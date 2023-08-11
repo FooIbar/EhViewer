@@ -310,6 +310,12 @@ class GalleryListScene : SearchBarScene() {
         }
     }
 
+    private val SceneGalleryListBinding.fastScroller get() = contentLayout.fastScroller
+    private val SceneGalleryListBinding.refreshLayout get() = contentLayout.refreshLayout
+    private val SceneGalleryListBinding.recyclerView get() = contentLayout.recyclerView
+    private val SceneGalleryListBinding.progress get() = contentLayout.progress
+    private val SceneGalleryListBinding.tip get() = contentLayout.tip
+
     override fun onCreateViewWithToolbar(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -329,7 +335,7 @@ class GalleryListScene : SearchBarScene() {
                 mSearchFab.parent as View,
             ),
         )
-        mViewTransition = BringOutTransition(binding.contentLayout, binding.searchLayout)
+        mViewTransition = BringOutTransition(binding.contentLayout.contentView, binding.searchLayout)
         binding.fastScroller.setOnDragHandlerListener(object : OnDragHandlerListener {
             override fun onStartDragHandler() {}
             override fun onEndDragHandler() {
