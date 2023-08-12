@@ -132,10 +132,10 @@ class VMStorage1 : ViewModel() {
                 if (urlBuilder.mode == MODE_TOPLIST) {
                     // TODO: Since we know total pages, let pager support jump
                     val key = (params.key ?: urlBuilder.mJumpTo ?: "0").toInt()
-                    val prev = if (key != 0) key - 1 else null
-                    val next = if (key != 199) key + 1 else null
+                    val prev = (key - 1).takeIf { it > 0 }
+                    val next = (key + 1).takeIf { it < TOPLIST_PAGES }
                     runSuspendCatching {
-                        urlBuilder.setJumpTo(key.toString())
+                        urlBuilder.setJumpTo(key)
                         EhEngine.getGalleryList(urlBuilder.build())
                     }.onFailure {
                         return@withIOContext LoadResult.Error(it)
@@ -461,10 +461,12 @@ class GalleryListScene : SearchBarScene() {
                     0 -> showGoToDialog()
                     1 -> {
                         mUrlBuilder.setIndex(null, true)
+                        mUrlBuilder.mJumpTo = null
                         mAdapter?.refresh()
                     }
                     2 -> {
                         if (mIsTopList) {
+                            mUrlBuilder.mJumpTo = "${TOPLIST_PAGES - 1}"
                             mAdapter?.refresh()
                         } else {
                             mUrlBuilder.setIndex("1", false)
@@ -651,9 +653,9 @@ class GalleryListScene : SearchBarScene() {
     private fun showGoToDialog() {
         mAdapter ?: return
         if (mIsTopList) {
-            val pages = 200
+            val page = mUrlBuilder.mJumpTo?.toIntOrNull() ?: 0
             val title = getString(R.string.go_to)
-            val hint = getString(R.string.go_to_hint, 1, 200)
+            val hint = getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
             lifecycleScope.launch {
                 val text = dialogState.awaitInputText(
                     title = title,
@@ -666,13 +668,13 @@ class GalleryListScene : SearchBarScene() {
                     }.onFailure {
                         return@awaitInputText getString(R.string.error_invalid_number)
                     }.getOrThrow()
-                    if (goTo < 0 || goTo >= pages) {
+                    if (goTo !in 0..<TOPLIST_PAGES) {
                         getString(R.string.error_out_of_range)
                     } else {
                         null
                     }
                 }.trim().toInt() - 1
-                mUrlBuilder.setJumpTo(text.toString())
+                mUrlBuilder.setJumpTo(text)
                 mAdapter?.refresh()
             }
         } else {
@@ -928,6 +930,7 @@ class GalleryListScene : SearchBarScene() {
                     navAnimated(R.id.galleryListScene, ListUrlBuilder().apply { set(q) }.toStartArgs())
                 } else {
                     mUrlBuilder.keyword = keywords[holder.bindingAdapterPosition].toString()
+                    mUrlBuilder.mJumpTo = null
                     onUpdateUrlBuilder()
                     mAdapter?.refresh()
                 }
@@ -1076,6 +1079,8 @@ class GalleryListScene : SearchBarScene() {
         )
     }
 }
+
+private const val TOPLIST_PAGES = 200
 
 @Parcelize
 enum class State : Parcelable {

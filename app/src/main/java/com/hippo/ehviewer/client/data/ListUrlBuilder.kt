@@ -70,8 +70,8 @@ data class ListUrlBuilder(
         mPrev = index?.takeUnless { isNext }
     }
 
-    fun setJumpTo(jumpTo: String?) {
-        mJumpTo = jumpTo
+    fun setJumpTo(jumpTo: Int) {
+        mJumpTo = jumpTo.takeUnless { it == 0 }?.toString()
     }
 
     var keyword: String?
