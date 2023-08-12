@@ -66,10 +66,12 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.ListUrlBuilder
+import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_NORMAL
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_SUBSCRIPTION
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TAG
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TOPLIST
+import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_UPLOADER
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_WHATS_HOT
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.client.exception.EhException
@@ -156,7 +158,7 @@ class VMStorage1 : ViewModel() {
                     }
                 }
                 val r = runSuspendCatching {
-                    if (ListUrlBuilder.MODE_IMAGE_SEARCH == urlBuilder.mode) {
+                    if (MODE_IMAGE_SEARCH == urlBuilder.mode) {
                         EhEngine.imageSearch(
                             File(urlBuilder.imagePath!!),
                             urlBuilder.isUseSimilarityScan,
@@ -295,6 +297,14 @@ class GalleryListScene : SearchBarScene() {
             title = resources.getString(R.string.search)
         }
         setSearchBarHint(title)
+
+        when (mode) {
+            MODE_NORMAL -> if (category != EhUtils.NONE || !keyword.isNullOrEmpty()) {
+                mainActivity?.clearNavCheckedItem()
+            }
+            MODE_TAG, MODE_UPLOADER, MODE_IMAGE_SEARCH -> mainActivity?.clearNavCheckedItem()
+            else -> Unit
+        }
     }
 
     private val dialogState = DialogState()
@@ -520,7 +530,7 @@ class GalleryListScene : SearchBarScene() {
         val context = context ?: return
 
         // Can't add image search as quick search
-        if (ListUrlBuilder.MODE_IMAGE_SEARCH == mUrlBuilder.mode) {
+        if (MODE_IMAGE_SEARCH == mUrlBuilder.mode) {
             showTip(R.string.image_search_not_quick_search, LENGTH_LONG)
             return
         }
@@ -899,26 +909,21 @@ class GalleryListScene : SearchBarScene() {
 
     private inner class QsDrawerAdapter(private val mInflater: LayoutInflater) :
         RecyclerView.Adapter<QsDrawerHolder>() {
+        private val keywords = intArrayOf(11, 12, 13, 15)
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QsDrawerHolder {
             val holder = QsDrawerHolder(ItemDrawerListBinding.inflate(mInflater, parent, false))
-            if (!mIsTopList) {
-                holder.itemView.setOnClickListener {
+            holder.itemView.setOnClickListener {
+                if (!mIsTopList) {
                     val q = mQuickSearchList[holder.bindingAdapterPosition]
                     mUrlBuilder.set(q)
-                    onUpdateUrlBuilder()
-                    mAdapter?.refresh()
-                    setState(State.NORMAL)
-                    closeSideSheet()
-                }
-            } else {
-                val keywords = intArrayOf(11, 12, 13, 15)
-                holder.itemView.setOnClickListener {
+                } else {
                     mUrlBuilder.keyword = keywords[holder.bindingAdapterPosition].toString()
-                    onUpdateUrlBuilder()
-                    mAdapter?.refresh()
-                    setState(State.NORMAL)
-                    closeSideSheet()
                 }
+                onUpdateUrlBuilder()
+                mAdapter?.refresh()
+                setState(State.NORMAL)
+                closeSideSheet()
             }
             return holder
         }
