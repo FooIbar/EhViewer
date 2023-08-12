@@ -225,7 +225,6 @@ class GalleryListScene : SearchBarScene() {
             ACTION_LIST_URL_BUILDER -> args?.getParcelableCompat<ListUrlBuilder>(KEY_LIST_URL_BUILDER)?.copy() ?: ListUrlBuilder()
             else -> throw IllegalStateException("Wrong KEY_ACTION:${args?.getString(KEY_ACTION)} when handle args!")
         }
-        args?.getString(KEY_GOTO)?.let { mUrlBuilder.mNext = it }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -268,10 +267,7 @@ class GalleryListScene : SearchBarScene() {
         val category = mUrlBuilder.category
         val mode = mUrlBuilder.mode
         val isPopular = mode == MODE_WHATS_HOT
-        val isTopList = mode == MODE_TOPLIST
-        if (isTopList != mIsTopList) {
-            mIsTopList = isTopList
-        }
+        mIsTopList = mode == MODE_TOPLIST
 
         // Update fab visibility
         binding.fabLayout.setSecondaryFabVisibilityAt(0, !isPopular)
@@ -380,6 +376,7 @@ class GalleryListScene : SearchBarScene() {
                 val empty = getString(R.string.gallery_list_empty_hit)
                 val noWatch = getString(R.string.gallery_list_empty_hit_subscription)
                 adapter.addLoadStateListener {
+                    _binding ?: return@addLoadStateListener
                     lifecycleScope.launchUI {
                         when (val state = it.refresh) {
                             is LoadState.Loading -> {
@@ -873,24 +870,35 @@ class GalleryListScene : SearchBarScene() {
     private fun onApplySearch(query: String?) {
         _binding ?: return
         lifecycleScope.launchIO {
+            val builder = ListUrlBuilder()
+            val oldMode = mUrlBuilder.mode
             if (mState == State.SEARCH || mState == State.SEARCH_SHOW_LIST) {
                 try {
-                    binding.searchLayout.formatListUrlBuilder(mUrlBuilder, query)
+                    binding.searchLayout.formatListUrlBuilder(builder, query)
                 } catch (e: EhException) {
                     showTip(e.message, LENGTH_LONG)
                     return@launchIO
                 }
             } else {
-                val oldMode = mUrlBuilder.mode
                 // If it's MODE_SUBSCRIPTION, keep it
                 val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
-                mUrlBuilder.reset()
-                mUrlBuilder.mode = newMode
-                mUrlBuilder.keyword = query
+                builder.mode = newMode
+                builder.keyword = query
             }
             withUIContext {
-                onUpdateUrlBuilder()
-                mAdapter?.refresh()
+                when (oldMode) {
+                    MODE_TOPLIST, MODE_WHATS_HOT -> {
+                        // Wait for search view to hide
+                        delay(300)
+                        navAnimated(R.id.galleryListScene, builder.toStartArgs())
+                    }
+
+                    else -> {
+                        mUrlBuilder = builder
+                        onUpdateUrlBuilder()
+                        mAdapter?.refresh()
+                    }
+                }
                 setState(State.NORMAL)
             }
         }
@@ -916,12 +924,13 @@ class GalleryListScene : SearchBarScene() {
             holder.itemView.setOnClickListener {
                 if (!mIsTopList) {
                     val q = mQuickSearchList[holder.bindingAdapterPosition]
-                    mUrlBuilder.set(q)
+                    // Navigate to galleryListScene to clear nav checked item
+                    navAnimated(R.id.galleryListScene, ListUrlBuilder().apply { set(q) }.toStartArgs())
                 } else {
                     mUrlBuilder.keyword = keywords[holder.bindingAdapterPosition].toString()
+                    onUpdateUrlBuilder()
+                    mAdapter?.refresh()
                 }
-                onUpdateUrlBuilder()
-                mAdapter?.refresh()
                 setState(State.NORMAL)
                 closeSideSheet()
             }
@@ -1053,7 +1062,6 @@ class GalleryListScene : SearchBarScene() {
 
     companion object {
         const val KEY_ACTION = "action"
-        const val KEY_GOTO = "goto"
         const val ACTION_HOMEPAGE = "action_homepage"
         const val ACTION_SUBSCRIPTION = "action_subscription"
         const val ACTION_WHATS_HOT = "action_whats_hot"
