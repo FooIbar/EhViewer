@@ -160,6 +160,8 @@ class FavoritesScene : SearchBarScene() {
         }
     }
 
+    override val fabLayout get() = binding.fabLayout
+
     private fun onItemClick(position: Int) {
         // Skip if in search mode
         if (!tracker.isInCustomChoice) {
@@ -191,6 +193,7 @@ class FavoritesScene : SearchBarScene() {
         }
         if (keyword.isNullOrEmpty()) {
             setSearchBarHint(getString(R.string.favorites_title, favCatName))
+            setSearchBarText(null)
         } else {
             setSearchBarHint(getString(R.string.favorites_title_2, favCatName, keyword))
         }
@@ -439,6 +442,16 @@ class FavoritesScene : SearchBarScene() {
         }
     }
 
+    override fun onSearchViewExpanded() {
+        super.onSearchViewExpanded()
+        selectSearchFab(true)
+    }
+
+    override fun onSearchViewHidden() {
+        super.onSearchViewHidden()
+        selectActionFab(true)
+    }
+
     private fun showGoToDialog() {
         context ?: return
         val local = LocalDateTime.of(2007, 3, 21, 0, 0)
@@ -528,5 +541,3 @@ class FavoritesScene : SearchBarScene() {
         }
     }
 }
-
-private const val ANIMATE_TIME = 300L

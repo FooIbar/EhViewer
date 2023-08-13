@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.ui.scene
 
-import android.animation.Animator
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
@@ -100,7 +99,6 @@ import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AnimationUtils
 import com.hippo.ehviewer.util.ExceptionUtils
-import com.hippo.ehviewer.util.SimpleAnimatorListener
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getValue
 import com.hippo.ehviewer.util.lazyMut
@@ -110,6 +108,7 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -194,23 +193,15 @@ class GalleryListScene : SearchBarScene() {
     }
     private var _binding: SceneGalleryListBinding? = null
     private val binding get() = _binding!!
-    private val mSearchFabAnimatorListener = object : SimpleAnimatorListener() {
-        override fun onAnimationEnd(animation: Animator) {
-            mSearchFab.visibility = View.INVISIBLE
-        }
-    }
-    private val mActionFabAnimatorListener = object : SimpleAnimatorListener() {
-        override fun onAnimationEnd(animation: Animator) {
-            binding.fabLayout.primaryFab?.visibility = View.INVISIBLE
-        }
-    }
     private var fabAnimator: ViewPropertyAnimator? = null
     private var mViewTransition: ViewTransition? = null
     private var mAdapter: GalleryAdapter? = null
     lateinit var mQuickSearchList: MutableList<QuickSearch>
     private var mHideActionFabSlop = 0
-    private var mShowActionFab = true
     private var mState = State.NORMAL
+
+    override val fabLayout get() = binding.fabLayout
+
     override fun getMenuResId(): Int {
         return R.menu.scene_gallery_list_searchbar_menu
     }
@@ -376,8 +367,8 @@ class GalleryListScene : SearchBarScene() {
                 val empty = getString(R.string.gallery_list_empty_hit)
                 val noWatch = getString(R.string.gallery_list_empty_hit_subscription)
                 adapter.addLoadStateListener {
-                    _binding ?: return@addLoadStateListener
-                    lifecycleScope.launchUI {
+                    viewLifecycleOwner.lifecycleScope.launchUI {
+                        ensureActive()
                         when (val state = it.refresh) {
                             is LoadState.Loading -> {
                                 showSearchBar()
@@ -459,12 +450,12 @@ class GalleryListScene : SearchBarScene() {
             override fun onClickSecondaryFab(view: FabLayout, fab: FloatingActionButton, position: Int) {
                 when (position) {
                     0 -> showGoToDialog()
-                    1 -> {
+                    1 -> { // First
                         mUrlBuilder.setIndex(null, true)
                         mUrlBuilder.mJumpTo = null
                         mAdapter?.refresh()
                     }
-                    2 -> {
+                    2 -> { // Last
                         if (mIsTopList) {
                             mUrlBuilder.mJumpTo = "${TOPLIST_PAGES - 1}"
                             mAdapter?.refresh()
@@ -490,7 +481,6 @@ class GalleryListScene : SearchBarScene() {
         }
         binding.fabLayout.primaryFab!!.setImageDrawable(actionFabDrawable)
         addAboveSnackView(binding.fabLayout)
-        mSearchFab.setOnClickListener { onApplySearch() }
 
         // Update list url builder
         onUpdateUrlBuilder()
@@ -744,70 +734,6 @@ class GalleryListScene : SearchBarScene() {
                     .setDuration(ANIMATE_TIME).setStartDelay(0L)
                     .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR)
             fabAnimator!!.start()
-        }
-    }
-
-    private fun selectSearchFab(animation: Boolean) {
-        _binding ?: return
-        mShowActionFab = false
-        if (animation) {
-            val fab: View? = binding.fabLayout.primaryFab
-            val delay: Long
-            if (View.INVISIBLE == fab!!.visibility) {
-                delay = 0L
-            } else {
-                delay = ANIMATE_TIME
-                binding.fabLayout.setExpanded(expanded = false, animation = true)
-                fab.animate().scaleX(0.0f).scaleY(0.0f).setListener(mActionFabAnimatorListener)
-                    .setDuration(ANIMATE_TIME).setStartDelay(0L)
-                    .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).start()
-            }
-            mSearchFab.visibility = View.VISIBLE
-            mSearchFab.rotation = -45.0f
-            mSearchFab.animate().scaleX(1.0f).scaleY(1.0f).rotation(0.0f).setListener(null)
-                .setDuration(ANIMATE_TIME).setStartDelay(delay)
-                .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).start()
-        } else {
-            binding.fabLayout.setExpanded(expanded = false, animation = false)
-            val fab: View? = binding.fabLayout.primaryFab
-            fab!!.visibility = View.INVISIBLE
-            fab.scaleX = 0.0f
-            fab.scaleY = 0.0f
-            mSearchFab.visibility = View.VISIBLE
-            mSearchFab.scaleX = 1.0f
-            mSearchFab.scaleY = 1.0f
-        }
-    }
-
-    private fun selectActionFab(animation: Boolean) {
-        _binding ?: return
-        mShowActionFab = true
-        if (animation) {
-            val delay: Long
-            if (View.INVISIBLE == mSearchFab.visibility) {
-                delay = 0L
-            } else {
-                delay = ANIMATE_TIME
-                mSearchFab.animate().scaleX(0.0f).scaleY(0.0f)
-                    .setListener(mSearchFabAnimatorListener)
-                    .setDuration(ANIMATE_TIME).setStartDelay(0L)
-                    .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).start()
-            }
-            val fab: View? = binding.fabLayout.primaryFab
-            fab!!.visibility = View.VISIBLE
-            fab.rotation = -45.0f
-            fab.animate().scaleX(1.0f).scaleY(1.0f).rotation(0.0f).setListener(null)
-                .setDuration(ANIMATE_TIME).setStartDelay(delay)
-                .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).start()
-        } else {
-            binding.fabLayout.setExpanded(expanded = false, animation = false)
-            val fab: View? = binding.fabLayout.primaryFab
-            fab!!.visibility = View.VISIBLE
-            fab.scaleX = 1.0f
-            fab.scaleY = 1.0f
-            mSearchFab.visibility = View.INVISIBLE
-            mSearchFab.scaleX = 0.0f
-            mSearchFab.scaleY = 0.0f
         }
     }
 
@@ -1072,7 +998,6 @@ class GalleryListScene : SearchBarScene() {
         const val ACTION_LIST_URL_BUILDER = "action_list_url_builder"
         const val KEY_LIST_URL_BUILDER = "list_url_builder"
         const val KEY_STATE = "state"
-        private const val ANIMATE_TIME = 300L
         fun ListUrlBuilder.toStartArgs() = bundleOf(
             KEY_ACTION to ACTION_LIST_URL_BUILDER,
             KEY_LIST_URL_BUILDER to this,
