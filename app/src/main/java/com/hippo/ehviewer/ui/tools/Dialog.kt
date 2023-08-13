@@ -148,18 +148,25 @@ class DialogState {
         @StringRes confirmText: Int? = null,
         @StringRes dismissText: Int? = null,
         @StringRes title: Int? = null,
+        onDismiss: () -> Unit = {},
         text: (@Composable () -> Unit)? = null,
     ) {
         return dialog { cont ->
             AlertDialog(
-                onDismissRequest = { cont.cancel() },
+                onDismissRequest = {
+                    onDismiss()
+                    cont.cancel()
+                },
                 confirmButton = {
                     TextButton(onClick = { cont.resume(Unit) }) {
                         Text(text = stringResource(id = confirmText ?: android.R.string.ok))
                     }
                 },
                 dismissButton = dismissText.ifNotNullThen {
-                    TextButton(onClick = { cont.cancel() }) {
+                    TextButton(onClick = {
+                        onDismiss()
+                        cont.cancel()
+                    }) {
                         Text(text = stringResource(id = dismissText!!))
                     }
                 },

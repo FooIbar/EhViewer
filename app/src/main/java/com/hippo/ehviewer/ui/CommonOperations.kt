@@ -20,6 +20,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
@@ -28,7 +30,12 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.HeartBroken
 import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import com.hippo.ehviewer.EhDB
@@ -55,6 +62,7 @@ import com.hippo.ehviewer.util.requestPermission
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.launchNow
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.sync.Mutex
@@ -312,7 +320,6 @@ suspend fun DialogState.doGalleryInfoAction(info: BaseGalleryInfo, context: Cont
             1 -> withUIContext {
                 if (downloaded) {
                     confirmRemoveDownload(info)
-                    DownloadManager.deleteDownload(info.gid)
                 } else {
                     CommonOperations.startDownload(this@with, info, false)
                 }
@@ -342,12 +349,28 @@ suspend fun DialogState.doGalleryInfoAction(info: BaseGalleryInfo, context: Cont
 
 private const val MAX_FAVNOTE_CHAR = 200
 
-suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo) = awaitPermissionOrCancel(
-    confirmText = android.R.string.ok,
-    dismissText = android.R.string.cancel,
-    title = R.string.download_remove_dialog_title,
-    text = { Text(text = stringResource(id = R.string.download_remove_dialog_message, info.title.orEmpty())) },
-)
+suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo, onDismiss: () -> Unit = {}) {
+    var checked by mutableStateOf(Settings.removeImageFiles)
+    awaitPermissionOrCancel(
+        confirmText = android.R.string.ok,
+        dismissText = android.R.string.cancel,
+        title = R.string.download_remove_dialog_title,
+        onDismiss = onDismiss,
+        text = {
+            Column {
+                Text(text = stringResource(id = R.string.download_remove_dialog_message, info.title.orEmpty()))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = checked, onCheckedChange = { checked = it })
+                    Text(text = stringResource(id = R.string.download_remove_dialog_check_text))
+                }
+            }
+        },
+    )
+    Settings.removeImageFiles = checked
+    withIOContext {
+        DownloadManager.deleteDownload(info.gid, checked)
+    }
+}
 
 suspend fun DialogState.showMoveDownloadLabel(info: GalleryInfo) {
     val defaultLabel = appCtx.getString(R.string.default_download_label_name)
