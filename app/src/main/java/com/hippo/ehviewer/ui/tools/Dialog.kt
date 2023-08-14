@@ -3,12 +3,10 @@ package com.hippo.ehviewer.ui.tools
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -148,18 +146,25 @@ class DialogState {
         @StringRes confirmText: Int? = null,
         @StringRes dismissText: Int? = null,
         @StringRes title: Int? = null,
+        onDismiss: () -> Unit = {},
         text: (@Composable () -> Unit)? = null,
     ) {
         return dialog { cont ->
             AlertDialog(
-                onDismissRequest = { cont.cancel() },
+                onDismissRequest = {
+                    onDismiss()
+                    cont.cancel()
+                },
                 confirmButton = {
                     TextButton(onClick = { cont.resume(Unit) }) {
                         Text(text = stringResource(id = confirmText ?: android.R.string.ok))
                     }
                 },
                 dismissButton = dismissText.ifNotNullThen {
-                    TextButton(onClick = { cont.cancel() }) {
+                    TextButton(onClick = {
+                        onDismiss()
+                        cont.cancel()
+                    }) {
                         Text(text = stringResource(id = dismissText!!))
                     }
                 },
@@ -195,12 +200,22 @@ class DialogState {
         vararg items: String,
         @StringRes title: Int,
     ): Int = showNoButton {
-        Column(modifier = Modifier.padding(24.dp)) {
-            Text(text = stringResource(id = title), style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.size(16.dp))
-            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
-                items.forEachIndexed { index, text ->
-                    Text(text = text, modifier = Modifier.clickable { dismissWith(index) }.fillMaxWidth().padding(vertical = 8.dp), style = MaterialTheme.typography.titleMedium)
+        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+            Text(
+                text = stringResource(id = title),
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+            LazyColumn {
+                itemsIndexed(items) { index, text ->
+                    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
+                        Text(
+                            text = text,
+                            modifier = Modifier.clickable { dismissWith(index) }.fillMaxWidth()
+                                .padding(horizontal = 24.dp, vertical = 16.dp),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
                 }
             }
         }

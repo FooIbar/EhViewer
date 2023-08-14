@@ -193,6 +193,27 @@ fun EhScreen() {
                     summary = stringResource(id = R.string.settings_my_tags_summary),
                 ) { navController.navigate(MYTAGS_SCREEN) }
             }
+            var defaultFavSlot by Settings::defaultFavSlot.observed
+            val disabled = stringResource(id = R.string.disabled_nav)
+            val localFav = stringResource(id = R.string.local_favorites)
+            val summary = when (defaultFavSlot) {
+                -1 -> localFav
+                in 0..9 -> Settings.favCat[defaultFavSlot]
+                else -> stringResource(id = R.string.default_favorites_warning)
+            }
+            val items = if (signin) {
+                arrayOf(disabled, localFav, *Settings.favCat)
+            } else {
+                arrayOf(disabled, localFav)
+            }
+            Preference(
+                title = stringResource(id = R.string.default_favorites_collection),
+                summary = summary,
+            ) {
+                coroutineScope.launch {
+                    defaultFavSlot = dialogState.showSelectItem(*items, title = R.string.default_favorites_collection) - 2
+                }
+            }
             SimpleMenuPreferenceInt(
                 title = stringResource(id = rikka.core.R.string.dark_theme),
                 entry = R.array.night_mode_entries,
@@ -244,27 +265,6 @@ fun EhScreen() {
                 entryValueRes = R.array.thumb_resolution_entry_values,
                 value = thumbResolution,
             )
-            var defaultFavSlot by Settings::defaultFavSlot.observed
-            val disabled = stringResource(id = R.string.disabled_nav)
-            val localFav = stringResource(id = R.string.local_favorites)
-            val summary = when (defaultFavSlot) {
-                -1 -> localFav
-                in 0..9 -> Settings.favCat[defaultFavSlot]
-                else -> stringResource(id = R.string.default_favorites_warning)
-            }
-            val items = if (signin) {
-                arrayOf(disabled, localFav, *Settings.favCat)
-            } else {
-                arrayOf(disabled, localFav)
-            }
-            Preference(
-                title = stringResource(id = R.string.default_favorites_collection),
-                summary = summary,
-            ) {
-                coroutineScope.launch {
-                    defaultFavSlot = dialogState.showSelectItem(*items, title = R.string.default_favorites_collection) - 2
-                }
-            }
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_force_eh_thumb),
                 summary = stringResource(id = R.string.settings_eh_force_eh_thumb_summary),
