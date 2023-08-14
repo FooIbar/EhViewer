@@ -68,7 +68,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -159,6 +158,7 @@ import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
+import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
 import com.hippo.ehviewer.util.AppHelper
 import com.hippo.ehviewer.util.ExceptionUtils
@@ -712,7 +712,7 @@ class GalleryDetailScene : BaseScene() {
                 stringResource(id = R.string.not_favorited)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTonalIconToggleButton(
+                FilledTertiaryIconToggleButton(
                     checked = favored,
                     onCheckedChange = { modifyFavourite() },
                 ) {
