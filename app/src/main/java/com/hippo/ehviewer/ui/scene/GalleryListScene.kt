@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.ui.scene
 
-import android.animation.Animator
 import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
@@ -66,10 +65,12 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.ListUrlBuilder
+import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_NORMAL
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_SUBSCRIPTION
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TAG
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TOPLIST
+import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_UPLOADER
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_WHATS_HOT
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.client.exception.EhException
@@ -98,7 +99,6 @@ import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AnimationUtils
 import com.hippo.ehviewer.util.ExceptionUtils
-import com.hippo.ehviewer.util.SimpleAnimatorListener
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getValue
 import com.hippo.ehviewer.util.lazyMut
@@ -108,6 +108,7 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -130,10 +131,10 @@ class VMStorage1 : ViewModel() {
                 if (urlBuilder.mode == MODE_TOPLIST) {
                     // TODO: Since we know total pages, let pager support jump
                     val key = (params.key ?: urlBuilder.mJumpTo ?: "0").toInt()
-                    val prev = if (key != 0) key - 1 else null
-                    val next = if (key != 199) key + 1 else null
+                    val prev = (key - 1).takeIf { it > 0 }
+                    val next = (key + 1).takeIf { it < TOPLIST_PAGES }
                     runSuspendCatching {
-                        urlBuilder.setJumpTo(key.toString())
+                        urlBuilder.setJumpTo(key)
                         EhEngine.getGalleryList(urlBuilder.build())
                     }.onFailure {
                         return@withIOContext LoadResult.Error(it)
@@ -156,7 +157,7 @@ class VMStorage1 : ViewModel() {
                     }
                 }
                 val r = runSuspendCatching {
-                    if (ListUrlBuilder.MODE_IMAGE_SEARCH == urlBuilder.mode) {
+                    if (MODE_IMAGE_SEARCH == urlBuilder.mode) {
                         EhEngine.imageSearch(
                             File(urlBuilder.imagePath!!),
                             urlBuilder.isUseSimilarityScan,
@@ -192,23 +193,15 @@ class GalleryListScene : SearchBarScene() {
     }
     private var _binding: SceneGalleryListBinding? = null
     private val binding get() = _binding!!
-    private val mSearchFabAnimatorListener = object : SimpleAnimatorListener() {
-        override fun onAnimationEnd(animation: Animator) {
-            mSearchFab.visibility = View.INVISIBLE
-        }
-    }
-    private val mActionFabAnimatorListener = object : SimpleAnimatorListener() {
-        override fun onAnimationEnd(animation: Animator) {
-            binding.fabLayout.primaryFab?.visibility = View.INVISIBLE
-        }
-    }
     private var fabAnimator: ViewPropertyAnimator? = null
     private var mViewTransition: ViewTransition? = null
     private var mAdapter: GalleryAdapter? = null
     lateinit var mQuickSearchList: MutableList<QuickSearch>
     private var mHideActionFabSlop = 0
-    private var mShowActionFab = true
     private var mState = State.NORMAL
+
+    override val fabLayout get() = binding.fabLayout
+
     override fun getMenuResId(): Int {
         return R.menu.scene_gallery_list_searchbar_menu
     }
@@ -223,7 +216,6 @@ class GalleryListScene : SearchBarScene() {
             ACTION_LIST_URL_BUILDER -> args?.getParcelableCompat<ListUrlBuilder>(KEY_LIST_URL_BUILDER)?.copy() ?: ListUrlBuilder()
             else -> throw IllegalStateException("Wrong KEY_ACTION:${args?.getString(KEY_ACTION)} when handle args!")
         }
-        args?.getString(KEY_GOTO)?.let { mUrlBuilder.mNext = it }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -266,10 +258,7 @@ class GalleryListScene : SearchBarScene() {
         val category = mUrlBuilder.category
         val mode = mUrlBuilder.mode
         val isPopular = mode == MODE_WHATS_HOT
-        val isTopList = mode == MODE_TOPLIST
-        if (isTopList != mIsTopList) {
-            mIsTopList = isTopList
-        }
+        mIsTopList = mode == MODE_TOPLIST
 
         // Update fab visibility
         binding.fabLayout.setSecondaryFabVisibilityAt(0, !isPopular)
@@ -295,6 +284,14 @@ class GalleryListScene : SearchBarScene() {
             title = resources.getString(R.string.search)
         }
         setSearchBarHint(title)
+
+        when (mode) {
+            MODE_NORMAL -> if (category != EhUtils.NONE || !keyword.isNullOrEmpty()) {
+                mainActivity?.clearNavCheckedItem()
+            }
+            MODE_TAG, MODE_UPLOADER, MODE_IMAGE_SEARCH -> mainActivity?.clearNavCheckedItem()
+            else -> Unit
+        }
     }
 
     private val dialogState = DialogState()
@@ -370,7 +367,8 @@ class GalleryListScene : SearchBarScene() {
                 val empty = getString(R.string.gallery_list_empty_hit)
                 val noWatch = getString(R.string.gallery_list_empty_hit_subscription)
                 adapter.addLoadStateListener {
-                    lifecycleScope.launchUI {
+                    viewLifecycleOwner.lifecycleScope.launchUI {
+                        ensureActive()
                         when (val state = it.refresh) {
                             is LoadState.Loading -> {
                                 showSearchBar()
@@ -452,12 +450,14 @@ class GalleryListScene : SearchBarScene() {
             override fun onClickSecondaryFab(view: FabLayout, fab: FloatingActionButton, position: Int) {
                 when (position) {
                     0 -> showGoToDialog()
-                    1 -> {
+                    1 -> { // First
                         mUrlBuilder.setIndex(null, true)
+                        mUrlBuilder.mJumpTo = null
                         mAdapter?.refresh()
                     }
-                    2 -> {
+                    2 -> { // Last
                         if (mIsTopList) {
+                            mUrlBuilder.mJumpTo = "${TOPLIST_PAGES - 1}"
                             mAdapter?.refresh()
                         } else {
                             mUrlBuilder.setIndex("1", false)
@@ -481,7 +481,6 @@ class GalleryListScene : SearchBarScene() {
         }
         binding.fabLayout.primaryFab!!.setImageDrawable(actionFabDrawable)
         addAboveSnackView(binding.fabLayout)
-        mSearchFab.setOnClickListener { onApplySearch() }
 
         // Update list url builder
         onUpdateUrlBuilder()
@@ -520,7 +519,7 @@ class GalleryListScene : SearchBarScene() {
         val context = context ?: return
 
         // Can't add image search as quick search
-        if (ListUrlBuilder.MODE_IMAGE_SEARCH == mUrlBuilder.mode) {
+        if (MODE_IMAGE_SEARCH == mUrlBuilder.mode) {
             showTip(R.string.image_search_not_quick_search, LENGTH_LONG)
             return
         }
@@ -644,9 +643,9 @@ class GalleryListScene : SearchBarScene() {
     private fun showGoToDialog() {
         mAdapter ?: return
         if (mIsTopList) {
-            val pages = 200
+            val page = mUrlBuilder.mJumpTo?.toIntOrNull() ?: 0
             val title = getString(R.string.go_to)
-            val hint = getString(R.string.go_to_hint, 1, 200)
+            val hint = getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
             lifecycleScope.launch {
                 val text = dialogState.awaitInputText(
                     title = title,
@@ -659,13 +658,13 @@ class GalleryListScene : SearchBarScene() {
                     }.onFailure {
                         return@awaitInputText getString(R.string.error_invalid_number)
                     }.getOrThrow()
-                    if (goTo < 0 || goTo >= pages) {
+                    if (goTo !in 0..<TOPLIST_PAGES) {
                         getString(R.string.error_out_of_range)
                     } else {
                         null
                     }
                 }.trim().toInt() - 1
-                mUrlBuilder.setJumpTo(text.toString())
+                mUrlBuilder.setJumpTo(text)
                 mAdapter?.refresh()
             }
         } else {
@@ -738,70 +737,6 @@ class GalleryListScene : SearchBarScene() {
         }
     }
 
-    private fun selectSearchFab(animation: Boolean) {
-        _binding ?: return
-        mShowActionFab = false
-        if (animation) {
-            val fab: View? = binding.fabLayout.primaryFab
-            val delay: Long
-            if (View.INVISIBLE == fab!!.visibility) {
-                delay = 0L
-            } else {
-                delay = ANIMATE_TIME
-                binding.fabLayout.setExpanded(expanded = false, animation = true)
-                fab.animate().scaleX(0.0f).scaleY(0.0f).setListener(mActionFabAnimatorListener)
-                    .setDuration(ANIMATE_TIME).setStartDelay(0L)
-                    .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).start()
-            }
-            mSearchFab.visibility = View.VISIBLE
-            mSearchFab.rotation = -45.0f
-            mSearchFab.animate().scaleX(1.0f).scaleY(1.0f).rotation(0.0f).setListener(null)
-                .setDuration(ANIMATE_TIME).setStartDelay(delay)
-                .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).start()
-        } else {
-            binding.fabLayout.setExpanded(expanded = false, animation = false)
-            val fab: View? = binding.fabLayout.primaryFab
-            fab!!.visibility = View.INVISIBLE
-            fab.scaleX = 0.0f
-            fab.scaleY = 0.0f
-            mSearchFab.visibility = View.VISIBLE
-            mSearchFab.scaleX = 1.0f
-            mSearchFab.scaleY = 1.0f
-        }
-    }
-
-    private fun selectActionFab(animation: Boolean) {
-        _binding ?: return
-        mShowActionFab = true
-        if (animation) {
-            val delay: Long
-            if (View.INVISIBLE == mSearchFab.visibility) {
-                delay = 0L
-            } else {
-                delay = ANIMATE_TIME
-                mSearchFab.animate().scaleX(0.0f).scaleY(0.0f)
-                    .setListener(mSearchFabAnimatorListener)
-                    .setDuration(ANIMATE_TIME).setStartDelay(0L)
-                    .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).start()
-            }
-            val fab: View? = binding.fabLayout.primaryFab
-            fab!!.visibility = View.VISIBLE
-            fab.rotation = -45.0f
-            fab.animate().scaleX(1.0f).scaleY(1.0f).rotation(0.0f).setListener(null)
-                .setDuration(ANIMATE_TIME).setStartDelay(delay)
-                .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).start()
-        } else {
-            binding.fabLayout.setExpanded(expanded = false, animation = false)
-            val fab: View? = binding.fabLayout.primaryFab
-            fab!!.visibility = View.VISIBLE
-            fab.scaleX = 1.0f
-            fab.scaleY = 1.0f
-            mSearchFab.visibility = View.INVISIBLE
-            mSearchFab.scaleX = 0.0f
-            mSearchFab.scaleY = 0.0f
-        }
-    }
-
     private fun setState(state: State) {
         setState(state, true)
     }
@@ -863,24 +798,35 @@ class GalleryListScene : SearchBarScene() {
     private fun onApplySearch(query: String?) {
         _binding ?: return
         lifecycleScope.launchIO {
+            val builder = ListUrlBuilder()
+            val oldMode = mUrlBuilder.mode
             if (mState == State.SEARCH || mState == State.SEARCH_SHOW_LIST) {
                 try {
-                    binding.searchLayout.formatListUrlBuilder(mUrlBuilder, query)
+                    binding.searchLayout.formatListUrlBuilder(builder, query)
                 } catch (e: EhException) {
                     showTip(e.message, LENGTH_LONG)
                     return@launchIO
                 }
             } else {
-                val oldMode = mUrlBuilder.mode
                 // If it's MODE_SUBSCRIPTION, keep it
                 val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
-                mUrlBuilder.reset()
-                mUrlBuilder.mode = newMode
-                mUrlBuilder.keyword = query
+                builder.mode = newMode
+                builder.keyword = query
             }
             withUIContext {
-                onUpdateUrlBuilder()
-                mAdapter?.refresh()
+                when (oldMode) {
+                    MODE_TOPLIST, MODE_WHATS_HOT -> {
+                        // Wait for search view to hide
+                        delay(300)
+                        navAnimated(R.id.galleryListScene, builder.toStartArgs())
+                    }
+
+                    else -> {
+                        mUrlBuilder = builder
+                        onUpdateUrlBuilder()
+                        mAdapter?.refresh()
+                    }
+                }
                 setState(State.NORMAL)
             }
         }
@@ -899,26 +845,23 @@ class GalleryListScene : SearchBarScene() {
 
     private inner class QsDrawerAdapter(private val mInflater: LayoutInflater) :
         RecyclerView.Adapter<QsDrawerHolder>() {
+        private val keywords = intArrayOf(11, 12, 13, 15)
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QsDrawerHolder {
             val holder = QsDrawerHolder(ItemDrawerListBinding.inflate(mInflater, parent, false))
-            if (!mIsTopList) {
-                holder.itemView.setOnClickListener {
+            holder.itemView.setOnClickListener {
+                if (!mIsTopList) {
                     val q = mQuickSearchList[holder.bindingAdapterPosition]
-                    mUrlBuilder.set(q)
-                    onUpdateUrlBuilder()
-                    mAdapter?.refresh()
-                    setState(State.NORMAL)
-                    closeSideSheet()
-                }
-            } else {
-                val keywords = intArrayOf(11, 12, 13, 15)
-                holder.itemView.setOnClickListener {
+                    // Navigate to galleryListScene to clear nav checked item
+                    navAnimated(R.id.galleryListScene, ListUrlBuilder().apply { set(q) }.toStartArgs())
+                } else {
                     mUrlBuilder.keyword = keywords[holder.bindingAdapterPosition].toString()
+                    mUrlBuilder.mJumpTo = null
                     onUpdateUrlBuilder()
                     mAdapter?.refresh()
-                    setState(State.NORMAL)
-                    closeSideSheet()
                 }
+                setState(State.NORMAL)
+                closeSideSheet()
             }
             return holder
         }
@@ -1048,7 +991,6 @@ class GalleryListScene : SearchBarScene() {
 
     companion object {
         const val KEY_ACTION = "action"
-        const val KEY_GOTO = "goto"
         const val ACTION_HOMEPAGE = "action_homepage"
         const val ACTION_SUBSCRIPTION = "action_subscription"
         const val ACTION_WHATS_HOT = "action_whats_hot"
@@ -1056,13 +998,14 @@ class GalleryListScene : SearchBarScene() {
         const val ACTION_LIST_URL_BUILDER = "action_list_url_builder"
         const val KEY_LIST_URL_BUILDER = "list_url_builder"
         const val KEY_STATE = "state"
-        private const val ANIMATE_TIME = 300L
         fun ListUrlBuilder.toStartArgs() = bundleOf(
             KEY_ACTION to ACTION_LIST_URL_BUILDER,
             KEY_LIST_URL_BUILDER to this,
         )
     }
 }
+
+private const val TOPLIST_PAGES = 200
 
 @Parcelize
 enum class State : Parcelable {

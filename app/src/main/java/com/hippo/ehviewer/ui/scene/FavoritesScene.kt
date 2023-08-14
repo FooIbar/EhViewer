@@ -51,6 +51,8 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.CalendarConstraints.DateValidator
 import com.google.android.material.datepicker.CompositeDateValidator
@@ -78,6 +80,7 @@ import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.ViewTransition
 import com.hippo.ehviewer.ui.legacy.WindowInsetsAnimationHelper
 import com.hippo.ehviewer.ui.setMD3Content
+import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.SimpleHandler
 import com.hippo.ehviewer.util.getValue
@@ -160,6 +163,10 @@ class FavoritesScene : SearchBarScene() {
         }
     }
 
+    private val dialogState = DialogState()
+
+    override val fabLayout get() = binding.fabLayout
+
     private fun onItemClick(position: Int) {
         // Skip if in search mode
         if (!tracker.isInCustomChoice) {
@@ -191,6 +198,7 @@ class FavoritesScene : SearchBarScene() {
         }
         if (keyword.isNullOrEmpty()) {
             setSearchBarHint(getString(R.string.favorites_title, favCatName))
+            setSearchBarText(null)
         } else {
             setSearchBarHint(getString(R.string.favorites_title_2, favCatName, keyword))
         }
@@ -222,6 +230,7 @@ class FavoritesScene : SearchBarScene() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = SceneFavoritesBinding.inflate(inflater, container!!)
+        container.addView(ComposeView(inflater.context).apply { setMD3Content { dialogState.Intercept() } })
         setOnApplySearch {
             if (!tracker.isInCustomChoice) {
                 switchFav(urlBuilder.favCat, it)
@@ -381,6 +390,36 @@ class FavoritesScene : SearchBarScene() {
             }
             switchFav(Settings.recentFavCat)
         }
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.Callback() {
+            override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+                return makeMovementFlags(0, ItemTouchHelper.LEFT)
+            }
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder,
+            ) = false
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.bindingAdapterPosition
+                val info = mAdapter!!.peek(position)!!
+                lifecycleScope.launchIO {
+                    dialogState.awaitPermissionOrCancel(
+                        confirmText = R.string.delete,
+                        dismissText = android.R.string.cancel,
+                        title = R.string.delete_favorites_dialog_title,
+                        onDismiss = { mAdapter!!.notifyItemChanged(position) },
+                    ) {
+                        Text(text = stringResource(id = R.string.delete_favorites_dialog_message, 1))
+                    }
+                    if (urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
+                        EhDB.removeLocalFavorites(info)
+                    } else {
+                        EhEngine.modifyFavorites(info.gid, info.token)
+                    }
+                }
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(binding.recyclerView)
         allowEmptySearch = false
         return binding.root
     }
@@ -437,6 +476,16 @@ class FavoritesScene : SearchBarScene() {
                 }
             }
         }
+    }
+
+    override fun onSearchViewExpanded() {
+        super.onSearchViewExpanded()
+        selectSearchFab(true)
+    }
+
+    override fun onSearchViewHidden() {
+        super.onSearchViewHidden()
+        selectActionFab(true)
     }
 
     private fun showGoToDialog() {
@@ -528,5 +577,3 @@ class FavoritesScene : SearchBarScene() {
         }
     }
 }
-
-private const val ANIMATE_TIME = 300L

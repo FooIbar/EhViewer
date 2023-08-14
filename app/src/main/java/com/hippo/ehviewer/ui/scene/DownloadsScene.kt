@@ -47,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_DRAG
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SimpleItemAnimator
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import arrow.core.partially1
 import coil.compose.AsyncImage
@@ -84,6 +84,7 @@ import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.DownloadService.Companion.clear
 import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.ktbuilder.imageRequest
+import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.legacy.AutoStaggeredGridLayoutManager
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CheckBoxDialogBuilder
@@ -98,6 +99,7 @@ import com.hippo.ehviewer.ui.main.requestOf
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.CropDefaults
+import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.LongList
 import com.hippo.ehviewer.util.sendTo
@@ -136,6 +138,8 @@ class DownloadsScene :
     private var mLabelAdapter: DownloadLabelAdapter? = null
     private lateinit var mLabels: MutableList<String>
     private var mType = -1
+
+    private val dialogState = DialogState()
 
     private fun initLabels() {
         context ?: return
@@ -247,6 +251,7 @@ class DownloadsScene :
         savedInstanceState: Bundle?,
     ): View {
         _binding = SceneDownloadBinding.inflate(inflater, container!!)
+        container.addView(ComposeView(inflater.context).apply { setMD3Content { dialogState.Intercept() } })
         binding.run {
             setLiftOnScrollTargetView(recyclerView)
             mViewTransition = ViewTransition(content, tip)
@@ -288,11 +293,6 @@ class DownloadsScene :
             recyclerView.layoutManager = layoutManager
             recyclerView.clipToPadding = false
             recyclerView.clipChildren = false
-            // Cancel change animation
-            val itemAnimator = recyclerView.itemAnimator
-            if (itemAnimator is SimpleItemAnimator) {
-                itemAnimator.supportsChangeAnimations = false
-            }
             val interval = resources.getDimensionPixelOffset(R.dimen.gallery_list_interval)
             val decoration = object : RecyclerView.ItemDecoration() {
                 override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
@@ -313,7 +313,7 @@ class DownloadsScene :
                 }
                 override fun isLongPressDragEnabled() = false
                 override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-                    return makeMovementFlags(ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0)
+                    return makeMovementFlags(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.LEFT)
                 }
                 override fun onMove(
                     recyclerView: RecyclerView,
@@ -336,7 +336,16 @@ class DownloadsScene :
                     }
                     return true
                 }
-                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val position = viewHolder.bindingAdapterPosition
+                    val info = mList!![position]
+                    lifecycleScope.launchUI {
+                        dialogState.confirmRemoveDownload(info) {
+                            mAdapter!!.notifyItemChanged(position)
+                        }
+                        mAdapter!!.notifyItemRemoved(position)
+                    }
+                }
             })
             mItemTouchHelper!!.attachToRecyclerView(recyclerView)
             fastScroller.attachToRecyclerView(recyclerView)

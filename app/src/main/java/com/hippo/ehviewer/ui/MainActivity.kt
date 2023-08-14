@@ -197,7 +197,7 @@ class MainActivity : EhActivity() {
         // Trick: Tweak NavigationUI to disable multiple backstack
         binding.navView.setNavigationItemSelectedListener {
             val navigationView = binding.navView
-            val handled = onNavDestinationSelected2(it, navController)
+            val handled = navigationView.checkedItem?.itemId == it.itemId || onNavDestinationSelected2(it, navController)
             if (handled) {
                 val parent = navigationView.parent
                 if (parent is Openable) {
@@ -396,6 +396,10 @@ class MainActivity : EhActivity() {
         } else {
             openDrawer(drawerGravity)
         }
+    }
+
+    fun clearNavCheckedItem() {
+        binding.navView.setCheckedItem(R.id.nav_stub)
     }
 
     fun showTip(@StringRes id: Int, length: Int, useToast: Boolean = false) {
