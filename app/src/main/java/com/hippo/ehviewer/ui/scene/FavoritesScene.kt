@@ -91,6 +91,7 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collectLatest
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
@@ -337,7 +338,8 @@ class FavoritesScene : SearchBarScene() {
                 val transition = ViewTransition(binding.refreshLayout, binding.progress, binding.tip)
                 val empty = getString(R.string.gallery_list_empty_hit)
                 adapter.addLoadStateListener {
-                    lifecycleScope.launchUI {
+                    viewLifecycleOwner.lifecycleScope.launchUI {
+                        ensureActive()
                         when (val state = it.refresh) {
                             is LoadState.Loading -> {
                                 showSearchBar()
