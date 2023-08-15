@@ -18,28 +18,25 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_filter"
-        android:icon="@drawable/v_filter_dark_x24"
-        android:title="@string/download_filter"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/action_open_side_sheet"
         android:icon="@drawable/ic_outline_label_24"
         android:title="@string/download_labels"
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_filter"
+        android:title="@string/download_filter"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_start_all"
-        android:icon="@drawable/v_play_x24"
         android:title="@string/download_start_all"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/action_stop_all"
-        android:icon="@drawable/v_pause_x24"
         android:title="@string/download_stop_all"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/action_reset_reading_progress"

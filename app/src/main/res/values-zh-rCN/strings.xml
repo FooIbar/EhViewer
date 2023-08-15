@@ -409,7 +409,7 @@
     <!-- Favorites -->
     <string name="cloud_favorites">云端收藏</string>
     <string name="local_favorites">本地收藏</string>
-    <string name="favorites_search_bar_hint">搜索 %s</string>
+    <string name="search_bar_hint">搜索 %s</string>
     <string name="favorites_title">%s</string>
     <string name="favorites_title_2">%1$s - %2$s</string>
     <string name="delete_favorites_dialog_title">删除收藏</string>

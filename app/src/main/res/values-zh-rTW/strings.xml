@@ -400,7 +400,7 @@
     <!-- Favorites -->
     <string name="cloud_favorites">雲端收藏</string>
     <string name="local_favorites">本機收藏</string>
-    <string name="favorites_search_bar_hint">搜尋 %s</string>
+    <string name="search_bar_hint">搜尋 %s</string>
     <string name="favorites_title">%s</string>
     <string name="favorites_title_2">%1$s - %2$s</string>
     <string name="delete_favorites_dialog_title">移除收藏</string>

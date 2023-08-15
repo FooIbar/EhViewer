@@ -294,7 +294,7 @@
     <string name="settings_advanced_dump_logcat_to">Protokolldatei wurde auf %s gespeichert.</string>
     <string name="cloud_favorites">Cloud-Favoriten</string>
     <string name="local_favorites">Lokale Favoriten</string>
-    <string name="favorites_search_bar_hint">%s durchsuchen</string>
+    <string name="search_bar_hint">%s durchsuchen</string>
     <string name="favorites_title">%s</string>
     <string name="favorites_title_2">%1$s - %2$s</string>
     <string name="delete_favorites_dialog_title">Aus Favoriten löschen</string>

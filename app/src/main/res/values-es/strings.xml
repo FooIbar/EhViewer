@@ -354,7 +354,7 @@
     <!-- Favorites -->
     <string name="cloud_favorites">Favoritos en la nube</string>
     <string name="local_favorites">Favoritos locales</string>
-    <string name="favorites_search_bar_hint">Buscar %s</string>
+    <string name="search_bar_hint">Buscar %s</string>
     <string name="favorites_title">%s</string>
     <string name="favorites_title_2">%1$s - %2$s</string>
     <string name="delete_favorites_dialog_title">Eliminar de favoritos</string>

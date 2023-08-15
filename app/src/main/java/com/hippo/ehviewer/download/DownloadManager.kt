@@ -503,7 +503,7 @@ object DownloadManager : OnSpiderListener {
         ensureDownload()
     }
 
-    fun moveDownload(fromPosition: Int, toPosition: Int): List<DownloadInfo> {
+    private fun moveDownload(fromPosition: Int, toPosition: Int): List<DownloadInfo> {
         val info = allInfoList.removeAt(fromPosition)
         allInfoList.add(toPosition, info)
         val range = if (fromPosition < toPosition) fromPosition..toPosition else toPosition..fromPosition
@@ -515,12 +515,11 @@ object DownloadManager : OnSpiderListener {
         return list
     }
 
-    fun moveDownload(label: String?, fromPosition: Int, toPosition: Int) =
-        getInfoListForLabel(label)!!.let {
-            val absFromPosition = allInfoList.indexOf(it[fromPosition])
-            val absToPosition = allInfoList.indexOf(it[toPosition])
-            moveDownload(absFromPosition, absToPosition)
-        }
+    fun moveDownload(fromItem: DownloadInfo, toItem: DownloadInfo): List<DownloadInfo> {
+        val fromPosition = allInfoList.indexOf(fromItem)
+        val toPosition = allInfoList.indexOf(toItem)
+        return moveDownload(fromPosition, toPosition)
+    }
 
     suspend fun resetAllReadingProgress() = coroutineScope {
         allInfoList.forEach { info ->

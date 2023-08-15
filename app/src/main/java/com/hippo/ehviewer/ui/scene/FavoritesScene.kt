@@ -203,7 +203,7 @@ class FavoritesScene : SearchBarScene() {
         } else {
             setSearchBarHint(getString(R.string.favorites_title_2, favCatName, keyword))
         }
-        setEditTextHint(getString(R.string.favorites_search_bar_hint, favCatName))
+        setEditTextHint(getString(R.string.search_bar_hint, favCatName))
         Settings.recentFavCat = urlBuilder.favCat
     }
 
@@ -422,7 +422,6 @@ class FavoritesScene : SearchBarScene() {
             }
         })
         itemTouchHelper.attachToRecyclerView(binding.recyclerView)
-        allowEmptySearch = false
         return binding.root
     }
 

@@ -102,6 +102,7 @@ import com.hippo.ehviewer.ui.tools.CropDefaults
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.LongList
+import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -116,12 +117,13 @@ import com.hippo.ehviewer.download.DownloadManager as downloadManager
 
 @SuppressLint("RtlHardcoded")
 class DownloadsScene :
-    BaseToolbarScene(),
+    SearchBarScene(),
     DownloadInfoListener,
     OnClickFabListener {
     /*---------------
      Whole life cycle
      ---------------*/
+    private var mKeyword: String? = null
     private var mLabel: String? = null
     private var mList: List<DownloadInfo>? = null
 
@@ -141,13 +143,16 @@ class DownloadsScene :
 
     private val dialogState = DialogState()
 
+    override val fabLayout get() = binding.fabLayout
+
     private fun initLabels() {
         context ?: return
         val listLabel = downloadManager.labelList
-        mLabels = ArrayList(listLabel.size + LABEL_OFFSET)
         // Add "All" and "Default" label names
-        mLabels.add(getString(R.string.download_all))
-        mLabels.add(getString(R.string.default_download_label_name))
+        mLabels = arrayListOf(
+            getString(R.string.download_all),
+            getString(R.string.default_download_label_name),
+        )
         listLabel.forEach {
             mLabels.add(it.label)
         }
@@ -207,10 +212,14 @@ class DownloadsScene :
             else -> DownloadManager.getLabelDownloadInfoList(mLabel)
                 ?: DownloadManager.allInfoList.also { mLabel = null }
         }
-        mList = if (mType != -1) {
-            list.filter { it.state == mType }
-        } else {
-            list
+        mList = list.filter {
+            (mType == -1 || it.state == mType) &&
+                mKeyword?.let { keyword ->
+                    it.galleryInfo.run {
+                        title.containsIgnoreCase(keyword) || titleJpn.containsIgnoreCase(keyword) ||
+                            uploader.containsIgnoreCase(keyword)
+                    }
+                } ?: true
         }
         if (mAdapter != null) {
             mAdapter!!.notifyDataSetChanged()
@@ -219,12 +228,9 @@ class DownloadsScene :
     }
 
     private fun updateTitle() {
-        setTitle(
-            getString(
-                R.string.scene_download_title,
-                if (mLabel != null) mLabel else getString(R.string.download_all),
-            ),
-        )
+        val title = getString(R.string.scene_download_title, mLabel ?: getString(R.string.download_all))
+        setSearchBarHint(title)
+        setEditTextHint(getString(R.string.search_bar_hint, title))
     }
 
     private fun onInit() {
@@ -325,10 +331,11 @@ class DownloadsScene :
                     if (fromPosition == toPosition) {
                         return false
                     }
-                    val list = when (mLabel) {
-                        null -> DownloadManager.moveDownload(fromPosition, toPosition)
-                        getString(R.string.default_download_label_name) -> DownloadManager.moveDownload(null, fromPosition, toPosition)
-                        else -> DownloadManager.moveDownload(mLabel, fromPosition, toPosition)
+                    val fromItem = mList!![fromPosition]
+                    val toItem = mList!![toPosition]
+                    val list = DownloadManager.moveDownload(fromItem, toItem)
+                    if (mType != -1 || mKeyword != null) {
+                        mList = mList!!.sortedByDescending { it.position }
                     }
                     mAdapter!!.notifyItemMoved(fromPosition, toPosition)
                     lifecycleScope.launchIO {
@@ -360,13 +367,28 @@ class DownloadsScene :
             addAboveSnackView(fabLayout)
             updateView()
         }
+        setOnApplySearch {
+            mKeyword = it.takeUnless { it.isEmpty() }
+            updateForLabel()
+            updateView()
+        }
         return binding.root
+    }
+
+    override fun onSearchViewExpanded() {
+        super.onSearchViewExpanded()
+        if (tracker.isInCustomChoice) tracker.clearSelection()
+        showSearchFab(true)
+    }
+
+    override fun onSearchViewHidden() {
+        super.onSearchViewHidden()
+        hideSearchFab(true)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         updateTitle()
-        setNavigationIcon(R.drawable.ic_baseline_menu_24)
     }
 
     override fun onDestroyView() {
