@@ -33,6 +33,7 @@ val cronetHttpClient: CronetEngine = CronetEngine.Builder(appCtx).apply {
     val cache = (appCtx.cacheDir.toOkioPath() / "http_cache").toFile().apply { mkdirs() }
     setStoragePath(cache.absolutePath)
     enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 100 * 1024)
+    setUserAgent(CHROME_USER_AGENT)
 }.build()
 
 val cronetHttpClientExecutor = EhApplication.baseOkHttpClient.dispatcher.executorService
@@ -72,7 +73,6 @@ class CronetRequest {
 inline fun cronetRequest(url: String, referer: String? = null, conf: UrlRequest.Builder.() -> Unit = {}) = CronetRequest().apply {
     request = cronetHttpClient.newUrlRequestBuilder(url, callback, cronetHttpClientExecutor).apply {
         addHeader("Cookie", EhCookieStore.getCookieHeader(url.toHttpUrl()))
-        addHeader("User-Agent", CHROME_USER_AGENT)
         addHeader("Accept", CHROME_ACCEPT)
         addHeader("Accept-Language", CHROME_ACCEPT_LANGUAGE)
         referer?.let { addHeader("Referer", it) }
