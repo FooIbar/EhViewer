@@ -26,7 +26,10 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.SoftwareKeyboardControllerCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.google.android.material.sidesheet.SideSheetDialog
 import com.hippo.ehviewer.ui.MainActivity
@@ -155,8 +158,10 @@ abstract class BaseScene : Fragment() {
         createDrawerView(savedInstanceState)?.let {
             sideSheetDialog = SideSheetDialog(requireContext()).apply {
                 window?.decorView?.apply {
-                    setViewTreeLifecycleOwner(viewLifecycleOwner)
-                    setViewTreeSavedStateRegistryOwner(this@BaseScene)
+                    val owner = viewLifecycleOwner
+                    setViewTreeLifecycleOwner(owner)
+                    setViewTreeViewModelStoreOwner(owner as ViewModelStoreOwner)
+                    setViewTreeSavedStateRegistryOwner(owner as SavedStateRegistryOwner)
                 }
                 setContentView(it)
             }

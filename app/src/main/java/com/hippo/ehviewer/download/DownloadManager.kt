@@ -272,23 +272,23 @@ object DownloadManager : OnSpiderListener {
     private val _stateFlow = callbackFlow {
         val listener = object : DownloadInfoListener {
             override fun onAdd(info: DownloadInfo, list: List<DownloadInfo>, position: Int) {
-                trySend(info)
+                trySend(info.gid)
             }
 
             override fun onUpdate(info: DownloadInfo, list: List<DownloadInfo>) {
-                trySend(info)
+                trySend(info.gid)
             }
 
             override fun onUpdateAll() {
-                // No-op
+                trySend(0)
             }
 
             override fun onReload() {
-                // No-op
+                trySend(0)
             }
 
             override fun onRemove(info: DownloadInfo, list: List<DownloadInfo>, position: Int) {
-                trySend(info)
+                trySend(info.gid)
             }
         }
         addDownloadInfoListener(listener)
@@ -297,7 +297,9 @@ object DownloadManager : OnSpiderListener {
         }
     }.shareIn(callbackFlowScope, SharingStarted.Eagerly)
 
-    fun stateFlow(gid: Long) = _stateFlow.filter { it.gid == gid }
+    fun stateFlow(gid: Long) = _stateFlow.filter { it == gid }
+
+    fun stateFlow() = _stateFlow
 
     suspend fun startAllDownload() {
         var update = false

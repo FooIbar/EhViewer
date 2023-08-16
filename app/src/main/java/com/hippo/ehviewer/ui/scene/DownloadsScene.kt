@@ -81,7 +81,6 @@ import com.hippo.ehviewer.databinding.ItemDownloadBinding
 import com.hippo.ehviewer.databinding.ItemDrawerListBinding
 import com.hippo.ehviewer.databinding.SceneDownloadBinding
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.download.DownloadManager.DownloadInfoListener
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.DownloadService.Companion.clear
 import com.hippo.ehviewer.download.downloadDir
@@ -113,6 +112,7 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.pxToDp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import rikka.core.res.resolveColor
 import com.hippo.ehviewer.download.DownloadManager as downloadManager
@@ -120,7 +120,6 @@ import com.hippo.ehviewer.download.DownloadManager as downloadManager
 @SuppressLint("RtlHardcoded")
 class DownloadsScene :
     SearchBarScene(),
-    DownloadInfoListener,
     OnClickFabListener {
     /*---------------
      Whole life cycle
@@ -181,17 +180,11 @@ class DownloadsScene :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DownloadManager.addDownloadInfoListener(this)
         if (savedInstanceState == null) {
             onInit()
         } else {
             onRestore(savedInstanceState)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        DownloadManager.removeDownloadInfoListener(this)
     }
 
     private fun filter(info: DownloadInfo) = info.run {
@@ -358,6 +351,11 @@ class DownloadsScene :
             addAboveSnackView(fabLayout)
             updateForLabel()
         }
+        viewLifecycleOwner.lifecycleScope.launch {
+            DownloadManager.stateFlow().collectLatest {
+                updateInfoList()
+            }
+        }
         setOnApplySearch {
             mKeyword = it.takeUnless { it.isEmpty() }
             updateInfoList()
@@ -374,11 +372,6 @@ class DownloadsScene :
     override fun onSearchViewHidden() {
         super.onSearchViewHidden()
         hideSearchFab(true)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        updateTitle()
     }
 
     override fun onDestroyView() {
@@ -615,30 +608,6 @@ class DownloadsScene :
         }
     }
 
-    private fun updateUI() = viewLifecycleOwner.lifecycleScope.launchUI {
-        updateInfoList()
-    }
-
-    override fun onAdd(info: DownloadInfo, list: List<DownloadInfo>, position: Int) {
-        updateUI()
-    }
-
-    override fun onUpdate(info: DownloadInfo, list: List<DownloadInfo>) {
-        updateUI()
-    }
-
-    override fun onUpdateAll() {
-        updateUI()
-    }
-
-    override fun onReload() {
-        updateUI()
-    }
-
-    override fun onRemove(info: DownloadInfo, list: List<DownloadInfo>, position: Int) {
-        updateUI()
-    }
-
     private class DownloadLabelHolder(val binding: ItemDrawerListBinding) :
         RecyclerView.ViewHolder(binding.root)
 
@@ -649,16 +618,14 @@ class DownloadsScene :
                 DownloadLabelHolder(ItemDrawerListBinding.inflate(mInflater, parent, false))
             holder.itemView.setOnClickListener {
                 val position = holder.bindingAdapterPosition
-                val label1: String? = if (position == 0) {
-                    null
-                } else {
-                    mLabels[position]
-                }
-                if (mLabel != label1) {
-                    mLabel = label1
+                val label = mLabels[position].takeUnless { position == 0 }
+                if (mLabel != label) {
+                    mKeyword = null
+                    setSearchBarText(null)
+                    mLabel = label
                     updateForLabel()
-                    closeSideSheet()
                 }
+                closeSideSheet()
             }
             holder.binding.edit.setOnClickListener {
                 val context = context

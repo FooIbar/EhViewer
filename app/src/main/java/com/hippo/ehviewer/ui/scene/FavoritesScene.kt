@@ -87,12 +87,11 @@ import com.hippo.ehviewer.util.getValue
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.setValue
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
 import java.time.Instant
@@ -337,9 +336,8 @@ class FavoritesScene : SearchBarScene() {
                 binding.refreshLayout.setOnRefreshListener { mAdapter?.refresh() }
                 val transition = ViewTransition(binding.refreshLayout, binding.progress, binding.tip)
                 val empty = getString(R.string.gallery_list_empty_hit)
-                adapter.addLoadStateListener {
-                    viewLifecycleOwner.lifecycleScope.launchUI {
-                        ensureActive()
+                viewLifecycleOwner.lifecycleScope.launch {
+                    adapter.loadStateFlow.collectLatest {
                         when (val state = it.refresh) {
                             is LoadState.Loading -> {
                                 showSearchBar()
