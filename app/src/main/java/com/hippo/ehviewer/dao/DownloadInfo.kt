@@ -25,7 +25,7 @@ import java.time.Instant
         ),
     ],
 )
-class DownloadEntity(
+data class DownloadEntity(
     @PrimaryKey
     @ColumnInfo(name = "GID")
     var gid: Long,
