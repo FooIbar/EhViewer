@@ -1,12 +1,9 @@
 @file:Suppress("BlockingMethodInNonBlockingContext")
-@file:RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 
 package com.hippo.ehviewer.coil
 
 import android.net.Uri
-import android.os.Build
 import android.webkit.MimeTypeMap
-import androidx.annotation.RequiresExtension
 import coil.ComponentRegistry
 import coil.ImageLoader
 import coil.decode.DataSource
@@ -30,7 +27,7 @@ class CronetHttpUriFetcher(private val data: String, private val options: Option
         val diskCache = requireNotNull(imageLoader.diskCache)
         val snapshot = diskCache.openSnapshot(diskCacheKey) ?: run {
             val success = cronetRequest(data) {
-                setCacheDisabled(true)
+                disableCache()
             }.execute {
                 diskCache.suspendEdit(diskCacheKey) {
                     RandomAccessFile(data.toFile(), "rw").use {
