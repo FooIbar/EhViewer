@@ -21,3 +21,5 @@ fun String.toLongOrDefault(defaultValue: Long): Long {
 fun String.toFloatOrDefault(defaultValue: Float): Float {
     return toFloatOrNull() ?: defaultValue
 }
+
+fun String?.containsIgnoreCase(other: String) = this?.contains(other, true) ?: false

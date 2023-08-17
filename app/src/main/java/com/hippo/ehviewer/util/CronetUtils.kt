@@ -1,6 +1,8 @@
 package com.hippo.ehviewer.util
 
-import com.hippo.ehviewer.Settings
+import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 
+@get:ChecksSdkIntAtLeast(Build.VERSION_CODES.S, extension = 7)
 val isCronetSupported: Boolean
-    get() = Settings.enableQuic && isAtLeastQ
+    get() = isAtLeastSExtension7

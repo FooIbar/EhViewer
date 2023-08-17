@@ -164,52 +164,68 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
         privLockModeStart = null
     }
 
-    fun selectSearchFab(animation: Boolean) {
-        _binding ?: return
-        mShowActionFab = false
+    fun showSearchFab(animation: Boolean, delay: Long = 0) {
         if (animation) {
-            val fab: View? = fabLayout.primaryFab
-            val delay: Long
-            if (View.INVISIBLE == fab!!.visibility) {
-                delay = 0L
-            } else {
-                delay = ANIMATE_TIME
-                fabLayout.setExpanded(expanded = false, animation = true)
-                fab.animate().scaleX(0.0f).scaleY(0.0f).setListener(mActionFabAnimatorListener)
-                    .setDuration(ANIMATE_TIME).setStartDelay(0L)
-                    .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).start()
-            }
             mSearchFab.visibility = View.VISIBLE
             mSearchFab.rotation = -45.0f
             mSearchFab.animate().scaleX(1.0f).scaleY(1.0f).rotation(0.0f).setListener(null)
                 .setDuration(ANIMATE_TIME).setStartDelay(delay)
                 .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).start()
         } else {
-            fabLayout.setExpanded(expanded = false, animation = false)
-            val fab = fabLayout.primaryFab!!
-            fab.visibility = View.INVISIBLE
-            fab.scaleX = 0.0f
-            fab.scaleY = 0.0f
             mSearchFab.visibility = View.VISIBLE
             mSearchFab.scaleX = 1.0f
             mSearchFab.scaleY = 1.0f
         }
     }
 
-    fun selectActionFab(animation: Boolean) {
-        _binding ?: return
-        mShowActionFab = true
-        if (animation) {
-            val delay: Long
-            if (View.INVISIBLE == mSearchFab.visibility) {
-                delay = 0L
-            } else {
-                delay = ANIMATE_TIME
+    fun hideSearchFab(animation: Boolean): Long {
+        return if (View.INVISIBLE == mSearchFab.visibility) {
+            0L
+        } else {
+            if (animation) {
                 mSearchFab.animate().scaleX(0.0f).scaleY(0.0f)
                     .setListener(mSearchFabAnimatorListener)
                     .setDuration(ANIMATE_TIME).setStartDelay(0L)
                     .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).start()
+            } else {
+                mSearchFab.visibility = View.INVISIBLE
+                mSearchFab.scaleX = 0.0f
+                mSearchFab.scaleY = 0.0f
             }
+            ANIMATE_TIME
+        }
+    }
+
+    fun selectSearchFab(animation: Boolean) {
+        _binding ?: return
+        mShowActionFab = false
+        val delay = if (animation) {
+            val fab = fabLayout.primaryFab!!
+            if (View.INVISIBLE == fab.visibility) {
+                0L
+            } else {
+                fabLayout.setExpanded(expanded = false, animation = true)
+                fab.animate().scaleX(0.0f).scaleY(0.0f).setListener(mActionFabAnimatorListener)
+                    .setDuration(ANIMATE_TIME).setStartDelay(0L)
+                    .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).start()
+                ANIMATE_TIME
+            }
+        } else {
+            fabLayout.setExpanded(expanded = false, animation = false)
+            val fab = fabLayout.primaryFab!!
+            fab.visibility = View.INVISIBLE
+            fab.scaleX = 0.0f
+            fab.scaleY = 0.0f
+            0L
+        }
+        showSearchFab(animation, delay)
+    }
+
+    fun selectActionFab(animation: Boolean) {
+        _binding ?: return
+        mShowActionFab = true
+        val delay = hideSearchFab(animation)
+        if (animation) {
             val fab = fabLayout.primaryFab!!
             fab.visibility = View.VISIBLE
             fab.rotation = -45.0f
@@ -222,9 +238,6 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
             fab.visibility = View.VISIBLE
             fab.scaleX = 1.0f
             fab.scaleY = 1.0f
-            mSearchFab.visibility = View.INVISIBLE
-            mSearchFab.scaleX = 0.0f
-            mSearchFab.scaleY = 0.0f
         }
     }
 

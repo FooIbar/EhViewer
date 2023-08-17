@@ -17,6 +17,7 @@
 -keep class com.hippo.ehviewer.client.parser.GalleryListResult { *; }
 -keep class com.hippo.ehviewer.client.parser.Limits { *; }
 -keep class com.hippo.ehviewer.client.data.BaseGalleryInfo { *; }
+-keep class com.hippo.ehviewer.ui.scene.SearchBarScene { getBinding(); }
 
 # Ktor logger
 -dontwarn org.slf4j.impl.StaticLoggerBinder

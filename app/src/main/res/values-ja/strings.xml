@@ -390,7 +390,7 @@
     <!-- Favorites -->
     <string name="cloud_favorites">Cloudのお気に入り</string>
     <string name="local_favorites">ローカルのお気に入り</string>
-    <string name="favorites_search_bar_hint">%sを検索</string>
+    <string name="search_bar_hint">%sを検索</string>
     <string name="favorites_title">%s</string>
     <string name="favorites_title_2">%1$s - %2$s</string>
     <string name="delete_favorites_dialog_title">お気に入りから削除</string>

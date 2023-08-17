@@ -55,9 +55,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_DRAG
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import arrow.core.partially1
@@ -79,7 +81,6 @@ import com.hippo.ehviewer.databinding.ItemDownloadBinding
 import com.hippo.ehviewer.databinding.ItemDrawerListBinding
 import com.hippo.ehviewer.databinding.SceneDownloadBinding
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.download.DownloadManager.DownloadInfoListener
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.DownloadService.Companion.clear
 import com.hippo.ehviewer.download.downloadDir
@@ -102,6 +103,7 @@ import com.hippo.ehviewer.ui.tools.CropDefaults
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.LongList
+import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -110,20 +112,21 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.pxToDp
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import rikka.core.res.resolveColor
 import com.hippo.ehviewer.download.DownloadManager as downloadManager
 
 @SuppressLint("RtlHardcoded")
 class DownloadsScene :
-    BaseToolbarScene(),
-    DownloadInfoListener,
+    SearchBarScene(),
     OnClickFabListener {
     /*---------------
      Whole life cycle
      ---------------*/
+    private var mKeyword: String? = null
     private var mLabel: String? = null
-    private var mList: List<DownloadInfo>? = null
+    private val mList get() = mAdapter?.currentList
 
     /*---------------
      View life cycle
@@ -134,20 +137,23 @@ class DownloadsScene :
     private var mAdapter: DownloadAdapter? = null
     private var mItemTouchHelper: ItemTouchHelper? = null
     private val tracker get() = mAdapter!!.tracker!!
-    private var mInitPosition = -1
+    private var mGid = -1L
     private var mLabelAdapter: DownloadLabelAdapter? = null
     private lateinit var mLabels: MutableList<String>
     private var mType = -1
 
     private val dialogState = DialogState()
 
+    override val fabLayout get() = binding.fabLayout
+
     private fun initLabels() {
         context ?: return
         val listLabel = downloadManager.labelList
-        mLabels = ArrayList(listLabel.size + LABEL_OFFSET)
         // Add "All" and "Default" label names
-        mLabels.add(getString(R.string.download_all))
-        mLabels.add(getString(R.string.default_download_label_name))
+        mLabels = arrayListOf(
+            getString(R.string.download_all),
+            getString(R.string.default_download_label_name),
+        )
         listLabel.forEach {
             mLabels.add(it.label)
         }
@@ -165,18 +171,7 @@ class DownloadsScene :
             val info = DownloadManager.getDownloadInfo(gid)
             if (null != info) {
                 mLabel = info.label
-                updateForLabel()
-                updateView()
-
-                // Get position
-                if (null != mList) {
-                    val position = mList!!.indexOf(info)
-                    if (position >= 0 && null != _binding) {
-                        binding.recyclerView.scrollToPosition(position)
-                    } else {
-                        mInitPosition = position
-                    }
-                }
+                mGid = gid
                 return true
             }
         }
@@ -185,7 +180,6 @@ class DownloadsScene :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DownloadManager.addDownloadInfoListener(this)
         if (savedInstanceState == null) {
             onInit()
         } else {
@@ -193,50 +187,54 @@ class DownloadsScene :
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        mList = null
-        DownloadManager.removeDownloadInfoListener(this)
+    private fun filter(info: DownloadInfo) = info.run {
+        (mType == -1 || state == mType) &&
+            mKeyword?.let {
+                title.containsIgnoreCase(it) || titleJpn.containsIgnoreCase(it) ||
+                    uploader.containsIgnoreCase(it)
+            } ?: true
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    private fun updateInfoList() {
+        mAdapter?.run {
+            val list = when (mLabel) {
+                null -> DownloadManager.allInfoList
+                getString(R.string.default_download_label_name) -> DownloadManager.defaultInfoList
+                else -> DownloadManager.getLabelDownloadInfoList(mLabel)
+                    ?: DownloadManager.allInfoList.also { mLabel = null }
+            }.filter(::filter)
+            submitList(list) {
+                if (mGid != -1L) {
+                    val position = list.indexOfFirst { it.gid == mGid }
+                    if (position != -1) {
+                        binding.recyclerView.scrollToPosition(position)
+                    }
+                    mGid = -1L
+                }
+                updateView()
+            }
+        }
+    }
+
     private fun updateForLabel() {
-        val list = when (mLabel) {
-            null -> DownloadManager.allInfoList
-            getString(R.string.default_download_label_name) -> DownloadManager.defaultInfoList
-            else -> DownloadManager.getLabelDownloadInfoList(mLabel)
-                ?: DownloadManager.allInfoList.also { mLabel = null }
-        }
-        mList = if (mType != -1) {
-            list.filter { it.state == mType }
-        } else {
-            list
-        }
-        if (mAdapter != null) {
-            mAdapter!!.notifyDataSetChanged()
-        }
+        updateInfoList()
         Settings.recentDownloadLabel = mLabel
     }
 
     private fun updateTitle() {
-        setTitle(
-            getString(
-                R.string.scene_download_title,
-                if (mLabel != null) mLabel else getString(R.string.download_all),
-            ),
-        )
+        val title = getString(R.string.scene_download_title, mLabel ?: getString(R.string.download_all))
+        setSearchBarHint(title)
+        setEditTextHint(getString(R.string.search_bar_hint, title))
     }
 
     private fun onInit() {
         if (!handleArguments(arguments)) {
             mLabel = Settings.recentDownloadLabel
-            updateForLabel()
         }
     }
 
     private fun onRestore(savedInstanceState: Bundle) {
         mLabel = savedInstanceState.getString(KEY_LABEL)
-        updateForLabel()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -300,10 +298,6 @@ class DownloadsScene :
                 }
             }
             recyclerView.addItemDecoration(decoration)
-            if (mInitPosition >= 0) {
-                recyclerView.scrollToPosition(mInitPosition)
-                mInitPosition = -1
-            }
             mItemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.Callback() {
                 override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
                     super.onSelectedChanged(viewHolder, actionState)
@@ -325,12 +319,10 @@ class DownloadsScene :
                     if (fromPosition == toPosition) {
                         return false
                     }
-                    val list = when (mLabel) {
-                        null -> DownloadManager.moveDownload(fromPosition, toPosition)
-                        getString(R.string.default_download_label_name) -> DownloadManager.moveDownload(null, fromPosition, toPosition)
-                        else -> DownloadManager.moveDownload(mLabel, fromPosition, toPosition)
-                    }
-                    mAdapter!!.notifyItemMoved(fromPosition, toPosition)
+                    val fromItem = mList!![fromPosition]
+                    val toItem = mList!![toPosition]
+                    val list = DownloadManager.moveDownload(fromItem, toItem)
+                    updateInfoList()
                     lifecycleScope.launchIO {
                         EhDB.updateDownloadInfo(list)
                     }
@@ -343,7 +335,6 @@ class DownloadsScene :
                         dialogState.confirmRemoveDownload(info) {
                             mAdapter!!.notifyItemChanged(position)
                         }
-                        mAdapter!!.notifyItemRemoved(position)
                     }
                 }
             })
@@ -358,15 +349,29 @@ class DownloadsScene :
             fabLayout.setAutoCancel(false)
             fabLayout.setOnClickFabListener(this@DownloadsScene)
             addAboveSnackView(fabLayout)
-            updateView()
+            updateForLabel()
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            DownloadManager.stateFlow().collectLatest {
+                updateInfoList()
+            }
+        }
+        setOnApplySearch {
+            mKeyword = it.takeUnless { it.isEmpty() }
+            updateInfoList()
         }
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        updateTitle()
-        setNavigationIcon(R.drawable.ic_baseline_menu_24)
+    override fun onSearchViewExpanded() {
+        super.onSearchViewExpanded()
+        if (tracker.isInCustomChoice) tracker.clearSelection()
+        showSearchFab(true)
+    }
+
+    override fun onSearchViewHidden() {
+        super.onSearchViewHidden()
+        hideSearchFab(true)
     }
 
     override fun onDestroyView() {
@@ -402,8 +407,7 @@ class DownloadsScene :
                         mType + 1,
                     ) { dialog: DialogInterface, which: Int ->
                         mType = which - 1
-                        updateForLabel()
-                        updateView()
+                        updateInfoList()
                         dialog.dismiss()
                     }
                     .show()
@@ -456,7 +460,7 @@ class DownloadsScene :
         }
     }
 
-    fun updateView() {
+    private fun updateView() {
         if (mViewTransition != null) {
             if (mList.isNullOrEmpty()) {
                 mViewTransition!!.showView(1)
@@ -604,61 +608,6 @@ class DownloadsScene :
         }
     }
 
-    override fun onAdd(info: DownloadInfo, list: List<DownloadInfo>, position: Int) {
-        if (mList !== list) {
-            return
-        }
-        lifecycleScope.launchUI {
-            if (mAdapter != null) {
-                mAdapter!!.notifyItemInserted(position)
-            }
-            updateView()
-        }
-    }
-
-    override fun onUpdate(info: DownloadInfo, list: List<DownloadInfo>) {
-        if (mLabel != null && mList !== list) {
-            return
-        }
-        val index = mList!!.indexOf(info)
-        lifecycleScope.launchUI {
-            if (index >= 0 && mAdapter != null) {
-                mAdapter!!.notifyItemChanged(index, PAYLOAD_STATE)
-            }
-        }
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    override fun onUpdateAll() {
-        lifecycleScope.launchUI {
-            if (mAdapter != null) {
-                mAdapter!!.notifyDataSetChanged()
-            }
-        }
-    }
-
-    @SuppressLint("NotifyDataSetChanged")
-    override fun onReload() {
-        lifecycleScope.launchUI {
-            if (mAdapter != null) {
-                mAdapter!!.notifyDataSetChanged()
-            }
-            updateView()
-        }
-    }
-
-    override fun onRemove(info: DownloadInfo, list: List<DownloadInfo>, position: Int) {
-        if (mList !== list) {
-            return
-        }
-        lifecycleScope.launchUI {
-            if (mAdapter != null) {
-                mAdapter!!.notifyItemRemoved(position)
-            }
-            updateView()
-        }
-    }
-
     private class DownloadLabelHolder(val binding: ItemDrawerListBinding) :
         RecyclerView.ViewHolder(binding.root)
 
@@ -669,17 +618,14 @@ class DownloadsScene :
                 DownloadLabelHolder(ItemDrawerListBinding.inflate(mInflater, parent, false))
             holder.itemView.setOnClickListener {
                 val position = holder.bindingAdapterPosition
-                val label1: String? = if (position == 0) {
-                    null
-                } else {
-                    mLabels[position]
-                }
-                if (mLabel != label1) {
-                    mLabel = label1
+                val label = mLabels[position].takeUnless { position == 0 }
+                if (mLabel != label) {
+                    mKeyword = null
+                    setSearchBarText(null)
+                    mLabel = label
                     updateForLabel()
-                    updateView()
-                    closeSideSheet()
                 }
+                closeSideSheet()
             }
             holder.binding.edit.setOnClickListener {
                 val context = context
@@ -717,7 +663,7 @@ class DownloadsScene :
             }
             holder.binding.run {
                 if (list != null) {
-                    text.text = label + " [" + list.size + "]"
+                    text.text = "$label [${list.size}]"
                 } else {
                     text.text = label
                 }
@@ -961,17 +907,23 @@ class DownloadsScene :
         }
     }
 
-    private inner class DownloadAdapter : RecyclerView.Adapter<DownloadHolder>() {
+    private val diffCallback = object : DiffUtil.ItemCallback<DownloadInfo>() {
+        override fun areItemsTheSame(oldItem: DownloadInfo, newItem: DownloadInfo) = oldItem.gid == newItem.gid
+        override fun areContentsTheSame(oldItem: DownloadInfo, newItem: DownloadInfo) = oldItem == newItem
+        override fun getChangePayload(oldItem: DownloadInfo, newItem: DownloadInfo): Any? {
+            return if (oldItem.downloadInfo != newItem.downloadInfo) {
+                PAYLOAD_DOWNLOAD_INFO
+            } else {
+                super.getChangePayload(oldItem, newItem)
+            }
+        }
+    }
+
+    private inner class DownloadAdapter : ListAdapter<DownloadInfo, DownloadHolder>(diffCallback) {
         private val mInflater: LayoutInflater = layoutInflater
         var tracker: GallerySelectionTracker<DownloadInfo>? = null
 
-        override fun getItemId(position: Int): Long {
-            return if (mList == null || position < 0 || position >= mList!!.size) {
-                0
-            } else {
-                mList!![position].gid
-            }
-        }
+        override fun getItemId(position: Int) = getItem(position).gid
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DownloadHolder {
             val holder = DownloadHolder(ItemDownloadBinding.inflate(mInflater, parent, false))
@@ -980,10 +932,8 @@ class DownloadsScene :
         }
 
         override fun onBindViewHolder(holder: DownloadHolder, position: Int) {
-            mList?.let {
-                val info = it[position]
-                holder.bind(info, tracker?.isSelected(info.gid) ?: false)
-            }
+            val info = getItem(position)
+            holder.bind(info, tracker?.isSelected(info.gid) ?: false)
         }
 
         override fun onBindViewHolder(
@@ -993,17 +943,14 @@ class DownloadsScene :
         ) {
             payloads.forEach { payload ->
                 when (payload) {
-                    PAYLOAD_STATE -> {
-                        mList?.let { holder.bindForState(it[position]) }
+                    PAYLOAD_DOWNLOAD_INFO -> {
+                        val info = getItem(position)
+                        holder.bindForState(info)
                         return
                     }
                 }
             }
             super.onBindViewHolder(holder, position, payloads)
-        }
-
-        override fun getItemCount(): Int {
-            return if (mList == null) 0 else mList!!.size
         }
     }
 
@@ -1039,7 +986,6 @@ class DownloadsScene :
                             if (mLabel == mOriginalLabel) {
                                 mLabel = text
                                 updateForLabel()
-                                updateView()
                             }
                         }
                     }
@@ -1128,7 +1074,6 @@ class DownloadsScene :
                         withUIContext {
                             mLabel = null
                             updateForLabel()
-                            updateView()
                             mLabelAdapter!!.notifyItemRemoved(position)
                         }
                     }
@@ -1146,7 +1091,7 @@ class DownloadsScene :
         const val ACTION_CLEAR_DOWNLOAD_SERVICE = "clear_download_service"
         private const val KEY_LABEL = "label"
         private const val LABEL_OFFSET = 2
-        private const val PAYLOAD_STATE = 0
+        private const val PAYLOAD_DOWNLOAD_INFO = 0
     }
 }
 

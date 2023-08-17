@@ -379,7 +379,7 @@
     <!-- Favorites -->
     <string name="cloud_favorites">รายการโปรดบนเว็บ</string>
     <string name="local_favorites">รายการโปรดบนเครื่อง</string>
-    <string name="favorites_search_bar_hint">ค้นหา %s</string>
+    <string name="search_bar_hint">ค้นหา %s</string>
     <string name="favorites_title">%s</string>
     <string name="favorites_title_2">%1$s - %2$s</string>
     <string name="delete_favorites_dialog_title">ลบออกจากรายการโปรด</string>
