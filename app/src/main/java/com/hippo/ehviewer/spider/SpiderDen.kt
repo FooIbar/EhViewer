@@ -135,9 +135,9 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
     ): Boolean {
         return if (isCronetSupported) {
             cronetRequest(url, referer) {
-                disableCache()
+                setCacheDisabled(true)
             }.execute { info ->
-                val headers = info.allHeaders
+                val headers = info.headers.asMap
                 val type = headers["Content-Type"]?.first()?.toMediaType()?.subtype ?: "jpg"
                 val length = headers["Content-Length"]!!.first().toLong()
                 saveResponseMeta(index, type, length) { file ->
