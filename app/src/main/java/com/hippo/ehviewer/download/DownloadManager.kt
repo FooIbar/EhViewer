@@ -71,7 +71,7 @@ object DownloadManager : OnSpiderListener {
     // Store download info wait to start
     private val mWaitList = LinkedList<DownloadInfo>()
     private val mSpeedReminder = SpeedReminder()
-    private val mDownloadInfoListeners = mutableListOf<DownloadInfoListener>()
+    private var mDownloadInfoListener: DownloadInfoListener? = null
     private val mNotifyTaskPool = ConcurrentPool<NotifyTask?>(5)
     private var mDownloadListener: DownloadListener? = null
     private var mCurrentTask: DownloadInfo? = null
@@ -125,14 +125,6 @@ object DownloadManager : OnSpiderListener {
         return info?.state ?: DownloadInfo.STATE_INVALID
     }
 
-    fun addDownloadInfoListener(downloadInfoListener: DownloadInfoListener) {
-        mDownloadInfoListeners.add(downloadInfoListener)
-    }
-
-    fun removeDownloadInfoListener(downloadInfoListener: DownloadInfoListener) {
-        mDownloadInfoListeners.remove(downloadInfoListener)
-    }
-
     fun setDownloadListener(listener: DownloadListener?) {
         mDownloadListener = listener
     }
@@ -166,12 +158,7 @@ object DownloadManager : OnSpiderListener {
                 mDownloadListener!!.onStart(info)
             }
             // Notify state update
-            val list: List<DownloadInfo>? = getInfoListForLabel(info.label)
-            if (list != null) {
-                for (l in mDownloadInfoListeners) {
-                    l.onUpdate(info, list)
-                }
-            }
+            mDownloadInfoListener?.onUpdate(info)
         }
     }
 
@@ -192,12 +179,7 @@ object DownloadManager : OnSpiderListener {
                 // Update in DB
                 EhDB.putDownloadInfo(info)
                 // Notify state update
-                val list: List<DownloadInfo>? = getInfoListForLabel(info.label)
-                if (list != null) {
-                    for (l in mDownloadInfoListeners) {
-                        l.onUpdate(info, list)
-                    }
-                }
+                mDownloadInfoListener?.onUpdate(info)
                 // Make sure download is running
                 ensureDownload()
             }
@@ -227,9 +209,7 @@ object DownloadManager : OnSpiderListener {
             EhDB.putDownloadInfo(info)
 
             // Notify
-            for (l in mDownloadInfoListeners) {
-                l.onAdd(info, list, list.size - 1)
-            }
+            mDownloadInfoListener?.onUpdate(info)
             // Make sure download is running
             ensureDownload()
 
@@ -259,9 +239,7 @@ object DownloadManager : OnSpiderListener {
         }
         if (update) {
             // Notify Listener
-            for (l in mDownloadInfoListeners) {
-                l.onUpdateAll()
-            }
+            mDownloadInfoListener?.onUpdateAll()
             // Ensure download
             ensureDownload()
         }
@@ -271,33 +249,23 @@ object DownloadManager : OnSpiderListener {
 
     private val _stateFlow = callbackFlow {
         val listener = object : DownloadInfoListener {
-            override fun onAdd(info: DownloadInfo, list: List<DownloadInfo>, position: Int) {
-                trySend(info)
-            }
-
-            override fun onUpdate(info: DownloadInfo, list: List<DownloadInfo>) {
-                trySend(info)
+            override fun onUpdate(info: DownloadInfo) {
+                trySend(info.gid)
             }
 
             override fun onUpdateAll() {
-                // No-op
-            }
-
-            override fun onReload() {
-                // No-op
-            }
-
-            override fun onRemove(info: DownloadInfo, list: List<DownloadInfo>, position: Int) {
-                trySend(info)
+                trySend(0)
             }
         }
-        addDownloadInfoListener(listener)
+        mDownloadInfoListener = listener
         awaitClose {
-            removeDownloadInfoListener(listener)
+            mDownloadInfoListener = null
         }
     }.shareIn(callbackFlowScope, SharingStarted.Eagerly)
 
-    fun stateFlow(gid: Long) = _stateFlow.filter { it.gid == gid }
+    fun stateFlow(gid: Long) = _stateFlow.filter { it == gid }
+
+    fun stateFlow() = _stateFlow
 
     suspend fun startAllDownload() {
         var update = false
@@ -315,9 +283,7 @@ object DownloadManager : OnSpiderListener {
         }
         if (update) {
             // Notify Listener
-            for (l in mDownloadInfoListeners) {
-                l.onUpdateAll()
-            }
+            mDownloadInfoListener?.onUpdateAll()
             // Ensure download
             ensureDownload()
         }
@@ -353,9 +319,7 @@ object DownloadManager : OnSpiderListener {
 
         // Notify
         if (notify) {
-            for (l in mDownloadInfoListeners) {
-                l.onReload()
-            }
+            mDownloadInfoListener?.onUpdateAll()
         }
     }
 
@@ -386,9 +350,7 @@ object DownloadManager : OnSpiderListener {
 
         // Notify
         withUIContext {
-            for (l in mDownloadInfoListeners) {
-                l.onAdd(info, list, list.size - 1)
-            }
+            mDownloadInfoListener?.onUpdate(info)
         }
     }
 
@@ -396,12 +358,7 @@ object DownloadManager : OnSpiderListener {
         val info = stopDownloadInternal(gid)
         if (info != null) {
             // Update listener
-            val list: List<DownloadInfo>? = getInfoListForLabel(info.label)
-            if (list != null) {
-                for (l in mDownloadInfoListeners) {
-                    l.onUpdate(info, list)
-                }
-            }
+            mDownloadInfoListener?.onUpdate(info)
             // Ensure download
             ensureDownload()
         }
@@ -411,12 +368,7 @@ object DownloadManager : OnSpiderListener {
         val info = stopCurrentDownloadInternal()
         if (info != null) {
             // Update listener
-            val list: List<DownloadInfo>? = getInfoListForLabel(info.label)
-            if (list != null) {
-                for (l in mDownloadInfoListeners) {
-                    l.onUpdate(info, list)
-                }
-            }
+            mDownloadInfoListener?.onUpdate(info)
             // Ensure download
             ensureDownload()
         }
@@ -426,9 +378,7 @@ object DownloadManager : OnSpiderListener {
         stopRangeDownloadInternal(gidList)
 
         // Update listener
-        for (l in mDownloadInfoListeners) {
-            l.onUpdateAll()
-        }
+        mDownloadInfoListener?.onUpdateAll()
 
         // Ensure download
         ensureDownload()
@@ -447,9 +397,7 @@ object DownloadManager : OnSpiderListener {
         stopCurrentDownloadInternal()
 
         // Notify mDownloadInfoListener
-        for (l in mDownloadInfoListeners) {
-            l.onUpdateAll()
-        }
+        mDownloadInfoListener?.onUpdateAll()
     }
 
     suspend fun deleteDownload(gid: Long, deleteFiles: Boolean = false) {
@@ -470,9 +418,7 @@ object DownloadManager : OnSpiderListener {
                 if (index >= 0) {
                     list.remove(info)
                     // Update listener
-                    for (l in mDownloadInfoListeners) {
-                        l.onRemove(info, list, index)
-                    }
+                    mDownloadInfoListener?.onUpdate(info)
                 }
             }
 
@@ -495,15 +441,13 @@ object DownloadManager : OnSpiderListener {
         allInfoList.removeAll(list.toSet())
 
         // Update listener
-        for (l in mDownloadInfoListeners) {
-            l.onReload()
-        }
+        mDownloadInfoListener?.onUpdateAll()
 
         // Ensure download
         ensureDownload()
     }
 
-    fun moveDownload(fromPosition: Int, toPosition: Int): List<DownloadInfo> {
+    private fun moveDownload(fromPosition: Int, toPosition: Int): List<DownloadInfo> {
         val info = allInfoList.removeAt(fromPosition)
         allInfoList.add(toPosition, info)
         val range = if (fromPosition < toPosition) fromPosition..toPosition else toPosition..fromPosition
@@ -515,12 +459,11 @@ object DownloadManager : OnSpiderListener {
         return list
     }
 
-    fun moveDownload(label: String?, fromPosition: Int, toPosition: Int) =
-        getInfoListForLabel(label)!!.let {
-            val absFromPosition = allInfoList.indexOf(it[fromPosition])
-            val absToPosition = allInfoList.indexOf(it[toPosition])
-            moveDownload(absFromPosition, absToPosition)
-        }
+    fun moveDownload(fromItem: DownloadInfo, toItem: DownloadInfo): List<DownloadInfo> {
+        val fromPosition = allInfoList.indexOf(fromItem)
+        val toPosition = allInfoList.indexOf(toItem)
+        return moveDownload(fromPosition, toPosition)
+    }
 
     suspend fun resetAllReadingProgress() = coroutineScope {
         allInfoList.forEach { info ->
@@ -658,9 +601,7 @@ object DownloadManager : OnSpiderListener {
             // Save to DB
             EhDB.putDownloadInfo(info)
         }
-        for (l in mDownloadInfoListeners) {
-            l.onReload()
-        }
+        mDownloadInfoListener?.onUpdateAll()
     }
 
     suspend fun addLabel(label: String?) {
@@ -811,29 +752,14 @@ object DownloadManager : OnSpiderListener {
 
     interface DownloadInfoListener {
         /**
-         * Add the special info to the special position
-         */
-        fun onAdd(info: DownloadInfo, list: List<DownloadInfo>, position: Int)
-
-        /**
          * The special info is changed
          */
-        fun onUpdate(info: DownloadInfo, list: List<DownloadInfo>)
+        fun onUpdate(info: DownloadInfo)
 
         /**
          * Maybe all data is changed, but size is the same
          */
         fun onUpdateAll()
-
-        /**
-         * Maybe all data is changed, maybe list is changed
-         */
-        fun onReload()
-
-        /**
-         * Remove the special info from the special position
-         */
-        fun onRemove(info: DownloadInfo, list: List<DownloadInfo>, position: Int)
     }
 
     interface DownloadListener {
@@ -940,12 +866,7 @@ object DownloadManager : OnSpiderListener {
                         Log.e(TAG, "Current task is null, but it should not be")
                     } else {
                         info.total = mPages
-                        val list: List<DownloadInfo>? = getInfoListForLabel(info.label)
-                        if (list != null) {
-                            for (l in mDownloadInfoListeners) {
-                                l.onUpdate(info, list)
-                            }
-                        }
+                        mDownloadInfoListener?.onUpdate(info)
                     }
                 }
 
@@ -974,12 +895,7 @@ object DownloadManager : OnSpiderListener {
                         if (mDownloadListener != null) {
                             mDownloadListener!!.onGetPage(info)
                         }
-                        val list: List<DownloadInfo>? = getInfoListForLabel(info.label)
-                        if (list != null) {
-                            for (l in mDownloadInfoListeners) {
-                                l.onUpdate(info, list)
-                            }
-                        }
+                        mDownloadInfoListener?.onUpdate(info)
                     }
                 }
 
@@ -992,12 +908,7 @@ object DownloadManager : OnSpiderListener {
                         info.finished = mFinished
                         info.downloaded = mDownloaded
                         info.total = mTotal
-                        val list: List<DownloadInfo>? = getInfoListForLabel(info.label)
-                        if (list != null) {
-                            for (l in mDownloadInfoListeners) {
-                                l.onUpdate(info, list)
-                            }
-                        }
+                        mDownloadInfoListener?.onUpdate(info)
                     }
                 }
 
@@ -1036,12 +947,7 @@ object DownloadManager : OnSpiderListener {
                             if (mDownloadListener != null) {
                                 mDownloadListener!!.onFinish(info)
                             }
-                            val list: List<DownloadInfo>? = getInfoListForLabel(info.label)
-                            if (list != null) {
-                                for (l in mDownloadInfoListeners) {
-                                    l.onUpdate(info, list)
-                                }
-                            }
+                            mDownloadInfoListener?.onUpdate(info)
                             // Start next download
                             ensureDownload()
                         }
@@ -1127,12 +1033,7 @@ object DownloadManager : OnSpiderListener {
                 if (mDownloadListener != null) {
                     mDownloadListener!!.onDownload(info)
                 }
-                val list: List<DownloadInfo>? = getInfoListForLabel(info.label)
-                if (list != null) {
-                    for (l in mDownloadInfoListeners) {
-                        l.onUpdate(info, list)
-                    }
-                }
+                mDownloadInfoListener?.onUpdate(info)
             }
             mBytesRead = 0
             if (!mStop) {
