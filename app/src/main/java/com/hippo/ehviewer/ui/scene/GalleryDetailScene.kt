@@ -105,6 +105,7 @@ import arrow.core.partially1
 import coil.imageLoader
 import com.google.android.material.snackbar.Snackbar
 import com.hippo.ehviewer.EhApplication.Companion.galleryDetailCache
+import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -122,6 +123,7 @@ import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.NoHAtHClientException
+import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.client.parser.ArchiveParser
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.client.parser.TorrentResult
@@ -341,6 +343,24 @@ class GalleryDetailScene : BaseScene() {
         }
     }
 
+    private fun actionClearCache() {
+        val gd = composeBindingGD ?: return
+        lifecycleScope.launchIO {
+            dialogState.awaitPermissionOrCancel(
+                confirmText = R.string.clear_all,
+                dismissText = android.R.string.cancel,
+                title = R.string.clear_image_cache,
+            ) {
+                Text(text = stringResource(id = R.string.clear_image_cache_confirm))
+            }
+            (0..<gd.pages).forEach {
+                val key = getImageKey(gd.gid, it)
+                imageCache.remove(key)
+            }
+            showTip(R.string.image_cache_cleared, LENGTH_SHORT)
+        }
+    }
+
     private fun actionOpenInOtherApp() {
         val url = galleryDetailUrl ?: return
         val activity: Activity = mainActivity ?: return
@@ -464,6 +484,13 @@ class GalleryDetailScene : BaseScene() {
                                         onClick = {
                                             dropdown = false
                                             actionRefresh()
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(text = stringResource(id = R.string.clear_image_cache)) },
+                                        onClick = {
+                                            dropdown = false
+                                            actionClearCache()
                                         },
                                     )
                                     DropdownMenuItem(
