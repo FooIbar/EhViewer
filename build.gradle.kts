@@ -13,7 +13,7 @@ allprojects {
 }
 
 tasks.register("Delete", Delete::class) {
-    delete(rootProject.buildDir)
+    delete(rootProject.layout.buildDirectory)
 }
 
 buildscript {
