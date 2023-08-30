@@ -149,6 +149,9 @@
     <string name="refresh">刷新</string>
     <string name="refresh_original">刷新（原图）</string>
     <string name="open_in_other_app">在其他应用中打开</string>
+    <string name="clear_image_cache">清除图片缓存</string>
+    <string name="clear_image_cache_confirm">清除该画廊的所有图片缓存？</string>
+    <string name="image_cache_cleared">已清除图片缓存</string>
     <string name="rate_successfully">评分成功</string>
     <string name="rate_failed">评分失败</string>
     <string name="no_torrents">没有种子</string>

@@ -21,7 +21,7 @@ plugins {
 android {
     compileSdk = 34
     buildToolsVersion = "34.0.0"
-    ndkVersion = "26.0.10404224"
+    ndkVersion = "26.0.10636728"
 
     splits {
         abi {
@@ -159,7 +159,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.3"
     }
 
     namespace = "com.hippo.ehviewer"
@@ -167,7 +167,7 @@ android {
 
 dependencies {
     // https://developer.android.com/jetpack/androidx/releases/activity
-    implementation("androidx.activity:activity-compose:1.8.0-alpha06")
+    implementation("androidx.activity:activity-compose:1.8.0-alpha07")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
     implementation("androidx.browser:browser:1.6.0")
@@ -185,12 +185,12 @@ dependencies {
 
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha12")
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
-    implementation("androidx.fragment:fragment-ktx:1.7.0-alpha02")
+    implementation("androidx.fragment:fragment-ktx:1.7.0-alpha03")
     // https://developer.android.com/jetpack/androidx/releases/lifecycle
     implementation("androidx.lifecycle:lifecycle-process:2.6.1")
 
     // https://developer.android.com/jetpack/androidx/releases/navigation
-    val nav_version = "2.7.0"
+    val nav_version = "2.7.1"
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
     implementation("androidx.navigation:navigation-compose:$nav_version")
@@ -203,7 +203,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview-selection:1.2.0-alpha01")
 
     // https://developer.android.com/jetpack/androidx/releases/room
-    val room_version = "2.6.0-alpha03"
+    val room_version = "2.6.0-beta01"
     ksp("androidx.room:room-compiler:$room_version")
     implementation("androidx.room:room-paging:$room_version")
 
@@ -213,7 +213,7 @@ dependencies {
     implementation("com.github.chrisbanes:PhotoView:2.3.0") // Dead Dependency
     implementation("com.github.tachiyomiorg:DirectionalViewPager:1.0.0") // Dead Dependency
     // https://github.com/google/accompanist/releases
-    val accompanist_version = "0.31.6-rc"
+    val accompanist_version = "0.32.0"
     implementation("com.google.accompanist:accompanist-themeadapter-material3:$accompanist_version")
     implementation("com.google.accompanist:accompanist-webview:$accompanist_version")
     implementation("com.google.android.material:material:1.11.0-alpha02")
@@ -253,7 +253,7 @@ dependencies {
     implementation("org.chromium.net:cronet-api:113.5672.61")
     implementation("com.google.android.gms:play-services-cronet:18.0.1")
 
-    val serialization = "1.5.1"
+    val serialization = "1.6.0"
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:$serialization")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serialization")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json-okio:$serialization")
@@ -299,6 +299,6 @@ tasks.configureEach {
     if ((name == "mergeDebugJniLibFolders" || name == "mergeReleaseJniLibFolders")) {
         dependsOn("cargoBuild")
         // fix mergeDebugJniLibFolders  UP-TO-DATE
-        inputs.dir(buildDir.resolve("rustJniLibs/android"))
+        inputs.dir(layout.buildDirectory.dir("rustJniLibs/android"))
     }
 }

@@ -191,6 +191,9 @@
     <string name="refresh">Refresh</string>
     <string name="refresh_original">Refresh (Original image)</string>
     <string name="open_in_other_app">Open with other app</string>
+    <string name="clear_image_cache">Clear image cache</string>
+    <string name="clear_image_cache_confirm">Clear all cached images for this gallery?</string>
+    <string name="image_cache_cleared">Image cache cleared</string>
     <string name="rate_successfully">Rate successfully</string>
     <string name="rate_failed">Rate failed</string>
     <string name="no_torrents">No torrents</string>
