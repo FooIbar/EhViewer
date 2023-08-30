@@ -57,7 +57,9 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
-        detector.onTouchEvent(e)
+        if (scrollState == SCROLL_STATE_IDLE) {
+            detector.onTouchEvent(e)
+        }
         return super.onTouchEvent(e)
     }
 
