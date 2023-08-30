@@ -44,21 +44,23 @@ data class DownloadEntity(
 
     @ColumnInfo(name = "POSITION")
     override var position: Int = 0,
+
+    @Ignore
+    override var speed: Long = 0,
+
+    @Ignore
+    override var remaining: Long = 0,
+
+    @Ignore
+    override var finished: Int = 0,
+
+    @Ignore
+    override var downloaded: Int = 0,
+
+    @Ignore
+    override var total: Int = 0,
 ) : AbstractDownloadInfo {
-    @Ignore
-    override var speed: Long = 0
-
-    @Ignore
-    override var remaining: Long = 0
-
-    @Ignore
-    override var finished = 0
-
-    @Ignore
-    override var downloaded = 0
-
-    @Ignore
-    override var total = 0
+    constructor() : this(0)
 }
 
 data class DownloadInfo(

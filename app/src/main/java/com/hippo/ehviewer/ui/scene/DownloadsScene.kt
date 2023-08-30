@@ -202,7 +202,7 @@ class DownloadsScene :
                 getString(R.string.default_download_label_name) -> DownloadManager.defaultInfoList
                 else -> DownloadManager.getLabelDownloadInfoList(mLabel)
                     ?: DownloadManager.allInfoList.also { mLabel = null }
-            }.filter(::filter)
+            }.mapNotNull { it.takeIf(::filter)?.copy(downloadInfo = it.downloadInfo.copy()) }
             submitList(list) {
                 if (mGid != -1L) {
                     val position = list.indexOfFirst { it.gid == mGid }
