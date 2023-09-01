@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
@@ -71,7 +72,7 @@ class SearchLayout @JvmOverloads constructor(
             }
         }
         Mdc3Theme {
-            Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h)).verticalScroll(rememberScrollState())) {
+            Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h)).imePadding().verticalScroll(rememberScrollState())) {
                 AnimatedVisibility(visible = isNormalMode) {
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                         Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {
