@@ -196,7 +196,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:$nav_version")
 
     // https://developer.android.com/jetpack/androidx/releases/paging
-    val paging = "3.2.0"
+    val paging = "3.2.1"
     implementation("androidx.paging:paging-compose:$paging")
     implementation("androidx.paging:paging-runtime-ktx:$paging")
     implementation("androidx.recyclerview:recyclerview:1.3.1")
