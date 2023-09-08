@@ -30,7 +30,7 @@ pub fn parseTorrent(env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jin
     parse_bytebuffer(&mut env, buffer, limit, |dom, parser, _env| {
         Some(dom.query_selector("table")?.filter_map(|e| {
             let html = e.get(parser)?.inner_html(parser);
-            let grp = regex!("</span> ([0-9-]+) [0-9:]+</td>[\\s\\S]+</span> ([0-9.]+ [KMGT]B)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span>([^<]+)</td>[\\s\\S]+onclick=\"document.location='([^\"]+)'[^<]+>([^<]+)</a>").captures(&html).unwrap();
+            let grp = regex!("</span> ([0-9-]+) [0-9:]+</td>[\\s\\S]+</span> ([0-9.]+ [KMGT]iB)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span>([^<]+)</td>[\\s\\S]+onclick=\"document.location='([^\"]+)'[^<]+>([^<]+)</a>").captures(&html).unwrap();
             let name = unescape(&grp[8]).ok()?;
             Some(Torrent {
                 posted: grp[1].to_string(),
