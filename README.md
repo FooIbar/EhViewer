@@ -1,3 +1,7 @@
+# Maintenance Mode
+
+The project is in maintenance mode, will only receive bugfixes.
+
 <p align="right">
   <strong>English</strong>
   <span> | </span>
