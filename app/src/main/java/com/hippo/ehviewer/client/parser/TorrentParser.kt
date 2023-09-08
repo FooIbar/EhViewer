@@ -1,9 +1,12 @@
 package com.hippo.ehviewer.client.parser
 
+import com.hippo.ehviewer.client.exception.ParseException
 import java.nio.ByteBuffer
 
 object TorrentParser {
-    fun parse(body: ByteBuffer) = parseTorrent(body)
+    fun parse(body: ByteBuffer) = runCatching {
+        parseTorrent(body)
+    }.getOrElse { throw ParseException("Can't parse torrent list", it) }
 }
 
 class Torrent(

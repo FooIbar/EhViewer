@@ -35,7 +35,7 @@ object SignInParser {
             if (m.find()) {
                 throw EhException(m.group(1) ?: m.group(2))
             } else {
-                throw ParseException("Can't parse sign in", body)
+                throw ParseException("Can't parse sign in")
             }
         }
     }

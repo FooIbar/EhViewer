@@ -120,8 +120,8 @@ private fun rethrowExactly(code: Int, headers: Headers, body: String, e: Throwab
         } else if ("<" !in body) {
             throw EhException(body)
         } else {
-            if (Settings.saveParseErrorBody) AppConfig.saveParseErrorBody(e)
-            throw EhException(appCtx.getString(R.string.error_parse_error))
+            if (Settings.saveParseErrorBody) AppConfig.saveParseErrorBody(e, body)
+            throw EhException(appCtx.getString(R.string.error_parse_error), e)
         }
     }
 

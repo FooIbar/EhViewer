@@ -114,9 +114,9 @@ object GalleryDetailParser {
             gd.token = groupValues[2]
             gd.apiUid = groupValues[3].toLongOrNull() ?: -1L
             gd.apiKey = groupValues[4]
-        } ?: throw ParseException("Can't parse gallery detail", body)
+        } ?: throw ParseException("Can't parse gallery detail")
         if (gd.gid == -1L) {
-            throw ParseException("Can't parse gallery detail", body)
+            throw ParseException("Can't parse gallery detail")
         }
         PATTERN_TORRENT.find(body)?.run {
             gd.torrentUrl = groupValues[1].trim().unescapeXml()
@@ -214,7 +214,7 @@ object GalleryDetailParser {
             }
         } catch (e: Throwable) {
             ExceptionUtils.throwIfFatal(e)
-            throw ParseException("Can't parse gallery detail", body)
+            throw ParseException("Can't parse gallery detail")
         }
 
         // newer version
@@ -450,7 +450,7 @@ object GalleryDetailParser {
      */
     fun parsePreviewPages(body: String): Int {
         return PATTERN_PREVIEW_PAGES.find(body)?.groupValues?.get(1)?.toIntOrNull()
-            ?: throw ParseException("Parse preview page count error", body)
+            ?: throw ParseException("Parse preview page count error")
     }
 
     /**
@@ -458,7 +458,7 @@ object GalleryDetailParser {
      */
     fun parsePages(body: String): Int {
         return PATTERN_PAGES.find(body)?.groupValues?.get(1)?.toIntOrNull()
-            ?: throw ParseException("Parse pages error", body)
+            ?: throw ParseException("Parse pages error")
     }
 
     fun parsePreviewList(body: String): Pair<List<GalleryPreview>, List<String>> {
