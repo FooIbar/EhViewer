@@ -187,7 +187,7 @@ dependencies {
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
     implementation("androidx.fragment:fragment-ktx:1.7.0-alpha04")
     // https://developer.android.com/jetpack/androidx/releases/lifecycle
-    implementation("androidx.lifecycle:lifecycle-process:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
 
     // https://developer.android.com/jetpack/androidx/releases/navigation
     val nav_version = "2.7.1"
