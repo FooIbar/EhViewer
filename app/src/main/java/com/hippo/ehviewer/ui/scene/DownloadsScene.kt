@@ -57,7 +57,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.ItemTouchHelper.ACTION_STATE_DRAG
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -299,15 +298,13 @@ class DownloadsScene :
             }
             recyclerView.addItemDecoration(decoration)
             mItemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.Callback() {
-                override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
-                    super.onSelectedChanged(viewHolder, actionState)
-                    if (actionState == ACTION_STATE_DRAG) {
-                        tracker.clearSelection()
-                    }
-                }
                 override fun isLongPressDragEnabled() = false
                 override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-                    return makeMovementFlags(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.LEFT)
+                    return if (tracker.isInCustomChoice) {
+                        0
+                    } else {
+                        makeMovementFlags(ItemTouchHelper.UP or ItemTouchHelper.DOWN, ItemTouchHelper.LEFT)
+                    }
                 }
                 override fun onMove(
                     recyclerView: RecyclerView,
