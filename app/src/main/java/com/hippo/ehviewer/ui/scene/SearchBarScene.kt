@@ -167,8 +167,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
     fun showSearchFab(animation: Boolean, delay: Long = 0) {
         if (animation) {
             mSearchFab.visibility = View.VISIBLE
-            mSearchFab.rotation = -45.0f
-            mSearchFab.animate().scaleX(1.0f).scaleY(1.0f).rotation(0.0f).setListener(null)
+            mSearchFab.animate().scaleX(1.0f).scaleY(1.0f).setListener(null)
                 .setDuration(ANIMATE_TIME).setStartDelay(delay)
                 .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).start()
         } else {
@@ -196,10 +195,26 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
         }
     }
 
-    fun selectSearchFab(animation: Boolean) {
-        _binding ?: return
+    fun showActionFab(animation: Boolean, delay: Long = ANIMATE_TIME) {
+        mShowActionFab = true
+        if (animation) {
+            val fab = fabLayout.primaryFab!!
+            fab.visibility = View.VISIBLE
+            fab.animate().scaleX(1.0f).scaleY(1.0f).setListener(null)
+                .setDuration(ANIMATE_TIME).setStartDelay(delay)
+                .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).start()
+        } else {
+            fabLayout.setExpanded(expanded = false, animation = false)
+            val fab = fabLayout.primaryFab!!
+            fab.visibility = View.VISIBLE
+            fab.scaleX = 1.0f
+            fab.scaleY = 1.0f
+        }
+    }
+
+    fun hideActionFab(animation: Boolean): Long {
         mShowActionFab = false
-        val delay = if (animation) {
+        return if (animation) {
             val fab = fabLayout.primaryFab!!
             if (View.INVISIBLE == fab.visibility) {
                 0L
@@ -218,27 +233,16 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
             fab.scaleY = 0.0f
             0L
         }
+    }
+
+    fun selectSearchFab(animation: Boolean) {
+        val delay = hideActionFab(animation)
         showSearchFab(animation, delay)
     }
 
     fun selectActionFab(animation: Boolean) {
-        _binding ?: return
-        mShowActionFab = true
         val delay = hideSearchFab(animation)
-        if (animation) {
-            val fab = fabLayout.primaryFab!!
-            fab.visibility = View.VISIBLE
-            fab.rotation = -45.0f
-            fab.animate().scaleX(1.0f).scaleY(1.0f).rotation(0.0f).setListener(null)
-                .setDuration(ANIMATE_TIME).setStartDelay(delay)
-                .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).start()
-        } else {
-            fabLayout.setExpanded(expanded = false, animation = false)
-            val fab = fabLayout.primaryFab!!
-            fab.visibility = View.VISIBLE
-            fab.scaleX = 1.0f
-            fab.scaleY = 1.0f
-        }
+        showActionFab(animation, delay)
     }
 
     fun setSearchBarHint(hint: String?) {

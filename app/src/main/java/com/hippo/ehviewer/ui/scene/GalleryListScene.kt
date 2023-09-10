@@ -688,12 +688,20 @@ class GalleryListScene : SearchBarScene() {
 
     override fun onSearchViewExpanded() {
         super.onSearchViewExpanded()
-        if (mState == State.NORMAL) selectSearchFab(true)
+        if (mState == State.NORMAL) {
+            hideActionFab(true)
+        } else {
+            hideSearchFab(true)
+        }
     }
 
     override fun onSearchViewHidden() {
         super.onSearchViewHidden()
-        if (mState == State.NORMAL) selectActionFab(true)
+        if (mState == State.NORMAL) {
+            showActionFab(true)
+        } else {
+            showSearchFab(true)
+        }
     }
 
     private fun showActionFab() {
