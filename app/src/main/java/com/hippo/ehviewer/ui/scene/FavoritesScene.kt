@@ -392,7 +392,11 @@ class FavoritesScene : SearchBarScene() {
         }
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.Callback() {
             override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-                return makeMovementFlags(0, ItemTouchHelper.LEFT)
+                return if (tracker.isInCustomChoice) {
+                    0
+                } else {
+                    makeMovementFlags(0, ItemTouchHelper.LEFT)
+                }
             }
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -478,13 +482,13 @@ class FavoritesScene : SearchBarScene() {
     }
 
     override fun onSearchViewExpanded() {
+        hideActionFab(true)
         super.onSearchViewExpanded()
-        selectSearchFab(true)
     }
 
     override fun onSearchViewHidden() {
         super.onSearchViewHidden()
-        selectActionFab(true)
+        showActionFab(true)
     }
 
     private fun showGoToDialog() {

@@ -24,7 +24,7 @@ object HomeParser {
             val fundsGP = ParserUtils.parseInt(get(2), 0) * 1000
             return Funds(fundsGP, fundsC)
         }
-        throw ParseException("Parse funds error", body)
+        throw ParseException("Parse funds error")
     }
 
     @Parcelize

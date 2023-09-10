@@ -28,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.util.toIntOrDefault
 
 @Composable
 fun SearchAdvanced(
@@ -55,9 +56,6 @@ fun SearchAdvanced(
             onExpandedChange = { expanded = !expanded },
         ) {
             val softwareKeyboardController = LocalSoftwareKeyboardController.current
-            SideEffect {
-                softwareKeyboardController?.hide()
-            }
             OutlinedTextField(
                 modifier = Modifier.menuAnchor(),
                 readOnly = true,
@@ -71,6 +69,9 @@ fun SearchAdvanced(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
             ) {
+                SideEffect {
+                    softwareKeyboardController?.hide()
+                }
                 minRatingItems.forEach { selectionOption ->
                     DropdownMenuItem(
                         text = { Text(selectionOption) },
@@ -88,18 +89,18 @@ fun SearchAdvanced(
             Checkbox(checked = enabled, onCheckedChange = { enabled = it })
             Text(text = stringResource(id = R.string.search_sp), modifier = Modifier.align(Alignment.CenterVertically))
             OutlinedTextField(
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 value = if (enabled && state.fromPage != -1) state.fromPage.toString() else "",
-                onValueChange = { onStateChanged(state.copy(fromPage = it.toInt())) },
+                onValueChange = { onStateChanged(state.copy(fromPage = it.toIntOrDefault(-1))) },
                 modifier = Modifier.width(96.dp).padding(16.dp),
                 singleLine = true,
                 enabled = enabled,
             )
             Text(text = stringResource(id = R.string.search_sp_to), modifier = Modifier.align(Alignment.CenterVertically))
             OutlinedTextField(
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 value = if (enabled && state.toPage != -1) state.toPage.toString() else "",
-                onValueChange = { onStateChanged(state.copy(toPage = it.toInt())) },
+                onValueChange = { onStateChanged(state.copy(toPage = it.toIntOrDefault(-1))) },
                 modifier = Modifier.width(96.dp).padding(16.dp),
                 singleLine = true,
                 enabled = enabled,

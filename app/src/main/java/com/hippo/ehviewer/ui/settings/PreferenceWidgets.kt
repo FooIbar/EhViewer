@@ -115,20 +115,6 @@ fun HtmlPreference(title: String, summary: AnnotatedString? = null, onClick: () 
 @Composable
 fun SimpleMenuPreferenceInt(title: String, summary: String? = null, @ArrayRes entry: Int, @ArrayRes entryValueRes: Int, value: MutableState<Int>) {
     val entryArray = stringArrayResource(id = entry)
-    val valuesArray = stringArrayResource(id = entryValueRes)
-    val map = remember {
-        val iter = entryArray.iterator()
-        valuesArray.associateWith { iter.next() }
-    }
-    var v by value
-    fun set(new: String) { v = new.toInt() }
-    check(entryArray.size == valuesArray.size)
-    DropDownPref(title = title, summary = summary, defaultValue = v.toString(), onValueChange = ::set, useSelectedAsSummary = summary.isNullOrBlank(), entries = map)
-}
-
-@Composable
-fun SimpleMenuPreferenceInt2(title: String, summary: String? = null, @ArrayRes entry: Int, @ArrayRes entryValueRes: Int, value: MutableState<Int>) {
-    val entryArray = stringArrayResource(id = entry)
     val valuesArray = integerArrayResource(id = entryValueRes)
     val map = remember {
         val iter = entryArray.iterator()

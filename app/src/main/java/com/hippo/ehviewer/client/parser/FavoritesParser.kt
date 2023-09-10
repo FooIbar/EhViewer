@@ -12,7 +12,7 @@ object FavoritesParser {
         }
         val catArray = arrayOfNulls<String>(10)
         val countArray = parseFav(body, catArray)
-        if (countArray.isEmpty()) throw ParseException("Parse favorites error", body)
+        if (countArray.isEmpty()) throw ParseException("Parse favorites error")
         val result = GalleryListParser.parse(body)
         return Result(catArray.requireNoNulls(), countArray, result)
     }

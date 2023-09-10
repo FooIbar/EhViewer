@@ -33,7 +33,7 @@ object GalleryMultiPageViewerPTokenParser {
             imagelist.parseAs<List<Item>>().map(Item::token)
         }.getOrElse {
             ExceptionUtils.throwIfFatal(it)
-            throw ParseException("Parse pToken from MPV error", body, it)
+            throw ParseException("Parse pToken from MPV error", it)
         }
     }
 

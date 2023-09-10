@@ -21,20 +21,20 @@
         <item>@string/settings_eh_list_mode_thumb</item>
     </string-array>
 
-    <string-array name="list_mode_entry_values" translatable="false">
+    <integer-array name="list_mode_entry_values" translatable="false">
         <item>0</item>
         <item>1</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="gallery_site_entries" translatable="false">
         <item>@string/site_e</item>
         <item>@string/site_ex</item>
     </string-array>
 
-    <string-array name="gallery_site_entry_values" translatable="false">
+    <integer-array name="gallery_site_entry_values" translatable="false">
         <item>0</item>
         <item>1</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="launch_page_entries" translatable="false">
         <item>@string/homepage</item>
@@ -43,22 +43,22 @@
         <item>@string/toplist</item>
     </string-array>
 
-    <string-array name="launch_page_entry_values" translatable="false">
+    <integer-array name="launch_page_entry_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
         <item>3</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="detail_size_entries" translatable="false">
         <item>@string/settings_eh_detail_size_long</item>
         <item>@string/settings_eh_detail_size_short</item>
     </string-array>
 
-    <string-array name="detail_size_entry_values" translatable="false">
+    <integer-array name="detail_size_entry_values" translatable="false">
         <item>0</item>
         <item>1</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="thumb_resolution_entries" translatable="false">
         <item>@string/settings_eh_thumb_resolution_auto</item>
@@ -66,11 +66,11 @@
         <item>300x</item>
     </string-array>
 
-    <string-array name="thumb_resolution_entry_values" translatable="false">
+    <integer-array name="thumb_resolution_entry_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="search_min_rating" translatable="false">
         <item>@string/unlimited</item>
@@ -87,12 +87,12 @@
         <item>7</item>
     </string-array>
 
-    <string-array name="multi_thread_download_entry_values" translatable="false">
+    <integer-array name="multi_thread_download_entry_values" translatable="false">
         <item>1</item>
         <item>3</item>
         <item>5</item>
         <item>7</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="download_delay_entries" translatable="false">
         <item>0</item>
@@ -107,7 +107,7 @@
         <item>20000</item>
     </string-array>
 
-    <string-array name="download_delay_entry_values" translatable="false">
+    <integer-array name="download_delay_entry_values" translatable="false">
         <item>0</item>
         <item>500</item>
         <item>1000</item>
@@ -118,7 +118,7 @@
         <item>5000</item>
         <item>10000</item>
         <item>20000</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="preload_image_entries" translatable="false">
         <item>3</item>
@@ -129,14 +129,14 @@
         <item>17</item>
     </string-array>
 
-    <string-array name="preload_image_entry_values" translatable="false">
+    <integer-array name="preload_image_entry_values" translatable="false">
         <item>3</item>
         <item>5</item>
         <item>7</item>
         <item>11</item>
         <item>13</item>
         <item>17</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="read_cache_size_entries" translatable="false">
         <item>320 MB</item>
@@ -146,13 +146,13 @@
         <item>5120 MB</item>
     </string-array>
 
-    <string-array name="read_cache_size_entry_values" translatable="false">
+    <integer-array name="read_cache_size_entry_values" translatable="false">
         <item>320</item>
         <item>640</item>
         <item>1280</item>
         <item>2560</item>
         <item>5120</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="filter_entries">
         <item>@string/filter_title</item>
@@ -208,11 +208,11 @@
         <item>@string/dark_theme_on</item>
     </string-array>
 
-    <string-array name="night_mode_values">
+    <integer-array name="night_mode_values">
         <item>-1</item>
         <item>1</item>
         <item>2</item>
-    </string-array>
+    </integer-array>
 
     <string-array name="download_state">
         <item>@string/download_all</item>

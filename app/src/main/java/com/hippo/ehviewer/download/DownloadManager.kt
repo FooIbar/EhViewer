@@ -462,7 +462,11 @@ object DownloadManager : OnSpiderListener {
     fun moveDownload(fromItem: DownloadInfo, toItem: DownloadInfo): List<DownloadInfo> {
         val fromPosition = allInfoList.indexOf(fromItem)
         val toPosition = allInfoList.indexOf(toItem)
-        return moveDownload(fromPosition, toPosition)
+        return if (fromPosition != -1 && toPosition != -1) {
+            moveDownload(fromPosition, toPosition)
+        } else {
+            emptyList()
+        }
     }
 
     suspend fun resetAllReadingProgress() = coroutineScope {
