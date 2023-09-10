@@ -3,10 +3,7 @@ use std::ops::Deref;
 use proc_macro::TokenStream;
 use quote::{quote, quote_spanned, ToTokens};
 use syn::spanned::Spanned;
-use syn::{
-    parse_macro_input, AttributeArgs, Expr, FnArg, ItemFn, Lit, Meta, MetaNameValue, NestedMeta,
-    Pat, Path,
-};
+use syn::{parse_macro_input, Expr, FnArg, ItemFn, LitStr, Pat, Path};
 
 const ONLY_FUNCTIONS_MSG: &str = "#[catch_panic] can only be applied to functions";
 const FIRST_ARG_MSG: &str =
@@ -33,30 +30,21 @@ pub fn catch_panic(attr: TokenStream, item: TokenStream) -> TokenStream {
     let item = proc_macro2::TokenStream::from(item);
 
     // parse macro arguments
-    let args = parse_macro_input!(attr as AttributeArgs);
     let mut default_value = None;
     let mut handler = None;
-
-    for arg in args {
-        if let NestedMeta::Meta(Meta::NameValue(MetaNameValue {
-            path,
-            lit: Lit::Str(str),
-            ..
-        })) = arg
-        {
-            match path.get_ident() {
-                Some(id) if id == "default" => match str.parse::<Expr>() {
-                    Ok(expr) => default_value = Some(expr),
-                    Err(err) => abort!(err.to_compile_error(), item),
-                },
-                Some(id) if id == "handler" => match str.parse::<Path>() {
-                    Ok(expr) => handler = Some(expr),
-                    Err(err) => abort!(err.to_compile_error(), item),
-                },
-                _ => {}
-            }
+    let parser = syn::meta::parser(|meta| {
+        if meta.path.is_ident("default") {
+            default_value = Some(meta.value()?.parse::<LitStr>()?.parse::<Expr>()?);
+            Ok(())
+        } else if meta.path.is_ident("handler") {
+            handler = Some(meta.value()?.parse::<LitStr>()?.parse::<Path>()?);
+            Ok(())
+        } else {
+            Err(meta.error("unsupported argument"))
         }
-    }
+    });
+
+    parse_macro_input!(attr with parser);
 
     let default_value = match default_value {
         Some(val) => val.to_token_stream(),

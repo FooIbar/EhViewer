@@ -56,7 +56,7 @@ object GalleryPageParser {
         return if (!imageUrl.isNullOrEmpty() && !showKey.isNullOrEmpty()) {
             Result(imageUrl, skipHathKey, originImageUrl, showKey)
         } else {
-            throw ParseException("Parse image url and show error", body)
+            throw ParseException("Parse image url and show error")
         }
     }
 

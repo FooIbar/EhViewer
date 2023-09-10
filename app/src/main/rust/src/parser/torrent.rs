@@ -30,17 +30,21 @@ pub fn parseTorrent(env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jin
     parse_bytebuffer(&mut env, buffer, limit, |dom, parser, _env| {
         Some(dom.query_selector("table")?.filter_map(|e| {
             let html = e.get(parser)?.inner_html(parser);
-            let grp = regex!("</span> ([0-9-]+) [0-9:]+</td>[\\s\\S]+</span> ([0-9.]+ [KMGT]B)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span>([^<]+)</td>[\\s\\S]+onclick=\"document.location='([^\"]+)'[^<]+>([^<]+)</a>").captures(&html)?;
-            let name = unescape(&grp[8]).ok()?;
-            Some(Torrent {
-                posted: grp[1].to_string(),
-                size: grp[2].to_string(),
-                seeds: grp[3].parse().ok()?,
-                peers: grp[4].parse().ok()?,
-                downloads: grp[5].parse().ok()?,
-                url: grp[7].to_string(),
-                name: name.to_string()
-            })
+            if html.contains("Expunged") {
+                None
+            } else {
+                let grp = regex!("</span> ([0-9-]+) [0-9:]+</td>[\\s\\S]+</span> ([0-9.]+ [KMGT]iB)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span>([^<]+)</td>[\\s\\S]+onclick=\"document.location='([^\"]+)'[^<]+>([^<]+)</a>").captures(&html).unwrap();
+                let name = unescape(&grp[8]).ok()?;
+                Some(Torrent {
+                    posted: grp[1].to_string(),
+                    size: grp[2].to_string(),
+                    seeds: grp[3].parse().ok()?,
+                    peers: grp[4].parse().ok()?,
+                    downloads: grp[5].parse().ok()?,
+                    url: grp[7].to_string(),
+                    name: name.to_string()
+                })
+            }
         }).collect::<Vec<Torrent>>())
     }).unwrap().into_java(&env).forget().into_raw()
 }

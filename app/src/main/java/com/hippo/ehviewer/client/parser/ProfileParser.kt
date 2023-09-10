@@ -46,7 +46,7 @@ object ProfileParser {
             Result(displayName, avatar)
         }.getOrElse {
             ExceptionUtils.throwIfFatal(it)
-            throw ParseException("Parse forums error", body)
+            throw ParseException("Parse forums error")
         }
     }
 

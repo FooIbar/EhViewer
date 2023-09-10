@@ -25,7 +25,7 @@ object GalleryListParser {
         if (body.contains("No hits found</p>")) {
             throw EhException(R.string.gallery_list_empty_hit)
         }
-        throw ParseException("Can't parse gallery list", body, it)
+        throw ParseException("Can't parse gallery list", it)
     }
 }
 

@@ -167,11 +167,11 @@ android {
 
 dependencies {
     // https://developer.android.com/jetpack/androidx/releases/activity
-    implementation("androidx.activity:activity-compose:1.8.0-alpha07")
+    implementation("androidx.activity:activity-compose:1.8.0-beta01")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
     implementation("androidx.browser:browser:1.6.0")
-    implementation("androidx.collection:collection-ktx:1.3.0-beta01")
+    implementation("androidx.collection:collection-ktx:1.3.0-rc01")
 
     // https://developer.android.com/jetpack/androidx/releases/compose-material3
     // api(platform("androidx.compose:compose-bom:2023.05.00"))
@@ -181,22 +181,22 @@ dependencies {
     implementation("androidx.compose.material3:material3-window-size-class")
     implementation("androidx.compose.ui:ui-util")
 
-    implementation("androidx.core:core-ktx:1.12.0-rc01")
+    implementation("androidx.core:core-ktx:1.12.0")
 
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha12")
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
-    implementation("androidx.fragment:fragment-ktx:1.7.0-alpha03")
+    implementation("androidx.fragment:fragment-ktx:1.7.0-alpha04")
     // https://developer.android.com/jetpack/androidx/releases/lifecycle
-    implementation("androidx.lifecycle:lifecycle-process:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
 
     // https://developer.android.com/jetpack/androidx/releases/navigation
-    val nav_version = "2.7.1"
+    val nav_version = "2.7.2"
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
     implementation("androidx.navigation:navigation-compose:$nav_version")
 
     // https://developer.android.com/jetpack/androidx/releases/paging
-    val paging = "3.2.0"
+    val paging = "3.2.1"
     implementation("androidx.paging:paging-compose:$paging")
     implementation("androidx.paging:paging-runtime-ktx:$paging")
     implementation("androidx.recyclerview:recyclerview:1.3.1")
@@ -238,7 +238,7 @@ dependencies {
     implementation("dev.rikka.rikkax.insets:insets:1.3.0")
     implementation("dev.rikka.rikkax.layoutinflater:layoutinflater:1.3.0")
 
-    implementation(platform("io.arrow-kt:arrow-stack:1.2.0"))
+    implementation(platform("io.arrow-kt:arrow-stack:1.2.1"))
     implementation("io.arrow-kt:arrow-fx-coroutines")
 
     // https://coil-kt.github.io/coil/changelog/
@@ -246,7 +246,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose")
     implementation("io.coil-kt:coil-gif")
 
-    val ktor = "2.3.3"
+    val ktor = "2.3.4"
     implementation("io.ktor:ktor-io-jvm:$ktor")
     implementation("io.ktor:ktor-utils-jvm:$ktor")
 

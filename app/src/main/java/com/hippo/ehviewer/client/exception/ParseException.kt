@@ -16,16 +16,7 @@
 package com.hippo.ehviewer.client.exception
 
 class ParseException : EhException {
-    val body: String
+    constructor(detailMessage: String?) : super(detailMessage)
 
-    constructor(detailMessage: String?, body: String) : super(detailMessage) {
-        this.body = body
-    }
-
-    constructor(detailMessage: String?, body: String, cause: Throwable?) : super(
-        detailMessage,
-        cause,
-    ) {
-        this.body = body
-    }
+    constructor(detailMessage: String?, cause: Throwable?) : super(detailMessage, cause)
 }

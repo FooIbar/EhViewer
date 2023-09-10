@@ -112,7 +112,7 @@ fun AboutScreen() {
                 title = stringResource(id = R.string.use_ci_update_channel),
                 value = Settings::useCIUpdateChannel,
             )
-            SimpleMenuPreferenceInt2(
+            SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.auto_updates),
                 entry = R.array.update_frequency,
                 entryValueRes = R.array.update_frequency_values,

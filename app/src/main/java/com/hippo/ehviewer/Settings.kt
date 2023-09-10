@@ -30,16 +30,16 @@ object Settings : DataStorePreferences(null) {
     var downloadQuery by stringOrNullPref("image_query", null)
     var downloadFragment by stringOrNullPref("image_fragment", null)
     var archivePasswds by stringSetOrNullPref("archive_passwds")
-    var downloadDelay by intFromStrPref("download_delay", 0)
-    var gallerySite by intFromStrPref("gallery_site", 0).observed { updateWhenGallerySiteChanges() }
-    var multiThreadDownload by intFromStrPref("download_thread", 3)
-    var preloadImage by intFromStrPref("preload_image", 5)
-    var theme by intFromStrPref("theme", -1).observed { updateWhenThemeChanges() }
-    var listMode by intFromStrPref("list_mode", 0)
-    var detailSize by intFromStrPref("detail_size", 0)
-    var thumbResolution by intFromStrPref("thumb_resolution", 0)
-    var readCacheSize by intFromStrPref("read_cache_size", 640)
-    var launchPage by intFromStrPref("launch_page", 0)
+    var downloadDelay by intPref("download_delay_2", 0)
+    var gallerySite by intPref("gallery_site_2", 0).observed { updateWhenGallerySiteChanges() }
+    var multiThreadDownload by intPref("download_thread_2", 3)
+    var preloadImage by intPref("preload_image_2", 5)
+    var theme by intPref("theme_2", -1).observed { updateWhenThemeChanges() }
+    var listMode by intPref("list_mode_2", 0)
+    var detailSize by intPref("detail_size_2", 0)
+    var thumbResolution by intPref("thumb_resolution_2", 0)
+    var readCacheSize by intPref("read_cache_size_2", 640)
+    var launchPage by intPref("launch_page_2", 0)
     var forceEhThumb by boolPref("force_eh_thumb", false)
     var showComments by boolPref("show_gallery_comments", true)
     var requestNews by boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
@@ -92,13 +92,6 @@ object Settings : DataStorePreferences(null) {
         val flowGetter: () -> Flow<Unit>
         operator fun getValue(thisRef: Any?, prop: KProperty<*>?): R
         operator fun setValue(thisRef: Any?, prop: KProperty<*>?, value: R)
-    }
-
-    private fun intFromStrPref(key: String, defValue: Int) = object : Delegate<Int> {
-        override val flowGetter: () -> Flow<Unit>
-        private var _value by stringPref(key, defValue.toString()).also { flowGetter = { it.changesFlow() } }
-        override fun getValue(thisRef: Any?, prop: KProperty<*>?) = _value.toIntOrNull() ?: defValue
-        override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: Int) { _value = value.toString() }
     }
 
     private fun intArrayPref(key: String, count: Int) = object : Delegate<IntArray> {

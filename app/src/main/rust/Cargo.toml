@@ -12,7 +12,7 @@ jnix = { path = "jnix" }
 jnix-macros = "0.4"
 catch_panic = { path = "catch_panic" }
 catch_panic_macros = { path = "catch_panic_macros" }
-jni_fn = { path = "jni_fn" }
+jni_fn = "0.1.2"
 quick-xml = { default-features = false, version = "0.30" }
 tl = "0.7"
 log = "0.4"
