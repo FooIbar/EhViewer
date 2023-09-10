@@ -478,8 +478,8 @@ class FavoritesScene : SearchBarScene() {
     }
 
     override fun onSearchViewExpanded() {
-        super.onSearchViewExpanded()
         hideActionFab(true)
+        super.onSearchViewExpanded()
     }
 
     override fun onSearchViewHidden() {

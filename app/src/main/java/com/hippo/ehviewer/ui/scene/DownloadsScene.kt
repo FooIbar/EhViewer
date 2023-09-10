@@ -364,8 +364,8 @@ class DownloadsScene :
     }
 
     override fun onSearchViewExpanded() {
+        hideActionFab(true)
         super.onSearchViewExpanded()
-        if (tracker.isInCustomChoice) tracker.clearSelection()
     }
 
     override fun onDestroyView() {
