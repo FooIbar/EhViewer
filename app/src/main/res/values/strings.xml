@@ -541,6 +541,7 @@
     <string name="download_service">Download Service</string>
     <string name="favorite_name">Favorite</string>
     <string name="black_dark_theme">Black dark theme</string>
+    <string name="harmonize_category_color">Harmonize category color for Dynamic Color</string>
     <string name="download_filter">Filter</string>
     <string name="download_all">All</string>
     <string name="download_start_all_reversed">Start all (reversed)</string>
