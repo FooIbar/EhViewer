@@ -9,7 +9,6 @@ import io.ktor.util.encodeBase64
 import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.Request
 import okio.sink
-import org.json.JSONObject
 import tachiyomi.data.release.GithubArtifacts
 import tachiyomi.data.release.GithubCommitComparison
 import tachiyomi.data.release.GithubRelease
@@ -20,7 +19,9 @@ import java.time.temporal.ChronoUnit
 import java.util.zip.ZipInputStream
 
 private const val API_URL = "https://api.github.com/repos/${BuildConfig.REPO_NAME}"
-private const val LATEST_RELEASE_URL = "$API_URL/releases/latest"
+private const val RELEASE_URL = "$API_URL/releases"
+private const val LATEST_RELEASE_URL = "$RELEASE_URL/latest"
+private const val GMS_SUFFIX = "-gms"
 
 object AppUpdater {
     suspend fun checkForUpdate(forceCheck: Boolean = false): Release? {
@@ -31,10 +32,7 @@ object AppUpdater {
             Settings.lastUpdateDay = now.epochSecond
             if (Settings.useCIUpdateChannel) {
                 val curSha = BuildConfig.COMMIT_SHA
-                val branch = ghRequest(API_URL).execute {
-                    JSONObject(body.string()).getString("default_branch")
-                }
-                val workflowRunsUrl = "$API_URL/actions/workflows/ci.yml/runs?branch=$branch&status=success&per_page=1"
+                val workflowRunsUrl = "$API_URL/actions/workflows/ci.yml/runs?branch=${BuildConfig.BRANCH}&status=success&per_page=1"
                 val workflowRun = ghRequest(workflowRunsUrl).executeAndParseAs<GithubWorkflowRuns>().workflowRuns[0]
                 val shortSha = workflowRun.headSha.take(7)
                 if (shortSha != curSha) {
@@ -51,10 +49,11 @@ object AppUpdater {
             } else {
                 val curVersion = BuildConfig.VERSION_NAME
                 val release = ghRequest(LATEST_RELEASE_URL).executeAndParseAs<GithubRelease>()
-                val latestVersion = release.version
+                val latestVersion = release.version + GMS_SUFFIX
                 val description = release.info
-                val downloadUrl = release.getDownloadLink()
                 if (latestVersion != curVersion) {
+                    val downloadUrl = ghRequest("$RELEASE_URL/tags/$latestVersion")
+                        .executeAndParseAs<GithubRelease>().getDownloadLink()
                     return Release(latestVersion, description, downloadUrl)
                 }
             }
