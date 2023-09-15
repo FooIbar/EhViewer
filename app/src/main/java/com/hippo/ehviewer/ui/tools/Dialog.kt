@@ -45,6 +45,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import kotlinx.coroutines.CancellableContinuation
@@ -253,7 +254,6 @@ class DialogState {
         Column {
             Text(text = stringResource(id = title), modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp), style = MaterialTheme.typography.titleMedium)
             CircularLayout(
-                radius = 112.dp,
                 modifier = Modifier.fillMaxWidth().aspectRatio(1F),
                 placeFirstItemInCenter = true,
             ) {
@@ -261,7 +261,7 @@ class DialogState {
                 TextField(
                     value = note,
                     onValueChange = { note = it },
-                    modifier = Modifier.width(128.dp),
+                    modifier = Modifier.fillMaxWidth(0.4F),
                     textStyle = TextStyle(fontFamily = FontFamily.Monospace),
                     label = { Text(text = stringResource(id = hint)) },
                     trailingIcon = {
@@ -278,7 +278,7 @@ class DialogState {
                             textAlign = TextAlign.End,
                         )
                     },
-                    maxLines = 6,
+                    maxLines = 5,
                     shape = ShapeDefaults.ExtraSmall,
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
@@ -287,15 +287,27 @@ class DialogState {
                 )
                 items.forEachIndexed { index, (icon, text) ->
                     Column(
-                        modifier = Modifier.clip(IconWithTextCorner).clickable { dismissWith(index to note) },
+                        modifier = Modifier.clip(IconWithTextCorner).clickable { dismissWith(index to note) }
+                            .fillMaxWidth(0.2F),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         if (index == 0 && adjustTextPosition) {
-                            Text(text = text, style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                text = text,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 2,
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
                             Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
                         } else {
                             Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
-                            Text(text = text, style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                text = text,
+                                overflow = TextOverflow.Ellipsis,
+                                maxLines = 1,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
                         }
                     }
                 }
