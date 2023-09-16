@@ -47,6 +47,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -184,6 +185,7 @@ class DialogState {
             }
             AlertDialog(
                 onDismissRequest = { cont.cancel() },
+                properties = DialogProperties(usePlatformDefaultWidth = respectDefaultWidth),
                 content = {
                     Surface(
                         modifier = with(Modifier) { if (!respectDefaultWidth) defaultMinSize(280.dp) else width(280.dp) },
@@ -278,7 +280,7 @@ class DialogState {
                             textAlign = TextAlign.End,
                         )
                     },
-                    maxLines = 5,
+                    maxLines = 6,
                     shape = ShapeDefaults.ExtraSmall,
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
@@ -305,7 +307,7 @@ class DialogState {
                             Text(
                                 text = text,
                                 overflow = TextOverflow.Ellipsis,
-                                maxLines = 1,
+                                maxLines = 2,
                                 style = MaterialTheme.typography.bodySmall,
                             )
                         }
