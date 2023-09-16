@@ -21,7 +21,7 @@ fun CircularLayout(
         modifier = modifier,
         content = content,
     ) { measurables, constraints ->
-        val radiusPx = constraints.maxWidth * 0.35
+        val radiusPx = constraints.maxWidth * 0.4
         val itemConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val placeables = measurables.map { measurable -> measurable.measure(itemConstraints) }
         val outPlaceables = if (placeFirstItemInCenter) placeables.drop(1) else placeables
