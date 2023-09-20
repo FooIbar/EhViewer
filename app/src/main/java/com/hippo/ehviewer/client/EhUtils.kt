@@ -126,11 +126,17 @@ object EhUtils {
             MISC -> BG_COLOR_MISC
             else -> BG_COLOR_UNKNOWN
         }.toInt()
-        return harmonizeWithRole(context, primary)
+        return if (Settings.harmonizeCategoryColor) {
+            harmonizeWithRole(context, primary)
+        } else {
+            primary
+        }
     }
 
     @Composable
     fun getCategoryColor(category: Int) = Color(getCategoryColor(LocalContext.current, category))
+
+    val categoryTextColor = Color(0xffe6e0e9)
 
     fun signOut() {
         EhCookieStore.signOut()

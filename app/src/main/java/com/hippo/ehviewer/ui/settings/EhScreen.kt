@@ -224,6 +224,10 @@ fun EhScreen() {
                 title = stringResource(id = R.string.black_dark_theme),
                 value = Settings::blackDarkTheme,
             )
+            SwitchPreference(
+                title = stringResource(id = R.string.harmonize_category_color),
+                value = Settings::harmonizeCategoryColor,
+            )
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_eh_launch_page),
                 entry = R.array.launch_page_entries,

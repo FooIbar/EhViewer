@@ -60,6 +60,7 @@ object Settings : DataStorePreferences(null) {
     var removeImageFiles by boolPref("include_pic", true)
     var needSignIn by boolPref("need_sign_in", true)
     var blackDarkTheme by boolPref("black_dark_theme", false).observed { updateWhenAmoledModeChanges() }
+    var harmonizeCategoryColor by boolPref("harmonize_category_color", true)
     var preloadThumbAggressively by boolPref("preload_thumb_aggressively", false)
     var downloadOriginImage by boolPref("download_origin_image", false)
     var thumbSizeDp by intPref("thumb_size_", 120)

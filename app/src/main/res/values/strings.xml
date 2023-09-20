@@ -477,7 +477,7 @@
     <string name="default_favorites_collection">Default favorites collection</string>
     <string name="default_favorites_warning">You won\'t be able to add favorite notes if you enable this</string>
     <string name="let_me_select">Let me select</string>
-    <string name="favorite_note">Note</string>
+    <string name="favorite_note">Favorite Note</string>
     <string name="collections">Collections</string>
     <string name="need_sign_in">Signing in is required</string>
     <!-- Progress Scene -->
@@ -541,6 +541,7 @@
     <string name="download_service">Download Service</string>
     <string name="favorite_name">Favorite</string>
     <string name="black_dark_theme">Black dark theme</string>
+    <string name="harmonize_category_color">Harmonize category color for Dynamic Color</string>
     <string name="download_filter">Filter</string>
     <string name="download_all">All</string>
     <string name="download_start_all_reversed">Start all (reversed)</string>

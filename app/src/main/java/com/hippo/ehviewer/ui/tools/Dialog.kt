@@ -41,11 +41,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -183,6 +183,7 @@ class DialogState {
             }
             AlertDialog(
                 onDismissRequest = { cont.cancel() },
+                properties = DialogProperties(usePlatformDefaultWidth = respectDefaultWidth),
                 content = {
                     Surface(
                         modifier = with(Modifier) { if (!respectDefaultWidth) defaultMinSize(280.dp) else width(280.dp) },
@@ -248,12 +249,10 @@ class DialogState {
         @StringRes title: Int,
         @StringRes hint: Int,
         maxChar: Int,
-        adjustTextPosition: Boolean = true,
     ): Pair<Int, String> = showNoButton(false) {
         Column {
             Text(text = stringResource(id = title), modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp), style = MaterialTheme.typography.titleMedium)
             CircularLayout(
-                radius = 112.dp,
                 modifier = Modifier.fillMaxWidth().aspectRatio(1F),
                 placeFirstItemInCenter = true,
             ) {
@@ -261,8 +260,7 @@ class DialogState {
                 TextField(
                     value = note,
                     onValueChange = { note = it },
-                    modifier = Modifier.width(128.dp),
-                    textStyle = TextStyle(fontFamily = FontFamily.Monospace),
+                    modifier = Modifier.fillMaxWidth(0.45F).aspectRatio(1F),
                     label = { Text(text = stringResource(id = hint)) },
                     trailingIcon = {
                         if (note.isNotEmpty()) {
@@ -278,7 +276,6 @@ class DialogState {
                             textAlign = TextAlign.End,
                         )
                     },
-                    maxLines = 6,
                     shape = ShapeDefaults.ExtraSmall,
                     colors = TextFieldDefaults.colors(
                         focusedIndicatorColor = Color.Transparent,
@@ -287,16 +284,18 @@ class DialogState {
                 )
                 items.forEachIndexed { index, (icon, text) ->
                     Column(
-                        modifier = Modifier.clip(IconWithTextCorner).clickable { dismissWith(index to note) },
+                        modifier = Modifier.clip(IconWithTextCorner).clickable { dismissWith(index to note) }
+                            .fillMaxWidth(0.2F),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        if (index == 0 && adjustTextPosition) {
-                            Text(text = text, style = MaterialTheme.typography.bodySmall)
-                            Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
-                        } else {
-                            Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
-                            Text(text = text, style = MaterialTheme.typography.bodySmall)
-                        }
+                        Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
+                        Text(
+                            text = text,
+                            textAlign = TextAlign.Center,
+                            overflow = TextOverflow.Ellipsis,
+                            maxLines = 2,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
                     }
                 }
             }
