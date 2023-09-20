@@ -3,7 +3,6 @@ package com.hippo.ehviewer.ui.tools
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.unit.Dp
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -15,7 +14,6 @@ private const val QuarterCircle = PI / 2
 @Composable
 fun CircularLayout(
     modifier: Modifier = Modifier,
-    radius: Dp,
     placeFirstItemInCenter: Boolean = false,
     content: @Composable () -> Unit,
 ) {
@@ -23,7 +21,7 @@ fun CircularLayout(
         modifier = modifier,
         content = content,
     ) { measurables, constraints ->
-        val radiusPx = radius.toPx()
+        val radiusPx = constraints.maxWidth * 0.4
         val itemConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val placeables = measurables.map { measurable -> measurable.measure(itemConstraints) }
         val outPlaceables = if (placeFirstItemInCenter) placeables.drop(1) else placeables

@@ -419,7 +419,7 @@
     <string name="default_favorites_collection">默认收藏夹</string>
     <string name="default_favorites_warning">启用此项将无法添加收藏备注</string>
     <string name="let_me_select">让我选择</string>
-    <string name="favorite_note">备注</string>
+    <string name="favorite_note">收藏备注</string>
     <string name="collections">收藏夹</string>
     <string name="need_sign_in">需要登录</string>
     <!-- Progress Scene -->
@@ -476,6 +476,7 @@
     <string name="download_service">下载服务</string>
     <string name="favorite_name">收藏画廊</string>
     <string name="black_dark_theme">纯黑深色主题</string>
+    <string name="harmonize_category_color">类别颜色适配动态配色</string>
     <string name="use_ci_update_channel">使用持续集成(CI)构建频道更新</string>
     <string name="download_filter">过滤</string>
     <string name="download_all">全部</string>
