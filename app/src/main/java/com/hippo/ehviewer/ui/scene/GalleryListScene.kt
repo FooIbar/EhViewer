@@ -362,7 +362,11 @@ class GalleryListScene : SearchBarScene() {
                 drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
                 binding.tip.setCompoundDrawables(null, drawable, null, null)
                 binding.tip.setOnClickListener { mAdapter?.refresh() }
-                binding.refreshLayout.setOnRefreshListener { mAdapter?.refresh() }
+                binding.refreshLayout.setOnRefreshListener {
+                    mUrlBuilder.setIndex(null, true)
+                    mUrlBuilder.mJumpTo = null
+                    mAdapter?.refresh()
+                }
                 val transition = ViewTransition(binding.refreshLayout, binding.progress, binding.tip)
                 val empty = getString(R.string.gallery_list_empty_hit)
                 launch {
