@@ -39,6 +39,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
 import androidx.paging.Pager
@@ -331,6 +332,7 @@ class GalleryListScene : SearchBarScene() {
             ),
         )
         mViewTransition = BringOutTransition(binding.contentLayout.contentView, binding.searchLayout)
+        binding.searchLayout.setViewTreeViewModelStoreOwner(this)
         binding.fastScroller.setOnDragHandlerListener(object : OnDragHandlerListener {
             override fun onStartDragHandler() {}
             override fun onEndDragHandler() {
