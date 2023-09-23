@@ -39,14 +39,16 @@ jobs:
         working-directory: ./app/src/main/rust
         run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: Ktlint Check
-        run: ./gradlew ktlintCheck
-
-      - name: Gradle Build
+      - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
           gradle-home-cache-cleanup: true
-          arguments: assembleRelease
+
+      - name: Spotless Check
+        run: ./gradlew spotlessCheck
+
+      - name: Gradle Build
+        run: ./gradlew assembleRelease
 
       - name: Update ARM64
         uses: actions/upload-artifact@v3
