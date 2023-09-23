@@ -22,7 +22,7 @@ plugins {
 android {
     compileSdk = 34
     buildToolsVersion = "34.0.0"
-    ndkVersion = "26.0.10636728"
+    ndkVersion = "26.0.10792818"
 
     splits {
         abi {

@@ -24,10 +24,6 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Install NDK
-        run: |
-          echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;26.0.10636728" --channel=1 --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
-
       - name: Install Rust Toolchain
         run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
 
@@ -46,6 +42,10 @@ jobs:
 
       - name: Spotless Check
         run: ./gradlew spotlessCheck
+
+      - name: Install NDK
+        run: |
+          echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;26.0.10792818" --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
 
       - name: Gradle Build
         run: ./gradlew assembleRelease
