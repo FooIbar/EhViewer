@@ -68,7 +68,8 @@ android {
         minSdk = 28
         targetSdk = 34
         versionCode = 180043
-        versionName = "1.8.9.6-gms"
+        versionName = "1.8.9.6"
+        versionNameSuffix = "-gms"
         resourceConfigurations.addAll(
             listOf(
                 "zh",
@@ -89,6 +90,7 @@ android {
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("String", "BUILD_TIME", "\"$buildTime\"")
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
+        buildConfigField("String", "VERSION_NAME_SUFFIX", "\"$versionNameSuffix\"")
     }
 
     externalNativeBuild {

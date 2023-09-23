@@ -21,7 +21,6 @@ import java.util.zip.ZipInputStream
 private const val API_URL = "https://api.github.com/repos/${BuildConfig.REPO_NAME}"
 private const val RELEASE_URL = "$API_URL/releases"
 private const val LATEST_RELEASE_URL = "$RELEASE_URL/latest"
-private const val GMS_SUFFIX = "-gms"
 
 object AppUpdater {
     suspend fun checkForUpdate(forceCheck: Boolean = false): Release? {
@@ -49,7 +48,7 @@ object AppUpdater {
             } else {
                 val curVersion = BuildConfig.VERSION_NAME
                 val release = ghRequest(LATEST_RELEASE_URL).executeAndParseAs<GithubRelease>()
-                val latestVersion = release.version + GMS_SUFFIX
+                val latestVersion = release.version + BuildConfig.VERSION_NAME_SUFFIX
                 val description = release.info
                 if (latestVersion != curVersion) {
                     val downloadUrl = ghRequest("$RELEASE_URL/tags/$latestVersion")
