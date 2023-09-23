@@ -3,9 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - '*'
-    tags-ignore:
-      - "*"
+      - '**'
 
 jobs:
   linux:
