@@ -13,6 +13,7 @@ plugins {
     id("kotlin-parcelize")
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
+    id("com.diffplug.spotless")
     id("com.mikepenz.aboutlibraries.plugin")
     id("org.mozilla.rust-android-gradle.rust-android")
     id("dev.shreyaspatil.compose-compiler-report-generator")
@@ -291,6 +292,15 @@ cargo {
     libname = "ehviewer_rust"
     targets = if (isRelease) listOf("arm", "x86", "arm64", "x86_64") else listOf("arm64")
     if (isRelease) profile = "release"
+}
+
+spotless {
+    kotlin {
+        ktlint()
+    }
+    kotlinGradle {
+        ktlint()
+    }
 }
 
 tasks.configureEach {
