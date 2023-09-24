@@ -48,6 +48,13 @@ jobs:
       - name: Spotless Check
         run: ./gradlew spotlessCheck
 
+      - name: CMake Cache
+        uses: actions/cache@v3
+        with:
+          path: app/.cxx
+          key: ${{ runner.os }}-cmake-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-cmake-
+
       - name: Gradle Build
         run: ./gradlew assembleRelease
 
