@@ -31,7 +31,6 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "./app/src/main/rust"
-          cache-all-crates: "true"
 
       - name: Rustfmt Check
         working-directory: ./app/src/main/rust
@@ -55,13 +54,6 @@ jobs:
           path: app/.cxx
           key: ${{ runner.os }}-cmake-${{ github.run_id }}
           restore-keys: ${{ runner.os }}-cmake-
-
-      - name: Build Cache
-        uses: actions/cache@v3
-        with:
-          path: app/build
-          key: ${{ runner.os }}-build-${{ github.run_id }}
-          restore-keys: ${{ runner.os }}-build-
 
       - name: Gradle Build
         run: ./gradlew assembleRelease
