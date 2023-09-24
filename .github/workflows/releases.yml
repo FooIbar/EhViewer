@@ -24,6 +24,26 @@ jobs:
       - name: Install Rust Toolchain
         run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android
 
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./app/src/main/rust"
+          cache-all-crates: "true"
+
+      - name: CMake Cache
+        uses: actions/cache@v3
+        with:
+          path: app/.cxx
+          key: ${{ runner.os }}-cmake-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-cmake-
+
+      - name: Build Cache
+        uses: actions/cache@v3
+        with:
+          path: app/build
+          key: ${{ runner.os }}-build-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-build-
+
       - name: Gradle Build
         uses: gradle/gradle-build-action@v2
         with:

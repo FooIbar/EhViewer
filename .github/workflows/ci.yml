@@ -27,6 +27,12 @@ jobs:
       - name: Install Rust Toolchain
         run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
 
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./app/src/main/rust"
+          cache-all-crates: "true"
+
       - name: Rustfmt Check
         working-directory: ./app/src/main/rust
         run: cargo fmt --all -- --check
@@ -42,6 +48,20 @@ jobs:
 
       - name: Spotless Check
         run: ./gradlew spotlessCheck
+
+      - name: CMake Cache
+        uses: actions/cache@v3
+        with:
+          path: app/.cxx
+          key: ${{ runner.os }}-cmake-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-cmake-
+
+      - name: Build Cache
+        uses: actions/cache@v3
+        with:
+          path: app/build
+          key: ${{ runner.os }}-build-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-build-
 
       - name: Gradle Build
         run: ./gradlew assembleRelease
