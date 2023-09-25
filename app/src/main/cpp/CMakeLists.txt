@@ -68,9 +68,8 @@ option(ENABLE_TEST OFF)
 SET(LIBARCHIVE_CUSTOM_LIBS "nettle" "liblzma")
 
 FetchContent_Declare(libarchive
-        GIT_REPOSITORY https://github.com/libarchive/libarchive
-        GIT_TAG v3.7.0
-        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/0001-Hide-symbols.patch ${CMAKE_CURRENT_LIST_DIR}/0002-Insert-link-libs.patch || cd .
+        GIT_REPOSITORY https://github.com/FooIbar/libarchive.git
+        GIT_TAG v3.7.2
         )
 
 FetchContent_MakeAvailable(libarchive)
