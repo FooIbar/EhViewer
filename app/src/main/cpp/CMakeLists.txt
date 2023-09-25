@@ -32,6 +32,13 @@ FetchContent_MakeAvailable(liblzma)
 include_directories(${liblzma_SOURCE_DIR}/src/liblzma/api)
 
 # Build GNUTLS libnettle
+FetchContent_Declare(nettle
+        URL https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
+        URL_MD5 29fcd2dec6bf5b48e5e3ffb3cbc4779e
+        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/nettle/nettle
+        )
+
+FetchContent_MakeAvailable(nettle)
 add_subdirectory(nettle)
 
 # Configure libnettle support for libarchive
