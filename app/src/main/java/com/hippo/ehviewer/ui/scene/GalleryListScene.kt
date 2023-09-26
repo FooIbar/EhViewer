@@ -285,7 +285,7 @@ class GalleryListScene : SearchBarScene() {
         setSearchBarHint(title)
 
         when (mode) {
-            MODE_NORMAL -> if (category != EhUtils.NONE || !keyword.isNullOrEmpty()) {
+            MODE_NORMAL, MODE_SUBSCRIPTION -> if (category != EhUtils.NONE || !keyword.isNullOrEmpty()) {
                 mainActivity?.clearNavCheckedItem()
             }
             MODE_TAG, MODE_UPLOADER, MODE_IMAGE_SEARCH -> mainActivity?.clearNavCheckedItem()
@@ -620,20 +620,22 @@ class GalleryListScene : SearchBarScene() {
             drawerBinding.toolbar.setTitle(R.string.toplist)
         } else {
             drawerBinding.toolbar.setTitle(R.string.quick_search)
-        }
-        if (!mIsTopList) drawerBinding.toolbar.inflateMenu(R.menu.drawer_gallery_list)
-        drawerBinding.toolbar.setOnMenuItemClickListener { item: MenuItem ->
-            val id = item.itemId
-            if (id == R.id.action_add) {
-                showAddQuickSearchDialog(
-                    qsDrawerAdapter,
-                    drawerBinding.recyclerViewDrawer,
-                    drawerBinding.tip,
-                )
-            } else if (id == R.id.action_help) {
-                showQuickSearchTipDialog()
+            if (mUrlBuilder.mode != MODE_WHATS_HOT) {
+                drawerBinding.toolbar.inflateMenu(R.menu.drawer_gallery_list)
+                drawerBinding.toolbar.setOnMenuItemClickListener { item: MenuItem ->
+                    val id = item.itemId
+                    if (id == R.id.action_add) {
+                        showAddQuickSearchDialog(
+                            qsDrawerAdapter,
+                            drawerBinding.recyclerViewDrawer,
+                            drawerBinding.tip,
+                        )
+                    } else if (id == R.id.action_help) {
+                        showQuickSearchTipDialog()
+                    }
+                    true
+                }
             }
-            true
         }
         return drawerBinding.root
     }
@@ -856,13 +858,17 @@ class GalleryListScene : SearchBarScene() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QsDrawerHolder {
             val holder = QsDrawerHolder(ItemDrawerListBinding.inflate(mInflater, parent, false))
             holder.itemView.setOnClickListener {
-                if (!mIsTopList) {
+                if (mUrlBuilder.mode == MODE_WHATS_HOT) {
                     val q = mQuickSearchList[holder.bindingAdapterPosition]
-                    // Navigate to galleryListScene to clear nav checked item
                     navAnimated(R.id.galleryListScene, ListUrlBuilder().apply { set(q) }.toStartArgs())
                 } else {
-                    mUrlBuilder.keyword = keywords[holder.bindingAdapterPosition].toString()
-                    mUrlBuilder.mJumpTo = null
+                    if (mIsTopList) {
+                        mUrlBuilder.keyword = keywords[holder.bindingAdapterPosition].toString()
+                        mUrlBuilder.mJumpTo = null
+                    } else {
+                        val q = mQuickSearchList[holder.bindingAdapterPosition]
+                        mUrlBuilder.set(q)
+                    }
                     onUpdateUrlBuilder()
                     mAdapter?.refresh()
                 }
