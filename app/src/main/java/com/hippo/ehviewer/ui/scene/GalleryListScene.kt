@@ -515,14 +515,15 @@ class GalleryListScene : SearchBarScene() {
         tip: TextView,
     ) {
         val context = context ?: return
+        if (mAdapter!!.itemCount == 0) return
 
         // Can't add image search as quick search
         if (MODE_IMAGE_SEARCH == mUrlBuilder.mode) {
             showTip(R.string.image_search_not_quick_search, LENGTH_LONG)
             return
         }
-        val gi = mAdapter?.peek(binding.recyclerView.layoutManager!!.firstVisibleItemPosition)
-        val next = gi?.gid?.plus(1)
+        val gi = mAdapter!!.peek(binding.recyclerView.layoutManager!!.firstVisibleItemPosition)!!
+        val next = gi.gid + 1
 
         // Check duplicate
         for (q in mQuickSearchList) {
@@ -557,7 +558,7 @@ class GalleryListScene : SearchBarScene() {
                     }
                     return@launchIO
                 }
-                if (checked[0] && next != null) {
+                if (checked[0]) {
                     text += "@$next"
                     Settings.qSSaveProgress = true
                 } else {
