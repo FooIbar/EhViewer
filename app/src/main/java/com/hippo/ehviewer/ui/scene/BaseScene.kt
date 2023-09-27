@@ -156,7 +156,10 @@ abstract class BaseScene : Fragment() {
         }
         hideSoftInput()
         createDrawerView(savedInstanceState)?.let {
-            sideSheetDialog = SideSheetDialog(requireContext()).apply {
+            sideSheetDialog = object : SideSheetDialog(requireContext()) {
+                // Dirty workaround
+                override fun cancel() = hide()
+            }.apply {
                 window?.decorView?.apply {
                     val owner = viewLifecycleOwner
                     setViewTreeLifecycleOwner(owner)
