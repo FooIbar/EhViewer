@@ -140,6 +140,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
     override fun onDestroyView() {
         super.onDestroyView()
         mSearchViewOnBackPressedCallback.remove()
+        binding.root.removeAllViews()
         _binding = null
     }
 
