@@ -192,10 +192,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-process:2.6.2")
 
     // https://developer.android.com/jetpack/androidx/releases/navigation
-    val nav_version = "2.7.3"
-    implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
-    implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
-    implementation("androidx.navigation:navigation-compose:$nav_version")
+    val navigation = "2.7.3"
+    implementation("androidx.navigation:navigation-fragment-ktx:$navigation")
+    implementation("androidx.navigation:navigation-ui-ktx:$navigation")
+    implementation("androidx.navigation:navigation-compose:$navigation")
 
     // https://developer.android.com/jetpack/androidx/releases/paging
     val paging = "3.2.1"
@@ -205,9 +205,9 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview-selection:1.2.0-alpha01")
 
     // https://developer.android.com/jetpack/androidx/releases/room
-    val room_version = "2.6.0-rc01"
-    ksp("androidx.room:room-compiler:$room_version")
-    implementation("androidx.room:room-paging:$room_version")
+    val room = "2.6.0-rc01"
+    ksp("androidx.room:room-compiler:$room")
+    implementation("androidx.room:room-paging:$room")
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
     implementation("androidx.work:work-runtime-ktx:2.8.1")
@@ -215,9 +215,9 @@ dependencies {
     implementation("com.github.chrisbanes:PhotoView:2.3.0") // Dead Dependency
     implementation("com.github.tachiyomiorg:DirectionalViewPager:1.0.0") // Dead Dependency
     // https://github.com/google/accompanist/releases
-    val accompanist_version = "0.32.0"
-    implementation("com.google.accompanist:accompanist-themeadapter-material3:$accompanist_version")
-    implementation("com.google.accompanist:accompanist-webview:$accompanist_version")
+    val accompanist = "0.32.0"
+    implementation("com.google.accompanist:accompanist-themeadapter-material3:$accompanist")
+    implementation("com.google.accompanist:accompanist-webview:$accompanist")
     implementation("com.google.android.material:material:1.11.0-alpha03")
 
     val splitties = "3.0.0"
@@ -299,7 +299,11 @@ spotless {
         ktlint()
     }
     kotlinGradle {
-        ktlint()
+        ktlint().editorConfigOverride(
+            mapOf(
+                "ktlint_standard_multiline-expression-wrapping" to "disabled",
+            ),
+        )
     }
 }
 
