@@ -8,14 +8,11 @@ import android.util.AttributeSet
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ElevatedCard
@@ -82,7 +79,7 @@ class SearchLayout @JvmOverloads constructor(
             }
         }
         Mdc3Theme {
-            Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h)).imePadding().verticalScroll(rememberScrollState())) {
+            Column(modifier = Modifier.imePadding().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h))) {
                 AnimatedVisibility(visible = vm.isNormalMode) {
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                         Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {
@@ -143,7 +140,6 @@ class SearchLayout @JvmOverloads constructor(
                         text = { Text(text = stringResource(id = R.string.search_image)) },
                     )
                 }
-                Spacer(modifier = Modifier.height(WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()))
             }
         }
     }
