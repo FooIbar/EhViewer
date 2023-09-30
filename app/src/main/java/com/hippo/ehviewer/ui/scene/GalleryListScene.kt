@@ -27,6 +27,7 @@ import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material3.Text
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
@@ -332,6 +333,7 @@ class GalleryListScene : SearchBarScene() {
             ),
         )
         mViewTransition = BringOutTransition(binding.contentLayout.contentView, binding.searchLayout)
+        binding.searchLayout.consumeWindowInsets = false
         binding.searchLayout.setViewTreeViewModelStoreOwner(this)
         binding.fastScroller.setOnDragHandlerListener(object : OnDragHandlerListener {
             override fun onStartDragHandler() {}
