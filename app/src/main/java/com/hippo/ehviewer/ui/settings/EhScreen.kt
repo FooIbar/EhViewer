@@ -4,9 +4,7 @@ import android.content.DialogInterface
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -90,7 +88,7 @@ fun EhScreen() {
     ) { paddingValues ->
         val touristMode = stringResource(id = R.string.settings_eh_identity_cookies_tourist)
         val copiedToClipboard = stringResource(id = R.string.copied_to_clipboard)
-        Column(modifier = Modifier.padding(top = paddingValues.calculateTopPadding()).nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState())) {
+        Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             Preference(
                 title = stringResource(id = R.string.account_name),
                 summary = Settings.displayName ?: touristMode,
@@ -343,7 +341,6 @@ fun EhScreen() {
                     )
                 }
             }
-            Spacer(modifier = Modifier.size(paddingValues.calculateBottomPadding()))
         }
     }
 }

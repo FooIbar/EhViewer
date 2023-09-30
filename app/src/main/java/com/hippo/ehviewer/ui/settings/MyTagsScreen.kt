@@ -38,7 +38,7 @@ fun MyTagsScreen() {
         val state = rememberWebViewState(url = url)
         WebView(
             state = state,
-            modifier = Modifier.padding(top = paddingValues.calculateTopPadding()).fillMaxSize(),
+            modifier = Modifier.padding(paddingValues).fillMaxSize(),
             onCreated = {
                 it.setDefaultSettings()
             },
