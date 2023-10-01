@@ -136,7 +136,7 @@ suspend fun DialogState.showNewVersion(context: Context, release: Release) {
         dismissText = android.R.string.cancel,
         title = R.string.new_version_available,
     ) {
-        Column {
+        Column(Modifier.verticalScroll(rememberScrollState())) {
             Text(
                 text = release.version,
                 style = MaterialTheme.typography.headlineSmall,
