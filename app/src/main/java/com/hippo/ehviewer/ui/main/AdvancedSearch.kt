@@ -59,7 +59,7 @@ fun SearchAdvanced(
             OutlinedTextField(
                 modifier = Modifier.menuAnchor(),
                 readOnly = true,
-                value = minRatingItems[state.minRating],
+                value = minRatingItems[if (state.minRating in 2..5) state.minRating - 1 else 0],
                 onValueChange = {},
                 label = { Text(stringResource(id = R.string.search_sr)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
@@ -77,7 +77,8 @@ fun SearchAdvanced(
                         text = { Text(selectionOption) },
                         onClick = {
                             expanded = false
-                            onStateChanged(state.copy(minRating = minRatingItems.indexOf(selectionOption)))
+                            val index = minRatingItems.indexOf(selectionOption)
+                            onStateChanged(state.copy(minRating = if (index > 0) index + 1 else -1))
                         },
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                     )

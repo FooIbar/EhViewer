@@ -4,13 +4,19 @@
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
 
-/* Define to 1 if using 'alloca.c'. */
+/* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
+   systems. This function is required for `alloca.c' support on those systems.
+   */
+/* #undef CRAY_STACKSEG_END */
+
+/* Define to 1 if using `alloca.c'. */
 /* #undef C_ALLOCA */
 
-/* Define to 1 if you have 'alloca', as a function or macro. */
+/* Define to 1 if you have `alloca', as a function or macro. */
 #define HAVE_ALLOCA 1
 
-/* Define to 1 if <alloca.h> works. */
+/* Define to 1 if you have <alloca.h> and it should be used (not on Ultrix).
+   */
 #define HAVE_ALLOCA_H 1
 
 /* Define if __builtin_bswap64 is available */
@@ -46,6 +52,9 @@
 /* Define to 1 if you have the <malloc.h> header file. */
 #define HAVE_MALLOC_H 1
 
+/* Define to 1 if you have the <memory.h> header file. */
+#define HAVE_MEMORY_H 1
+
 /* Define to 1 each of the following for which a native (ie. CPU specific)
     implementation of the corresponding routine exists.  */
 /* #undef HAVE_NATIVE_memxor3 */
@@ -71,7 +80,7 @@
 /* #undef HAVE_NATIVE_cbc_aes256_encrypt */
 /* #undef HAVE_NATIVE_chacha_core */
 /* #undef HAVE_NATIVE_chacha_2core */
-/* #undef HAVE_NATIVE_chacha_3core */
+#define HAVE_NATIVE_chacha_3core 1
 /* #undef HAVE_NATIVE_chacha_4core */
 /* #undef HAVE_NATIVE_fat_chacha_2core */
 /* #undef HAVE_NATIVE_fat_chacha_3core */
@@ -88,13 +97,18 @@
 /* #undef HAVE_NATIVE_ecc_secp384r1_redc */
 /* #undef HAVE_NATIVE_ecc_secp521r1_modp */
 /* #undef HAVE_NATIVE_ecc_secp521r1_redc */
+/* #undef HAVE_NATIVE_poly1305_set_key */
+/* #undef HAVE_NATIVE_poly1305_block */
+/* #undef HAVE_NATIVE_poly1305_digest */
+/* #undef HAVE_NATIVE_poly1305_blocks */
+/* #undef HAVE_NATIVE_fat_poly1305_blocks */
 /* #undef HAVE_NATIVE_ghash_set_key */
 /* #undef HAVE_NATIVE_ghash_update */
 /* #undef HAVE_NATIVE_salsa20_core */
-/* #undef HAVE_NATIVE_salsa20_2core */
+#define HAVE_NATIVE_salsa20_2core 1
 /* #undef HAVE_NATIVE_fat_salsa20_2core */
 /* #undef HAVE_NATIVE_sha1_compress */
-/* #undef HAVE_NATIVE_sha256_compress */
+/* #undef HAVE_NATIVE_sha256_compress_n */
 /* #undef HAVE_NATIVE_sha512_compress */
 /* #undef HAVE_NATIVE_sha3_permute */
 /* #undef HAVE_NATIVE_umac_nh */
@@ -107,13 +121,10 @@
 /* #undef HAVE_OPENSSL_EVP_H */
 
 /* Define to 1 if you have the `secure_getenv' function. */
-/* #undef HAVE_SECURE_GETENV */
+#define HAVE_SECURE_GETENV 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
-
-/* Define to 1 if you have the <stdio.h> header file. */
-#define HAVE_STDIO_H 1
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
@@ -129,9 +140,6 @@
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
-
-/* Define to 1 if you have the <sys/time.h> header file. */
-#define HAVE_SYS_TIME_H 1
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
@@ -149,7 +157,7 @@
 #define PACKAGE_NAME "nettle"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "nettle 3.8.1"
+#define PACKAGE_STRING "nettle 3.9.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "nettle"
@@ -158,7 +166,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.8.1"
+#define PACKAGE_VERSION "3.9.1"
 
 /* The size of `long', as computed by sizeof. */
 #define SIZEOF_LONG __SIZEOF_LONG__
@@ -174,13 +182,10 @@
 	STACK_DIRECTION = 0 => direction of growth unknown */
 /* #undef STACK_DIRECTION */
 
-/* Define to 1 if all of the C90 standard headers exist (not just the ones
-   required in a freestanding environment). This macro is provided for
-   backward compatibility; new code need not use it. */
+/* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. This
-   macro is obsolete. */
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
 
 /* Defined if public key features are enabled */

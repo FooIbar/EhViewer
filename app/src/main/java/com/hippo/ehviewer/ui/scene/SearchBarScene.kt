@@ -11,6 +11,7 @@ import androidx.annotation.CallSuper
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -82,6 +83,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
             onApplySearch()
             true
         }
+        binding.searchBarList.consumeWindowInsets = false
         binding.searchBarList.setMD3Content {
             LazyColumn(contentPadding = WindowInsets.navigationBars.asPaddingValues()) {
                 items(mSuggestionList) {
@@ -140,6 +142,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
     override fun onDestroyView() {
         super.onDestroyView()
         mSearchViewOnBackPressedCallback.remove()
+        binding.root.removeAllViews()
         _binding = null
     }
 

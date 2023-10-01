@@ -8,14 +8,11 @@ import android.util.AttributeSet
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ElevatedCard
@@ -34,6 +31,10 @@ import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.findViewTreeViewModelStoreOwner
+import androidx.lifecycle.get
 import com.google.accompanist.themeadapter.material3.Mdc3Theme
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -49,120 +50,125 @@ import com.hippo.ehviewer.util.pickVisualMedia
 import com.hippo.unifile.UniFile
 import kotlinx.coroutines.launch
 
+class SearchViewModel : ViewModel() {
+    var isNormalMode by mutableStateOf(true) // else ImageSearch mode
+    var isAdvancedMode by mutableStateOf(false)
+    var mCategory by mutableIntStateOf(Settings.searchCategory)
+    var mSearchMode by mutableIntStateOf(1)
+    var advancedState by mutableStateOf(AdvancedSearchOption())
+    var uss by mutableStateOf(false)
+    var osc by mutableStateOf(false)
+    var path by mutableStateOf("")
+}
+
 class SearchLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0,
 ) : AbstractComposeView(context, attrs, defStyle) {
-    private var isNormalMode by mutableStateOf(true) // else ImageSearch mode
-    private var isAdvancedMode by mutableStateOf(false)
-    private var mCategory by mutableIntStateOf(Settings.searchCategory)
-    private var mSearchMode by mutableIntStateOf(1)
-    private var advancedState by mutableStateOf(AdvancedSearchOption())
-    private var uss by mutableStateOf(false)
-    private var osc by mutableStateOf(false)
-    private var path by mutableStateOf("")
+    private val vm by lazy {
+        ViewModelProvider(findViewTreeViewModelStoreOwner()!!).get<SearchViewModel>()
+    }
 
     @Composable
     override fun Content() {
         val coroutineScope = rememberCoroutineScope()
         fun selectImage() = coroutineScope.launch {
             context.pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly)?.let {
-                path = it.toString()
+                vm.path = it.toString()
             }
         }
         Mdc3Theme {
-            Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h)).imePadding().verticalScroll(rememberScrollState())) {
-                AnimatedVisibility(visible = isNormalMode) {
+            Column(modifier = Modifier.imePadding().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h))) {
+                AnimatedVisibility(visible = vm.isNormalMode) {
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                         Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {
                             Text(text = stringResource(id = R.string.search_normal), modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                             NormalSearch(
-                                category = mCategory,
+                                category = vm.mCategory,
                                 onCategoryChanged = {
                                     Settings.searchCategory = it
-                                    mCategory = it
+                                    vm.mCategory = it
                                 },
-                                searchMode = mSearchMode,
-                                onSearchModeChanged = { mSearchMode = it },
-                                isAdvanced = isAdvancedMode,
-                                onAdvancedChanged = { isAdvancedMode = it },
+                                searchMode = vm.mSearchMode,
+                                onSearchModeChanged = { vm.mSearchMode = it },
+                                isAdvanced = vm.isAdvancedMode,
+                                onAdvancedChanged = { vm.isAdvancedMode = it },
                                 showInfo = { BaseDialogBuilder(context).setMessage(R.string.search_tip).show() },
                             )
                         }
                     }
                 }
-                AnimatedVisibility(visible = isNormalMode && isAdvancedMode) {
+                AnimatedVisibility(visible = vm.isNormalMode && vm.isAdvancedMode) {
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                         Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {
                             Text(text = stringResource(id = R.string.search_advance), modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                             SearchAdvanced(
-                                state = advancedState,
-                                onStateChanged = { advancedState = it },
+                                state = vm.advancedState,
+                                onStateChanged = { vm.advancedState = it },
                             )
                         }
                     }
                 }
-                AnimatedVisibility(visible = !isNormalMode) {
+                AnimatedVisibility(visible = !vm.isNormalMode) {
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                         Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {
                             Text(text = stringResource(id = R.string.search_image), modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                             ImageSearch(
-                                imagePath = path,
+                                imagePath = vm.path,
                                 onSelectImage = ::selectImage,
-                                uss = uss,
-                                onUssChecked = { uss = it },
-                                osc = osc,
-                                onOscChecked = { osc = it },
+                                uss = vm.uss,
+                                onUssChecked = { vm.uss = it },
+                                osc = vm.osc,
+                                onOscChecked = { vm.osc = it },
                             )
                         }
                     }
                 }
                 TabRow(
-                    selectedTabIndex = if (isNormalMode) 0 else 1,
+                    selectedTabIndex = if (vm.isNormalMode) 0 else 1,
                     divider = {},
                 ) {
                     Tab(
-                        selected = isNormalMode,
-                        onClick = { isNormalMode = true },
+                        selected = vm.isNormalMode,
+                        onClick = { vm.isNormalMode = true },
                         text = { Text(text = stringResource(id = R.string.keyword_search)) },
                     )
                     Tab(
-                        selected = !isNormalMode,
-                        onClick = { isNormalMode = false },
+                        selected = !vm.isNormalMode,
+                        onClick = { vm.isNormalMode = false },
                         text = { Text(text = stringResource(id = R.string.search_image)) },
                     )
                 }
-                Spacer(modifier = Modifier.height(WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()))
             }
         }
     }
 
     fun setSearchMyTags(isMyTags: Boolean) {
-        if (isMyTags) mSearchMode = 2
+        if (isMyTags) vm.mSearchMode = 2
     }
 
     fun setCategory(category: Int) {
-        mCategory = category
+        vm.mCategory = category
     }
 
     fun formatListUrlBuilder(urlBuilder: ListUrlBuilder, query: String?) {
         urlBuilder.reset()
-        when (isNormalMode) {
+        when (vm.isNormalMode) {
             true -> {
-                when (mSearchMode) {
+                when (vm.mSearchMode) {
                     1 -> urlBuilder.mode = ListUrlBuilder.MODE_NORMAL
                     2 -> urlBuilder.mode = ListUrlBuilder.MODE_SUBSCRIPTION
                     3 -> urlBuilder.mode = ListUrlBuilder.MODE_UPLOADER
                     4 -> urlBuilder.mode = ListUrlBuilder.MODE_TAG
                 }
                 urlBuilder.keyword = query
-                urlBuilder.category = mCategory
-                if (isAdvancedMode) {
-                    urlBuilder.advanceSearch = advancedState.advanceSearch
-                    urlBuilder.minRating = advancedState.minRating
-                    val pageFrom = advancedState.fromPage
-                    val pageTo = advancedState.toPage
+                urlBuilder.category = vm.mCategory
+                if (vm.isAdvancedMode) {
+                    urlBuilder.advanceSearch = vm.advancedState.advanceSearch
+                    urlBuilder.minRating = vm.advancedState.minRating
+                    val pageFrom = vm.advancedState.fromPage
+                    val pageTo = vm.advancedState.toPage
                     if (pageTo != -1 && pageTo < 10) {
                         throw EhException(context.getString(R.string.search_sp_err1))
                     } else if (pageFrom != -1 && pageTo != -1 && pageTo - pageFrom < 20) {
@@ -175,15 +181,15 @@ class SearchLayout @JvmOverloads constructor(
 
             false -> {
                 urlBuilder.mode = ListUrlBuilder.MODE_IMAGE_SEARCH
-                if (path.isBlank()) throw EhException(context.getString(R.string.select_image_first))
-                val uri = Uri.parse(path)
+                if (vm.path.isBlank()) throw EhException(context.getString(R.string.select_image_first))
+                val uri = Uri.parse(vm.path)
                 val src = UniFile.fromUri(context, uri)?.imageSource ?: return
                 val temp = AppConfig.createTempFile() ?: return
                 val bitmap = ImageDecoder.decodeBitmap(src, Image.imageSearchDecoderSampleListener)
                 temp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
                 urlBuilder.imagePath = temp.path
-                urlBuilder.isUseSimilarityScan = uss
-                urlBuilder.isOnlySearchCovers = osc
+                urlBuilder.isUseSimilarityScan = vm.uss
+                urlBuilder.isOnlySearchCovers = vm.osc
             }
         }
     }

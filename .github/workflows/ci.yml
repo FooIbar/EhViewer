@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - '*'
-    tags-ignore:
-      - "*"
+      - 'renovate/**'
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   linux:
@@ -13,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
         with:
           submodules: 'recursive'
 
@@ -23,12 +24,13 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Install NDK
-        run: |
-          echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;26.0.10636728" --channel=1 --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
-
       - name: Install Rust Toolchain
         run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./app/src/main/rust"
 
       - name: Rustfmt Check
         working-directory: ./app/src/main/rust
@@ -38,14 +40,25 @@ jobs:
         working-directory: ./app/src/main/rust
         run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: Ktlint Check
-        run: ./gradlew ktlintCheck
-
-      - name: Gradle Build
+      - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
         with:
           gradle-home-cache-cleanup: true
-          arguments: assembleRelease
+
+      - name: Spotless Check
+        run: ./gradlew spotlessCheck
+
+      - name: CMake Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            app/.cxx
+            app/src/main/cpp/nettle/nettle
+          key: ${{ runner.os }}-cmake-${{ github.run_id }}
+          restore-keys: ${{ runner.os }}-cmake-
+
+      - name: Gradle Build
+        run: ./gradlew assembleRelease
 
       - name: Update ARM64
         uses: actions/upload-artifact@v3

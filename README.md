@@ -5,60 +5,60 @@ The project is in maintenance mode, will only receive bugfixes.
 <p align="right">
   <strong>English</strong>
   <span> | </span>
-  <a href="https://github.com/Ehviewer-Overhauled/Ehviewer/blob/1.8.x.x/docs/README/zh-cn.md">
+  <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/docs/README/zh-cn.md">
   简体中文
   </a>
   <span> | </span>
-  <a href="https://github.com/Ehviewer-Overhauled/Ehviewer/blob/1.8.x.x/docs/README/zh-tw.md">
+  <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/docs/README/zh-tw.md">
   正體中文
   </a>
 </p>
 
 <h1 align="center">
-  <img src="https://github.com/Ehviewer-Overhauled/Art/blob/master/launcher_icon-web.svg" width="200">
+  <img src="https://github.com/Ehviewer-Overhauled/Art/blob/master/launcher_icon-web.svg" width="200" alt="EhViewer">
   <br>EhViewer<br>
 </h1>
 
 <p align="center">
-  <a href="https://github.com/Ehviewer-Overhauled/Ehviewer/actions/workflows/ci.yml">
-    <img src="https://github.com/Ehviewer-Overhauled/Ehviewer/actions/workflows/ci.yml/badge.svg" alt="Github Actions">
+  <a href="https://github.com/FooIbar/EhViewer/actions/workflows/ci.yml">
+    <img src="https://github.com/FooIbar/EhViewer/actions/workflows/ci.yml/badge.svg" alt="Github Actions">
   </a>
-  <a href="https://github.com/Ehviewer-Overhauled/Ehviewer/blob/1.8.x.x/LICENSE">
-    <img src="https://img.shields.io/github/license/Ehviewer-Overhauled/Ehviewer" alt="LICENSE">
+  <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/LICENSE">
+    <img src="https://img.shields.io/github/license/FooIbar/EhViewer" alt="LICENSE">
   </a>
-  <a href="https://www.codefactor.io/repository/github/Ehviewer-Overhauled/ehviewer">
-    <img src="https://www.codefactor.io/repository/github/Ehviewer-Overhauled/ehviewer/badge" alt="CodeFactor">
+  <a href="https://www.codefactor.io/repository/github/FooIbar/EhViewer">
+    <img src="https://www.codefactor.io/repository/github/FooIbar/EhViewer/badge" alt="CodeFactor">
   </a>
-  <a href="https://github.com/Ehviewer-Overhauled/Ehviewer/releases">
-    <img src="https://img.shields.io/github/downloads/Ehviewer-Overhauled/EhViewer/total.svg" alt="Downloads">
+  <a href="https://github.com/FooIbar/EhViewer/releases">
+    <img src="https://img.shields.io/github/downloads/FooIbar/EhViewer/total.svg" alt="Downloads">
   </a>
-  <a href="https://github.com/Ehviewer-Overhauled/Ehviewer/releases">
-    <img src="https://img.shields.io/github/v/release/Ehviewer-Overhauled/ehviewer?include_prereleases" alt="Release">
+  <a href="https://github.com/FooIbar/EhViewer/releases">
+    <img src="https://img.shields.io/github/v/release/FooIbar/EhViewer" alt="Release">
   </a>
-  <a href="https://github.com/Ehviewer-Overhauled/Ehviewer/issues">
-    <img src="https://img.shields.io/github/issues/Ehviewer-Overhauled/ehviewer" alt="Issues">
+  <a href="https://github.com/FooIbar/EhViewer/issues">
+    <img src="https://img.shields.io/github/issues/FooIbar/EhViewer" alt="Issues">
   </a>
 </p>
 
 <div align="center">
   <h3>
-    <a href="https://github.com/Ehviewer-Overhauled/Ehviewer#description">
+    <a href="https://github.com/FooIbar/EhViewer#description">
     Description
     </a>
     <span> | </span>
-    <a href="https://github.com/Ehviewer-Overhauled/Ehviewer#download">
+    <a href="https://github.com/FooIbar/EhViewer#download">
     Download
     </a>
     <span> | </span>
-    <a href="https://github.com/Ehviewer-Overhauled/Ehviewer#screenshot">
+    <a href="https://github.com/FooIbar/EhViewer#screenshot">
     Screenshot
     </a>
     <span> | </span>
-    <a href="https://github.com/Ehviewer-Overhauled/Ehviewer#thanks">
+    <a href="https://github.com/FooIbar/EhViewer#thanks">
     Thanks
     </a>
     <span> | </span>
-    <a href="https://github.com/Ehviewer-Overhauled/Ehviewer#license">
+    <a href="https://github.com/FooIbar/EhViewer#license">
     License
     </a>
   </h3>
@@ -73,7 +73,9 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 
 # Download
 
-<a href="https://github.com/Ehviewer-Overhauled/Ehviewer/releases"><img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/></a> <a href="https://github.com/Ehviewer-Overhauled/fdroid-repo"><img alt="Get it on F-Droid" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-fdroid.svg" width="200px"/></a>
+<a href="https://github.com/FooIbar/EhViewer/releases">
+<img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
+</a>
 
 # Screenshot
 
@@ -103,6 +105,7 @@ Specially thanks [Tachiyomi](https://tachiyomi.org/) for its reader implementati
     Copyright 2014-2019 Hippo Seven
     Copyright 2020-2022 NekoInverter
     Copyright 2022-2023 Tarsin Norbin
+    Copyright 2023 Foolbar
 
     EhViewer is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
