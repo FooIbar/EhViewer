@@ -333,7 +333,7 @@ class FavoritesScene : SearchBarScene() {
                 drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
                 binding.tip.setCompoundDrawables(null, drawable, null, null)
                 binding.tip.setOnClickListener { mAdapter?.refresh() }
-                binding.refreshLayout.setOnRefreshListener { mAdapter?.refresh() }
+                binding.refreshLayout.setOnRefreshListener { switchFav(urlBuilder.favCat) }
                 val transition = ViewTransition(binding.refreshLayout, binding.progress, binding.tip)
                 val empty = getString(R.string.gallery_list_empty_hit)
                 viewLifecycleOwner.lifecycleScope.launch {

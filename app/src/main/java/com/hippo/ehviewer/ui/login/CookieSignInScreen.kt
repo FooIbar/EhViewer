@@ -257,7 +257,7 @@ fun CookieSignInScene(windowSizeClass: WindowSizeClass) {
             when (windowSizeClass.widthSizeClass) {
                 WindowWidthSizeClass.Compact, WindowWidthSizeClass.Medium -> {
                     Column(
-                        modifier = Modifier.padding(dimensionResource(id = R.dimen.keyline_margin)).padding(padding).fillMaxSize().verticalScroll(rememberScrollState()),
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(padding).padding(dimensionResource(id = R.dimen.keyline_margin)),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Icon(
@@ -284,7 +284,7 @@ fun CookieSignInScene(windowSizeClass: WindowSizeClass) {
                 }
                 WindowWidthSizeClass.Expanded -> {
                     Row(
-                        modifier = Modifier.padding(dimensionResource(id = R.dimen.keyline_margin)).padding(padding).verticalScroll(rememberScrollState()),
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(padding).padding(dimensionResource(id = R.dimen.keyline_margin)),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(

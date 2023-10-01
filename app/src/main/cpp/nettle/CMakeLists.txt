@@ -32,7 +32,6 @@ set(LIBNETTLE_SOURCES
         nettle/aes256-meta.c
         nettle/nist-keywrap.c
         nettle/arcfour.c
-        nettle/arcfour-crypt.c
         nettle/arctwo.c
         nettle/arctwo-meta.c
         nettle/blowfish.c
@@ -177,7 +176,7 @@ set(LIBNETTLE_SOURCES
         nettle/sha1-compress.c
         nettle/sha1-meta.c
         nettle/sha256.c
-        nettle/sha256-compress.c
+        nettle/sha256-compress-n.c
         nettle/sha224-meta.c
         nettle/sha256-meta.c
         nettle/sha512.c

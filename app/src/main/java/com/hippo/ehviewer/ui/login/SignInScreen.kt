@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -181,7 +182,7 @@ fun SignInScreen(windowSizeClass: WindowSizeClass) {
         when (windowSizeClass.widthSizeClass) {
             WindowWidthSizeClass.Compact, WindowWidthSizeClass.Medium -> {
                 Column(
-                    modifier = Modifier.padding(dimensionResource(id = R.dimen.keyline_margin)).fillMaxSize().verticalScroll(rememberScrollState()),
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).systemBarsPadding().padding(dimensionResource(id = R.dimen.keyline_margin)),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Image(
@@ -266,7 +267,7 @@ fun SignInScreen(windowSizeClass: WindowSizeClass) {
             }
             WindowWidthSizeClass.Expanded -> {
                 Row(
-                    modifier = Modifier.padding(dimensionResource(id = R.dimen.keyline_margin)).fillMaxSize().verticalScroll(rememberScrollState()),
+                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).systemBarsPadding().padding(dimensionResource(id = R.dimen.keyline_margin)),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(

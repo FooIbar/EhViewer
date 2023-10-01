@@ -13,6 +13,7 @@ plugins {
     id("kotlin-parcelize")
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
+    id("com.diffplug.spotless")
     id("com.mikepenz.aboutlibraries.plugin")
     id("org.mozilla.rust-android-gradle.rust-android")
     id("dev.shreyaspatil.compose-compiler-report-generator")
@@ -21,7 +22,7 @@ plugins {
 android {
     compileSdk = 34
     buildToolsVersion = "34.0.0"
-    ndkVersion = "26.0.10636728"
+    ndkVersion = "26.0.10792818"
 
     splits {
         abi {
@@ -68,7 +69,7 @@ android {
         minSdk = 28
         targetSdk = 34
         versionCode = 180043
-        versionName = "1.8.9.6"
+        versionName = "1.8.9.7"
         versionNameSuffix = "-gms"
         resourceConfigurations.addAll(
             listOf(
@@ -88,7 +89,6 @@ android {
         )
         buildConfigField("String", "BRANCH", "\"$branch\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
-        buildConfigField("String", "BUILD_TIME", "\"$buildTime\"")
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
         buildConfigField("String", "VERSION_NAME_SUFFIX", "\"$versionNameSuffix\"")
     }
@@ -153,9 +153,11 @@ android {
             isShrinkResources = true
             proguardFiles("proguard-rules.pro")
             signingConfig = signConfig
+            buildConfigField("String", "BUILD_TIME", "\"$buildTime\"")
         }
         debug {
             applicationIdSuffix = ".debug"
+            buildConfigField("String", "BUILD_TIME", "\"\"")
         }
     }
 
@@ -174,7 +176,7 @@ android {
 
 dependencies {
     // https://developer.android.com/jetpack/androidx/releases/activity
-    implementation("androidx.activity:activity-compose:1.8.0-beta01")
+    implementation("androidx.activity:activity-compose:1.8.0-rc01")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.biometric:biometric-ktx:1.2.0-alpha05")
     implementation("androidx.browser:browser:1.6.0")
@@ -192,15 +194,15 @@ dependencies {
 
     implementation("androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha12")
     implementation("androidx.coordinatorlayout:coordinatorlayout:1.2.0")
-    implementation("androidx.fragment:fragment-ktx:1.7.0-alpha04")
+    implementation("androidx.fragment:fragment-ktx:1.7.0-alpha05")
     // https://developer.android.com/jetpack/androidx/releases/lifecycle
     implementation("androidx.lifecycle:lifecycle-process:2.6.2")
 
     // https://developer.android.com/jetpack/androidx/releases/navigation
-    val nav_version = "2.7.2"
-    implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
-    implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
-    implementation("androidx.navigation:navigation-compose:$nav_version")
+    val navigation = "2.7.3"
+    implementation("androidx.navigation:navigation-fragment-ktx:$navigation")
+    implementation("androidx.navigation:navigation-ui-ktx:$navigation")
+    implementation("androidx.navigation:navigation-compose:$navigation")
 
     // https://developer.android.com/jetpack/androidx/releases/paging
     val paging = "3.2.1"
@@ -210,9 +212,9 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview-selection:1.2.0-alpha01")
 
     // https://developer.android.com/jetpack/androidx/releases/room
-    val room_version = "2.6.0-beta01"
-    ksp("androidx.room:room-compiler:$room_version")
-    implementation("androidx.room:room-paging:$room_version")
+    val room = "2.6.0-rc01"
+    ksp("androidx.room:room-compiler:$room")
+    implementation("androidx.room:room-paging:$room")
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0-alpha01")
     implementation("androidx.work:work-runtime-ktx:2.8.1")
@@ -220,10 +222,10 @@ dependencies {
     implementation("com.github.chrisbanes:PhotoView:2.3.0") // Dead Dependency
     implementation("com.github.tachiyomiorg:DirectionalViewPager:1.0.0") // Dead Dependency
     // https://github.com/google/accompanist/releases
-    val accompanist_version = "0.32.0"
-    implementation("com.google.accompanist:accompanist-themeadapter-material3:$accompanist_version")
-    implementation("com.google.accompanist:accompanist-webview:$accompanist_version")
-    implementation("com.google.android.material:material:1.11.0-alpha02")
+    val accompanist = "0.32.0"
+    implementation("com.google.accompanist:accompanist-themeadapter-material3:$accompanist")
+    implementation("com.google.accompanist:accompanist-webview:$accompanist")
+    implementation("com.google.android.material:material:1.11.0-alpha03")
 
     val splitties = "3.0.0"
     implementation("com.louiscad.splitties:splitties-appctx:$splitties")
@@ -238,7 +240,7 @@ dependencies {
 
     implementation("com.squareup.okio:okio-jvm:3.5.0")
 
-    implementation("com.mikepenz:aboutlibraries-core:10.8.3")
+    implementation("com.mikepenz:aboutlibraries-core:10.9.1")
 
     implementation("dev.chrisbanes.insetter:insetter:0.6.1") // Dead Dependency
     implementation("dev.rikka.rikkax.core:core-ktx:1.4.1")
@@ -300,6 +302,19 @@ cargo {
     libname = "ehviewer_rust"
     targets = if (isRelease) listOf("arm", "x86", "arm64", "x86_64") else listOf("arm64")
     if (isRelease) profile = "release"
+}
+
+spotless {
+    kotlin {
+        ktlint()
+    }
+    kotlinGradle {
+        ktlint().editorConfigOverride(
+            mapOf(
+                "ktlint_standard_multiline-expression-wrapping" to "disabled",
+            ),
+        )
+    }
 }
 
 tasks.configureEach {

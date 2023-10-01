@@ -27,6 +27,7 @@ import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material3.Text
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
@@ -39,6 +40,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
 import androidx.paging.Pager
@@ -284,7 +286,7 @@ class GalleryListScene : SearchBarScene() {
         setSearchBarHint(title)
 
         when (mode) {
-            MODE_NORMAL -> if (category != EhUtils.NONE || !keyword.isNullOrEmpty()) {
+            MODE_NORMAL, MODE_SUBSCRIPTION -> if (category != EhUtils.NONE || !keyword.isNullOrEmpty()) {
                 mainActivity?.clearNavCheckedItem()
             }
             MODE_TAG, MODE_UPLOADER, MODE_IMAGE_SEARCH -> mainActivity?.clearNavCheckedItem()
@@ -331,6 +333,8 @@ class GalleryListScene : SearchBarScene() {
             ),
         )
         mViewTransition = BringOutTransition(binding.contentLayout.contentView, binding.searchLayout)
+        binding.searchLayout.consumeWindowInsets = false
+        binding.searchLayout.setViewTreeViewModelStoreOwner(this)
         binding.fastScroller.setOnDragHandlerListener(object : OnDragHandlerListener {
             override fun onStartDragHandler() {}
             override fun onEndDragHandler() {
@@ -360,7 +364,11 @@ class GalleryListScene : SearchBarScene() {
                 drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
                 binding.tip.setCompoundDrawables(null, drawable, null, null)
                 binding.tip.setOnClickListener { mAdapter?.refresh() }
-                binding.refreshLayout.setOnRefreshListener { mAdapter?.refresh() }
+                binding.refreshLayout.setOnRefreshListener {
+                    mUrlBuilder.setIndex(null, true)
+                    mUrlBuilder.mJumpTo = null
+                    mAdapter?.refresh()
+                }
                 val transition = ViewTransition(binding.refreshLayout, binding.progress, binding.tip)
                 val empty = getString(R.string.gallery_list_empty_hit)
                 launch {
@@ -509,14 +517,15 @@ class GalleryListScene : SearchBarScene() {
         tip: TextView,
     ) {
         val context = context ?: return
+        if (mAdapter!!.itemCount == 0) return
 
         // Can't add image search as quick search
         if (MODE_IMAGE_SEARCH == mUrlBuilder.mode) {
             showTip(R.string.image_search_not_quick_search, LENGTH_LONG)
             return
         }
-        val gi = mAdapter?.peek(binding.recyclerView.layoutManager!!.firstVisibleItemPosition)
-        val next = gi?.gid?.plus(1)
+        val gi = mAdapter!!.peek(binding.recyclerView.layoutManager!!.firstVisibleItemPosition)!!
+        val next = gi.gid + 1
 
         // Check duplicate
         for (q in mQuickSearchList) {
@@ -551,7 +560,7 @@ class GalleryListScene : SearchBarScene() {
                     }
                     return@launchIO
                 }
-                if (checked[0] && next != null) {
+                if (checked[0]) {
                     text += "@$next"
                     Settings.qSSaveProgress = true
                 } else {
@@ -614,20 +623,22 @@ class GalleryListScene : SearchBarScene() {
             drawerBinding.toolbar.setTitle(R.string.toplist)
         } else {
             drawerBinding.toolbar.setTitle(R.string.quick_search)
-        }
-        if (!mIsTopList) drawerBinding.toolbar.inflateMenu(R.menu.drawer_gallery_list)
-        drawerBinding.toolbar.setOnMenuItemClickListener { item: MenuItem ->
-            val id = item.itemId
-            if (id == R.id.action_add) {
-                showAddQuickSearchDialog(
-                    qsDrawerAdapter,
-                    drawerBinding.recyclerViewDrawer,
-                    drawerBinding.tip,
-                )
-            } else if (id == R.id.action_help) {
-                showQuickSearchTipDialog()
+            if (mUrlBuilder.mode != MODE_WHATS_HOT) {
+                drawerBinding.toolbar.inflateMenu(R.menu.drawer_gallery_list)
+                drawerBinding.toolbar.setOnMenuItemClickListener { item: MenuItem ->
+                    val id = item.itemId
+                    if (id == R.id.action_add) {
+                        showAddQuickSearchDialog(
+                            qsDrawerAdapter,
+                            drawerBinding.recyclerViewDrawer,
+                            drawerBinding.tip,
+                        )
+                    } else if (id == R.id.action_help) {
+                        showQuickSearchTipDialog()
+                    }
+                    true
+                }
             }
-            true
         }
         return drawerBinding.root
     }
@@ -850,13 +861,17 @@ class GalleryListScene : SearchBarScene() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QsDrawerHolder {
             val holder = QsDrawerHolder(ItemDrawerListBinding.inflate(mInflater, parent, false))
             holder.itemView.setOnClickListener {
-                if (!mIsTopList) {
+                if (mUrlBuilder.mode == MODE_WHATS_HOT) {
                     val q = mQuickSearchList[holder.bindingAdapterPosition]
-                    // Navigate to galleryListScene to clear nav checked item
                     navAnimated(R.id.galleryListScene, ListUrlBuilder().apply { set(q) }.toStartArgs())
                 } else {
-                    mUrlBuilder.keyword = keywords[holder.bindingAdapterPosition].toString()
-                    mUrlBuilder.mJumpTo = null
+                    if (mIsTopList) {
+                        mUrlBuilder.keyword = keywords[holder.bindingAdapterPosition].toString()
+                        mUrlBuilder.mJumpTo = null
+                    } else {
+                        val q = mQuickSearchList[holder.bindingAdapterPosition]
+                        mUrlBuilder.set(q)
+                    }
                     onUpdateUrlBuilder()
                     mAdapter?.refresh()
                 }
