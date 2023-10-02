@@ -51,7 +51,6 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isCronetSupported
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
 import okhttp3.AsyncDns
@@ -65,6 +64,10 @@ private val lifecycleScope = lifecycle.coroutineScope
 
 class EhApplication : Application(), ImageLoaderFactory {
     override fun onCreate() {
+        // Initialize Settings on first access
+        lifecycleScope.launchIO {
+            AppCompatDelegate.setDefaultNightMode(Settings.theme)
+        }
         lifecycle.addObserver(lockObserver)
         val handler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
@@ -80,12 +83,6 @@ class EhApplication : Application(), ImageLoaderFactory {
         System.loadLibrary("ehviewer")
         System.loadLibrary("ehviewer_rust")
         ReadableTime.initialize(this)
-        lifecycleScope.launchIO {
-            val theme = Settings.theme
-            withUIContext {
-                AppCompatDelegate.setDefaultNightMode(theme)
-            }
-        }
         lifecycleScope.launchIO {
             launchIO {
                 migrateCookies()
