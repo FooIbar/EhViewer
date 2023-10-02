@@ -21,7 +21,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.verify.domain.DomainVerificationManager
-import android.content.pm.verify.domain.DomainVerificationUserState
+import android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE_NONE
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
@@ -237,16 +237,7 @@ class MainActivity : EhActivity() {
     private fun checkAppLinkVerify() {
         val manager = getSystemService(DomainVerificationManager::class.java)
         val userState = manager.getDomainVerificationUserState(packageName) ?: return
-        var hasUnverified = false
-        val hostToStateMap = userState.hostToStateMap
-        for (key in hostToStateMap.keys) {
-            val stateValue = hostToStateMap[key]
-            if (stateValue == null || stateValue == DomainVerificationUserState.DOMAIN_STATE_VERIFIED || stateValue == DomainVerificationUserState.DOMAIN_STATE_SELECTED) {
-                continue
-            }
-            hasUnverified = true
-            break
-        }
+        val hasUnverified = userState.hostToStateMap.values.any { it == DOMAIN_STATE_NONE }
         if (hasUnverified) {
             BaseDialogBuilder(this)
                 .setTitle(R.string.app_link_not_verified_title)

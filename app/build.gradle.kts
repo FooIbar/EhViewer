@@ -308,7 +308,7 @@ spotless {
 }
 
 tasks.configureEach {
-    if ((name == "mergeDebugJniLibFolders" || name == "mergeReleaseJniLibFolders")) {
+    if (name == "mergeDebugJniLibFolders" || name == "mergeReleaseJniLibFolders") {
         dependsOn("cargoBuild")
         // fix mergeDebugJniLibFolders  UP-TO-DATE
         inputs.dir(layout.buildDirectory.dir("rustJniLibs/android"))

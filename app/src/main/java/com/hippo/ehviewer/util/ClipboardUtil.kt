@@ -60,7 +60,7 @@ fun Context.addTextToClipboard(text: CharSequence?, isSensitive: Boolean, useToa
 
 fun ClipboardManager.getUrlFromClipboard(context: Context): String? {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && primaryClipDescription?.classificationStatus == ClipDescription.CLASSIFICATION_COMPLETE) {
-        if ((primaryClipDescription?.getConfidenceScore(TextClassifier.TYPE_URL)?.let { it <= 0 }) == true) return null
+        if (primaryClipDescription?.getConfidenceScore(TextClassifier.TYPE_URL)?.let { it <= 0 } == true) return null
     }
     val item = primaryClip?.getItemAt(0)
     val string = item?.coerceToText(context).toString()

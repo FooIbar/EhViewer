@@ -76,7 +76,7 @@ fun NormalSearch(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     RadioButton(
-                        selected = (it.first == searchMode),
+                        selected = it.first == searchMode,
                         onClick = { onSearchModeChanged(it.first) },
                     )
                     Text(

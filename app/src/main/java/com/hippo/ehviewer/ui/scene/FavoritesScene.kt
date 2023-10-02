@@ -159,7 +159,7 @@ class FavoritesScene : SearchBarScene() {
         updateJumpFab() // index: 0, 2
         binding.fabLayout.run {
             setSecondaryFabVisibilityAt(1, true)
-            (3..6).forEach { setSecondaryFabVisibilityAt(it, false) }
+            for (i in 3..6) { setSecondaryFabVisibilityAt(i, false) }
         }
     }
 
@@ -530,8 +530,8 @@ class FavoritesScene : SearchBarScene() {
     private fun showSelectionFab() {
         SimpleHandler.removeCallbacks(showNormalFabsRunnable)
         binding.fabLayout.run {
-            (0..2).forEach { setSecondaryFabVisibilityAt(it, false) }
-            (3..6).forEach { setSecondaryFabVisibilityAt(it, true) }
+            for (i in 0..2) { setSecondaryFabVisibilityAt(i, false) }
+            for (i in 3..6) { setSecondaryFabVisibilityAt(i, true) }
         }
     }
 
