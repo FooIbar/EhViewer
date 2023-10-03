@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.GroupOff
 import androidx.compose.material.icons.filled.Label
+import androidx.compose.material.icons.filled.NoAccounts
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedCard
@@ -143,7 +143,7 @@ fun GalleryDetailHeaderCard(
                 modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.GroupOff,
+                        imageVector = Icons.Default.NoAccounts,
                         contentDescription = null,
                         modifier = Modifier.clickable(onClick = onBlockUploaderIconClick),
                     )
