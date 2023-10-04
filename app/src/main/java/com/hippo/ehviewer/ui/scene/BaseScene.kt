@@ -31,6 +31,7 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetDialog
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.util.getSparseParcelableArrayCompat
@@ -96,7 +97,13 @@ abstract class BaseScene : Fragment() {
         }
     }
 
-    fun openSideSheet() = sideSheetDialog!!.show()
+    fun openSideSheet() {
+        sideSheetDialog!!.show()
+        val behavior = sideSheetDialog!!.behavior
+        if (behavior.state == SideSheetBehavior.STATE_HIDDEN) {
+            behavior.expand()
+        }
+    }
     fun closeSideSheet() = sideSheetDialog!!.hide()
 
     fun showTip(message: CharSequence?, length: Int) {
