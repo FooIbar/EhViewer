@@ -235,6 +235,7 @@ object EhEngine {
     suspend fun getGalleryList(url: String) = ehRequest(url, EhUrl.referer)
         .executeAndParsingWith(GalleryListParser::parse)
         .apply { fillGalleryList(galleryInfoList, url, true) }
+        .takeUnless { it.galleryInfoList.isEmpty() } ?: GalleryListParser.emptyResult
 
     suspend fun getGalleryDetail(url: String) = ehRequest(url, EhUrl.referer).executeAndParsingWith {
         EventPaneParser.parse(this)?.let {
@@ -250,7 +251,7 @@ object EhEngine {
 
     suspend fun getFavorites(url: String) = ehRequest(url, EhUrl.referer)
         .executeAndParsingWith(FavoritesParser::parse)
-        .apply { fillGalleryList(galleryInfoList, url, false) }
+        .apply { fillGalleryList(galleryInfoList, url) }
 
     suspend fun signIn(username: String, password: String): String {
         val referer = "https://forums.e-hentai.org/index.php?act=Login&CODE=00"
@@ -374,7 +375,7 @@ object EhEngine {
                 add("ddact", catStr)
                 gidArray.forEach { add("modifygids[]", it.toString()) }
             }
-        }.executeAndParsingWith(FavoritesParser::parse).apply { fillGalleryList(galleryInfoList, url, false) }
+        }.executeAndParsingWith(FavoritesParser::parse).apply { fillGalleryList(galleryInfoList, url) }
     }
 
     suspend fun getGalleryPageApi(
@@ -492,9 +493,9 @@ object EhEngine {
             if (osc) addFormDataPart("fs_covers", "on")
             addFormDataPart("f_sfile", "File Search")
         }
-    }.executeAndParsingWith(GalleryListParser::parse).apply { fillGalleryList(galleryInfoList, EhUrl.imageSearchUrl, true) }
+    }.executeAndParsingWith(GalleryListParser::parse).apply { fillGalleryList(galleryInfoList, EhUrl.imageSearchUrl) }
 
-    private suspend fun fillGalleryList(list: MutableList<BaseGalleryInfo>, url: String, filter: Boolean) {
+    private suspend fun fillGalleryList(list: MutableList<BaseGalleryInfo>, url: String, filter: Boolean = false) {
         // Filter title and uploader
         if (filter) list.removeAllSuspend { EhFilter.filterTitle(it) || EhFilter.filterUploader(it) }
 

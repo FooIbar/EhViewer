@@ -27,6 +27,8 @@ object GalleryListParser {
         }
         throw ParseException("Can't parse gallery list", it)
     }
+
+    val emptyResult = GalleryListResult(null, null, arrayListOf())
 }
 
 class GalleryListResult(
