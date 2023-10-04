@@ -124,6 +124,7 @@ import java.util.Locale
 
 class VMStorage1 : ViewModel() {
     var urlBuilder = ListUrlBuilder()
+    var shouldScrollToTop = false
     val dataFlow = Pager(PagingConfig(25)) {
         object : PagingSource<String, BaseGalleryInfo>() {
             override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
@@ -154,6 +155,7 @@ class VMStorage1 : ViewModel() {
                         } else {
                             urlBuilder.setIndex(key, false)
                         }
+                        shouldScrollToTop = true
                     }
                 }
                 val r = runSuspendCatching {
@@ -402,6 +404,10 @@ class GalleryListScene : SearchBarScene() {
                                     binding.tip.text = empty
                                     transition.showView(2)
                                 } else {
+                                    if (vm.shouldScrollToTop) {
+                                        vm.shouldScrollToTop = false
+                                        binding.recyclerView.scrollToPosition(0)
+                                    }
                                     transition.showView(0)
                                 }
                             }
