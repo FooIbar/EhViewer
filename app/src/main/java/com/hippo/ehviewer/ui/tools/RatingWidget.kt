@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarHalf
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -38,7 +38,7 @@ fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier
         }
         repeat(halfStar) {
             Icon(
-                imageVector = Icons.Default.StarHalf,
+                imageVector = Icons.AutoMirrored.Default.StarHalf,
                 contentDescription = null,
                 modifier = Modifier.size(ratingSize),
                 tint = colorYellow800,

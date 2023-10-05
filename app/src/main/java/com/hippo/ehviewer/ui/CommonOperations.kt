@@ -23,13 +23,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.HeartBroken
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -300,17 +300,17 @@ suspend fun DialogState.doGalleryInfoAction(info: BaseGalleryInfo, context: Cont
     val favourite = info.favoriteSlot != NOT_FAVORITED
     val selected = if (!downloaded) {
         showSelectItemWithIcon(
-            Icons.Default.MenuBook to R.string.read,
+            Icons.AutoMirrored.Default.MenuBook to R.string.read,
             Icons.Default.Download to R.string.download,
             if (!favourite) Icons.Default.Favorite to R.string.add_to_favourites else Icons.Default.HeartBroken to R.string.remove_from_favourites,
             title = EhUtils.getSuitableTitle(info),
         )
     } else {
         showSelectItemWithIcon(
-            Icons.Default.MenuBook to R.string.read,
+            Icons.AutoMirrored.Default.MenuBook to R.string.read,
             Icons.Default.Delete to R.string.delete_downloads,
             if (!favourite) Icons.Default.Favorite to R.string.add_to_favourites else Icons.Default.HeartBroken to R.string.remove_from_favourites,
-            Icons.Default.DriveFileMove to R.string.download_move_dialog_title,
+            Icons.AutoMirrored.Default.DriveFileMove to R.string.download_move_dialog_title,
             title = EhUtils.getSuitableTitle(info),
         )
     }

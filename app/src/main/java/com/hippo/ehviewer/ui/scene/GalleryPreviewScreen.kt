@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -129,7 +129,7 @@ class GalleryPreviewScreen : Fragment() {
                         title = { Text(stringResource(R.string.gallery_previews)) },
                         navigationIcon = {
                             IconButton(onClick = { findNavController().popBackStack() }) {
-                                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+                                Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                             }
                         },
                         scrollBehavior = scrollBehaviour,

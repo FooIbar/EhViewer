@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -92,7 +92,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
                         supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
                         leadingContent = it.canOpenDirectly.ifTrueThen {
                             Icon(
-                                imageVector = Icons.Default.MenuBook,
+                                imageVector = Icons.AutoMirrored.Default.MenuBook,
                                 contentDescription = null,
                             )
                         },
