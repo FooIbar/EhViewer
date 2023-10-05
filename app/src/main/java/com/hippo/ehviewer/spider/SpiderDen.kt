@@ -34,6 +34,7 @@ import com.hippo.ehviewer.gallery.SUPPORT_IMAGE_EXTENSIONS
 import com.hippo.ehviewer.image.Image.CloseableSource
 import com.hippo.ehviewer.image.rewriteGifSource2
 import com.hippo.ehviewer.util.FileUtils
+import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.ehviewer.util.isCronetSupported
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
@@ -163,7 +164,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
 
     private suspend fun saveResponseMeta(index: Int, ext: String, length: Long, fops: suspend (UniFile) -> Unit): Boolean {
         suspend fun realFops(f: UniFile) = fops(f).apply {
-            if (ext.lowercase() == "gif") {
+            if (ext.lowercase() == "gif" && !isAtLeastU) {
                 f.openFileDescriptor("rw").use { rewriteGifSource2(it.fd) }
             }
         }
