@@ -24,4 +24,8 @@ val <T> KMutableProperty0<T>.observed: MutableState<T>
 
 val <T> MutableState<T>.rememberedAccessor: KMutableProperty0<T>
     @Composable
-    get() = remember { object { var value by this@rememberedAccessor }::value }
+    get() = remember {
+        object {
+            var value by this@rememberedAccessor
+        }::value
+    }

@@ -83,7 +83,11 @@ class DialogState {
     suspend fun <R> awaitResult(initial: R, @StringRes title: Int? = null, block: @Composable DialogScope<R>.() -> Unit): R {
         return dialog { cont ->
             val state = remember(cont) { mutableStateOf(initial) }
-            val impl = remember(cont) { object : DialogScope<R> { override var expectedValue by state } }
+            val impl = remember(cont) {
+                object : DialogScope<R> {
+                    override var expectedValue by state
+                }
+            }
             AlertDialog(
                 onDismissRequest = { cont.cancel() },
                 confirmButton = {

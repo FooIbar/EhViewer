@@ -103,7 +103,8 @@ interface GalleryInfo {
             Pattern.compile(
                 "[(\\[]eng(?:lish)?[)\\]]|英訳",
                 Pattern.CASE_INSENSITIVE,
-            ), // [(（\[]ch(?:inese)?[)）\]]|[汉漢]化|中[国國][语語]|中文|中国翻訳
+            ),
+            // [(（\[]ch(?:inese)?[)）\]]|[汉漢]化|中[国國][语語]|中文|中国翻訳
             Pattern.compile(
                 "[(\uFF08\\[]ch(?:inese)?[)\uFF09\\]]|[汉漢]化|中[国國][语語]|中文|中国翻訳",
                 Pattern.CASE_INSENSITIVE,

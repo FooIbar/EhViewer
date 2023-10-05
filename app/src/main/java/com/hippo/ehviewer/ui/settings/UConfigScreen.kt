@@ -28,7 +28,7 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.util.setDefaultSettings
 
-private const val applyJs = "javascript:(function(){var apply = document.getElementById(\"apply\").children[0];apply.click();})();"
+private const val APPLY_JS = "javascript:(function(){var apply = document.getElementById(\"apply\").children[0];apply.click();})();"
 
 @Composable
 fun UConfigScreen() {
@@ -48,7 +48,7 @@ fun UConfigScreen() {
                 actions = {
                     IconButton(
                         onClick = {
-                            webview.get()?.loadUrl(applyJs)
+                            webview.get()?.loadUrl(APPLY_JS)
                             navController.popBackStack()
                         },
                     ) {

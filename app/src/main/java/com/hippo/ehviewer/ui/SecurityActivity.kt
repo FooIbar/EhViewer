@@ -112,12 +112,12 @@ class SecurityActivity : AppCompatActivity() {
 
 private var isAuthenticating = false
 var locked = true
-var locked_last_leave_time: Long = 0
+var lockedLastLeaveTime: Long = 0
 
 val lockObserver = object : DefaultLifecycleObserver {
     override fun onPause(owner: LifecycleOwner) {
         if (!locked) {
-            locked_last_leave_time = System.currentTimeMillis() / 1000
+            lockedLastLeaveTime = System.currentTimeMillis() / 1000
         }
         locked = true
     }
@@ -125,7 +125,7 @@ val lockObserver = object : DefaultLifecycleObserver {
 
 fun Context.interceptSecurityOrReturn() {
     val lockedResumeTime = System.currentTimeMillis() / 1000
-    val lockedDelayTime = lockedResumeTime - locked_last_leave_time
+    val lockedDelayTime = lockedResumeTime - lockedLastLeaveTime
     if (lockedDelayTime < Settings.securityDelay * 60) {
         locked = false
     } else if (Settings.security && isAuthenticationSupported() && locked) {

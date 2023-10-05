@@ -36,8 +36,8 @@ fun PrefsListItem(
         typography.titleMedium,
         textColor,
         when {
-            enabled || !darkenOnDisable -> AlphaHigh
-            else -> AlphaDisabled
+            enabled || !darkenOnDisable -> ALPHA_HIGH
+            else -> ALPHA_DISABLED
         },
         text,
     )!!
@@ -45,8 +45,8 @@ fun PrefsListItem(
         typography.bodyMedium,
         textColor,
         when {
-            enabled || !darkenOnDisable -> AlphaMedium
-            else -> AlphaDisabled
+            enabled || !darkenOnDisable -> ALPHA_MEDIUM
+            else -> ALPHA_DISABLED
         },
         secondaryText,
     )
@@ -54,8 +54,8 @@ fun PrefsListItem(
         typography.bodySmall,
         textColor,
         when {
-            enabled || !darkenOnDisable -> AlphaHigh
-            else -> AlphaDisabled
+            enabled || !darkenOnDisable -> ALPHA_HIGH
+            else -> ALPHA_DISABLED
         },
         trailing,
     )
@@ -146,6 +146,6 @@ private fun applyTextStyle(
     }
 }
 
-private const val AlphaHigh = 1.0f
-private const val AlphaMedium = 0.74f
-private const val AlphaDisabled = 0.38f
+private const val ALPHA_HIGH = 1.0f
+private const val ALPHA_MEDIUM = 0.74f
+private const val ALPHA_DISABLED = 0.38f

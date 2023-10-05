@@ -161,7 +161,9 @@ class FavoritesScene : SearchBarScene() {
         updateJumpFab() // index: 0, 2
         binding.fabLayout.run {
             setSecondaryFabVisibilityAt(1, true)
-            for (i in 3..6) { setSecondaryFabVisibilityAt(i, false) }
+            for (i in 3..6) {
+                setSecondaryFabVisibilityAt(i, false)
+            }
         }
     }
 
@@ -536,8 +538,12 @@ class FavoritesScene : SearchBarScene() {
     private fun showSelectionFab() {
         SimpleHandler.removeCallbacks(showNormalFabsRunnable)
         binding.fabLayout.run {
-            for (i in 0..2) { setSecondaryFabVisibilityAt(i, false) }
-            for (i in 3..6) { setSecondaryFabVisibilityAt(i, true) }
+            for (i in 0..2) {
+                setSecondaryFabVisibilityAt(i, false)
+            }
+            for (i in 3..6) {
+                setSecondaryFabVisibilityAt(i, true)
+            }
         }
     }
 
@@ -559,7 +565,11 @@ class FavoritesScene : SearchBarScene() {
     private inner class MoveDialogHelper : DialogInterface.OnClickListener {
         override fun onClick(dialog: DialogInterface, which: Int) {
             val srcCat = urlBuilder.favCat
-            val dstCat = if (which == 0) { FavListUrlBuilder.FAV_CAT_LOCAL } else { which - 1 }
+            val dstCat = if (which == 0) {
+                FavListUrlBuilder.FAV_CAT_LOCAL
+            } else {
+                which - 1
+            }
             if (srcCat == dstCat) return
             val info = takeCheckedInfo()
             lifecycleScope.launchIO {

@@ -8,7 +8,7 @@ import com.hippo.ehviewer.dao.CookiesDatabase
 import splitties.arch.room.roomDb
 import splitties.init.appCtx
 
-private const val legacyCookiesDB = "okhttp3-cookie.db"
+private const val LEGACY_COOKIES_DB = "okhttp3-cookie.db"
 
 private fun Cookie.toOkHttp3Cookie(): okhttp3.Cookie {
     return okhttp3.Cookie.Builder().apply {
@@ -23,12 +23,12 @@ private fun Cookie.toOkHttp3Cookie(): okhttp3.Cookie {
 }
 
 suspend fun migrateCookies() {
-    if (legacyCookiesDB !in appCtx.databaseList()) return
+    if (LEGACY_COOKIES_DB !in appCtx.databaseList()) return
     resource {
-        roomDb<CookiesDatabase>(legacyCookiesDB)
+        roomDb<CookiesDatabase>(LEGACY_COOKIES_DB)
     } release {
         it.close()
-        appCtx.deleteDatabase(legacyCookiesDB)
+        appCtx.deleteDatabase(LEGACY_COOKIES_DB)
     } use { database ->
         database.cookiesDao().list().forEach {
             EhCookieStore.addCookie(it.toOkHttp3Cookie())

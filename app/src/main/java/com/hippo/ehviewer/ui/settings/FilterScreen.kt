@@ -63,7 +63,9 @@ fun FilterScreen() {
     class AddFilterDialogHelper(private val dialog: AlertDialog) : View.OnClickListener {
         private val mArray = dialog.context.resources.getStringArray(R.array.filter_entries)
         private val binding = DialogAddFilterBinding.bind(dialog.findViewById(R.id.base)!!)
-        init { dialog.getButton(DialogInterface.BUTTON_POSITIVE)!!.setOnClickListener(this) }
+        init {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE)!!.setOnClickListener(this)
+        }
         override fun onClick(v: View) {
             val emptyError = context.getString(R.string.text_is_empty)
             val text1: String?
@@ -161,7 +163,13 @@ fun FilterScreen() {
                                 Text(text = filter.text)
                                 Spacer(modifier = Modifier.weight(1F))
                                 IconButton(
-                                    onClick = { BaseDialogBuilder(context).setMessage(context.getString(R.string.delete_filter, filter.text)).setPositiveButton(R.string.delete) { _, which -> if (DialogInterface.BUTTON_POSITIVE == which) { filter.forget { filters.remove(filter) } } }.setNegativeButton(android.R.string.cancel, null).show() },
+                                    onClick = {
+                                        BaseDialogBuilder(context).setMessage(context.getString(R.string.delete_filter, filter.text)).setPositiveButton(R.string.delete) { _, which ->
+                                            if (DialogInterface.BUTTON_POSITIVE == which) {
+                                                filter.forget { filters.remove(filter) }
+                                            }
+                                        }.setNegativeButton(android.R.string.cancel, null).show()
+                                    },
                                 ) {
                                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                                 }

@@ -8,8 +8,8 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-private const val FullCircle: Float = (PI * 2).toFloat()
-private const val QuarterCircle = PI / 2
+private const val FULL_CIRCLE: Float = (PI * 2).toFloat()
+private const val QUARTER_CIRCLE = PI / 2
 
 @Composable
 fun CircularLayout(
@@ -25,7 +25,7 @@ fun CircularLayout(
         val itemConstraints = constraints.copy(minWidth = 0, minHeight = 0)
         val placeables = measurables.map { measurable -> measurable.measure(itemConstraints) }
         val outPlaceables = if (placeFirstItemInCenter) placeables.drop(1) else placeables
-        val theta = FullCircle / outPlaceables.count()
+        val theta = FULL_CIRCLE / outPlaceables.count()
 
         layout(
             width = constraints.minWidth,
@@ -44,8 +44,8 @@ fun CircularLayout(
             outPlaceables.forEachIndexed { i, it ->
                 val centerOffsetX = constraints.maxWidth / 2 - it.width / 2
                 val centerOffsetY = constraints.maxHeight / 2 - it.height / 2
-                val offsetX = radiusPx * cos(theta * i - QuarterCircle) + centerOffsetX
-                val offsetY = radiusPx * sin(theta * i - QuarterCircle) + centerOffsetY
+                val offsetX = radiusPx * cos(theta * i - QUARTER_CIRCLE) + centerOffsetX
+                val offsetY = radiusPx * sin(theta * i - QUARTER_CIRCLE) + centerOffsetY
                 it.place(
                     x = offsetX.roundToInt(),
                     y = offsetY.roundToInt(),
