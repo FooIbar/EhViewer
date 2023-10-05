@@ -52,10 +52,10 @@ fun SelectSiteScreen() {
         )
         Spacer(modifier = Modifier.weight(1f))
         SingleChoiceSegmentedButtonRow {
-            SegmentedButton(selected = !siteEx, onClick = { siteEx = false }, shape = SegmentedButtonDefaults.shape(0, 2)) {
+            SegmentedButton(selected = !siteEx, onClick = { siteEx = false }, shape = SegmentedButtonDefaults.itemShape(0, 2)) {
                 Text(text = stringResource(id = R.string.site_e))
             }
-            SegmentedButton(selected = siteEx, onClick = { siteEx = true }, shape = SegmentedButtonDefaults.shape(1, 2)) {
+            SegmentedButton(selected = siteEx, onClick = { siteEx = true }, shape = SegmentedButtonDefaults.itemShape(1, 2)) {
                 Text(text = stringResource(id = R.string.site_ex))
             }
         }
