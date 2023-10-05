@@ -134,8 +134,8 @@ data class ListUrlBuilder(
     /**
      * @param query xxx=yyy&mmm=nnn
      */
-    // TODO page
     fun setQuery(query: String?) {
+        // TODO page
         reset()
         if (query.isNullOrEmpty()) {
             return

@@ -104,7 +104,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      * to screen density - on a retina screen, 1:1 may still be too small. Consider using [setMinimumDpi],
      * which is density aware.
      */
-    // Max scale allowed (prevent infinite zoom)
     var maxScale = 2F
 
     // Density to reach before loading higher resolution tiles
@@ -148,7 +147,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      *
      * @return the current scale as a source/view pixels ratio.
      */
-    // Current scale and scale at start of zoom
     var scale = 0F
         private set
     private var scaleStart = 0F
@@ -192,7 +190,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      *
      * @return the source image width in pixels.
      */
-    // Source image dimensions and orientation - dimensions relate to the unrotated image
     var sWidth = 0
         private set
 

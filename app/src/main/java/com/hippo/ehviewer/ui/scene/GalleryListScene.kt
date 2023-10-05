@@ -1030,7 +1030,10 @@ private const val TOPLIST_PAGES = 200
 
 @Parcelize
 enum class State : Parcelable {
-    NORMAL, SIMPLE_SEARCH, SEARCH, SEARCH_SHOW_LIST
+    NORMAL,
+    SIMPLE_SEARCH,
+    SEARCH,
+    SEARCH_SHOW_LIST,
 }
 
 private fun Context.getSuitableTitleForUrlBuilder(

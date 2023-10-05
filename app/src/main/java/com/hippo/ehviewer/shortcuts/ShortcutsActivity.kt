@@ -27,7 +27,9 @@ import com.hippo.ehviewer.download.DownloadService
 class ShortcutsActivity : AppCompatActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        when (intent?.action) { DownloadService.ACTION_START_ALL, DownloadService.ACTION_STOP_ALL -> ContextCompat.startForegroundService(this, Intent(this, DownloadService::class.java).setAction(intent.action)) }
+        when (intent?.action) {
+            DownloadService.ACTION_START_ALL, DownloadService.ACTION_STOP_ALL -> ContextCompat.startForegroundService(this, Intent(this, DownloadService::class.java).setAction(intent.action))
+        }
         finish()
     }
 }

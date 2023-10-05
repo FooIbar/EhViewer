@@ -12,10 +12,7 @@ import androidx.navigation.NavOptions
 @SuppressLint("PrivateResource")
 fun onNavDestinationSelected2(item: MenuItem, navController: NavController): Boolean {
     val builder = NavOptions.Builder().setLaunchSingleTop(true)
-    if (
-        navController.currentDestination!!.parent!!.findNode(item.itemId)
-        is ActivityNavigator.Destination
-    ) {
+    if (navController.currentDestination!!.parent!!.findNode(item.itemId) is ActivityNavigator.Destination) {
         builder.setEnterAnim(R.anim.nav_default_enter_anim)
             .setExitAnim(R.anim.nav_default_exit_anim)
             .setPopEnterAnim(R.anim.nav_default_pop_enter_anim)

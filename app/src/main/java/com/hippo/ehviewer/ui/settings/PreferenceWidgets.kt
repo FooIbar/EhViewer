@@ -121,7 +121,9 @@ fun SimpleMenuPreferenceInt(title: String, summary: String? = null, @ArrayRes en
         valuesArray.associateWith { iter.next() }
     }
     var v by value
-    fun set(new: Int) { v = new }
+    fun set(new: Int) {
+        v = new
+    }
     check(entryArray.size == valuesArray.size)
     DropDownPrefInt(title = title, summary = summary, defaultValue = v, onValueChange = ::set, useSelectedAsSummary = summary.isNullOrBlank(), entries = map)
 }
