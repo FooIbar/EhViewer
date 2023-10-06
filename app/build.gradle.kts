@@ -62,7 +62,7 @@ android {
 
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
-        minSdk = 28
+        minSdk = 23
         targetSdk = 34
         versionCode = 180043
         versionName = "1.8.10.0-SNAPSHOT"
@@ -93,6 +93,7 @@ android {
     }
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -239,6 +240,8 @@ dependencies {
     releaseImplementation(libs.chucker.nop)
 
     debugImplementation(libs.leakcanary.android)
+
+    coreLibraryDesugaring(libs.desugar)
 }
 
 ksp {
