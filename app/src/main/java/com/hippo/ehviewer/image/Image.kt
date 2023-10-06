@@ -25,8 +25,8 @@ import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
+import androidx.annotation.RequiresApi
 import com.hippo.ehviewer.R
-import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import splitties.init.appCtx
 import java.nio.ByteBuffer
 import kotlin.math.min
@@ -77,14 +77,12 @@ class Image private constructor(private val src: CloseableSource) {
             }
         val screenWidth = appCtx.resources.displayMetrics.widthPixels
         val screenHeight = appCtx.resources.displayMetrics.heightPixels
-        val isWideColorGamut = appCtx.resources.configuration.isScreenWideColorGamut
-        var colorSpace = ColorSpace.get(
-            if (isWideColorGamut && ReaderPreferences.wideColorGamut().get()) {
-                ColorSpace.Named.DISPLAY_P3
-            } else {
-                ColorSpace.Named.SRGB
-            },
-        )
+
+        @delegate:RequiresApi(Build.VERSION_CODES.O)
+        val isWideColorGamut by lazy { appCtx.resources.configuration.isScreenWideColorGamut }
+
+        @RequiresApi(Build.VERSION_CODES.O)
+        lateinit var colorSpace: ColorSpace
 
         fun decode(src: CloseableSource): Image? {
             return runCatching {
