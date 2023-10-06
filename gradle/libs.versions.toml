@@ -1,6 +1,6 @@
 [versions]
 aboutlibraries = "10.9.1"
-agp = "8.1.2"
+agp = "8.3.0-alpha07"
 android-tools-r8 = "8.3.6-dev"
 androidx-activity = "1.8.0"
 androidx-appcompat = "1.6.1"
