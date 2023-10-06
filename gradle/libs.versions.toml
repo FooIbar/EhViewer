@@ -1,5 +1,6 @@
 [versions]
 aboutlibraries = "10.9.1"
+agp = "8.1.2"
 android-tools-r8 = "8.3.6-dev"
 androidx-activity = "1.8.0"
 androidx-appcompat = "1.6.1"
@@ -139,7 +140,7 @@ splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences",
 
 [plugins]
 aboutlibrariesPlugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
-android-application = { id = "com.android.application", version = "8.1.2" }
+android-application = { id = "com.android.application", version.ref = "agp" }
 composeCompilerReportGenerator = { id = "dev.shreyaspatil.compose-compiler-report-generator", version = "1.1.0" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
