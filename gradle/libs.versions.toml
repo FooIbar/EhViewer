@@ -80,6 +80,8 @@ coil-compose = { module = "io.coil-kt:coil-compose" }
 coil-gif = { module = "io.coil-kt:coil-gif" }
 
 compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "compose-bom" }
+# For renovate
+compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose-compiler" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
@@ -95,6 +97,7 @@ kotlinx-serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinx-serialization" }
 
+# For renovate
 ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
 
 ktor-io-jvm = { module = "io.ktor:ktor-io-jvm", version.ref = "ktor" }
