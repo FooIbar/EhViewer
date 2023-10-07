@@ -17,6 +17,9 @@
  */
 package com.hippo.ehviewer.image
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ColorSpace
 import android.graphics.ImageDecoder
 import android.graphics.ImageDecoder.ImageInfo
@@ -24,27 +27,27 @@ import android.graphics.ImageDecoder.Source
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
+import coil.decode.BitmapFactoryDecoder
+import coil.decode.DecodeUtils
+import coil.decode.GifDecoder
+import coil.decode.ImageSource
+import coil.decode.isGif
+import coil.request.Options
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.util.isAtLeastP
+import com.hippo.unifile.UniFile
+import com.hippo.unifile.openInputStream
+import okio.buffer
+import okio.source
 import splitties.init.appCtx
 import java.nio.ByteBuffer
 import kotlin.math.min
 
-class Image private constructor(private val src: CloseableSource) {
-    var mObtainedDrawable: Drawable? =
-        ImageDecoder.decodeDrawable(src.source) { decoder: ImageDecoder, info: ImageInfo, _: Source ->
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
-                // Allocating hardware bitmap may cause a crash on framework versions prior to Android Q
-                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-            }
-            decoder.setTargetColorSpace(colorSpace)
-            decoder.setTargetSampleSize(
-                calculateSampleSize(info, 2 * screenHeight, 2 * screenWidth),
-            )
-        }.also {
-            if (it !is Animatable) src.close()
-        }
+class Image private constructor(private val src: AutoCloseable) {
+    var mObtainedDrawable: Drawable? = null
         private set
 
     val size: Int
@@ -60,6 +63,7 @@ class Image private constructor(private val src: CloseableSource) {
     }
 
     companion object {
+        @RequiresApi(Build.VERSION_CODES.P)
         fun calculateSampleSize(info: ImageInfo, targetHeight: Int, targetWeight: Int): Int {
             return min(
                 info.size.width / targetWeight,
@@ -69,14 +73,16 @@ class Image private constructor(private val src: CloseableSource) {
 
         private val imageSearchMaxSize = appCtx.resources.getDimensionPixelOffset(R.dimen.image_search_max_size)
 
-        val imageSearchDecoderSampleListener =
+        @delegate:RequiresApi(Build.VERSION_CODES.P)
+        val imageSearchDecoderSampleListener by lazy {
             ImageDecoder.OnHeaderDecodedListener { decoder, info, _ ->
                 decoder.setTargetSampleSize(
                     calculateSampleSize(info, imageSearchMaxSize, imageSearchMaxSize),
                 )
             }
-        val screenWidth = appCtx.resources.displayMetrics.widthPixels
-        val screenHeight = appCtx.resources.displayMetrics.heightPixels
+        }
+        private val screenWidth = appCtx.resources.displayMetrics.widthPixels
+        private val screenHeight = appCtx.resources.displayMetrics.heightPixels
 
         @delegate:RequiresApi(Build.VERSION_CODES.O)
         val isWideColorGamut by lazy { appCtx.resources.configuration.isScreenWideColorGamut }
@@ -84,18 +90,74 @@ class Image private constructor(private val src: CloseableSource) {
         @RequiresApi(Build.VERSION_CODES.O)
         lateinit var colorSpace: ColorSpace
 
-        fun decode(src: CloseableSource): Image? {
+        suspend fun decode(src: UniFileSource): Image? {
             return runCatching {
-                Image(src)
+                Image(src).apply {
+                    mObtainedDrawable = if (isAtLeastP) {
+                        decodeDrawable(src.source.imageSource)
+                    } else {
+                        ImageSource(src.source.openInputStream().source().buffer(), appCtx).use {
+                            val options = Options(appCtx)
+                            if (DecodeUtils.isGif(it.source())) {
+                                GifDecoder(it, options).decode().drawable
+                            } else {
+                                BitmapFactoryDecoder(it, options).decode().drawable
+                            }
+                        }
+                    }.also {
+                        if (it !is Animatable) src.close()
+                    }
+                }
             }.onFailure {
                 src.close()
                 it.printStackTrace()
             }.getOrNull()
         }
+
+        fun decode(src: ByteBufferSource) = runCatching {
+            Image(src).apply {
+                mObtainedDrawable = if (isAtLeastP) {
+                    val source = ImageDecoder.createSource(src.source)
+                    decodeDrawable(source)
+                } else {
+                    null
+                }.also {
+                    if (it !is Animatable) src.close()
+                }
+            }
+        }.onFailure {
+            src.close()
+            it.printStackTrace()
+        }.getOrNull()
+
+        @RequiresApi(Build.VERSION_CODES.P)
+        private fun decodeDrawable(src: Source) = ImageDecoder.decodeDrawable(src) { decoder, info, _ ->
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
+                // Allocating hardware bitmap may cause a crash on framework versions prior to Android Q
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            }
+            decoder.setTargetColorSpace(colorSpace)
+            decoder.setTargetSampleSize(
+                calculateSampleSize(info, 2 * screenHeight, 2 * screenWidth),
+            )
+        }
     }
 
-    interface CloseableSource : AutoCloseable {
-        val source: Source
+    interface UniFileSource : AutoCloseable {
+        val source: UniFile
+    }
+
+    interface ByteBufferSource : AutoCloseable {
+        val source: ByteBuffer
+    }
+}
+
+fun Context.decodeBitmap(uri: Uri): Bitmap? = if (isAtLeastP) {
+    val src = ImageDecoder.createSource(contentResolver, uri)
+    ImageDecoder.decodeBitmap(src, Image.imageSearchDecoderSampleListener)
+} else {
+    contentResolver.openFileDescriptor(uri, "r")!!.use {
+        BitmapFactory.decodeFileDescriptor(it.fileDescriptor)
     }
 }
 

@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.spider
 
-import android.graphics.ImageDecoder
 import android.os.ParcelFileDescriptor
 import android.os.ParcelFileDescriptor.MODE_READ_WRITE
 import com.hippo.ehviewer.EhDB
@@ -31,7 +30,7 @@ import com.hippo.ehviewer.cronet.cronetRequest
 import com.hippo.ehviewer.cronet.execute
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.gallery.SUPPORT_IMAGE_EXTENSIONS
-import com.hippo.ehviewer.image.Image.CloseableSource
+import com.hippo.ehviewer.image.Image.UniFileSource
 import com.hippo.ehviewer.image.rewriteGifSource2
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.isAtLeastU
@@ -240,20 +239,20 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
             ?: downloadDir?.let { findImageFile(it, index) }?.name.let { FileUtils.getExtensionFromFilename(it) }
     }
 
-    fun getImageSource(index: Int): CloseableSource? {
+    fun getImageSource(index: Int): UniFileSource? {
         if (mode == SpiderQueen.MODE_READ) {
             val key = getImageKey(mGid, index)
             val snapshot = sCache.openSnapshot(key)
             if (snapshot != null) {
-                val source = ImageDecoder.createSource(snapshot.data.toFile())
-                return object : CloseableSource, AutoCloseable by snapshot {
+                val source = UniFile.fromFile(snapshot.data.toFile())!!
+                return object : UniFileSource, AutoCloseable by snapshot {
                     override val source = source
                 }
             }
         }
         val dir = downloadDir ?: return null
-        val source = findImageFile(dir, index)?.imageSource ?: return null
-        return object : CloseableSource {
+        val source = findImageFile(dir, index) ?: return null
+        return object : UniFileSource {
             override val source = source
 
             override fun close() {}
