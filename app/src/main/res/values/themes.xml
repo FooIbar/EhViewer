@@ -33,7 +33,7 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
 
         <!-- Transparent Navigation Bar -->
-        <item name="android:windowLightNavigationBar">?isLightTheme</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">?isLightTheme</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
 

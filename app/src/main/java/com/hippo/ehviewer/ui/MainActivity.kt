@@ -23,7 +23,6 @@ import android.content.pm.PackageManager
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE_NONE
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -53,7 +52,7 @@ import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.databinding.ActivityMainBinding
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadLocation
-import com.hippo.ehviewer.image.Image
+import com.hippo.ehviewer.image.decodeBitmap
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.scene.BaseScene
@@ -81,9 +80,8 @@ class MainActivity : EhActivity() {
     private lateinit var navController: NavController
 
     private fun saveImageToTempFile(uri: Uri): File? {
-        val src = ImageDecoder.createSource(contentResolver, uri)
         val bitmap = runCatching {
-            ImageDecoder.decodeBitmap(src, Image.imageSearchDecoderSampleListener)
+            decodeBitmap(uri)
         }.getOrNull() ?: return null
         val temp = AppConfig.createTempFile() ?: return null
         return runCatching {

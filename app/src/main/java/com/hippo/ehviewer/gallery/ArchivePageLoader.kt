@@ -16,7 +16,6 @@
 package com.hippo.ehviewer.gallery
 
 import android.content.Context
-import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.util.Log
@@ -106,10 +105,9 @@ class ArchivePageLoader(context: Context, private val uri: Uri, passwdFlow: Flow
         if (!isAtLeastU) {
             rewriteGifSource(buffer)
         }
-        val source = ImageDecoder.createSource(buffer)
-        val src = object : Image.CloseableSource {
-            override val source: ImageDecoder.Source
-                get() = source
+        val src = object : Image.ByteBufferSource {
+            override val source
+                get() = buffer!!
 
             override fun close() {
                 releaseByteBuffer(buffer)

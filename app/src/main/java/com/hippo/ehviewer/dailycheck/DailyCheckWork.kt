@@ -29,6 +29,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.TimeUnit
 
 private val signedIn
     get() = EhCookieStore.hasSignedIn()
@@ -66,7 +67,7 @@ private fun getDailyCheckWorkRequest(): PeriodicWorkRequest {
         .build()
     return PeriodicWorkRequestBuilder<DailyCheckWork>(Duration.ofDays(1))
         .setConstraints(constraints)
-        .setInitialDelay(initialDelay)
+        .setInitialDelay(initialDelay.seconds, TimeUnit.SECONDS)
         .build()
 }
 

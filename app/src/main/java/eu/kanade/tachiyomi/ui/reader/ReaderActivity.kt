@@ -45,6 +45,8 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
+import androidx.annotation.ChecksSdkIntAtLeast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -76,6 +78,7 @@ import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getParcelableExtraCompat
+import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import dev.chrisbanes.insetter.applyInsetter
@@ -300,12 +303,12 @@ class ReaderActivity : EhActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.colorMode = if (Image.isWideColorGamut && ReaderPreferences.wideColorGamut()
-                .get()
-        ) {
-            ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
-        } else {
-            ActivityInfo.COLOR_MODE_DEFAULT
+        if (isAtLeastO) {
+            window.colorMode = if (Image.isWideColorGamut && ReaderPreferences.wideColorGamut().get()) {
+                ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
+            } else {
+                ActivityInfo.COLOR_MODE_DEFAULT
+            }
         }
         if (savedInstanceState == null) {
             onInit()
@@ -600,6 +603,7 @@ class ReaderActivity : EhActivity() {
     var viewer: BaseViewer? = null
         private set
 
+    @get:ChecksSdkIntAtLeast(Build.VERSION_CODES.P)
     val hasCutout by lazy { hasDisplayCutout() }
 
     private var config: ReaderConfig? = null
@@ -922,9 +926,11 @@ class ReaderActivity : EhActivity() {
                 .onEach { setTrueColor(it) }
                 .launchIn(lifecycleScope)
 
-            ReaderPreferences.cutoutShort().changes()
-                .onEach { setCutoutShort(it) }
-                .launchIn(lifecycleScope)
+            if (hasCutout) {
+                ReaderPreferences.cutoutShort().changes()
+                    .onEach { setCutoutShort(it) }
+                    .launchIn(lifecycleScope)
+            }
 
             ReaderPreferences.keepScreenOn().changes()
                 .onEach { setKeepScreenOn(it) }
@@ -991,6 +997,7 @@ class ReaderActivity : EhActivity() {
             // TODO()
         }
 
+        @RequiresApi(Build.VERSION_CODES.P)
         private fun setCutoutShort(enabled: Boolean) {
             window.attributes.layoutInDisplayCutoutMode = when (enabled) {
                 true -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES

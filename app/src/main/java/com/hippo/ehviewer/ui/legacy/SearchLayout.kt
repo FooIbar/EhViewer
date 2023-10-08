@@ -2,7 +2,6 @@ package com.hippo.ehviewer.ui.legacy
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageDecoder
 import android.net.Uri
 import android.util.AttributeSet
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,14 +39,13 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.exception.EhException
-import com.hippo.ehviewer.image.Image
+import com.hippo.ehviewer.image.decodeBitmap
 import com.hippo.ehviewer.ui.main.AdvancedSearchOption
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.NormalSearch
 import com.hippo.ehviewer.ui.main.SearchAdvanced
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.pickVisualMedia
-import com.hippo.unifile.UniFile
 import kotlinx.coroutines.launch
 
 class SearchViewModel : ViewModel() {
@@ -183,9 +181,8 @@ class SearchLayout @JvmOverloads constructor(
                 urlBuilder.mode = ListUrlBuilder.MODE_IMAGE_SEARCH
                 if (vm.path.isBlank()) throw EhException(context.getString(R.string.select_image_first))
                 val uri = Uri.parse(vm.path)
-                val src = UniFile.fromUri(context, uri)?.imageSource ?: return
                 val temp = AppConfig.createTempFile() ?: return
-                val bitmap = ImageDecoder.decodeBitmap(src, Image.imageSearchDecoderSampleListener)
+                val bitmap = context.decodeBitmap(uri) ?: return
                 temp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
                 urlBuilder.imagePath = temp.path
                 urlBuilder.isUseSimilarityScan = vm.uss

@@ -1,6 +1,6 @@
 [versions]
 aboutlibraries = "10.9.1"
-agp = "8.1.2"
+agp = "8.3.0-alpha07"
 android-tools-r8 = "8.3.6-dev"
 androidx-activity = "1.8.0"
 androidx-appcompat = "1.6.1"
@@ -86,6 +86,8 @@ compose-material-icons-extended = { module = "androidx.compose.material:material
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
 compose-ui-util = { module = "androidx.compose.ui:ui-util" }
+
+desugar = "com.android.tools:desugar_jdk_libs:2.0.3"
 
 directionalviewpager = "com.github.tachiyomiorg:DirectionalViewPager:1.0.0"
 drawer = "com.drakeet.drawer:drawer:1.0.3"

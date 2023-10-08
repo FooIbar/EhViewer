@@ -29,6 +29,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.ServiceCompat
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -414,7 +415,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
     private fun checkStopSelf() {
         launch {
             if (deferredMgr.await().isIdle) {
-                stopForeground(STOP_FOREGROUND_REMOVE)
+                ServiceCompat.stopForeground(this@DownloadService, STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
         }

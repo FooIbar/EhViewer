@@ -47,6 +47,7 @@ import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
+import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isCronetSupported
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
@@ -147,7 +148,9 @@ class EhApplication : Application(), ImageLoaderFactory {
             } else {
                 callFactory(baseOkHttpClient)
             }
-            add { result, options, _ -> ImageDecoderDecoder(result.source, options, false) }
+            if (isAtLeastP) {
+                add(ImageDecoderDecoder.Factory(false))
+            }
             add(MergeInterceptor)
         }
         diskCache(imageCache)
