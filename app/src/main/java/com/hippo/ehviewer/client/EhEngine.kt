@@ -61,7 +61,6 @@ import kotlinx.serialization.json.addJsonArray
 import kotlinx.serialization.json.put
 import moe.tarsin.coroutines.removeAllSuspend
 import moe.tarsin.coroutines.runSuspendCatching
-import okhttp3.Headers
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -75,30 +74,20 @@ import kotlin.math.ceil
 
 private const val TAG = "EhEngine"
 private const val MAX_REQUEST_SIZE = 25
-private const val SAD_PANDA_DISPOSITION = "inline; filename=\"sadpanda.jpg\""
-private const val SAD_PANDA_TYPE = "image/gif"
-private const val SAD_PANDA_LENGTH = "9615"
-private const val KOKOMADE_URL = "https://exhentai.org/img/kokomade.jpg"
 private const val U_CONFIG_TEXT = "Selected Profile"
 private val MEDIA_TYPE_JPEG: MediaType = "image/jpeg".toMediaType()
 
-private fun rethrowExactly(code: Int, headers: Headers, body: String, e: Throwable): Nothing {
+private fun rethrowExactly(code: Int, body: String, e: Throwable): Nothing {
     // Don't translate coroutine cancellation
     if (e is CancellationException) throw e
 
-    // Check sad panda
-    if (SAD_PANDA_DISPOSITION == headers["Content-Disposition"] && SAD_PANDA_TYPE == headers["Content-Type"] && SAD_PANDA_LENGTH == headers["Content-Length"]) {
-        throw EhException("Sad Panda")
-    }
-
     // Check sad panda(without panda)
-    if ("text/html; charset=UTF-8" == headers["Content-Type"] && "0" == headers["Content-Length"] && EhUtils.isExHentai) {
-        throw EhException("Sad Panda\n(without panda)")
-    }
-
-    // Check kokomade
-    if (body.contains(KOKOMADE_URL)) {
-        throw EhException("今回はここまで ${appCtx.getString(R.string.kokomade_tip)}".trimIndent())
+    if (body.isEmpty()) {
+        if (EhUtils.isExHentai) {
+            throw EhException("Sad Panda\n(without panda)")
+        } else {
+            throw EhException(appCtx.getString(R.string.error_empty_html))
+        }
     }
 
     // Check Gallery Not Available
@@ -115,9 +104,7 @@ private fun rethrowExactly(code: Int, headers: Headers, body: String, e: Throwab
     }
 
     if (e is ParseException) {
-        if (body.isEmpty()) {
-            throw EhException(appCtx.getString(R.string.error_empty_html))
-        } else if ("<" !in body) {
+        if ("<" !in body) {
             throw EhException(body)
         } else {
             if (Settings.saveParseErrorBody) AppConfig.saveParseErrorBody(e, body)
@@ -169,7 +156,7 @@ private suspend inline fun <T> Request.executeAndParsingWith(block: suspend Stri
         try {
             block(body)
         } catch (e: Exception) {
-            rethrowExactly(code, headers, body, e)
+            rethrowExactly(code, body, e)
         }
     }
 }
