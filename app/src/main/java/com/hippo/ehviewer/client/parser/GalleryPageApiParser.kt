@@ -26,8 +26,7 @@ object GalleryPageApiParser {
     private val PATTERN_SKIP_HATH_KEY = Regex("onclick=\"return nl\\('([^)]+)'\\)")
     private val PATTERN_ORIGIN_IMAGE_URL = Regex("<a href=\"([^\"]+)fullimg.php([^\"]+)\">")
 
-    fun parse(body: String): Result {
-        runCatching { body.parseAs<Error>() }.onSuccess { throw ParseException(it.error) }
+    fun parse(body: String) = runCatching {
         val res = body.parseAs<JsonResult>()
         val imageUrl = PATTERN_IMAGE_URL.find(res.imageUrl)?.run {
             groupValues[1].trim().unescapeXml()
@@ -38,11 +37,11 @@ object GalleryPageApiParser {
         val originImageUrl = PATTERN_ORIGIN_IMAGE_URL.find(res.originImageUrl)?.run {
             groupValues[1].unescapeXml() + "fullimg.php" + groupValues[2].unescapeXml()
         }
-        if (!imageUrl.isNullOrEmpty()) {
-            return Result(imageUrl, skipHathKey, originImageUrl)
-        } else {
-            throw ParseException("Parse image url and skip hath key error")
-        }
+        check(!imageUrl.isNullOrEmpty())
+        Result(imageUrl, skipHathKey, originImageUrl)
+    }.getOrElse { e ->
+        runCatching { body.parseAs<Error>() }.onSuccess { throw ParseException(it.error) }
+        throw ParseException("Parse image url and skip hath key error", e)
     }
 
     @Serializable
