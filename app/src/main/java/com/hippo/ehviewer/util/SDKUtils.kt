@@ -3,6 +3,7 @@ package com.hippo.ehviewer.util
 import android.os.Build
 import android.os.ext.SdkExtensions
 
+val isAtLeastN = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
 val isAtLeastO = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
 val isAtLeastP = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
 val isAtLeastQ = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
