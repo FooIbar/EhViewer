@@ -40,7 +40,7 @@ import splitties.init.appCtx
 
 private val diffCallback = object : DiffUtil.ItemCallback<BaseGalleryInfo>() {
     override fun areItemsTheSame(oldItem: BaseGalleryInfo, newItem: BaseGalleryInfo) = oldItem.gid == newItem.gid
-    override fun areContentsTheSame(oldItem: BaseGalleryInfo, newItem: BaseGalleryInfo) = oldItem.gid == newItem.gid
+    override fun areContentsTheSame(oldItem: BaseGalleryInfo, newItem: BaseGalleryInfo) = oldItem == newItem
 }
 
 class GalleryAdapter(

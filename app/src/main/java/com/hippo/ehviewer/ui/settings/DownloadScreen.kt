@@ -33,6 +33,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine.fillGalleryListByApi
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.spider.SpiderQueen
@@ -197,7 +198,7 @@ fun DownloadScreen() {
                         } else {
                             val count = result.filterNot { it.title.isNullOrBlank() }.map {
                                 EhDB.putDownloadDirname(it.gid, it.dirname)
-                                DownloadManager.restoreDownload(it, it.dirname)
+                                DownloadManager.restoreDownload(it.galleryInfo, it.dirname)
                             }.size
                             launchSnackBar(RESTORE_COUNT_MSG(count + restoreDirCount))
                         }
@@ -234,7 +235,7 @@ fun DownloadScreen() {
     }
 }
 
-private class RestoreItem(val dirname: String) : BaseGalleryInfo()
+private class RestoreItem(val dirname: String, val galleryInfo: BaseGalleryInfo = BaseGalleryInfo()) : GalleryInfo by galleryInfo
 private val RESTORE_NOT_FOUND = appCtx.getString(R.string.settings_download_restore_not_found)
 private val RESTORE_COUNT_MSG = { cnt: Int -> if (cnt == 0) RESTORE_NOT_FOUND else appCtx.getString(R.string.settings_download_restore_successfully, cnt) }
 private val NO_REDUNDANCY = appCtx.getString(R.string.settings_download_clean_redundancy_no_redundancy)

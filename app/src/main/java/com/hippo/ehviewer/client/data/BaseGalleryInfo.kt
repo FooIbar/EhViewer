@@ -25,7 +25,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 @Entity(tableName = "GALLERIES")
-open class BaseGalleryInfo(
+data class BaseGalleryInfo(
     @PrimaryKey
     @ColumnInfo(name = "GID")
     override var gid: Long = 0,
