@@ -32,11 +32,11 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import coil.decode.BitmapFactoryDecoder
 import coil.decode.DecodeUtils
-import coil.decode.GifDecoder
 import coil.decode.ImageSource
 import coil.decode.isGif
 import coil.request.Options
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
@@ -97,9 +97,9 @@ class Image private constructor(private val src: AutoCloseable) {
                         decodeDrawable(src.source.imageSource)
                     } else {
                         ImageSource(src.source.openInputStream().source().buffer(), appCtx).use {
-                            val options = Options(appCtx)
+                            val options = Options(appCtx, colorSpace = if (isAtLeastO) colorSpace else null)
                             if (DecodeUtils.isGif(it.source())) {
-                                GifDecoder(it, options).decode().drawable
+                                TODO("Unsupported")
                             } else {
                                 BitmapFactoryDecoder(it, options).decode().drawable
                             }
@@ -120,7 +120,7 @@ class Image private constructor(private val src: AutoCloseable) {
                     val source = ImageDecoder.createSource(src.source)
                     decodeDrawable(source)
                 } else {
-                    null
+                    TODO("Unsupported")
                 }.also {
                     if (it !is Animatable) src.close()
                 }
