@@ -337,7 +337,7 @@ fun EhScreen() {
                 AnimatedVisibility(visible = reqNews.value) {
                     SwitchPreference(
                         title = stringResource(id = R.string.settings_eh_hide_hv_events),
-                        value = Settings::requestNews,
+                        value = Settings::hideHvEvents,
                     )
                 }
             }
