@@ -56,6 +56,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
+import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 
 class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineScope {
@@ -517,7 +518,9 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         private val pTokenLock = Mutex()
         private var showKey: String? = null
         private val showKeyLock = Mutex()
-        private val mDownloadDelay = Settings.downloadDelay
+        private val mDownloadDelay = Settings.downloadDelay.toLong()
+        private val delayLock = Mutex()
+        private var delayedTime = 0L
         private var isDownloadMode = false
 
         fun cancelDecode(index: Int) {
@@ -600,6 +603,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     mSpiderInfo.pTokenMap[index] = TOKEN_FAILED
                 }
                 previousPToken = getPToken(index - 1)
+            }
+
+            delayLock.withLock {
+                val curTime = Instant.now().toEpochMilli()
+                delayedTime = (delayedTime + mDownloadDelay).coerceAtLeast(curTime)
+                delay(delayedTime - curTime)
             }
 
             var skipHathKey: String? = null
@@ -737,7 +746,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
                     Log.d(WORKER_DEBUG_TAG, "Download image succeed $index")
                     updatePageState(index, STATE_FINISHED)
-                    delay(mDownloadDelay.toLong())
                     return
                 }.onFailure {
                     if (it is CancellationException) {

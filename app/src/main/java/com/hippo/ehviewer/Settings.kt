@@ -30,7 +30,7 @@ object Settings : DataStorePreferences(null) {
     var downloadQuery by stringOrNullPref("image_query", null)
     var downloadFragment by stringOrNullPref("image_fragment", null)
     var archivePasswds by stringSetOrNullPref("archive_passwds")
-    var downloadDelay by intPref("download_delay_2", 0)
+    var downloadDelay by intPref("download_delay_3", 1000)
     var gallerySite by intPref("gallery_site_2", 0).observed { updateWhenGallerySiteChanges() }
     var multiThreadDownload by intPref("download_thread_2", 3)
     var preloadImage by intPref("preload_image_2", 5)
