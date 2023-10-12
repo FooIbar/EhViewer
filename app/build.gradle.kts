@@ -32,7 +32,7 @@ android {
                 include("arm64-v8a", "x86_64", "armeabi-v7a", "x86")
                 isUniversalApk = true
             } else {
-                include("arm64-v8a")
+                include("arm64-v8a", "x86_64")
             }
         }
     }
@@ -267,7 +267,7 @@ aboutLibraries {
 cargo {
     module = "src/main/rust"
     libname = "ehviewer_rust"
-    targets = if (isRelease) listOf("arm", "x86", "arm64", "x86_64") else listOf("arm64")
+    targets = if (isRelease) listOf("arm", "x86", "arm64", "x86_64") else listOf("arm64", "x86_64")
     if (isRelease) profile = "release"
 }
 
