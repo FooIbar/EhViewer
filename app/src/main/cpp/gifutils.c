@@ -49,13 +49,19 @@ Java_com_hippo_ehviewer_image_ImageKt_rewriteGifSource(JNIEnv *env, jclass clazz
     doRewrite(addr, size);
 }
 
-JNIEXPORT void JNICALL
-Java_com_hippo_ehviewer_image_ImageKt_rewriteGifSource2(JNIEnv *env, jclass clazz, jint fd) {
+JNIEXPORT jobject JNICALL
+Java_com_hippo_ehviewer_image_ImageKt_mmap(JNIEnv *env, jclass clazz, jint fd) {
     struct stat64 st;
     fstat64(fd, &st);
     size_t size = st.st_size;
-    byte *addr = mmap64(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (addr == MAP_FAILED) return;
-    doRewrite(addr, size);
+    byte *addr = mmap64(0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+    if (addr == MAP_FAILED) return NULL;
+    return (*env)->NewDirectByteBuffer(env, addr, size);
+}
+
+JNIEXPORT void JNICALL
+Java_com_hippo_ehviewer_image_ImageKt_munmap(JNIEnv *env, jclass clazz, jobject buffer) {
+    byte *addr = (*env)->GetDirectBufferAddress(env, buffer);
+    size_t size = (*env)->GetDirectBufferCapacity(env, buffer);
     munmap(addr, size);
 }
