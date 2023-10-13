@@ -35,6 +35,8 @@ import coil.decode.DecodeUtils
 import coil.decode.ImageSource
 import coil.decode.isGif
 import coil.request.Options
+import coil.size.Scale
+import coil.size.Size
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
@@ -81,8 +83,8 @@ class Image private constructor(private val src: AutoCloseable) {
                 )
             }
         }
-        private val screenWidth = appCtx.resources.displayMetrics.widthPixels
-        private val screenHeight = appCtx.resources.displayMetrics.heightPixels
+        private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 2
+        private val targetHeight = appCtx.resources.displayMetrics.heightPixels * 2
 
         @delegate:RequiresApi(Build.VERSION_CODES.O)
         val isWideColorGamut by lazy { appCtx.resources.configuration.isScreenWideColorGamut }
@@ -97,10 +99,15 @@ class Image private constructor(private val src: AutoCloseable) {
                         decodeDrawable(src.source.imageSource)
                     } else {
                         ImageSource(src.source.openInputStream().source().buffer(), appCtx).use {
-                            val options = Options(appCtx, colorSpace = if (isAtLeastO) colorSpace else null)
                             if (DecodeUtils.isGif(it.source())) {
                                 TODO("Unsupported")
                             } else {
+                                val options = Options(
+                                    appCtx,
+                                    colorSpace = if (isAtLeastO) colorSpace else null,
+                                    size = Size(targetWidth, targetHeight),
+                                    scale = Scale.FILL,
+                                )
                                 BitmapFactoryDecoder(it, options).decode().drawable
                             }
                         }
@@ -137,9 +144,33 @@ class Image private constructor(private val src: AutoCloseable) {
                 decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
             }
             decoder.setTargetColorSpace(colorSpace)
-            decoder.setTargetSampleSize(
-                calculateSampleSize(info, 2 * screenHeight, 2 * screenWidth),
-            )
+            decoder.setTargetSampleSize(calculateSampleSize(info, targetHeight, targetWidth))
+        }
+
+        fun Context.decodeBitmap(uri: Uri): Bitmap? = if (isAtLeastP) {
+            val src = ImageDecoder.createSource(contentResolver, uri)
+            ImageDecoder.decodeBitmap(src, imageSearchDecoderSampleListener)
+        } else {
+            contentResolver.openFileDescriptor(uri, "r")!!.use {
+                val options = BitmapFactory.Options()
+
+                // Disable these since we straight up compress the bitmap to JPEG
+                options.inScaled = false
+                options.inPremultiplied = false
+
+                options.inJustDecodeBounds = true
+                BitmapFactory.decodeFileDescriptor(it.fileDescriptor, null, options)
+                options.inJustDecodeBounds = false
+
+                options.inSampleSize = DecodeUtils.calculateInSampleSize(
+                    options.outWidth,
+                    options.outHeight,
+                    imageSearchMaxSize,
+                    imageSearchMaxSize,
+                    Scale.FILL,
+                )
+                BitmapFactory.decodeFileDescriptor(it.fileDescriptor, null, options)
+            }
         }
     }
 
@@ -149,15 +180,6 @@ class Image private constructor(private val src: AutoCloseable) {
 
     interface ByteBufferSource : AutoCloseable {
         val source: ByteBuffer
-    }
-}
-
-fun Context.decodeBitmap(uri: Uri): Bitmap? = if (isAtLeastP) {
-    val src = ImageDecoder.createSource(contentResolver, uri)
-    ImageDecoder.decodeBitmap(src, Image.imageSearchDecoderSampleListener)
-} else {
-    contentResolver.openFileDescriptor(uri, "r")!!.use {
-        BitmapFactory.decodeFileDescriptor(it.fileDescriptor)
     }
 }
 
