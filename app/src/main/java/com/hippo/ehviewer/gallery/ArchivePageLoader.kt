@@ -21,9 +21,7 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import com.hippo.ehviewer.Settings.archivePasswds
 import com.hippo.ehviewer.image.Image
-import com.hippo.ehviewer.image.rewriteGifSource
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -102,12 +100,8 @@ class ArchivePageLoader(context: Context, private val uri: Uri, passwdFlow: Flow
         val buffer = extractToByteBuffer(index)
         buffer ?: return
         check(buffer.isDirect)
-        if (!isAtLeastU) {
-            rewriteGifSource(buffer)
-        }
         val src = object : Image.ByteBufferSource {
-            override val source
-                get() = buffer!!
+            override val source: ByteBuffer = buffer
 
             override fun close() {
                 releaseByteBuffer(buffer)
