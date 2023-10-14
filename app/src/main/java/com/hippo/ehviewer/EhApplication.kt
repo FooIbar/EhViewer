@@ -81,7 +81,9 @@ class EhApplication : Application(), ImageLoaderFactory {
             handler?.uncaughtException(t, e)
         }
         super.onCreate()
-        System.loadLibrary("ehviewer")
+        if (isAtLeastP) {
+            System.loadLibrary("ehviewer")
+        }
         System.loadLibrary("ehviewer_rust")
         ReadableTime.initialize(this)
         lifecycleScope.launchIO {

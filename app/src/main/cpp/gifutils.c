@@ -46,21 +46,21 @@ static void doRewrite(byte *addr, size_t size) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_image_ImageKt_isGif(JNIEnv *env, jclass clazz, jint fd) {
+Java_com_hippo_ehviewer_jni_GifUtilsKt_isGif(JNIEnv *env, jclass clazz, jint fd) {
     byte buffer[GIF_HEADER_LENGTH];
     return read(fd, buffer, GIF_HEADER_LENGTH) == GIF_HEADER_LENGTH &&
            isGif(buffer);
 }
 
 JNIEXPORT void JNICALL
-Java_com_hippo_ehviewer_image_ImageKt_rewriteGifSource(JNIEnv *env, jclass clazz, jobject buffer) {
+Java_com_hippo_ehviewer_jni_GifUtilsKt_rewriteGifSource(JNIEnv *env, jclass clazz, jobject buffer) {
     byte *addr = (*env)->GetDirectBufferAddress(env, buffer);
     size_t size = (*env)->GetDirectBufferCapacity(env, buffer);
     doRewrite(addr, size);
 }
 
 JNIEXPORT jobject JNICALL
-Java_com_hippo_ehviewer_image_ImageKt_mmap(JNIEnv *env, jclass clazz, jint fd) {
+Java_com_hippo_ehviewer_jni_GifUtilsKt_mmap(JNIEnv *env, jclass clazz, jint fd) {
     struct stat64 st;
     fstat64(fd, &st);
     size_t size = st.st_size;
@@ -70,7 +70,7 @@ Java_com_hippo_ehviewer_image_ImageKt_mmap(JNIEnv *env, jclass clazz, jint fd) {
 }
 
 JNIEXPORT void JNICALL
-Java_com_hippo_ehviewer_image_ImageKt_munmap(JNIEnv *env, jclass clazz, jobject buffer) {
+Java_com_hippo_ehviewer_jni_GifUtilsKt_munmap(JNIEnv *env, jclass clazz, jobject buffer) {
     byte *addr = (*env)->GetDirectBufferAddress(env, buffer);
     size_t size = (*env)->GetDirectBufferCapacity(env, buffer);
     munmap(addr, size);

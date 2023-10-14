@@ -79,6 +79,7 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.isAtLeastO
+import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import dev.chrisbanes.insetter.applyInsetter
@@ -196,54 +197,58 @@ class ReaderActivity : EhActivity() {
         if (ACTION_EH == mAction) {
             mGalleryInfo?.let { mGalleryProvider = EhPageLoader(it) }
         } else if (Intent.ACTION_VIEW == mAction) {
-            if (mUri != null) {
-                try {
-                    grantUriPermission(
-                        BuildConfig.APPLICATION_ID,
-                        mUri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                    )
-                } catch (e: Exception) {
-                    Toast.makeText(this, R.string.error_reading_failed, Toast.LENGTH_SHORT).show()
-                }
+            if (isAtLeastP) {
+                if (mUri != null) {
+                    try {
+                        grantUriPermission(
+                            BuildConfig.APPLICATION_ID,
+                            mUri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                        )
+                    } catch (e: Exception) {
+                        Toast.makeText(this, R.string.error_reading_failed, Toast.LENGTH_SHORT).show()
+                    }
 
-                val continuation: AtomicReference<Continuation<String>?> = AtomicReference(null)
-                mGalleryProvider = ArchivePageLoader(
-                    this,
-                    mUri!!,
-                    flow {
-                        if (!dialogShown) {
-                            withUIContext {
-                                dialogShown = true
-                                dialog.run {
-                                    show()
-                                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                                        val passwd = builder.text
-                                        if (passwd.isEmpty()) {
-                                            builder.setError(getString(R.string.passwd_cannot_be_empty))
-                                        } else {
-                                            continuation.getAndSet(null)?.resume(passwd)
+                    val continuation: AtomicReference<Continuation<String>?> = AtomicReference(null)
+                    mGalleryProvider = ArchivePageLoader(
+                        this,
+                        mUri!!,
+                        flow {
+                            if (!dialogShown) {
+                                withUIContext {
+                                    dialogShown = true
+                                    dialog.run {
+                                        show()
+                                        getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                                            val passwd = builder.text
+                                            if (passwd.isEmpty()) {
+                                                builder.setError(getString(R.string.passwd_cannot_be_empty))
+                                            } else {
+                                                continuation.getAndSet(null)?.resume(passwd)
+                                            }
                                         }
-                                    }
-                                    setOnCancelListener {
-                                        finish()
+                                        setOnCancelListener {
+                                            finish()
+                                        }
                                     }
                                 }
                             }
-                        }
-                        while (true) {
-                            currentCoroutineContext().ensureActive()
-                            val r = suspendCancellableCoroutine {
-                                continuation.set(it)
-                                it.invokeOnCancellation { dialog.dismiss() }
+                            while (true) {
+                                currentCoroutineContext().ensureActive()
+                                val r = suspendCancellableCoroutine {
+                                    continuation.set(it)
+                                    it.invokeOnCancellation { dialog.dismiss() }
+                                }
+                                emit(r)
+                                withUIContext {
+                                    builder.setError(getString(R.string.passwd_wrong))
+                                }
                             }
-                            emit(r)
-                            withUIContext {
-                                builder.setError(getString(R.string.passwd_wrong))
-                            }
-                        }
-                    },
-                )
+                        },
+                    )
+                }
+            } else {
+                Toast.makeText(this, "Archives are not supported before Android P", Toast.LENGTH_LONG).show()
             }
         }
     }

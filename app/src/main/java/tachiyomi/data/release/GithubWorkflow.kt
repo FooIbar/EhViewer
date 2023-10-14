@@ -1,6 +1,5 @@
 package tachiyomi.data.release
 
-import android.os.Build
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -21,7 +20,6 @@ data class GithubArtifacts(
     @SerialName("artifacts") val artifacts: List<GithubArtifact>,
 ) {
     fun getDownloadLink(): String {
-        val apkVariant = Build.SUPPORTED_ABIS[0]
         return (artifacts.find { it.name.contains(apkVariant) } ?: artifacts[0]).downloadLink
     }
 }

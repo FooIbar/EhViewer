@@ -1,8 +1,11 @@
 package tachiyomi.data.release
 
 import android.os.Build
+import com.hippo.ehviewer.BuildConfig
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+val apkVariant = "${BuildConfig.FLAVOR}-${Build.SUPPORTED_ABIS[0]}"
 
 /**
  * Contains information about the latest release from GitHub.
@@ -15,8 +18,9 @@ data class GithubRelease(
     @SerialName("assets") val assets: List<GitHubAssets>,
 ) {
     fun getDownloadLink(): String {
-        val apkVariant = Build.SUPPORTED_ABIS[0]
-        return (assets.find { it.downloadLink.contains(apkVariant) } ?: assets.find { it.downloadLink.contains("universal") } ?: assets[0]).downloadLink
+        val asset = assets.find { it.downloadLink.contains(apkVariant) }
+            ?: assets.find { it.downloadLink.contains("${BuildConfig.FLAVOR}-universal") } ?: assets[0]
+        return asset.downloadLink
     }
 }
 

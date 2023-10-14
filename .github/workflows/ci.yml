@@ -63,35 +63,71 @@ jobs:
       - name: Update ARM64
         uses: actions/upload-artifact@v3
         with:
-          name: arm64-v8a-${{ github.sha }}
-          path: app/build/outputs/apk/release/app-arm64-v8a-release.apk
+          name: default-arm64-v8a-${{ github.sha }}
+          path: app/build/outputs/apk/default/release/app-default-arm64-v8a-release.apk
 
       - name: Update x86_64
         uses: actions/upload-artifact@v3
         with:
-          name: x86_64-${{ github.sha }}
-          path: app/build/outputs/apk/release/app-x86_64-release.apk
+          name: default-x86_64-${{ github.sha }}
+          path: app/build/outputs/apk/default/release/app-default-x86_64-release.apk
 
       - name: Update ARM32
         uses: actions/upload-artifact@v3
         with:
-          name: armeabi-v7a-${{ github.sha }}
-          path: app/build/outputs/apk/release/app-armeabi-v7a-release.apk
+          name: default-armeabi-v7a-${{ github.sha }}
+          path: app/build/outputs/apk/default/release/app-default-armeabi-v7a-release.apk
 
       - name: Update x86
         uses: actions/upload-artifact@v3
         with:
-          name: x86-${{ github.sha }}
-          path: app/build/outputs/apk/release/app-x86-release.apk
+          name: default-x86-${{ github.sha }}
+          path: app/build/outputs/apk/default/release/app-default-x86-release.apk
 
       - name: Update mapping
         uses: actions/upload-artifact@v3
         with:
-          name: mapping-${{ github.sha }}
-          path: app/build/outputs/mapping/release/mapping.txt
+          name: default-mapping-${{ github.sha }}
+          path: app/build/outputs/mapping/defaultRelease/mapping.txt
 
       - name: Update native debug symbols
         uses: actions/upload-artifact@v3
         with:
-          name: native-debug-symbols-${{ github.sha }}
-          path: app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
+          name: default-native-debug-symbols-${{ github.sha }}
+          path: app/build/outputs/native-debug-symbols/defaultRelease/native-debug-symbols.zip
+
+      - name: Update Marshmallow ARM64
+        uses: actions/upload-artifact@v3
+        with:
+          name: marshmallow-arm64-v8a-${{ github.sha }}
+          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-arm64-v8a-release.apk
+
+      - name: Update Marshmallow x86_64
+        uses: actions/upload-artifact@v3
+        with:
+          name: marshmallow-x86_64-${{ github.sha }}
+          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-x86_64-release.apk
+
+      - name: Update Marshmallow ARM32
+        uses: actions/upload-artifact@v3
+        with:
+          name: marshmallow-armeabi-v7a-${{ github.sha }}
+          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-armeabi-v7a-release.apk
+
+      - name: Update Marshmallow x86
+        uses: actions/upload-artifact@v3
+        with:
+          name: marshmallow-x86-${{ github.sha }}
+          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-x86-release.apk
+
+      - name: Update Marshmallow mapping
+        uses: actions/upload-artifact@v3
+        with:
+          name: marshmallow-mapping-${{ github.sha }}
+          path: app/build/outputs/mapping/marshmallowRelease/mapping.txt
+
+      - name: Update Marshmallow native debug symbols
+        uses: actions/upload-artifact@v3
+        with:
+          name: marshmallow-native-debug-symbols-${{ github.sha }}
+          path: app/build/outputs/native-debug-symbols/marshmallowRelease/native-debug-symbols.zip
