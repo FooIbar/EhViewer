@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include <android/log.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -11,6 +12,7 @@
 
 #define GIF_HEADER_87A "GIF87a"
 #define GIF_HEADER_89A "GIF89a"
+#define GIF_HEADER_LENGTH 6
 
 static int FRAME_DELAY_START_MARKER = 0x0021F904;
 
@@ -20,8 +22,11 @@ typedef signed char byte;
 #define MINIMUM_FRAME_DELAY 2
 #define DEFAULT_FRAME_DELAY 10
 
+static byte gif_header_buffer[GIF_HEADER_LENGTH];
+
 static inline bool isGif(void *addr) {
-    return !memcmp(addr, GIF_HEADER_87A, 6) || !memcmp(addr, GIF_HEADER_89A, 6);
+    return !memcmp(addr, GIF_HEADER_87A, GIF_HEADER_LENGTH) ||
+           !memcmp(addr, GIF_HEADER_89A, GIF_HEADER_LENGTH);
 }
 
 static void doRewrite(byte *addr, size_t size) {
@@ -40,6 +45,12 @@ static void doRewrite(byte *addr, size_t size) {
             end[2] = 0;
         }
     }
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_hippo_ehviewer_image_ImageKt_isGif(JNIEnv *env, jclass clazz, jint fd) {
+    return read(fd, gif_header_buffer, GIF_HEADER_LENGTH) == GIF_HEADER_LENGTH &&
+           isGif(gif_header_buffer);
 }
 
 JNIEXPORT void JNICALL

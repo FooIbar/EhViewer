@@ -98,22 +98,24 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                     is UniFileSource -> {
                         if (isAtLeastP) {
                             if (!isAtLeastU) {
-                                val buffer = src.source.openFileDescriptor("rw").use {
-                                    mmap(it.fd)!!
-                                }
-                                val source = object : ByteBufferSource {
-                                    override val source = buffer
-                                    override fun close() {
-                                        munmap(buffer)
-                                        src.close()
+                                src.source.openFileDescriptor("rw").use {
+                                    val fd = it.fd
+                                    if (isGif(fd)) {
+                                        val buffer = mmap(fd)!!
+                                        val source = object : ByteBufferSource {
+                                            override val source = buffer
+                                            override fun close() {
+                                                munmap(buffer)
+                                                src.close()
+                                            }
+                                        }
+                                        return decode(source)
                                     }
                                 }
-                                decode(source)
-                            } else {
-                                val drawable = decodeDrawable(src.source.imageSource)
-                                if (drawable !is Animatable) src.close()
-                                Image(drawable, src)
                             }
+                            val drawable = decodeDrawable(src.source.imageSource)
+                            if (drawable !is Animatable) src.close()
+                            Image(drawable, src)
                         } else {
                             val options = Options(
                                 appCtx,
@@ -197,6 +199,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
     }
 }
 
+external fun isGif(fd: Int): Boolean
 external fun rewriteGifSource(buffer: ByteBuffer)
 external fun mmap(fd: Int): ByteBuffer?
 external fun munmap(buffer: ByteBuffer)
