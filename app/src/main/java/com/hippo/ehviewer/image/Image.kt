@@ -37,6 +37,10 @@ import coil.request.Options
 import coil.size.Scale
 import coil.size.Size
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.jni.isGif
+import com.hippo.ehviewer.jni.mmap
+import com.hippo.ehviewer.jni.munmap
+import com.hippo.ehviewer.jni.rewriteGifSource
 import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastU
@@ -198,8 +202,3 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
         val source: ByteBuffer
     }
 }
-
-external fun isGif(fd: Int): Boolean
-external fun rewriteGifSource(buffer: ByteBuffer)
-external fun mmap(fd: Int): ByteBuffer?
-external fun munmap(buffer: ByteBuffer)

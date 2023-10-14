@@ -45,21 +45,37 @@ jobs:
 
       - name: Rename Apks
         run: |
-          cp app/build/outputs/apk/release/app-universal-release.apk app/build/outputs/apk/release/EhViewer-universal.apk
-          cp app/build/outputs/apk/release/app-arm64-v8a-release.apk app/build/outputs/apk/release/EhViewer-arm64-v8a.apk
-          cp app/build/outputs/apk/release/app-x86_64-release.apk app/build/outputs/apk/release/EhViewer-x86_64.apk
-          cp app/build/outputs/apk/release/app-x86-release.apk app/build/outputs/apk/release/EhViewer-x86.apk
-          cp app/build/outputs/apk/release/app-armeabi-v7a-release.apk app/build/outputs/apk/release/EhViewer-armeabi-v7a.apk
+          cp app/build/outputs/apk/default/release/app-universal-release.apk EhViewer-universal.apk
+          cp app/build/outputs/apk/default/release/app-arm64-v8a-release.apk EhViewer-arm64-v8a.apk
+          cp app/build/outputs/apk/default/release/app-x86_64-release.apk EhViewer-x86_64.apk
+          cp app/build/outputs/apk/default/release/app-x86-release.apk EhViewer-x86.apk
+          cp app/build/outputs/apk/default/release/app-armeabi-v7a-release.apk EhViewer-armeabi-v7a.apk
+          cp app/build/outputs/mapping/defaultRelease/mapping.txt .
+          cp app/build/outputs/native-debug-symbols/defaultRelease/native-debug-symbols.zip .
+          cp app/build/outputs/apk/marshmallow/release/app-universal-release.apk EhViewer-marshmallow-universal.apk
+          cp app/build/outputs/apk/marshmallow/release/app-arm64-v8a-release.apk EhViewer-marshmallow-arm64-v8a.apk
+          cp app/build/outputs/apk/marshmallow/release/app-x86_64-release.apk EhViewer-marshmallow-x86_64.apk
+          cp app/build/outputs/apk/marshmallow/release/app-x86-release.apk EhViewer-marshmallow-x86.apk
+          cp app/build/outputs/apk/marshmallow/release/app-armeabi-v7a-release.apk EhViewer-marshmallow-armeabi-v7a.apk
+          cp app/build/outputs/mapping/marshmallowRelease/mapping.txt mapping-marshmallow.txt
+          cp app/build/outputs/native-debug-symbols/marshmallowRelease/native-debug-symbols.zip native-debug-symbols-marshmallow.zip
 
       - name: Releases
         uses: softprops/action-gh-release@v1
         with:
           body: Bump Version
           files: |
-            app/build/outputs/apk/release/EhViewer-universal.apk
-            app/build/outputs/apk/release/EhViewer-arm64-v8a.apk
-            app/build/outputs/apk/release/EhViewer-x86_64.apk
-            app/build/outputs/apk/release/EhViewer-x86.apk
-            app/build/outputs/apk/release/EhViewer-armeabi-v7a.apk
-            app/build/outputs/mapping/release/mapping.txt
-            app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
+            EhViewer-universal.apk
+            EhViewer-arm64-v8a.apk
+            EhViewer-x86_64.apk
+            EhViewer-x86.apk
+            EhViewer-armeabi-v7a.apk
+            mapping.txt
+            native-debug-symbols.zip
+            EhViewer-marshmallow-universal.apk
+            EhViewer-marshmallow-arm64-v8a.apk
+            EhViewer-marshmallow-x86_64.apk
+            EhViewer-marshmallow-x86.apk
+            EhViewer-marshmallow-armeabi-v7a.apk
+            mapping-marshmallow.txt
+            native-debug-symbols-marshmallow.zip

@@ -13,14 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:RequiresApi(Build.VERSION_CODES.P)
+
 package com.hippo.ehviewer.gallery
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.hippo.ehviewer.Settings.archivePasswds
 import com.hippo.ehviewer.image.Image
+import com.hippo.ehviewer.jni.closeArchive
+import com.hippo.ehviewer.jni.extractToByteBuffer
+import com.hippo.ehviewer.jni.extractToFd
+import com.hippo.ehviewer.jni.getFilename
+import com.hippo.ehviewer.jni.needPassword
+import com.hippo.ehviewer.jni.openArchive
+import com.hippo.ehviewer.jni.providePassword
+import com.hippo.ehviewer.jni.releaseByteBuffer
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.unifile.UniFile
 import kotlinx.coroutines.CoroutineScope
@@ -169,12 +181,3 @@ class ArchivePageLoader(context: Context, private val uri: Uri, passwdFlow: Flow
 }
 
 private const val DEBUG_TAG = "ArchivePageLoader"
-
-private external fun releaseByteBuffer(buffer: ByteBuffer)
-private external fun openArchive(fd: Int, size: Long): Int
-private external fun extractToByteBuffer(index: Int): ByteBuffer?
-private external fun extractToFd(index: Int, fd: Int)
-private external fun getFilename(index: Int): String
-private external fun needPassword(): Boolean
-private external fun providePassword(str: String): Boolean
-private external fun closeArchive()

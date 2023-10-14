@@ -62,7 +62,7 @@ android {
 
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
-        minSdk = 23
+        minSdk = 28
         targetSdk = 34
         versionCode = 180043
         versionName = "1.8.10.0-SNAPSHOT"
@@ -89,6 +89,25 @@ android {
         }
     }
 
+    flavorDimensions += "api"
+
+    productFlavors {
+        create("default")
+        create("marshmallow") {
+            minSdk = 23
+            applicationIdSuffix = ".m"
+            versionNameSuffix = "-m"
+            externalNativeBuild {
+                cmake {
+                    targets += "noop"
+                }
+            }
+            compileOptions {
+                isCoreLibraryDesugaringEnabled = true
+            }
+        }
+    }
+
     externalNativeBuild {
         cmake {
             path = File("src/main/cpp/CMakeLists.txt")
@@ -96,7 +115,6 @@ android {
     }
 
     compileOptions {
-        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -288,7 +306,7 @@ spotless {
 }
 
 tasks.configureEach {
-    if (name == "mergeDebugJniLibFolders" || name == "mergeReleaseJniLibFolders") {
+    if (name.startsWith("merge") && name.endsWith("JniLibFolders")) {
         dependsOn("cargoBuild")
         // fix mergeDebugJniLibFolders  UP-TO-DATE
         inputs.dir(layout.buildDirectory.dir("rustJniLibs/android"))
