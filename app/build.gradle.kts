@@ -84,6 +84,9 @@ android {
         )
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
+        ndk {
+            debugSymbolLevel = "FULL"
+        }
     }
 
     externalNativeBuild {

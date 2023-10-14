@@ -89,4 +89,9 @@ jobs:
         with:
           name: mapping-${{ github.sha }}
           path: app/build/outputs/mapping/release/mapping.txt
-          retention-days: 5
+
+      - name: Update native debug symbols
+        uses: actions/upload-artifact@v3
+        with:
+          name: native-debug-symbols-${{ github.sha }}
+          path: app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
