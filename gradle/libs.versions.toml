@@ -77,7 +77,6 @@ chucker-nop = { module = "com.github.chuckerteam.chucker:library-no-op", version
 
 coil-bom = { module = "io.coil-kt:coil-bom", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt:coil-compose" }
-coil-gif = { module = "io.coil-kt:coil-gif" }
 
 compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "compose-bom" }
 # For renovate
@@ -132,7 +131,7 @@ accompanist = ["accompanist-themeadapter-material3", "accompanist-webview"]
 androidx-navigation = ["androidx-navigation-compose", "androidx-navigation-fragment", "androidx-navigation-ui"]
 androidx-paging = ["androidx-paging-compose", "androidx-paging-runtime"]
 androidx-recyclerview = ["androidx-recyclerview", "androidx-recyclerview-selection"]
-coil = ["coil-compose", "coil-gif"]
+coil = ["coil-compose"]
 compose = ["compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
 kotlinx-serialization = ["kotlinx-serialization-cbor", "kotlinx-serialization-json", "kotlinx-serialization-json-okio"]
 ktor = ["ktor-io-jvm", "ktor-utils-jvm"]
