@@ -96,7 +96,7 @@ android {
         create("marshmallow") {
             minSdk = 23
             applicationIdSuffix = ".m"
-            versionNameSuffix = "-m"
+            versionNameSuffix = "-M"
             externalNativeBuild {
                 cmake {
                     targets += "noop"
