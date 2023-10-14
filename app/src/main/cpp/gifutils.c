@@ -22,8 +22,6 @@ typedef signed char byte;
 #define MINIMUM_FRAME_DELAY 2
 #define DEFAULT_FRAME_DELAY 10
 
-static byte gif_header_buffer[GIF_HEADER_LENGTH];
-
 static inline bool isGif(void *addr) {
     return !memcmp(addr, GIF_HEADER_87A, GIF_HEADER_LENGTH) ||
            !memcmp(addr, GIF_HEADER_89A, GIF_HEADER_LENGTH);
@@ -49,8 +47,9 @@ static void doRewrite(byte *addr, size_t size) {
 
 JNIEXPORT jboolean JNICALL
 Java_com_hippo_ehviewer_image_ImageKt_isGif(JNIEnv *env, jclass clazz, jint fd) {
-    return read(fd, gif_header_buffer, GIF_HEADER_LENGTH) == GIF_HEADER_LENGTH &&
-           isGif(gif_header_buffer);
+    byte buffer[GIF_HEADER_LENGTH];
+    return read(fd, buffer, GIF_HEADER_LENGTH) == GIF_HEADER_LENGTH &&
+           isGif(buffer);
 }
 
 JNIEXPORT void JNICALL
