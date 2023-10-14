@@ -64,25 +64,25 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: arm64-v8a-${{ github.sha }}
-          path: app/build/outputs/apk/default/release/app-arm64-v8a-release.apk
+          path: app/build/outputs/apk/default/release/app-default-arm64-v8a-release.apk
 
       - name: Update x86_64
         uses: actions/upload-artifact@v3
         with:
           name: x86_64-${{ github.sha }}
-          path: app/build/outputs/apk/default/release/app-x86_64-release.apk
+          path: app/build/outputs/apk/default/release/app-default-x86_64-release.apk
 
       - name: Update ARM32
         uses: actions/upload-artifact@v3
         with:
           name: armeabi-v7a-${{ github.sha }}
-          path: app/build/outputs/apk/default/release/app-armeabi-v7a-release.apk
+          path: app/build/outputs/apk/default/release/app-default-armeabi-v7a-release.apk
 
       - name: Update x86
         uses: actions/upload-artifact@v3
         with:
           name: x86-${{ github.sha }}
-          path: app/build/outputs/apk/default/release/app-x86-release.apk
+          path: app/build/outputs/apk/default/release/app-default-x86-release.apk
 
       - name: Update mapping
         uses: actions/upload-artifact@v3
@@ -100,25 +100,25 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: arm64-v8a-marshmallow-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-arm64-v8a-release.apk
+          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-arm64-v8a-release.apk
 
       - name: Update Marshmallow x86_64
         uses: actions/upload-artifact@v3
         with:
           name: x86_64-marshmallow-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-x86_64-release.apk
+          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-x86_64-release.apk
 
       - name: Update Marshmallow ARM32
         uses: actions/upload-artifact@v3
         with:
           name: armeabi-v7a-marshmallow-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-armeabi-v7a-release.apk
+          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-armeabi-v7a-release.apk
 
       - name: Update Marshmallow x86
         uses: actions/upload-artifact@v3
         with:
           name: x86-marshmallow-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-x86-release.apk
+          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-x86-release.apk
 
       - name: Update Marshmallow mapping
         uses: actions/upload-artifact@v3

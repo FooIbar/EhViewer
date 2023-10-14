@@ -45,20 +45,20 @@ jobs:
 
       - name: Rename Apks
         run: |
-          cp app/build/outputs/apk/default/release/app-universal-release.apk EhViewer-universal.apk
-          cp app/build/outputs/apk/default/release/app-arm64-v8a-release.apk EhViewer-arm64-v8a.apk
-          cp app/build/outputs/apk/default/release/app-x86_64-release.apk EhViewer-x86_64.apk
-          cp app/build/outputs/apk/default/release/app-x86-release.apk EhViewer-x86.apk
-          cp app/build/outputs/apk/default/release/app-armeabi-v7a-release.apk EhViewer-armeabi-v7a.apk
-          cp app/build/outputs/mapping/defaultRelease/mapping.txt .
-          cp app/build/outputs/native-debug-symbols/defaultRelease/native-debug-symbols.zip .
-          cp app/build/outputs/apk/marshmallow/release/app-universal-release.apk EhViewer-marshmallow-universal.apk
-          cp app/build/outputs/apk/marshmallow/release/app-arm64-v8a-release.apk EhViewer-marshmallow-arm64-v8a.apk
-          cp app/build/outputs/apk/marshmallow/release/app-x86_64-release.apk EhViewer-marshmallow-x86_64.apk
-          cp app/build/outputs/apk/marshmallow/release/app-x86-release.apk EhViewer-marshmallow-x86.apk
-          cp app/build/outputs/apk/marshmallow/release/app-armeabi-v7a-release.apk EhViewer-marshmallow-armeabi-v7a.apk
-          cp app/build/outputs/mapping/marshmallowRelease/mapping.txt mapping-marshmallow.txt
-          cp app/build/outputs/native-debug-symbols/marshmallowRelease/native-debug-symbols.zip native-debug-symbols-marshmallow.zip
+          mv app/build/outputs/apk/default/release/app-default-universal-release.apk EhViewer-universal.apk
+          mv app/build/outputs/apk/default/release/app-default-arm64-v8a-release.apk EhViewer-arm64-v8a.apk
+          mv app/build/outputs/apk/default/release/app-default-x86_64-release.apk EhViewer-x86_64.apk
+          mv app/build/outputs/apk/default/release/app-default-x86-release.apk EhViewer-x86.apk
+          mv app/build/outputs/apk/default/release/app-default-armeabi-v7a-release.apk EhViewer-armeabi-v7a.apk
+          mv app/build/outputs/mapping/defaultRelease/mapping.txt .
+          mv app/build/outputs/native-debug-symbols/defaultRelease/native-debug-symbols.zip .
+          mv app/build/outputs/apk/marshmallow/release/app-marshmallow-universal-release.apk EhViewer-marshmallow-universal.apk
+          mv app/build/outputs/apk/marshmallow/release/app-marshmallow-arm64-v8a-release.apk EhViewer-marshmallow-arm64-v8a.apk
+          mv app/build/outputs/apk/marshmallow/release/app-marshmallow-x86_64-release.apk EhViewer-marshmallow-x86_64.apk
+          mv app/build/outputs/apk/marshmallow/release/app-marshmallow-x86-release.apk EhViewer-marshmallow-x86.apk
+          mv app/build/outputs/apk/marshmallow/release/app-marshmallow-armeabi-v7a-release.apk EhViewer-marshmallow-armeabi-v7a.apk
+          mv app/build/outputs/mapping/marshmallowRelease/mapping.txt mapping-marshmallow.txt
+          mv app/build/outputs/native-debug-symbols/marshmallowRelease/native-debug-symbols.zip native-debug-symbols-marshmallow.zip
 
       - name: Releases
         uses: softprops/action-gh-release@v1
