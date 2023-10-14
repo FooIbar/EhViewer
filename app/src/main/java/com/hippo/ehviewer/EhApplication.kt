@@ -149,7 +149,7 @@ class EhApplication : Application(), ImageLoaderFactory {
                 callFactory(baseOkHttpClient)
             }
             if (isAtLeastP) {
-                add(ImageDecoderDecoder.Factory(false))
+                add { result, options, _ -> ImageDecoderDecoder(result.source, options, false) }
             }
             add(MergeInterceptor)
         }
