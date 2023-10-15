@@ -93,7 +93,6 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.applySystemAnimatorScale
-import eu.kanade.tachiyomi.util.system.hasDisplayCutout
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.view.copy
 import eu.kanade.tachiyomi.util.view.popupMenu
@@ -102,6 +101,7 @@ import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.merge
@@ -375,6 +375,8 @@ class ReaderActivity : EhActivity() {
             mGalleryProvider!!.stop()
             mGalleryProvider = null
         }
+        readerSettingSheetDialog?.dismiss()
+        readerSettingSheetDialog = null
     }
 
     fun shareImage(page: Int) {
@@ -608,8 +610,9 @@ class ReaderActivity : EhActivity() {
     var viewer: BaseViewer? = null
         private set
 
+    // We don't know if the device has cutout since the insets are not applied yet
     @get:ChecksSdkIntAtLeast(Build.VERSION_CODES.P)
-    val hasCutout by lazy { hasDisplayCutout() }
+    val hasCutout = isAtLeastP
 
     private var config: ReaderConfig? = null
 
@@ -619,6 +622,8 @@ class ReaderActivity : EhActivity() {
             binding.root,
         )
     }
+
+    private var readerSettingSheetDialog: ReaderSettingsSheet? = null
 
     /**
      * Sets the visibility of the menu according to [visible] and with an optional parameter to
@@ -720,7 +725,7 @@ class ReaderActivity : EhActivity() {
 
             setOnClickListener {
                 popupMenu(
-                    items = ReadingModeType.values().map { it.flagValue to it.stringRes },
+                    items = ReadingModeType.entries.map { it.flagValue to it.stringRes },
                     selectedItemId = ReaderPreferences.defaultReadingMode().get(),
                 ) {
                     val newReadingMode = ReadingModeType.fromPreference(itemId)
@@ -735,7 +740,7 @@ class ReaderActivity : EhActivity() {
 
             setOnClickListener {
                 popupMenu(
-                    items = OrientationType.values().map { it.flagValue to it.stringRes },
+                    items = OrientationType.entries.map { it.flagValue to it.stringRes },
                     selectedItemId = ReaderPreferences.defaultOrientationType().get(),
                 ) {
                     val newOrientation = OrientationType.fromPreference(itemId)
@@ -747,10 +752,10 @@ class ReaderActivity : EhActivity() {
         // Settings sheet
         with(binding.actionSettings) {
             setTooltip(R.string.action_settings)
-            val readerSettingSheetDialog = ReaderSettingsSheet(this@ReaderActivity)
+            readerSettingSheetDialog = ReaderSettingsSheet(this@ReaderActivity)
             setOnClickListener {
-                if (!readerSettingSheetDialog.isShowing) {
-                    readerSettingSheetDialog.show()
+                if (!readerSettingSheetDialog!!.isShowing) {
+                    readerSettingSheetDialog!!.show()
                 }
             }
 
@@ -932,8 +937,14 @@ class ReaderActivity : EhActivity() {
                 .launchIn(lifecycleScope)
 
             if (hasCutout) {
+                setCutoutShort(ReaderPreferences.cutoutShort().get())
                 ReaderPreferences.cutoutShort().changes()
-                    .onEach { setCutoutShort(it) }
+                    .drop(1)
+                    .onEach {
+                        readerSettingSheetDialog?.hide()
+                        setCutoutShort(it)
+                        recreate()
+                    }
                     .launchIn(lifecycleScope)
             }
 
@@ -1008,9 +1019,6 @@ class ReaderActivity : EhActivity() {
                 true -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
                 false -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
             }
-
-            // Trigger relayout
-            setMenuVisibility(menuVisible)
         }
 
         /**
