@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-alpha07" type="baseline" client="gradle" dependencies="false" name="AGP (8.3.0-alpha07)" variant="all" version="8.3.0-alpha07">
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 28 (current min is 23): `android.graphics.ImageDecoder#createSource`"
+        errorLine1="        return ImageDecoder.createSource(context.contentResolver, uri!!)"
+        errorLine2="                            ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/unifile/Contracts.kt"
+            line="74"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `installCronetHttpUriFetcher`"
+        errorLine1="                installCronetHttpUriFetcher()"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/EhApplication.kt"
+            line="149"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `cronetRequest`"
+        errorLine1="        cronetRequest(url, referer).execute {"
+        errorLine2="        ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/client/EhEngine.kt"
+            line="123"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `execute`"
+        errorLine1="        cronetRequest(url, referer).execute {"
+        errorLine2="                                    ~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/client/EhEngine.kt"
+            line="123"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `awaitBodyFully`"
+        errorLine1="                awaitBodyFully {"
+        errorLine2="                ~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/client/EhEngine.kt"
+            line="126"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 28 (current min is 23): `android.graphics.ImageDecoder#createSource`"
+        errorLine1="        get() = ImageDecoder.createSource(mFile)"
+        errorLine2="                             ~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/unifile/RawFile.kt"
+            line="151"
+            column="30"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `cronetRequest`"
+        errorLine1="            cronetRequest(url, referer) {"
+        errorLine2="            ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="135"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `android.net.http.UrlRequest.Builder#setCacheDisabled`"
+        errorLine1="                setCacheDisabled(true)"
+        errorLine2="                ~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="136"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `execute`"
+        errorLine1="            }.execute { info ->"
+        errorLine2="              ~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="137"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `android.net.http.HeaderBlock#getAsMap`"
+        errorLine1="                val headers = info.headers.asMap"
+        errorLine2="                                           ~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="138"
+            column="44"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `android.net.http.UrlResponseInfo#getHeaders`"
+        errorLine1="                val headers = info.headers.asMap"
+        errorLine2="                                   ~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="138"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `copyToChannel`"
+        errorLine1="                        copyToChannel(chan) {"
+        errorLine2="                        ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="145"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `android.net.http.UrlResponseInfo#getReceivedByteCount`"
+        errorLine1="                            notifyProgress(length, info.receivedByteCount, it)"
+        errorLine2="                                                        ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="146"
+            column="57"/>
+    </issue>
+
+</issues>
