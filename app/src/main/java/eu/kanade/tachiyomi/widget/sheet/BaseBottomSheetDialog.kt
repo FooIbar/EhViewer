@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.util.isAtLeastO
 import eu.kanade.tachiyomi.util.system.displayCompat
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.view.setNavigationBarTransparentCompat
@@ -39,14 +40,16 @@ abstract class BaseBottomSheetDialog(context: Context) : BottomSheetDialog(conte
         // Set navbar color to transparent for edge-to-edge bottom sheet if we can use light navigation bar
         // TODO Replace deprecated systemUiVisibility when material-components uses new API to modify status bar icons
         // window?.setNavigationBarTransparentCompat(context, behavior.getElevation())
-        window?.setNavigationBarTransparentCompat(context, 0f)
-        val bottomSheet = rootView.parent as ViewGroup
-        var flags = bottomSheet.systemUiVisibility
-        flags = if (context.isNightMode()) {
-            flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
-        } else {
-            flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        if (isAtLeastO) {
+            window?.setNavigationBarTransparentCompat(context, 0f)
+            val bottomSheet = rootView.parent as ViewGroup
+            var flags = bottomSheet.systemUiVisibility
+            flags = if (context.isNightMode()) {
+                flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+            } else {
+                flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            }
+            bottomSheet.systemUiVisibility = flags
         }
-        bottomSheet.systemUiVisibility = flags
     }
 }

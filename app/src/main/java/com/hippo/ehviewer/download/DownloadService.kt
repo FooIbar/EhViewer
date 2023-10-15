@@ -415,7 +415,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
     private fun checkStopSelf() {
         launch {
             if (deferredMgr.await().isIdle) {
-                ServiceCompat.stopForeground(this@DownloadService, STOP_FOREGROUND_REMOVE)
+                ServiceCompat.stopForeground(this@DownloadService, ServiceCompat.STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
         }
