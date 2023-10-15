@@ -106,8 +106,9 @@ android {
                 isCoreLibraryDesugaringEnabled = true
             }
             lint {
-                checkOnly += setOf("InlinedApi", "NewApi", "UnusedAttribute")
                 baseline = file("lint-baseline.xml")
+                checkOnly += setOf("InlinedApi", "NewApi", "UnusedAttribute")
+                error += setOf("InlinedApi", "UnusedAttribute")
             }
         }
     }
