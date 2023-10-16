@@ -28,6 +28,8 @@ import com.hippo.ehviewer.coil.suspendEdit
 import com.hippo.ehviewer.cronet.copyToChannel
 import com.hippo.ehviewer.cronet.cronetRequest
 import com.hippo.ehviewer.cronet.execute
+import com.hippo.ehviewer.cronet.getHeadersMap
+import com.hippo.ehviewer.cronet.noCache
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.gallery.SUPPORT_IMAGE_EXTENSIONS
 import com.hippo.ehviewer.image.Image.UniFileSource
@@ -133,9 +135,9 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
     ): Boolean {
         return if (isCronetSupported) {
             cronetRequest(url, referer) {
-                setCacheDisabled(true)
+                noCache()
             }.execute { info ->
-                val headers = info.headers.asMap
+                val headers = info.getHeadersMap()
                 val type = headers["Content-Type"]?.first()?.toMediaType()?.subtype ?: "jpg"
                 val length = headers["Content-Length"]!!.first().toLong()
                 saveResponseMeta(index, type, length) { file ->
