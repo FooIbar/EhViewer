@@ -361,11 +361,11 @@ class FavoritesScene : SearchBarScene() {
                                     binding.tip.text = empty
                                     transition.showView(2)
                                 } else {
+                                    transition.showView(0, false)
                                     if (vm.shouldScrollToTop) {
                                         vm.shouldScrollToTop = false
                                         binding.recyclerView.scrollToPosition(0)
                                     }
-                                    transition.showView(0)
                                 }
                             }
                         }
