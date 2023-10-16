@@ -345,9 +345,9 @@ class FavoritesScene : SearchBarScene() {
                         when (val state = it.refresh) {
                             is LoadState.Loading -> {
                                 showSearchBar()
-                                if (!binding.refreshLayout.isRefreshing) {
-                                    transition.showView(1)
-                                }
+                                // if (!binding.refreshLayout.isRefreshing) {
+                                //     transition.showView(1)
+                                // }
                             }
                             is LoadState.Error -> {
                                 binding.refreshLayout.isRefreshing = false
