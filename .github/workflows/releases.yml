@@ -90,13 +90,13 @@ jobs:
             default-oss-mapping.txt
             default-oss-native-debug-symbols.zip
 
-            EhViewer-default-oss-universal.apk
-            EhViewer-default-oss-arm64-v8a.apk
-            EhViewer-default-oss-x86_64.apk
-            EhViewer-default-oss-x86.apk
-            EhViewer-default-oss-armeabi-v7a.apk
-            default-oss-mapping.txt
-            default-oss-native-debug-symbols.zip
+            EhViewer-default-gms-universal.apk
+            EhViewer-default-gms-arm64-v8a.apk
+            EhViewer-default-gms-x86_64.apk
+            EhViewer-default-gms-x86.apk
+            EhViewer-default-gms-armeabi-v7a.apk
+            default-gms-mapping.txt
+            default-gms-native-debug-symbols.zip
 
             EhViewer-marshmallow-oss-universal.apk
             EhViewer-marshmallow-oss-arm64-v8a.apk
