@@ -22,6 +22,7 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.ParcelFileDescriptor
+import androidx.annotation.RequiresApi
 import java.io.File
 
 /**
@@ -242,6 +243,8 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      * @see android.provider.DocumentsContract.renameDocument
      */
     abstract fun renameTo(displayName: String): Boolean
+
+    @get:RequiresApi(Build.VERSION_CODES.P)
     abstract val imageSource: ImageDecoder.Source
 
     abstract fun openFileDescriptor(mode: String): ParcelFileDescriptor

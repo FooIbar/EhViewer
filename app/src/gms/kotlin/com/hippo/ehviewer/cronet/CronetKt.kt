@@ -117,4 +117,4 @@ suspend inline fun <R> CronetRequest.execute(crossinline callback: suspend Crone
 }
 
 fun UrlRequest.Builder.noCache(): UrlRequest.Builder = disableCache()
-fun UrlResponseInfo.getHeadersMap(): MutableMap<String, MutableList<String>> = allHeaders
+fun UrlResponseInfo.getHeadersMap(): Map<String, List<String>> = allHeaders

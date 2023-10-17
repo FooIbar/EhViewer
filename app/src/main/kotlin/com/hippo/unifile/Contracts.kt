@@ -18,6 +18,7 @@ package com.hippo.unifile
 import android.content.Context
 import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import java.io.IOException
 
@@ -71,6 +72,10 @@ internal object Contracts {
     }
 
     fun getImageSource(context: Context, uri: Uri?): ImageDecoder.Source {
-        return ImageDecoder.createSource(context.contentResolver, uri!!)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            ImageDecoder.createSource(context.contentResolver, uri!!)
+        } else {
+            TODO("VERSION.SDK_INT < P")
+        }
     }
 }
