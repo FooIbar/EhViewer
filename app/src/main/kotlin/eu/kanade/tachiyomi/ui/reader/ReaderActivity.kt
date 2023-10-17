@@ -190,6 +190,8 @@ class ReaderActivity : EhActivity() {
         }
 
     private fun buildProvider(replace: Boolean = false) {
+        if (setOrientation(ReaderPreferences.defaultOrientationType().get())) return
+
         if (mGalleryProvider != null) {
             if (replace) mGalleryProvider!!.stop() else return
         }
@@ -330,7 +332,6 @@ class ReaderActivity : EhActivity() {
 
         mGalleryProvider.let {
             if (it == null) {
-                finish()
                 return
             }
             lifecycleScope.launchIO {
@@ -361,6 +362,7 @@ class ReaderActivity : EhActivity() {
         updateViewerInset(ReaderPreferences.fullscreen().get())
         binding.viewerContainer.removeAllViews()
         setOrientation(ReaderPreferences.defaultOrientationType().get())
+        updateOrientationShortcut(ReaderPreferences.defaultOrientationType().get())
         binding.viewerContainer.addView(viewer?.getView())
         viewer?.setGalleryProvider(mGalleryProvider!!)
         moveToPageIndex(mCurrentIndex)
@@ -848,13 +850,15 @@ class ReaderActivity : EhActivity() {
 
     /**
      * Forces the user preferred [orientation] on the activity.
+     * Returns true if a restart is required.
      */
-    private fun setOrientation(orientation: Int) {
+    private fun setOrientation(orientation: Int): Boolean {
         val newOrientation = OrientationType.fromPreference(orientation)
-        if (newOrientation.flag != requestedOrientation) {
+        val restart = newOrientation.flag != requestedOrientation
+        if (restart) {
             requestedOrientation = newOrientation.flag
         }
-        updateOrientationShortcut(ReaderPreferences.defaultOrientationType().get())
+        return restart
     }
 
     /**
@@ -904,10 +908,12 @@ class ReaderActivity : EhActivity() {
          */
         init {
             ReaderPreferences.defaultReadingMode().changes()
+                .drop(1)
                 .onEach { setGallery() }
                 .launchIn(lifecycleScope)
 
             ReaderPreferences.defaultOrientationType().changes()
+                .drop(1)
                 .onEach { setGallery() }
                 .launchIn(lifecycleScope)
 
