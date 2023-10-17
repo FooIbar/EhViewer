@@ -345,9 +345,11 @@ class FavoritesScene : SearchBarScene() {
                         when (val state = it.refresh) {
                             is LoadState.Loading -> {
                                 showSearchBar()
-                                // if (!binding.refreshLayout.isRefreshing) {
-                                //     transition.showView(1)
-                                // }
+                                if (!binding.refreshLayout.isRefreshing) {
+                                    // https://github.com/FooIbar/EhViewer/issues/45
+                                    // transition.showView(1)
+                                    binding.refreshLayout.isRefreshing = true
+                                }
                             }
                             is LoadState.Error -> {
                                 binding.refreshLayout.isRefreshing = false
