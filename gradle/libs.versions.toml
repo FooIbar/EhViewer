@@ -1,7 +1,6 @@
 [versions]
 aboutlibraries = "10.9.1"
 agp = "8.3.0-alpha07"
-android-tools-r8 = "8.3.6-dev"
 androidx-activity = "1.8.0"
 androidx-appcompat = "1.6.1"
 androidx-biometric = "1.2.0-alpha05"
@@ -23,12 +22,13 @@ arrow = "1.2.1"
 chucker = "4.0.0"
 coil = "2.4.0"
 compose-bom = "2023.11.00-alpha01"
-compose-compiler = "1.5.3"
+compose-compiler = "1.5.4-dev-k1.9.20-RC-1edce5fd625"
 google-accompanist = "0.32.0"
 google-android-material = "1.11.0-alpha03"
-kotlin = "1.9.10"
+kotlin = "1.9.20-RC"
 kotlinx-coroutines = "1.7.3"
 kotlinx-serialization = "1.6.0"
+ksp = "1.9.20-RC-1.0.13"
 ktlint = "1.0.1"
 ktor = "2.3.5"
 leakcanary = "2.12"
@@ -119,8 +119,6 @@ okio-jvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
 
 photoview = "com.github.chrisbanes:PhotoView:2.3.0"
 
-r8 = { module = "com.android.tools:r8", version.ref = "android-tools-r8" }
-
 rikkax-core = "dev.rikka.rikkax.core:core-ktx:1.4.1"
 rikkax-insets = "dev.rikka.rikkax.insets:insets:1.3.0"
 rikkax-layoutinflater = "dev.rikka.rikkax.layoutinflater:layoutinflater:1.3.0"
@@ -151,6 +149,6 @@ composeCompilerReportGenerator = { id = "dev.shreyaspatil.compose-compiler-repor
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version = "1.9.10-1.0.13" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 rustAndroidPlugin = { id = "org.mozilla.rust-android-gradle.rust-android", version = "0.9.3" }
 spotless = { id = "com.diffplug.spotless", version = "6.22.0" }
