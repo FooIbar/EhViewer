@@ -1,13 +1,5 @@
-@file:RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
-
 package com.hippo.ehviewer.cronet
 
-import android.net.http.HttpEngine
-import android.net.http.HttpException
-import android.net.http.UrlRequest
-import android.net.http.UrlResponseInfo
-import android.os.Build
-import androidx.annotation.RequiresExtension
 import com.hippo.ehviewer.EhApplication
 import com.hippo.ehviewer.client.CHROME_ACCEPT
 import com.hippo.ehviewer.client.CHROME_ACCEPT_LANGUAGE
@@ -20,6 +12,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okio.Path.Companion.toOkioPath
+import org.chromium.net.CronetEngine
+import org.chromium.net.CronetException
+import org.chromium.net.UrlRequest
+import org.chromium.net.UrlResponseInfo
 import splitties.init.appCtx
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
@@ -32,23 +28,24 @@ import kotlin.coroutines.resumeWithException
 private const val TAG = "CronetRequest"
 val pool = DirectByteBufferPool(32)
 
-val cronetHttpClient: HttpEngine = HttpEngine.Builder(appCtx).apply {
-    setEnableBrotli(true)
+val cronetHttpClient: CronetEngine = CronetEngine.Builder(appCtx).apply {
+    enableBrotli(true)
     val cache = (appCtx.cacheDir.toOkioPath() / "http_cache").toFile().apply { mkdirs() }
     setStoragePath(cache.absolutePath)
-    setEnableHttpCache(HttpEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 100 * 1024)
+    enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 100 * 1024)
     setUserAgent(CHROME_USER_AGENT)
 }.build()
 
 val cronetHttpClientExecutor = EhApplication.baseOkHttpClient.dispatcher.executorService
 
+// TODO: Rewrite this to use android.net.http.HttpEngine and make it Android 14 only when released
 class CronetRequest {
     lateinit var consumer: (ByteBuffer) -> Unit
     lateinit var onResponse: CronetRequest.(UrlResponseInfo) -> Unit
     lateinit var request: UrlRequest
     lateinit var onError: (Throwable) -> Unit
     lateinit var readerCont: Continuation<Unit>
-    val callback = object : UrlRequest.Callback {
+    val callback = object : UrlRequest.Callback() {
         override fun onRedirectReceived(req: UrlRequest, info: UrlResponseInfo, url: String) {
             logcat(tag = TAG) { "Redirected to $url" }
             req.followRedirect()
@@ -67,18 +64,14 @@ class CronetRequest {
             readerCont.resume(Unit)
         }
 
-        override fun onFailed(req: UrlRequest, info: UrlResponseInfo?, e: HttpException) {
+        override fun onFailed(req: UrlRequest, info: UrlResponseInfo?, e: CronetException) {
             onError(e)
-        }
-
-        override fun onCanceled(req: UrlRequest, info: UrlResponseInfo?) {
-            // No-op
         }
     }
 }
 
 inline fun cronetRequest(url: String, referer: String? = null, conf: UrlRequest.Builder.() -> Unit = {}) = CronetRequest().apply {
-    request = cronetHttpClient.newUrlRequestBuilder(url, cronetHttpClientExecutor, callback).apply {
+    request = cronetHttpClient.newUrlRequestBuilder(url, callback, cronetHttpClientExecutor).apply {
         addHeader("Cookie", EhCookieStore.getCookieHeader(url.toHttpUrl()))
         addHeader("Accept", CHROME_ACCEPT)
         addHeader("Accept-Language", CHROME_ACCEPT_LANGUAGE)
@@ -122,3 +115,6 @@ suspend inline fun <R> CronetRequest.execute(crossinline callback: suspend Crone
         }
     }
 }
+
+fun UrlRequest.Builder.noCache(): UrlRequest.Builder = disableCache()
+fun UrlResponseInfo.getHeadersMap(): Map<String, List<String>> = allHeaders

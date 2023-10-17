@@ -87,6 +87,9 @@ compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
 compose-ui-util = { module = "androidx.compose.ui:ui-util" }
 
+cronet-api = "org.chromium.net:cronet-api:113.5672.61"
+cronet-gms = "com.google.android.gms:play-services-cronet:18.0.1"
+
 desugar = "com.android.tools:desugar_jdk_libs:2.0.3"
 
 directionalviewpager = "com.github.tachiyomiorg:DirectionalViewPager:1.0.0"
@@ -134,6 +137,7 @@ androidx-paging = ["androidx-paging-compose", "androidx-paging-runtime"]
 androidx-recyclerview = ["androidx-recyclerview", "androidx-recyclerview-selection"]
 coil = ["coil-compose", "coil-gif"]
 compose = ["compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
+cronet = ["cronet-api", "cronet-gms"]
 kotlinx-serialization = ["kotlinx-serialization-cbor", "kotlinx-serialization-json", "kotlinx-serialization-json-okio"]
 ktor = ["ktor-io-jvm", "ktor-utils-jvm"]
 okhttp = ["okhttp-android", "okhttp-coroutines"]

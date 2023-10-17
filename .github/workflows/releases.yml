@@ -45,37 +45,71 @@ jobs:
 
       - name: Rename Apks
         run: |
-          mv app/build/outputs/apk/default/release/app-default-universal-release.apk EhViewer-default-universal.apk
-          mv app/build/outputs/apk/default/release/app-default-arm64-v8a-release.apk EhViewer-default-arm64-v8a.apk
-          mv app/build/outputs/apk/default/release/app-default-x86_64-release.apk EhViewer-default-x86_64.apk
-          mv app/build/outputs/apk/default/release/app-default-x86-release.apk EhViewer-default-x86.apk
-          mv app/build/outputs/apk/default/release/app-default-armeabi-v7a-release.apk EhViewer-default-armeabi-v7a.apk
-          mv app/build/outputs/mapping/defaultRelease/mapping.txt default-mapping.txt
-          mv app/build/outputs/native-debug-symbols/defaultRelease/native-debug-symbols.zip default-native-debug-symbols.zip
-          mv app/build/outputs/apk/marshmallow/release/app-marshmallow-universal-release.apk EhViewer-marshmallow-universal.apk
-          mv app/build/outputs/apk/marshmallow/release/app-marshmallow-arm64-v8a-release.apk EhViewer-marshmallow-arm64-v8a.apk
-          mv app/build/outputs/apk/marshmallow/release/app-marshmallow-x86_64-release.apk EhViewer-marshmallow-x86_64.apk
-          mv app/build/outputs/apk/marshmallow/release/app-marshmallow-x86-release.apk EhViewer-marshmallow-x86.apk
-          mv app/build/outputs/apk/marshmallow/release/app-marshmallow-armeabi-v7a-release.apk EhViewer-marshmallow-armeabi-v7a.apk
-          mv app/build/outputs/mapping/marshmallowRelease/mapping.txt marshmallow-mapping.txt
-          mv app/build/outputs/native-debug-symbols/marshmallowRelease/native-debug-symbols.zip marshmallow-native-debug-symbols.zip
+          mv app/build/outputs/apk/defaultOss/release/app-default-oss-universal-release.apk EhViewer-${{ github.ref_name }}-default-oss-universal.apk
+          mv app/build/outputs/apk/defaultOss/release/app-default-oss-arm64-v8a-release.apk EhViewer-${{ github.ref_name }}-default-oss-arm64-v8a.apk
+          mv app/build/outputs/apk/defaultOss/release/app-default-oss-x86_64-release.apk EhViewer-${{ github.ref_name }}-default-oss-x86_64.apk
+          mv app/build/outputs/apk/defaultOss/release/app-default-oss-x86-release.apk EhViewer-${{ github.ref_name }}-default-oss-x86.apk
+          mv app/build/outputs/apk/defaultOss/release/app-default-oss-armeabi-v7a-release.apk EhViewer-${{ github.ref_name }}-default-oss-armeabi-v7a.apk
+          mv app/build/outputs/mapping/defaultOssRelease/mapping.txt EhViewer-${{ github.ref_name }}-default-oss-mapping.txt
+          mv app/build/outputs/native-debug-symbols/defaultOssRelease/native-debug-symbols.zip EhViewer-${{ github.ref_name }}-default-oss-native-debug-symbols.zip
+
+          mv app/build/outputs/apk/defaultGms/release/app-default-gms-universal-release.apk EhViewer-${{ github.ref_name }}-default-gms-universal.apk
+          mv app/build/outputs/apk/defaultGms/release/app-default-gms-arm64-v8a-release.apk EhViewer-${{ github.ref_name }}-default-gms-arm64-v8a.apk
+          mv app/build/outputs/apk/defaultGms/release/app-default-gms-x86_64-release.apk EhViewer-${{ github.ref_name }}-default-gms-x86_64.apk
+          mv app/build/outputs/apk/defaultGms/release/app-default-gms-x86-release.apk EhViewer-${{ github.ref_name }}-default-gms-x86.apk
+          mv app/build/outputs/apk/defaultGms/release/app-default-gms-armeabi-v7a-release.apk EhViewer-${{ github.ref_name }}-default-gms-armeabi-v7a.apk
+          mv app/build/outputs/mapping/defaultGmsRelease/mapping.txt EhViewer-${{ github.ref_name }}-default-gms-mapping.txt
+          mv app/build/outputs/native-debug-symbols/defaultGmsRelease/native-debug-symbols.zip EhViewer-${{ github.ref_name }}-default-gms-native-debug-symbols.zip
+
+          mv app/build/outputs/apk/marshmallowOss/release/app-marshmallow-oss-universal-release.apk EhViewer-${{ github.ref_name }}-marshmallow-oss-universal.apk
+          mv app/build/outputs/apk/marshmallowOss/release/app-marshmallow-oss-arm64-v8a-release.apk EhViewer-${{ github.ref_name }}-marshmallow-oss-arm64-v8a.apk
+          mv app/build/outputs/apk/marshmallowOss/release/app-marshmallow-oss-x86_64-release.apk EhViewer-${{ github.ref_name }}-marshmallow-oss-x86_64.apk
+          mv app/build/outputs/apk/marshmallowOss/release/app-marshmallow-oss-x86-release.apk EhViewer-${{ github.ref_name }}-marshmallow-oss-x86.apk
+          mv app/build/outputs/apk/marshmallowOss/release/app-marshmallow-oss-armeabi-v7a-release.apk EhViewer-${{ github.ref_name }}-marshmallow-oss-armeabi-v7a.apk
+          mv app/build/outputs/mapping/marshmallowOssRelease/mapping.txt EhViewer-${{ github.ref_name }}-marshmallow-oss-mapping.txt
+          mv app/build/outputs/native-debug-symbols/marshmallowOssRelease/native-debug-symbols.zip EhViewer-${{ github.ref_name }}-marshmallow-oss-native-debug-symbols.zip
+
+          mv app/build/outputs/apk/marshmallowGms/release/app-marshmallow-gms-universal-release.apk EhViewer-${{ github.ref_name }}-marshmallow-gms-universal.apk
+          mv app/build/outputs/apk/marshmallowGms/release/app-marshmallow-gms-arm64-v8a-release.apk EhViewer-${{ github.ref_name }}-marshmallow-gms-arm64-v8a.apk
+          mv app/build/outputs/apk/marshmallowGms/release/app-marshmallow-gms-x86_64-release.apk EhViewer-${{ github.ref_name }}-marshmallow-gms-x86_64.apk
+          mv app/build/outputs/apk/marshmallowGms/release/app-marshmallow-gms-x86-release.apk EhViewer-${{ github.ref_name }}-marshmallow-gms-x86.apk
+          mv app/build/outputs/apk/marshmallowGms/release/app-marshmallow-gms-armeabi-v7a-release.apk EhViewer-${{ github.ref_name }}-marshmallow-gms-armeabi-v7a.apk
+          mv app/build/outputs/mapping/marshmallowGmsRelease/mapping.txt EhViewer-${{ github.ref_name }}-marshmallow-gms-mapping.txt
+          mv app/build/outputs/native-debug-symbols/marshmallowGmsRelease/native-debug-symbols.zip EhViewer-${{ github.ref_name }}-marshmallow-gms-native-debug-symbols.zip
 
       - name: Releases
         uses: softprops/action-gh-release@v1
         with:
           body: Bump Version
           files: |
-            EhViewer-default-universal.apk
-            EhViewer-default-arm64-v8a.apk
-            EhViewer-default-x86_64.apk
-            EhViewer-default-x86.apk
-            EhViewer-default-armeabi-v7a.apk
-            default-mapping.txt
-            default-native-debug-symbols.zip
-            EhViewer-marshmallow-universal.apk
-            EhViewer-marshmallow-arm64-v8a.apk
-            EhViewer-marshmallow-x86_64.apk
-            EhViewer-marshmallow-x86.apk
-            EhViewer-marshmallow-armeabi-v7a.apk
-            marshmallow-mapping.txt
-            marshmallow-native-debug-symbols.zip
+            EhViewer-${{ github.ref_name }}-default-oss-universal.apk
+            EhViewer-${{ github.ref_name }}-default-oss-arm64-v8a.apk
+            EhViewer-${{ github.ref_name }}-default-oss-x86_64.apk
+            EhViewer-${{ github.ref_name }}-default-oss-x86.apk
+            EhViewer-${{ github.ref_name }}-default-oss-armeabi-v7a.apk
+            EhViewer-${{ github.ref_name }}-default-oss-mapping.txt
+            EhViewer-${{ github.ref_name }}-default-oss-native-debug-symbols.zip
+
+            EhViewer-${{ github.ref_name }}-default-gms-universal.apk
+            EhViewer-${{ github.ref_name }}-default-gms-arm64-v8a.apk
+            EhViewer-${{ github.ref_name }}-default-gms-x86_64.apk
+            EhViewer-${{ github.ref_name }}-default-gms-x86.apk
+            EhViewer-${{ github.ref_name }}-default-gms-armeabi-v7a.apk
+            EhViewer-${{ github.ref_name }}-default-gms-mapping.txt
+            EhViewer-${{ github.ref_name }}-default-gms-native-debug-symbols.zip
+
+            EhViewer-${{ github.ref_name }}-marshmallow-oss-universal.apk
+            EhViewer-${{ github.ref_name }}-marshmallow-oss-arm64-v8a.apk
+            EhViewer-${{ github.ref_name }}-marshmallow-oss-x86_64.apk
+            EhViewer-${{ github.ref_name }}-marshmallow-oss-x86.apk
+            EhViewer-${{ github.ref_name }}-marshmallow-oss-armeabi-v7a.apk
+            EhViewer-${{ github.ref_name }}-marshmallow-oss-mapping.txt
+            EhViewer-${{ github.ref_name }}-marshmallow-oss-native-debug-symbols.zip
+
+            EhViewer-${{ github.ref_name }}-marshmallow-gms-universal.apk
+            EhViewer-${{ github.ref_name }}-marshmallow-gms-arm64-v8a.apk
+            EhViewer-${{ github.ref_name }}-marshmallow-gms-x86_64.apk
+            EhViewer-${{ github.ref_name }}-marshmallow-gms-x86.apk
+            EhViewer-${{ github.ref_name }}-marshmallow-gms-armeabi-v7a.apk
+            EhViewer-${{ github.ref_name }}-marshmallow-gms-mapping.txt
+            EhViewer-${{ github.ref_name }}-marshmallow-gms-native-debug-symbols.zip

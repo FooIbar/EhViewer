@@ -89,11 +89,14 @@ android {
         }
     }
 
-    flavorDimensions += "api"
+    flavorDimensions += listOf("api", "oss")
 
     productFlavors {
-        create("default")
+        create("default") {
+            dimension = "api"
+        }
         create("marshmallow") {
+            dimension = "api"
             minSdk = 23
             applicationIdSuffix = ".m"
             versionNameSuffix = "-M"
@@ -106,10 +109,16 @@ android {
                 isCoreLibraryDesugaringEnabled = true
             }
             lint {
-                baseline = file("lint-baseline.xml")
                 checkOnly += setOf("InlinedApi", "NewApi", "UnusedAttribute")
                 error += setOf("InlinedApi", "UnusedAttribute")
             }
+        }
+        create("oss") {
+            dimension = "oss"
+        }
+        create("gms") {
+            dimension = "oss"
+            versionNameSuffix = "-gms"
         }
     }
 
@@ -268,6 +277,8 @@ dependencies {
     debugImplementation(libs.leakcanary.android)
 
     coreLibraryDesugaring(libs.desugar)
+
+    "gmsImplementation"(libs.bundles.cronet)
 }
 
 ksp {

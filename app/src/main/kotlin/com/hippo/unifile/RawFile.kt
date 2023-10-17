@@ -17,6 +17,7 @@ package com.hippo.unifile
 
 import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.webkit.MimeTypeMap
@@ -148,7 +149,11 @@ internal class RawFile(parent: UniFile?, var mFile: File) : UniFile(parent) {
     }
 
     override val imageSource: ImageDecoder.Source
-        get() = ImageDecoder.createSource(mFile)
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            ImageDecoder.createSource(mFile)
+        } else {
+            TODO("VERSION.SDK_INT < P")
+        }
 
     override fun openFileDescriptor(mode: String): ParcelFileDescriptor {
         val md = ParcelFileDescriptor.parseMode(mode)
