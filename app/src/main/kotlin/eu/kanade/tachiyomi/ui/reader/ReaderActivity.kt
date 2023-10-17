@@ -288,6 +288,7 @@ class ReaderActivity : EhActivity() {
                 it.start()
                 if (it.awaitReady()) {
                     withUIContext {
+                        totalPage = it.size
                         viewer?.setGalleryProvider(it)
                         moveToPageIndex(0)
                     }
