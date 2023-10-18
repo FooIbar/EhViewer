@@ -73,6 +73,17 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 
 # Download
 
+| Flavor | Feature |
+|-|-|
+| Default | Android 9+, full support |
+| Marshmallow | Android 6.0+, limited support* |
+| OSS | FOSS dependencies**  |
+| GMS | Proprietary GMS component |
+
+\* Archives and GIFs are not supported
+
+** Fall back to OkHttp on devices that don't support [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine)
+
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
 </a>
