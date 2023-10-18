@@ -128,13 +128,7 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
     kotlinOptions {
-        jvmTarget = "21"
         freeCompilerArgs = listOf(
             // https://kotlinlang.org/docs/compiler-reference.html#progressive
             "-progressive",
@@ -281,10 +275,8 @@ dependencies {
     "gmsImplementation"(libs.bundles.cronet)
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+kotlin {
+    jvmToolchain(21)
 }
 
 ksp {
