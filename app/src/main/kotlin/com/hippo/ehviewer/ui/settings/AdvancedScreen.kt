@@ -125,6 +125,11 @@ fun AdvancedScreen() {
                 value = Settings::language,
             )
             SwitchPreference(
+                title = stringResource(id = R.string.settings_advanced_cronet_integration),
+                summary = stringResource(id = R.string.settings_advanced_cronet_integration_summary),
+                value = Settings::enableCronet,
+            )
+            SwitchPreference(
                 title = stringResource(id = R.string.preload_thumb_aggressively),
                 value = Settings::preloadThumbAggressively,
             )

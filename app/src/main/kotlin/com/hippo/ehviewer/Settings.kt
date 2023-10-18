@@ -63,6 +63,7 @@ object Settings : DataStorePreferences(null) {
     var harmonizeCategoryColor by boolPref("harmonize_category_color", true)
     var preloadThumbAggressively by boolPref("preload_thumb_aggressively", false)
     var downloadOriginImage by boolPref("download_origin_image", false)
+    var enableCronet by boolPref("enable_cronet", true)
     var thumbSizeDp by intPref("thumb_size_", 120)
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)
     var defaultFavSlot by intPref("default_favorite_slot", -2)
