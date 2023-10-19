@@ -139,6 +139,13 @@ fun DownloadScreen() {
                 entryValueRes = R.array.download_delay_entry_values,
                 value = downloadDelay,
             )
+            IntSliderPreference(
+                maxValue = 120,
+                minValue = 10,
+                step = 10,
+                title = stringResource(id = R.string.settings_download_download_timeout),
+                value = Settings::downloadTimeout,
+            )
             val preloadImage = Settings::preloadImage.observed
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_download_preload_image),

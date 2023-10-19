@@ -46,6 +46,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -55,10 +56,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withTimeout
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration.Companion.seconds
 
 class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
@@ -520,6 +523,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         private var showKey: String? = null
         private val showKeyLock = Mutex()
         private val mDownloadDelay = Settings.downloadDelay.toLong()
+        private val downloadTimeout = Settings.downloadTimeout.seconds
         private val delayLock = Mutex()
         private var delayedTime = 0L
         private var isDownloadMode = false
@@ -689,12 +693,14 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     repeat(3) { times ->
                         runCatching {
                             Log.d(WORKER_DEBUG_TAG, "Start download image $index attempt #$times")
-                            val success = mSpiderDen.makeHttpCallAndSaveImage(
-                                index,
-                                targetImageUrl,
-                                referer,
-                                this@SpiderQueen::notifyPageDownload.partially1(index),
-                            )
+                            val success = withTimeout(downloadTimeout) {
+                                mSpiderDen.makeHttpCallAndSaveImage(
+                                    index,
+                                    targetImageUrl,
+                                    referer,
+                                    this@SpiderQueen::notifyPageDownload.partially1(index),
+                                )
+                            }
 
                             check(success)
                             Log.d(WORKER_DEBUG_TAG, "Download image $index succeed")
@@ -702,11 +708,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                             return
                         }.onFailure {
                             mSpiderDen.remove(index)
-                            if (it is CancellationException) {
-                                throw it
-                            } else {
-                                Log.d(WORKER_DEBUG_TAG, "Download image $index attempt #$times failed")
-                                error = ExceptionUtils.getReadableString(it)
+                            Log.d(WORKER_DEBUG_TAG, "Download image $index attempt #$times failed")
+                            error = when (it) {
+                                is TimeoutCancellationException -> ERROR_TIMEOUT
+                                is CancellationException -> throw it
+                                else -> ExceptionUtils.getReadableString(it)
                             }
                         }
                     }
@@ -769,6 +775,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 }
 
 private val PTOKEN_FAILED_MESSAGE = appCtx.getString(R.string.error_get_ptoken_error)
+private val ERROR_TIMEOUT = appCtx.getString(R.string.error_timeout)
 private val DECODE_ERROR = appCtx.getString(R.string.error_decoding_failed)
 private val URL_509_ARRAY = arrayOf(
     "https://ehgt.org/g/509.gif",
