@@ -365,7 +365,7 @@ class GalleryListScene : SearchBarScene() {
                 val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.big_sad_pandroid)!!
                 drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
                 binding.tip.setCompoundDrawables(null, drawable, null, null)
-                binding.tip.setOnClickListener { mAdapter?.refresh() }
+                binding.tip.setOnClickListener { mAdapter?.retry() }
                 binding.refreshLayout.setOnRefreshListener {
                     mUrlBuilder.setIndex(null, true)
                     mUrlBuilder.mJumpTo = null
@@ -401,7 +401,6 @@ class GalleryListScene : SearchBarScene() {
                                 }
                             }
                             is LoadState.NotLoading -> {
-                                delay(500)
                                 binding.refreshLayout.isRefreshing = false
                                 if (mAdapter?.itemCount == 0) {
                                     binding.tip.text = empty

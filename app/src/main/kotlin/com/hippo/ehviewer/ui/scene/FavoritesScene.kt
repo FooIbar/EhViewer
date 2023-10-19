@@ -89,7 +89,6 @@ import com.hippo.ehviewer.util.setValue
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
@@ -336,7 +335,7 @@ class FavoritesScene : SearchBarScene() {
                 val drawable = ContextCompat.getDrawable(context, R.drawable.big_sad_pandroid)!!
                 drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
                 binding.tip.setCompoundDrawables(null, drawable, null, null)
-                binding.tip.setOnClickListener { mAdapter?.refresh() }
+                binding.tip.setOnClickListener { mAdapter?.retry() }
                 binding.refreshLayout.setOnRefreshListener { switchFav(urlBuilder.favCat) }
                 val transition = ViewTransition(binding.refreshLayout, binding.progress, binding.tip)
                 val empty = getString(R.string.gallery_list_empty_hit)
@@ -358,7 +357,6 @@ class FavoritesScene : SearchBarScene() {
                                 transition.showView(2)
                             }
                             is LoadState.NotLoading -> {
-                                delay(500)
                                 binding.refreshLayout.isRefreshing = false
                                 if (mAdapter?.itemCount == 0) {
                                     binding.tip.text = empty

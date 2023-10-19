@@ -138,7 +138,10 @@ class GalleryAdapter(
         }
 
     init {
-        recyclerView.adapter = this
+        recyclerView.adapter = withLoadStateHeaderAndFooter(
+            GalleryLoadStateAdapter(::retry),
+            GalleryLoadStateAdapter(::retry),
+        )
         recyclerView.layoutManager = layoutManager
         type = Settings.listMode
     }
