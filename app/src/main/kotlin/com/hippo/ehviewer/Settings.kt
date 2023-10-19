@@ -34,6 +34,7 @@ object Settings : DataStorePreferences(null) {
     var gallerySite by intPref("gallery_site_2", 0).observed { updateWhenGallerySiteChanges() }
     var multiThreadDownload by intPref("download_thread_2", 3)
     var preloadImage by intPref("preload_image_2", 5)
+    var downloadTimeout by intPref("download_timeout", 60)
     var theme by intPref("theme_2", -1).observed { updateWhenThemeChanges() }
     var listMode by intPref("list_mode_2", 0)
     var detailSize by intPref("detail_size_2", 0)
