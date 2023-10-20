@@ -190,7 +190,12 @@ class ReaderActivity : EhActivity() {
         }
 
     private fun buildProvider(replace: Boolean = false) {
-        if (setOrientation(ReaderPreferences.defaultOrientationType().get())) return
+        // TODO: Better solution for this dirty workaround
+        if (setOrientation(ReaderPreferences.defaultOrientationType().get())) {
+            // Orientation changed, we don't know if the activity will recreate, just recreate anyway
+            recreate()
+            return
+        }
 
         if (mGalleryProvider != null) {
             if (replace) mGalleryProvider!!.stop() else return
