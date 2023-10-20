@@ -44,6 +44,7 @@
             android:configChanges="screenSize"
             android:exported="true"
             android:launchMode="singleTask"
+            android:theme="@style/AppTheme.Splash"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
