@@ -209,6 +209,7 @@ dependencies {
     implementation(libs.bundles.compose)
 
     implementation(libs.androidx.core)
+    implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.coordinatorlayout)
