@@ -35,7 +35,7 @@ jobs:
           path: |
             app/.cxx
             app/src/main/cpp/nettle/nettle
-          key: ${{ runner.os }}-cmake-${{ github.run_id }}
+          key: ${{ runner.os }}-cmake-${{ hashFiles('app/src/main/cpp/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-cmake-
 
       - name: Gradle Build
