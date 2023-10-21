@@ -602,7 +602,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     private fun onTouchEventInternal(event: MotionEvent): Boolean {
         val touchCount = event.pointerCount
         when (event.action) {
-            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_1_DOWN, MotionEvent.ACTION_POINTER_2_DOWN -> {
+            MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                 anim = null
                 requestDisallowInterceptTouchEvent(true)
                 maxTouchCount = maxTouchCount.coerceAtLeast(touchCount)
@@ -773,7 +773,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
                     return true
                 }
             }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_POINTER_2_UP -> {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> {
                 longClickJob?.cancel()
                 if (isQuickScaling) {
                     isQuickScaling = false

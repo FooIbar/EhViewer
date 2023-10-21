@@ -27,6 +27,7 @@ class WebtoonLayoutManager(activity: ReaderActivity) : LinearLayoutManager(activ
     /**
      * Returns the custom extra layout space.
      */
+    @Deprecated("Deprecated in Java")
     override fun getExtraLayoutSpace(state: RecyclerView.State): Int {
         return extraLayoutSpace
     }
