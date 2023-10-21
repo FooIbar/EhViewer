@@ -73,6 +73,8 @@ import eu.kanade.tachiyomi.util.system.pxToDp
 import kotlinx.coroutines.delay
 
 class HistoryScene : BaseScene() {
+    override val showLeftDrawer = true
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = ComposeView(inflater.context).apply {
         setMD3Content {
             val dialogState = rememberDialogState()

@@ -120,7 +120,7 @@ abstract class BaseScene : Fragment() {
         }
     }
 
-    open val showLeftDrawer = true
+    open val showLeftDrawer = false
 
     private fun createDrawerView(savedInstanceState: Bundle?): View? {
         drawerView = onCreateDrawerView(layoutInflater)

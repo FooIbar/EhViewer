@@ -34,8 +34,6 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import moe.tarsin.coroutines.runSuspendCatching
 
 class ProgressScene : BaseScene() {
-    override val showLeftDrawer = false
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return ComposeView(inflater.context).apply {
             setMD3Content {

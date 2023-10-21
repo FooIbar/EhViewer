@@ -75,6 +75,8 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
         }
     }
 
+    override val showLeftDrawer = true
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SceneSearchbarBinding.inflate(inflater, container, false)
         binding.appbar.statusBarForeground = MaterialShapeDrawable.createWithElevationOverlay(context)
