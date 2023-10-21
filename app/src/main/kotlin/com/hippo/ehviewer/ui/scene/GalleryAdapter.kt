@@ -74,31 +74,15 @@ class GalleryAdapter(
                     layoutManager.setStrategy(STRATEGY_MIN_SIZE)
                     if (null != mGirdDecoration) {
                         recyclerView.removeItemDecoration(mGirdDecoration!!)
-                        val paddingH = resources.getDimensionPixelOffset(R.dimen.gallery_grid_margin_h)
-                        val paddingV = resources.getDimensionPixelOffset(R.dimen.gallery_grid_margin_v)
-                        recyclerView.setPadding(
-                            recyclerView.paddingLeft - paddingH,
-                            recyclerView.paddingTop - paddingV,
-                            recyclerView.paddingRight - paddingH,
-                            recyclerView.paddingBottom - paddingV,
-                        )
                         mGirdDecoration = null
                     }
                     if (null == mListDecoration) {
                         val interval = resources.getDimensionPixelOffset(R.dimen.gallery_list_interval)
-                        val paddingH = resources.getDimensionPixelOffset(R.dimen.gallery_list_margin_h)
-                        val paddingV = resources.getDimensionPixelOffset(R.dimen.gallery_list_margin_v)
                         mListDecoration = object : ItemDecoration() {
                             override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
                                 outRect.set(0, interval / 2, 0, interval / 2)
                             }
                         }
-                        recyclerView.setPadding(
-                            recyclerView.paddingLeft + paddingH,
-                            recyclerView.paddingTop + paddingV,
-                            recyclerView.paddingRight + paddingH,
-                            recyclerView.paddingBottom + paddingV,
-                        )
                         recyclerView.addItemDecoration(mListDecoration!!)
                     }
                 }
@@ -109,27 +93,11 @@ class GalleryAdapter(
                     layoutManager.setStrategy(STRATEGY_SUITABLE_SIZE)
                     if (null != mListDecoration) {
                         recyclerView.removeItemDecoration(mListDecoration!!)
-                        val paddingH = resources.getDimensionPixelOffset(R.dimen.gallery_list_margin_h)
-                        val paddingV = resources.getDimensionPixelOffset(R.dimen.gallery_list_margin_v)
-                        recyclerView.setPadding(
-                            recyclerView.paddingLeft - paddingH,
-                            recyclerView.paddingTop - paddingV,
-                            recyclerView.paddingRight - paddingH,
-                            recyclerView.paddingBottom - paddingV,
-                        )
                         mListDecoration = null
                     }
                     if (null == mGirdDecoration) {
                         val interval = resources.getDimensionPixelOffset(R.dimen.gallery_grid_interval)
-                        val paddingH = resources.getDimensionPixelOffset(R.dimen.gallery_grid_margin_h)
-                        val paddingV = resources.getDimensionPixelOffset(R.dimen.gallery_grid_margin_v)
                         mGirdDecoration = MarginItemDecoration(interval, 0, 0, 0, 0)
-                        recyclerView.setPadding(
-                            recyclerView.paddingLeft + paddingH,
-                            recyclerView.paddingTop + paddingV,
-                            recyclerView.paddingRight + paddingH,
-                            recyclerView.paddingBottom + paddingV,
-                        )
                         recyclerView.addItemDecoration(mGirdDecoration!!)
                     }
                 }
