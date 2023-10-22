@@ -1,9 +1,9 @@
 package com.hippo.ehviewer.util
 
+import java.io.File
 import okhttp3.ResponseBody
 import okio.buffer
 import okio.sink
-import java.io.File
 
 fun ResponseBody.copyToFile(file: File) {
     file.outputStream().use { os ->

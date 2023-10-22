@@ -3,6 +3,8 @@ package com.hippo.ehviewer.coil
 import coil.intercept.Interceptor
 import coil.request.ImageResult
 import com.hippo.ehviewer.Settings
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -11,8 +13,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 object MergeInterceptor : Interceptor {
     private val pendingContinuationMap: HashMap<String, MutableList<CancellableContinuation<Unit>>> = hashMapOf()

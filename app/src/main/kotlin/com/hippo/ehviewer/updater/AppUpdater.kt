@@ -6,6 +6,10 @@ import com.hippo.ehviewer.client.execute
 import com.hippo.ehviewer.client.executeAndParseAs
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.util.encodeBase64
+import java.io.File
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import java.util.zip.ZipInputStream
 import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.Request
 import okio.sink
@@ -14,10 +18,6 @@ import tachiyomi.data.release.GithubArtifacts
 import tachiyomi.data.release.GithubCommitComparison
 import tachiyomi.data.release.GithubRelease
 import tachiyomi.data.release.GithubWorkflowRuns
-import java.io.File
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.zip.ZipInputStream
 
 private const val API_URL = "https://api.github.com/repos/${BuildConfig.REPO_NAME}"
 private const val LATEST_RELEASE_URL = "$API_URL/releases/latest"

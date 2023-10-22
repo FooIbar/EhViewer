@@ -39,6 +39,7 @@ import com.hippo.ehviewer.util.runAssertingNotMainThread
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import java.util.LinkedList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
@@ -50,7 +51,6 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import splitties.init.appCtx
 import splitties.preferences.edit
-import java.util.LinkedList
 
 object DownloadManager : OnSpiderListener {
     // All download info list

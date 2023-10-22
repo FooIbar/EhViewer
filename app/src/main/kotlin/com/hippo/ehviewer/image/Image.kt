@@ -46,11 +46,11 @@ import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
+import java.nio.ByteBuffer
+import kotlin.math.min
 import okio.buffer
 import okio.source
 import splitties.init.appCtx
-import java.nio.ByteBuffer
-import kotlin.math.min
 
 class Image private constructor(drawable: Drawable, private val src: AutoCloseable) {
     var mObtainedDrawable: Drawable? = drawable

@@ -17,7 +17,6 @@ package com.hippo.ehviewer.util
 
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.exception.EhException
-import splitties.init.appCtx
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.ProtocolException
@@ -25,6 +24,7 @@ import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.net.ssl.SSLException
+import splitties.init.appCtx
 
 object ExceptionUtils {
     fun getReadableString(e: Throwable): String {

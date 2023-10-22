@@ -1,9 +1,9 @@
 package com.hippo.ehviewer.legacy
 
 import com.hippo.ehviewer.spider.SpiderInfo
+import java.io.InputStream
 import okio.buffer
 import okio.source
-import java.io.InputStream
 
 fun readLegacySpiderInfo(inputStream: InputStream): SpiderInfo {
     val source = inputStream.source().buffer()

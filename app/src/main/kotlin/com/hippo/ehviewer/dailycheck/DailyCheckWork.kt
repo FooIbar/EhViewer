@@ -24,12 +24,12 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import splitties.init.appCtx
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
+import splitties.init.appCtx
 
 private val signedIn
     get() = EhCookieStore.hasSignedIn()

@@ -43,10 +43,10 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.installPackage
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
-import java.io.File
 
 private const val REPO_URL = "https://github.com/${BuildConfig.REPO_NAME}"
 private const val RELEASE_URL = "$REPO_URL/releases"

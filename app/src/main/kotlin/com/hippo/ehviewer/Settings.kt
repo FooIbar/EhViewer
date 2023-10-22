@@ -4,6 +4,8 @@ package com.hippo.ehviewer
 
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import java.util.Locale
+import kotlin.reflect.KProperty
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asFlow
@@ -12,8 +14,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapMerge
 import splitties.preferences.DataStorePreferences
 import splitties.preferences.edit
-import java.util.Locale
-import kotlin.reflect.KProperty
 
 object Settings : DataStorePreferences(null) {
     private const val KEY_SHOW_TAG_TRANSLATIONS = "show_tag_translations"

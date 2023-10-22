@@ -7,13 +7,13 @@ import com.hippo.ehviewer.legacy.readLegacySpiderInfo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
 import com.hippo.unifile.openOutputStream
+import java.io.File
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
-import java.io.File
 
 @Serializable
 class SpiderInfo(

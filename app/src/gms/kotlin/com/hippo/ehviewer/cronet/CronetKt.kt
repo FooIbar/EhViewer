@@ -7,6 +7,13 @@ import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhCookieStore
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.utils.io.pool.DirectByteBufferPool
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -17,13 +24,6 @@ import org.chromium.net.CronetException
 import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
 import splitties.init.appCtx
-import java.nio.ByteBuffer
-import java.nio.channels.FileChannel
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 private const val TAG = "CronetRequest"
 val pool = DirectByteBufferPool(32)
