@@ -30,7 +30,6 @@ import com.hippo.ehviewer.client.EhUrl.getGalleryMultiPageViewerUrl
 import com.hippo.ehviewer.client.EhUrl.referer
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.ehRequest
-import com.hippo.ehviewer.client.exception.ParseException
 import com.hippo.ehviewer.client.exception.QuotaExceededException
 import com.hippo.ehviewer.client.execute
 import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePages
@@ -650,7 +649,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     }
 
                     if (imageUrl == null) {
-                        runCatching {
+                        runSuspendCatching {
                             EhEngine.getGalleryPageApi(
                                 mSpiderInfo.gid,
                                 index,
@@ -664,13 +663,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                                 originImageUrl = it.originImageUrl
                             }
                         }.onFailure {
-                            if (it is ParseException && "Key mismatch" == it.message) {
-                                // Show key is wrong, enter a new loop to get the new show key
-                                if (showKey == localShowKey) showKey = null
-                                return@repeat
-                            } else {
-                                throw it
-                            }
+                            forceHtml = true
+                            return@repeat
                         }
                     }
 
