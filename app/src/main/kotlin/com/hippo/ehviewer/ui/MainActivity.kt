@@ -356,11 +356,11 @@ class MainActivity : EhActivity() {
     }
 
     fun addAboveSnackView(view: View) {
-        binding.absnacker.addAboveSnackView(view)
+        binding.snackbar.addView(view)
     }
 
     fun removeAboveSnackView(view: View) {
-        binding.absnacker.removeAboveSnackView(view)
+        binding.snackbar.removeView(view)
     }
 
     fun setDrawerLockMode(lockMode: Int, edgeGravity: Int) {
@@ -401,7 +401,7 @@ class MainActivity : EhActivity() {
      * If activity is running, show snack bar, otherwise show toast
      */
     fun showTip(message: CharSequence, length: Int, useToast: Boolean = false) {
-        findViewById<View>(R.id.snackbar)?.takeUnless { useToast }?.apply {
+        binding.snackbar.takeUnless { useToast }?.apply {
             Snackbar.make(
                 this,
                 message,
