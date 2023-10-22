@@ -88,17 +88,17 @@ import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.setValue
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import moe.tarsin.coroutines.runSuspendCatching
-import rikka.core.res.resolveColor
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import moe.tarsin.coroutines.runSuspendCatching
+import rikka.core.res.resolveColor
 
 // Note that we do not really follow mvvm structure, just use it as ... storage
 class VMStorage : ViewModel() {

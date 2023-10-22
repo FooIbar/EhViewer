@@ -136,6 +136,7 @@ import com.hippo.ehviewer.databinding.DialogArchiveListBinding
 import com.hippo.ehviewer.databinding.DialogRateBinding
 import com.hippo.ehviewer.databinding.DialogTorrentListBinding
 import com.hippo.ehviewer.databinding.ItemGalleryCommentBinding
+import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.MODE_READ
@@ -172,6 +173,7 @@ import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.getParcelableCompat
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.sync.Mutex
@@ -179,8 +181,6 @@ import kotlinx.coroutines.sync.withLock
 import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import splitties.systemservices.downloadManager
-import kotlin.math.roundToInt
-import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
 
 class GalleryDetailScene : BaseScene() {
     private var mDownloadState = 0

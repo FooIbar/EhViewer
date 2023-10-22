@@ -69,12 +69,12 @@ import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import java.io.File
+import java.io.FileOutputStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
-import java.io.File
-import java.io.FileOutputStream
 
 class MainActivity : EhActivity() {
     private lateinit var binding: ActivityMainBinding

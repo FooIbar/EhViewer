@@ -4,13 +4,13 @@ import android.content.Context
 import android.webkit.WebSettings
 import android.webkit.WebView
 import com.hippo.ehviewer.util.setDefaultSettings
+import java.util.Locale
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
-import java.util.Locale
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 abstract class WebViewInterceptor(private val context: Context) : Interceptor {
     /**

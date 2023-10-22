@@ -17,6 +17,7 @@ package com.hippo.ehviewer.spider
 
 import android.os.ParcelFileDescriptor
 import android.os.ParcelFileDescriptor.MODE_READ_WRITE
+import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
 import com.hippo.ehviewer.client.data.GalleryInfo
@@ -38,14 +39,13 @@ import com.hippo.ehviewer.util.isCronetSupported
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openOutputStream
+import java.util.Locale
+import kotlin.io.path.readText
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Response
 import okio.Buffer
 import okio.ForwardingSink
 import okio.sink
-import java.util.Locale
-import kotlin.io.path.readText
-import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 
 class SpiderDen(mGalleryInfo: GalleryInfo) {
     private val mGid = mGalleryInfo.gid

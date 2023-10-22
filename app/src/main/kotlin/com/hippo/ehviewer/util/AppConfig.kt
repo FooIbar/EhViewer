@@ -17,8 +17,8 @@ package com.hippo.ehviewer.util
 
 import android.os.Environment
 import com.hippo.ehviewer.client.exception.ParseException
-import splitties.init.appCtx
 import java.io.File
+import splitties.init.appCtx
 
 fun File.ensureDirectory() = if (exists()) isDirectory else mkdirs()
 

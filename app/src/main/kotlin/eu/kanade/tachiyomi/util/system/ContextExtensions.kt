@@ -17,10 +17,10 @@ import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import com.hippo.ehviewer.R
-import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
-import splitties.systemservices.windowManager
-import kotlin.math.roundToInt
 import com.hippo.ehviewer.Settings as AppSettings
+import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
+import kotlin.math.roundToInt
+import splitties.systemservices.windowManager
 
 /**
  * Returns the color for the given attribute.

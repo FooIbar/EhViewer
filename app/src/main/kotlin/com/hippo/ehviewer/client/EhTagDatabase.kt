@@ -24,6 +24,8 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.copyToFile
+import java.io.File
+import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -42,8 +44,6 @@ import okio.blackholeSink
 import okio.buffer
 import okio.source
 import splitties.init.appCtx
-import java.io.File
-import java.nio.charset.StandardCharsets
 
 object EhTagDatabase : CoroutineScope {
     private const val NAMESPACE_PREFIX = "n"

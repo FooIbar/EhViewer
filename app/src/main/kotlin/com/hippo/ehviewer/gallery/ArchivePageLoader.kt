@@ -35,6 +35,7 @@ import com.hippo.ehviewer.jni.providePassword
 import com.hippo.ehviewer.jni.releaseByteBuffer
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.unifile.UniFile
+import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,6 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import moe.tarsin.coroutines.NamedMutex
 import moe.tarsin.coroutines.withLock
-import java.nio.ByteBuffer
 
 class ArchivePageLoader(context: Context, private val uri: Uri, passwdFlow: Flow<String>) : PageLoader2(), CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()

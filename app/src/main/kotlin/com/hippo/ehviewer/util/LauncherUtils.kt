@@ -22,10 +22,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import arrow.atomic.AtomicInt
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import rikka.core.util.ContextUtils.requireActivity
 import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import rikka.core.util.ContextUtils.requireActivity
 
 // Fuck off the silly Android launcher and callback :)
 

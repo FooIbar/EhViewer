@@ -64,10 +64,10 @@ import com.hippo.ehviewer.util.ExceptionUtils
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import java.util.Locale
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.Cookie
-import java.util.Locale
 
 @Composable
 fun CookieSignInScene(windowSizeClass: WindowSizeClass) {

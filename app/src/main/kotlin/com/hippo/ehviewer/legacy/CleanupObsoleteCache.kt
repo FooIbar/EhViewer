@@ -2,8 +2,8 @@ package com.hippo.ehviewer.legacy
 
 import android.app.Application
 import eu.kanade.tachiyomi.util.lang.launchIO
-import kotlinx.coroutines.DelicateCoroutinesApi
 import java.io.File
+import kotlinx.coroutines.DelicateCoroutinesApi
 
 private val OBSOLETE_CACHE_DIRS = arrayOf(
     "image",

@@ -41,6 +41,10 @@ import com.hippo.ehviewer.util.toFloatOrDefault
 import com.hippo.ehviewer.util.toIntOrDefault
 import com.hippo.ehviewer.util.trimAnd
 import com.hippo.ehviewer.util.unescapeXml
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -48,10 +52,6 @@ import org.jsoup.nodes.Node
 import org.jsoup.select.Elements
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
-import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 object GalleryDetailParser {
     private val PATTERN_ERROR = Regex("<div class=\"d\">\n<p>([^<]+)</p>")

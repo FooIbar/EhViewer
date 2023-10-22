@@ -16,11 +16,11 @@
 package com.hippo.ehviewer.util
 
 import android.os.Looper
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.runBlocking
 import java.io.BufferedReader
 import java.io.FileReader
 import java.util.regex.Pattern
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.runBlocking
 
 object OSUtils {
     private const val PROCFS_MEMFILE = "/proc/meminfo"

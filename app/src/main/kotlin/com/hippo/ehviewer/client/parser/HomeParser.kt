@@ -3,8 +3,8 @@ package com.hippo.ehviewer.client.parser
 import android.os.Parcelable
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
 import com.hippo.ehviewer.client.exception.ParseException
-import kotlinx.parcelize.Parcelize
 import java.nio.ByteBuffer
+import kotlinx.parcelize.Parcelize
 
 object HomeParser {
     private val PATTERN_FUNDS = Regex("Available: ([\\d,]+) Credits.*Available: ([\\d,]+) kGP", RegexOption.DOT_MATCHES_ALL)

@@ -91,9 +91,9 @@ import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.toBBCode
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import kotlin.math.hypot
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
-import kotlin.math.hypot
 
 class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefreshListener {
     private var _binding: SceneGalleryCommentsBinding? = null

@@ -25,9 +25,9 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.ui.main.AdvanceTable
 import com.hippo.ehviewer.util.encodeUTF8
 import com.hippo.ehviewer.util.toIntOrDefault
-import kotlinx.parcelize.Parcelize
 import java.io.UnsupportedEncodingException
 import java.net.URLDecoder
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class ListUrlBuilder(

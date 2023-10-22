@@ -81,6 +81,7 @@ import com.hippo.ehviewer.databinding.ItemDownloadBinding
 import com.hippo.ehviewer.databinding.ItemDrawerListBinding
 import com.hippo.ehviewer.databinding.SceneDownloadBinding
 import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.download.DownloadManager as downloadManager
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.DownloadService.Companion.clear
 import com.hippo.ehviewer.download.downloadDir
@@ -115,7 +116,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import rikka.core.res.resolveColor
-import com.hippo.ehviewer.download.DownloadManager as downloadManager
 
 @SuppressLint("RtlHardcoded")
 class DownloadsScene :

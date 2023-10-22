@@ -42,6 +42,9 @@ import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
+import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,9 +62,6 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withTimeout
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
-import java.time.Instant
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.time.Duration.Companion.seconds
 
 class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
