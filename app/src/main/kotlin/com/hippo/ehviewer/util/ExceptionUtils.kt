@@ -16,7 +16,6 @@
 package com.hippo.ehviewer.util
 
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.client.exception.EhException
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.ProtocolException
@@ -60,8 +59,7 @@ object ExceptionUtils {
             }
 
             is SocketException, is SSLException -> appCtx.getString(R.string.error_socket)
-            is EhException -> e.message!!
-            else -> appCtx.getString(R.string.error_unknown)
+            else -> e.message ?: appCtx.getString(R.string.error_unknown)
         }
     }
 
