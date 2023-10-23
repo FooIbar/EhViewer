@@ -22,9 +22,7 @@ import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.StringRes
-import androidx.core.view.GravityCompat
 import androidx.core.view.SoftwareKeyboardControllerCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
@@ -55,45 +53,21 @@ abstract class BaseScene : Fragment() {
         }
     }
 
-    fun setDrawerLockMode(lockMode: Int, edgeGravity: Int) {
+    val isDrawerLocked
+        get() = mainActivity?.drawerLocked == true
+
+    fun lockDrawer() {
+        mainActivity?.drawerLocked = true
+    }
+
+    fun unlockDrawer() {
+        mainActivity?.drawerLocked = false
+    }
+
+    fun openDrawer() {
         val activity = activity
         if (activity is MainActivity) {
-            activity.setDrawerLockMode(lockMode, edgeGravity)
-        }
-    }
-
-    fun getDrawerLockMode(edgeGravity: Int): Int? {
-        val activity = activity
-        return if (activity is MainActivity) {
-            activity.getDrawerLockMode(edgeGravity)
-        } else {
-            null
-        }
-    }
-
-    fun isDrawerOpen(drawerGravity: Int): Boolean {
-        val activity = activity
-        return activity is MainActivity && activity.isDrawerOpen(drawerGravity)
-    }
-
-    fun openDrawer(drawerGravity: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.openDrawer(drawerGravity)
-        }
-    }
-
-    fun closeDrawer(drawerGravity: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.closeDrawer(drawerGravity)
-        }
-    }
-
-    fun toggleDrawer(drawerGravity: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.toggleDrawer(drawerGravity)
+            activity.openDrawer()
         }
     }
 
@@ -157,9 +131,9 @@ abstract class BaseScene : Fragment() {
 
         // Update left drawer locked state
         if (showLeftDrawer) {
-            setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.START)
+            unlockDrawer()
         } else {
-            setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.START)
+            lockDrawer()
         }
         hideSoftInput()
         createDrawerView(savedInstanceState)?.let {

@@ -50,7 +50,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
-import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -88,7 +87,7 @@ class HistoryScene : BaseScene() {
                     TopAppBar(
                         title = { Text(text = stringResource(id = R.string.history)) },
                         navigationIcon = {
-                            IconButton(onClick = { toggleDrawer(GravityCompat.START) }) {
+                            IconButton(onClick = { openDrawer() }) {
                                 Icon(imageVector = Icons.Default.Menu, contentDescription = null)
                             }
                         },

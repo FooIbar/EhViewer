@@ -37,10 +37,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
-import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -384,15 +382,13 @@ class FavoritesScene : SearchBarScene() {
                         // Delay expanding action to make layout work fine
                         SimpleHandler.post { binding.fabLayout.isExpanded = true }
                         binding.refreshLayout.isEnabled = false
-                        // Lock drawer
-                        setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.START)
+                        lockDrawer()
                     }) {
                         showNormalFab()
                         binding.fabLayout.setAutoCancel(true)
                         binding.fabLayout.isExpanded = false
                         binding.refreshLayout.isEnabled = true
-                        // Unlock drawer
-                        setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.START)
+                        unlockDrawer()
                     }
                     restoreSelection(savedInstanceState)
                 }

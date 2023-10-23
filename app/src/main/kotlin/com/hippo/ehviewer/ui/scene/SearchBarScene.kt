@@ -28,9 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.core.view.GravityCompat
 import androidx.core.widget.addTextChangedListener
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.search.SearchView
 import com.google.android.material.shape.MaterialShapeDrawable
@@ -148,16 +146,13 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
         _binding = null
     }
 
-    private var privLockModeStart: Int? = null
+    private var drawerLocked = false
 
     @CallSuper
     open fun onSearchViewExpanded() {
-        privLockModeStart = getDrawerLockMode(GravityCompat.START)
-        privLockModeStart?.let {
-            setDrawerLockMode(
-                DrawerLayout.LOCK_MODE_LOCKED_CLOSED,
-                GravityCompat.START,
-            )
+        if (!isDrawerLocked) {
+            drawerLocked = true
+            lockDrawer()
         }
         updateSuggestions()
     }
@@ -165,8 +160,10 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
     @CallSuper
     open fun onSearchViewHidden() {
         binding.toolbar.setText(binding.searchview.text)
-        privLockModeStart?.let { setDrawerLockMode(it, GravityCompat.START) }
-        privLockModeStart = null
+        if (drawerLocked) {
+            unlockDrawer()
+            drawerLocked = false
+        }
     }
 
     fun showSearchFab(animation: Boolean, delay: Long = 0) {
@@ -264,7 +261,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
     }
 
     override fun onNavigationClick() {
-        toggleDrawer(GravityCompat.START)
+        openDrawer()
     }
 
     override fun getMenuResId(): Int {

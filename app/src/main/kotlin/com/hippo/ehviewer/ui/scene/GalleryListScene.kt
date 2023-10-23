@@ -33,10 +33,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
-import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -480,10 +478,10 @@ class GalleryListScene : SearchBarScene() {
         val actionFabDrawable = AddDeleteDrawable(requireContext(), colorID)
         binding.fabLayout.addOnExpandListener {
             if (it) {
-                setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.START)
+                lockDrawer()
                 actionFabDrawable.setDelete(ANIMATE_TIME)
             } else {
-                setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.START)
+                unlockDrawer()
                 actionFabDrawable.setAdd(ANIMATE_TIME)
             }
         }
@@ -854,9 +852,9 @@ class GalleryListScene : SearchBarScene() {
     private fun onStateChange(newState: State) {
         stateBackPressedCallback.isEnabled = newState != State.NORMAL
         if (newState == State.NORMAL || newState == State.SIMPLE_SEARCH) {
-            setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.START)
+            unlockDrawer()
         } else {
-            setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.START)
+            lockDrawer()
         }
     }
 
