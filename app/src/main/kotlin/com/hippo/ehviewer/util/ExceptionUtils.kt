@@ -42,12 +42,12 @@ object ExceptionUtils {
             is SocketTimeoutException -> appCtx.getString(R.string.error_timeout)
             is UnknownHostException -> appCtx.getString(R.string.error_unknown_host)
             is StatusCodeException -> {
-                val sb = StringBuilder()
-                sb.append(appCtx.getString(R.string.error_bad_status_code, e.responseCode))
-                if (e.isIdentifiedResponseCode) {
-                    sb.append(", ").append(e.message)
+                buildString {
+                    append(appCtx.getString(R.string.error_bad_status_code, e.responseCode))
+                    if (e.isIdentifiedResponseCode) {
+                        append(", ").append(e.message)
+                    }
                 }
-                sb.toString()
             }
 
             is ProtocolException -> {

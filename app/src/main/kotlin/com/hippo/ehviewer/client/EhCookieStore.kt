@@ -16,6 +16,11 @@
 package com.hippo.ehviewer.client
 
 import android.webkit.CookieManager
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastFilter
+import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastJoinToString
+import androidx.compose.ui.util.fastMapNotNull
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -24,13 +29,15 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 object EhCookieStore : CookieJar {
     private val manager = CookieManager.getInstance()
     fun signOut() = manager.removeAllCookies(null)
-    fun contains(url: HttpUrl, name: String) = get(url).any { it.name == name }
+    fun contains(url: HttpUrl, name: String) = get(url).fastAny { it.name == name }
 
     fun get(url: HttpUrl): List<Cookie> {
         val cookies = manager.getCookie(url.toString())
 
-        return if (cookies != null && cookies.isNotEmpty()) {
-            cookies.split(";").mapNotNull { Cookie.parse(url, it) }.filterNot { it.name == KEY_UTMP_NAME }
+        return if (!cookies.isNullOrEmpty()) {
+            cookies.split(";").fastMapNotNull { setCookie ->
+                Cookie.parse(url, setCookie)?.takeUnless { it.name == KEY_UTMP_NAME }
+            }
         } else {
             emptyList()
         }
@@ -57,9 +64,12 @@ object EhCookieStore : CookieJar {
     }.build()
 
     fun copyNecessaryCookies() {
-        val cookie = get(EhUrl.HOST_E.toHttpUrl()).filter { it.name == KEY_STAR || it.name == KEY_IPB_MEMBER_ID || it.name == KEY_IPB_PASS_HASH || it.name == KEY_IGNEOUS }
-        cookie.forEach { manager.setCookie(EhUrl.HOST_EX, it.toString()) }
-        flush()
+        val cookies = get(EhUrl.HOST_E.toHttpUrl())
+        cookies.fastForEach {
+            if (it.name == KEY_STAR || it.name == KEY_IPB_MEMBER_ID || it.name == KEY_IPB_PASS_HASH) {
+                manager.setCookie(EhUrl.HOST_EX, it.toString())
+            }
+        }
     }
 
     fun deleteCookie(url: HttpUrl, name: String) {
@@ -67,35 +77,29 @@ object EhCookieStore : CookieJar {
     }
 
     fun addCookie(cookie: Cookie) {
-        if (EhUrl.DOMAIN_E in cookie.domain) manager.setCookie(EhUrl.HOST_E, cookie.toString()) else manager.setCookie(EhUrl.DOMAIN_EX, cookie.toString())
+        manager.setCookie(if (EhUrl.DOMAIN_E == cookie.domain) EhUrl.HOST_E else EhUrl.HOST_EX, cookie.toString())
     }
 
     fun flush() = manager.flush()
 
     fun getCookieHeader(url: HttpUrl): String {
-        val cookies = loadForRequest(url)
-        val cookieHeader = StringBuilder()
-        var i = 0
-        val size = cookies.size
-        while (i < size) {
-            if (i > 0) {
-                cookieHeader.append("; ")
-            }
-            val cookie = cookies[i]
-            cookieHeader.append(cookie.name).append('=').append(cookie.value)
-            i++
+        return loadForRequest(url).fastJoinToString("; ") {
+            "${it.name}=${it.value}"
         }
-        return cookieHeader.toString()
     }
 
     // See https://github.com/Ehviewer-Overhauled/Ehviewer/issues/873
-    override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) = cookies.filterNot { it.name == KEY_UTMP_NAME }.forEach { manager.setCookie(url.toString(), it.toString()) }.also { flush() }
+    override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) = cookies.fastForEach {
+        if (it.name != KEY_UTMP_NAME) {
+            manager.setCookie(url.toString(), it.toString())
+        }
+    }
 
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
         val checkTips = EhUrl.DOMAIN_E in url.host
         return get(url).run {
             if (checkTips) {
-                filterNot { it.name == KEY_CONTENT_WARNING }.toMutableList().apply { add(sTipsCookie) }
+                fastFilter { it.name != KEY_CONTENT_WARNING }.toMutableList().apply { add(sTipsCookie) }
             } else {
                 this
             }

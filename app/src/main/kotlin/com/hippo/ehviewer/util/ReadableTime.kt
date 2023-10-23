@@ -101,19 +101,19 @@ object ReadableTime {
     }
 
     fun getShortTimeInterval(time: Long): String {
-        val sb = StringBuilder()
         val resources = sResources
-        for (i in 0 until SIZE) {
-            val multiple = MULTIPLES[i]
-            val quotient = time / multiple
-            if (time > multiple * 1.5 || i == SIZE - 1) {
-                sb.append(quotient)
-                    .append(" ")
-                    .append(resources!!.getQuantityString(UNITS[i], quotient.toInt()))
-                break
+        return buildString {
+            for (i in 0 until SIZE) {
+                val multiple = MULTIPLES[i]
+                val quotient = time / multiple
+                if (time > multiple * 1.5 || i == SIZE - 1) {
+                    append(quotient)
+                        .append(" ")
+                        .append(resources!!.getQuantityString(UNITS[i], quotient.toInt()))
+                    break
+                }
             }
         }
-        return sb.toString()
     }
 
     fun getFilenamableTime(time: Long): String {

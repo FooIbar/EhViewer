@@ -27,6 +27,7 @@ suspend fun postLogin() = coroutineScope {
         launch {
             runCatching {
                 EhEngine.getUConfig(EhUrl.URL_UCONFIG_E)
+                EhCookieStore.flush()
             }.onFailure {
                 it.printStackTrace()
             }
@@ -36,6 +37,7 @@ suspend fun postLogin() = coroutineScope {
         Settings.gallerySite = EhUrl.SITE_EX
         // Explicitly use ex url since https://github.com/Ehviewer-Overhauled/Ehviewer/issues/1239#issuecomment-1632584525
         EhEngine.getUConfig(EhUrl.URL_UCONFIG_EX)
+        EhCookieStore.flush()
     }.onFailure {
         Settings.gallerySite = EhUrl.SITE_E
         Settings.needSignIn = false

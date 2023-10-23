@@ -60,7 +60,7 @@ fun Spanned.toBBCode(): String {
         }
         if (next < text.length) processOneSpanTransition(next)
     }
-    return StringBuilder().apply {
+    return buildString {
         processOneSpanTransition()
-    }.toString()
+    }
 }

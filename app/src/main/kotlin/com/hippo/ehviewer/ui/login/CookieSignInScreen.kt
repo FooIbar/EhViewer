@@ -101,7 +101,6 @@ fun CookieSignInScene(windowSizeClass: WindowSizeClass) {
         EhCookieStore.addCookie(newCookie(EhCookieStore.KEY_IPB_PASS_HASH, hash, EhUrl.DOMAIN_E))
         EhCookieStore.addCookie(newCookie(EhCookieStore.KEY_IPB_PASS_HASH, hash, EhUrl.DOMAIN_EX))
         if (igneous.isNotBlank()) EhCookieStore.addCookie(newCookie(EhCookieStore.KEY_IGNEOUS, igneous, EhUrl.DOMAIN_EX))
-        EhCookieStore.flush()
     }
 
     fun login() {

@@ -320,66 +320,67 @@ data class ListUrlBuilder(
                     // Pages
                     if (pageFrom != -1 || pageTo != -1) {
                         addQueryParameter("f_sp", "on")
-                        addQueryParameter(
+                        addQueryParameterIfNotBlank(
                             "f_spf",
-                            (if (pageFrom != -1) pageFrom.toString() else "").toString(),
+                            pageFrom.takeUnless { it == -1 }?.toString(),
                         )
-                        addQueryParameter(
+                        addQueryParameterIfNotBlank(
                             "f_spt",
-                            (if (pageTo != -1) pageTo.toString() else "").toString(),
+                            pageTo.takeUnless { it == -1 }?.toString(),
                         )
                     }
                 }
             }.toString()
 
             MODE_UPLOADER -> {
-                val sb = StringBuilder(EhUrl.host)
-                mKeyword?.let {
-                    sb.append("uploader/")
-                    sb.append(encodeUTF8(it))
+                buildString {
+                    append(EhUrl.host)
+                    mKeyword?.let {
+                        append("uploader/").append(encodeUTF8(it))
+                    }
+                    mPrev?.let {
+                        append("?prev=").append(it)
+                    }
+                    mNext?.let {
+                        append("?next=").append(it)
+                    }
+                    mJumpTo?.let {
+                        append("&seek=").append(it)
+                    }
                 }
-                mPrev?.let {
-                    sb.append("?prev=").append(it)
-                }
-                mNext?.let {
-                    sb.append("?next=").append(it)
-                }
-                mJumpTo?.let {
-                    sb.append("&seek=").append(it)
-                }
-                sb.toString()
             }
 
             MODE_TAG -> {
-                val sb = StringBuilder(EhUrl.host)
-                mKeyword?.let {
-                    sb.append("tag/")
-                    sb.append(encodeUTF8(it))
+                buildString {
+                    append(EhUrl.host)
+                    mKeyword?.let {
+                        append("tag/").append(encodeUTF8(it))
+                    }
+                    mPrev?.let {
+                        append("?prev=").append(it)
+                    }
+                    mNext?.let {
+                        append("?next=").append(it)
+                    }
+                    mJumpTo?.let {
+                        append("&seek=").append(it)
+                    }
                 }
-                mPrev?.let {
-                    sb.append("?prev=").append(it)
-                }
-                mNext?.let {
-                    sb.append("?next=").append(it)
-                }
-                mJumpTo?.let {
-                    sb.append("&seek=").append(it)
-                }
-                sb.toString()
             }
 
             MODE_WHATS_HOT -> EhUrl.popularUrl
             MODE_IMAGE_SEARCH -> EhUrl.imageSearchUrl
             MODE_TOPLIST -> {
-                val sb = StringBuilder(EhUrl.HOST_E)
-                sb.append("toplist.php?tl=")
-                mKeyword.orEmpty().let {
-                    sb.append(encodeUTF8(it))
+                buildString {
+                    append(EhUrl.HOST_E)
+                    append("toplist.php?tl=")
+                    mKeyword.orEmpty().let {
+                        append(encodeUTF8(it))
+                    }
+                    mJumpTo?.let {
+                        append("&p=").append(it)
+                    }
                 }
-                mJumpTo?.let {
-                    sb.append("&p=").append(it)
-                }
-                sb.toString()
             }
 
             else -> throw IllegalStateException("Unexpected value: $mode")
