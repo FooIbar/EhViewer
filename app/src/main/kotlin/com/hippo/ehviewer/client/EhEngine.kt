@@ -54,6 +54,7 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.StatusCodeException
 import com.hippo.ehviewer.util.isCronetSupported
 import io.ktor.utils.io.pool.DirectByteBufferPool
+import io.ktor.utils.io.pool.useInstance
 import java.io.File
 import java.nio.ByteBuffer
 import kotlin.math.ceil
@@ -121,28 +122,22 @@ val httpContentPool = DirectByteBufferPool(16, 0x20000)
 suspend inline fun <T> fetchCompat(url: String, referer: String? = null, crossinline parser: (ByteBuffer) -> T): T {
     return if (isCronetSupported) {
         cronetRequest(url, referer).execute {
-            val buffer = httpContentPool.borrow()
-            try {
+            httpContentPool.useInstance { buffer ->
                 awaitBodyFully {
                     buffer.put(it)
                 }
                 buffer.flip()
                 parser(buffer)
-            } finally {
-                httpContentPool.recycle(buffer)
             }
         }
     } else {
         ehRequest(url, referer).execute {
-            val buffer = httpContentPool.borrow()
-            try {
+            httpContentPool.useInstance { buffer ->
                 while (true) {
                     if (body.source().read(buffer) == -1) break
                 }
                 buffer.flip()
                 parser(buffer)
-            } finally {
-                httpContentPool.recycle(buffer)
             }
         }
     }

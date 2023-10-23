@@ -1,14 +1,10 @@
 package com.hippo.ehviewer.cronet
 
-import com.hippo.ehviewer.EhApplication
 import com.hippo.ehviewer.client.CHROME_ACCEPT
 import com.hippo.ehviewer.client.CHROME_ACCEPT_LANGUAGE
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhCookieStore
-import eu.kanade.tachiyomi.util.system.logcat
-import io.ktor.utils.io.pool.DirectByteBufferPool
 import java.nio.ByteBuffer
-import java.nio.channels.FileChannel
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.Continuation
@@ -25,9 +21,6 @@ import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
 import splitties.init.appCtx
 
-private const val TAG = "CronetRequest"
-val pool = DirectByteBufferPool(32)
-
 val cronetHttpClient: CronetEngine = CronetEngine.Builder(appCtx).apply {
     enableBrotli(true)
     val cache = (appCtx.cacheDir.toOkioPath() / "http_cache").toFile().apply { mkdirs() }
@@ -36,9 +29,6 @@ val cronetHttpClient: CronetEngine = CronetEngine.Builder(appCtx).apply {
     setUserAgent(CHROME_USER_AGENT)
 }.build()
 
-val cronetHttpClientExecutor = EhApplication.baseOkHttpClient.dispatcher.executorService
-
-// TODO: Rewrite this to use android.net.http.HttpEngine and make it Android 14 only when released
 class CronetRequest {
     lateinit var consumer: (ByteBuffer) -> Unit
     lateinit var onResponse: CronetRequest.(UrlResponseInfo) -> Unit
@@ -47,7 +37,6 @@ class CronetRequest {
     lateinit var readerCont: Continuation<Unit>
     val callback = object : UrlRequest.Callback() {
         override fun onRedirectReceived(req: UrlRequest, info: UrlResponseInfo, url: String) {
-            logcat(tag = TAG) { "Redirected to $url" }
             req.followRedirect()
         }
 
@@ -77,29 +66,6 @@ inline fun cronetRequest(url: String, referer: String? = null, conf: UrlRequest.
         addHeader("Accept-Language", CHROME_ACCEPT_LANGUAGE)
         referer?.let { addHeader("Referer", it) }
     }.apply(conf).build()
-}
-
-suspend inline fun CronetRequest.awaitBodyFully(crossinline callback: (ByteBuffer) -> Unit) {
-    val buffer = pool.borrow()
-    return try {
-        suspendCancellableCoroutine { cont ->
-            consumer = {
-                callback(it)
-                buffer.clear()
-                request.read(buffer)
-            }
-            onError = { readerCont.resumeWithException(it) }
-            readerCont = cont
-            request.read(buffer)
-        }
-    } finally {
-        pool.recycle(buffer)
-    }
-}
-
-suspend inline fun CronetRequest.copyToChannel(chan: FileChannel, crossinline listener: ((Int) -> Unit) = {}) = awaitBodyFully {
-    val bytes = chan.write(it)
-    listener(bytes)
 }
 
 suspend inline fun <R> CronetRequest.execute(crossinline callback: suspend CronetRequest.(UrlResponseInfo) -> R): R {
