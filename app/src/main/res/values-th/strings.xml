@@ -388,7 +388,6 @@
     <string name="default_favorites_collection">ค่าเริ่มต้นของที่เก็บรายการโปรด</string>
     <string name="let_me_select">ขอให้ฉันเลือกนะ</string>
     <string name="collections">คอลเลคชั่น</string>
-    <string name="need_sign_in">จำเป็นต้องลงชื่อเข้าใช้ก่อน</string>
 
     <!-- Progress Scene -->
     <string name="error_something_wrong_happened">มีสิ่งผิดปกติบางอย่างเกิดขึ้น</string>
@@ -424,7 +423,6 @@
     <string name="no_archives">ยังไม่มีไฟล์บีบอัด</string>
     <string name="download_archive_started">เริ่มการดาวน์โหลดบีบอัด</string>
     <string name="download_archive_failure">การดาวน์โหลดไฟล์บีบอัดล้มเหลว</string>
-    <string name="archive">การบีบอัด</string>
     <string name="download_archive_failure_no_hath">ต้องการ H@H client เพื่อโหลดไฟล์บีบอัด</string>
     <string name="settings_privacy">ความเป็นส่วนตัว</string>
     <string name="settings_privacy_secure">ป้องกันการบันทึกภาพหน้าจอ</string>

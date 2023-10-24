@@ -363,7 +363,6 @@
     <string name="default_favorites_collection">Colección de favoritos por defecto</string>
     <string name="let_me_select">Déjame elegir</string>
     <string name="collections">Colección</string>
-    <string name="need_sign_in">Se necesita iniciar sesión</string>
 
     <!-- Progress Scene -->
 
@@ -411,7 +410,6 @@
     <string name="cancel_vote_down">Cancelar voto negativo</string>
     <string name="clear_all">Limpiar todo</string>
     <string name="comment_failed">Comentario fallido</string>
-    <string name="archive">Archivo</string>
     <string name="delete">Eliminar</string>
     <string name="download_state_failed">Descarga fallida</string>
     <string name="download_state_none">Descarga en pausa</string>

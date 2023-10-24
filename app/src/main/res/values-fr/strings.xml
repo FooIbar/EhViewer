@@ -402,7 +402,6 @@
     <string name="default_favorites_collection">Collection favoris par défaut</string>
     <string name="let_me_select">Sélectionner manuellement</string>
     <string name="collections">Collections</string>
-    <string name="need_sign_in">Vous devez vous connecter</string>
 
     <!-- Progress Scene -->
     <string name="error_something_wrong_happened">Une erreur s\'est produite</string>
@@ -445,7 +444,6 @@
     <string name="no_archives">Aucun fiche archives</string>
     <string name="download_archive_started">Téléchargement du fiche archives a commencé</string>
     <string name="download_archive_failure">Téléchargement du fiche archives a échoué</string>
-    <string name="archive">Fiches archives</string>
     <string name="download_archive_failure_no_hath">Client H@H est nécessaire pour le téléchargement de fiches archives</string>
     <string name="settings_privacy">Confidentialité</string>
     <string name="settings_privacy_secure">Empêcher les captures d\'ecran</string>
