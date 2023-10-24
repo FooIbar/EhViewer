@@ -287,16 +287,6 @@ ksp {
 aboutLibraries {
     duplicationMode = MERGE
     duplicationRule = GROUP
-    exclusionPatterns = listOf(
-        "androidx\\..*".toPattern(),
-        ".*annotations".toPattern(),
-        "com\\.google\\.code\\..*".toPattern(),
-        "com\\.google\\.guava:listenablefuture".toPattern(),
-        "com\\.google\\.protobuf:protobuf-javalite".toPattern(),
-        "org\\.checkerframework:checker-qual".toPattern(),
-        "org\\.chromium\\.net:cronet-embedded".toPattern(),
-        "org\\.slf4j:slf4j-api".toPattern(),
-    )
 }
 
 cargo {
