@@ -28,7 +28,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -65,7 +64,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.Settings.launchPage
-import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
@@ -179,17 +177,6 @@ class MainActivity : EhActivity() {
         return false
     }
 
-    private fun setNavGraph() {
-        navController.apply {
-            graph = navInflater.inflate(R.navigation.nav_graph).apply {
-                check(launchPage in 0..3)
-                val id = items[launchPage].first
-                setStartDestination(id)
-                selectedItem = id
-            }
-        }
-    }
-
     var drawerLocked by mutableStateOf(false)
     private var openDrawer = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val items = listOf(
@@ -261,8 +248,14 @@ class MainActivity : EhActivity() {
             ) {
                 AndroidViewBinding(factory = ActivityMainBinding::inflate) {
                     val navHostFragment = fragmentContainer.getFragment<NavHostFragment>()
-                    navController = navHostFragment.navController
-                    if (!EhUtils.needSignedIn()) setNavGraph()
+                    navController = navHostFragment.navController.apply {
+                        graph = navInflater.inflate(R.navigation.nav_graph).apply {
+                            check(launchPage in 0..3)
+                            val id = items[launchPage].first
+                            setStartDestination(id)
+                            selectedItem = id
+                        }
+                    }
                 }
             }
         }
@@ -351,14 +344,9 @@ class MainActivity : EhActivity() {
         }
     }
 
-    private val loginLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            setNavGraph()
-        }
-
     override fun onResume() {
-        if (EhUtils.needSignedIn()) {
-            loginLauncher.launch(Intent(this, ConfigureActivity::class.java))
+        if (Settings.needSignIn) {
+            startActivity(Intent(this, ConfigureActivity::class.java))
         }
         super.onResume()
         lifecycleScope.launch {

@@ -115,6 +115,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
@@ -414,6 +415,7 @@ class GalleryListScene : SearchBarScene() {
                         }
                     }
                 }
+                Settings.needSignInFlow.first { !it }
                 vm.dataFlow.collectLatest {
                     adapter.submitData(it)
                 }
