@@ -60,6 +60,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.onNavDestinationSelected2
 import com.google.android.material.snackbar.Snackbar
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -178,33 +179,34 @@ class MainActivity : EhActivity() {
     }
 
     var drawerLocked by mutableStateOf(false)
-    private var openDrawer = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    private val items = listOf(
-        Triple(R.id.nav_homepage, R.string.homepage, R.drawable.v_homepage_black_x24),
-        Triple(R.id.nav_subscription, R.string.subscription, R.drawable.v_eh_subscription_black_x24),
-        Triple(R.id.nav_whats_hot, R.string.whats_hot, R.drawable.v_fire_black_x24),
-        Triple(R.id.nav_toplist, R.string.toplist, R.drawable.ic_baseline_format_list_numbered_24),
-        Triple(R.id.nav_favourite, R.string.favourite, R.drawable.v_heart_x24),
-        Triple(R.id.nav_history, R.string.history, R.drawable.v_history_black_x24),
-        Triple(R.id.nav_downloads, R.string.downloads, R.drawable.v_download_x24),
-        Triple(R.id.nav_settings, R.string.settings, R.drawable.v_settings_black_x24),
-    )
-    private var selectedItem by mutableStateOf(0)
+    private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setMD3Content {
-            val scope = rememberCoroutineScope()
             val drawerState = rememberDrawerState(DrawerValue.Closed)
+            val scope = rememberCoroutineScope()
+            val items = listOf(
+                Triple(R.id.nav_homepage, R.string.homepage, R.drawable.v_homepage_black_x24),
+                Triple(R.id.nav_subscription, R.string.subscription, R.drawable.v_eh_subscription_black_x24),
+                Triple(R.id.nav_whats_hot, R.string.whats_hot, R.drawable.v_fire_black_x24),
+                Triple(R.id.nav_toplist, R.string.toplist, R.drawable.ic_baseline_format_list_numbered_24),
+                Triple(R.id.nav_favourite, R.string.favourite, R.drawable.v_heart_x24),
+                Triple(R.id.nav_history, R.string.history, R.drawable.v_history_black_x24),
+                Triple(R.id.nav_downloads, R.string.downloads, R.drawable.v_download_x24),
+                Triple(R.id.nav_settings, R.string.settings, R.drawable.v_settings_black_x24),
+            )
+            fun isSelected(id: Int) = ::navController.isInitialized && id == navController.currentDestination?.id
+            fun closeDrawer() = scope.launch { drawerState.close() }
             scope.launch {
-                openDrawer.collect {
+                openDrawerFlow.collect {
                     drawerState.open()
                 }
             }
             BackHandler(drawerState.isOpen) {
-                scope.launch { drawerState.close() }
+                closeDrawer()
             }
             ModalNavigationDrawer(
                 drawerContent = {
@@ -226,13 +228,10 @@ class MainActivity : EhActivity() {
                                     label = {
                                         Text(text = stringResource(id = stringId))
                                     },
-                                    selected = id == selectedItem,
+                                    selected = isSelected(id),
                                     onClick = {
-                                        scope.launch { drawerState.close() }
-                                        if (id != selectedItem) {
-                                            navController.navigate(id)
-                                            selectedItem = id
-                                        }
+                                        closeDrawer()
+                                        onNavDestinationSelected2(id, navController)
                                     },
                                     modifier = Modifier.padding(horizontal = 12.dp),
                                     icon = {
@@ -251,9 +250,7 @@ class MainActivity : EhActivity() {
                     navController = navHostFragment.navController.apply {
                         graph = navInflater.inflate(R.navigation.nav_graph).apply {
                             check(launchPage in 0..3)
-                            val id = items[launchPage].first
-                            setStartDestination(id)
-                            selectedItem = id
+                            setStartDestination(items[launchPage].first)
                         }
                     }
                 }
@@ -403,11 +400,7 @@ class MainActivity : EhActivity() {
     }
 
     fun openDrawer() {
-        openDrawer.tryEmit(Unit)
-    }
-
-    fun clearNavCheckedItem() {
-        selectedItem = 0
+        openDrawerFlow.tryEmit(Unit)
     }
 
     fun showTip(@StringRes id: Int, length: Int, useToast: Boolean = false) {
