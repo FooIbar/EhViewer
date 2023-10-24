@@ -25,7 +25,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
@@ -389,14 +388,6 @@ class MainActivity : EhActivity() {
             }
         }
         Settings.clipboardTextHashCode = hashCode
-    }
-
-    fun addAboveSnackView(view: View) {
-//        binding.snackbar.addView(view)
-    }
-
-    fun removeAboveSnackView(view: View) {
-//        binding.snackbar.removeView(view)
     }
 
     fun openDrawer() {

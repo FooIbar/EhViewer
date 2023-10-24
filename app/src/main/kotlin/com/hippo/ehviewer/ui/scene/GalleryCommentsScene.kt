@@ -256,8 +256,6 @@ class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefresh
             }
         }
         binding.fab.setOnClickListener(this)
-        addAboveSnackView(binding.editPanel)
-        addAboveSnackView(binding.fabLayout)
         mViewTransition = ViewTransition(binding.refreshLayout, tip)
         updateView(false)
         return binding.root
@@ -282,8 +280,6 @@ class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefresh
         super.onDestroyView()
         callback.remove()
         binding.recyclerView.stopScroll()
-        removeAboveSnackView(binding.editPanel)
-        removeAboveSnackView(binding.fabLayout)
         mAdapter = null
         mViewTransition = null
         _binding = null

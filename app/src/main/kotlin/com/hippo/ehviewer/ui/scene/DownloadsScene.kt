@@ -342,7 +342,6 @@ class DownloadsScene :
             fabLayout.setHidePrimaryFab(true)
             fabLayout.setAutoCancel(false)
             fabLayout.setOnClickFabListener(this@DownloadsScene)
-            addAboveSnackView(fabLayout)
             updateForLabel()
         }
         viewLifecycleOwner.lifecycleScope.launch {
@@ -365,7 +364,6 @@ class DownloadsScene :
     override fun onDestroyView() {
         super.onDestroyView()
         binding.recyclerView.stopScroll()
-        removeAboveSnackView(binding.fabLayout)
         mViewTransition = null
         mAdapter = null
         mLabelAdapter = null

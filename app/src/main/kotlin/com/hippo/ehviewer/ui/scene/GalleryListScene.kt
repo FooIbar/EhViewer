@@ -479,7 +479,6 @@ class GalleryListScene : SearchBarScene() {
             }
         }
         binding.fabLayout.primaryFab!!.setImageDrawable(actionFabDrawable)
-        addAboveSnackView(binding.fabLayout)
 
         // Update list url builder
         onUpdateUrlBuilder()
@@ -495,7 +494,6 @@ class GalleryListScene : SearchBarScene() {
         super.onDestroyView()
         stateBackPressedCallback.remove()
         binding.recyclerView.stopScroll()
-        removeAboveSnackView(binding.fabLayout)
         _binding = null
         fabAnimator = null
         mAdapter = null

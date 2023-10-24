@@ -307,7 +307,6 @@ class FavoritesScene : SearchBarScene() {
                     if (tracker.isInCustomChoice) tracker.clearSelection()
                 }
             }
-            addAboveSnackView(this)
         }
         binding.fastScroller.setOnDragHandlerListener(object : OnDragHandlerListener {
             override fun onStartDragHandler() {}
@@ -447,7 +446,6 @@ class FavoritesScene : SearchBarScene() {
     override fun onDestroyView() {
         super.onDestroyView()
         binding.recyclerView.stopScroll()
-        removeAboveSnackView(binding.fabLayout)
         mAdapter = null
         _binding = null
     }

@@ -39,19 +39,6 @@ abstract class BaseScene : Fragment() {
     private var drawerView: View? = null
     private var drawerViewState: SparseArray<Parcelable>? = null
     private var sideSheetDialog: SideSheetDialog? = null
-    fun addAboveSnackView(view: View) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.addAboveSnackView(view)
-        }
-    }
-
-    fun removeAboveSnackView(view: View) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.removeAboveSnackView(view)
-        }
-    }
 
     val isDrawerLocked
         get() = mainActivity?.drawerLocked == true
@@ -65,10 +52,7 @@ abstract class BaseScene : Fragment() {
     }
 
     fun openDrawer() {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.openDrawer()
-        }
+        mainActivity?.openDrawer()
     }
 
     fun openSideSheet() {
@@ -81,17 +65,11 @@ abstract class BaseScene : Fragment() {
     fun closeSideSheet() = sideSheetDialog!!.hide()
 
     fun showTip(message: CharSequence?, length: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.showTip(message!!, length)
-        }
+        mainActivity?.showTip(message!!, length)
     }
 
     fun showTip(@StringRes id: Int, length: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.showTip(id, length)
-        }
+        mainActivity?.showTip(id, length)
     }
 
     open val showLeftDrawer = false
@@ -158,14 +136,7 @@ abstract class BaseScene : Fragment() {
     }
 
     val mainActivity: MainActivity?
-        get() {
-            val activity = activity
-            return if (activity is MainActivity) {
-                activity
-            } else {
-                null
-            }
-        }
+        get() = activity as? MainActivity
 
     fun hideSoftInput() = activity?.window?.decorView?.run { SoftwareKeyboardControllerCompat(this) }?.hide()
 
