@@ -96,7 +96,6 @@ cronet-gms = "com.google.android.gms:play-services-cronet:18.0.1"
 desugar = "com.android.tools:desugar_jdk_libs:2.0.3"
 
 directionalviewpager = "com.github.tachiyomiorg:DirectionalViewPager:1.0.0"
-drawer = "com.drakeet.drawer:drawer:1.0.3"
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
 jsoup = "org.jsoup:jsoup:1.16.2"
 

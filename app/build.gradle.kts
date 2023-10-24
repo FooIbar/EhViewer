@@ -231,7 +231,6 @@ dependencies {
 
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.androidx.work.runtime)
-    implementation(libs.drawer)
     implementation(libs.photoview) // Dead Dependency
     implementation(libs.directionalviewpager) // Dead Dependency
     // https://github.com/google/accompanist/releases
