@@ -22,9 +22,7 @@ import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
 import androidx.annotation.StringRes
-import androidx.core.view.GravityCompat
 import androidx.core.view.SoftwareKeyboardControllerCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
@@ -41,60 +39,20 @@ abstract class BaseScene : Fragment() {
     private var drawerView: View? = null
     private var drawerViewState: SparseArray<Parcelable>? = null
     private var sideSheetDialog: SideSheetDialog? = null
-    fun addAboveSnackView(view: View) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.addAboveSnackView(view)
-        }
+
+    val isDrawerLocked
+        get() = mainActivity?.drawerLocked == true
+
+    fun lockDrawer() {
+        mainActivity?.drawerLocked = true
     }
 
-    fun removeAboveSnackView(view: View) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.removeAboveSnackView(view)
-        }
+    fun unlockDrawer() {
+        mainActivity?.drawerLocked = false
     }
 
-    fun setDrawerLockMode(lockMode: Int, edgeGravity: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.setDrawerLockMode(lockMode, edgeGravity)
-        }
-    }
-
-    fun getDrawerLockMode(edgeGravity: Int): Int? {
-        val activity = activity
-        return if (activity is MainActivity) {
-            activity.getDrawerLockMode(edgeGravity)
-        } else {
-            null
-        }
-    }
-
-    fun isDrawerOpen(drawerGravity: Int): Boolean {
-        val activity = activity
-        return activity is MainActivity && activity.isDrawerOpen(drawerGravity)
-    }
-
-    fun openDrawer(drawerGravity: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.openDrawer(drawerGravity)
-        }
-    }
-
-    fun closeDrawer(drawerGravity: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.closeDrawer(drawerGravity)
-        }
-    }
-
-    fun toggleDrawer(drawerGravity: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.toggleDrawer(drawerGravity)
-        }
+    fun openDrawer() {
+        mainActivity?.openDrawer()
     }
 
     fun openSideSheet() {
@@ -107,17 +65,11 @@ abstract class BaseScene : Fragment() {
     fun closeSideSheet() = sideSheetDialog!!.hide()
 
     fun showTip(message: CharSequence?, length: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.showTip(message!!, length)
-        }
+        mainActivity?.showTip(message!!, length)
     }
 
     fun showTip(@StringRes id: Int, length: Int) {
-        val activity = activity
-        if (activity is MainActivity) {
-            activity.showTip(id, length)
-        }
+        mainActivity?.showTip(id, length)
     }
 
     open val showLeftDrawer = false
@@ -157,9 +109,9 @@ abstract class BaseScene : Fragment() {
 
         // Update left drawer locked state
         if (showLeftDrawer) {
-            setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.START)
+            unlockDrawer()
         } else {
-            setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.START)
+            lockDrawer()
         }
         hideSoftInput()
         createDrawerView(savedInstanceState)?.let {
@@ -184,14 +136,7 @@ abstract class BaseScene : Fragment() {
     }
 
     val mainActivity: MainActivity?
-        get() {
-            val activity = activity
-            return if (activity is MainActivity) {
-                activity
-            } else {
-                null
-            }
-        }
+        get() = activity as? MainActivity
 
     fun hideSoftInput() = activity?.window?.decorView?.run { SoftwareKeyboardControllerCompat(this) }?.hide()
 

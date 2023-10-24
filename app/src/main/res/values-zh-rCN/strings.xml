@@ -54,8 +54,6 @@
     <string name="error_cant_create_temp_file">无法创建临时文件</string>
     <string name="error_cant_save_image">无法保存图片</string>
     <string name="error_invalid_number">非法数字</string>
-    <string name="error_empty_html">页面内容为空</string>
-    <string name="kokomade_tip">设置-&gt;Eh-&gt;画廊站点-&gt;e-hentai</string>
     <string name="app_waring">本应用中内容来自互联网，部分内容可能对您的生理及心理造成难以恢复的伤害。本应用作者不会对由本应用造成的任何后果负责。未成年人应在监护人指导下使用本应用。请遵守所在地的法律法规。</string>
     <string name="app_waring_2">继续使用即代表您同意上述条款。</string>
     <string name="error_username_cannot_empty">用户名不可为空</string>
@@ -423,7 +421,6 @@
     <string name="let_me_select">让我选择</string>
     <string name="favorite_note">收藏备注</string>
     <string name="collections">收藏夹</string>
-    <string name="need_sign_in">需要登录</string>
     <!-- Progress Scene -->
     <string name="error_something_wrong_happened">被玩坏了</string>
     <!-- Guide -->
@@ -456,7 +453,6 @@
     <string name="no_archives">没有压缩包</string>
     <string name="download_archive_started">开始下载压缩包</string>
     <string name="download_archive_failure">无法下载压缩包</string>
-    <string name="archive">压缩包</string>
     <string name="archive_free">免费</string>
     <string name="archive_original">原始档案</string>
     <string name="archive_resample">重采样档案</string>

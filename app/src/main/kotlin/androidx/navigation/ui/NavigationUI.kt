@@ -1,7 +1,6 @@
 package androidx.navigation.ui
 
 import android.annotation.SuppressLint
-import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.navigation.ActivityNavigator
 import androidx.navigation.NavController
@@ -10,9 +9,10 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavOptions
 
 @SuppressLint("PrivateResource")
-fun onNavDestinationSelected2(item: MenuItem, navController: NavController): Boolean {
+fun onNavDestinationSelected2(@IdRes id: Int, navController: NavController): Boolean {
+    if (navController.currentDestination?.matchDestination(id) == true) return true
     val builder = NavOptions.Builder().setLaunchSingleTop(true)
-    if (navController.currentDestination!!.parent!!.findNode(item.itemId) is ActivityNavigator.Destination) {
+    if (navController.currentDestination!!.parent!!.findNode(id) is ActivityNavigator.Destination) {
         builder.setEnterAnim(R.anim.nav_default_enter_anim)
             .setExitAnim(R.anim.nav_default_exit_anim)
             .setPopEnterAnim(R.anim.nav_default_pop_enter_anim)
@@ -26,9 +26,9 @@ fun onNavDestinationSelected2(item: MenuItem, navController: NavController): Boo
     val options = builder.build()
     return try {
         // TODO provide proper API instead of using Exceptions as Control-Flow.
-        navController.navigate(item.itemId, null, options)
+        navController.navigate(id, null, options)
         // Return true only if the destination we've navigated to matches the MenuItem
-        navController.currentDestination?.matchDestination(item.itemId) == true
+        navController.currentDestination?.matchDestination(id) == true
     } catch (e: IllegalArgumentException) {
         false
     }

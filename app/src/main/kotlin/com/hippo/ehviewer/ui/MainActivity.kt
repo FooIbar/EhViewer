@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.ui
 
-import android.annotation.SuppressLint
 import android.app.assist.AssistContent
 import android.content.DialogInterface
 import android.content.Intent
@@ -26,27 +25,45 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.customview.widget.Openable
-import androidx.drawerlayout.widget.DrawerLayout
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.NavigationUI
 import androidx.navigation.ui.onNavDestinationSelected2
-import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.Settings.launchPage
-import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
@@ -58,7 +75,6 @@ import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.scene.GalleryDetailScene
-import com.hippo.ehviewer.ui.scene.GalleryListScene
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.scene.ProgressScene
 import com.hippo.ehviewer.ui.scene.navAnimated
@@ -72,12 +88,12 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
 class MainActivity : EhActivity() {
-    private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
 
     private fun saveImageToTempFile(uri: Uri): File? {
@@ -161,58 +177,84 @@ class MainActivity : EhActivity() {
         return false
     }
 
-    private fun setNavGraph() {
-        navController.apply {
-            graph = navInflater.inflate(R.navigation.nav_graph).apply {
-                when (
-                    when (val value = launchPage) {
-                        0 -> GalleryListScene.ACTION_HOMEPAGE
-                        1 -> GalleryListScene.ACTION_SUBSCRIPTION
-                        2 -> GalleryListScene.ACTION_WHATS_HOT
-                        3 -> GalleryListScene.ACTION_TOP_LIST
-                        else -> throw IllegalStateException("Unexpected value: $value")
-                    }
-                ) {
-                    GalleryListScene.ACTION_HOMEPAGE -> setStartDestination(R.id.nav_homepage)
-                    GalleryListScene.ACTION_SUBSCRIPTION -> setStartDestination(R.id.nav_subscription)
-                    GalleryListScene.ACTION_WHATS_HOT -> setStartDestination(R.id.nav_whats_hot)
-                    GalleryListScene.ACTION_TOP_LIST -> setStartDestination(R.id.nav_toplist)
-                }
-            }
-        }
-    }
+    var drawerLocked by mutableStateOf(false)
+    private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
-        navController = navHostFragment.navController
-        if (!EhUtils.needSignedIn()) setNavGraph()
-        binding.drawView.addDrawerListener(mDrawerOnBackPressedCallback)
-        binding.navView.setupWithNavController(navController)
-
-        // Trick: Tweak NavigationUI to disable multiple backstack
-        binding.navView.setNavigationItemSelectedListener {
-            val navigationView = binding.navView
-            val handled = navigationView.checkedItem?.itemId == it.itemId || onNavDestinationSelected2(it, navController)
-            if (handled) {
-                val parent = navigationView.parent
-                if (parent is Openable) {
-                    parent.close()
-                } else {
-                    @SuppressLint("RestrictedApi")
-                    val bottomSheetBehavior = NavigationUI.findBottomSheetBehavior(navigationView)
-                    if (bottomSheetBehavior != null) {
-                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setMD3Content {
+            val drawerState = rememberDrawerState(DrawerValue.Closed)
+            val scope = rememberCoroutineScope()
+            val items = listOf(
+                Triple(R.id.nav_homepage, R.string.homepage, R.drawable.v_homepage_black_x24),
+                Triple(R.id.nav_subscription, R.string.subscription, R.drawable.v_eh_subscription_black_x24),
+                Triple(R.id.nav_whats_hot, R.string.whats_hot, R.drawable.v_fire_black_x24),
+                Triple(R.id.nav_toplist, R.string.toplist, R.drawable.ic_baseline_format_list_numbered_24),
+                Triple(R.id.nav_favourite, R.string.favourite, R.drawable.v_heart_x24),
+                Triple(R.id.nav_history, R.string.history, R.drawable.v_history_black_x24),
+                Triple(R.id.nav_downloads, R.string.downloads, R.drawable.v_download_x24),
+                Triple(R.id.nav_settings, R.string.settings, R.drawable.v_settings_black_x24),
+            )
+            fun isSelected(id: Int) = ::navController.isInitialized && id == navController.currentDestination?.id
+            fun closeDrawer() = scope.launch { drawerState.close() }
+            scope.launch {
+                openDrawerFlow.collect {
+                    drawerState.open()
+                }
+            }
+            BackHandler(drawerState.isOpen) {
+                closeDrawer()
+            }
+            ModalNavigationDrawer(
+                drawerContent = {
+                    ModalDrawerSheet(
+                        windowInsets = WindowInsets(0, 0, 0, 0),
+                    ) {
+                        val scrollState = rememberScrollState()
+                        Column(
+                            modifier = Modifier.verticalScroll(scrollState).navigationBarsPadding(),
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.sadpanda_low_poly),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                contentScale = ContentScale.FillWidth,
+                            )
+                            items.forEach { (id, stringId, drawableId) ->
+                                NavigationDrawerItem(
+                                    label = {
+                                        Text(text = stringResource(id = stringId))
+                                    },
+                                    selected = isSelected(id),
+                                    onClick = {
+                                        closeDrawer()
+                                        onNavDestinationSelected2(id, navController)
+                                    },
+                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                    icon = {
+                                        Icon(painter = painterResource(id = drawableId), contentDescription = null)
+                                    },
+                                )
+                            }
+                        }
+                    }
+                },
+                drawerState = drawerState,
+                gesturesEnabled = !drawerLocked,
+            ) {
+                AndroidViewBinding(factory = ActivityMainBinding::inflate) {
+                    val navHostFragment = fragmentContainer.getFragment<NavHostFragment>()
+                    navController = navHostFragment.navController.apply {
+                        graph = navInflater.inflate(R.navigation.nav_graph).apply {
+                            check(launchPage in 0..3)
+                            setStartDestination(items[launchPage].first)
+                        }
                     }
                 }
             }
-            handled
         }
-        // Trick End
 
         if (savedInstanceState == null) {
             if (intent.action != Intent.ACTION_MAIN) {
@@ -282,7 +324,7 @@ class MainActivity : EhActivity() {
         if (connectivityManager.isActiveNetworkMetered) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 Snackbar.make(
-                    binding.drawView,
+                    findViewById(R.id.snackbar),
                     R.string.metered_network_warning,
                     Snackbar.LENGTH_LONG,
                 )
@@ -298,20 +340,13 @@ class MainActivity : EhActivity() {
         }
     }
 
-    private val loginLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            setNavGraph()
-        }
-
     override fun onResume() {
-        if (EhUtils.needSignedIn()) {
-            loginLauncher.launch(Intent(this, ConfigureActivity::class.java))
+        if (Settings.needSignIn) {
+            startActivity(Intent(this, ConfigureActivity::class.java))
         }
         super.onResume()
         lifecycleScope.launch {
             delay(300)
-            mDrawerOnBackPressedCallback.remove()
-            onBackPressedDispatcher.addCallback(mDrawerOnBackPressedCallback)
             checkClipboardUrl()
         }
     }
@@ -341,7 +376,7 @@ class MainActivity : EhActivity() {
             launch?.let {
                 withUIContext {
                     val snackbar = Snackbar.make(
-                        binding.drawView,
+                        findViewById(R.id.snackbar),
                         R.string.clipboard_gallery_url_snack_message,
                         Snackbar.LENGTH_SHORT,
                     )
@@ -355,42 +390,8 @@ class MainActivity : EhActivity() {
         Settings.clipboardTextHashCode = hashCode
     }
 
-    fun addAboveSnackView(view: View) {
-        binding.absnacker.addAboveSnackView(view)
-    }
-
-    fun removeAboveSnackView(view: View) {
-        binding.absnacker.removeAboveSnackView(view)
-    }
-
-    fun setDrawerLockMode(lockMode: Int, edgeGravity: Int) {
-        binding.drawView.setDrawerLockMode(lockMode, edgeGravity)
-    }
-
-    fun getDrawerLockMode(edgeGravity: Int): Int {
-        return binding.drawView.getDrawerLockMode(edgeGravity)
-    }
-
-    fun isDrawerOpen(drawerGravity: Int) = binding.drawView.isDrawerOpen(drawerGravity)
-
-    fun openDrawer(drawerGravity: Int) {
-        binding.drawView.openDrawer(drawerGravity)
-    }
-
-    fun closeDrawer(drawerGravity: Int) {
-        binding.drawView.closeDrawer(drawerGravity)
-    }
-
-    fun toggleDrawer(drawerGravity: Int) {
-        if (isDrawerOpen(drawerGravity)) {
-            closeDrawer(drawerGravity)
-        } else {
-            openDrawer(drawerGravity)
-        }
-    }
-
-    fun clearNavCheckedItem() {
-        binding.navView.setCheckedItem(R.id.nav_stub)
+    fun openDrawer() {
+        openDrawerFlow.tryEmit(Unit)
     }
 
     fun showTip(@StringRes id: Int, length: Int, useToast: Boolean = false) {
@@ -401,17 +402,19 @@ class MainActivity : EhActivity() {
      * If activity is running, show snack bar, otherwise show toast
      */
     fun showTip(message: CharSequence, length: Int, useToast: Boolean = false) {
-        findViewById<View>(R.id.snackbar)?.takeUnless { useToast }?.apply {
+        if (!useToast) {
             Snackbar.make(
-                this,
+                findViewById(R.id.snackbar),
                 message,
                 if (length == BaseScene.LENGTH_LONG) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT,
             ).show()
-        } ?: Toast.makeText(
-            this,
-            message,
-            if (length == BaseScene.LENGTH_LONG) Toast.LENGTH_LONG else Toast.LENGTH_SHORT,
-        ).show()
+        } else {
+            Toast.makeText(
+                this,
+                message,
+                if (length == BaseScene.LENGTH_LONG) Toast.LENGTH_LONG else Toast.LENGTH_SHORT,
+            ).show()
+        }
     }
 
     var mShareUrl: String? = null
@@ -419,20 +422,4 @@ class MainActivity : EhActivity() {
         super.onProvideAssistContent(outContent)
         mShareUrl?.let { outContent?.webUri = Uri.parse(mShareUrl) }
     }
-
-    private val mDrawerOnBackPressedCallback =
-        object : OnBackPressedCallback(false), DrawerLayout.DrawerListener {
-            val slideThreshold = 0.05
-            override fun handleOnBackPressed() {
-                binding.drawView.closeDrawers()
-            }
-
-            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                isEnabled = slideOffset > slideThreshold
-            }
-
-            override fun onDrawerOpened(drawerView: View) {}
-            override fun onDrawerClosed(drawerView: View) {}
-            override fun onDrawerStateChanged(newState: Int) {}
-        }
 }

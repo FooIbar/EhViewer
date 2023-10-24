@@ -146,10 +146,6 @@ object EhUtils {
         Settings.needSignIn = true
     }
 
-    fun needSignedIn(): Boolean {
-        return Settings.needSignIn
-    }
-
     fun getSuitableTitle(gi: GalleryInfo): String {
         return if (Settings.showJpnTitle) {
             if (gi.titleJpn.isNullOrEmpty()) gi.title else gi.titleJpn

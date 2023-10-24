@@ -16,14 +16,8 @@
 
 <resources>
 
-    <!-- 80dp - 4dp, 4dp for card padding -->
     <dimen name="gallery_list_margin_h">76dp</dimen>
-    <!-- 80dp - 4dp, 4dp for card padding -->
-    <dimen name="gallery_grid_margin_h">76dp</dimen>
 
-    <!-- 80dp - 4dp, 4dp for card padding -->
-
-    <!-- 80dp - 4dp, 4dp for card padding -->
     <dimen name="search_layout_margin_h">76dp</dimen>
 
 </resources>

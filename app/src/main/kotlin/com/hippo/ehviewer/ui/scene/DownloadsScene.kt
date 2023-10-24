@@ -53,8 +53,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -267,12 +265,10 @@ class DownloadsScene :
             ).apply {
                 addCustomChoiceListener({
                     binding.fabLayout.isExpanded = true
-                    // Lock drawer
-                    setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.START)
+                    lockDrawer()
                 }) {
                     binding.fabLayout.isExpanded = false
-                    // Unlock drawer
-                    setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, GravityCompat.START)
+                    unlockDrawer()
                 }
                 restoreSelection(savedInstanceState)
             }
@@ -346,7 +342,6 @@ class DownloadsScene :
             fabLayout.setHidePrimaryFab(true)
             fabLayout.setAutoCancel(false)
             fabLayout.setOnClickFabListener(this@DownloadsScene)
-            addAboveSnackView(fabLayout)
             updateForLabel()
         }
         viewLifecycleOwner.lifecycleScope.launch {
@@ -369,7 +364,6 @@ class DownloadsScene :
     override fun onDestroyView() {
         super.onDestroyView()
         binding.recyclerView.stopScroll()
-        removeAboveSnackView(binding.fabLayout)
         mViewTransition = null
         mAdapter = null
         mLabelAdapter = null
@@ -378,7 +372,7 @@ class DownloadsScene :
     }
 
     override fun onNavigationClick() {
-        toggleDrawer(GravityCompat.START)
+        openDrawer()
     }
 
     override fun getMenuResId(): Int {

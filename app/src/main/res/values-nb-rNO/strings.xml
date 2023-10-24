@@ -30,7 +30,6 @@
     <string name="no_torrents">Ingen torrenter</string>
     <string name="search_sfl">Språk</string>
     <string name="search_osc">Kun søk i omslag</string>
-    <string name="error_empty_html">Tom side</string>
     <string name="tourist_mode">Fortsett uten å logge inn</string>
     <string name="select_scene">Hvilken galleriside vil du besøke\?</string>
     <string name="favored_times">♥ %d</string>
@@ -197,7 +196,6 @@
     <string name="settings_eh_thumb_resolution_auto">Automatisk</string>
     <string name="app_language_system">Systemspråk (forvalg)</string>
     <string name="error_something_wrong_happened">Noe gikk galt</string>
-    <string name="need_sign_in">Innlogging kreves</string>
     <string name="just_now">Akkurat nå</string>
     <string name="move_favorites_dialog_title">Flytt favoritter</string>
     <string name="let_me_select">La meg velge</string>

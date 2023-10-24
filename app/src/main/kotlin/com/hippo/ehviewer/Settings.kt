@@ -24,6 +24,7 @@ object Settings : DataStorePreferences(null) {
     var favCount by intArrayPref("fav_count", 10).emitTo(_favFlow)
     var favCloudCount by intPref("fav_cloud", 0).emitTo(_favFlow)
 
+    val needSignInFlow: Flow<Boolean>
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)
     var downloadPath by stringOrNullPref("image_path", null)
@@ -59,7 +60,7 @@ object Settings : DataStorePreferences(null) {
     var saveCrashLog by boolPref("save_crash_log", true)
     var security by boolPref("require_unlock", false)
     var removeImageFiles by boolPref("include_pic", true)
-    var needSignIn by boolPref("need_sign_in", true)
+    var needSignIn by boolPref("need_sign_in", true).also { needSignInFlow = it.valueFlow() }
     var blackDarkTheme by boolPref("black_dark_theme", false).observed { updateWhenAmoledModeChanges() }
     var harmonizeCategoryColor by boolPref("harmonize_category_color", true)
     var preloadThumbAggressively by boolPref("preload_thumb_aggressively", false)
