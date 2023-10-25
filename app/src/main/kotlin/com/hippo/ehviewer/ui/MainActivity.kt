@@ -94,6 +94,17 @@ import kotlinx.coroutines.launch
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
+private val navItems = arrayOf(
+    Triple(R.id.nav_homepage, R.string.homepage, R.drawable.v_homepage_black_x24),
+    Triple(R.id.nav_subscription, R.string.subscription, R.drawable.v_eh_subscription_black_x24),
+    Triple(R.id.nav_whats_hot, R.string.whats_hot, R.drawable.v_fire_black_x24),
+    Triple(R.id.nav_toplist, R.string.toplist, R.drawable.ic_baseline_format_list_numbered_24),
+    Triple(R.id.nav_favourite, R.string.favourite, R.drawable.v_heart_x24),
+    Triple(R.id.nav_history, R.string.history, R.drawable.v_history_black_x24),
+    Triple(R.id.nav_downloads, R.string.downloads, R.drawable.v_download_x24),
+    Triple(R.id.nav_settings, R.string.settings, R.drawable.v_settings_black_x24),
+)
+
 class MainActivity : EhActivity() {
     private lateinit var navController: NavController
 
@@ -180,16 +191,6 @@ class MainActivity : EhActivity() {
 
     var drawerLocked by mutableStateOf(false)
     private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    private val navItems = arrayOf(
-        Triple(R.id.nav_homepage, R.string.homepage, R.drawable.v_homepage_black_x24),
-        Triple(R.id.nav_subscription, R.string.subscription, R.drawable.v_eh_subscription_black_x24),
-        Triple(R.id.nav_whats_hot, R.string.whats_hot, R.drawable.v_fire_black_x24),
-        Triple(R.id.nav_toplist, R.string.toplist, R.drawable.ic_baseline_format_list_numbered_24),
-        Triple(R.id.nav_favourite, R.string.favourite, R.drawable.v_heart_x24),
-        Triple(R.id.nav_history, R.string.history, R.drawable.v_history_black_x24),
-        Triple(R.id.nav_downloads, R.string.downloads, R.drawable.v_download_x24),
-        Triple(R.id.nav_settings, R.string.settings, R.drawable.v_settings_black_x24),
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
