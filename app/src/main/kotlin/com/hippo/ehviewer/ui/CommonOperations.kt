@@ -58,6 +58,7 @@ import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.LongList
+import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.requestPermission
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
@@ -68,7 +69,6 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import moe.tarsin.coroutines.runSuspendCatching
-import rikka.core.util.ContextUtils.requireActivity
 import splitties.init.appCtx
 
 object CommonOperations {
@@ -314,7 +314,7 @@ suspend fun DialogState.doGalleryInfoAction(info: BaseGalleryInfo, context: Cont
             title = EhUtils.getSuitableTitle(info),
         )
     }
-    with(requireActivity<MainActivity>(context)) {
+    with(context.findActivity<MainActivity>()) {
         when (selected) {
             0 -> navToReader(info)
             1 -> withUIContext {

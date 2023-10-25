@@ -25,7 +25,6 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import rikka.core.util.ContextUtils.requireActivity
 
 // Fuck off the silly Android launcher and callback :)
 
@@ -58,7 +57,7 @@ private suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultC
     lifecycle.addObserver(observer)
     return withUIContext {
         suspendCoroutine { cont -> // No cancellation support here since we cannot cancel a launched Intent
-            val activity = requireActivity<ComponentActivity>(this@awaitActivityResult)
+            val activity = findActivity<ComponentActivity>()
             launcher = activity.activityResultRegistry.register(key, contract) {
                 launcher?.unregister()
                 lifecycle.removeObserver(observer)
