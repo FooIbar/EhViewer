@@ -58,17 +58,11 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
     var allowEmptySearch = true
     private val mSearchDatabase = searchDatabase.searchDao()
     private var onApplySearch: (String) -> Unit = {}
-    protected val mSearchFab get() = binding.searchFab
     protected abstract val fabLayout: FabLayout
     protected var mShowActionFab = true
     protected val mActionFabAnimatorListener = object : SimpleAnimatorListener() {
         override fun onAnimationEnd(animation: Animator) {
             fabLayout.primaryFab?.visibility = View.INVISIBLE
-        }
-    }
-    private val mSearchFabAnimatorListener = object : SimpleAnimatorListener() {
-        override fun onAnimationEnd(animation: Animator) {
-            mSearchFab.visibility = View.INVISIBLE
         }
     }
 
@@ -116,14 +110,12 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
                 onSearchViewHidden()
             }
         }
-        mSearchFab.setOnClickListener { onApplySearch() }
         onCreateViewWithToolbar(inflater, binding.root, savedInstanceState)
         // This has to be placed after onCreateViewWithToolbar() since
         // callbacks are invoked in the reverse order in which they are added
         binding.searchview.addTransitionListener(mSearchViewOnBackPressedCallback)
         requireActivity().onBackPressedDispatcher.addCallback(mSearchViewOnBackPressedCallback)
         binding.appbar.bringToFront()
-        (binding.searchFab.parent as View).bringToFront()
         return binding.root
     }
 
@@ -166,37 +158,6 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
         }
     }
 
-    fun showSearchFab(animation: Boolean, delay: Long = 0) {
-        if (animation) {
-            mSearchFab.visibility = View.VISIBLE
-            mSearchFab.animate().scaleX(1.0f).scaleY(1.0f).setListener(null)
-                .setDuration(ANIMATE_TIME).setStartDelay(delay)
-                .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).start()
-        } else {
-            mSearchFab.visibility = View.VISIBLE
-            mSearchFab.scaleX = 1.0f
-            mSearchFab.scaleY = 1.0f
-        }
-    }
-
-    fun hideSearchFab(animation: Boolean): Long {
-        return if (View.INVISIBLE == mSearchFab.visibility) {
-            0L
-        } else {
-            if (animation) {
-                mSearchFab.animate().scaleX(0.0f).scaleY(0.0f)
-                    .setListener(mSearchFabAnimatorListener)
-                    .setDuration(ANIMATE_TIME).setStartDelay(0L)
-                    .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).start()
-            } else {
-                mSearchFab.visibility = View.INVISIBLE
-                mSearchFab.scaleX = 0.0f
-                mSearchFab.scaleY = 0.0f
-            }
-            ANIMATE_TIME
-        }
-    }
-
     fun showActionFab(animation: Boolean, delay: Long = ANIMATE_TIME) {
         mShowActionFab = true
         if (animation) {
@@ -235,16 +196,6 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
             fab.scaleY = 0.0f
             0L
         }
-    }
-
-    fun selectSearchFab(animation: Boolean) {
-        val delay = hideActionFab(animation)
-        showSearchFab(animation, delay)
-    }
-
-    fun selectActionFab(animation: Boolean) {
-        val delay = hideSearchFab(animation)
-        showActionFab(animation, delay)
     }
 
     fun setSearchBarHint(hint: String?) {
