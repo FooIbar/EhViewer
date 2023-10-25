@@ -195,7 +195,8 @@ class MainActivity : EhActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // Disable this until insets are correctly handled
+        // WindowCompat.setDecorFitsSystemWindows(window, false)
         setMD3Content {
             val drawerState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
