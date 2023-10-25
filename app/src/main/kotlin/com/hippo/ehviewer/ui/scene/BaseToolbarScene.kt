@@ -22,7 +22,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.databinding.SceneToolbarBinding
 
 abstract class BaseToolbarScene : BaseScene(), ToolBarScene {
@@ -61,12 +60,7 @@ abstract class BaseToolbarScene : BaseScene(), ToolBarScene {
     }
 
     override fun onMenuItemClick(item: MenuItem): Boolean {
-        return if (item.itemId == R.id.action_open_side_sheet) {
-            openSideSheet()
-            true
-        } else {
-            false
-        }
+        return false
     }
 
     override fun onNavigationClick() {
