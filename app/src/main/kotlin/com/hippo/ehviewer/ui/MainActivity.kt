@@ -33,8 +33,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DrawerValue
@@ -56,6 +58,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -81,8 +86,10 @@ import com.hippo.ehviewer.ui.scene.navAnimated
 import com.hippo.ehviewer.ui.scene.navWithUrl
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.addTextToClipboard
+import com.hippo.ehviewer.util.buildWindowInsets
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
+import com.hippo.ehviewer.util.set
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
@@ -194,8 +201,7 @@ class MainActivity : EhActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        // Disable this until insets are correctly handled
-        // WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setMD3Content {
             val drawerState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
@@ -247,14 +253,28 @@ class MainActivity : EhActivity() {
                 // Disabled for breaking custom swipe gestures
                 gesturesEnabled = drawerState.isOpen,
             ) {
-                AndroidViewBinding(factory = ActivityMainBinding::inflate) {
-                    val navHostFragment = fragmentContainer.getFragment<NavHostFragment>()
-                    navController = navHostFragment.navController.apply {
-                        graph = navInflater.inflate(R.navigation.nav_graph).apply {
-                            check(launchPage in 0..3)
-                            setStartDestination(navItems[launchPage].first)
+                val insets = buildWindowInsets {
+                    set(
+                        WindowInsetsCompat.Type.systemBars(),
+                        WindowInsets.systemBars,
+                    )
+                    set(
+                        WindowInsetsCompat.Type.ime(),
+                        WindowInsets.ime,
+                    )
+                }
+                AndroidViewBinding(factory = { inflater, parent, attachToParent ->
+                    ActivityMainBinding.inflate(inflater, parent, attachToParent).apply {
+                        val navHostFragment = fragmentContainer.getFragment<NavHostFragment>()
+                        navController = navHostFragment.navController.apply {
+                            graph = navInflater.inflate(R.navigation.nav_graph).apply {
+                                check(launchPage in 0..3)
+                                setStartDestination(navItems[launchPage].first)
+                            }
                         }
                     }
+                }) {
+                    ViewCompat.dispatchApplyWindowInsets(root, insets)
                 }
             }
         }
