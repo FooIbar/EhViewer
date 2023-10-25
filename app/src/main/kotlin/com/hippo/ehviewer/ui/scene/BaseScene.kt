@@ -128,6 +128,7 @@ abstract class BaseScene : Fragment() {
                 setContentView(it)
             }
         }
+        mainActivity?.recompose()
     }
 
     override fun onDestroyView() {
