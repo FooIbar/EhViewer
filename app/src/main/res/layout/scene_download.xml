@@ -21,25 +21,26 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:clipChildren="false"
+        app:layout_behavior="@string/searchbar_scrolling_view_behavior">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/gallery_padding_top_search_bar"
             android:paddingHorizontal="@dimen/gallery_list_margin_h"
-            android:paddingVertical="@dimen/gallery_list_margin_v"
-            app:fitsSystemWindowsInsets="bottom" />
+            android:paddingVertical="@dimen/gallery_list_margin_v" />
 
         <com.hippo.ehviewer.ui.legacy.FastScroller
             android:id="@+id/fast_scroller"
             android:layout_width="30dp"
             android:layout_height="match_parent"
             android:layout_gravity="end"
+            android:layout_marginTop="@dimen/gallery_padding_top_search_bar"
             android:paddingStart="20dp"
             android:paddingEnd="4dp"
-            android:paddingBottom="8dp"
-            app:fitsSystemWindowsInsets="bottom" />
+            android:paddingBottom="8dp" />
 
     </FrameLayout>
 
@@ -58,8 +59,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingEnd="@dimen/corner_fab_margin"
-        android:paddingBottom="@dimen/corner_fab_margin"
-        app:fitsSystemWindowsInsets="bottom">
+        android:paddingBottom="@dimen/corner_fab_margin">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             style="@style/Widget.Material3.FloatingActionButton.Small.Primary"

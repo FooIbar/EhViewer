@@ -25,8 +25,6 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.view.setSecureScreen
-import rikka.insets.WindowInsetsHelper
-import rikka.layoutinflater.view.LayoutInflaterFactory
 
 abstract class EhActivity : AppCompatActivity() {
     @StyleRes
@@ -44,7 +42,6 @@ abstract class EhActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        layoutInflater.factory2 = LayoutInflaterFactory(delegate).addOnViewCreatedListener(WindowInsetsHelper.LISTENER)
         super.onCreate(savedInstanceState)
         WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !isNightMode()
         WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = !isNightMode()

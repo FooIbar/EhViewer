@@ -100,6 +100,7 @@ import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AnimationUtils
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.SimpleAnimatorListener
+import com.hippo.ehviewer.util.applyNavigationBarsPadding
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getValue
 import com.hippo.ehviewer.util.lazyMut
@@ -107,6 +108,7 @@ import com.hippo.ehviewer.util.setValue
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import eu.kanade.tachiyomi.util.system.dpToPx
 import java.io.File
 import java.time.Instant
 import java.time.LocalDateTime
@@ -363,6 +365,7 @@ class GalleryListScene : SearchBarScene() {
                 drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
                 binding.tip.setCompoundDrawables(null, drawable, null, null)
                 binding.tip.setOnClickListener { mAdapter?.retry() }
+                binding.refreshLayout.setProgressViewOffset(true, 0, 64.dpToPx)
                 binding.refreshLayout.setOnRefreshListener {
                     mUrlBuilder.setIndex(null, true)
                     mUrlBuilder.mJumpTo = null
@@ -490,7 +493,12 @@ class GalleryListScene : SearchBarScene() {
         }
         binding.fabLayout.primaryFab!!.setImageDrawable(actionFabDrawable)
         binding.searchFab.setOnClickListener { onApplySearch() }
-        (binding.searchFab.parent as View).bringToFront()
+        (binding.searchFab.parent as View).apply {
+            bringToFront()
+            applyNavigationBarsPadding()
+        }
+        binding.fastScroller.applyNavigationBarsPadding()
+        binding.recyclerView.applyNavigationBarsPadding()
 
         // Update list url builder
         onUpdateUrlBuilder()

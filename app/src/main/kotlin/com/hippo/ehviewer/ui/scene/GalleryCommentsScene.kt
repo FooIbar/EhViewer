@@ -87,6 +87,7 @@ import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.SimpleAnimatorListener
 import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
+import com.hippo.ehviewer.util.applyNavigationBarsPadding
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.toBBCode
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -258,6 +259,8 @@ class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefresh
         binding.fab.setOnClickListener(this)
         mViewTransition = ViewTransition(binding.refreshLayout, tip)
         updateView(false)
+        binding.editPanel.applyNavigationBarsPadding()
+        binding.fabLayout.applyNavigationBarsPadding()
         return binding.root
     }
 
