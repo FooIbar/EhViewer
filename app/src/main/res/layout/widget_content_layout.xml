@@ -20,8 +20,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false"
-    android:paddingTop="16dp"
-    app:fitsSystemWindowsInsets="top"
     app:layout_behavior="@string/searchbar_scrolling_view_behavior">
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
@@ -54,8 +52,7 @@
             android:clipChildren="false"
             android:clipToPadding="false"
             android:paddingHorizontal="@dimen/gallery_list_margin_h"
-            android:paddingVertical="@dimen/gallery_list_margin_v"
-            app:fitsSystemWindowsInsets="bottom" />
+            android:paddingVertical="@dimen/gallery_list_margin_v" />
 
     </androidx.swiperefreshlayout.widget.ThemedSwipeRefreshLayout>
 
@@ -67,7 +64,6 @@
         android:layout_marginTop="@dimen/gallery_padding_top_search_bar"
         android:paddingStart="20dp"
         android:paddingEnd="4dp"
-        android:paddingVertical="8dp"
-        app:fitsSystemWindowsInsets="bottom" />
+        android:paddingVertical="8dp" />
 
 </FrameLayout>

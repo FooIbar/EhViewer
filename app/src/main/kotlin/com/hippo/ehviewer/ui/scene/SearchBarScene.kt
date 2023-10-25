@@ -43,6 +43,7 @@ import com.hippo.ehviewer.ui.legacy.FabLayout
 import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.util.AnimationUtils
 import com.hippo.ehviewer.util.SimpleAnimatorListener
+import com.hippo.ehviewer.util.applyNavigationBarsPadding
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -116,6 +117,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
         binding.searchview.addTransitionListener(mSearchViewOnBackPressedCallback)
         requireActivity().onBackPressedDispatcher.addCallback(mSearchViewOnBackPressedCallback)
         binding.appbar.bringToFront()
+        fabLayout.applyNavigationBarsPadding()
         return binding.root
     }
 
