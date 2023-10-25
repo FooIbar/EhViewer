@@ -9,10 +9,9 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.CallSuper
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -85,7 +84,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
         }
         binding.searchBarList.consumeWindowInsets = false
         binding.searchBarList.setMD3Content {
-            LazyColumn(contentPadding = WindowInsets.navigationBars.asPaddingValues()) {
+            LazyColumn(modifier = Modifier.navigationBarsPadding().imePadding()) {
                 items(mSuggestionList) {
                     ListItem(
                         headlineContent = { Text(text = it.keyword) },
