@@ -47,6 +47,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -197,6 +198,11 @@ class MainActivity : EhActivity() {
 
     var drawerLocked by mutableStateOf(false)
     private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private var recomposeFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    fun recompose() {
+        recomposeFlow.tryEmit(Unit)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -205,11 +211,17 @@ class MainActivity : EhActivity() {
         setMD3Content {
             val drawerState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
+            val recomposeScope = currentRecomposeScope
             fun isSelected(id: Int) = ::navController.isInitialized && id == navController.currentDestination?.id
             fun closeDrawer() = scope.launch { drawerState.close() }
             LaunchedEffect(Unit) {
                 openDrawerFlow.collect {
                     drawerState.open()
+                }
+            }
+            LaunchedEffect(Unit) {
+                recomposeFlow.collect {
+                    recomposeScope.invalidate()
                 }
             }
             BackHandler(drawerState.isOpen) {
