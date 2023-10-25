@@ -44,6 +44,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -179,6 +180,16 @@ class MainActivity : EhActivity() {
 
     var drawerLocked by mutableStateOf(false)
     private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val navItems = arrayOf(
+        Triple(R.id.nav_homepage, R.string.homepage, R.drawable.v_homepage_black_x24),
+        Triple(R.id.nav_subscription, R.string.subscription, R.drawable.v_eh_subscription_black_x24),
+        Triple(R.id.nav_whats_hot, R.string.whats_hot, R.drawable.v_fire_black_x24),
+        Triple(R.id.nav_toplist, R.string.toplist, R.drawable.ic_baseline_format_list_numbered_24),
+        Triple(R.id.nav_favourite, R.string.favourite, R.drawable.v_heart_x24),
+        Triple(R.id.nav_history, R.string.history, R.drawable.v_history_black_x24),
+        Triple(R.id.nav_downloads, R.string.downloads, R.drawable.v_download_x24),
+        Triple(R.id.nav_settings, R.string.settings, R.drawable.v_settings_black_x24),
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -187,19 +198,9 @@ class MainActivity : EhActivity() {
         setMD3Content {
             val drawerState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
-            val items = listOf(
-                Triple(R.id.nav_homepage, R.string.homepage, R.drawable.v_homepage_black_x24),
-                Triple(R.id.nav_subscription, R.string.subscription, R.drawable.v_eh_subscription_black_x24),
-                Triple(R.id.nav_whats_hot, R.string.whats_hot, R.drawable.v_fire_black_x24),
-                Triple(R.id.nav_toplist, R.string.toplist, R.drawable.ic_baseline_format_list_numbered_24),
-                Triple(R.id.nav_favourite, R.string.favourite, R.drawable.v_heart_x24),
-                Triple(R.id.nav_history, R.string.history, R.drawable.v_history_black_x24),
-                Triple(R.id.nav_downloads, R.string.downloads, R.drawable.v_download_x24),
-                Triple(R.id.nav_settings, R.string.settings, R.drawable.v_settings_black_x24),
-            )
             fun isSelected(id: Int) = ::navController.isInitialized && id == navController.currentDestination?.id
             fun closeDrawer() = scope.launch { drawerState.close() }
-            scope.launch {
+            LaunchedEffect(Unit) {
                 openDrawerFlow.collect {
                     drawerState.open()
                 }
@@ -222,7 +223,7 @@ class MainActivity : EhActivity() {
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                                 contentScale = ContentScale.FillWidth,
                             )
-                            items.forEach { (id, stringId, drawableId) ->
+                            navItems.forEach { (id, stringId, drawableId) ->
                                 NavigationDrawerItem(
                                     label = {
                                         Text(text = stringResource(id = stringId))
@@ -242,14 +243,15 @@ class MainActivity : EhActivity() {
                     }
                 },
                 drawerState = drawerState,
-                gesturesEnabled = !drawerLocked,
+                // Disabled for breaking custom swipe gestures
+                gesturesEnabled = drawerState.isOpen,
             ) {
                 AndroidViewBinding(factory = ActivityMainBinding::inflate) {
                     val navHostFragment = fragmentContainer.getFragment<NavHostFragment>()
                     navController = navHostFragment.navController.apply {
                         graph = navInflater.inflate(R.navigation.nav_graph).apply {
                             check(launchPage in 0..3)
-                            setStartDestination(items[launchPage].first)
+                            setStartDestination(navItems[launchPage].first)
                         }
                     }
                 }
