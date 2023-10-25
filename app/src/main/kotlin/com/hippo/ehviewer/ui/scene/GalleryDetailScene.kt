@@ -979,7 +979,7 @@ class GalleryDetailScene : BaseScene() {
         context ?: return
         if (mPage != 0) {
             Snackbar.make(
-                requireActivity().findViewById(R.id.snackbar),
+                requireActivity().findViewById(R.id.fragment_container),
                 getString(R.string.read_from, mPage),
                 Snackbar.LENGTH_LONG,
             ).setAction(R.string.read) { context?.navToReader(gd.galleryInfo, mPage) }.show()
