@@ -124,6 +124,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
         binding.searchview.addTransitionListener(mSearchViewOnBackPressedCallback)
         requireActivity().onBackPressedDispatcher.addCallback(mSearchViewOnBackPressedCallback)
         binding.appbar.bringToFront()
+        (binding.searchFab.parent as View).bringToFront()
         return binding.root
     }
 
