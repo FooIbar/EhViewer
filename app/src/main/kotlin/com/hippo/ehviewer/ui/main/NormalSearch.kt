@@ -64,7 +64,7 @@ fun NormalSearch(
                 onClick = { onCategoryChanged(if (selected) category xor it.first else category or it.first) },
                 label = { Text(text = stringResource(id = it.second)) },
                 leadingIcon = { if (selected) Icon(imageVector = Icons.Default.Check, contentDescription = null) },
-                modifier = Modifier.padding(horizontal = 4.dp).align(alignment = Alignment.CenterVertically),
+                modifier = Modifier.padding(horizontal = 4.dp).align(alignment = Alignment.CenterVertically).width(145.dp),
             )
         }
     }
