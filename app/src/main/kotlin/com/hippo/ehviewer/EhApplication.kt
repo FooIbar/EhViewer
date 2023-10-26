@@ -91,7 +91,7 @@ class EhApplication : Application(), ImageLoaderFactory {
                 migrateCookies()
             }
             launchIO {
-                EhTagDatabase.update()
+                EhTagDatabase
             }
             launchIO {
                 EhDB
