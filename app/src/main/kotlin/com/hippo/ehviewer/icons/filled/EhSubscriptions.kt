@@ -65,4 +65,5 @@ val Icons.Filled.EhSubscriptions: ImageVector
         return _ehSubscriptions!!
     }
 
+@Suppress("ktlint:standard:property-naming")
 private var _ehSubscriptions: ImageVector? = null
