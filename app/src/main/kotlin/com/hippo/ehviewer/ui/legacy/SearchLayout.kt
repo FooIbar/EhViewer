@@ -19,6 +19,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,6 +47,7 @@ import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.NormalSearch
 import com.hippo.ehviewer.ui.main.SearchAdvanced
 import com.hippo.ehviewer.util.AppConfig
+import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.pickVisualMedia
 import kotlinx.coroutines.launch
 
@@ -71,6 +74,7 @@ class SearchLayout @JvmOverloads constructor(
     @Composable
     override fun Content() {
         val coroutineScope = rememberCoroutineScope()
+        val windowSizeClass = calculateWindowSizeClass(activity = context.findActivity())
         fun selectImage() = coroutineScope.launch {
             context.pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly)?.let {
                 vm.path = it.toString()
@@ -93,6 +97,11 @@ class SearchLayout @JvmOverloads constructor(
                                 isAdvanced = vm.isAdvancedMode,
                                 onAdvancedChanged = { vm.isAdvancedMode = it },
                                 showInfo = { BaseDialogBuilder(context).setMessage(R.string.search_tip).show() },
+                                maxItemsInEachRow = when (windowSizeClass.widthSizeClass) {
+                                    WindowWidthSizeClass.Compact -> 2
+                                    WindowWidthSizeClass.Medium -> 3
+                                    else -> 5
+                                },
                             )
                         }
                     }
