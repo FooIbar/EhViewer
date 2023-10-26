@@ -433,5 +433,6 @@
     <string name="settings_privacy_secure_summary">Si habilitas esta opción no podrás hacer captura de pantalla y el sistema no mostrará una previsualización en el multitareas.\n\nDeberás reiniciar la aplicación para activar esta función.</string>
     <string name="u_config">Ajustes EHentai</string>
     <string name="apply_tip">Toca la marca de verificación para guardar los cambios</string>
+    <string name="dark_theme_follow_system">Sigue el sistema</string>
 
 </resources>

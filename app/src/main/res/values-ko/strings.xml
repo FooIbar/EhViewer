@@ -415,4 +415,8 @@
 
     <string name="download_service">다운로드 서비스</string>
     <string name="favorite_name">즐겨찾기</string>
+    <string name="dark_theme">어두운 테마</string>
+    <string name="dark_theme_follow_system">시스템 설정</string>
+    <string name="dark_theme_off">항상 꺼짐</string>
+    <string name="dark_theme_on">항상 켜짐</string>
 </resources>

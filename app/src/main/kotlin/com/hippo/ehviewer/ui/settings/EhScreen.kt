@@ -213,7 +213,7 @@ fun EhScreen() {
                 }
             }
             SimpleMenuPreferenceInt(
-                title = stringResource(id = rikka.core.R.string.dark_theme),
+                title = stringResource(id = R.string.dark_theme),
                 entry = R.array.night_mode_entries,
                 entryValueRes = R.array.night_mode_values,
                 value = Settings::theme.observed,
