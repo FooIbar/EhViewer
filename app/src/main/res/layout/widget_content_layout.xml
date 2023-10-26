@@ -42,7 +42,6 @@
         android:id="@+id/refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/gallery_padding_top_search_bar"
         android:clipChildren="false">
 
         <androidx.recyclerview.widget.RecyclerView
@@ -61,7 +60,6 @@
         android:layout_width="30dp"
         android:layout_height="match_parent"
         android:layout_gravity="end"
-        android:layout_marginTop="@dimen/gallery_padding_top_search_bar"
         android:paddingStart="20dp"
         android:paddingEnd="4dp"
         android:paddingVertical="8dp" />

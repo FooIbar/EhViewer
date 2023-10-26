@@ -34,7 +34,14 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Label
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
@@ -48,10 +55,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEachReversed
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
@@ -60,6 +69,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import androidx.viewbinding.ViewBinding
 import arrow.core.partially1
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
@@ -105,8 +115,8 @@ import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.pxToDp
 import kotlinx.coroutines.Dispatchers
@@ -144,7 +154,6 @@ class DownloadsScene :
     override val fabLayout get() = binding.fabLayout
     override val fastScroller get() = binding.fastScroller
     override val recyclerView get() = binding.recyclerView
-    override val contentView get() = binding.content
 
     private fun initLabels() {
         context ?: return
@@ -247,13 +256,11 @@ class DownloadsScene :
 
     override fun onCreateViewWithToolbar(
         inflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup,
         savedInstanceState: Bundle?,
-    ): View {
-        _binding = SceneDownloadBinding.inflate(inflater, container!!)
-        container.addView(ComposeView(inflater.context).apply { setMD3Content { dialogState.Intercept() } })
+    ): ViewBinding {
+        _binding = SceneDownloadBinding.inflate(inflater, container)
         binding.run {
-            setLiftOnScrollTargetView(recyclerView)
             mViewTransition = ViewTransition(content, tip)
             val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.big_download)
             drawable!!.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
@@ -357,7 +364,7 @@ class DownloadsScene :
             mKeyword = it.takeUnless { it.isEmpty() }
             updateInfoList()
         }
-        return binding.root
+        return binding
     }
 
     override fun onSearchViewExpanded() {
@@ -375,78 +382,84 @@ class DownloadsScene :
         _binding = null
     }
 
-    override fun onNavigationClick() {
-        openDrawer()
-    }
-
-    override fun getMenuResId(): Int {
-        return R.menu.scene_download
-    }
-
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        // Skip when in choice mode
-        val activity: Activity? = mainActivity
-        if (null == activity || tracker.isInCustomChoice) {
-            return false
+    @Composable
+    override fun TrailingIcon() {
+        dialogState.Intercept()
+        var expanded by remember { mutableStateOf(false) }
+        IconButton(onClick = { openSideSheet() }) {
+            Icon(imageVector = Icons.AutoMirrored.Outlined.Label, contentDescription = stringResource(id = R.string.download_labels))
         }
-        when (item.itemId) {
-            R.id.action_filter -> {
-                BaseDialogBuilder(requireActivity())
-                    .setSingleChoiceItems(
-                        R.array.download_state,
-                        mType + 1,
-                    ) { dialog: DialogInterface, which: Int ->
-                        mType = which - 1
-                        updateInfoList()
-                        dialog.dismiss()
+        IconButton(onClick = { expanded = !expanded }) {
+            Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
+        }
+        val states = stringArrayResource(id = R.array.download_state)
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(
+                text = { Text(text = stringResource(id = R.string.download_filter)) },
+                onClick = {
+                    expanded = false
+                    lifecycleScope.launch {
+                        val type = dialogState.showSingleChoice(states, mType)
+                        if (type != mType) {
+                            updateInfoList()
+                        }
                     }
-                    .show()
-                return true
-            }
-
-            R.id.action_start_all -> {
-                val intent = Intent(activity, DownloadService::class.java)
-                intent.action = DownloadService.ACTION_START_ALL
-                ContextCompat.startForegroundService(activity, intent)
-                return true
-            }
-
-            R.id.action_stop_all -> {
-                lifecycleScope.launchIO {
-                    DownloadManager.stopAllDownload()
-                }
-                return true
-            }
-
-            R.id.action_reset_reading_progress -> {
-                BaseDialogBuilder(requireContext())
-                    .setMessage(R.string.reset_reading_progress_message)
-                    .setNegativeButton(android.R.string.cancel, null)
-                    .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                        lifecycleScope.launchNonCancellable {
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(text = stringResource(id = R.string.download_start_all)) },
+                onClick = {
+                    expanded = false
+                    val activity = requireActivity()
+                    val intent = Intent(activity, DownloadService::class.java)
+                    intent.action = DownloadService.ACTION_START_ALL
+                    ContextCompat.startForegroundService(activity, intent)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(text = stringResource(id = R.string.download_stop_all)) },
+                onClick = {
+                    expanded = false
+                    lifecycleScope.launchIO {
+                        DownloadManager.stopAllDownload()
+                    }
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(text = stringResource(id = R.string.download_reset_reading_progress)) },
+                onClick = {
+                    expanded = false
+                    lifecycleScope.launchIO {
+                        dialogState.awaitPermissionOrCancel(
+                            confirmText = android.R.string.ok,
+                            dismissText = android.R.string.cancel,
+                        ) {
+                            Text(text = stringResource(id = R.string.reset_reading_progress_message))
+                        }
+                        withNonCancellableContext {
                             DownloadManager.resetAllReadingProgress()
                         }
-                    }.show()
-                return true
-            }
-
-            R.id.action_start_all_reversed -> {
-                val list = mList ?: return true
-                val gidList = LongList()
-                for (i in list.size - 1 downTo 0) {
-                    val info = list[i]
-                    if (info.state != DownloadInfo.STATE_FINISH) {
-                        gidList.add(info.gid)
                     }
-                }
-                val intent = Intent(activity, DownloadService::class.java)
-                intent.action = DownloadService.ACTION_START_RANGE
-                intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
-                ContextCompat.startForegroundService(activity, intent)
-                return true
-            }
-
-            else -> return super.onMenuItemClick(item)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(text = stringResource(id = R.string.download_start_all_reversed)) },
+                onClick = {
+                    expanded = false
+                    val list = mList ?: return@DropdownMenuItem
+                    val activity = requireActivity()
+                    val gidList = LongList()
+                    list.fastForEachReversed { info ->
+                        if (info.state != DownloadInfo.STATE_FINISH) {
+                            gidList.add(info.gid)
+                        }
+                    }
+                    val intent = Intent(activity, DownloadService::class.java)
+                    intent.action = DownloadService.ACTION_START_RANGE
+                    intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
+                    ContextCompat.startForegroundService(activity, intent)
+                },
+            )
         }
     }
 

@@ -27,12 +27,16 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
@@ -47,6 +51,7 @@ import androidx.paging.cachedIn
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.CalendarConstraints.DateValidator
 import com.google.android.material.datepicker.CompositeDateValidator
@@ -85,19 +90,15 @@ import com.hippo.ehviewer.ui.legacy.BringOutTransition
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.legacy.FabLayout
 import com.hippo.ehviewer.ui.legacy.FabLayout.OnClickFabListener
-import com.hippo.ehviewer.ui.legacy.FastScroller.OnDragHandlerListener
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.LayoutManagerUtils.firstVisibleItemPosition
 import com.hippo.ehviewer.ui.legacy.ViewTransition
-import com.hippo.ehviewer.ui.legacy.WindowInsetsAnimationHelper
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.ExceptionUtils
-import com.hippo.ehviewer.util.applyNavigationBarsPadding
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getValue
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.setValue
-import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -197,11 +198,6 @@ class GalleryListScene : SearchBarScene() {
     override val fabLayout get() = binding.fabLayout
     override val fastScroller get() = binding.fastScroller
     override val recyclerView get() = binding.recyclerView
-    override val contentView get() = binding.contentLayout.contentView
-
-    override fun getMenuResId(): Int {
-        return R.menu.scene_gallery_list_searchbar_menu
-    }
 
     private fun handleArgs(args: Bundle?) {
         val action = args?.getString(KEY_ACTION) ?: ACTION_HOMEPAGE
@@ -293,30 +289,15 @@ class GalleryListScene : SearchBarScene() {
 
     override fun onCreateViewWithToolbar(
         inflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup,
         savedInstanceState: Bundle?,
-    ): View {
-        _binding = SceneGalleryListBinding.inflate(inflater, container!!)
-        container.addView(ComposeWithMD3 { dialogState.Intercept() })
+    ): ViewBinding {
+        _binding = SceneGalleryListBinding.inflate(inflater, container)
         requireActivity().onBackPressedDispatcher.addCallback(stateBackPressedCallback)
         mHideActionFabSlop = ViewConfiguration.get(requireContext()).scaledTouchSlop
-        ViewCompat.setWindowInsetsAnimationCallback(
-            binding.root,
-            WindowInsetsAnimationHelper(
-                WindowInsetsAnimationCompat.Callback.DISPATCH_MODE_STOP,
-                binding.fabLayout,
-                binding.searchFabLayout,
-            ),
-        )
         mViewTransition = BringOutTransition(binding.contentLayout.contentView, binding.searchLayout)
         binding.searchLayout.consumeWindowInsets = false
         binding.searchLayout.setViewTreeViewModelStoreOwner(this)
-        binding.fastScroller.setOnDragHandlerListener(object : OnDragHandlerListener {
-            override fun onStartDragHandler() {}
-            override fun onEndDragHandler() {
-                showSearchBar()
-            }
-        })
         mAdapter = GalleryAdapter(
             binding.recyclerView,
             true,
@@ -352,7 +333,6 @@ class GalleryListScene : SearchBarScene() {
                     adapter.loadStateFlow.collectLatest {
                         when (val state = it.refresh) {
                             is LoadState.Loading -> {
-                                showSearchBar()
                                 if (!binding.refreshLayout.isRefreshing) {
                                     transition.showView(1)
                                 }
@@ -456,16 +436,6 @@ class GalleryListScene : SearchBarScene() {
             }
         }
         binding.fabLayout.primaryFab.setImageDrawable(actionFabDrawable)
-        binding.searchFab.setOnClickListener { onApplySearch() }
-        binding.searchFabLayout.apply {
-            bringToFront()
-            applyNavigationBarsPadding()
-        }
-        binding.searchLayout.applyInsetter {
-            type(statusBars = true) {
-                padding()
-            }
-        }
 
         // Update list url builder
         onUpdateUrlBuilder()
@@ -474,7 +444,7 @@ class GalleryListScene : SearchBarScene() {
         val newState = mState
         mState = State.NORMAL
         setState(newState, false)
-        return binding.root
+        return binding
     }
 
     override fun onDestroyView() {
@@ -680,21 +650,29 @@ class GalleryListScene : SearchBarScene() {
         }
     }
 
+    private fun showSearchFab(delay: Long) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(delay)
+            showSearchFab = true
+        }
+    }
+
     private fun selectSearchFab(animation: Boolean) {
         val delay = binding.fabLayout.hide(animation)
-        binding.searchFabLayout.show(animation, delay)
+        showSearchFab(delay)
     }
 
     private fun selectActionFab(animation: Boolean) {
-        val delay = binding.searchFabLayout.hide(animation)
-        binding.fabLayout.show(animation, delay)
+        showSearchFab = false
+        binding.fabLayout.show(animation, FabLayout.ANIMATE_TIME)
     }
 
     override fun onSearchViewExpanded() {
         if (mState == State.NORMAL) {
             binding.fabLayout.hide()
         } else {
-            binding.searchFabLayout.hide()
+            showSearchFab = false
+            stateBackPressedCallback.isEnabled = false
         }
         super.onSearchViewExpanded()
     }
@@ -704,7 +682,8 @@ class GalleryListScene : SearchBarScene() {
         if (mState == State.NORMAL) {
             binding.fabLayout.show(delay = SEARCH_VIEW_ANIMATE_TIME)
         } else {
-            binding.searchFabLayout.show(delay = SEARCH_VIEW_ANIMATE_TIME)
+            showSearchFab(SEARCH_VIEW_ANIMATE_TIME)
+            stateBackPressedCallback.isEnabled = true
         }
     }
 
@@ -722,11 +701,7 @@ class GalleryListScene : SearchBarScene() {
         }
     }
 
-    private fun setState(state: State) {
-        setState(state, true)
-    }
-
-    private fun setState(state: State, animation: Boolean) {
+    private fun setState(state: State, animation: Boolean = true) {
         _binding ?: return
         if (null == mViewTransition) {
             return
@@ -734,7 +709,6 @@ class GalleryListScene : SearchBarScene() {
         if (mState != state) {
             val oldState = mState
             mState = state
-            showSearchBar()
             onStateChange(state)
             when (oldState) {
                 State.NORMAL -> when (state) {
@@ -767,16 +741,20 @@ class GalleryListScene : SearchBarScene() {
         }
     }
 
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        return if (item.itemId == R.id.action_search_more) {
+    @Composable
+    override fun TrailingIcon() {
+        dialogState.Intercept()
+        IconButton(onClick = { openSideSheet() }) {
+            Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
+        }
+        IconButton(onClick = {
             if (mState == State.NORMAL) {
                 setState(State.SEARCH)
             } else {
                 setState(State.NORMAL)
             }
-            true
-        } else {
-            super.onMenuItemClick(item)
+        }) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = null)
         }
     }
 

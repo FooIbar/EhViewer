@@ -26,8 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginStart="@dimen/gallery_search_bar_margin_v"
-        android:layout_marginEnd="@dimen/gallery_search_bar_margin_v"
-        android:paddingTop="@dimen/gallery_padding_top_search_bar" />
+        android:layout_marginEnd="@dimen/gallery_search_bar_margin_v" />
 
     <com.hippo.ehviewer.ui.legacy.FabLayout
         android:id="@+id/fab_layout"
@@ -57,24 +56,6 @@
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-
-    </com.hippo.ehviewer.ui.legacy.FabLayout>
-
-    <com.hippo.ehviewer.ui.legacy.FabLayout
-        android:id="@+id/search_fab_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingEnd="@dimen/corner_fab_margin"
-        android:paddingBottom="@dimen/corner_fab_margin">
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/search_fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scaleX="0"
-            android:scaleY="0"
-            android:visibility="invisible"
-            app:srcCompat="@drawable/v_magnify_x24" />
 
     </com.hippo.ehviewer.ui.legacy.FabLayout>
 

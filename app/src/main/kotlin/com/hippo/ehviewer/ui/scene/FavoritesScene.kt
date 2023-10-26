@@ -18,16 +18,20 @@ package com.hippo.ehviewer.ui.scene
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.currentRecomposeScope
@@ -50,6 +54,7 @@ import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.CalendarConstraints.DateValidator
 import com.google.android.material.datepicker.CompositeDateValidator
@@ -73,7 +78,6 @@ import com.hippo.ehviewer.ui.legacy.AddDeleteDrawable
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.FabLayout
 import com.hippo.ehviewer.ui.legacy.FabLayout.OnClickFabListener
-import com.hippo.ehviewer.ui.legacy.FastScroller.OnDragHandlerListener
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.ViewTransition
 import com.hippo.ehviewer.ui.legacy.WindowInsetsAnimationHelper
@@ -160,7 +164,6 @@ class FavoritesScene : SearchBarScene() {
     override val fabLayout get() = binding.fabLayout
     override val fastScroller get() = binding.fastScroller
     override val recyclerView get() = binding.recyclerView
-    override val contentView get() = binding.contentLayout.contentView
 
     private fun onItemClick(position: Int) {
         // Skip if in search mode
@@ -201,7 +204,13 @@ class FavoritesScene : SearchBarScene() {
         Settings.recentFavCat = urlBuilder.favCat
     }
 
-    override fun getMenuResId() = R.menu.scene_favorites
+    @Composable
+    override fun TrailingIcon() {
+        dialogState.Intercept()
+        IconButton(onClick = { openSideSheet() }) {
+            Icon(imageVector = Icons.Outlined.FolderSpecial, contentDescription = stringResource(id = R.string.collections))
+        }
+    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -221,12 +230,10 @@ class FavoritesScene : SearchBarScene() {
 
     override fun onCreateViewWithToolbar(
         inflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup,
         savedInstanceState: Bundle?,
-    ): View {
-        _binding = SceneFavoritesBinding.inflate(inflater, container!!)
-        val stub = ComposeWithMD3 { dialogState.Intercept() }
-        container.addView(stub)
+    ): ViewBinding {
+        _binding = SceneFavoritesBinding.inflate(inflater, container)
         setOnApplySearch {
             if (!tracker.isInCustomChoice) {
                 switchFav(urlBuilder.favCat, it)
@@ -303,12 +310,6 @@ class FavoritesScene : SearchBarScene() {
                 }
             }
         }
-        binding.fastScroller.setOnDragHandlerListener(object : OnDragHandlerListener {
-            override fun onStartDragHandler() {}
-            override fun onEndDragHandler() {
-                showSearchBar()
-            }
-        })
         binding.recyclerView.run {
             mAdapter = GalleryAdapter(
                 this@run,
@@ -336,7 +337,6 @@ class FavoritesScene : SearchBarScene() {
                     adapter.loadStateFlow.collectLatest {
                         when (val state = it.refresh) {
                             is LoadState.Loading -> {
-                                showSearchBar()
                                 if (!binding.refreshLayout.isRefreshing) {
                                     transition.showView(1)
                                 }
@@ -416,7 +416,7 @@ class FavoritesScene : SearchBarScene() {
             }
         })
         itemTouchHelper.attachToRecyclerView(binding.recyclerView)
-        return binding.root
+        return binding
     }
 
     // Hide jump fab on local fav cat
