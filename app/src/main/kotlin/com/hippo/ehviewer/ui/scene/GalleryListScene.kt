@@ -105,6 +105,7 @@ import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getValue
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.setValue
+import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -210,6 +211,9 @@ class GalleryListScene : SearchBarScene() {
     }
 
     override val fabLayout get() = binding.fabLayout
+    override val fastScroller get() = binding.fastScroller
+    override val recyclerView get() = binding.recyclerView
+    override val contentView get() = binding.contentLayout.contentView
 
     override fun getMenuResId(): Int {
         return R.menu.scene_gallery_list_searchbar_menu
@@ -497,8 +501,11 @@ class GalleryListScene : SearchBarScene() {
             bringToFront()
             applyNavigationBarsPadding()
         }
-        binding.fastScroller.applyNavigationBarsPadding()
-        binding.recyclerView.applyNavigationBarsPadding()
+        binding.searchLayout.applyInsetter {
+            type(statusBars = true) {
+                padding()
+            }
+        }
 
         // Update list url builder
         onUpdateUrlBuilder()

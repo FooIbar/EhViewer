@@ -81,7 +81,6 @@ import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.SimpleHandler
-import com.hippo.ehviewer.util.applyNavigationBarsPadding
 import com.hippo.ehviewer.util.getValue
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.setValue
@@ -169,6 +168,9 @@ class FavoritesScene : SearchBarScene() {
     private val dialogState = DialogState()
 
     override val fabLayout get() = binding.fabLayout
+    override val fastScroller get() = binding.fastScroller
+    override val recyclerView get() = binding.recyclerView
+    override val contentView get() = binding.contentLayout.contentView
 
     private fun onItemClick(position: Int) {
         // Skip if in search mode
@@ -431,8 +433,6 @@ class FavoritesScene : SearchBarScene() {
             }
         })
         itemTouchHelper.attachToRecyclerView(binding.recyclerView)
-        binding.fastScroller.applyNavigationBarsPadding()
-        binding.recyclerView.applyNavigationBarsPadding()
         return binding.root
     }
 

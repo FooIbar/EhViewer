@@ -46,6 +46,7 @@ import com.hippo.ehviewer.util.SimpleAnimatorListener
 import com.hippo.ehviewer.util.applyNavigationBarsPadding
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
+import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -56,16 +57,20 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
     private val binding get() = _binding!!
     private var mSuggestionList by mutableStateOf(emptyList<Suggestion>())
     private var mSuggestionProvider: SuggestionProvider? = null
-    var allowEmptySearch = true
+    private var allowEmptySearch = true
     private val mSearchDatabase = searchDatabase.searchDao()
     private var onApplySearch: (String) -> Unit = {}
-    protected abstract val fabLayout: FabLayout
     protected var mShowActionFab = true
     protected val mActionFabAnimatorListener = object : SimpleAnimatorListener() {
         override fun onAnimationEnd(animation: Animator) {
             fabLayout.primaryFab?.visibility = View.INVISIBLE
         }
     }
+
+    protected abstract val fabLayout: FabLayout
+    protected abstract val fastScroller: View
+    protected abstract val recyclerView: View
+    protected abstract val contentView: View
 
     override val showLeftDrawer = true
 
@@ -118,6 +123,13 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
         requireActivity().onBackPressedDispatcher.addCallback(mSearchViewOnBackPressedCallback)
         binding.appbar.bringToFront()
         fabLayout.applyNavigationBarsPadding()
+        fastScroller.applyNavigationBarsPadding()
+        recyclerView.applyNavigationBarsPadding()
+        contentView.applyInsetter {
+            type(statusBars = true) {
+                padding()
+            }
+        }
         return binding.root
     }
 
