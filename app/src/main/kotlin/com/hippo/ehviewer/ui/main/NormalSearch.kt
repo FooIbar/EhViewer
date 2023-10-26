@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
@@ -55,8 +56,12 @@ fun NormalSearch(
     isAdvanced: Boolean,
     onAdvancedChanged: (Boolean) -> Unit,
     showInfo: () -> Unit,
+    maxItemsInEachRow: Int,
 ) {
-    FlowRow(modifier = Modifier.wrapContentHeight(align = Alignment.Top)) {
+    FlowRow(
+        modifier = Modifier.wrapContentHeight(align = Alignment.Top),
+        maxItemsInEachRow = maxItemsInEachRow,
+    ) {
         categoryTable.forEach {
             val selected = category and it.first != 0
             FilterChip(
@@ -64,7 +69,7 @@ fun NormalSearch(
                 onClick = { onCategoryChanged(if (selected) category xor it.first else category or it.first) },
                 label = { Text(text = stringResource(id = it.second)) },
                 leadingIcon = { if (selected) Icon(imageVector = Icons.Default.Check, contentDescription = null) },
-                modifier = Modifier.padding(horizontal = 4.dp).align(alignment = Alignment.CenterVertically),
+                modifier = Modifier.padding(horizontal = 4.dp).align(alignment = Alignment.CenterVertically).widthIn(min = 145.dp),
             )
         }
     }
