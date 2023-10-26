@@ -39,6 +39,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FormatListNumbered
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
@@ -76,6 +84,7 @@ import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.databinding.ActivityMainBinding
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadLocation
+import com.hippo.ehviewer.icons.filled.EhSubscriptions
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
@@ -102,14 +111,14 @@ import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
 private val navItems = arrayOf(
-    Triple(R.id.nav_homepage, R.string.homepage, R.drawable.v_homepage_black_x24),
-    Triple(R.id.nav_subscription, R.string.subscription, R.drawable.v_eh_subscription_black_x24),
-    Triple(R.id.nav_whats_hot, R.string.whats_hot, R.drawable.v_fire_black_x24),
-    Triple(R.id.nav_toplist, R.string.toplist, R.drawable.ic_baseline_format_list_numbered_24),
-    Triple(R.id.nav_favourite, R.string.favourite, R.drawable.v_heart_x24),
-    Triple(R.id.nav_history, R.string.history, R.drawable.v_history_black_x24),
-    Triple(R.id.nav_downloads, R.string.downloads, R.drawable.v_download_x24),
-    Triple(R.id.nav_settings, R.string.settings, R.drawable.v_settings_black_x24),
+    Triple(R.id.nav_homepage, R.string.homepage, Icons.Default.Home),
+    Triple(R.id.nav_subscription, R.string.subscription, Icons.Default.EhSubscriptions),
+    Triple(R.id.nav_whats_hot, R.string.whats_hot, Icons.Default.Whatshot),
+    Triple(R.id.nav_toplist, R.string.toplist, Icons.Default.FormatListNumbered),
+    Triple(R.id.nav_favourite, R.string.favourite, Icons.Default.Favorite),
+    Triple(R.id.nav_history, R.string.history, Icons.Default.History),
+    Triple(R.id.nav_downloads, R.string.downloads, Icons.Default.Download),
+    Triple(R.id.nav_settings, R.string.settings, Icons.Default.Settings),
 )
 
 class MainActivity : EhActivity() {
@@ -242,7 +251,7 @@ class MainActivity : EhActivity() {
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                                 contentScale = ContentScale.FillWidth,
                             )
-                            navItems.forEach { (id, stringId, drawableId) ->
+                            navItems.forEach { (id, stringId, icon) ->
                                 NavigationDrawerItem(
                                     label = {
                                         Text(text = stringResource(id = stringId))
@@ -254,7 +263,7 @@ class MainActivity : EhActivity() {
                                     },
                                     modifier = Modifier.padding(horizontal = 12.dp),
                                     icon = {
-                                        Icon(painter = painterResource(id = drawableId), contentDescription = null)
+                                        Icon(imageVector = icon, contentDescription = null)
                                     },
                                 )
                             }
