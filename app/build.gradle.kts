@@ -249,7 +249,6 @@ dependencies {
     implementation(libs.aboutlibraries.core)
 
     implementation(libs.insetter) // Dead Dependency
-    implementation(libs.bundles.rikkax)
 
     implementation(platform(libs.arrow.stack))
     implementation(libs.arrow.fx.coroutines)

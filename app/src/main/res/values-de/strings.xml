@@ -60,7 +60,7 @@
     <string name="gallery_list_search_bar_hint_e_hentai">E-Hentai durchsuchen</string>
     <string name="gallery_list_empty_hit">Die Welt ist so groß und der Panda sitzt ganz allein</string>
     <string name="search">Suchen</string>
-    <string name="keyword_search">"Suche nach dem Schlüsselwort "</string>
+    <string name="keyword_search">Suche nach dem Schlüsselwort</string>
     <string name="image_search">Suche nach einem Bild</string>
     <string name="search_normal">Normale Suche</string>
     <string name="search_advance">Erweiterte Optionen</string>
@@ -204,7 +204,7 @@
     <string name="download_remove_dialog_check_text">Bilddateien löschen</string>
     <string name="stat_download_action_stop_all">Alle stopppen</string>
     <string name="default_download_label_name">Standard</string>
-    <string name="download_move_dialog_title">"Verschieben "</string>
+    <string name="download_move_dialog_title">Verschieben</string>
     <string name="download_labels">Download-Etikette</string>
     <string name="download_start_all">Alle starten</string>
     <string name="download_stop_all">Alle stoppen</string>
@@ -347,5 +347,6 @@
     <string name="settings_eh_identity_cookies_copy">Kopieren</string>
     <string name="settings_eh_show_gallery_pages">Galerieseitenzahl anzeigen</string>
     <string name="settings_eh_show_gallery_pages_summary">Die Galerieseitenzahle in der Galerieliste anzeigen</string>
+    <string name="dark_theme_follow_system">System folgen</string>
 
 </resources>

@@ -590,5 +590,9 @@
     <string name="disabled_nav">停用</string>
     <string name="wide_color_gamut">使用 Display P3 色彩空間</string>
     <string name="settings_eh_request_news_timepicker">設定請求新聞頁面的時間</string>
+    <string name="dark_theme">深色主題</string>
+    <string name="dark_theme_follow_system">跟隨系統</string>
+    <string name="dark_theme_off">總是關閉</string>
+    <string name="dark_theme_on">總是開啟</string>
     <!-- Tachiyomi Reader End-->
 </resources>
