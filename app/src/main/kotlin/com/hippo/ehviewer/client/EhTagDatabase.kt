@@ -55,7 +55,6 @@ object EhTagDatabase : CoroutineScope {
     )
     private lateinit var tagGroups: Map<String, Map<String, String>>
     private val updateLock = Mutex()
-    private val dbLock = Mutex()
     override val coroutineContext = Dispatchers.IO + Job()
 
     var initialized by mutableStateOf(false)
@@ -202,42 +201,42 @@ object EhTagDatabase : CoroutineScope {
         }
     }
 
-    private suspend fun issueUpdateInMemoryData() {
-        dbLock.withLock {
-            getMetadata(appCtx)?.let { urls ->
-                val dataName = urls[2]
-                val dir = AppConfig.getFilesDir("tag-translations")
-                val dataFile = File(dir, dataName).takeIf { it.exists() } ?: return
-                runSuspendCatching {
-                    tagGroups = dataFile.source().buffer().use(BufferedSource::parseAs)
-                    initialized = true
-                }.onFailure {
-                    it.printStackTrace()
-                }
-            }
-        }
+    private fun issueUpdateInMemoryData(file: File? = null) {
+        val dataFile = file ?: getMetadata(appCtx)?.let { metadata ->
+            val dataName = metadata[2]
+            val dir = AppConfig.getFilesDir("tag-translations")
+            File(dir, dataName).takeIf { it.exists() }
+        } ?: return
+        tagGroups = dataFile.source().buffer().use(BufferedSource::parseAs)
+        initialized = true
     }
 
     init {
         launch {
-            issueUpdateInMemoryData()
+            updateLock.withLock {
+                runSuspendCatching {
+                    issueUpdateInMemoryData()
+                }.onFailure {
+                    it.printStackTrace()
+                }
+                updateInternal()
+            }
         }
     }
 
     private suspend fun updateInternal() {
-        val urls = getMetadata(appCtx)
-        urls?.let {
-            val sha1Name = urls[0]
-            val sha1Url = urls[1]
-            val dataName = urls[2]
-            val dataUrl = urls[3]
+        getMetadata(appCtx)?.let { metadata ->
+            val sha1Name = metadata[0]
+            val sha1Url = metadata[1]
+            val dataName = metadata[2]
+            val dataUrl = metadata[3]
 
             val dir = AppConfig.getFilesDir("tag-translations")
             checkNotNull(dir)
             val sha1File = File(dir, sha1Name)
             val dataFile = File(dir, dataName)
 
-            runCatching {
+            runSuspendCatching {
                 // Check current sha1 and current data
                 val sha1 = getFileContent(sha1File)
                 if (!checkData(sha1, dataFile)) {
@@ -254,7 +253,7 @@ object EhTagDatabase : CoroutineScope {
                 if (tempSha1 == sha1) {
                     // The data is the same
                     FileUtils.delete(tempSha1File)
-                    return@runCatching
+                    return
                 }
 
                 // Save new data
@@ -265,7 +264,7 @@ object EhTagDatabase : CoroutineScope {
                 if (!checkData(tempSha1, tempDataFile)) {
                     FileUtils.delete(tempSha1File)
                     FileUtils.delete(tempDataFile)
-                    return@runCatching
+                    return
                 }
 
                 // Replace current sha1 and current data with new sha1 and new data
@@ -275,7 +274,7 @@ object EhTagDatabase : CoroutineScope {
                 tempDataFile.renameTo(dataFile)
 
                 // Read new EhTagDatabase
-                issueUpdateInMemoryData()
+                issueUpdateInMemoryData(dataFile)
             }.onFailure {
                 it.printStackTrace()
             }
