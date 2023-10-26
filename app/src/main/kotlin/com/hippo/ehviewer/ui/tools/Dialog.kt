@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.tools
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +25,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -211,6 +213,24 @@ class DialogState {
                     )
                 },
             )
+        }
+    }
+
+    suspend fun showSingleChoice(
+        items: Array<String>,
+        selected: Int,
+    ): Int = showNoButton {
+        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+            items.forEachIndexed { index, text ->
+                Row(
+                    modifier = Modifier.clickable { dismissWith(index) }.fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = index == selected, onClick = { dismissWith(index) })
+                    Text(text = text)
+                }
+            }
         }
     }
 

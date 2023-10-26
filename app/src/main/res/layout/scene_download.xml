@@ -28,7 +28,6 @@
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="@dimen/gallery_padding_top_search_bar"
             android:paddingHorizontal="@dimen/gallery_list_margin_h"
             android:paddingVertical="@dimen/gallery_list_margin_v" />
 
@@ -37,7 +36,6 @@
             android:layout_width="30dp"
             android:layout_height="match_parent"
             android:layout_gravity="end"
-            android:layout_marginTop="@dimen/gallery_padding_top_search_bar"
             android:paddingStart="20dp"
             android:paddingEnd="4dp"
             android:paddingBottom="8dp" />
