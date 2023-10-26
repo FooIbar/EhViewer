@@ -601,7 +601,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
 
     private fun onTouchEventInternal(event: MotionEvent): Boolean {
         val touchCount = event.pointerCount
-        when (event.action) {
+        when (event.actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                 anim = null
                 requestDisallowInterceptTouchEvent(true)
