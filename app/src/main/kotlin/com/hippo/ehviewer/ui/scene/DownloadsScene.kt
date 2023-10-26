@@ -102,7 +102,6 @@ import com.hippo.ehviewer.ui.tools.CropDefaults
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.LongList
-import com.hippo.ehviewer.util.applyNavigationBarsPadding
 import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
@@ -144,6 +143,9 @@ class DownloadsScene :
     private val dialogState = DialogState()
 
     override val fabLayout get() = binding.fabLayout
+    override val fastScroller get() = binding.fastScroller
+    override val recyclerView get() = binding.recyclerView
+    override val contentView get() = binding.content
 
     private fun initLabels() {
         context ?: return
@@ -354,8 +356,6 @@ class DownloadsScene :
             mKeyword = it.takeUnless { it.isEmpty() }
             updateInfoList()
         }
-        binding.fastScroller.applyNavigationBarsPadding()
-        binding.recyclerView.applyNavigationBarsPadding()
         return binding.root
     }
 

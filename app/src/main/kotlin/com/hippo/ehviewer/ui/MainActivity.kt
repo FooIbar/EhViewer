@@ -34,9 +34,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -276,8 +277,12 @@ class MainActivity : EhActivity() {
             ) {
                 val insets = buildWindowInsets {
                     set(
-                        WindowInsetsCompat.Type.systemBars(),
-                        WindowInsets.systemBars,
+                        WindowInsetsCompat.Type.statusBars(),
+                        WindowInsets.statusBars,
+                    )
+                    set(
+                        WindowInsetsCompat.Type.navigationBars(),
+                        WindowInsets.navigationBars,
                     )
                     set(
                         WindowInsetsCompat.Type.ime(),
