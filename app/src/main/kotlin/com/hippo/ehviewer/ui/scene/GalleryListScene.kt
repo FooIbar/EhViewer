@@ -225,7 +225,7 @@ class GalleryListScene : SearchBarScene() {
             ACTION_HOMEPAGE -> ListUrlBuilder()
             ACTION_SUBSCRIPTION -> ListUrlBuilder(MODE_SUBSCRIPTION)
             ACTION_WHATS_HOT -> ListUrlBuilder(MODE_WHATS_HOT)
-            ACTION_TOP_LIST -> ListUrlBuilder(MODE_TOPLIST, mKeyword = "11")
+            ACTION_TOP_LIST -> ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist)
             ACTION_LIST_URL_BUILDER -> args?.getParcelableCompat<ListUrlBuilder>(KEY_LIST_URL_BUILDER)?.copy() ?: ListUrlBuilder()
             else -> throw IllegalStateException("Wrong KEY_ACTION:${args?.getString(KEY_ACTION)} when handle args!")
         }
@@ -921,7 +921,8 @@ class GalleryListScene : SearchBarScene() {
 
     private inner class QsDrawerAdapter(private val mInflater: LayoutInflater) :
         RecyclerView.Adapter<QsDrawerHolder>() {
-        private val keywords = intArrayOf(11, 12, 13, 15)
+        private val toplists = resources.getStringArray(R.array.toplist_entries)
+        private val keywords = resources.getStringArray(R.array.toplist_values)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QsDrawerHolder {
             val holder = QsDrawerHolder(ItemDrawerListBinding.inflate(mInflater, parent, false))
@@ -931,7 +932,9 @@ class GalleryListScene : SearchBarScene() {
                     navAnimated(R.id.galleryListScene, ListUrlBuilder().apply { set(q) }.toStartArgs())
                 } else {
                     if (mIsTopList) {
-                        mUrlBuilder.keyword = keywords[holder.bindingAdapterPosition].toString()
+                        val keyword = keywords[holder.bindingAdapterPosition]
+                        Settings.recentToplist = keyword
+                        mUrlBuilder.keyword = keyword
                         mUrlBuilder.mJumpTo = null
                     } else {
                         val q = mQuickSearchList[holder.bindingAdapterPosition]
@@ -951,13 +954,7 @@ class GalleryListScene : SearchBarScene() {
                 if (!mIsTopList) {
                     text.text = mQuickSearchList[position].name
                 } else {
-                    val toplists = intArrayOf(
-                        R.string.toplist_alltime,
-                        R.string.toplist_pastyear,
-                        R.string.toplist_pastmonth,
-                        R.string.toplist_yesterday,
-                    )
-                    text.text = getString(toplists[position])
+                    text.text = toplists[position]
                     option.visibility = View.GONE
                 }
             }
