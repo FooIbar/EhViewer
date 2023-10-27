@@ -76,6 +76,7 @@ object Settings : DataStorePreferences(null) {
     var requestNewsTimerHour by intPref("request_news_timer_hour", -1)
     var requestNewsTimerMinute by intPref("request_news_timer_minute", -1)
     var updateIntervalDays by intPref("update_interval_days", 0)
+    var recentToplist by stringPref("recent_toplist", "11")
     var recentDownloadLabel by stringOrNullPref("recent_download_label", null)
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
     var displayName by stringOrNullPref("display_name", null)

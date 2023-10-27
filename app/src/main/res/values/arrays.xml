@@ -16,6 +16,20 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
 
+    <string-array name="toplist_entries" translatable="false">
+        <item>@string/toplist_alltime</item>
+        <item>@string/toplist_pastyear</item>
+        <item>@string/toplist_pastmonth</item>
+        <item>@string/toplist_yesterday</item>
+    </string-array>
+
+    <string-array name="toplist_values" translatable="false">
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>15</item>
+    </string-array>
+
     <string-array name="list_mode_entries" translatable="false">
         <item>@string/settings_eh_list_mode_detail</item>
         <item>@string/settings_eh_list_mode_thumb</item>
