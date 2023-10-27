@@ -437,7 +437,7 @@ class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefresh
                     return@setItems
                 }
                 when (menuId[which]) {
-                    R.id.copy -> requireActivity().addTextToClipboard(text, false)
+                    R.id.copy -> requireActivity().addTextToClipboard(text)
                     R.id.block_commenter -> showFilterCommenterDialog(comment.user, position)
                     R.id.vote_up -> voteComment(comment.id, 1)
                     R.id.vote_down -> voteComment(comment.id, -1)

@@ -32,7 +32,7 @@ import com.hippo.ehviewer.client.data.GalleryInfo.Companion.LOCAL_FAVORITED
 import com.hippo.ehviewer.client.thumbUrl
 import com.hippo.ehviewer.databinding.InfoSheetBinding
 import com.hippo.ehviewer.ui.scene.navWithUrl
-import com.hippo.ehviewer.util.tellClipboardWithToast
+import com.hippo.ehviewer.util.addTextToClipboard
 
 private const val INDEX_URL = 2
 private const val INDEX_PARENT = 9
@@ -83,7 +83,7 @@ class GalleryInfoBottomSheet(private val detail: GalleryDetail) : BottomSheetDia
                                             navController.navWithUrl(content)
                                         }
                                     } else {
-                                        context tellClipboardWithToast content
+                                        context.addTextToClipboard(content, true)
                                         if (index == INDEX_URL) {
                                             // Save it to avoid detect the gallery
                                             Settings.clipboardTextHashCode = data[index].hashCode()
