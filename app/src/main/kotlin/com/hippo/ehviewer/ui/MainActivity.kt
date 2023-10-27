@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -63,6 +64,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -220,6 +222,7 @@ class MainActivity : EhActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setMD3Content {
+            val configuration = LocalConfiguration.current
             val drawerState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
             val recomposeScope = currentRecomposeScope
@@ -241,6 +244,7 @@ class MainActivity : EhActivity() {
             ModalNavigationDrawer(
                 drawerContent = {
                     ModalDrawerSheet(
+                        modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp),
                         windowInsets = WindowInsets(0, 0, 0, 0),
                     ) {
                         val scrollState = rememberScrollState()
