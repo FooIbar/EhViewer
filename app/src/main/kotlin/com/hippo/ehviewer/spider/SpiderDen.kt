@@ -59,7 +59,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
     suspend fun setMode(value: Int) {
         mode = value
         if (mode == SpiderQueen.MODE_DOWNLOAD && downloadDir == null) {
-            downloadDir = getGalleryDownloadDir(mGid)!!.apply { check(ensureDir()) { "Download directory $uri is not valid directory!" } }
+            downloadDir = getGalleryDownloadDir(mGid)?.takeIf { it.ensureDir() }
         }
     }
 
