@@ -53,7 +53,7 @@ import com.hippo.ehviewer.ui.tools.TimePickerDialog
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberDialogState
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
-import com.hippo.ehviewer.util.whisperClipboard
+import com.hippo.ehviewer.util.copyTextToClipboard
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -111,7 +111,7 @@ fun EhScreen() {
                         val spanned = context.getString(R.string.settings_eh_identity_cookies_signed, str).parseAsHtml()
                         setMessage(spanned)
                         setNeutralButton(R.string.settings_eh_identity_cookies_copy) { _, _ ->
-                            context whisperClipboard str.replace("<br>", "\n")
+                            copyTextToClipboard(str.replace("<br>", "\n"), true)
                             // Avoid double notify user since system have done that on Tiramisu above
                             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) launchSnackBar(copiedToClipboard)
                         }

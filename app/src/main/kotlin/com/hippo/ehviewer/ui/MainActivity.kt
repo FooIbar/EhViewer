@@ -151,11 +151,8 @@ class MainActivity : EhActivity() {
                         val url = intent.data.toString()
                         EditTextDialogBuilder(this@MainActivity, url, "")
                             .setTitle(R.string.error_cannot_parse_the_url)
-                            .setPositiveButton(android.R.string.copy) { _: DialogInterface?, _: Int ->
-                                this@MainActivity.addTextToClipboard(
-                                    url,
-                                    false,
-                                )
+                            .setPositiveButton(android.R.string.copy) { _, _ ->
+                                this@MainActivity.addTextToClipboard(url)
                             }
                             .show()
                     }

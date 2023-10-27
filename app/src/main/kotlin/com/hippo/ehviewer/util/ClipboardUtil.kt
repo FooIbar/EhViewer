@@ -29,15 +29,7 @@ import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.scene.BaseScene
 import splitties.systemservices.clipboardManager
 
-infix fun Context.tellClipboardWithToast(text: String?) {
-    addTextToClipboard(text, false, true)
-}
-
-infix fun Context.whisperClipboard(text: String?) {
-    addTextToClipboard(text, true, false)
-}
-
-fun Context.addTextToClipboard(text: CharSequence?, isSensitive: Boolean, useToast: Boolean = false) {
+fun copyTextToClipboard(text: CharSequence?, isSensitive: Boolean) {
     clipboardManager.apply {
         setPrimaryClip(
             ClipData.newPlainText(null, text).apply {
@@ -47,6 +39,10 @@ fun Context.addTextToClipboard(text: CharSequence?, isSensitive: Boolean, useToa
             },
         )
     }
+}
+
+fun Context.addTextToClipboard(text: CharSequence?, useToast: Boolean = false) {
+    copyTextToClipboard(text, false)
     // Avoid double notify user since system have done that on Tiramisu above
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
         val activity = findActivity<MainActivity>()

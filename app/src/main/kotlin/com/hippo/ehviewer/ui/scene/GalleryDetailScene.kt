@@ -1209,11 +1209,11 @@ class GalleryDetailScene : BaseScene() {
                     }
 
                     R.id.copy -> {
-                        requireActivity().addTextToClipboard(tag, false)
+                        requireActivity().addTextToClipboard(tag)
                     }
 
                     R.id.copy_trans -> {
-                        requireActivity().addTextToClipboard(translated, false)
+                        requireActivity().addTextToClipboard(translated)
                     }
                 }
             }.show()
