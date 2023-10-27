@@ -76,7 +76,7 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 | Flavor | Feature |
 |-|-|
 | Default | Android 9+, full support |
-| Marshmallow | Android 6.0+, limited support* |
+| Marshmallow | Android 6.0-8.1, limited support* |
 | OSS | FOSS dependencies**  |
 | GMS | Proprietary GMS component |
 
