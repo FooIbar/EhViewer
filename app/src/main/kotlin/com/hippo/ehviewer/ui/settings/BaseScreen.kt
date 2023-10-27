@@ -17,9 +17,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.icons.EhIcons
+import com.hippo.ehviewer.icons.filled.SadPanda
 import com.hippo.ehviewer.ui.ABOUT_SETTINGS_SCREEN
 import com.hippo.ehviewer.ui.ADVANCED_SETTINGS_SCREEN
 import com.hippo.ehviewer.ui.DOWNLOAD_SETTINGS_SCREEN
@@ -47,7 +48,7 @@ fun BaseScreen() {
     ) {
         Column(modifier = Modifier.padding(it).nestedScroll(scrollBehavior.nestedScrollConnection)) {
             PreferenceHeader(
-                icon = painterResource(id = R.drawable.v_sad_panda_primary_x24),
+                icon = EhIcons.Default.SadPanda,
                 title = R.string.settings_eh,
                 childRouteName = EH_SETTINGS_SCREEN,
             )

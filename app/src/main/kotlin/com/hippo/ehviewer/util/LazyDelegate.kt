@@ -5,6 +5,8 @@ package com.hippo.ehviewer.util
 import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
 
+fun <T> unsafeLazy(initializer: () -> T) = lazy(LazyThreadSafetyMode.NONE, initializer)
+
 interface Lazy<T> {
     var value: T
 }

@@ -1,11 +1,12 @@
 package com.hippo.ehviewer.icons.filled
 
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.materialIcon
 import androidx.compose.material.icons.materialPath
+import com.hippo.ehviewer.icons.EhIcons
+import com.hippo.ehviewer.util.unsafeLazy
 
-val Icons.Filled.EhSubscriptions by lazy {
-    materialIcon(name = "EhSubscriptions") {
+val EhIcons.Filled.Subscriptions by unsafeLazy {
+    materialIcon(name = "Subscriptions") {
         materialPath {
             moveTo(20.0F, 8.0F)
             horizontalLineTo(4.0F)

@@ -21,13 +21,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.navigation.fragment.findNavController
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhEngine
+import com.hippo.ehviewer.icons.EhIcons
+import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.util.ExceptionUtils
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -77,7 +78,7 @@ class ProgressScene : BaseScene() {
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.big_sad_pandroid),
+                                imageVector = EhIcons.Big.Default.SadAndroid,
                                 contentDescription = null,
                                 modifier = Modifier.padding(16.dp),
                             )

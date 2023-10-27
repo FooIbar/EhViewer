@@ -26,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -35,6 +34,8 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.icons.EhIcons
+import com.hippo.ehviewer.icons.big.SadAndroid
 
 @Composable
 fun GalleryDetailHeaderInfoCard(
@@ -160,7 +161,7 @@ fun GalleryDetailErrorTip(error: String, onClick: () -> Unit) = Column(
     verticalArrangement = Arrangement.Center,
 ) {
     Icon(
-        painter = painterResource(id = R.drawable.big_sad_pandroid),
+        imageVector = EhIcons.Big.Default.SadAndroid,
         contentDescription = null,
         modifier = Modifier.clickable(onClick = onClick),
     )

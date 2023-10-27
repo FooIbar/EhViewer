@@ -85,7 +85,8 @@ import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.databinding.ActivityMainBinding
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadLocation
-import com.hippo.ehviewer.icons.filled.EhSubscriptions
+import com.hippo.ehviewer.icons.EhIcons
+import com.hippo.ehviewer.icons.filled.Subscriptions
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
@@ -113,7 +114,7 @@ import splitties.systemservices.connectivityManager
 
 private val navItems = arrayOf(
     Triple(R.id.nav_homepage, R.string.homepage, Icons.Default.Home),
-    Triple(R.id.nav_subscription, R.string.subscription, Icons.Default.EhSubscriptions),
+    Triple(R.id.nav_subscription, R.string.subscription, EhIcons.Default.Subscriptions),
     Triple(R.id.nav_whats_hot, R.string.whats_hot, Icons.Default.Whatshot),
     Triple(R.id.nav_toplist, R.string.toplist, Icons.Default.FormatListNumbered),
     Triple(R.id.nav_favourite, R.string.favourite, Icons.Default.Favorite),
