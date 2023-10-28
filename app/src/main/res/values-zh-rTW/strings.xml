@@ -550,6 +550,9 @@
     <string name="pref_color_filter_mode">濾鏡融合機制</string>
     <string name="filter_mode_multiply">色彩增值</string>
     <string name="filter_mode_screen">濾色</string>
+    <string name="filter_mode_overlay">覆蓋</string>
+    <string name="filter_mode_lighten">減淡/變亮</string>
+    <string name="filter_mode_darken">加深/變暗</string>
     <string name="pref_cutout_short">使用螢幕凹口區域</string>
     <string name="action_menu">選單</string>
     <string name="webtoon_side_padding_25">25%</string>

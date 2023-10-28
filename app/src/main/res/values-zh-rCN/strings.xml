@@ -581,6 +581,9 @@
     <string name="pref_color_filter_mode">滤镜调和模式</string>
     <string name="filter_mode_multiply">色彩增值</string>
     <string name="filter_mode_screen">滤色</string>
+    <string name="filter_mode_overlay">覆盖</string>
+    <string name="filter_mode_lighten">减淡/变亮</string>
+    <string name="filter_mode_darken">加深/变暗</string>
     <string name="pref_cutout_short">在刘海屏区域显示内容</string>
     <string name="action_menu">菜单</string>
     <string name="webtoon_side_padding_25">25%</string>
