@@ -110,6 +110,8 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
@@ -127,6 +129,7 @@ private val navItems = arrayOf(
 
 class MainActivity : EhActivity() {
     private lateinit var navController: NavController
+    private val isInitializedFlow = MutableStateFlow(false)
 
     private fun saveImageToTempFile(uri: Uri): File? {
         val bitmap = runCatching {
@@ -145,6 +148,7 @@ class MainActivity : EhActivity() {
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         lifecycleScope.launchUI {
+            isInitializedFlow.first { it }
             if (!handleIntent(intent)) {
                 if (intent != null && Intent.ACTION_VIEW == intent.action) {
                     if (intent.data != null) {
@@ -300,6 +304,7 @@ class MainActivity : EhActivity() {
                                 setStartDestination(navItems[launchPage].first)
                             }
                         }
+                        isInitializedFlow.value = true
                     }
                 }) {
                     ViewCompat.dispatchApplyWindowInsets(root, insets)
@@ -313,7 +318,10 @@ class MainActivity : EhActivity() {
             }
             checkDownloadLocation()
             if (Settings.meteredNetworkWarning) {
-                checkMeteredNetwork()
+                lifecycleScope.launchUI {
+                    isInitializedFlow.first { it }
+                    checkMeteredNetwork()
+                }
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (!Settings.appLinkVerifyTip) {
@@ -403,6 +411,7 @@ class MainActivity : EhActivity() {
     }
 
     private suspend fun checkClipboardUrl() {
+        isInitializedFlow.first { it }
         val text = clipboardManager.getUrlFromClipboard(this)
         val hashCode = text?.hashCode() ?: 0
         if (text != null && hashCode != 0 && Settings.clipboardTextHashCode != hashCode) {
