@@ -45,6 +45,7 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
+import androidx.activity.viewModels
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -59,6 +60,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.hippo.ehviewer.BuildConfig
@@ -78,9 +80,12 @@ import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getParcelableExtraCompat
+import com.hippo.ehviewer.util.getValue
 import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
+import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.sendTo
+import com.hippo.ehviewer.util.setValue
 import com.hippo.unifile.UniFile
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -116,6 +121,15 @@ import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.suspendCancellableCoroutine
 import splitties.systemservices.clipboardManager
 
+class GalleryModel : ViewModel() {
+    var galleryProvider: PageLoader2? = null
+    override fun onCleared() {
+        super.onCleared()
+        galleryProvider?.stop()
+        galleryProvider = null
+    }
+}
+
 class ReaderActivity : EhActivity() {
     lateinit var binding: ReaderActivityBinding
     private var mAction: String? = null
@@ -124,6 +138,7 @@ class ReaderActivity : EhActivity() {
     private var mGalleryInfo: BaseGalleryInfo? = null
     private var mPage: Int = 0
     private var mCacheFileName: String? = null
+    private val vm: GalleryModel by viewModels()
 
     /**
      * Whether the menu is currently visible.
@@ -159,7 +174,7 @@ class ReaderActivity : EhActivity() {
             }
         }
     }
-    var mGalleryProvider: PageLoader2? = null
+    var mGalleryProvider by lazyMut { vm::galleryProvider }
     private var mCurrentIndex: Int = 0
     private var mSavingPage = -1
     private lateinit var builder: EditTextDialogBuilder
@@ -264,7 +279,6 @@ class ReaderActivity : EhActivity() {
 
     private fun onInit() {
         handleIntent(intent)
-        buildProvider()
     }
 
     private fun onRestore(savedInstanceState: Bundle) {
@@ -274,7 +288,6 @@ class ReaderActivity : EhActivity() {
         mGalleryInfo = savedInstanceState.getParcelableCompat(KEY_GALLERY_INFO)
         mPage = savedInstanceState.getInt(KEY_PAGE, -1)
         mCurrentIndex = savedInstanceState.getInt(KEY_CURRENT_INDEX)
-        buildProvider()
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -321,6 +334,7 @@ class ReaderActivity : EhActivity() {
         } else {
             onRestore(savedInstanceState)
         }
+        buildProvider()
         binding = ReaderActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
         builder = EditTextDialogBuilder(this, null, getString(R.string.archive_passwd))
@@ -372,10 +386,6 @@ class ReaderActivity : EhActivity() {
         config = null
         viewer?.destroy()
         viewer = null
-        if (mGalleryProvider != null) {
-            mGalleryProvider!!.stop()
-            mGalleryProvider = null
-        }
         readerSettingSheetDialog?.dismiss()
         readerSettingSheetDialog = null
     }
@@ -905,10 +915,12 @@ class ReaderActivity : EhActivity() {
          */
         init {
             ReaderPreferences.defaultReadingMode().changes()
+                .drop(1)
                 .onEach { setGallery() }
                 .launchIn(lifecycleScope)
 
             ReaderPreferences.defaultOrientationType().changes()
+                .drop(1)
                 .onEach { setGallery() }
                 .launchIn(lifecycleScope)
 
