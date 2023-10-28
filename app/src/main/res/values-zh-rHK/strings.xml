@@ -491,6 +491,9 @@
     <string name="pref_color_filter_mode">濾鏡融合機制</string>
     <string name="filter_mode_multiply">色彩增值</string>
     <string name="filter_mode_screen">濾色</string>
+    <string name="filter_mode_overlay">覆蓋</string>
+    <string name="filter_mode_lighten">減淡/變亮</string>
+    <string name="filter_mode_darken">加深/變暗</string>
     <string name="pref_read_with_long_tap">長按顯示</string>
     <string name="pref_reader_theme">背景顏色</string>
     <string name="white_background">白色</string>
