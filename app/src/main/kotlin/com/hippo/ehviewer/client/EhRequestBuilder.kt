@@ -19,6 +19,7 @@ import android.util.Log
 import com.hippo.ehviewer.EhApplication.Companion.baseOkHttpClient
 import com.hippo.ehviewer.EhApplication.Companion.noRedirectOkHttpClient
 import com.hippo.ehviewer.EhApplication.Companion.okHttpClient
+import com.hippo.ehviewer.Settings
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.resume
@@ -44,7 +45,7 @@ import okhttp3.executeAsync
 import okio.BufferedSource
 
 inline fun ehRequest(url: String, referer: String? = null, origin: String? = null, builder: Request.Builder.() -> Unit = {}) = Request.Builder().url(url).apply {
-    addHeader("User-Agent", CHROME_USER_AGENT)
+    addHeader("User-Agent", Settings.userAgent)
     addHeader("Accept", CHROME_ACCEPT)
     addHeader("Accept-Language", CHROME_ACCEPT_LANGUAGE)
     referer?.let { addHeader("Referer", it) }

@@ -2,6 +2,7 @@
 
 package com.hippo.ehviewer
 
+import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import java.util.Locale
@@ -77,6 +78,7 @@ object Settings : DataStorePreferences(null) {
     var requestNewsTimerMinute by intPref("request_news_timer_minute", -1)
     var updateIntervalDays by intPref("update_interval_days", 0)
     var recentToplist by stringPref("recent_toplist", "11")
+    var userAgent by stringPref("user_agent", CHROME_USER_AGENT)
     var recentDownloadLabel by stringOrNullPref("recent_download_label", null)
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
     var displayName by stringOrNullPref("display_name", null)
