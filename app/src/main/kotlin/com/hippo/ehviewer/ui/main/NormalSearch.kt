@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
@@ -68,7 +69,11 @@ fun NormalSearch(
                 selected = selected,
                 onClick = { onCategoryChanged(if (selected) category xor it.first else category or it.first) },
                 label = { Text(text = stringResource(id = it.second)) },
-                leadingIcon = { if (selected) Icon(imageVector = Icons.Default.Check, contentDescription = null) },
+                leadingIcon = {
+                    AnimatedVisibility(selected) {
+                        Icon(imageVector = Icons.Default.Check, contentDescription = null)
+                    }
+                },
                 modifier = Modifier.padding(horizontal = 4.dp).align(alignment = Alignment.CenterVertically).widthIn(min = 145.dp),
             )
         }
