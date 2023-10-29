@@ -55,12 +55,15 @@
     <string name="error_cant_save_image">無法儲存圖片</string>
     <string name="error_invalid_number">無效的數字</string>
     <string name="app_waring">本應用程式中內容來自網際網路，部分內容可能對您的生理及心理造成難以恢復的傷害。本應用程式的作者不會對由其所造成的任何影響負責。\n\n未成年人應在監護人指導下使用本應用程式。\n\n繼續使用即代表您同意上述條款。</string>
+    <string name="app_waring_2">繼續使用即表示您同意上述條款。</string>
     <string name="error_username_cannot_empty">使用者名稱欄位不能為空</string>
     <string name="error_password_cannot_empty">密碼欄位不能為空</string>
     <string name="tourist_mode">略過登入</string>
     <string name="sign_in_failed">登入失敗</string>
     <string name="sign_in_failed_tip">若持續出錯，請嘗試“通過網頁登入”或“通過 Cookie 登入”。</string>
     <string name="get_it">知道了</string>
+    <string name="cloudflare_bypass_failed">未能繞過 Cloudflare 驗證</string>
+    <string name="open_in_webview">在 WebView 中開啟網址以完成驗證？</string>
     <!-- Select scene -->
     <string name="select_scene">你想選擇哪個圖庫站台？</string>
     <string name="select_scene_explain">e-hentai：對任何人開放\nexhentai：僅對登入使用者開放</string>
@@ -142,7 +145,11 @@
     <string name="no_more_previews">已經顯示所有預覽了</string>
     <string name="more_previews">更多預覽</string>
     <string name="refresh">重新整理</string>
+    <string name="refresh_original">重新整理 (原圖)</string>
     <string name="open_in_other_app">在其他應用程式中開啟</string>
+    <string name="clear_image_cache">清除圖片快取</string>
+    <string name="clear_image_cache_confirm">為該圖庫清除所有快取圖片？</string>
+    <string name="image_cache_cleared">已清除圖片快取</string>
     <string name="rate_successfully">評分成功</string>
     <string name="rate_failed">評分失敗</string>
     <string name="no_torrents">沒有種子</string>
@@ -320,6 +327,8 @@
     <string name="settings_eh_thumb_resolution">縮圖解析度</string>
     <string name="settings_eh_thumb_resolution_summary">%s，指定解析度可能會使縮圖取得失敗</string>
     <string name="settings_eh_thumb_resolution_auto">自動</string>
+    <string name="settings_eh_force_eh_thumb">強制 e-hentai 縮圖/API 伺服器</string>
+    <string name="settings_eh_force_eh_thumb_summary">若exhentai載入遇到問題可嘗試此項\n注意，此項將使用 e-hentai 設定來載入圖片。</string>
     <string name="settings_eh_show_jpn_title">顯示日文標題</string>
     <string name="settings_eh_show_jpn_title_summary">需同時在 EHentai 網站設定中啟用 Japanese Title</string>
     <string name="settings_eh_show_gallery_pages">顯示圖庫頁數</string>
@@ -368,6 +377,8 @@
     <string name="settings_advanced_dump_logcat_to">已將紀錄檔儲存至 %s</string>
     <string name="settings_advanced_read_cache_size">閱讀快取大小</string>
     <string name="settings_advanced_app_language_title">應用程式介面語言</string>
+    <string name="settings_advanced_cronet_integration">[實驗性] Cronet 整合</string>
+    <string name="settings_advanced_cronet_integration_summary">使用 Cronet 下載圖片 (性能較佳)</string>
     <string name="settings_advanced_export_data">匯出檔案</string>
     <string name="settings_advanced_export_data_summary">儲存資料至外接儲存設備，例如下載列表，快速搜尋列表</string>
     <string name="settings_advanced_export_data_to">已匯出資料至 %s</string>
@@ -389,6 +400,7 @@
     <string name="settings_about_version">版本號碼</string>
     <string name="settings_about_build_time">於 %s 建置</string>
     <string name="settings_about_check_for_updates">檢查更新</string>
+    <string name="license">License</string>
     <!-- ExcludedLanguagesScene -->
     <string name="please_wait">請稍候</string>
     <string name="cant_read_the_file">無法讀取檔案</string>
@@ -405,7 +417,9 @@
     <string name="delete_favorites_dialog_message">將 %d 項收藏移除？</string>
     <string name="move_favorites_dialog_title">移動收藏</string>
     <string name="default_favorites_collection">預設收藏夾</string>
+    <string name="default_favorites_warning">若啟用此項將無法添加收藏備註</string>
     <string name="let_me_select">讓我每次都選擇</string>
+    <string name="favorite_note">收藏備註</string>
     <string name="collections">收藏夾</string>
     <!-- Progress Scene -->
     <string name="error_something_wrong_happened">被玩壞了</string>
@@ -453,14 +467,21 @@
     <string name="settings_privacy">隱私</string>
     <string name="settings_privacy_secure">不允許螢幕擷取</string>
     <string name="settings_privacy_secure_summary">啟用後，將無法對本程式進行螢幕擷取，同時，將不會在系統任務切換器中顯示該程式的預覽內容，重新啟動本程式以套用此變更</string>
+    <string name="clear_search_history">清除裝置上的搜尋記錄</string>
+    <string name="clear_search_history_summary">移除曾在此裝置上進行過的搜尋</string>
+    <string name="clear_search_history_confirm">清除搜尋記錄？</string>
+    <string name="search_history_cleared">已清除搜尋記錄</string>
     <string name="download_service">下載服務</string>
     <string name="favorite_name">收藏圖庫</string>
     <string name="black_dark_theme">純黑深色主題</string>
+    <string name="harmonize_category_color">以動態顏色為分類顏色配色</string>
+    <string name="use_ci_update_channel">使用 CI 更新頻道</string>
     <string name="download_filter">過濾</string>
     <string name="download_all">全部</string>
     <string name="download_start_all_reversed">全部開始（倒序）</string>
     <string name="settings_download_download_delay">下載延時</string>
     <string name="settings_download_download_delay_summary">每次下載延時 %s 毫秒</string>
+    <string name="settings_download_download_timeout">下載超時（秒）</string>
     <string name="no_browser_installed">請安裝一個瀏覽器。</string>
     <string name="toplist_alltime">從始至終</string>
     <string name="toplist_pastyear">過去一年</string>
@@ -500,6 +521,16 @@
     <string name="passwd_cannot_be_empty">密碼不能為空</string>
     <string name="list_tile_thumb_size">詳情模式下縮圖大小</string>
     <string name="account_name">帳號</string>
+    <string name="preload_thumb_aggressively">積極地預載入縮圖</string>
+    <string name="auto_updates">自動檢查更新</string>
+    <string name="update_frequency_never">從不</string>
+    <string name="update_frequency_daily">每天</string>
+    <string name="update_frequency_3days">每3天</string>
+    <string name="update_frequency_weekly">每週</string>
+    <string name="update_frequency_biweekly">每兩週</string>
+    <string name="update_frequency_monthly">每月</string>
+    <string name="new_version_available">有新版本可用！</string>
+    <string name="already_latest_version">已是最新版本</string>
     <!-- Tachiyomi Reader Start-->
     <string name="action_settings">設定</string>
     <string name="action_retry">重試</string>
