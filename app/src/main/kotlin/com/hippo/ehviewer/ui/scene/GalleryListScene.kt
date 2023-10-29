@@ -383,9 +383,7 @@ class GalleryListScene : SearchBarScene() {
                             is LoadState.Loading -> {
                                 showSearchBar()
                                 if (!binding.refreshLayout.isRefreshing) {
-                                    // https://github.com/FooIbar/EhViewer/issues/45
-                                    // transition.showView(1)
-                                    binding.refreshLayout.isRefreshing = true
+                                    transition.showView(1)
                                 }
                             }
 
@@ -411,11 +409,11 @@ class GalleryListScene : SearchBarScene() {
                                     binding.tip.text = empty
                                     transition.showView(2)
                                 } else {
-                                    transition.showView(0, false)
                                     if (vm.shouldScrollToTop) {
                                         vm.shouldScrollToTop = false
                                         binding.recyclerView.scrollToPosition(0)
                                     }
+                                    transition.showView(0)
                                 }
                             }
                         }
