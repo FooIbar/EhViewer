@@ -49,8 +49,11 @@ import com.hippo.ehviewer.databinding.DialogAddFilterBinding
 import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.rememberDialogState
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.groupByToObserved
 
 @Composable
@@ -60,6 +63,8 @@ fun FilterScreen() {
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val allFilterMap = remember { scope.async { EhFilter.filters.await().groupByToObserved { it.mode } } }
+    val dialogState = rememberDialogState()
+    dialogState.Intercept()
     class AddFilterDialogHelper(private val dialog: AlertDialog) : View.OnClickListener {
         private val mArray = dialog.context.resources.getStringArray(R.array.filter_entries)
         private val binding = DialogAddFilterBinding.bind(dialog.findViewById(R.id.base)!!)
@@ -160,15 +165,22 @@ fun FilterScreen() {
                                     checked = filter.enable,
                                     onCheckedChange = { filter.trigger { filterCheckBoxRecomposeScope.invalidate() } },
                                 )
-                                Text(text = filter.text)
-                                Spacer(modifier = Modifier.weight(1F))
+                                Text(text = filter.text, modifier = Modifier.weight(1F))
                                 IconButton(
                                     onClick = {
-                                        BaseDialogBuilder(context).setMessage(context.getString(R.string.delete_filter, filter.text)).setPositiveButton(R.string.delete) { _, which ->
-                                            if (DialogInterface.BUTTON_POSITIVE == which) {
-                                                filter.forget { filters.remove(filter) }
+                                        scope.launch {
+                                            dialogState.awaitPermissionOrCancel(
+                                                confirmText = R.string.delete,
+                                                dismissText = android.R.string.cancel,
+                                            ) {
+                                                Text(text = stringResource(id = R.string.delete_filter, filter.text))
                                             }
-                                        }.setNegativeButton(android.R.string.cancel, null).show()
+                                            filter.forget {
+                                                withUIContext {
+                                                    filters.remove(filter)
+                                                }
+                                            }
+                                        }
                                     },
                                 ) {
                                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)
