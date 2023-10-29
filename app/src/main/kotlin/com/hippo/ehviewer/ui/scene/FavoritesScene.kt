@@ -349,7 +349,6 @@ class FavoritesScene : SearchBarScene() {
                                 if (!binding.refreshLayout.isRefreshing) {
                                     // https://github.com/FooIbar/EhViewer/issues/45
                                     // transition.showView(1)
-                                    transition.showView(0, false)
                                     binding.refreshLayout.isRefreshing = true
                                 }
                             }
