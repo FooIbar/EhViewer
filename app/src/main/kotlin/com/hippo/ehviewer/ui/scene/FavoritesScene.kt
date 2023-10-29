@@ -102,7 +102,6 @@ import rikka.core.res.resolveColor
 // Note that we do not really follow mvvm structure, just use it as ... storage
 class VMStorage : ViewModel() {
     var urlBuilder = FavListUrlBuilder(favCat = Settings.recentFavCat)
-    var shouldScrollToTop = false
     private val cloudDataFlow = Pager(PagingConfig(25)) {
         object : PagingSource<String, BaseGalleryInfo>() {
             override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
@@ -119,7 +118,6 @@ class VMStorage : ViewModel() {
                         } else {
                             urlBuilder.setIndex(key, false)
                         }
-                        shouldScrollToTop = true
                     }
                 }
                 val r = runSuspendCatching {
@@ -347,10 +345,7 @@ class FavoritesScene : SearchBarScene() {
                             is LoadState.Loading -> {
                                 showSearchBar()
                                 if (!binding.refreshLayout.isRefreshing) {
-                                    // https://github.com/FooIbar/EhViewer/issues/45
-                                    // transition.showView(1)
-                                    transition.showView(0, false)
-                                    binding.refreshLayout.isRefreshing = true
+                                    transition.showView(1)
                                 }
                             }
                             is LoadState.Error -> {
@@ -364,11 +359,7 @@ class FavoritesScene : SearchBarScene() {
                                     binding.tip.text = empty
                                     transition.showView(2)
                                 } else {
-                                    transition.showView(0, false)
-                                    if (vm.shouldScrollToTop) {
-                                        vm.shouldScrollToTop = false
-                                        binding.recyclerView.scrollToPosition(0)
-                                    }
+                                    transition.showView(0)
                                 }
                             }
                         }
