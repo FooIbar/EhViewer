@@ -8,7 +8,6 @@ import android.webkit.WebViewClient
 import androidx.core.content.ContextCompat
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
-import java.io.IOException
 import java.util.concurrent.CountDownLatch
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
@@ -27,14 +26,11 @@ class CloudflareInterceptor(context: Context) : WebViewInterceptor(context) {
         request: Request,
         response: Response,
     ): Response {
-        // Because OkHttp's enqueue only handles IOExceptions, wrap the exception so that
-        // we don't crash the entire app
-        return runCatching {
-            response.close()
-            EhCookieStore.deleteCookie(request.url, COOKIE_NAME)
-            resolveWithWebView(request)
-            chain.proceed(request)
-        }.getOrElse { throw IOException(it) }
+        response.close()
+        EhCookieStore.deleteCookie(request.url, COOKIE_NAME)
+        resolveWithWebView(request)
+
+        return chain.proceed(request)
     }
 
     private fun resolveWithWebView(originalRequest: Request) {

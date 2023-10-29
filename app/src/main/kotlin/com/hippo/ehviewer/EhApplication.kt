@@ -51,6 +51,7 @@ import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isCronetSupported
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
+import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
@@ -170,6 +171,7 @@ class EhApplication : Application(), ImageLoaderFactory {
                     dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
                 }
                 chunker { alwaysReadResponseBody(false) }
+                addInterceptor(UncaughtExceptionInterceptor())
                 addInterceptor(CloudflareInterceptor(appCtx))
             }
         }
