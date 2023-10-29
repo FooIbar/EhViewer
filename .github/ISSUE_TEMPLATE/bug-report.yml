@@ -64,7 +64,7 @@ body:
       description: 您可以通过设置-高级-导出日志来获得日志文件 / You can get logs file in Settings - Advanced - Dump logcat
       placeholder: 06-15 17:44:53.704 23382 23382 E ...
     validations:
-      required: false
+      required: true
 
   - type: textarea
     id: more
@@ -78,6 +78,15 @@ body:
         Additional details and attachments
     validations:
       required: false
+
+  - type: input
+    id: site
+    attributes:
+      label: 浏览站点 / Browsing site
+      description: E-Hentai / ExHentai
+      placeholder: E-Hentai
+    validations:
+      required: true
 
   - type: input
     id: version
