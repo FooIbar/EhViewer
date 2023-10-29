@@ -17,17 +17,17 @@ object EhFilter : CoroutineScope {
     val filters = async { EhDB.getAllFilter() as MutableList }
     private suspend inline fun anyActive(mode: FilterMode, predicate: (Filter) -> Boolean) = filters.await().any { it.mode == mode && it.enable && predicate(it) }
     private fun <R> Filter.launchOps(
-        callback: ((R) -> Unit)? = null,
+        callback: (suspend (R) -> Unit)? = null,
         ops: suspend Filter.() -> R,
     ) = launch { ops().let { callback?.invoke(it) } }
-    fun Filter.remember(callback: ((Boolean) -> Unit)? = null) = launchOps(callback) {
+    fun Filter.remember(callback: (suspend (Boolean) -> Unit)? = null) = launchOps(callback) {
         EhDB.addFilter(this).also { if (it) filters.await().add(this) }
     }
-    fun Filter.trigger(callback: ((Unit) -> Unit)? = null) = launchOps(callback) {
+    fun Filter.trigger(callback: (suspend (Unit) -> Unit)? = null) = launchOps(callback) {
         enable = !enable
         EhDB.updateFilter(this)
     }
-    fun Filter.forget(callback: ((Unit) -> Unit)? = null) = launchOps(callback) {
+    fun Filter.forget(callback: (suspend (Unit) -> Unit)? = null) = launchOps(callback) {
         EhDB.deleteFilter(this)
         filters.await().remove(this)
     }
