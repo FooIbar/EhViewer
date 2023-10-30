@@ -91,7 +91,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LocalPinnableContainer
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -137,6 +136,7 @@ import com.hippo.ehviewer.databinding.DialogRateBinding
 import com.hippo.ehviewer.databinding.DialogTorrentListBinding
 import com.hippo.ehviewer.databinding.ItemGalleryCommentBinding
 import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
+import androidx.compose.ui.platform.*
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.MODE_READ
@@ -416,7 +416,7 @@ class GalleryDetailScene : BaseScene() {
             getDetailError = getString(R.string.error_cannot_find_gallery)
         }
         (requireActivity() as MainActivity).mShareUrl = galleryDetailUrl
-        return ComposeView(requireContext()).apply {
+        return ComposeWithViewLifecycle().apply {
             setMD3Content {
                 LaunchedEffect(gid) {
                     EhDownloadManager.stateFlow(gid).collect {
@@ -726,7 +726,9 @@ class GalleryDetailScene : BaseScene() {
             Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
         }
         Row(
-            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
         ) {
             val favored by produceState(initialValue = false) {
@@ -1039,8 +1041,11 @@ class GalleryDetailScene : BaseScene() {
                 }
             }
             Box(
-                modifier = Modifier.fillMaxWidth().padding(bottom = dimensionResource(id = R.dimen.strip_item_padding_v))
-                    .clip(RoundedCornerShape(16.dp)).clickable(onClick = ::onNavigateToCommentScene),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = dimensionResource(id = R.dimen.strip_item_padding_v))
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable(onClick = ::onNavigateToCommentScene),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(commentText)

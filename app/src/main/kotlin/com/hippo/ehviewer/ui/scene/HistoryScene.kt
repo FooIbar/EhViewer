@@ -75,7 +75,7 @@ import kotlinx.coroutines.delay
 class HistoryScene : BaseScene() {
     override val showLeftDrawer = true
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = ComposeView(inflater.context).apply {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = ComposeWithViewLifecycle().apply {
         setMD3Content {
             val dialogState = rememberDialogState()
             dialogState.Intercept()
@@ -161,14 +161,18 @@ class HistoryScene : BaseScene() {
                                 directions = setOf(DismissDirection.EndToStart),
                             )
                         } else {
-                            CrystalCard(modifier = Modifier.height(cardHeight).fillMaxWidth()) {}
+                            CrystalCard(modifier = Modifier
+                                .height(cardHeight)
+                                .fillMaxWidth()) {}
                         }
                     }
                 }
                 Deferred({ delay(200) }) {
                     if (historyData.itemCount == 0) {
                         Column(
-                            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+                            modifier = Modifier
+                                .padding(paddingValues)
+                                .fillMaxSize(),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
