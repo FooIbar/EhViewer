@@ -119,6 +119,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.suspendCancellableCoroutine
+import splitties.init.appCtx
 import splitties.systemservices.clipboardManager
 
 class GalleryModel : ViewModel() {
@@ -226,7 +227,7 @@ class ReaderActivity : EhActivity() {
 
                     val continuation: AtomicReference<Continuation<String>?> = AtomicReference(null)
                     mGalleryProvider = ArchivePageLoader(
-                        this,
+                        appCtx,
                         mUri!!,
                         flow {
                             if (!dialogShown) {
