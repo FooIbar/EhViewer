@@ -376,6 +376,8 @@
     <string name="settings_eh_show_gallery_pages_summary">Display the number of pages in the gallery list</string>
     <string name="settings_eh_show_gallery_comments">Show gallery comments</string>
     <string name="settings_eh_show_gallery_comments_summary">Show comments on the gallery details page</string>
+    <string name="settings_eh_show_gallery_comment_threshold">Comment score threshold</string>
+    <string name="settings_eh_show_gallery_comment_threshold_summary">Hide comments at or below this score (-101 disables)</string>
     <string name="settings_eh_show_tag_translations">Show tag translations</string>
     <string name="settings_eh_show_tag_translations_summary">Show tag translations instead of the original text (It takes time to download the data file)</string>
     <string name="settings_eh_tag_translations_source">Placeholder</string>

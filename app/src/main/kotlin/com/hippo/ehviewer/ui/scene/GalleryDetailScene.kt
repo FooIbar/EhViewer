@@ -1015,9 +1015,9 @@ class GalleryDetailScene : BaseScene() {
 
     @SuppressLint("InflateParams")
     @Composable
-    private fun GalleryDetailComment(commentsList: Array<GalleryComment>?) {
+    private fun GalleryDetailComment(commentsList: Array<GalleryComment>) {
         val maxShowCount = 2
-        val commentText = if (commentsList.isNullOrEmpty()) {
+        val commentText = if (commentsList.isEmpty()) {
             stringResource(R.string.no_comments)
         } else if (commentsList.size <= maxShowCount) {
             stringResource(R.string.no_more_comments)
@@ -1025,18 +1025,16 @@ class GalleryDetailScene : BaseScene() {
             stringResource(R.string.more_comment)
         }
         CrystalCard {
-            if (commentsList != null) {
-                val length = maxShowCount.coerceAtMost(commentsList.size)
-                for (i in 0 until length) {
-                    val item = commentsList[i]
-                    AndroidViewBinding(factory = ItemGalleryCommentBinding::inflate) {
-                        card.setOnClickListener { onNavigateToCommentScene() }
-                        user.text = item.user
-                        user.setBackgroundColor(Color.TRANSPARENT)
-                        time.text = ReadableTime.getTimeAgo(item.time)
-                        comment.maxLines = 5
-                        comment.text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(comment))
-                    }
+            val length = maxShowCount.coerceAtMost(commentsList.size)
+            for (i in 0 until length) {
+                val item = commentsList[i]
+                AndroidViewBinding(factory = ItemGalleryCommentBinding::inflate) {
+                    card.setOnClickListener { onNavigateToCommentScene() }
+                    user.text = item.user
+                    user.setBackgroundColor(Color.TRANSPARENT)
+                    time.text = ReadableTime.getTimeAgo(item.time)
+                    comment.maxLines = 5
+                    comment.text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(comment))
                 }
             }
             Box(

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,6 +31,7 @@ fun SliderPref(
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     showValue: Boolean = false,
     showInteger: Boolean = false,
+    showTicks: Boolean = true,
     steps: Int = 0,
     textColor: Color = MaterialTheme.colorScheme.onBackground,
     enabled: Boolean = true,
@@ -61,6 +63,14 @@ fun SliderPref(
                 steps = steps,
                 onValueChangeFinished = { onValueChangeFinished?.invoke(value) },
                 enabled = enabled,
+                colors = if (showTicks) {
+                    SliderDefaults.colors()
+                } else {
+                    SliderDefaults.colors(
+                        activeTickColor = Color.Transparent,
+                        inactiveTickColor = Color.Transparent,
+                    )
+                },
             )
             if (showValue) {
                 Text(

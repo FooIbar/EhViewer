@@ -17,6 +17,7 @@ package com.hippo.ehviewer.client.parser
 
 import arrow.core.unzip
 import com.hippo.ehviewer.EhDB
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhFilter
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.EhUtils.getCategory
@@ -394,7 +395,7 @@ object GalleryDetailParser {
             // filter comment
             if (!comment.uploader) {
                 val sEhFilter = EhFilter
-                if (sEhFilter.filterCommenter(comment.user!!) || sEhFilter.filterComment(comment.comment!!)) {
+                if (comment.score <= Settings.commentThreshold || sEhFilter.filterCommenter(comment.user!!) || sEhFilter.filterComment(comment.comment!!)) {
                     return null
                 }
             }
