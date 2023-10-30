@@ -30,7 +30,6 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material3.Text
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf

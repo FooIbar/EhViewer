@@ -136,7 +136,6 @@ import com.hippo.ehviewer.databinding.DialogRateBinding
 import com.hippo.ehviewer.databinding.DialogTorrentListBinding
 import com.hippo.ehviewer.databinding.ItemGalleryCommentBinding
 import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
-import androidx.compose.ui.platform.*
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.MODE_READ

@@ -44,7 +44,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -161,9 +160,11 @@ class HistoryScene : BaseScene() {
                                 directions = setOf(DismissDirection.EndToStart),
                             )
                         } else {
-                            CrystalCard(modifier = Modifier
-                                .height(cardHeight)
-                                .fillMaxWidth()) {}
+                            CrystalCard(
+                                modifier = Modifier
+                                    .height(cardHeight)
+                                    .fillMaxWidth(),
+                            ) {}
                         }
                     }
                 }

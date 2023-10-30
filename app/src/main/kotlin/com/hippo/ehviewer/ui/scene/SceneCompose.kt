@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.scene
 
-import androidx.compose.ui.platform.*
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 
 /**
