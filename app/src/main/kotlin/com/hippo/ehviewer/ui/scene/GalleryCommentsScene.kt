@@ -151,10 +151,10 @@ class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefresh
 
     override fun onCreateViewWithToolbar(
         inflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = SceneGalleryCommentsBinding.inflate(inflater, container!!)
+        _binding = SceneGalleryCommentsBinding.inflate(inflater, container)
         setLiftOnScrollTargetView(binding.recyclerView)
         val tip = binding.tip
         ViewCompat.setWindowInsetsAnimationCallback(

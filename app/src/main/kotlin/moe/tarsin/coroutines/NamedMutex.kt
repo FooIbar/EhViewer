@@ -3,7 +3,8 @@ package moe.tarsin.coroutines
 import arrow.core.memoize
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.*
+import moe.tarsin.coroutines.withLock
 
 class NamedMutex<T> {
     val innerMutexGetter = { _: T -> Mutex() }.memoize()

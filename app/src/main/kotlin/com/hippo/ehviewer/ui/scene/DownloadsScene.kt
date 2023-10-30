@@ -246,10 +246,10 @@ class DownloadsScene :
 
     override fun onCreateViewWithToolbar(
         inflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = SceneDownloadBinding.inflate(inflater, container!!)
+        _binding = SceneDownloadBinding.inflate(inflater, container)
         container.addView(ComposeView(inflater.context).apply { setMD3Content { dialogState.Intercept() } })
         binding.run {
             setLiftOnScrollTargetView(recyclerView)

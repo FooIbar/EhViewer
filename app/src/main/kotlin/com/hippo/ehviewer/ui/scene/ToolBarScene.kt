@@ -9,7 +9,7 @@ import android.view.ViewGroup
 interface ToolBarScene {
     fun onCreateViewWithToolbar(
         inflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup,
         savedInstanceState: Bundle?,
     ): View
 

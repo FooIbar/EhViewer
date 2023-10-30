@@ -142,6 +142,7 @@ class VMStorage : ViewModel() {
             EhDB.searchLocalFav(keyword)
         }
     }.flow.cachedIn(viewModelScope)
+
     fun dataflow() = if (urlBuilder.favCat == -2) localFavDataFlow else cloudDataFlow
     val localFavCount = EhDB.localFavCount
 }
@@ -150,11 +151,10 @@ class FavoritesScene : SearchBarScene() {
     private val vm: VMStorage by viewModels()
     private var urlBuilder by lazyMut { vm::urlBuilder }
     private var _binding: SceneFavoritesBinding? = null
-    private val binding get() = _binding!!
     private var mAdapter: GalleryAdapter? = null
-    private val tracker get() = mAdapter!!.tracker!!
     private val showNormalFabsRunnable = Runnable {
-        updateJumpFab() // index: 0, 2
+        val binding = _binding ?: return@Runnable
+        updateJumpFab(binding) // index: 0, 2
         binding.fabLayout.run {
             setSecondaryFabVisibilityAt(1, true)
             for (i in 3..6) {
@@ -165,16 +165,20 @@ class FavoritesScene : SearchBarScene() {
 
     private val dialogState = DialogState()
 
-    override val fabLayout get() = binding.fabLayout
-    override val fastScroller get() = binding.fastScroller
-    override val recyclerView get() = binding.recyclerView
-    override val contentView get() = binding.contentLayout.contentView
+    override val fabLayout
+        get() = _binding?.fabLayout ?: throw IllegalStateException("FavoritesScene binding not ready to get fab")
+    override val fastScroller
+        get() = _binding?.fastScroller ?: throw IllegalStateException("FavoritesScene binding not ready to get fast scroller")
+    override val recyclerView
+        get() = _binding?.recyclerView ?: throw IllegalStateException("FavoritesScene binding not ready to get rv")
+    override val contentView
+        get() = _binding?.contentLayout?.contentView ?: throw IllegalStateException("FavoritesScene binding not ready to get content")
 
     private fun onItemClick(position: Int) {
         // Skip if in search mode
-        if (!tracker.isInCustomChoice) {
+        if (mAdapter?.tracker?.isInCustomChoice == false) {
             switchFav(position - 2)
-            updateJumpFab()
+            _binding?.let(::updateJumpFab)
             closeSideSheet()
         }
     }
@@ -213,7 +217,7 @@ class FavoritesScene : SearchBarScene() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        mAdapter?.let { tracker.saveSelection(outState) }
+        mAdapter?.tracker?.saveSelection(outState)
     }
 
     override fun onResume() {
@@ -229,13 +233,14 @@ class FavoritesScene : SearchBarScene() {
 
     override fun onCreateViewWithToolbar(
         inflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = SceneFavoritesBinding.inflate(inflater, container!!)
+        val binding = SceneFavoritesBinding.inflate(inflater, container)
+        _binding = binding
         container.addView(ComposeView(inflater.context).apply { setMD3Content { dialogState.Intercept() } })
         setOnApplySearch {
-            if (!tracker.isInCustomChoice) {
+            if (mAdapter?.tracker?.isInCustomChoice == false) {
                 switchFav(urlBuilder.favCat, it)
             }
         }
@@ -243,7 +248,7 @@ class FavoritesScene : SearchBarScene() {
         binding.fastScroller.setHandlerDrawable(HandlerDrawable().apply { setColor(inflater.context.theme.resolveColor(androidx.appcompat.R.attr.colorPrimary)) })
         binding.fabLayout.run {
             ViewCompat.setWindowInsetsAnimationCallback(binding.root, WindowInsetsAnimationHelper(WindowInsetsAnimationCompat.Callback.DISPATCH_MODE_STOP, this))
-            updateJumpFab()
+            updateJumpFab(binding)
             val colorID = theme.resolveColor(com.google.android.material.R.attr.colorOnSurface)
             val addDelete = AddDeleteDrawable(context, colorID)
             primaryFab!!.setImageDrawable(addDelete)
@@ -252,6 +257,7 @@ class FavoritesScene : SearchBarScene() {
             setHidePrimaryFab(false)
             setOnClickFabListener(object : OnClickFabListener {
                 override fun onClickPrimaryFab(view: FabLayout, fab: FloatingActionButton) {
+                    val tracker = mAdapter?.tracker ?: return
                     if (tracker.isInCustomChoice) {
                         tracker.clearSelection()
                     } else {
@@ -260,6 +266,7 @@ class FavoritesScene : SearchBarScene() {
                 }
 
                 override fun onClickSecondaryFab(view: FabLayout, fab: FloatingActionButton, position: Int) {
+                    val tracker = mAdapter?.tracker ?: return
                     if (!tracker.isInCustomChoice) {
                         when (position) {
                             0 -> showGoToDialog()
@@ -274,9 +281,12 @@ class FavoritesScene : SearchBarScene() {
                     }
                     when (position) {
                         // Check all
-                        3 -> tracker.selectAll()
+                        3 -> mAdapter?.tracker?.selectAll()
                         // Download
-                        4 -> CommonOperations.startDownload(mainActivity!!, takeCheckedInfo(), false)
+                        4 -> {
+                            val info = takeCheckedInfo() ?: return
+                            CommonOperations.startDownload(mainActivity!!, info, false)
+                        }
                         // Delete
                         5 -> {
                             val helper = DeleteDialogHelper()
@@ -296,7 +306,8 @@ class FavoritesScene : SearchBarScene() {
                             } else {
                                 arrayOf(localFav)
                             }
-                            BaseDialogBuilder(context).setTitle(R.string.move_favorites_dialog_title).setItems(array, helper).show()
+                            BaseDialogBuilder(context).setTitle(R.string.move_favorites_dialog_title)
+                                .setItems(array, helper).show()
                         }
                     }
                 }
@@ -306,6 +317,7 @@ class FavoritesScene : SearchBarScene() {
                     addDelete.setDelete(ANIMATE_TIME)
                 } else {
                     addDelete.setAdd(ANIMATE_TIME)
+                    val tracker = mAdapter?.tracker ?: return@addOnExpandListener
                     if (tracker.isInCustomChoice) tracker.clearSelection()
                 }
             }
@@ -348,11 +360,13 @@ class FavoritesScene : SearchBarScene() {
                                     transition.showView(1)
                                 }
                             }
+
                             is LoadState.Error -> {
                                 binding.refreshLayout.isRefreshing = false
                                 binding.tip.text = ExceptionUtils.getReadableString(state.error)
                                 transition.showView(2)
                             }
+
                             is LoadState.NotLoading -> {
                                 binding.refreshLayout.isRefreshing = false
                                 if (mAdapter?.itemCount == 0) {
@@ -372,7 +386,7 @@ class FavoritesScene : SearchBarScene() {
                     { (this as GalleryHolder).galleryId },
                 ).apply {
                     addCustomChoiceListener({
-                        showSelectionFab()
+                        showSelectionFab(binding)
                         binding.fabLayout.setAutoCancel(false)
                         // Delay expanding action to make layout work fine
                         SimpleHandler.post { binding.fabLayout.isExpanded = true }
@@ -392,17 +406,19 @@ class FavoritesScene : SearchBarScene() {
         }
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.Callback() {
             override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-                return if (tracker.isInCustomChoice) {
+                return if (mAdapter?.tracker?.isInCustomChoice == true) {
                     0
                 } else {
                     makeMovementFlags(0, ItemTouchHelper.LEFT)
                 }
             }
+
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder,
             ) = false
+
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.bindingAdapterPosition
                 val info = mAdapter!!.peek(position)!!
@@ -428,7 +444,7 @@ class FavoritesScene : SearchBarScene() {
     }
 
     // Hide jump fab on local fav cat
-    private fun updateJumpFab() {
+    private fun updateJumpFab(binding: SceneFavoritesBinding) {
         binding.fabLayout.setSecondaryFabVisibilityAt(
             0,
             urlBuilder.favCat != FavListUrlBuilder.FAV_CAT_LOCAL,
@@ -441,7 +457,7 @@ class FavoritesScene : SearchBarScene() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        binding.recyclerView.stopScroll()
+        _binding?.recyclerView?.stopScroll()
         mAdapter = null
         _binding = null
     }
@@ -516,9 +532,9 @@ class FavoritesScene : SearchBarScene() {
         }
     }
 
-    private fun takeCheckedInfo() = tracker.getAndClearSelection()
+    private fun takeCheckedInfo() = mAdapter?.tracker?.getAndClearSelection()
 
-    private fun checkedSize() = tracker.selectionSize
+    private fun checkedSize() = mAdapter?.tracker?.selectionSize
 
     private fun showNormalFab() {
         // Delay showing normal fab to avoid mutation
@@ -526,7 +542,7 @@ class FavoritesScene : SearchBarScene() {
         SimpleHandler.postDelayed(showNormalFabsRunnable, 300)
     }
 
-    private fun showSelectionFab() {
+    private fun showSelectionFab(binding: SceneFavoritesBinding) {
         SimpleHandler.removeCallbacks(showNormalFabsRunnable)
         binding.fabLayout.run {
             for (i in 0..2) {
@@ -540,7 +556,7 @@ class FavoritesScene : SearchBarScene() {
 
     private inner class DeleteDialogHelper : DialogInterface.OnClickListener {
         override fun onClick(dialog: DialogInterface, which: Int) {
-            val info = takeCheckedInfo()
+            val info = takeCheckedInfo() ?: return
             lifecycleScope.launchIO {
                 if (urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) { // Delete local fav
                     EhDB.removeLocalFavorites(info)
@@ -562,7 +578,7 @@ class FavoritesScene : SearchBarScene() {
                 which - 1
             }
             if (srcCat == dstCat) return
-            val info = takeCheckedInfo()
+            val info = takeCheckedInfo() ?: return
             lifecycleScope.launchIO {
                 if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
                     // Move from local to cloud

@@ -318,10 +318,10 @@ class GalleryListScene : SearchBarScene() {
 
     override fun onCreateViewWithToolbar(
         inflater: LayoutInflater,
-        container: ViewGroup?,
+        container: ViewGroup,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = SceneGalleryListBinding.inflate(inflater, container!!)
+        _binding = SceneGalleryListBinding.inflate(inflater, container)
         container.addView(ComposeView(inflater.context).apply { setMD3Content { dialogState.Intercept() } })
         checkForUpdates()
         requireActivity().onBackPressedDispatcher.addCallback(stateBackPressedCallback)
