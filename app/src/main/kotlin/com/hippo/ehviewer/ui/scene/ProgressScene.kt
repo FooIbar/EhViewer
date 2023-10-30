@@ -20,7 +20,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
@@ -36,7 +35,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 
 class ProgressScene : BaseScene() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return ComposeView(inflater.context).apply {
+        return ComposeWithViewLifecycle().apply {
             setMD3Content {
                 val action = rememberSaveable { requireArguments().getString(KEY_ACTION, INVALID) }
                 val gid = rememberSaveable { requireArguments().getLong(KEY_GID, -1) }

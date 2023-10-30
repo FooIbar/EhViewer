@@ -30,7 +30,6 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material3.Text
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -322,7 +321,7 @@ class GalleryListScene : SearchBarScene() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = SceneGalleryListBinding.inflate(inflater, container!!)
-        container.addView(ComposeView(inflater.context).apply { setMD3Content { dialogState.Intercept() } })
+        container.addView(ComposeWithViewLifecycle().apply { setMD3Content { dialogState.Intercept() } })
         checkForUpdates()
         requireActivity().onBackPressedDispatcher.addCallback(stateBackPressedCallback)
         mHideActionFabSlop = ViewConfiguration.get(requireContext()).scaledTouchSlop
