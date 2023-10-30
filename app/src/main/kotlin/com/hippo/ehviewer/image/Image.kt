@@ -56,8 +56,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
     var mObtainedDrawable: Drawable? = drawable
         private set
 
-    val size: Int
-        get() = mObtainedDrawable!!.run { intrinsicHeight * intrinsicWidth * 4 * if (this is Animatable) 4 else 1 }
+    val size = drawable.run { intrinsicHeight * intrinsicWidth * 4 * if (this is Animatable) 4 else 1 }
 
     @Synchronized
     fun recycle() {
