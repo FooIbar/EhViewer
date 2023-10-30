@@ -277,11 +277,22 @@ fun EhScreen() {
                 summary = stringResource(id = R.string.settings_eh_show_gallery_pages_summary),
                 value = Settings::showGalleryPages,
             )
+            val showComments = Settings::showComments.observed
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_show_gallery_comments),
                 summary = stringResource(id = R.string.settings_eh_show_gallery_comments_summary),
-                value = Settings::showComments,
+                value = showComments.rememberedAccessor,
             )
+            AnimatedVisibility(visible = showComments.value) {
+                IntSliderPreference(
+                    maxValue = 100,
+                    minValue = -101,
+                    showTicks = false,
+                    title = stringResource(id = R.string.settings_eh_show_gallery_comment_threshold),
+                    summary = stringResource(id = R.string.settings_eh_show_gallery_comment_threshold_summary),
+                    value = Settings::commentThreshold,
+                )
+            }
             if (EhTagDatabase.isTranslatable(context)) {
                 SwitchPreference(
                     title = stringResource(id = R.string.settings_eh_show_tag_translations),
