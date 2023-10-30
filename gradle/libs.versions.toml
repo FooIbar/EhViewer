@@ -83,7 +83,7 @@ coil-compose = { module = "io.coil-kt:coil-compose" }
 coil-gif = { module = "io.coil-kt:coil-gif" }
 
 # https://issuetracker.google.com/issues/295745063#comment57
-compose-foundation = { module = "androidx.compose.foundation:foundation-android", version = { strictly = "1.6.0-alpha07" } }
+compose-foundation = { module = "androidx.compose.foundation:foundation-android", version = { strictly = "1.6.0-alpha08" } }
 compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "compose-bom" }
 # For renovate
 compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose-compiler" }
