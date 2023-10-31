@@ -65,7 +65,8 @@ android {
         minSdk = 28
         targetSdk = 34
         versionCode = 180045
-        versionName = "1.8.11.0"
+        versionName = "1.8.12.0"
+        versionNameSuffix = "-SNAPSHOT"
         resourceConfigurations.addAll(
             listOf(
                 "zh",
