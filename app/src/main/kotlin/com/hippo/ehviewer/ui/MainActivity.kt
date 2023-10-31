@@ -98,6 +98,7 @@ import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.scene.ProgressScene
 import com.hippo.ehviewer.ui.scene.navAnimated
 import com.hippo.ehviewer.ui.scene.navWithUrl
+import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.buildWindowInsets
@@ -242,71 +243,73 @@ class MainActivity : EhActivity() {
             BackHandler(drawerState.isOpen) {
                 closeDrawer()
             }
-            ModalNavigationDrawer(
-                drawerContent = {
-                    ModalDrawerSheet(
-                        modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp),
-                        windowInsets = WindowInsets(0, 0, 0, 0),
-                    ) {
-                        val scrollState = rememberScrollState()
-                        Column(
-                            modifier = Modifier.verticalScroll(scrollState).navigationBarsPadding(),
+            LocalTouchSlopProvider(3f) {
+                ModalNavigationDrawer(
+                    drawerContent = {
+                        ModalDrawerSheet(
+                            modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp),
+                            windowInsets = WindowInsets(0, 0, 0, 0),
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.sadpanda_low_poly),
-                                contentDescription = null,
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                contentScale = ContentScale.FillWidth,
-                            )
-                            navItems.forEach { (id, stringId, icon) ->
-                                NavigationDrawerItem(
-                                    label = {
-                                        Text(text = stringResource(id = stringId))
-                                    },
-                                    selected = isSelected(id),
-                                    onClick = {
-                                        closeDrawer()
-                                        onNavDestinationSelected2(id, navController)
-                                    },
-                                    modifier = Modifier.padding(horizontal = 12.dp),
-                                    icon = {
-                                        Icon(imageVector = icon, contentDescription = null)
-                                    },
+                            val scrollState = rememberScrollState()
+                            Column(
+                                modifier = Modifier.verticalScroll(scrollState).navigationBarsPadding(),
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.sadpanda_low_poly),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                    contentScale = ContentScale.FillWidth,
                                 )
+                                navItems.forEach { (id, stringId, icon) ->
+                                    NavigationDrawerItem(
+                                        label = {
+                                            Text(text = stringResource(id = stringId))
+                                        },
+                                        selected = isSelected(id),
+                                        onClick = {
+                                            closeDrawer()
+                                            onNavDestinationSelected2(id, navController)
+                                        },
+                                        modifier = Modifier.padding(horizontal = 12.dp),
+                                        icon = {
+                                            Icon(imageVector = icon, contentDescription = null)
+                                        },
+                                    )
+                                }
                             }
                         }
+                    },
+                    drawerState = drawerState,
+                    gesturesEnabled = !drawerLocked || drawerState.isOpen,
+                ) {
+                    val insets = buildWindowInsets {
+                        set(
+                            WindowInsetsCompat.Type.statusBars(),
+                            WindowInsets.statusBars,
+                        )
+                        set(
+                            WindowInsetsCompat.Type.navigationBars(),
+                            WindowInsets.navigationBars,
+                        )
+                        set(
+                            WindowInsetsCompat.Type.ime(),
+                            WindowInsets.ime,
+                        )
                     }
-                },
-                drawerState = drawerState,
-                gesturesEnabled = !drawerLocked || drawerState.isOpen,
-            ) {
-                val insets = buildWindowInsets {
-                    set(
-                        WindowInsetsCompat.Type.statusBars(),
-                        WindowInsets.statusBars,
-                    )
-                    set(
-                        WindowInsetsCompat.Type.navigationBars(),
-                        WindowInsets.navigationBars,
-                    )
-                    set(
-                        WindowInsetsCompat.Type.ime(),
-                        WindowInsets.ime,
-                    )
-                }
-                AndroidViewBinding(factory = { inflater, parent, attachToParent ->
-                    ActivityMainBinding.inflate(inflater, parent, attachToParent).apply {
-                        val navHostFragment = fragmentContainer.getFragment<NavHostFragment>()
-                        navController = navHostFragment.navController.apply {
-                            graph = navInflater.inflate(R.navigation.nav_graph).apply {
-                                check(launchPage in 0..3)
-                                setStartDestination(navItems[launchPage].first)
+                    AndroidViewBinding(factory = { inflater, parent, attachToParent ->
+                        ActivityMainBinding.inflate(inflater, parent, attachToParent).apply {
+                            val navHostFragment = fragmentContainer.getFragment<NavHostFragment>()
+                            navController = navHostFragment.navController.apply {
+                                graph = navInflater.inflate(R.navigation.nav_graph).apply {
+                                    check(launchPage in 0..3)
+                                    setStartDestination(navItems[launchPage].first)
+                                }
                             }
+                            isInitializedFlow.value = true
                         }
-                        isInitializedFlow.value = true
+                    }) {
+                        ViewCompat.dispatchApplyWindowInsets(root, insets)
                     }
-                }) {
-                    ViewCompat.dispatchApplyWindowInsets(root, insets)
                 }
             }
         }

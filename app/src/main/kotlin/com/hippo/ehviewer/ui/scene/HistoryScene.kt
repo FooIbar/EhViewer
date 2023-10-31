@@ -66,6 +66,7 @@ import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
+import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.ui.tools.rememberDialogState
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.pxToDp
@@ -133,33 +134,35 @@ class HistoryScene : BaseScene() {
                                     true
                                 },
                             )
-                            SwipeToDismiss(
-                                state = dismissState,
-                                background = {},
-                                dismissContent = {
-                                    // TODO: item delete & add animation
-                                    // Bug tracker: https://issuetracker.google.com/issues/150812265
-                                    GalleryInfoListItem(
-                                        onClick = {
-                                            navAnimated(
-                                                R.id.galleryDetailScene,
-                                                bundleOf(
-                                                    GalleryDetailScene.KEY_ACTION to GalleryDetailScene.ACTION_GALLERY_INFO,
-                                                    GalleryDetailScene.KEY_GALLERY_INFO to info,
-                                                ),
-                                            )
-                                        },
-                                        onLongClick = {
-                                            coroutineScope.launchIO {
-                                                dialogState.doGalleryInfoAction(info, context)
-                                            }
-                                        },
-                                        info = info,
-                                        modifier = Modifier.height(cardHeight),
-                                    )
-                                },
-                                directions = setOf(DismissDirection.EndToStart),
-                            )
+                            LocalTouchSlopProvider(3f) {
+                                SwipeToDismiss(
+                                    state = dismissState,
+                                    background = {},
+                                    dismissContent = {
+                                        // TODO: item delete & add animation
+                                        // Bug tracker: https://issuetracker.google.com/issues/150812265
+                                        GalleryInfoListItem(
+                                            onClick = {
+                                                navAnimated(
+                                                    R.id.galleryDetailScene,
+                                                    bundleOf(
+                                                        GalleryDetailScene.KEY_ACTION to GalleryDetailScene.ACTION_GALLERY_INFO,
+                                                        GalleryDetailScene.KEY_GALLERY_INFO to info,
+                                                    ),
+                                                )
+                                            },
+                                            onLongClick = {
+                                                coroutineScope.launchIO {
+                                                    dialogState.doGalleryInfoAction(info, context)
+                                                }
+                                            },
+                                            info = info,
+                                            modifier = Modifier.height(cardHeight),
+                                        )
+                                    },
+                                    directions = setOf(DismissDirection.EndToStart),
+                                )
+                            }
                         } else {
                             CrystalCard(
                                 modifier = Modifier
