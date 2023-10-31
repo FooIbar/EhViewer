@@ -17,46 +17,32 @@ package com.hippo.ehviewer.client.parser
 
 import com.hippo.ehviewer.client.exception.ParseException
 import com.hippo.ehviewer.util.unescapeXml
-import java.util.regex.Pattern
 
 object GalleryPageParser {
-    private val PATTERN_IMAGE_URL = Pattern.compile("<img[^>]*src=\"([^\"]+)\" style")
-    private val PATTERN_SKIP_HATH_KEY = Pattern.compile("onclick=\"return nl\\('([^)]+)'\\)")
-    private val PATTERN_ORIGIN_IMAGE_URL =
-        Pattern.compile("<a href=\"([^\"]+)fullimg.php([^\"]+)\">")
+    private val PATTERN_IMAGE_URL = Regex("<img[^>]*src=\"([^\"]+)\" style")
+    private val PATTERN_SKIP_HATH_KEY = Regex("onclick=\"return nl\\('([\\d-]+)'\\)")
+    private val PATTERN_ORIGIN_IMAGE_URL = Regex("<a href=\"([^\"]+/fullimg/[^\"]+)\">")
 
     // TODO Not sure about the size of show keys
-    private val PATTERN_SHOW_KEY = Pattern.compile("var showkey=\"([0-9a-z]+)\";")
+    private val PATTERN_SHOW_KEY = Regex("var showkey=\"([0-9a-z]+)\";")
 
     fun parse(body: String): Result {
-        var m = PATTERN_IMAGE_URL.matcher(body)
-        val imageUrl = if (m.find()) {
-            m.group(1)!!.trim().unescapeXml()
-        } else {
-            null
+        val imageUrl = PATTERN_IMAGE_URL.find(body)?.run {
+            groupValues[1].unescapeXml()
         }
-        m = PATTERN_SKIP_HATH_KEY.matcher(body)
-        val skipHathKey = if (m.find()) {
-            m.group(1)!!.trim().unescapeXml()
-        } else {
-            null
+        val skipHathKey = PATTERN_SKIP_HATH_KEY.find(body)?.run {
+            groupValues[1]
         }
-        m = PATTERN_ORIGIN_IMAGE_URL.matcher(body)
-        val originImageUrl = if (m.find()) {
-            m.group(1)!!.unescapeXml() + "fullimg.php" + m.group(2)!!.unescapeXml()
-        } else {
-            null
+        val originImageUrl = PATTERN_ORIGIN_IMAGE_URL.find(body)?.run {
+            groupValues[1].unescapeXml()
         }
-        m = PATTERN_SHOW_KEY.matcher(body)
-        val showKey = if (m.find()) {
-            m.group(1)
-        } else {
-            null
+        val showKey = PATTERN_SHOW_KEY.find(body)?.run {
+            groupValues[1]
         }
-        return if (!imageUrl.isNullOrEmpty() && !showKey.isNullOrEmpty()) {
+        return if (!imageUrl.isNullOrEmpty()) {
             Result(imageUrl, skipHathKey, originImageUrl, showKey)
         } else {
-            throw ParseException("Parse image url and show error")
+            throw ParseException("Parse image url error")
         }
     }
 
@@ -64,6 +50,6 @@ object GalleryPageParser {
         val imageUrl: String,
         val skipHathKey: String?,
         val originImageUrl: String?,
-        val showKey: String,
+        val showKey: String?,
     )
 }

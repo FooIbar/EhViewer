@@ -34,7 +34,6 @@ import com.hippo.ehviewer.client.parser.GalleryApiParser
 import com.hippo.ehviewer.client.parser.GalleryDetailParser
 import com.hippo.ehviewer.client.parser.GalleryListParser
 import com.hippo.ehviewer.client.parser.GalleryNotAvailableParser
-import com.hippo.ehviewer.client.parser.GalleryPageApiParser
 import com.hippo.ehviewer.client.parser.GalleryPageParser
 import com.hippo.ehviewer.client.parser.GalleryTokenApiParser
 import com.hippo.ehviewer.client.parser.HomeParser
@@ -366,7 +365,7 @@ object EhEngine {
         pToken: String,
         showKey: String?,
         previousPToken: String?,
-    ): GalleryPageApiParser.Result {
+    ): GalleryPageParser.Result {
         val referer = if (index > 0 && previousPToken != null) EhUrl.getPageUrl(gid, index - 1, previousPToken) else null
         return ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
             jsonBody {
@@ -376,7 +375,7 @@ object EhEngine {
                 put("imgkey", pToken)
                 put("showkey", showKey)
             }
-        }.executeAndParsingWith(GalleryPageApiParser::parse)
+        }.executeAndParsingWith { GalleryPageParser.parse(filterNot { it == '\\' }) }
     }
 
     suspend fun rateGallery(
