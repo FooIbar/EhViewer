@@ -278,7 +278,7 @@ class MainActivity : EhActivity() {
                     }
                 },
                 drawerState = drawerState,
-                gesturesEnabled = !drawerLocked,
+                gesturesEnabled = !drawerLocked || drawerState.isOpen,
             ) {
                 val insets = buildWindowInsets {
                     set(
