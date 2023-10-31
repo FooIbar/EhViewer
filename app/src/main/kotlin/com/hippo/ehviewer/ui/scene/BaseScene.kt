@@ -72,7 +72,7 @@ abstract class BaseScene : Fragment() {
         mainActivity?.showTip(id, length)
     }
 
-    open val showLeftDrawer = false
+    open val enableDrawerGestures = false
 
     private fun createDrawerView(savedInstanceState: Bundle?): View? {
         drawerView = onCreateDrawerView(layoutInflater)
@@ -108,7 +108,7 @@ abstract class BaseScene : Fragment() {
         view.background = requireActivity().theme.resolveDrawable(android.R.attr.windowBackground)
 
         // Update left drawer locked state
-        if (showLeftDrawer) {
+        if (enableDrawerGestures) {
             unlockDrawer()
         } else {
             lockDrawer()

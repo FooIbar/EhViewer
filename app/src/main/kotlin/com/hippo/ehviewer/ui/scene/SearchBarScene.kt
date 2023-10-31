@@ -73,7 +73,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
     protected abstract val recyclerView: View
     protected abstract val contentView: View
 
-    override val showLeftDrawer = true
+    override val enableDrawerGestures = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = SceneSearchbarBinding.inflate(inflater, container, false)

@@ -72,7 +72,8 @@ import eu.kanade.tachiyomi.util.system.pxToDp
 import kotlinx.coroutines.delay
 
 class HistoryScene : BaseScene() {
-    override val showLeftDrawer = true
+    // Disabled for breaking swipe-to-dismiss
+    override val enableDrawerGestures = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = ComposeWithViewLifecycle().apply {
         setMD3Content {
