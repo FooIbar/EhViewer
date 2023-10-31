@@ -16,8 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
@@ -132,7 +132,7 @@ class SearchLayout @JvmOverloads constructor(
                         }
                     }
                 }
-                SecondaryTabRow(
+                TabRow(
                     selectedTabIndex = if (vm.isNormalMode) 0 else 1,
                     divider = {},
                 ) {
