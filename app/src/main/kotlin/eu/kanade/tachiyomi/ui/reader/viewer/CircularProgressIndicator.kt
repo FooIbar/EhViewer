@@ -46,7 +46,7 @@ fun CombinedCircularProgressIndicator(progress: Float) {
                 label = "rotation",
             )
             CircularProgressIndicator(
-                progress = { animatedProgress },
+                progress = animatedProgress,
                 modifier = Modifier.rotate(rotation),
             )
         }
