@@ -104,8 +104,6 @@ import eu.kanade.tachiyomi.util.view.setTooltip
 import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
 import java.io.File
 import java.io.IOException
-import java.util.concurrent.atomic.AtomicReference
-import kotlin.coroutines.Continuation
 import kotlin.math.abs
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.drop
@@ -217,23 +215,26 @@ class ReaderActivity : EhActivity() {
                         Toast.makeText(this, R.string.error_reading_failed, Toast.LENGTH_SHORT).show()
                     }
 
-                    val continuation: AtomicReference<Continuation<String>?> = AtomicReference(null)
                     mGalleryProvider = ArchivePageLoader(
                         appCtx,
                         mUri!!,
                     ) { invalidator ->
-                        dialogState.awaitInputText(
-                            title = getString(R.string.archive_need_passwd),
-                            hint = getString(R.string.archive_passwd),
-                        ) {
-                            if (it.isBlank()) {
-                                getString(R.string.passwd_cannot_be_empty)
-                            } else if (invalidator(it)) {
-                                null
-                            } else {
-                                getString(R.string.passwd_wrong)
+                        runCatching {
+                            dialogState.awaitInputText(
+                                title = getString(R.string.archive_need_passwd),
+                                hint = getString(R.string.archive_passwd),
+                            ) {
+                                if (it.isBlank()) {
+                                    getString(R.string.passwd_cannot_be_empty)
+                                } else if (invalidator(it)) {
+                                    null
+                                } else {
+                                    getString(R.string.passwd_wrong)
+                                }
                             }
-                        }
+                        }.onFailure {
+                            finish()
+                        }.getOrThrow()
                     }
                 }
             } else {
