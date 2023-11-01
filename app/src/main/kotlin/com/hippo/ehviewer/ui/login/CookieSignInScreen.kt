@@ -59,7 +59,7 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.ui.FINISH_ROUTE_NAME
 import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.ui.SELECT_SITE_ROUTE_NAME
-import com.hippo.ehviewer.ui.tools.rememberDialogState
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.ExceptionUtils
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
@@ -87,8 +87,7 @@ fun CookieSignInScene(windowSizeClass: WindowSizeClass) {
 
     var signInJob by remember { mutableStateOf<Job?>(null) }
 
-    val dialogState = rememberDialogState()
-    dialogState.Intercept()
+    val dialogState = LocalDialogState.current
 
     val noCookies = stringResource(R.string.from_clipboard_error)
 

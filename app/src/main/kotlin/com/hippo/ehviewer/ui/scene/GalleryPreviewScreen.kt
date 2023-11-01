@@ -60,7 +60,6 @@ import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
-import com.hippo.ehviewer.ui.tools.rememberDialogState
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
@@ -78,8 +77,6 @@ class GalleryPreviewScreen : Fragment() {
             val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
             val columnCount = calculateSuitableSpanCount()
             val state = rememberLazyGridState()
-            val dialogState = rememberDialogState()
-            dialogState.Intercept()
             val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
             val pages = galleryDetail.pages
             val pgSize = galleryDetail.previewList.size

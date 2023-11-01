@@ -31,6 +31,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -318,7 +319,4 @@ class DialogState {
 
 private val IconWithTextCorner = RoundedCornerShape(8.dp)
 
-@Composable
-fun rememberDialogState(): DialogState {
-    return remember { DialogState() }
-}
+val LocalDialogState = compositionLocalOf<DialogState> { error("CompositionLocal LocalDialogState not present!") }

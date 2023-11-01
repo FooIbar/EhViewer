@@ -38,8 +38,8 @@ import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.ui.LocalNavController
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
-import com.hippo.ehviewer.ui.tools.rememberDialogState
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ReadableTime
 import java.io.File
@@ -58,8 +58,7 @@ fun AdvancedScreen() {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
     fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
-    val dialogState = rememberDialogState()
-    dialogState.Intercept()
+    val dialogState = LocalDialogState.current
     Scaffold(
         topBar = {
             TopAppBar(

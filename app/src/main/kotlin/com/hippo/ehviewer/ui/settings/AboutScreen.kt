@@ -34,8 +34,8 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.ui.LICENSE_SCREEN
 import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.ui.tools.DialogState
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
-import com.hippo.ehviewer.ui.tools.rememberDialogState
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.updater.Release
@@ -66,8 +66,7 @@ fun AboutScreen() {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    val dialogState = rememberDialogState()
-    dialogState.Intercept()
+    val dialogState = LocalDialogState.current
     fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
     Scaffold(
         topBar = {

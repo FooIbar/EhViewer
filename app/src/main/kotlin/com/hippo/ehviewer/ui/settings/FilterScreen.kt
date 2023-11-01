@@ -49,7 +49,7 @@ import com.hippo.ehviewer.databinding.DialogAddFilterBinding
 import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.tools.Deferred
-import com.hippo.ehviewer.ui.tools.rememberDialogState
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -63,8 +63,7 @@ fun FilterScreen() {
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val allFilterMap = remember { scope.async { EhFilter.filters.await().groupByToObserved { it.mode } } }
-    val dialogState = rememberDialogState()
-    dialogState.Intercept()
+    val dialogState = LocalDialogState.current
     class AddFilterDialogHelper(private val dialog: AlertDialog) : View.OnClickListener {
         private val mArray = dialog.context.resources.getStringArray(R.array.filter_entries)
         private val binding = DialogAddFilterBinding.bind(dialog.findViewById(R.id.base)!!)
