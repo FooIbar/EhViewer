@@ -79,7 +79,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -715,9 +714,8 @@ class GalleryDetailScene : BaseScene() {
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
         ) {
-            val favored by produceState(initialValue = false) {
-                value = galleryDetail.favoriteSlot != NOT_FAVORITED
-                FavouriteStatusRouter.stateFlow(galleryDetail.gid).collect { value = it != NOT_FAVORITED }
+            val favored by FavouriteStatusRouter.collectAsState(galleryDetail) {
+                it != NOT_FAVORITED
             }
             val favButtonText = if (favored) {
                 galleryDetail.favoriteName ?: stringResource(id = R.string.local_favorites)
