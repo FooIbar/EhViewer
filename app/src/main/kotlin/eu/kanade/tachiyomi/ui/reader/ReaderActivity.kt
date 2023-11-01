@@ -48,7 +48,6 @@ import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.activity.viewModels
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -73,8 +72,8 @@ import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.ui.EhActivity
-import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.setMD3Content
+import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FileUtils
@@ -107,18 +106,13 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
 import kotlin.math.abs
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
-import kotlinx.coroutines.suspendCancellableCoroutine
 import splitties.init.appCtx
 import splitties.systemservices.clipboardManager
 
@@ -140,6 +134,7 @@ class ReaderActivity : EhActivity() {
     private var mPage: Int = 0
     private var mCacheFileName: String? = null
     private val vm: GalleryModel by viewModels()
+    private val dialogState = DialogState()
 
     /**
      * Whether the menu is currently visible.
@@ -178,9 +173,6 @@ class ReaderActivity : EhActivity() {
     var mGalleryProvider by lazyMut { vm::galleryProvider }
     private var mCurrentIndex: Int = 0
     private var mSavingPage = -1
-    private lateinit var builder: EditTextDialogBuilder
-    private var dialogShown = false
-    private lateinit var dialog: AlertDialog
     private var requestStoragePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { result ->
@@ -229,39 +221,20 @@ class ReaderActivity : EhActivity() {
                     mGalleryProvider = ArchivePageLoader(
                         appCtx,
                         mUri!!,
-                        flow {
-                            if (!dialogShown) {
-                                withUIContext {
-                                    dialogShown = true
-                                    dialog.run {
-                                        show()
-                                        getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                                            val passwd = builder.text
-                                            if (passwd.isEmpty()) {
-                                                builder.setError(getString(R.string.passwd_cannot_be_empty))
-                                            } else {
-                                                continuation.getAndSet(null)?.resume(passwd)
-                                            }
-                                        }
-                                        setOnCancelListener {
-                                            finish()
-                                        }
-                                    }
-                                }
+                    ) { invalidator ->
+                        dialogState.awaitInputText(
+                            title = getString(R.string.archive_need_passwd),
+                            hint = getString(R.string.archive_passwd),
+                        ) {
+                            if (it.isBlank()) {
+                                getString(R.string.passwd_cannot_be_empty)
+                            } else if (invalidator(it)) {
+                                null
+                            } else {
+                                getString(R.string.passwd_wrong)
                             }
-                            while (true) {
-                                currentCoroutineContext().ensureActive()
-                                val r = suspendCancellableCoroutine {
-                                    continuation.set(it)
-                                    it.invokeOnCancellation { dialog.dismiss() }
-                                }
-                                emit(r)
-                                withUIContext {
-                                    builder.setError(getString(R.string.passwd_wrong))
-                                }
-                            }
-                        },
-                    )
+                        }
+                    }
                 }
             } else {
                 Toast.makeText(this, "Archives are not supported before Android P", Toast.LENGTH_LONG).show()
@@ -337,13 +310,10 @@ class ReaderActivity : EhActivity() {
         }
         buildProvider()
         binding = ReaderActivityBinding.inflate(layoutInflater)
+        binding.dialogStub.setMD3Content {
+            dialogState.Intercept()
+        }
         setContentView(binding.root)
-        builder = EditTextDialogBuilder(this, null, getString(R.string.archive_passwd))
-        builder.setTitle(getString(R.string.archive_need_passwd))
-        builder.setPositiveButton(getString(android.R.string.ok), null)
-        dialog = builder.create()
-        dialog.setCanceledOnTouchOutside(false)
-
         mGalleryProvider.let {
             if (it == null) {
                 finish()
@@ -361,8 +331,6 @@ class ReaderActivity : EhActivity() {
 
     fun setGallery() {
         if (mGalleryProvider?.isReady != true) return
-        // TODO: Not well place to call it
-        dialog.dismiss()
 
         // Get start page
         if (mCurrentIndex == 0) {
