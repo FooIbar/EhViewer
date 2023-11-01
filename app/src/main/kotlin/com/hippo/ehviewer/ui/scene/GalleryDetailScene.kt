@@ -21,10 +21,8 @@ import android.app.Activity
 import android.app.Dialog
 import android.app.DownloadManager
 import android.content.DialogInterface
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.LayoutInflater
@@ -32,7 +30,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -96,7 +93,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
-import androidx.core.content.ContextCompat
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -170,7 +166,10 @@ import com.hippo.ehviewer.util.IntList
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.getParcelableCompat
+import com.hippo.ehviewer.util.isAtLeastQ
+import com.hippo.ehviewer.util.requestPermission
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
@@ -197,20 +196,6 @@ class GalleryDetailScene : BaseScene() {
     private var getDetailError by mutableStateOf("")
 
     private var mTorrentList: TorrentResult? = null
-    private var requestStoragePermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { result: Boolean ->
-        if (result && composeBindingGD != null) {
-            val helper = TorrentListDialogHelper()
-            val binding = DialogTorrentListBinding.inflate(layoutInflater)
-            val dialog: Dialog = BaseDialogBuilder(requireActivity())
-                .setTitle(R.string.torrents)
-                .setView(binding.root)
-                .setOnDismissListener(helper)
-                .show()
-            helper.setDialog(dialog, binding, composeBindingGD!!.torrentUrl)
-        }
-    }
     private var mArchiveFormParamOr: String? = null
     private var mArchiveList: List<ArchiveParser.Archive>? = null
     private var mCurrentFunds: HomeParser.Funds? = null
@@ -1113,21 +1098,20 @@ class GalleryDetailScene : BaseScene() {
 
     private fun showTorrentDialog() {
         val galleryDetail = composeBindingGD ?: return
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q && ContextCompat.checkSelfPermission(
-                requireActivity(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestStoragePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        } else {
-            val helper = TorrentListDialogHelper()
-            val binding = DialogTorrentListBinding.inflate(layoutInflater)
-            val dialog: Dialog = BaseDialogBuilder(requireContext())
-                .setTitle(R.string.torrents)
-                .setView(binding.root)
-                .setOnDismissListener(helper)
-                .show()
-            helper.setDialog(dialog, binding, galleryDetail.torrentUrl)
+        viewLifecycleOwner.lifecycleScope.launchUI {
+            val granted = isAtLeastQ || requireContext().requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            if (granted) {
+                val helper = TorrentListDialogHelper()
+                val binding = DialogTorrentListBinding.inflate(layoutInflater)
+                val dialog: Dialog = BaseDialogBuilder(requireContext())
+                    .setTitle(R.string.torrents)
+                    .setView(binding.root)
+                    .setOnDismissListener(helper)
+                    .show()
+                helper.setDialog(dialog, binding, galleryDetail.torrentUrl)
+            } else {
+                showTip(getString(R.string.permission_denied), LENGTH_SHORT)
+            }
         }
     }
 

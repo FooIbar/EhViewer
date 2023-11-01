@@ -597,6 +597,7 @@
     <string name="update_frequency_monthly">Monthly</string>
     <string name="new_version_available">New version available!</string>
     <string name="already_latest_version">Already the latest version</string>
+    <string name="permission_denied">Permission denied</string>
     <!-- Tachiyomi Reader Start-->
     <string name="action_settings">Settings</string>
     <string name="pref_rotation_type">Default rotation type</string>
