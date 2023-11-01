@@ -67,11 +67,8 @@ fun GalleryInfoListItem(
                     modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
                 )
             }
-            val showFav by produceState(false, info.gid) {
-                value = info.favoriteSlot != NOT_FAVORITED && !isInFavScene
-                FavouriteStatusRouter.stateFlow(info.gid).collect {
-                    value = it != NOT_FAVORITED && !isInFavScene
-                }
+            val showFav by FavouriteStatusRouter.collectAsState(info) {
+                it != NOT_FAVORITED && !isInFavScene
             }
             ConstraintLayout(modifier = Modifier.padding(8.dp, 4.dp).fillMaxSize()) {
                 val (titleRef, uploaderRef, ratingRef, categoryRef, postedRef, favRef, iconsRef) = createRefs()
