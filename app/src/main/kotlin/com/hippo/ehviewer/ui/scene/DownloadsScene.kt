@@ -205,6 +205,8 @@ class DownloadsScene :
                     ?: DownloadManager.allInfoList.also { mLabel = null }
             }.mapNotNull { it.takeIf(::filter)?.copy(downloadInfo = it.downloadInfo.copy()) }
             submitList(list) {
+                // This may be called after view destroyed
+                _binding ?: return@submitList
                 if (mGid != -1L) {
                     val position = list.indexOfFirst { it.gid == mGid }
                     if (position != -1) {
