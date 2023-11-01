@@ -34,6 +34,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +50,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 interface DialogScope<R> {
@@ -106,17 +108,24 @@ class DialogState {
         title: String? = null,
         hint: String? = null,
         isNumber: Boolean = false,
-        invalidator: ((String) -> String?)? = null,
+        invalidator: (suspend (String) -> String?)? = null,
     ): String {
         return dialog { cont ->
+            val coroutineScope = rememberCoroutineScope()
             var state by remember(cont) { mutableStateOf(initial) }
             var error by remember(cont) { mutableStateOf<String?>(null) }
             AlertDialog(
                 onDismissRequest = { cont.cancel() },
                 confirmButton = {
                     TextButton(onClick = {
-                        error = invalidator?.invoke(state)
-                        error ?: cont.resume(state)
+                        if (invalidator == null) {
+                            cont.resume(state)
+                        } else {
+                            coroutineScope.launch {
+                                error = invalidator.invoke(state)
+                                error ?: cont.resume(state)
+                            }
+                        }
                     }) {
                         Text(text = stringResource(id = android.R.string.ok))
                     }

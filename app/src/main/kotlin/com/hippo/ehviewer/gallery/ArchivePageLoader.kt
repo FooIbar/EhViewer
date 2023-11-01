@@ -43,14 +43,16 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import moe.tarsin.coroutines.NamedMutex
 import moe.tarsin.coroutines.withLock
 
-class ArchivePageLoader(context: Context, private val uri: Uri, passwdFlow: Flow<String>) : PageLoader2(), CoroutineScope {
+typealias PasswdInvalidator = (String) -> Boolean
+typealias PasswdProvider = suspend (PasswdInvalidator) -> String
+
+class ArchivePageLoader(context: Context, private val uri: Uri, passwdProvider: PasswdProvider) : PageLoader2(), CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
     private lateinit var pfd: ParcelFileDescriptor
     private val hostJob = launch(start = CoroutineStart.LAZY) {
@@ -65,12 +67,8 @@ class ArchivePageLoader(context: Context, private val uri: Uri, passwdFlow: Flow
                 it ?: return@forEach
                 if (providePassword(it)) return@launch
             }
-            passwdFlow.collect {
-                if (providePassword(it)) {
-                    archivePasswds = archivePasswds?.toMutableSet()?.apply { add(it) } ?: setOf(it)
-                    currentCoroutineContext().cancel()
-                }
-            }
+            val toAdd = passwdProvider { providePassword(it) }
+            archivePasswds = archivePasswds?.toMutableSet()?.apply { add(toAdd) } ?: setOf(toAdd)
         }
     }
 
