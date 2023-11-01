@@ -94,7 +94,7 @@ compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding" }
 cronet-api = "org.chromium.net:cronet-api:113.5672.61"
 cronet-gms = "com.google.android.gms:play-services-cronet:18.0.1"
 
-desugar = "com.android.tools:desugar_jdk_libs:2.0.3"
+desugar = "com.android.tools:desugar_jdk_libs_nio:2.0.3"
 
 directionalviewpager = "com.github.tachiyomiorg:DirectionalViewPager:1.0.0"
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
