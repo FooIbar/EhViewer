@@ -533,6 +533,7 @@
     <string name="update_frequency_monthly">每月</string>
     <string name="new_version_available">有新版本！</string>
     <string name="already_latest_version">已是最新版本</string>
+    <string name="permission_denied">权限被拒</string>
     <!-- Tachiyomi Reader Start-->
     <string name="action_settings">设置</string>
     <string name="action_retry">重试</string>
