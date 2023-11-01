@@ -68,7 +68,7 @@ import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.ui.SELECT_SITE_ROUTE_NAME
 import com.hippo.ehviewer.ui.WEBVIEW_SIGN_IN_ROUTE_NAME
 import com.hippo.ehviewer.ui.openBrowser
-import com.hippo.ehviewer.ui.tools.rememberDialogState
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.ExceptionUtils
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
@@ -88,9 +88,7 @@ fun SignInScreen(windowSizeClass: WindowSizeClass) {
     var passwordHidden by rememberSaveable { mutableStateOf(true) }
     val context = LocalContext.current
     var signInJob by remember { mutableStateOf<Job?>(null) }
-
-    val dialogState = rememberDialogState()
-    dialogState.Intercept()
+    val dialogState = LocalDialogState.current
 
     BackHandler {
         (context as Activity).moveTaskToBack(true)

@@ -24,8 +24,8 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.ui.isAuthenticationSupported
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
-import com.hippo.ehviewer.ui.tools.rememberDialogState
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,8 +37,7 @@ fun PrivacyScreen() {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
     fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
-    val dialogState = rememberDialogState()
-    dialogState.Intercept()
+    val dialogState = LocalDialogState.current
     Scaffold(
         topBar = {
             TopAppBar(

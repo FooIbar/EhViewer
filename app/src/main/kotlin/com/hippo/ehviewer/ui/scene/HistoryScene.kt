@@ -66,8 +66,8 @@ import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
-import com.hippo.ehviewer.ui.tools.rememberDialogState
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.pxToDp
 import kotlinx.coroutines.delay
@@ -78,8 +78,7 @@ class HistoryScene : BaseScene() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = ComposeWithViewLifecycle().apply {
         setMD3Content {
-            val dialogState = rememberDialogState()
-            dialogState.Intercept()
+            val dialogState = LocalDialogState.current
             val coroutineScope = rememberCoroutineScope()
             val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
             val historyData = remember { Pager(PagingConfig(20, jumpThreshold = 40)) { EhDB.historyLazyList }.flow.cachedIn(lifecycleScope) }.collectAsLazyPagingItems()
