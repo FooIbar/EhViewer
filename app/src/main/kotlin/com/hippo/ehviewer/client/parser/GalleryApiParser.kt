@@ -33,7 +33,7 @@ object GalleryApiParser {
                 titleJpn = item.titleJpn.unescapeXml()
                 category = getCategory(item.category)
                 thumbKey = getThumbKey(handleThumbUrlResolution(item.thumb)!!)
-                uploader = item.uploader.unescapeXml()
+                uploader = item.uploader?.unescapeXml()
                 posted = ParserUtils.formatDate(item.posted * 1000)
                 rating = item.rating
                 simpleTags = item.tags
@@ -54,7 +54,8 @@ object GalleryApiParser {
         val titleJpn: String,
         val category: String,
         val thumb: String,
-        val uploader: String,
+        // Null in some old galleries
+        val uploader: String?,
         val posted: Long,
         @SerialName("filecount")
         val pages: Int,
