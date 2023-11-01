@@ -24,7 +24,7 @@ set(BUILD_TESTING 0)
 
 FetchContent_Declare(liblzma
         GIT_REPOSITORY https://github.com/FooIbar/xz.git
-        GIT_TAG v5.4.4
+        GIT_TAG v5.4.5
         )
 
 FetchContent_MakeAvailable(liblzma)
