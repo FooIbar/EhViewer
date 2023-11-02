@@ -244,7 +244,7 @@ class MainActivity : EhActivity() {
             BackHandler(drawerState.isOpen) {
                 closeDrawer()
             }
-            LocalTouchSlopProvider(3f) {
+            LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
                 ModalNavigationDrawer(
                     drawerContent = {
                         ModalDrawerSheet(
