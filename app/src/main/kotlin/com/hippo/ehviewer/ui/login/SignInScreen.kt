@@ -32,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -62,22 +61,25 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.ui.COOKIE_SIGN_IN_ROUTE_NAME
-import com.hippo.ehviewer.ui.FINISH_ROUTE_NAME
-import com.hippo.ehviewer.ui.LocalNavController
-import com.hippo.ehviewer.ui.SELECT_SITE_ROUTE_NAME
-import com.hippo.ehviewer.ui.WEBVIEW_SIGN_IN_ROUTE_NAME
+import com.hippo.ehviewer.ui.destinations.CookieSignInSceneDestination
+import com.hippo.ehviewer.ui.destinations.FinishDestination
+import com.hippo.ehviewer.ui.destinations.SelectSiteScreenDestination
+import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.util.ExceptionUtils
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Job
 
+@Destination
 @Composable
-fun SignInScreen(windowSizeClass: WindowSizeClass) {
-    val navController = LocalNavController.current
+fun SignInScreen(navigator: DestinationsNavigator) {
+    val windowSizeClass = LocalWindowSizeClass.current
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     var isProgressIndicatorVisible by rememberSaveable { mutableStateOf(false) }
@@ -134,7 +136,7 @@ fun SignInScreen(windowSizeClass: WindowSizeClass) {
                 }
             }.onSuccess {
                 val canEx = withNonCancellableContext { postLogin() }
-                withUIContext { navController.navigate(if (canEx) SELECT_SITE_ROUTE_NAME else FINISH_ROUTE_NAME) }
+                withUIContext { navigator.navigate(if (canEx) SelectSiteScreenDestination else FinishDestination) }
             }
         }
     }
@@ -216,7 +218,7 @@ fun SignInScreen(windowSizeClass: WindowSizeClass) {
                     }
                     Row(modifier = Modifier.padding(horizontal = 4.dp)) {
                         TextButton(
-                            onClick = { navController.navigate(WEBVIEW_SIGN_IN_ROUTE_NAME) },
+                            onClick = { navigator.navigate(WebViewSignInScreenDestination) },
                             modifier = Modifier.padding(horizontal = 8.dp),
                         ) {
                             Text(
@@ -230,7 +232,7 @@ fun SignInScreen(windowSizeClass: WindowSizeClass) {
                             )
                         }
                         TextButton(
-                            onClick = { navController.navigate(COOKIE_SIGN_IN_ROUTE_NAME) },
+                            onClick = { navigator.navigate(CookieSignInSceneDestination) },
                             modifier = Modifier.padding(horizontal = 8.dp),
                         ) {
                             Text(
@@ -248,7 +250,7 @@ fun SignInScreen(windowSizeClass: WindowSizeClass) {
                         onClick = {
                             Settings.needSignIn = false
                             Settings.gallerySite = EhUrl.SITE_E
-                            navController.navigate(FINISH_ROUTE_NAME)
+                            navigator.navigate(FinishDestination)
                         },
                     ) {
                         Text(
@@ -312,7 +314,7 @@ fun SignInScreen(windowSizeClass: WindowSizeClass) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.Center) {
                             TextButton(
-                                onClick = { navController.navigate(COOKIE_SIGN_IN_ROUTE_NAME) },
+                                onClick = { navigator.navigate(CookieSignInSceneDestination) },
                                 modifier = Modifier.padding(horizontal = 4.dp),
                             ) {
                                 Text(
@@ -326,7 +328,7 @@ fun SignInScreen(windowSizeClass: WindowSizeClass) {
                                 )
                             }
                             TextButton(
-                                onClick = { navController.navigate(WEBVIEW_SIGN_IN_ROUTE_NAME) },
+                                onClick = { navigator.navigate(WebViewSignInScreenDestination) },
                                 modifier = Modifier.padding(horizontal = 4.dp),
                             ) {
                                 Text(
@@ -344,7 +346,7 @@ fun SignInScreen(windowSizeClass: WindowSizeClass) {
                             onClick = {
                                 Settings.needSignIn = false
                                 Settings.gallerySite = EhUrl.SITE_E
-                                navController.navigate(FINISH_ROUTE_NAME)
+                                navigator.navigate(FinishDestination)
                             },
                             modifier = Modifier.padding(horizontal = 4.dp),
                         ) {

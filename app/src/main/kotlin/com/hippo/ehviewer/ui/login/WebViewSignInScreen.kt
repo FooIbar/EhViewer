@@ -14,18 +14,19 @@ import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.ui.FINISH_ROUTE_NAME
-import com.hippo.ehviewer.ui.LocalNavController
-import com.hippo.ehviewer.ui.SELECT_SITE_ROUTE_NAME
+import com.hippo.ehviewer.ui.destinations.FinishDestination
+import com.hippo.ehviewer.ui.destinations.SelectSiteScreenDestination
 import com.hippo.ehviewer.util.setDefaultSettings
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
+@Destination
 @Composable
-fun WebViewSignInScreen() {
-    val navController = LocalNavController.current
+fun WebViewSignInScreen(navigator: DestinationsNavigator) {
     val coroutineScope = rememberCoroutineScope()
     val state = rememberWebViewState(url = EhUrl.URL_SIGN_IN)
     val client = remember {
@@ -49,7 +50,7 @@ fun WebViewSignInScreen() {
                     present = true
                     coroutineScope.launchIO {
                         val canEx = withNonCancellableContext { postLogin() }
-                        withUIContext { navController.navigate(if (canEx) SELECT_SITE_ROUTE_NAME else FINISH_ROUTE_NAME) }
+                        withUIContext { navigator.navigate(if (canEx) SelectSiteScreenDestination else FinishDestination) }
                     }
                 }
             }

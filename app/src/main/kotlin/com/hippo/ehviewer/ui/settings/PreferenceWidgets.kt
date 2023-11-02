@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import arrow.atomic.Atomic
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.ui.LocalNavController
+import com.hippo.ehviewer.ui.destinations.DirectionDestination
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.settings.PreferenceTokens.PreferenceTextPadding
 import com.jamal.composeprefs3.ui.prefs.DropDownPref
@@ -50,6 +50,7 @@ import com.jamal.composeprefs3.ui.prefs.SliderPref
 import com.jamal.composeprefs3.ui.prefs.SpannedTextPref
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.jamal.composeprefs3.ui.prefs.TextPref
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
@@ -66,10 +67,14 @@ object PreferenceTokens {
 }
 
 @Composable
-fun PreferenceHeader(icon: Painter, @StringRes title: Int, childRouteName: String) {
-    val navController = LocalNavController.current
+fun PreferenceHeader(
+    icon: Painter,
+    @StringRes title: Int,
+    childRoute: DirectionDestination,
+    navigator: DestinationsNavigator,
+) {
     Row(
-        modifier = Modifier.clickable { navController.navigate(childRouteName) }.fillMaxWidth().height(PreferenceTokens.PreferenceHeaderHeight),
+        modifier = Modifier.clickable { navigator.navigate(childRoute) }.fillMaxWidth().height(PreferenceTokens.PreferenceHeaderHeight),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Spacer(modifier = Modifier.size(PreferenceTokens.PreferenceIconPadding))
@@ -80,7 +85,17 @@ fun PreferenceHeader(icon: Painter, @StringRes title: Int, childRouteName: Strin
 }
 
 @Composable
-fun PreferenceHeader(icon: ImageVector, @StringRes title: Int, childRouteName: String) = PreferenceHeader(icon = rememberVectorPainter(image = icon), title = title, childRouteName = childRouteName)
+fun PreferenceHeader(
+    icon: ImageVector,
+    @StringRes title: Int,
+    childRoute: DirectionDestination,
+    navigator: DestinationsNavigator,
+) = PreferenceHeader(
+    icon = rememberVectorPainter(image = icon),
+    title = title,
+    childRoute = childRoute,
+    navigator = navigator,
+)
 
 @Composable
 fun Preference(title: String, summary: String? = null, onClick: () -> Unit = {}) {

@@ -21,24 +21,27 @@ import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.SadPanda
-import com.hippo.ehviewer.ui.ABOUT_SETTINGS_SCREEN
-import com.hippo.ehviewer.ui.ADVANCED_SETTINGS_SCREEN
-import com.hippo.ehviewer.ui.DOWNLOAD_SETTINGS_SCREEN
-import com.hippo.ehviewer.ui.EH_SETTINGS_SCREEN
-import com.hippo.ehviewer.ui.FINISH_ROUTE_NAME
-import com.hippo.ehviewer.ui.LocalNavController
-import com.hippo.ehviewer.ui.PRIVACY_SETTINGS_SCREEN
+import com.hippo.ehviewer.ui.destinations.AboutScreenDestination
+import com.hippo.ehviewer.ui.destinations.AdvancedScreenDestination
+import com.hippo.ehviewer.ui.destinations.DownloadScreenDestination
+import com.hippo.ehviewer.ui.destinations.EhScreenDestination
+import com.hippo.ehviewer.ui.destinations.FinishDestination
+import com.hippo.ehviewer.ui.destinations.PrivacyScreenDestination
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootNavGraph
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
+@RootNavGraph(start = true)
+@Destination
 @Composable
-fun BaseScreen() {
-    val navController = LocalNavController.current
+fun BaseScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.settings)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigate(FINISH_ROUTE_NAME) }) {
+                    IconButton(onClick = { navigator.navigate(FinishDestination) }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },
@@ -50,27 +53,32 @@ fun BaseScreen() {
             PreferenceHeader(
                 icon = EhIcons.Default.SadPanda,
                 title = R.string.settings_eh,
-                childRouteName = EH_SETTINGS_SCREEN,
+                childRoute = EhScreenDestination,
+                navigator = navigator,
             )
             PreferenceHeader(
                 icon = Icons.Default.Download,
                 title = R.string.settings_download,
-                childRouteName = DOWNLOAD_SETTINGS_SCREEN,
+                childRoute = DownloadScreenDestination,
+                navigator = navigator,
             )
             PreferenceHeader(
                 icon = Icons.Default.Security,
                 title = R.string.settings_privacy,
-                childRouteName = PRIVACY_SETTINGS_SCREEN,
+                childRoute = PrivacyScreenDestination,
+                navigator = navigator,
             )
             PreferenceHeader(
                 icon = Icons.Default.Adb,
                 title = R.string.settings_advanced,
-                childRouteName = ADVANCED_SETTINGS_SCREEN,
+                childRoute = AdvancedScreenDestination,
+                navigator = navigator,
             )
             PreferenceHeader(
                 icon = Icons.Default.Info,
                 title = R.string.settings_about,
-                childRouteName = ABOUT_SETTINGS_SCREEN,
+                childRoute = AboutScreenDestination,
+                navigator = navigator,
             )
         }
     }

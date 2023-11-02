@@ -46,19 +46,20 @@ import com.hippo.ehviewer.client.EhFilter.trigger
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.databinding.DialogAddFilterBinding
-import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.groupByToObserved
 
+@Destination
 @Composable
-fun FilterScreen() {
-    val navController = LocalNavController.current
+fun FilterScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -112,7 +113,7 @@ fun FilterScreen() {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.filter)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },

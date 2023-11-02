@@ -25,14 +25,15 @@ import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhUrl
-import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.util.setDefaultSettings
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 private const val APPLY_JS = "javascript:(function(){var apply = document.getElementById(\"apply\").children[0];apply.click();})();"
 
+@Destination
 @Composable
-fun UConfigScreen() {
-    val navController = LocalNavController.current
+fun UConfigScreen(navigator: DestinationsNavigator) {
     val url = EhUrl.uConfigUrl
     val webview = remember { Atomic<WebView?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -41,7 +42,7 @@ fun UConfigScreen() {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.u_config)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },
@@ -49,7 +50,7 @@ fun UConfigScreen() {
                     IconButton(
                         onClick = {
                             webview.get()?.loadUrl(APPLY_JS)
-                            navController.popBackStack()
+                            navigator.popBackStack()
                         },
                     ) {
                         Icon(imageVector = Icons.Default.Check, contentDescription = null)

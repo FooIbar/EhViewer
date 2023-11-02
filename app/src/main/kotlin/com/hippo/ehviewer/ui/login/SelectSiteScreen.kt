@@ -29,13 +29,14 @@ import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUrl
-import com.hippo.ehviewer.ui.FINISH_ROUTE_NAME
-import com.hippo.ehviewer.ui.LocalNavController
+import com.hippo.ehviewer.ui.destinations.FinishDestination
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
+@Destination
 @Composable
-fun SelectSiteScreen() {
+fun SelectSiteScreen(navigator: DestinationsNavigator) {
     var siteEx by remember { mutableStateOf(true) }
-    val navController = LocalNavController.current
     val context = LocalContext.current
 
     BackHandler {
@@ -70,7 +71,7 @@ fun SelectSiteScreen() {
                     // Gallery site was set to ex in sad panda check
                     if (!siteEx) Settings.gallerySite = EhUrl.SITE_E
                     Settings.needSignIn = false
-                    navController.navigate(FINISH_ROUTE_NAME)
+                    navigator.navigate(FinishDestination)
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) {
