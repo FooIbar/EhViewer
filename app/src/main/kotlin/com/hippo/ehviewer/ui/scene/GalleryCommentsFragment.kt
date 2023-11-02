@@ -43,7 +43,6 @@ import android.view.ViewAnimationUtils
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -64,12 +63,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -140,8 +141,17 @@ import rikka.core.res.resolveColor
 @Composable
 fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val coroutineScope = rememberCoroutineScope()
     var commenting by rememberSaveable { mutableStateOf(false) }
     var userComment by rememberSaveable { mutableStateOf("") }
+    var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
+
+    suspend fun refreshComment(showAll: Boolean) {
+        val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
+        val detail = EhEngine.getGalleryDetail(url)
+        comments = detail.comments
+    }
+
     BackHandler(commenting) {
         commenting = false
     }
@@ -172,7 +182,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 modifier = Modifier.padding(horizontal = keylineMargin),
                 contentPadding = paddingValues,
             ) {
-                items(galleryDetail.comments.comments) { item ->
+                items(comments.comments) { item ->
                     AndroidViewBinding(factory = ItemGalleryCommentBinding::inflate) {
                         user.text = item.user
                         user.setBackgroundColor(Color.TRANSPARENT)
@@ -181,8 +191,20 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         comment.text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(comment))
                     }
                 }
-                if (galleryDetail.comments.hasMore) {
+                if (comments.hasMore) {
                     item {
+                        TextButton(
+                            onClick = {
+                                coroutineScope.launchIO {
+                                    runSuspendCatching {
+                                        refreshComment(true)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(keylineMargin),
+                        ) {
+                            Text(text = stringResource(id = R.string.click_more_comments))
+                        }
                     }
                 }
             }
@@ -217,13 +239,6 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
 class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshListener {
     private var _binding: SceneGalleryCommentsBinding? = null
     private val binding get() = _binding!!
-    private val callback = object : OnBackPressedCallback(false) {
-        override fun handleOnBackPressed() {
-            if (!mInAnimation && binding.editPanel.visibility == View.VISIBLE) {
-                hideEditPanel(true)
-            }
-        }
-    }
     private var mGalleryDetail: GalleryDetail? = null
     private var mAdapter: CommentAdapter? = null
     private var mViewTransition: ViewTransition? = null
@@ -233,38 +248,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
     private var mInAnimation = false
     private var mShowAllComments = false
     private var mRefreshingComments = false
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        requireActivity().onBackPressedDispatcher.addCallback(callback)
-        if (savedInstanceState == null) {
-            onInit()
-        } else {
-            onRestore(savedInstanceState)
-        }
-    }
-
-    private fun handleArgs(args: Bundle?) {
-        if (args == null) {
-            return
-        }
-        mGalleryDetail = args.getParcelableCompat(KEY_GALLERY_DETAIL)
-        mShowAllComments =
-            mGalleryDetail != null && true && !mGalleryDetail!!.comments.hasMore
-    }
-
-    private fun onInit() {
-        handleArgs(arguments)
-    }
-
-    private fun onRestore(savedInstanceState: Bundle) {
-        mGalleryDetail = savedInstanceState.getParcelableCompat(KEY_GALLERY_DETAIL)
-        mShowAllComments = mGalleryDetail != null && !mGalleryDetail!!.comments.hasMore
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putParcelable(KEY_GALLERY_DETAIL, mGalleryDetail)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -411,11 +394,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
 
     override fun onDestroyView() {
         super.onDestroyView()
-        callback.remove()
-        binding.recyclerView.stopScroll()
-        mAdapter = null
-        mViewTransition = null
-        _binding = null
     }
 
     private fun showFilterCommenterDialog(commenter: String?, position: Int) {
@@ -556,12 +534,7 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
                     R.id.vote_up -> voteComment(comment.id, 1)
                     R.id.vote_down -> voteComment(comment.id, -1)
                     R.id.check_vote_status -> showVoteStatusDialog(context, comment.voteState!!)
-                    R.id.edit_comment -> {
-                        prepareEditComment(comment.id, text)
-                        if (!mInAnimation && binding.editPanel.visibility != View.VISIBLE) {
-                            showEditPanel(true)
-                        }
-                    }
+                    R.id.edit_comment -> prepareEditComment(comment.id, text)
                 }
             }.show()
     }
@@ -662,16 +635,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
             }).start()
     }
 
-    private fun showEditPanel(animation: Boolean) {
-        callback.isEnabled = true
-        if (animation) {
-            showEditPanelWithAnimation()
-        } else {
-            (binding.fab as View).visibility = View.INVISIBLE
-            binding.editPanel.visibility = View.VISIBLE
-        }
-    }
-
     private fun hideEditPanelWithAnimation() {
         mInAnimation = true
         val halfW = binding.editPanel.width / 2
@@ -717,7 +680,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
     }
 
     private fun hideEditPanel(animation: Boolean) {
-        callback.isEnabled = false
         hideSoftInput()
         if (animation) {
             hideEditPanelWithAnimation()
@@ -748,7 +710,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
         if (binding.fab === v) {
             if (!mInAnimation) {
                 prepareNewComment()
-                showEditPanel(true)
             }
         } else if (binding.send === v) {
             if (!mInAnimation) {
