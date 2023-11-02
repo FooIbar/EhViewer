@@ -44,6 +44,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -56,6 +57,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -145,6 +147,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     var commenting by rememberSaveable { mutableStateOf(false) }
     var userComment by rememberSaveable { mutableStateOf("") }
     var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
+    var refreshing by remember { mutableStateOf(false) }
 
     suspend fun refreshComment(showAll: Boolean) {
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
@@ -193,17 +196,27 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 }
                 if (comments.hasMore) {
                     item {
-                        TextButton(
-                            onClick = {
-                                coroutineScope.launchIO {
-                                    runSuspendCatching {
-                                        refreshComment(true)
+                        // TODO: This animation need to be investigated
+                        AnimatedVisibility(refreshing) {
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                            }
+                        }
+                        AnimatedVisibility(!refreshing) {
+                            TextButton(
+                                onClick = {
+                                    coroutineScope.launchIO {
+                                        refreshing = true
+                                        runSuspendCatching {
+                                            refreshComment(true)
+                                        }
+                                        refreshing = false
                                     }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(keylineMargin),
-                        ) {
-                            Text(text = stringResource(id = R.string.click_more_comments))
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(keylineMargin),
+                            ) {
+                                Text(text = stringResource(id = R.string.click_more_comments))
+                            }
                         }
                     }
                 }
