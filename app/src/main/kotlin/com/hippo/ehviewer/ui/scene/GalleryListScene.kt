@@ -996,10 +996,9 @@ class GalleryListScene : SearchBarScene() {
     ) : UrlSuggestion() {
         override val destination = R.id.progressScene
         override val args = bundleOf(
-            ProgressScene.KEY_ACTION to ProgressScene.ACTION_GALLERY_TOKEN,
-            ProgressScene.KEY_GID to gid,
-            ProgressScene.KEY_PTOKEN to pToken,
-            ProgressScene.KEY_PAGE to page,
+            ProgressFragment.KEY_GID to gid,
+            ProgressFragment.KEY_PTOKEN to pToken,
+            ProgressFragment.KEY_PAGE to page,
         )
     }
 

@@ -95,7 +95,7 @@ import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.scene.GalleryDetailScene
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
-import com.hippo.ehviewer.ui.scene.ProgressScene
+import com.hippo.ehviewer.ui.scene.ProgressFragment
 import com.hippo.ehviewer.ui.scene.navAnimated
 import com.hippo.ehviewer.ui.scene.navWithUrl
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
@@ -429,10 +429,9 @@ class MainActivity : EhActivity() {
             val result2 = GalleryPageUrlParser.parse(text, false)
             if (result2 != null) {
                 val args = Bundle()
-                args.putString(ProgressScene.KEY_ACTION, ProgressScene.ACTION_GALLERY_TOKEN)
-                args.putLong(ProgressScene.KEY_GID, result2.gid)
-                args.putString(ProgressScene.KEY_PTOKEN, result2.pToken)
-                args.putInt(ProgressScene.KEY_PAGE, result2.page)
+                args.putLong(ProgressFragment.KEY_GID, result2.gid)
+                args.putString(ProgressFragment.KEY_PTOKEN, result2.pToken)
+                args.putInt(ProgressFragment.KEY_PAGE, result2.page)
                 launch = { navController.navAnimated(R.id.progressScene, args) }
             }
             launch?.let {
