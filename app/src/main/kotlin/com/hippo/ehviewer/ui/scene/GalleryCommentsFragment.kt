@@ -44,19 +44,35 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Reply
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
@@ -123,6 +139,10 @@ import rikka.core.res.resolveColor
 @Composable
 fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    var commenting by rememberSaveable { mutableStateOf(false) }
+    BackHandler(commenting) {
+        commenting = false
+    }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -136,23 +156,49 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 scrollBehavior = scrollBehavior,
             )
         },
-    ) { paddingValues ->
-        val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
-        LazyColumn(
-            modifier = Modifier.padding(horizontal = keylineMargin),
-            contentPadding = paddingValues,
-        ) {
-            items(galleryDetail.comments.comments) { item ->
-                AndroidViewBinding(factory = ItemGalleryCommentBinding::inflate) {
-                    user.text = item.user
-                    user.setBackgroundColor(Color.TRANSPARENT)
-                    time.text = ReadableTime.getTimeAgo(item.time)
-                    comment.maxLines = 5
-                    comment.text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(comment))
+        floatingActionButton = {
+            if (!commenting) {
+                FloatingActionButton(onClick = { commenting = true }) {
+                    Icon(imageVector = Icons.AutoMirrored.Default.Reply, contentDescription = null)
                 }
             }
-            if (galleryDetail.comments.hasMore) {
-                item {
+        },
+    ) { paddingValues ->
+        val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier.padding(horizontal = keylineMargin),
+                contentPadding = paddingValues,
+            ) {
+                items(galleryDetail.comments.comments) { item ->
+                    AndroidViewBinding(factory = ItemGalleryCommentBinding::inflate) {
+                        user.text = item.user
+                        user.setBackgroundColor(Color.TRANSPARENT)
+                        time.text = ReadableTime.getTimeAgo(item.time)
+                        comment.maxLines = 5
+                        comment.text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(comment))
+                    }
+                }
+                if (galleryDetail.comments.hasMore) {
+                    item {
+                    }
+                }
+            }
+            if (commenting) {
+                Surface(
+                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                ) {
+                    Row {
+                        Spacer(modifier = Modifier.weight(1f))
+                        IconButton(onClick = { commenting = false }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.Send,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                        }
+                    }
                 }
             }
         }
