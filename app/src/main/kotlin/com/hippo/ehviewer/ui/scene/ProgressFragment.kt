@@ -26,12 +26,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
-import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -93,14 +92,12 @@ fun ProgressScreen(gid: Long, token: String, page: Int, navigator: NavController
 
 class ProgressFragment : BaseScene() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return ComposeWithViewLifecycle().apply {
-            setMD3Content {
-                val gid = remember { requireArguments().getLong(KEY_GID, -1) }
-                val token = remember { requireArguments().getString(KEY_PTOKEN, INVALID) }
-                val page = remember { requireArguments().getInt(KEY_PAGE, -1) }
-                val navController = remember { findNavController() }
-                ProgressScreen(gid, token, page, navController)
-            }
+        return ComposeWithMD3 {
+            val gid = remember { requireArguments().getLong(KEY_GID, -1) }
+            val token = remember { requireArguments().getString(KEY_PTOKEN, INVALID) }
+            val page = remember { requireArguments().getInt(KEY_PAGE, -1) }
+            val navController = remember { findNavController() }
+            ProgressScreen(gid, token, page, navController)
         }
     }
 

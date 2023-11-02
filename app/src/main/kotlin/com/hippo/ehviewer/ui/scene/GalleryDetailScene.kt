@@ -151,7 +151,6 @@ import com.hippo.ehviewer.ui.modifyFavorites
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
-import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
@@ -399,113 +398,111 @@ class GalleryDetailScene : BaseScene() {
             getDetailError = getString(R.string.error_cannot_find_gallery)
         }
         (requireActivity() as MainActivity).mShareUrl = galleryDetailUrl
-        return ComposeWithViewLifecycle().apply {
-            setMD3Content {
-                LaunchedEffect(gid) {
-                    EhDownloadManager.stateFlow(gid).collect {
-                        updateDownloadState()
-                    }
+        return ComposeWithMD3 {
+            LaunchedEffect(gid) {
+                EhDownloadManager.stateFlow(gid).collect {
+                    updateDownloadState()
                 }
-                dialogState.Intercept()
-                val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-                Scaffold(
-                    topBar = {
-                        LargeTopAppBar(
-                            title = {
-                                composeBindingGI?.let {
-                                    Text(
-                                        text = EhUtils.getSuitableTitle(it),
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                            },
-                            navigationIcon = {
-                                IconButton(onClick = {
-                                    findNavController().popBackStack()
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                        contentDescription = null,
-                                    )
-                                }
-                            },
-                            scrollBehavior = scrollBehavior,
-                            actions = {
-                                IconButton(onClick = ::showArchiveDialog) {
-                                    Icon(
-                                        imageVector = Icons.Default.FolderZip,
-                                        contentDescription = null,
-                                    )
-                                }
-                                IconButton(onClick = ::doShareGallery) {
-                                    Icon(
-                                        imageVector = Icons.Default.Share,
-                                        contentDescription = null,
-                                    )
-                                }
-                                var dropdown by remember { mutableStateOf(false) }
-                                IconButton(onClick = { dropdown = !dropdown }) {
-                                    Icon(
-                                        imageVector = Icons.Default.MoreVert,
-                                        contentDescription = null,
-                                    )
-                                }
-                                DropdownMenu(
-                                    expanded = dropdown,
-                                    onDismissRequest = { dropdown = false },
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text(text = stringResource(id = R.string.action_add_tag)) },
-                                        onClick = {
-                                            dropdown = false
-                                            actionAddTag()
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(text = stringResource(id = R.string.refresh)) },
-                                        onClick = {
-                                            dropdown = false
-                                            actionRefresh()
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(text = stringResource(id = R.string.clear_image_cache)) },
-                                        onClick = {
-                                            dropdown = false
-                                            actionClearCache()
-                                        },
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text(text = stringResource(id = R.string.open_in_other_app)) },
-                                        onClick = {
-                                            dropdown = false
-                                            actionOpenInOtherApp()
-                                        },
-                                    )
-                                }
-                            },
-                        )
-                    },
-                ) {
-                    Surface {
-                        val gi = composeBindingGI
-                        if (gi != null) {
-                            GalleryDetailContent(
-                                galleryInfo = gi,
-                                galleryDetail = composeBindingGD,
-                                contentPadding = it,
-                                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                            )
-                        } else if (getDetailError.isNotBlank()) {
-                            GalleryDetailErrorTip(error = getDetailError, onClick = ::actionRefresh)
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                CircularProgressIndicator()
+            }
+            dialogState.Intercept()
+            val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+            Scaffold(
+                topBar = {
+                    LargeTopAppBar(
+                        title = {
+                            composeBindingGI?.let {
+                                Text(
+                                    text = EhUtils.getSuitableTitle(it),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
                             }
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = {
+                                findNavController().popBackStack()
+                            }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                    contentDescription = null,
+                                )
+                            }
+                        },
+                        scrollBehavior = scrollBehavior,
+                        actions = {
+                            IconButton(onClick = ::showArchiveDialog) {
+                                Icon(
+                                    imageVector = Icons.Default.FolderZip,
+                                    contentDescription = null,
+                                )
+                            }
+                            IconButton(onClick = ::doShareGallery) {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = null,
+                                )
+                            }
+                            var dropdown by remember { mutableStateOf(false) }
+                            IconButton(onClick = { dropdown = !dropdown }) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = null,
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = dropdown,
+                                onDismissRequest = { dropdown = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(text = stringResource(id = R.string.action_add_tag)) },
+                                    onClick = {
+                                        dropdown = false
+                                        actionAddTag()
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(text = stringResource(id = R.string.refresh)) },
+                                    onClick = {
+                                        dropdown = false
+                                        actionRefresh()
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(text = stringResource(id = R.string.clear_image_cache)) },
+                                    onClick = {
+                                        dropdown = false
+                                        actionClearCache()
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(text = stringResource(id = R.string.open_in_other_app)) },
+                                    onClick = {
+                                        dropdown = false
+                                        actionOpenInOtherApp()
+                                    },
+                                )
+                            }
+                        },
+                    )
+                },
+            ) {
+                Surface {
+                    val gi = composeBindingGI
+                    if (gi != null) {
+                        GalleryDetailContent(
+                            galleryInfo = gi,
+                            galleryDetail = composeBindingGD,
+                            contentPadding = it,
+                            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                        )
+                    } else if (getDetailError.isNotBlank()) {
+                        GalleryDetailErrorTip(error = getDetailError, onClick = ::actionRefresh)
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
                         }
                     }
                 }

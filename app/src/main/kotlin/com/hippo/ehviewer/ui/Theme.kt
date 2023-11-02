@@ -12,7 +12,7 @@ import com.hippo.ehviewer.ui.tools.LocalDialogState
 
 // To make sure compose theme and legacy view theme are in sync, we only use Mdc3Theme
 
-fun ComposeView.setMD3Content(content: @Composable () -> Unit) = setContent {
+inline fun ComposeView.setMD3Content(crossinline content: @Composable () -> Unit) = setContent {
     Mdc3Theme {
         val dialogState = remember { DialogState() }
         dialogState.Intercept()
@@ -22,7 +22,7 @@ fun ComposeView.setMD3Content(content: @Composable () -> Unit) = setContent {
     }
 }
 
-fun ComponentActivity.setMD3Content(content: @Composable () -> Unit) = setContent {
+inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -> Unit) = setContent {
     Mdc3Theme {
         val dialogState = remember { DialogState() }
         dialogState.Intercept()
