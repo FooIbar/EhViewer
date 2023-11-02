@@ -209,6 +209,9 @@ dependencies {
     api(platform(libs.compose.bom))
     implementation(libs.bundles.compose)
 
+    implementation(libs.compose.destinations.core)
+    ksp(libs.compose.destinations.compiler)
+
     implementation(libs.androidx.core)
     implementation(libs.androidx.core.splashscreen)
 

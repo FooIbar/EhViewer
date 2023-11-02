@@ -31,8 +31,7 @@ import androidx.core.text.parseAsHtml
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.ui.LICENSE_SCREEN
-import com.hippo.ehviewer.ui.LocalNavController
+import com.hippo.ehviewer.ui.destinations.LicenseScreenDestination
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
@@ -42,6 +41,8 @@ import com.hippo.ehviewer.updater.Release
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.installPackage
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -59,10 +60,10 @@ private fun versionCode() = "${BuildConfig.VERSION_NAME} (${BuildConfig.COMMIT_S
 @Stable
 private fun author() = stringResource(R.string.settings_about_author_summary).replace('$', '@').parseAsHtml().toAnnotatedString()
 
+@Destination
 @Composable
-fun AboutScreen() {
+fun AboutScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
-    val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
@@ -73,7 +74,7 @@ fun AboutScreen() {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.settings_about)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },
@@ -100,7 +101,7 @@ fun AboutScreen() {
                 url = REPO_URL,
             )
             Preference(title = stringResource(id = R.string.license)) {
-                navController.navigate(LICENSE_SCREEN)
+                navigator.navigate(LicenseScreenDestination)
             }
             Preference(
                 title = stringResource(id = R.string.settings_about_version),

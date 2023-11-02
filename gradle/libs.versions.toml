@@ -25,6 +25,7 @@ chucker = "4.0.0"
 coil = "2.5.0"
 compose-bom = "2023.11.00-alpha01"
 compose-compiler = "1.5.4-dev-k1.9.20-50f08dfa4b4"
+compose-destinations = "1.9.54"
 google-accompanist = "0.32.0"
 google-android-material = "1.11.0-beta01"
 kotlin = "1.9.20"
@@ -90,6 +91,9 @@ compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
 compose-ui-util = { module = "androidx.compose.ui:ui-util" }
 compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding" }
+
+compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "compose-destinations" }
+compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "compose-destinations" }
 
 cronet-api = "org.chromium.net:cronet-api:113.5672.61"
 cronet-gms = "com.google.android.gms:play-services-cronet:18.0.1"

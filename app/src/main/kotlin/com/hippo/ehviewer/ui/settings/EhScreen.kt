@@ -43,17 +43,18 @@ import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.dailycheck.schedHour
 import com.hippo.ehviewer.dailycheck.schedMinute
 import com.hippo.ehviewer.dailycheck.updateDailyCheckWork
-import com.hippo.ehviewer.ui.FILTER_SCREEN
-import com.hippo.ehviewer.ui.LocalNavController
-import com.hippo.ehviewer.ui.MYTAGS_SCREEN
-import com.hippo.ehviewer.ui.SIGN_IN_ROUTE_NAME
-import com.hippo.ehviewer.ui.UCONFIG_SCREEN
+import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
+import com.hippo.ehviewer.ui.destinations.MyTagsScreenDestination
+import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
+import com.hippo.ehviewer.ui.destinations.UConfigScreenDestination
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.TimePickerDialog
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.copyTextToClipboard
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -61,9 +62,9 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
+@Destination
 @Composable
-fun EhScreen() {
-    val navController = LocalNavController.current
+fun EhScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
@@ -76,7 +77,7 @@ fun EhScreen() {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.settings_eh)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },
@@ -119,7 +120,7 @@ fun EhScreen() {
                     }
                     setPositiveButton(R.string.settings_eh_sign_out) { _, _ ->
                         EhUtils.signOut()
-                        navController.navigate(SIGN_IN_ROUTE_NAME)
+                        navigator.navigate(SignInScreenDestination)
                     }
                 }.show()
             }
@@ -184,11 +185,11 @@ fun EhScreen() {
                 Preference(
                     title = stringResource(id = R.string.settings_u_config),
                     summary = stringResource(id = R.string.settings_u_config_summary),
-                ) { navController.navigate(UCONFIG_SCREEN) }
+                ) { navigator.navigate(UConfigScreenDestination) }
                 Preference(
                     title = stringResource(id = R.string.settings_my_tags),
                     summary = stringResource(id = R.string.settings_my_tags_summary),
-                ) { navController.navigate(MYTAGS_SCREEN) }
+                ) { navigator.navigate(MyTagsScreenDestination) }
             }
             var defaultFavSlot by Settings::defaultFavSlot.observed
             val disabled = stringResource(id = R.string.disabled_nav)
@@ -306,7 +307,7 @@ fun EhScreen() {
             Preference(
                 title = stringResource(id = R.string.settings_eh_filter),
                 summary = stringResource(id = R.string.settings_eh_filter_summary),
-            ) { navController.navigate(FILTER_SCREEN) }
+            ) { navigator.navigate(FilterScreenDestination) }
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_metered_network_warning),
                 value = Settings::meteredNetworkWarning,

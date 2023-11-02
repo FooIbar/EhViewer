@@ -38,22 +38,23 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.readCompatFromUniFile
-import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.unifile.UniFile
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
 
+@Destination
 @Composable
-fun DownloadScreen() {
-    val navController = LocalNavController.current
+fun DownloadScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
@@ -64,7 +65,7 @@ fun DownloadScreen() {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.settings_download)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },

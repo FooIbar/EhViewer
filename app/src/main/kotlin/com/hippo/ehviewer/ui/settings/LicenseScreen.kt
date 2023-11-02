@@ -13,19 +13,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.ui.LocalNavController
 import com.mikepenz.aboutlibraries.ui.compose.LibrariesContainer
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
+@Destination
 @Composable
-fun LicenseScreen() {
-    val navController = LocalNavController.current
+fun LicenseScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.license)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },

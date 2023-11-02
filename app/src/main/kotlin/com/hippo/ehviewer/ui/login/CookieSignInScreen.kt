@@ -28,7 +28,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,11 +55,13 @@ import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.ui.FINISH_ROUTE_NAME
-import com.hippo.ehviewer.ui.LocalNavController
-import com.hippo.ehviewer.ui.SELECT_SITE_ROUTE_NAME
+import com.hippo.ehviewer.ui.destinations.FinishDestination
+import com.hippo.ehviewer.ui.destinations.SelectSiteScreenDestination
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.util.ExceptionUtils
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -69,9 +70,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import okhttp3.Cookie
 
+@Destination
 @Composable
-fun CookieSignInScene(windowSizeClass: WindowSizeClass) {
-    val navController = LocalNavController.current
+fun CookieSignInScene(navigator: DestinationsNavigator) {
+    val windowSizeClass = LocalWindowSizeClass.current
     val clipboardManager = LocalClipboardManager.current
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -124,7 +126,7 @@ fun CookieSignInScene(windowSizeClass: WindowSizeClass) {
                 EhEngine.getProfile()
             }.onSuccess {
                 val canEx = withNonCancellableContext { postLogin() }
-                withUIContext { navController.navigate(if (canEx) SELECT_SITE_ROUTE_NAME else FINISH_ROUTE_NAME) }
+                withUIContext { navigator.navigate(if (canEx) SelectSiteScreenDestination else FinishDestination) }
             }.onFailure {
                 EhCookieStore.signOut()
                 dialogState.awaitPermissionOrCancel(

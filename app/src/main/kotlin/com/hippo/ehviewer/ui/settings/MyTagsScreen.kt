@@ -16,19 +16,20 @@ import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUrl
-import com.hippo.ehviewer.ui.LocalNavController
 import com.hippo.ehviewer.util.setDefaultSettings
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
+@Destination
 @Composable
-fun MyTagsScreen() {
-    val navController = LocalNavController.current
+fun MyTagsScreen(navigator: DestinationsNavigator) {
     val url = EhUrl.myTagsUrl
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.my_tags)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },

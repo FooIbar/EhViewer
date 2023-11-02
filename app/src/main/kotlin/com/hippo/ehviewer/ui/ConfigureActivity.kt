@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -7,120 +8,57 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhCookieStore
-import com.hippo.ehviewer.ui.login.CookieSignInScene
-import com.hippo.ehviewer.ui.login.SelectSiteScreen
-import com.hippo.ehviewer.ui.login.SignInScreen
-import com.hippo.ehviewer.ui.login.WebViewSignInScreen
-import com.hippo.ehviewer.ui.settings.AboutScreen
-import com.hippo.ehviewer.ui.settings.AdvancedScreen
-import com.hippo.ehviewer.ui.settings.BaseScreen
-import com.hippo.ehviewer.ui.settings.DownloadScreen
-import com.hippo.ehviewer.ui.settings.EhScreen
-import com.hippo.ehviewer.ui.settings.FilterScreen
-import com.hippo.ehviewer.ui.settings.LicenseScreen
-import com.hippo.ehviewer.ui.settings.MyTagsScreen
-import com.hippo.ehviewer.ui.settings.PrivacyScreen
-import com.hippo.ehviewer.ui.settings.UConfigScreen
+import com.hippo.ehviewer.ui.destinations.BaseScreenDestination
+import com.hippo.ehviewer.ui.destinations.SelectSiteScreenDestination
+import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
+import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
+import com.hippo.ehviewer.util.findActivity
+import com.ramcosta.composedestinations.DestinationsNavHost
+import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.rememberNavHostEngine
 
 class ConfigureActivity : EhActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        val rootNavGraphDefaultAnimations = RootNavGraphDefaultAnimations(
+            enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up, tween(200)) },
+            exitTransition = { fadeOut(tween(200)) },
+            popEnterTransition = { fadeIn(tween(200)) },
+            popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down, tween(200)) },
+        )
         setMD3Content {
-            val navController = rememberNavController()
             val windowSizeClass = calculateWindowSizeClass(this)
-            CompositionLocalProvider(LocalNavController provides navController) {
-                NavHost(
-                    navController = navController,
-                    startDestination = if (Settings.needSignIn) {
-                        if (EhCookieStore.hasSignedIn()) SELECT_SITE_ROUTE_NAME else SIGN_IN_ROUTE_NAME
-                    } else {
-                        BASE_SETTINGS_SCREEN
-                    },
+            CompositionLocalProvider(LocalWindowSizeClass provides windowSizeClass) {
+                DestinationsNavHost(
+                    navGraph = NavGraphs.root,
                     modifier = Modifier.imePadding(),
-                    enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up, tween(200)) },
-                    exitTransition = { fadeOut(tween(200)) },
-                    popEnterTransition = { fadeIn(tween(200)) },
-                    popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down, tween(200)) },
-                ) {
-                    composable(SIGN_IN_ROUTE_NAME) {
-                        SignInScreen(windowSizeClass)
-                    }
-                    composable(WEBVIEW_SIGN_IN_ROUTE_NAME) {
-                        WebViewSignInScreen()
-                    }
-                    composable(COOKIE_SIGN_IN_ROUTE_NAME) {
-                        CookieSignInScene(windowSizeClass)
-                    }
-                    composable(SELECT_SITE_ROUTE_NAME) {
-                        SelectSiteScreen()
-                    }
-                    composable(BASE_SETTINGS_SCREEN) {
-                        BaseScreen()
-                    }
-                    composable(ABOUT_SETTINGS_SCREEN) {
-                        AboutScreen()
-                    }
-                    composable(LICENSE_SCREEN) {
-                        LicenseScreen()
-                    }
-                    composable(PRIVACY_SETTINGS_SCREEN) {
-                        PrivacyScreen()
-                    }
-                    composable(ADVANCED_SETTINGS_SCREEN) {
-                        AdvancedScreen()
-                    }
-                    composable(DOWNLOAD_SETTINGS_SCREEN) {
-                        DownloadScreen()
-                    }
-                    composable(EH_SETTINGS_SCREEN) {
-                        EhScreen()
-                    }
-                    composable(UCONFIG_SCREEN) {
-                        UConfigScreen()
-                    }
-                    composable(MYTAGS_SCREEN) {
-                        MyTagsScreen()
-                    }
-                    composable(FILTER_SCREEN) {
-                        FilterScreen()
-                    }
-                    composable(FINISH_ROUTE_NAME) {
-                        SideEffect {
-                            finish()
-                        }
-                    }
-                }
+                    startRoute = if (Settings.needSignIn) {
+                        if (EhCookieStore.hasSignedIn()) SelectSiteScreenDestination else SignInScreenDestination
+                    } else {
+                        BaseScreenDestination
+                    },
+                    engine = rememberNavHostEngine(rootDefaultAnimations = rootNavGraphDefaultAnimations),
+                )
             }
         }
     }
 }
 
-val LocalNavController = compositionLocalOf<NavController> { error("CompositionLocal LocalNavController not present!") }
-
-const val BASE_SETTINGS_SCREEN = "Base"
-const val EH_SETTINGS_SCREEN = "Eh"
-const val DOWNLOAD_SETTINGS_SCREEN = "Download"
-const val PRIVACY_SETTINGS_SCREEN = "Privacy"
-const val ADVANCED_SETTINGS_SCREEN = "Advanced"
-const val ABOUT_SETTINGS_SCREEN = "About"
-const val LICENSE_SCREEN = "License"
-const val UCONFIG_SCREEN = "UConfig"
-const val MYTAGS_SCREEN = "Mytags"
-const val FILTER_SCREEN = "Filter"
-const val SIGN_IN_ROUTE_NAME = "SignIn"
-const val WEBVIEW_SIGN_IN_ROUTE_NAME = "WebViewSignIn"
-const val COOKIE_SIGN_IN_ROUTE_NAME = "CookieSignIn"
-const val SELECT_SITE_ROUTE_NAME = "SelectSite"
-const val FINISH_ROUTE_NAME = "Finish"
+@Destination
+@Composable
+fun Finish() {
+    val context = LocalContext.current
+    SideEffect {
+        context.findActivity<Activity>().finish()
+    }
+}
