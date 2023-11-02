@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
@@ -40,6 +42,10 @@ fun ChapterNavigator(
     val horizontalPadding = if (isTabletUi) 24.dp else 16.dp
     val layoutDirection = if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
     val view = LocalView.current
+    val configuration = LocalConfiguration.current
+    // https://m3.material.io/components/sliders/specs
+    // Tick width is 2 dp
+    val maxTickCount = configuration.screenWidthDp / 6
 
     // We explicitly handle direction based on the reader viewer rather than the system direction
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -73,6 +79,14 @@ fun ChapterNavigator(
                                 onSliderValueChange(it.roundToInt() - 1)
                             },
                             interactionSource = interactionSource,
+                            colors = if (totalPages < maxTickCount) {
+                                SliderDefaults.colors()
+                            } else {
+                                SliderDefaults.colors(
+                                    activeTickColor = Color.Transparent,
+                                    inactiveTickColor = Color.Transparent,
+                                )
+                            },
                         )
 
                         Text(text = totalPages.toString())
