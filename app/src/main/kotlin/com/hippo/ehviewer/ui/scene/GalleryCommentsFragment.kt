@@ -78,6 +78,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -96,7 +97,6 @@ import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
-import androidx.viewbinding.ViewBinding
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
@@ -110,9 +110,8 @@ import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.databinding.ItemDrawerFavoritesBinding
 import com.hippo.ehviewer.databinding.ItemGalleryCommentBinding
-import com.hippo.ehviewer.databinding.ItemGalleryCommentMoreBinding
-import com.hippo.ehviewer.databinding.ItemGalleryCommentProgressBinding
 import com.hippo.ehviewer.databinding.SceneGalleryCommentsBinding
+import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
@@ -129,6 +128,7 @@ import com.hippo.ehviewer.util.SimpleAnimatorListener
 import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.applyNavigationBarsPadding
+import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.toBBCode
 import com.ramcosta.composedestinations.annotation.Destination
@@ -139,6 +139,39 @@ import kotlin.math.hypot
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
 
+private fun Context.generateComment(
+    textView: TextView,
+    comment: GalleryComment,
+): CharSequence {
+    val sp = comment.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(textView))
+    val ssb = SpannableStringBuilder(sp)
+    if (0L != comment.id && 0 != comment.score) {
+        val score = comment.score
+        val scoreString = if (score > 0) "+$score" else score.toString()
+        ssb.append("  ").inSpans(
+            RelativeSizeSpan(0.8f),
+            StyleSpan(Typeface.BOLD),
+            ForegroundColorSpan(theme.resolveColor(android.R.attr.textColorSecondary)),
+        ) {
+            append(scoreString)
+        }
+    }
+    if (comment.lastEdited != 0L) {
+        val str = getString(
+            R.string.last_edited,
+            ReadableTime.getTimeAgo(comment.lastEdited),
+        )
+        ssb.append("\n\n").inSpans(
+            RelativeSizeSpan(0.8f),
+            StyleSpan(Typeface.BOLD),
+            ForegroundColorSpan(theme.resolveColor(android.R.attr.textColorSecondary)),
+        ) {
+            append(str)
+        }
+    }
+    return TextUrl.handleTextUrl(ssb)
+}
+
 @Destination
 @Composable
 fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController) {
@@ -148,6 +181,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     var userComment by rememberSaveable { mutableStateOf("") }
     var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
     var refreshing by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     suspend fun refreshComment(showAll: Boolean) {
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
@@ -187,11 +221,35 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             ) {
                 items(comments.comments) { item ->
                     AndroidViewBinding(factory = ItemGalleryCommentBinding::inflate) {
-                        user.text = item.user
+                        user.text = item.user?.let {
+                            if (item.uploader) context.getString(R.string.comment_user_uploader, it) else it
+                        }
                         user.setBackgroundColor(Color.TRANSPARENT)
+                        user.setOnClickListener {
+                            val lub = ListUrlBuilder(
+                                mode = ListUrlBuilder.MODE_UPLOADER,
+                                mKeyword = item.user,
+                            )
+                            navigator.navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
+                        }
                         time.text = ReadableTime.getTimeAgo(item.time)
                         comment.maxLines = 5
-                        comment.text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(comment))
+                        comment.text = context.generateComment(comment, item)
+                        comment.setOnClickListener {
+                            val span = comment.currentSpan
+                            comment.clearCurrentSpan()
+                            if (span is URLSpan) {
+                                val activity = context.findActivity<MainActivity>()
+                                if (!activity.jumpToReaderByPage(span.url, galleryDetail)) {
+                                    if (!navigator.navWithUrl(span.url)) {
+                                        activity.openBrowser(span.url)
+                                    }
+                                }
+                            }
+                        }
+                        card.setOnClickListener {
+                            // showCommentDialog(position, holder.sp)
+                        }
                     }
                 }
                 if (comments.hasMore) {
@@ -199,7 +257,9 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         // TODO: This animation need to be investigated
                         AnimatedVisibility(refreshing) {
                             Box(modifier = Modifier.fillMaxWidth()) {
-                                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                                CircularProgressIndicator(
+                                    modifier = Modifier.align(Alignment.Center).padding(keylineMargin),
+                                )
                             }
                         }
                         AnimatedVisibility(!refreshing) {
@@ -253,7 +313,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
     private var _binding: SceneGalleryCommentsBinding? = null
     private val binding get() = _binding!!
     private var mGalleryDetail: GalleryDetail? = null
-    private var mAdapter: CommentAdapter? = null
     private var mViewTransition: ViewTransition? = null
     private var mSendDrawable: Drawable? = null
     private var mPencilDrawable: Drawable? = null
@@ -284,8 +343,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
         tip.setCompoundDrawables(null, drawable, null, null)
         mSendDrawable = ContextCompat.getDrawable(context, R.drawable.v_send_dark_x24)
         mPencilDrawable = ContextCompat.getDrawable(context, R.drawable.v_pencil_dark_x24)
-        mAdapter = CommentAdapter()
-        binding.recyclerView.adapter = mAdapter
         binding.recyclerView.layoutManager = LinearLayoutManager(
             context,
             RecyclerView.VERTICAL,
@@ -405,10 +462,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-    }
-
     private fun showFilterCommenterDialog(commenter: String?, position: Int) {
         val context = context
         if (context == null || commenter == null) {
@@ -443,7 +496,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
             i++
         }
         mGalleryDetail!!.comments.comments = newCommentsList.requireNoNulls()
-        mAdapter!!.notifyDataSetChanged()
         updateView(true)
     }
 
@@ -550,31 +602,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
                     R.id.edit_comment -> prepareEditComment(comment.id, text)
                 }
             }.show()
-    }
-
-    fun onItemClick(parent: RecyclerView?, view2: View?, position: Int): Boolean {
-        val activity = mainActivity ?: return false
-        val holder = parent!!.getChildViewHolder(view2!!)
-        if (holder is ActualCommentHolder) {
-            val span = holder.binding.comment.currentSpan
-            holder.binding.comment.clearCurrentSpan()
-            val detail = mGalleryDetail ?: return false
-            if (span is URLSpan) {
-                if (!activity.jumpToReaderByPage(span.url, detail)) {
-                    if (!findNavController().navWithUrl(span.url)) {
-                        activity.openBrowser(span.url)
-                    }
-                }
-            } else {
-                showCommentDialog(position, holder.sp)
-            }
-        } else if (holder is MoreCommentHolder && !mRefreshingComments && mAdapter != null) {
-            mRefreshingComments = true
-            mShowAllComments = true
-            mAdapter!!.notifyItemChanged(position)
-            galleryDetailUrl?.let { refreshComment(it) }
-        }
-        return true
     }
 
     private fun refreshComment(url: String) {
@@ -760,44 +787,25 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
     }
 
     private fun onRefreshGallerySuccess(result: GalleryCommentList) {
-        if (mGalleryDetail == null || mAdapter == null) {
-            return
-        }
         binding.refreshLayout.isRefreshing = false
         mRefreshingComments = false
         mGalleryDetail!!.comments = result
-        mAdapter!!.notifyDataSetChanged()
         updateView(true)
     }
 
     private fun onRefreshGalleryFailure() {
-        if (mAdapter == null) {
-            return
-        }
         binding.refreshLayout.isRefreshing = false
         mRefreshingComments = false
-        val position = mAdapter!!.itemCount - 1
-        if (position >= 0) {
-            mAdapter!!.notifyItemChanged(position)
-        }
     }
 
     private fun onCommentGallerySuccess(result: GalleryCommentList) {
-        if (mGalleryDetail == null || mAdapter == null) {
-            return
-        }
         mGalleryDetail!!.comments = result
-        mAdapter!!.notifyDataSetChanged()
-
         // Remove text
         binding.editText.setText("")
         updateView(true)
     }
 
     private fun onVoteCommentSuccess(result: VoteCommentResult, voteUp: Boolean) {
-        if (mAdapter == null) {
-            return
-        }
         var position = -1
         var i = 0
         val n = mGalleryDetail!!.comments.comments.size
@@ -824,11 +832,10 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
             comment.voteDownEd = 0 != result.vote
             comment.voteUpEd = false
         }
-        mAdapter!!.notifyItemChanged(position)
     }
 
     override fun onRefresh() {
-        if (!mRefreshingComments && mAdapter != null) {
+        if (!mRefreshingComments) {
             mRefreshingComments = true
             galleryDetailUrl?.let { refreshComment(it) }
         }
@@ -842,131 +849,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
         }
     }
 
-    private abstract class CommentHolder(binding: ViewBinding) :
-        RecyclerView.ViewHolder(binding.root)
-
-    private class MoreCommentHolder(binding: ItemGalleryCommentMoreBinding) : CommentHolder(binding)
-
-    private class ProgressCommentHolder(binding: ItemGalleryCommentProgressBinding) :
-        CommentHolder(binding)
-
-    private inner class ActualCommentHolder(val binding: ItemGalleryCommentBinding) :
-        CommentHolder(binding) {
-        lateinit var sp: CharSequence
-
-        private fun generateComment(
-            context: Context,
-            textView: TextView,
-            comment: GalleryComment,
-        ): CharSequence {
-            sp = comment.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(textView))
-            val ssb = SpannableStringBuilder(sp)
-            if (0L != comment.id && 0 != comment.score) {
-                val score = comment.score
-                val scoreString = if (score > 0) "+$score" else score.toString()
-                ssb.append("  ").inSpans(
-                    RelativeSizeSpan(0.8f),
-                    StyleSpan(Typeface.BOLD),
-                    ForegroundColorSpan(theme.resolveColor(android.R.attr.textColorSecondary)),
-                ) {
-                    append(scoreString)
-                }
-            }
-            if (comment.lastEdited != 0L) {
-                val str = context.getString(
-                    R.string.last_edited,
-                    ReadableTime.getTimeAgo(comment.lastEdited),
-                )
-                ssb.append("\n\n").inSpans(
-                    RelativeSizeSpan(0.8f),
-                    StyleSpan(Typeface.BOLD),
-                    ForegroundColorSpan(theme.resolveColor(android.R.attr.textColorSecondary)),
-                ) {
-                    append(str)
-                }
-            }
-            return TextUrl.handleTextUrl(ssb)
-        }
-
-        fun bind(value: GalleryComment) {
-            binding.run {
-                user.text = value.user?.let {
-                    if (value.uploader) getString(R.string.comment_user_uploader, it) else it
-                }
-                user.setOnClickListener {
-                    value.user?.let {
-                        val lub = ListUrlBuilder().apply {
-                            mode = ListUrlBuilder.MODE_UPLOADER
-                            keyword = it
-                        }
-                        navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-                    }
-                }
-                time.text = ReadableTime.getTimeAgo(value.time)
-                comment.text = generateComment(binding.comment.context, binding.comment, value)
-            }
-        }
-    }
-
-    private inner class CommentAdapter : RecyclerView.Adapter<CommentHolder>() {
-        private val mInflater: LayoutInflater = layoutInflater
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentHolder {
-            return when (viewType) {
-                TYPE_COMMENT -> ActualCommentHolder(
-                    ItemGalleryCommentBinding.inflate(mInflater, parent, false),
-                )
-
-                TYPE_MORE -> MoreCommentHolder(
-                    ItemGalleryCommentMoreBinding.inflate(mInflater, parent, false),
-                )
-
-                TYPE_PROGRESS -> ProgressCommentHolder(
-                    ItemGalleryCommentProgressBinding.inflate(mInflater, parent, false),
-                )
-
-                else -> throw IllegalStateException("Invalid view type: $viewType")
-            }
-        }
-
-        override fun onBindViewHolder(holder: CommentHolder, position: Int) {
-            val context = context
-            if (context == null || mGalleryDetail == null) {
-                return
-            }
-            holder.itemView.setOnClickListener {
-                onItemClick(
-                    binding.recyclerView,
-                    holder.itemView,
-                    position,
-                )
-            }
-            holder.itemView.isClickable = true
-            holder.itemView.isFocusable = true
-            if (holder is ActualCommentHolder) {
-                holder.bind(mGalleryDetail!!.comments.comments[position])
-            }
-        }
-
-        override fun getItemCount(): Int {
-            return if (mGalleryDetail == null) {
-                0
-            } else if (mGalleryDetail!!.comments.hasMore) {
-                mGalleryDetail!!.comments.comments.size + 1
-            } else {
-                mGalleryDetail!!.comments.comments.size
-            }
-        }
-
-        override fun getItemViewType(position: Int): Int {
-            return if (position >= mGalleryDetail!!.comments.comments.size) {
-                if (mRefreshingComments) TYPE_PROGRESS else TYPE_MORE
-            } else {
-                TYPE_COMMENT
-            }
-        }
-    }
-
     companion object {
         val TAG: String = GalleryCommentsFragment::class.java.simpleName
         const val KEY_API_UID = "api_uid"
@@ -975,8 +857,5 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
         const val KEY_TOKEN = "token"
         const val KEY_COMMENT_LIST = "comment_list"
         const val KEY_GALLERY_DETAIL = "gallery_detail"
-        private const val TYPE_COMMENT = 0
-        private const val TYPE_MORE = 1
-        private const val TYPE_PROGRESS = 2
     }
 }
