@@ -47,12 +47,12 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text2.BasicTextField2
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Reply
@@ -77,6 +77,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.content.ContextCompat
 import androidx.core.text.getSpans
@@ -140,6 +141,7 @@ import rikka.core.res.resolveColor
 fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var commenting by rememberSaveable { mutableStateOf(false) }
+    var userComment by rememberSaveable { mutableStateOf("") }
     BackHandler(commenting) {
         commenting = false
     }
@@ -186,12 +188,19 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             }
             if (commenting) {
                 Surface(
-                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
+                    modifier = Modifier.align(Alignment.BottomCenter),
                     color = MaterialTheme.colorScheme.primaryContainer,
                 ) {
-                    Row {
-                        Spacer(modifier = Modifier.weight(1f))
-                        IconButton(onClick = { commenting = false }) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        BasicTextField2(
+                            value = userComment,
+                            onValueChange = { userComment = it },
+                            modifier = Modifier.weight(1f).padding(keylineMargin),
+                        )
+                        IconButton(
+                            onClick = { commenting = false },
+                            modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
+                        ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Default.Send,
                                 contentDescription = null,
