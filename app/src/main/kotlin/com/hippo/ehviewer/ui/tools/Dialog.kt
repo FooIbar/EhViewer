@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -212,21 +213,31 @@ class DialogState {
     }
 
     suspend fun showSelectItem(
-        vararg items: String,
+        vararg items: String?,
         @StringRes title: Int,
-    ): Int = showNoButton {
+    ) = showSelectItem(
+        *items.filterNotNull().mapIndexed { a, b -> b to a }.toTypedArray(),
+        title = title,
+    )
+
+    suspend fun <R> showSelectItem(
+        vararg items: Pair<String, R>?,
+        @StringRes title: Int? = null,
+    ): R = showNoButton {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            Text(
-                text = stringResource(id = title),
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-                style = MaterialTheme.typography.headlineSmall,
-            )
+            title.ifNotNullThen {
+                Text(
+                    text = stringResource(id = title!!),
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            }
             LazyColumn {
-                itemsIndexed(items) { index, text ->
+                items(items.filterNotNull()) { (text, item) ->
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
                         Text(
                             text = text,
-                            modifier = Modifier.clickable { dismissWith(index) }.fillMaxWidth()
+                            modifier = Modifier.clickable { dismissWith(item) }.fillMaxWidth()
                                 .padding(horizontal = 24.dp, vertical = 16.dp),
                             style = MaterialTheme.typography.titleMedium,
                         )

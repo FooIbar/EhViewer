@@ -120,6 +120,7 @@ import com.hippo.ehviewer.ui.legacy.ViewTransition
 import com.hippo.ehviewer.ui.legacy.WindowInsetsAnimationHelper
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.AnimationUtils
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.IntList
@@ -136,13 +137,14 @@ import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.hypot
+import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
 
 private fun Context.generateComment(
     textView: TextView,
     comment: GalleryComment,
-): CharSequence {
+): Pair<CharSequence, CharSequence> {
     val sp = comment.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(textView))
     val ssb = SpannableStringBuilder(sp)
     if (0L != comment.id && 0 != comment.score) {
@@ -169,13 +171,14 @@ private fun Context.generateComment(
             append(str)
         }
     }
-    return TextUrl.handleTextUrl(ssb)
+    return TextUrl.handleTextUrl(ssb) to sp
 }
 
 @Destination
 @Composable
 fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val dialogState = LocalDialogState.current
     val coroutineScope = rememberCoroutineScope()
     var commenting by rememberSaveable { mutableStateOf(false) }
     var userComment by rememberSaveable { mutableStateOf("") }
@@ -187,6 +190,18 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
         val detail = EhEngine.getGalleryDetail(url)
         comments = detail.comments
+    }
+
+    val copyComment = stringResource(R.string.copy_comment_text)
+    val blockCommenter = stringResource(R.string.block_commenter)
+    suspend fun doCommentAction(comment: GalleryComment, realText: CharSequence) {
+        val action = dialogState.showSelectItem(
+            copyComment to {
+                context.findActivity<MainActivity>().addTextToClipboard(realText)
+            },
+            (blockCommenter to suspend {}).takeIf { !comment.uploader && !comment.editable },
+        )
+        action.invoke()
     }
 
     BackHandler(commenting) {
@@ -234,7 +249,8 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         }
                         time.text = ReadableTime.getTimeAgo(item.time)
                         comment.maxLines = 5
-                        comment.text = context.generateComment(comment, item)
+                        val (commentText, realtext) = context.generateComment(comment, item)
+                        comment.text = commentText
                         comment.setOnClickListener {
                             val span = comment.currentSpan
                             comment.clearCurrentSpan()
@@ -248,7 +264,9 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                             }
                         }
                         card.setOnClickListener {
-                            // showCommentDialog(position, holder.sp)
+                            coroutineScope.launch {
+                                doCommentAction(item, realtext)
+                            }
                         }
                     }
                 }
