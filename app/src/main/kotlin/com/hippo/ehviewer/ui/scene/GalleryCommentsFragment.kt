@@ -19,6 +19,7 @@ import android.animation.Animator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
+import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -40,8 +41,27 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.content.ContextCompat
 import androidx.core.text.getSpans
 import androidx.core.text.inSpans
@@ -50,6 +70,7 @@ import androidx.core.text.set
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsAnimationCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -90,6 +111,7 @@ import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.applyNavigationBarsPadding
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.toBBCode
+import com.ramcosta.composedestinations.annotation.Destination
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -97,7 +119,47 @@ import kotlin.math.hypot
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
 
-class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefreshListener {
+@Destination
+@Composable
+fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController) {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.gallery_comments)) },
+                navigationIcon = {
+                    IconButton(onClick = { navigator.popBackStack() }) {
+                        Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+            )
+        },
+    ) { paddingValues ->
+        val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
+        LazyColumn(
+            modifier = Modifier.padding(horizontal = keylineMargin),
+            contentPadding = paddingValues,
+        ) {
+            items(galleryDetail.comments.comments) { item ->
+                AndroidViewBinding(factory = ItemGalleryCommentBinding::inflate) {
+                    user.text = item.user
+                    user.setBackgroundColor(Color.TRANSPARENT)
+                    time.text = ReadableTime.getTimeAgo(item.time)
+                    comment.maxLines = 5
+                    comment.text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(comment))
+                }
+            }
+            if (galleryDetail.comments.hasMore) {
+                item {
+                }
+            }
+        }
+    }
+}
+
+class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshListener {
     private var _binding: SceneGalleryCommentsBinding? = null
     private val binding get() = _binding!!
     private val callback = object : OnBackPressedCallback(false) {
@@ -149,13 +211,12 @@ class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefresh
         outState.putParcelable(KEY_GALLERY_DETAIL, mGalleryDetail)
     }
 
-    override fun onCreateViewWithToolbar(
+    override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = SceneGalleryCommentsBinding.inflate(inflater, container!!)
-        setLiftOnScrollTargetView(binding.recyclerView)
+        _binding = SceneGalleryCommentsBinding.inflate(inflater, FrameLayout(inflater.context))
         val tip = binding.tip
         ViewCompat.setWindowInsetsAnimationCallback(
             binding.root,
@@ -271,7 +332,11 @@ class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefresh
             }
         }
         binding.fabLayout.applyNavigationBarsPadding()
-        return binding.root
+        return ComposeWithMD3 {
+            val galleryDetail = remember { requireArguments().getParcelableCompat<GalleryDetail>(KEY_GALLERY_DETAIL)!! }
+            val navController = remember { findNavController() }
+            GalleryCommentsScreen(galleryDetail = galleryDetail, navigator = navController)
+        }
     }
 
     fun Spannable.clearSpan(start: Int, end: Int, url: Boolean) {
@@ -296,12 +361,6 @@ class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefresh
         mAdapter = null
         mViewTransition = null
         _binding = null
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        setTitle(R.string.gallery_comments)
-        setNavigationIcon(R.drawable.v_arrow_left_dark_x24)
     }
 
     private fun showFilterCommenterDialog(commenter: String?, position: Int) {
@@ -880,7 +939,7 @@ class GalleryCommentsScene : BaseToolbarScene(), View.OnClickListener, OnRefresh
     }
 
     companion object {
-        val TAG: String = GalleryCommentsScene::class.java.simpleName
+        val TAG: String = GalleryCommentsFragment::class.java.simpleName
         const val KEY_API_UID = "api_uid"
         const val KEY_API_KEY = "api_key"
         const val KEY_GID = "gid"

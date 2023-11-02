@@ -975,19 +975,19 @@ class GalleryDetailScene : BaseScene() {
     private fun onNavigateToCommentScene() {
         val galleryDetail = composeBindingGD ?: return
         val args = Bundle()
-        args.putLong(GalleryCommentsScene.KEY_API_UID, galleryDetail.apiUid)
+        args.putLong(GalleryCommentsFragment.KEY_API_UID, galleryDetail.apiUid)
         args.putString(
-            GalleryCommentsScene.KEY_API_KEY,
+            GalleryCommentsFragment.KEY_API_KEY,
             galleryDetail.apiKey,
         )
-        args.putLong(GalleryCommentsScene.KEY_GID, galleryDetail.gid)
-        args.putString(GalleryCommentsScene.KEY_TOKEN, galleryDetail.token)
+        args.putLong(GalleryCommentsFragment.KEY_GID, galleryDetail.gid)
+        args.putString(GalleryCommentsFragment.KEY_TOKEN, galleryDetail.token)
         args.putParcelable(
-            GalleryCommentsScene.KEY_COMMENT_LIST,
+            GalleryCommentsFragment.KEY_COMMENT_LIST,
             galleryDetail.comments,
         )
         args.putParcelable(
-            GalleryCommentsScene.KEY_GALLERY_DETAIL,
+            GalleryCommentsFragment.KEY_GALLERY_DETAIL,
             galleryDetail,
         )
         navAnimated(R.id.galleryCommentsScene, args)
