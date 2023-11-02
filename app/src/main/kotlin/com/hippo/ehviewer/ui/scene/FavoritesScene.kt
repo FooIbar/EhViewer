@@ -76,7 +76,6 @@ import com.hippo.ehviewer.ui.legacy.FastScroller.OnDragHandlerListener
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.ViewTransition
 import com.hippo.ehviewer.ui.legacy.WindowInsetsAnimationHelper
-import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.SimpleHandler
@@ -225,7 +224,7 @@ class FavoritesScene : SearchBarScene() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = SceneFavoritesBinding.inflate(inflater, container!!)
-        container.addView(ComposeWithViewLifecycle().apply { setMD3Content { dialogState.Intercept() } })
+        container.addView(ComposeWithMD3 { dialogState.Intercept() })
         setOnApplySearch {
             if (!tracker.isInCustomChoice) {
                 switchFav(urlBuilder.favCat, it)
@@ -439,35 +438,33 @@ class FavoritesScene : SearchBarScene() {
         showNormalFabsJob = null
     }
 
-    override fun onCreateDrawerView(inflater: LayoutInflater) = ComposeWithViewLifecycle().apply {
-        setMD3Content {
-            val localFavCount by vm.localFavCount.collectAsState(0)
-            ElevatedCard {
-                TopAppBar(title = { Text(text = stringResource(id = R.string.collections)) })
-                val scope = currentRecomposeScope
-                LaunchedEffect(Unit) {
-                    Settings.favChangesFlow.collect {
-                        scope.invalidate()
-                    }
+    override fun onCreateDrawerView(inflater: LayoutInflater) = ComposeWithMD3 {
+        val localFavCount by vm.localFavCount.collectAsState(0)
+        ElevatedCard {
+            TopAppBar(title = { Text(text = stringResource(id = R.string.collections)) })
+            val scope = currentRecomposeScope
+            LaunchedEffect(Unit) {
+                Settings.favChangesFlow.collect {
+                    scope.invalidate()
                 }
-                val localFav = stringResource(id = R.string.local_favorites) to localFavCount
-                val faves = if (EhCookieStore.hasSignedIn()) {
-                    arrayOf(
-                        localFav,
-                        stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
-                        *Settings.favCat.zip(Settings.favCount.toTypedArray()).toTypedArray(),
+            }
+            val localFav = stringResource(id = R.string.local_favorites) to localFavCount
+            val faves = if (EhCookieStore.hasSignedIn()) {
+                arrayOf(
+                    localFav,
+                    stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
+                    *Settings.favCat.zip(Settings.favCount.toTypedArray()).toTypedArray(),
+                )
+            } else {
+                arrayOf(localFav)
+            }
+            LazyColumn {
+                itemsIndexed(faves) { index, (name, count) ->
+                    ListItem(
+                        headlineContent = { Text(text = name) },
+                        trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
+                        modifier = Modifier.clickable { onItemClick(index) },
                     )
-                } else {
-                    arrayOf(localFav)
-                }
-                LazyColumn {
-                    itemsIndexed(faves) { index, (name, count) ->
-                        ListItem(
-                            headlineContent = { Text(text = name) },
-                            trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
-                            modifier = Modifier.clickable { onItemClick(index) },
-                        )
-                    }
                 }
             }
         }
