@@ -23,8 +23,9 @@ import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -45,6 +46,7 @@ import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.ElevatedCard
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
 import com.hippo.ehviewer.util.FavouriteStatusRouter
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun GalleryInfoListItem(
@@ -120,13 +122,9 @@ fun GalleryInfoListItem(
                             bottom.linkTo(postedRef.top)
                         },
                     ) {
-                        val download by produceState(false, info.gid) {
-                            // Workaround ComposeView in RecyclerView, since view is reused, remembered value will not update when setContent with similar @Composable lambda, since composer group key is the same
-                            value = DownloadManager.containDownloadInfo(info.gid)
-                            DownloadManager.stateFlow(info.gid).collect {
-                                value = DownloadManager.containDownloadInfo(info.gid)
-                            }
-                        }
+                        val download by remember {
+                            DownloadManager.stateFlow(info.gid).map(DownloadManager::containDownloadInfo)
+                        }.collectAsState(initial = DownloadManager.containDownloadInfo(info.gid))
                         if (download) {
                             Icon(
                                 Icons.Default.Download,

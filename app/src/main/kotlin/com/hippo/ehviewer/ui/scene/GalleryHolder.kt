@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -53,14 +54,17 @@ class ListGalleryHolder(private val composeView: ComposeView, private val showFa
     override fun bind(galleryInfo: GalleryInfo, isChecked: Boolean, onClick: () -> Unit, onLongClick: () -> Unit) {
         composeView.setMD3Content {
             CheckableItem(checked = isChecked) {
-                GalleryInfoListItem(
-                    onClick = onClick,
-                    onLongClick = onLongClick,
-                    info = galleryInfo,
-                    modifier = Modifier.height(height),
-                    isInFavScene = !showFavourite,
-                    showPages = showPages,
-                )
+                // Workaround ComposeView in RecyclerView, since view is reused, remembered value will not update when setContent with similar @Composable lambda, since composer group key is the same
+                key(galleryInfo.gid) {
+                    GalleryInfoListItem(
+                        onClick = onClick,
+                        onLongClick = onLongClick,
+                        info = galleryInfo,
+                        modifier = Modifier.height(height),
+                        isInFavScene = !showFavourite,
+                        showPages = showPages,
+                    )
+                }
             }
         }
     }
