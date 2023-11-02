@@ -73,7 +73,7 @@
         android:label="SettingsActivity" />
     <fragment
         android:id="@+id/progressScene"
-        android:name="com.hippo.ehviewer.ui.scene.ProgressScene"
+        android:name="com.hippo.ehviewer.ui.scene.ProgressFragment"
         android:label="ProgressScene" />
     <activity
         android:id="@+id/webView"

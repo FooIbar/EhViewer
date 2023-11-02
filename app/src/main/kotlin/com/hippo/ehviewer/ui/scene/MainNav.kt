@@ -55,10 +55,9 @@ fun NavController.navWithUrl(url: String): Boolean {
         navAnimated(
             R.id.progressScene,
             bundleOf(
-                ProgressScene.KEY_ACTION to ProgressScene.ACTION_GALLERY_TOKEN,
-                ProgressScene.KEY_GID to gid,
-                ProgressScene.KEY_PTOKEN to pToken,
-                ProgressScene.KEY_PAGE to page,
+                ProgressFragment.KEY_GID to gid,
+                ProgressFragment.KEY_PTOKEN to pToken,
+                ProgressFragment.KEY_PAGE to page,
             ),
         )
         return true
