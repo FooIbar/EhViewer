@@ -381,6 +381,8 @@
     <string name="settings_advanced_app_language_title">App 界面语言</string>
     <string name="settings_advanced_cronet_integration">[实验性] Cronet 集成</string>
     <string name="settings_advanced_cronet_integration_summary">使用 Cronet 下载图片（性能更好）</string>
+    <string name="settings_advanced_touch_slop">[实验性] 触摸溢出系数</string>
+    <string name="settings_advanced_touch_slop_summary">增大此项将降低滑动手势敏感度</string>
     <string name="settings_advanced_export_data">导出数据</string>
     <string name="settings_advanced_export_data_summary">保存数据至外置存储器，例如下载列表，快速搜索列表</string>
     <string name="settings_advanced_export_data_to">已导出数据至 %s</string>

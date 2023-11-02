@@ -62,6 +62,7 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.Settings.listThumbSize
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.History
@@ -143,7 +144,7 @@ fun HistoryScreen(navigator: NavController) {
                             true
                         },
                     )
-                    LocalTouchSlopProvider(3f) {
+                    LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
                         SwipeToDismiss(
                             state = dismissState,
                             background = {},

@@ -139,6 +139,13 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.preload_thumb_aggressively),
                 value = Settings::preloadThumbAggressively,
             )
+            IntSliderPreference(
+                maxValue = 5,
+                minValue = 1,
+                title = stringResource(id = R.string.settings_advanced_touch_slop),
+                summary = stringResource(id = R.string.settings_advanced_touch_slop_summary),
+                value = Settings::touchSlopFactor,
+            )
             var userAgent by Settings::userAgent.observed
             val userAgentTitle = stringResource(id = R.string.user_agent)
             Preference(
