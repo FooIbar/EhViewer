@@ -360,7 +360,7 @@ class FavoritesScene : SearchBarScene() {
                     "favorite-selection",
                     this,
                     { adapter.snapshot().items },
-                    { (this as GalleryHolder).galleryId },
+                    { (this as? GalleryHolder)?.galleryId },
                 ).apply {
                     addCustomChoiceListener({
                         showSelectionFab()
