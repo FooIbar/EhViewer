@@ -12,7 +12,7 @@ private fun joinIfStringArray(any: Any?): String {
 }
 
 private fun collectClassStaticInfo(clazz: Class<*>): String {
-    return clazz.declaredFields.joinToString("\n") {
+    return clazz.fields.joinToString("\n") {
         "${it.name}=${joinIfStringArray(it.get(null))}"
     }
 }
@@ -20,11 +20,7 @@ private fun collectClassStaticInfo(clazz: Class<*>): String {
 object Crash {
     private fun collectInfo(fw: FileWriter) {
         fw.write("======== PackageInfo ========\n")
-        fw.write("PackageName=${BuildConfig.APPLICATION_ID}\n")
-        fw.write("VersionName=${BuildConfig.VERSION_NAME}\n")
-        fw.write("VersionCode=${BuildConfig.VERSION_CODE}\n")
-        fw.write("CommitSha=${BuildConfig.COMMIT_SHA}\n")
-        fw.write("BuildTime=${BuildConfig.BUILD_TIME}\n")
+        fw.write("${collectClassStaticInfo(BuildConfig::class.java)}\n")
         fw.write("\n")
 
         // Device info
