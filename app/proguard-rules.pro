@@ -11,6 +11,10 @@
     java.lang.Object _value;
 }
 
+-keepclassmembers enum androidx.compose.material3.DrawerValue {
+    values();
+}
+
 -keep class androidx.viewpager.widget.ViewPager$LayoutParams { int position; }
 
 -keep class com.hippo.ehviewer.client.parser.Torrent { *; }
