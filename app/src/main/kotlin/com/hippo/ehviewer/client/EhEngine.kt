@@ -395,22 +395,23 @@ object EhEngine {
         }
     }.executeAndParsingWith(String::parseAs)
 
-    suspend fun fillGalleryListByApi(galleryInfoList: List<GalleryInfo>, referer: String) = galleryInfoList.chunked(MAX_REQUEST_SIZE).parMap {
-        ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
-            jsonBody {
-                put("method", "gdata")
-                array("gidlist") {
-                    it.forEach {
-                        addJsonArray {
-                            add(it.gid)
-                            add(it.token)
+    suspend fun fillGalleryListByApi(galleryInfoList: List<GalleryInfo>, referer: String) =
+        galleryInfoList.chunked(MAX_REQUEST_SIZE).parMap(concurrency = Settings.multiThreadDownload) {
+            ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
+                jsonBody {
+                    put("method", "gdata")
+                    array("gidlist") {
+                        it.forEach {
+                            addJsonArray {
+                                add(it.gid)
+                                add(it.token)
+                            }
                         }
                     }
+                    put("namespace", 1)
                 }
-                put("namespace", 1)
-            }
-        }.executeAndParsingWith { GalleryApiParser.parse(this, it) }
-    }
+            }.executeAndParsingWith { GalleryApiParser.parse(this, it) }
+        }
 
     suspend fun voteComment(
         apiUid: Long,

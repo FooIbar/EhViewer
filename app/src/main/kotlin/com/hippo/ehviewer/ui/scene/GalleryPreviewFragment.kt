@@ -110,7 +110,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
                     val end = (up + getLimit(params, key) - 1).coerceAtMost(pages - 1)
                     runSuspendCatching {
                         (up..end).filterNot { it in previewPagesMap }.map { it / pgSize }.toSet()
-                            .parMap(Dispatchers.IO) { getPreviewListByPage(it) }
+                            .parMap(Dispatchers.IO, Settings.multiThreadDownload) { getPreviewListByPage(it) }
                             .forEach { previews -> previews.forEach { previewPagesMap[it.position] = it } }
                     }.onFailure {
                         return LoadResult.Error(it)
