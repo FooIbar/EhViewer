@@ -15,15 +15,12 @@
  */
 package com.hippo.ehviewer.ui.scene
 
-import android.animation.Animator
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.os.Looper
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.CharacterStyle
@@ -33,19 +30,18 @@ import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.URLSpan
 import android.text.style.UnderlineSpan
-import android.util.Log
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewAnimationUtils
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -61,6 +57,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -107,24 +104,18 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
-import com.hippo.ehviewer.databinding.ItemDrawerFavoritesBinding
 import com.hippo.ehviewer.databinding.ItemGalleryCommentBinding
 import com.hippo.ehviewer.databinding.SceneGalleryCommentsBinding
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.jumpToReaderByPage
-import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
-import com.hippo.ehviewer.ui.legacy.ViewTransition
 import com.hippo.ehviewer.ui.legacy.WindowInsetsAnimationHelper
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.LocalDialogState
-import com.hippo.ehviewer.util.AnimationUtils
 import com.hippo.ehviewer.util.ExceptionUtils
-import com.hippo.ehviewer.util.IntList
 import com.hippo.ehviewer.util.ReadableTime
-import com.hippo.ehviewer.util.SimpleAnimatorListener
 import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.applyNavigationBarsPadding
@@ -135,7 +126,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import kotlin.math.hypot
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
@@ -209,6 +199,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     val cancelVoteDown = stringResource(R.string.cancel_vote_down)
     val voteUp = stringResource(R.string.vote_up)
     val voteDown = stringResource(R.string.vote_down)
+    val checkVoteStatus = stringResource(R.string.check_vote_status)
 
     suspend fun Context.showFilterCommenter(comment: GalleryComment) {
         val commenter = comment.user ?: return
@@ -216,6 +207,34 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         Filter(FilterMode.COMMENTER, commenter).remember()
         comments = comments.copy(comments = comments.comments.filter { it == comment })
         findActivity<MainActivity>().showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
+    }
+
+    suspend fun showCommentVoteStatus(comment: GalleryComment) {
+        val statusStr = comment.voteState ?: return
+        val data = statusStr.split(',').map {
+            val str = it.trim()
+            val index = str.lastIndexOf(' ')
+            if (index < 0) {
+                str to ""
+            } else {
+                str.substring(0, index).trim() to str.substring(index + 1).trim()
+            }
+        }
+        // Wait cancellation
+        dialogState.showNoButton<Unit> {
+            Column {
+                data.forEach { (name, vote) ->
+                    ListItem(
+                        headlineContent = {
+                            Text(text = name)
+                        },
+                        trailingContent = {
+                            Text(text = vote)
+                        },
+                    )
+                }
+            }
+        }
     }
 
     BackHandler(commenting) {
@@ -277,13 +296,16 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         val actions = buildAction {
                             copyComment thenDo { findActivity<MainActivity>().addTextToClipboard(realText) }
                             if (!comment.uploader && !comment.editable) {
-                                blockCommenter thenDo suspend { showFilterCommenter(comment) }
+                                blockCommenter thenDo { showFilterCommenter(comment) }
                             }
                             if (comment.voteUpAble) {
                                 (if (comment.voteUpEd) cancelVoteUp else voteUp) thenDo { voteComment(comment, true) }
                             }
                             if (comment.voteDownAble) {
                                 (if (comment.voteDownEd) cancelVoteDown else voteDown) thenDo { voteComment(comment, false) }
+                            }
+                            if (!comment.voteState.isNullOrEmpty()) {
+                                checkVoteStatus thenDo { showCommentVoteStatus(comment) }
                             }
                         }
                         dialogState.showSelectItem(*actions.toTypedArray()).invoke()
@@ -385,7 +407,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener {
     private var _binding: SceneGalleryCommentsBinding? = null
     private val binding get() = _binding!!
     private var mGalleryDetail: GalleryDetail? = null
-    private var mViewTransition: ViewTransition? = null
     private var mSendDrawable: Drawable? = null
     private var mPencilDrawable: Drawable? = null
     private var mCommentId: Long = 0
@@ -497,8 +518,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener {
             }
         }
         binding.fab.setOnClickListener(this)
-        mViewTransition = ViewTransition(binding.refreshLayout, tip)
-        updateView(false)
         binding.editPanel.applyInsetter {
             type(ime = true, navigationBars = true) {
                 padding()
@@ -532,84 +551,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener {
         }
     }
 
-    @SuppressLint("InflateParams")
-    fun showVoteStatusDialog(context: Context, voteStatus: String) {
-        val temp = voteStatus.split(',')
-        val length = temp.size
-        val userArray = arrayOfNulls<String>(length)
-        val voteArray = arrayOfNulls<String>(length)
-        for (i in 0 until length) {
-            val str = temp[i].trim()
-            val index = str.lastIndexOf(' ')
-            if (index < 0) {
-                Log.d(TAG, "Something wrong happened about vote state")
-                userArray[i] = str
-                voteArray[i] = ""
-            } else {
-                userArray[i] = str.substring(0, index).trim()
-                voteArray[i] = str.substring(index + 1).trim()
-            }
-        }
-        val builder = BaseDialogBuilder(context)
-        val builderContext = builder.context
-        val inflater = LayoutInflater.from(builderContext)
-        val rv = inflater.inflate(R.layout.dialog_recycler_view, null) as RecyclerView
-        rv.adapter = object : RecyclerView.Adapter<VoteHolder>() {
-            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VoteHolder {
-                return VoteHolder(ItemDrawerFavoritesBinding.inflate(inflater, parent, false))
-            }
-
-            override fun onBindViewHolder(holder: VoteHolder, position: Int) {
-                holder.bind(userArray[position], voteArray[position])
-            }
-
-            override fun getItemCount(): Int {
-                return length
-            }
-        }
-        rv.layoutManager = LinearLayoutManager(builderContext)
-        rv.clipToPadding = false
-        builder.setView(rv).show()
-    }
-
-    private fun showCommentDialog(position: Int, text: CharSequence) {
-        val context = context
-        if (context == null || mGalleryDetail == null || position >= mGalleryDetail!!.comments.comments.size || position < 0) {
-            return
-        }
-        val comment = mGalleryDetail!!.comments.comments[position]
-        val menu: MutableList<String> = ArrayList()
-        val menuId = IntList()
-        val resources = context.resources
-        menu.add(resources.getString(R.string.copy_comment_text))
-        menuId.add(R.id.copy)
-        if (!comment.voteState.isNullOrEmpty()) {
-            menu.add(resources.getString(R.string.check_vote_status))
-            menuId.add(R.id.check_vote_status)
-        }
-        BaseDialogBuilder(context)
-            .setItems(menu.toTypedArray()) { _: DialogInterface?, which: Int ->
-                if (which < 0 || which >= menuId.size) {
-                    return@setItems
-                }
-                when (menuId[which]) {
-                    R.id.check_vote_status -> showVoteStatusDialog(context, comment.voteState!!)
-                    R.id.edit_comment -> prepareEditComment(comment.id, text)
-                }
-            }.show()
-    }
-
-    private fun updateView(animation: Boolean) {
-        if (null == mViewTransition) {
-            return
-        }
-        if (mGalleryDetail == null || mGalleryDetail!!.comments.comments.isEmpty()) {
-            mViewTransition!!.showView(1, animation)
-        } else {
-            mViewTransition!!.showView(0, animation)
-        }
-    }
-
     private fun prepareNewComment() {
         mCommentId = 0
         binding.send.setImageDrawable(mSendDrawable)
@@ -619,93 +560,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener {
         mCommentId = commentId
         binding.editText.setText(text)
         binding.send.setImageDrawable(mPencilDrawable)
-    }
-
-    private fun showEditPanelWithAnimation() {
-        mInAnimation = true
-        binding.fab.translationX = 0.0f
-        binding.fab.translationY = 0.0f
-        binding.fab.scaleX = 1.0f
-        binding.fab.scaleY = 1.0f
-        val fabEndX = binding.editPanel.left + binding.editPanel.width / 2 - binding.fab.width / 2
-        val fabEndY = binding.editPanel.top + binding.editPanel.height / 2 - binding.fab.height / 2
-        binding.fab.animate().x(fabEndX.toFloat()).y(fabEndY.toFloat()).scaleX(0.0f).scaleY(0.0f)
-            .setInterpolator(AnimationUtils.SLOW_FAST_SLOW_INTERPOLATOR)
-            .setDuration(300L).setListener(object : SimpleAnimatorListener() {
-                override fun onAnimationEnd(animation: Animator) {
-                    (binding.fab as View).visibility = View.INVISIBLE
-                    binding.editPanel.visibility = View.VISIBLE
-                    val halfW = binding.editPanel.width / 2
-                    val halfH = binding.editPanel.height / 2
-                    val animator = ViewAnimationUtils.createCircularReveal(
-                        binding.editPanel,
-                        halfW,
-                        halfH,
-                        0f,
-                        hypot(halfW.toDouble(), halfH.toDouble()).toFloat(),
-                    ).setDuration(300L)
-                    animator.addListener(object : SimpleAnimatorListener() {
-                        override fun onAnimationEnd(animation: Animator) {
-                            mInAnimation = false
-                        }
-                    })
-                    animator.start()
-                }
-            }).start()
-    }
-
-    private fun hideEditPanelWithAnimation() {
-        mInAnimation = true
-        val halfW = binding.editPanel.width / 2
-        val halfH = binding.editPanel.height / 2
-        val animator = ViewAnimationUtils.createCircularReveal(
-            binding.editPanel,
-            halfW,
-            halfH,
-            hypot(halfW.toDouble(), halfH.toDouble()).toFloat(),
-            0.0f,
-        ).setDuration(300L)
-        animator.addListener(object : SimpleAnimatorListener() {
-            override fun onAnimationEnd(animation: Animator) {
-                if (Looper.myLooper() != Looper.getMainLooper()) {
-                    // Some devices may run this block in non-UI thread.
-                    // It might be a bug of Android OS.
-                    // Check it here to avoid crash.
-                    return
-                }
-                binding.editPanel.visibility = View.GONE
-                (binding.fab as View).visibility = View.VISIBLE
-                val fabStartX =
-                    binding.editPanel.left + binding.editPanel.width / 2 - binding.fab.width / 2
-                val fabStartY =
-                    binding.editPanel.top + binding.editPanel.height / 2 - binding.fab.height / 2
-                binding.fab.x = fabStartX.toFloat()
-                binding.fab.y = fabStartY.toFloat()
-                binding.fab.scaleX = 0.0f
-                binding.fab.scaleY = 0.0f
-                binding.fab.rotation = -45.0f
-                binding.fab.animate().translationX(0.0f).translationY(0.0f).scaleX(1.0f)
-                    .scaleY(1.0f)
-                    .rotation(0.0f)
-                    .setInterpolator(AnimationUtils.SLOW_FAST_SLOW_INTERPOLATOR)
-                    .setDuration(300L).setListener(object : SimpleAnimatorListener() {
-                        override fun onAnimationEnd(animation: Animator) {
-                            mInAnimation = false
-                        }
-                    }).start()
-            }
-        })
-        animator.start()
-    }
-
-    private fun hideEditPanel(animation: Boolean) {
-        hideSoftInput()
-        if (animation) {
-            hideEditPanelWithAnimation()
-        } else {
-            (binding.fab as View).visibility = View.VISIBLE
-            binding.editPanel.visibility = View.INVISIBLE
-        }
     }
 
     private val galleryDetailUrl: String?
@@ -759,8 +613,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener {
                         )
                     }
                 }
-                hideSoftInput()
-                hideEditPanel(true)
             }
         }
     }
@@ -769,15 +621,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener {
         mGalleryDetail!!.comments = result
         // Remove text
         binding.editText.setText("")
-        updateView(true)
-    }
-
-    private class VoteHolder(private val binding: ItemDrawerFavoritesBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        fun bind(user: String?, vote: String?) {
-            binding.key.text = user
-            binding.value.text = vote
-        }
     }
 
     companion object {

@@ -191,7 +191,7 @@ class DialogState {
         }
     }
 
-    private suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable DismissDialogScope<R>.() -> Unit): R {
+    suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable DismissDialogScope<R>.() -> Unit): R {
         return dialog { cont ->
             val impl = remember(cont) {
                 DismissDialogScope<R> {
