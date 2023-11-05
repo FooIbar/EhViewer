@@ -222,7 +222,6 @@ class GalleryDetailScene : BaseScene() {
         mAction = action
         if (ACTION_GALLERY_INFO == action) {
             composeBindingGI = args.getParcelableCompat(KEY_GALLERY_INFO)
-            composeBindingGI?.let { lifecycleScope.launchIO { EhDB.putHistoryInfo(it) } }
         } else if (ACTION_GID_TOKEN == action) {
             mGid = args.getLong(KEY_GID)
             mToken = args.getString(KEY_TOKEN)
@@ -867,7 +866,10 @@ class GalleryDetailScene : BaseScene() {
                 EhEngine.getGalleryDetail(url)
             }.onSuccess { galleryDetail ->
                 galleryDetailCache.put(galleryDetail.gid, galleryDetail)
-                EhDB.putHistoryInfo(galleryDetail.galleryInfo)
+                // Don't update gallery info in database if previous destination is favorites,
+                // since it will invalidate local favorites PagingSource and lose scroll state
+                val previousDestinationId = findNavController().previousBackStackEntry?.destination?.id
+                EhDB.putHistoryInfo(galleryDetail.galleryInfo, previousDestinationId != R.id.nav_favourite)
                 if (Settings.preloadThumbAggressively) {
                     lifecycleScope.launchIO {
                         galleryDetail.previewList.forEach {
