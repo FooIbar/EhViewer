@@ -223,7 +223,7 @@ class DialogState {
     )
 
     suspend fun <R> showSelectItem(
-        vararg items: Pair<String, R>?,
+        vararg items: Pair<String, R>,
         @StringRes title: Int? = null,
     ): R = showNoButton {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
@@ -235,7 +235,7 @@ class DialogState {
                 )
             }
             LazyColumn {
-                items(items.filterNotNull()) { (text, item) ->
+                items(items) { (text, item) ->
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
                         Text(
                             text = text,

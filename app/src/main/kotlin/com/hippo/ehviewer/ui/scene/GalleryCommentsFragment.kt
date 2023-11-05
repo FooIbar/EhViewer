@@ -141,6 +141,18 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
 
+interface ActionScope {
+    infix fun String.thenDo(that: suspend () -> Unit)
+}
+
+private inline fun buildAction(builder: ActionScope.() -> Unit) = buildList {
+    builder(object : ActionScope {
+        override fun String.thenDo(that: suspend () -> Unit) {
+            add(this to that)
+        }
+    })
+}
+
 private fun Context.generateComment(
     textView: TextView,
     comment: GalleryComment,
@@ -194,22 +206,33 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
 
     val copyComment = stringResource(R.string.copy_comment_text)
     val blockCommenter = stringResource(R.string.block_commenter)
+    val cancelVoteUp = stringResource(R.string.cancel_vote_up)
+    val cancelVoteDown = stringResource(R.string.cancel_vote_down)
+    val voteUp = stringResource(R.string.vote_up)
+    val voteDown = stringResource(R.string.vote_down)
 
     suspend fun Context.showFilterCommenter(comment: GalleryComment) {
         val commenter = comment.user ?: return
-        val text = getString(R.string.filter_the_commenter, commenter)
-        dialogState.awaitPermissionOrCancel { Text(text = text) }
+        dialogState.awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_commenter, commenter)) }
         Filter(FilterMode.COMMENTER, commenter).remember()
         comments = comments.copy(comments = comments.comments.filter { it == comment })
         findActivity<MainActivity>().showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
     }
 
     suspend fun Context.doCommentAction(comment: GalleryComment, realText: CharSequence) {
-        val action = dialogState.showSelectItem(
-            copyComment to { findActivity<MainActivity>().addTextToClipboard(realText) },
-            (blockCommenter to suspend { showFilterCommenter(comment) }).takeIf { !comment.uploader && !comment.editable },
-        )
-        action.invoke()
+        val actions = buildAction {
+            copyComment thenDo { findActivity<MainActivity>().addTextToClipboard(realText) }
+            if (!comment.uploader && !comment.editable) {
+                blockCommenter thenDo suspend { showFilterCommenter(comment) }
+            }
+            if (comment.voteUpAble) {
+                (if (comment.voteUpEd) cancelVoteUp else voteUp) thenDo {}
+            }
+            if (comment.voteDownAble) {
+                (if (comment.voteUpEd) cancelVoteDown else voteDown) thenDo {}
+            }
+        }
+        dialogState.showSelectItem(*actions.toTypedArray()).invoke()
     }
 
     BackHandler(commenting) {
