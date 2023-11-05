@@ -344,7 +344,6 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 }
                 if (comments.hasMore) {
                     item {
-                        // TODO: This animation need to be investigated
                         AnimatedVisibility(refreshing) {
                             Box(modifier = Modifier.fillMaxWidth()) {
                                 CircularProgressIndicator(
