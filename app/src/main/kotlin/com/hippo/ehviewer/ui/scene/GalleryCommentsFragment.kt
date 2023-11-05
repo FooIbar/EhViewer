@@ -69,6 +69,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -219,22 +220,6 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         findActivity<MainActivity>().showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
     }
 
-    suspend fun Context.doCommentAction(comment: GalleryComment, realText: CharSequence) {
-        val actions = buildAction {
-            copyComment thenDo { findActivity<MainActivity>().addTextToClipboard(realText) }
-            if (!comment.uploader && !comment.editable) {
-                blockCommenter thenDo suspend { showFilterCommenter(comment) }
-            }
-            if (comment.voteUpAble) {
-                (if (comment.voteUpEd) cancelVoteUp else voteUp) thenDo {}
-            }
-            if (comment.voteDownAble) {
-                (if (comment.voteUpEd) cancelVoteDown else voteDown) thenDo {}
-            }
-        }
-        dialogState.showSelectItem(*actions.toTypedArray()).invoke()
-    }
-
     BackHandler(commenting) {
         commenting = false
     }
@@ -266,6 +251,46 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 contentPadding = paddingValues,
             ) {
                 items(comments.comments) { item ->
+                    val recomposeScope = currentRecomposeScope
+
+                    suspend fun Context.voteComment(comment: GalleryComment, isUp: Boolean) {
+                        galleryDetail.runSuspendCatching {
+                            EhEngine.voteComment(apiUid, apiKey, gid, token, comment.id, if (isUp) 1 else -1)
+                        }.onSuccess { result ->
+                            findActivity<MainActivity>().showTip(
+                                if (isUp) (if (0 != result.vote) R.string.vote_up_successfully else R.string.cancel_vote_up_successfully) else if (0 != result.vote) R.string.vote_down_successfully else R.string.cancel_vote_down_successfully,
+                                BaseScene.LENGTH_SHORT,
+                            )
+                            comment.score = result.score
+                            if (isUp) {
+                                comment.voteUpEd = 0 != result.vote
+                                comment.voteDownEd = false
+                            } else {
+                                comment.voteDownEd = 0 != result.vote
+                                comment.voteUpEd = false
+                            }
+                            recomposeScope.invalidate()
+                        }.onFailure {
+                            findActivity<MainActivity>().showTip(R.string.vote_failed, BaseScene.LENGTH_LONG)
+                        }
+                    }
+
+                    suspend fun Context.doCommentAction(comment: GalleryComment, realText: CharSequence) {
+                        val actions = buildAction {
+                            copyComment thenDo { findActivity<MainActivity>().addTextToClipboard(realText) }
+                            if (!comment.uploader && !comment.editable) {
+                                blockCommenter thenDo suspend { showFilterCommenter(comment) }
+                            }
+                            if (comment.voteUpAble) {
+                                (if (comment.voteUpEd) cancelVoteUp else voteUp) thenDo { voteComment(comment, true) }
+                            }
+                            if (comment.voteDownAble) {
+                                (if (comment.voteUpEd) cancelVoteDown else voteDown) thenDo { voteComment(comment, false) }
+                            }
+                        }
+                        dialogState.showSelectItem(*actions.toTypedArray()).invoke()
+                    }
+
                     AndroidViewBinding(factory = ItemGalleryCommentBinding::inflate) {
                         user.text = item.user?.let {
                             if (item.uploader) context.getString(R.string.comment_user_uploader, it) else it
@@ -514,18 +539,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
     private fun voteComment(id: Long, vote: Int) {
         val gd = mGalleryDetail ?: return
         lifecycleScope.launchIO {
-            runSuspendCatching {
-                EhEngine.voteComment(gd.apiUid, gd.apiKey, gd.gid, gd.token, id, vote)
-            }.onSuccess { result ->
-                val voteUp = vote > 0
-                showTip(
-                    if (voteUp) (if (0 != result.vote) R.string.vote_up_successfully else R.string.cancel_vote_up_successfully) else if (0 != result.vote) R.string.vote_down_successfully else R.string.cancel_vote_down_successfully,
-                    LENGTH_SHORT,
-                )
-                withUIContext { onVoteCommentSuccess(result, voteUp) }
-            }.onFailure {
-                showTip(R.string.vote_failed, LENGTH_LONG)
-            }
         }
     }
 
@@ -834,14 +847,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
 
         // Update comment
         val comment = mGalleryDetail!!.comments.comments[position]
-        comment.score = result.score
-        if (voteUp) {
-            comment.voteUpEd = 0 != result.vote
-            comment.voteDownEd = false
-        } else {
-            comment.voteDownEd = 0 != result.vote
-            comment.voteUpEd = false
-        }
     }
 
     override fun onRefresh() {
