@@ -17,7 +17,6 @@ package com.hippo.ehviewer.ui.scene
 
 import android.content.Context
 import android.content.DialogInterface
-import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -40,6 +39,7 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -80,7 +80,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.content.ContextCompat
 import androidx.core.text.getSpans
 import androidx.core.text.inSpans
@@ -104,13 +103,13 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
-import com.hippo.ehviewer.databinding.ItemGalleryCommentBinding
 import com.hippo.ehviewer.databinding.SceneGalleryCommentsBinding
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.legacy.WindowInsetsAnimationHelper
+import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.LocalDialogState
@@ -145,7 +144,7 @@ private inline fun buildAction(builder: ActionScope.() -> Unit) = buildList {
 private fun Context.generateComment(
     textView: TextView,
     comment: GalleryComment,
-): Pair<CharSequence, CharSequence> {
+): CharSequence {
     val sp = comment.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(textView))
     val ssb = SpannableStringBuilder(sp)
     if (0L != comment.id && 0 != comment.score) {
@@ -172,7 +171,7 @@ private fun Context.generateComment(
             append(str)
         }
     }
-    return TextUrl.handleTextUrl(ssb) to sp
+    return TextUrl.handleTextUrl(ssb)
 }
 
 @Destination
@@ -265,6 +264,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
                 modifier = Modifier.padding(horizontal = keylineMargin),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = paddingValues,
             ) {
                 items(comments.comments) { item ->
@@ -292,9 +292,9 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         }
                     }
 
-                    suspend fun Context.doCommentAction(comment: GalleryComment, realText: CharSequence) {
+                    suspend fun Context.doCommentAction(comment: GalleryComment) {
                         val actions = buildAction {
-                            copyComment thenDo { findActivity<MainActivity>().addTextToClipboard(realText) }
+                            copyComment thenDo { findActivity<MainActivity>().addTextToClipboard(comment.comment.orEmpty().parseAsHtml()) }
                             if (!comment.uploader && !comment.editable) {
                                 blockCommenter thenDo { showFilterCommenter(comment) }
                             }
@@ -311,25 +311,26 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         dialogState.showSelectItem(*actions.toTypedArray()).invoke()
                     }
 
-                    AndroidViewBinding(factory = ItemGalleryCommentBinding::inflate) {
-                        user.text = item.user?.let {
-                            if (item.uploader) context.getString(R.string.comment_user_uploader, it) else it
-                        }
-                        user.setBackgroundColor(Color.TRANSPARENT)
-                        user.setOnClickListener {
+                    GalleryCommentCard(
+                        comment = item,
+                        onUserClick = {
                             val lub = ListUrlBuilder(
                                 mode = ListUrlBuilder.MODE_UPLOADER,
                                 mKeyword = item.user,
                             )
                             navigator.navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-                        }
-                        time.text = ReadableTime.getTimeAgo(item.time)
-                        comment.maxLines = 5
-                        val (commentText, realtext) = context.generateComment(comment, item)
-                        comment.text = commentText
-                        comment.setOnClickListener {
-                            val span = comment.currentSpan
-                            comment.clearCurrentSpan()
+                        },
+                        onCardClick = {
+                            coroutineScope.launch {
+                                context.doCommentAction(item)
+                            }
+                        },
+                    ) {
+                        maxLines = 5
+                        text = context.generateComment(this, item)
+                        setOnClickListener {
+                            val span = currentSpan
+                            clearCurrentSpan()
                             if (span is URLSpan) {
                                 val activity = context.findActivity<MainActivity>()
                                 if (!activity.jumpToReaderByPage(span.url, galleryDetail)) {
@@ -337,11 +338,6 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                                         activity.openBrowser(span.url)
                                     }
                                 }
-                            }
-                        }
-                        card.setOnClickListener {
-                            coroutineScope.launch {
-                                context.doCommentAction(item, realtext)
                             }
                         }
                     }
