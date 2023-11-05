@@ -97,7 +97,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
@@ -106,7 +105,6 @@ import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.GalleryCommentList
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.ListUrlBuilder
-import com.hippo.ehviewer.client.parser.VoteCommentResult
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.databinding.ItemDrawerFavoritesBinding
@@ -285,7 +283,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                                 (if (comment.voteUpEd) cancelVoteUp else voteUp) thenDo { voteComment(comment, true) }
                             }
                             if (comment.voteDownAble) {
-                                (if (comment.voteUpEd) cancelVoteDown else voteDown) thenDo { voteComment(comment, false) }
+                                (if (comment.voteDownEd) cancelVoteDown else voteDown) thenDo { voteComment(comment, false) }
                             }
                         }
                         dialogState.showSelectItem(*actions.toTypedArray()).invoke()
@@ -383,7 +381,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     }
 }
 
-class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshListener {
+class GalleryCommentsFragment : BaseScene(), View.OnClickListener {
     private var _binding: SceneGalleryCommentsBinding? = null
     private val binding get() = _binding!!
     private var mGalleryDetail: GalleryDetail? = null
@@ -393,7 +391,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
     private var mCommentId: Long = 0
     private var mInAnimation = false
     private var mShowAllComments = false
-    private var mRefreshingComments = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -410,7 +407,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
                 binding.fabLayout,
             ),
         )
-        binding.refreshLayout.setOnRefreshListener(this)
         val context = requireContext()
         val drawable = ContextCompat.getDrawable(context, R.drawable.big_sad_pandroid)
         drawable!!.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
@@ -536,12 +532,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
         }
     }
 
-    private fun voteComment(id: Long, vote: Int) {
-        val gd = mGalleryDetail ?: return
-        lifecycleScope.launchIO {
-        }
-    }
-
     @SuppressLint("InflateParams")
     fun showVoteStatusDialog(context: Context, voteStatus: String) {
         val temp = voteStatus.split(',')
@@ -593,22 +583,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
         val resources = context.resources
         menu.add(resources.getString(R.string.copy_comment_text))
         menuId.add(R.id.copy)
-        if (!comment.uploader && !comment.editable) {
-            menu.add(resources.getString(R.string.block_commenter))
-            menuId.add(R.id.block_commenter)
-        }
-        if (comment.editable) {
-            menu.add(resources.getString(R.string.edit_comment))
-            menuId.add(R.id.edit_comment)
-        }
-        if (comment.voteUpAble) {
-            menu.add(resources.getString(if (comment.voteUpEd) R.string.cancel_vote_up else R.string.vote_up))
-            menuId.add(R.id.vote_up)
-        }
-        if (comment.voteDownAble) {
-            menu.add(resources.getString(if (comment.voteDownEd) R.string.cancel_vote_down else R.string.vote_down))
-            menuId.add(R.id.vote_down)
-        }
         if (!comment.voteState.isNullOrEmpty()) {
             menu.add(resources.getString(R.string.check_vote_status))
             menuId.add(R.id.check_vote_status)
@@ -619,28 +593,10 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
                     return@setItems
                 }
                 when (menuId[which]) {
-                    R.id.vote_up -> voteComment(comment.id, 1)
-                    R.id.vote_down -> voteComment(comment.id, -1)
                     R.id.check_vote_status -> showVoteStatusDialog(context, comment.voteState!!)
                     R.id.edit_comment -> prepareEditComment(comment.id, text)
                 }
             }.show()
-    }
-
-    private fun refreshComment(url: String) {
-        lifecycleScope.launchIO {
-            runSuspendCatching {
-                EhEngine.getGalleryDetail(url)
-            }.onSuccess {
-                withUIContext {
-                    onRefreshGallerySuccess(it.comments)
-                }
-            }.onFailure {
-                withUIContext {
-                    onRefreshGalleryFailure()
-                }
-            }
-        }
     }
 
     private fun updateView(animation: Boolean) {
@@ -809,51 +765,11 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
         }
     }
 
-    private fun onRefreshGallerySuccess(result: GalleryCommentList) {
-        binding.refreshLayout.isRefreshing = false
-        mRefreshingComments = false
-        mGalleryDetail!!.comments = result
-        updateView(true)
-    }
-
-    private fun onRefreshGalleryFailure() {
-        binding.refreshLayout.isRefreshing = false
-        mRefreshingComments = false
-    }
-
     private fun onCommentGallerySuccess(result: GalleryCommentList) {
         mGalleryDetail!!.comments = result
         // Remove text
         binding.editText.setText("")
         updateView(true)
-    }
-
-    private fun onVoteCommentSuccess(result: VoteCommentResult, voteUp: Boolean) {
-        var position = -1
-        var i = 0
-        val n = mGalleryDetail!!.comments.comments.size
-        while (i < n) {
-            val comment = mGalleryDetail!!.comments.comments[i]
-            if (comment.id == result.id) {
-                position = i
-                break
-            }
-            i++
-        }
-        if (-1 == position) {
-            Log.d(TAG, "Can't find comment with id " + result.id)
-            return
-        }
-
-        // Update comment
-        val comment = mGalleryDetail!!.comments.comments[position]
-    }
-
-    override fun onRefresh() {
-        if (!mRefreshingComments) {
-            mRefreshingComments = true
-            galleryDetailUrl?.let { refreshComment(it) }
-        }
     }
 
     private class VoteHolder(private val binding: ItemDrawerFavoritesBinding) :
