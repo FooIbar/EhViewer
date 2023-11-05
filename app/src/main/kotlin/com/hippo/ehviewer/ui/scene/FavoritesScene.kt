@@ -141,7 +141,7 @@ class VMStorage : ViewModel() {
             EhDB.searchLocalFav(keyword)
         }
     }.flow.cachedIn(viewModelScope)
-    fun dataflow() = if (urlBuilder.favCat == -2) localFavDataFlow else cloudDataFlow
+    fun dataflow() = if (urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) localFavDataFlow else cloudDataFlow
     val localFavCount = EhDB.localFavCount
 }
 

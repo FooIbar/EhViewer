@@ -39,7 +39,7 @@ object FavouriteStatusRouter {
     private val _globalFlow = MutableSharedFlow<Pair<Long, Int>>(extraBufferCapacity = 1).apply {
         listenerScope.launch {
             collect { (gid, slot) ->
-                EhDB.modifyHistoryInfoFavslotNonRefresh(gid, slot)
+                EhDB.updateFavoriteSlot(gid, slot)
             }
         }
     }

@@ -18,6 +18,9 @@ interface GalleryDao {
     suspend fun list(): List<BaseGalleryInfo>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertOrIgnore(galleryInfo: BaseGalleryInfo)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnore(galleryInfoList: List<BaseGalleryInfo>)
 
     @Update
