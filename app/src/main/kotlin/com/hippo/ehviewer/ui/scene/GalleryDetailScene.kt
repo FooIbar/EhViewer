@@ -92,6 +92,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -973,23 +974,10 @@ class GalleryDetailScene : BaseScene() {
 
     private fun onNavigateToCommentScene() {
         val galleryDetail = composeBindingGD ?: return
-        val args = Bundle()
-        args.putLong(GalleryCommentsFragment.KEY_API_UID, galleryDetail.apiUid)
-        args.putString(
-            GalleryCommentsFragment.KEY_API_KEY,
-            galleryDetail.apiKey,
+        navAnimated(
+            R.id.galleryCommentsScene,
+            bundleOf(GalleryCommentsFragment.KEY_GALLERY_DETAIL to galleryDetail),
         )
-        args.putLong(GalleryCommentsFragment.KEY_GID, galleryDetail.gid)
-        args.putString(GalleryCommentsFragment.KEY_TOKEN, galleryDetail.token)
-        args.putParcelable(
-            GalleryCommentsFragment.KEY_COMMENT_LIST,
-            galleryDetail.comments,
-        )
-        args.putParcelable(
-            GalleryCommentsFragment.KEY_GALLERY_DETAIL,
-            galleryDetail,
-        )
-        navAnimated(R.id.galleryCommentsScene, args)
     }
 
     @SuppressLint("InflateParams")
