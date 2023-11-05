@@ -125,7 +125,6 @@ import com.hippo.ehviewer.util.toBBCode
 import com.ramcosta.composedestinations.annotation.Destination
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
@@ -200,6 +199,31 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     val voteUp = stringResource(R.string.vote_up)
     val voteDown = stringResource(R.string.vote_down)
     val checkVoteStatus = stringResource(R.string.check_vote_status)
+    val editCommentSuccess = stringResource(R.string.edit_comment_successfully)
+    val commentSuccess = stringResource(R.string.comment_successfully)
+    val editCommentFail = stringResource(R.string.edit_comment_failed)
+    val commentFail = stringResource(R.string.comment_failed)
+
+    suspend fun Context.sendComment() {
+        commenting = false
+        val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, false)
+        runSuspendCatching {
+            EhEngine.commentGallery(url, userComment, null)
+        }.onSuccess {
+            findActivity<MainActivity>().showTip(
+                if (false) editCommentSuccess else commentSuccess,
+                BaseScene.LENGTH_SHORT,
+            )
+            userComment = ""
+            comments = it
+        }.onFailure {
+            val text = if (false) editCommentFail else commentFail
+            findActivity<MainActivity>().showTip(
+                text + "\n" + ExceptionUtils.getReadableString(it),
+                BaseScene.LENGTH_LONG,
+            )
+        }
+    }
 
     suspend fun Context.showFilterCommenter(comment: GalleryComment) {
         val commenter = comment.user ?: return
@@ -383,7 +407,11 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                             modifier = Modifier.weight(1f).padding(keylineMargin),
                         )
                         IconButton(
-                            onClick = { commenting = false },
+                            onClick = {
+                                coroutineScope.launchIO {
+                                    context.sendComment()
+                                }
+                            },
                             modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
                         ) {
                             Icon(
@@ -585,29 +613,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener {
                 val comment = binding.editText.text?.toBBCode()?.takeIf { it.isNotBlank() } ?: return
                 val url = galleryDetailUrl ?: return
                 lifecycleScope.launchIO {
-                    runSuspendCatching {
-                        EhEngine.commentGallery(
-                            url,
-                            comment,
-                            if (mCommentId != 0L) mCommentId.toString() else null,
-                        )
-                    }.onSuccess {
-                        showTip(
-                            if (mCommentId != 0L) R.string.edit_comment_successfully else R.string.comment_successfully,
-                            LENGTH_SHORT,
-                        )
-                        withUIContext {
-                            onCommentGallerySuccess(it)
-                        }
-                    }.onFailure {
-                        showTip(
-                            """
-    ${getString(if (mCommentId != 0L) R.string.edit_comment_failed else R.string.comment_failed)}
-    ${ExceptionUtils.getReadableString(it)}
-                            """.trimIndent(),
-                            LENGTH_LONG,
-                        )
-                    }
                 }
             }
         }
