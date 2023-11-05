@@ -131,6 +131,7 @@ fun CookieSignInScene(navigator: DestinationsNavigator) {
                 EhCookieStore.signOut()
                 dialogState.awaitPermissionOrCancel(
                     confirmText = R.string.get_it,
+                    showCancelButton = false,
                     title = R.string.sign_in_failed,
                     text = {
                         Text(

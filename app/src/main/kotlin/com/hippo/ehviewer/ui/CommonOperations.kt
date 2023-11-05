@@ -352,8 +352,6 @@ private const val MAX_FAVNOTE_CHAR = 200
 suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo, onDismiss: () -> Unit = {}) {
     var checked by mutableStateOf(Settings.removeImageFiles)
     awaitPermissionOrCancel(
-        confirmText = android.R.string.ok,
-        dismissText = android.R.string.cancel,
         title = R.string.download_remove_dialog_title,
         onDismiss = onDismiss,
         text = {

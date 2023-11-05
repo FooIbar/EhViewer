@@ -77,7 +77,7 @@ object GalleryDetailParser {
     private val PATTERN_FAVORITE_SLOT =
         Regex("/fav.png\\); background-position:0px -(\\d+)px")
     private val EMPTY_GALLERY_TAG_GROUP_ARRAY = arrayOf<GalleryTagGroup>()
-    private val EMPTY_GALLERY_COMMENT_ARRAY = GalleryCommentList(arrayOf(), false)
+    private val EMPTY_GALLERY_COMMENT_ARRAY = GalleryCommentList(emptyList(), false)
     private val WEB_COMMENT_DATE_FORMAT = DateTimeFormatter
         .ofPattern("dd MMMM yyyy, HH:mm", Locale.US).withZone(ZoneOffset.UTC)
     private const val OFFENSIVE_STRING =
@@ -438,7 +438,7 @@ object GalleryDetailParser {
                 },
                 chd!!,
             )
-            GalleryCommentList(list.toTypedArray(), hasMore)
+            GalleryCommentList(list, hasMore)
         } catch (e: Throwable) {
             ExceptionUtils.throwIfFatal(e)
             e.printStackTrace()

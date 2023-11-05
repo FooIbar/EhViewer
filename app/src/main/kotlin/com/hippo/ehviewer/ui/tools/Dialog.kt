@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.jamal.composeprefs3.ui.ifNotNullThen
+import com.jamal.composeprefs3.ui.ifTrueThen
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.launch
@@ -158,8 +159,9 @@ class DialogState {
     }
 
     suspend fun awaitPermissionOrCancel(
-        @StringRes confirmText: Int? = null,
-        @StringRes dismissText: Int? = null,
+        @StringRes confirmText: Int = android.R.string.ok,
+        @StringRes dismissText: Int = android.R.string.cancel,
+        showCancelButton: Boolean = true,
         @StringRes title: Int? = null,
         onDismiss: () -> Unit = {},
         text: (@Composable () -> Unit)? = null,
@@ -172,15 +174,15 @@ class DialogState {
                 },
                 confirmButton = {
                     TextButton(onClick = { cont.resume(Unit) }) {
-                        Text(text = stringResource(id = confirmText ?: android.R.string.ok))
+                        Text(text = stringResource(id = confirmText))
                     }
                 },
-                dismissButton = dismissText.ifNotNullThen {
+                dismissButton = showCancelButton.ifTrueThen {
                     TextButton(onClick = {
                         onDismiss()
                         cont.cancel()
                     }) {
-                        Text(text = stringResource(id = dismissText!!))
+                        Text(text = stringResource(id = dismissText))
                     }
                 },
                 title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },

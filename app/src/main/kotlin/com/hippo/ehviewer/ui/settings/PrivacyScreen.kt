@@ -81,7 +81,6 @@ fun PrivacyScreen(navigator: DestinationsNavigator) {
                 coroutineScope.launch {
                     dialogState.awaitPermissionOrCancel(
                         confirmText = R.string.clear_all,
-                        dismissText = android.R.string.cancel,
                         title = R.string.clear_search_history_confirm,
                     )
                     searchDatabase.searchDao().clear()

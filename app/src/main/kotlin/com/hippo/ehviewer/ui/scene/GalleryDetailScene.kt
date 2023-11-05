@@ -330,7 +330,6 @@ class GalleryDetailScene : BaseScene() {
         lifecycleScope.launchIO {
             dialogState.awaitPermissionOrCancel(
                 confirmText = R.string.clear_all,
-                dismissText = android.R.string.cancel,
                 title = R.string.clear_image_cache,
             ) {
                 Text(text = stringResource(id = R.string.clear_image_cache_confirm))
@@ -995,7 +994,7 @@ class GalleryDetailScene : BaseScene() {
 
     @SuppressLint("InflateParams")
     @Composable
-    private fun GalleryDetailComment(commentsList: Array<GalleryComment>) {
+    private fun GalleryDetailComment(commentsList: List<GalleryComment>) {
         val maxShowCount = 2
         val commentText = if (commentsList.isEmpty()) {
             stringResource(R.string.no_comments)

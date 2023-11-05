@@ -194,12 +194,20 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
 
     val copyComment = stringResource(R.string.copy_comment_text)
     val blockCommenter = stringResource(R.string.block_commenter)
-    suspend fun doCommentAction(comment: GalleryComment, realText: CharSequence) {
+
+    suspend fun Context.showFilterCommenter(comment: GalleryComment) {
+        val commenter = comment.user ?: return
+        val text = getString(R.string.filter_the_commenter, commenter)
+        dialogState.awaitPermissionOrCancel { Text(text = text) }
+        Filter(FilterMode.COMMENTER, commenter).remember()
+        comments = comments.copy(comments = comments.comments.filter { it == comment })
+        findActivity<MainActivity>().showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
+    }
+
+    suspend fun Context.doCommentAction(comment: GalleryComment, realText: CharSequence) {
         val action = dialogState.showSelectItem(
-            copyComment to {
-                context.findActivity<MainActivity>().addTextToClipboard(realText)
-            },
-            (blockCommenter to suspend {}).takeIf { !comment.uploader && !comment.editable },
+            copyComment to { findActivity<MainActivity>().addTextToClipboard(realText) },
+            (blockCommenter to suspend { showFilterCommenter(comment) }).takeIf { !comment.uploader && !comment.editable },
         )
         action.invoke()
     }
@@ -265,7 +273,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         }
                         card.setOnClickListener {
                             coroutineScope.launch {
-                                doCommentAction(item, realtext)
+                                context.doCommentAction(item, realtext)
                             }
                         }
                     }
@@ -480,43 +488,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
         }
     }
 
-    private fun showFilterCommenterDialog(commenter: String?, position: Int) {
-        val context = context
-        if (context == null || commenter == null) {
-            return
-        }
-        BaseDialogBuilder(context)
-            .setMessage(getString(R.string.filter_the_commenter, commenter))
-            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                Filter(FilterMode.COMMENTER, commenter).remember()
-                hideComment(position)
-                showTip(R.string.filter_added, LENGTH_SHORT)
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
-    }
-
-    private fun hideComment(position: Int) {
-        if (mGalleryDetail == null) {
-            return
-        }
-        val oldCommentsList = mGalleryDetail!!.comments.comments
-        val newCommentsList = arrayOfNulls<GalleryComment>(
-            oldCommentsList.size - 1,
-        )
-        var i = 0
-        var j = 0
-        while (i < oldCommentsList.size) {
-            if (i != position) {
-                newCommentsList[j] = oldCommentsList[i]
-                j++
-            }
-            i++
-        }
-        mGalleryDetail!!.comments.comments = newCommentsList.requireNoNulls()
-        updateView(true)
-    }
-
     private fun voteComment(id: Long, vote: Int) {
         val gd = mGalleryDetail ?: return
         lifecycleScope.launchIO {
@@ -612,8 +583,6 @@ class GalleryCommentsFragment : BaseScene(), View.OnClickListener, OnRefreshList
                     return@setItems
                 }
                 when (menuId[which]) {
-                    R.id.copy -> requireActivity().addTextToClipboard(text)
-                    R.id.block_commenter -> showFilterCommenterDialog(comment.user, position)
                     R.id.vote_up -> voteComment(comment.id, 1)
                     R.id.vote_down -> voteComment(comment.id, -1)
                     R.id.check_vote_status -> showVoteStatusDialog(context, comment.voteState!!)

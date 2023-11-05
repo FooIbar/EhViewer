@@ -107,7 +107,6 @@ fun HistoryScreen(navigator: NavController) {
                         coroutineScope.launchIO {
                             dialogState.awaitPermissionOrCancel(
                                 confirmText = R.string.clear_all,
-                                dismissText = android.R.string.cancel,
                                 text = { Text(text = stringResource(id = R.string.clear_all_history)) },
                             )
                             EhDB.clearHistoryInfo()

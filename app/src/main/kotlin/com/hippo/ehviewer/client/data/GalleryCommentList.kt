@@ -19,7 +19,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class GalleryCommentList(
-    var comments: Array<GalleryComment>,
+data class GalleryCommentList(
+    val comments: List<GalleryComment>,
     val hasMore: Boolean,
 ) : Parcelable
