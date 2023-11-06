@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -375,7 +376,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                     modifier = Modifier.align(Alignment.BottomCenter).imePadding(),
                     color = MaterialTheme.colorScheme.primaryContainer,
                 ) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
                         BasicTextField2(
                             value = userComment,
                             onValueChange = { userComment = it },
