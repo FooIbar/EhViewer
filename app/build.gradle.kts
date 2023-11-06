@@ -270,8 +270,6 @@ dependencies {
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.nop)
 
-    debugImplementation(libs.leakcanary.android)
-
     coreLibraryDesugaring(libs.desugar)
 
     "gmsImplementation"(libs.bundles.cronet)
