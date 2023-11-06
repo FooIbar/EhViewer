@@ -269,7 +269,11 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             val additionalPadding = if (commenting) {
                 editTextMeasured
             } else {
-                16.dp + 56.dp // Fab size + Fab space
+                if (!comments.hasMore) {
+                    16.dp + 56.dp // Fab space + Fab size
+                } else {
+                    16.dp // Fab space
+                }
             }
             LazyColumn(
                 modifier = Modifier.padding(horizontal = keylineMargin),
