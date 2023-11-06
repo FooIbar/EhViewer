@@ -32,6 +32,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -68,13 +69,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
-import androidx.core.text.set
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.hippo.ehviewer.R
@@ -161,6 +163,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
     var refreshing by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val density = LocalDensity.current
 
     suspend fun refreshComment(showAll: Boolean) {
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
@@ -262,11 +265,20 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         },
     ) { paddingValues ->
         val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
+        var editTextMeasured by remember { mutableStateOf(0.dp) }
         Box(modifier = Modifier.fillMaxSize().imePadding()) {
+            val additionalPadding = if (commenting) {
+                editTextMeasured
+            } else {
+                16.dp + 56.dp // Fab size + Fab space
+            }
             LazyColumn(
                 modifier = Modifier.padding(horizontal = keylineMargin),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = paddingValues,
+                contentPadding = PaddingValues(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = paddingValues.calculateBottomPadding() + additionalPadding,
+                ),
             ) {
                 items(comments.comments) { item ->
                     val recomposeScope = currentRecomposeScope
@@ -373,7 +385,9 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             }
             if (commenting) {
                 Surface(
-                    modifier = Modifier.align(Alignment.BottomCenter),
+                    modifier = Modifier.align(Alignment.BottomCenter).onGloballyPositioned { coordinates ->
+                        editTextMeasured = with(density) { coordinates.size.height.toDp() }
+                    },
                     color = MaterialTheme.colorScheme.primaryContainer,
                 ) {
                     Row(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
