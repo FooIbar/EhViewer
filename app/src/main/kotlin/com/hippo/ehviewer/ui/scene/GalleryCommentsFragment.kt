@@ -342,14 +342,17 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         maxLines = 5
                         text = context.generateComment(this, item)
                         setOnClickListener {
-                            val span = currentSpan
-                            clearCurrentSpan()
+                            val span = currentSpan.apply { clearCurrentSpan() }
                             if (span is URLSpan) {
                                 val activity = context.findActivity<MainActivity>()
                                 if (!activity.jumpToReaderByPage(span.url, galleryDetail)) {
                                     if (!navigator.navWithUrl(span.url)) {
                                         activity.openBrowser(span.url)
                                     }
+                                }
+                            } else {
+                                coroutineScope.launch {
+                                    context.doCommentAction(item)
                                 }
                             }
                         }
