@@ -993,9 +993,7 @@ class GalleryDetailScene : BaseScene() {
             stringResource(R.string.more_comment)
         }
         CrystalCard {
-            val length = maxShowCount.coerceAtMost(commentsList.size)
-            for (i in 0 until length) {
-                val item = commentsList[i]
+            commentsList.take(maxShowCount).forEach { item ->
                 GalleryCommentCard(
                     modifier = Modifier.padding(vertical = 4.dp),
                     comment = item,
