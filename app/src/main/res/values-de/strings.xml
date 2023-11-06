@@ -165,7 +165,6 @@
     <string name="favored_times">♥ %d</string>
     <string name="rating_text">%1$s (%2$.2f, %3$d)</string>
     <string name="gallery_comments">Kommentare der Galerie</string>
-    <string name="no_one_comments_gallery">Keine Kommentare</string>
     <string name="comment_successfully">Kommentar erfolgreich gesendet</string>
     <string name="comment_failed">Kommentar nicht gesendet</string>
     <string name="copy_comment_text">Inhalt des Kommentars kopieren</string>

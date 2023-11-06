@@ -68,8 +68,6 @@
     <dimen name="fab_size">56dp</dimen>
     <dimen name="fab_min_size">40dp</dimen>
 
-    <dimen name="fab_rv_padding_size">64dp</dimen>
-
     <dimen name="corner_fab_margin">16dp</dimen>
 
     <dimen name="gallery_detail_thumb_width">128dp</dimen>

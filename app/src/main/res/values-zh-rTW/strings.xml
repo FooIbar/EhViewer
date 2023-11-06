@@ -204,7 +204,6 @@
     <string name="key_torrent_url">種子連結</string>
     <!-- Gallery Comments -->
     <string name="gallery_comments">圖庫留言</string>
-    <string name="no_one_comments_gallery">目前沒有留言</string>
     <string name="comment_successfully">留言成功</string>
     <string name="comment_failed">留言失敗</string>
     <string name="copy_comment_text">複製留言文字</string>

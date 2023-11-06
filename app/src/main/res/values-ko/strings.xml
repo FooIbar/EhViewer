@@ -185,7 +185,6 @@
 
     <!-- Gallery Comments -->
     <string name="gallery_comments">갤러리 코멘트</string>
-    <string name="no_one_comments_gallery">코멘트가 없습니다.</string>
     <string name="comment_successfully">코멘트를 남겼습니다.</string>
     <string name="comment_failed">코멘트를 남기지 못했습니다.</string>
     <string name="copy_comment_text">코멘트 텍스트 복사</string>

@@ -129,7 +129,6 @@
     <string name="key_size">Størrelse</string>
     <string name="download_move_dialog_title">Flytt</string>
     <string name="key_torrents">Torrenter</string>
-    <string name="no_one_comments_gallery">Ingen kommentar.</string>
     <string name="gallery_comments">Gallerikommentarer</string>
     <string name="download_state_wait">Venter</string>
     <string name="download_state_failed">Mislykket</string>

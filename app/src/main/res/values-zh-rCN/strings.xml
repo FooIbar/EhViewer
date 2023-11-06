@@ -204,7 +204,6 @@
     <string name="key_torrent_url">种子链接</string>
     <!-- Gallery Comments -->
     <string name="gallery_comments">画廊评论</string>
-    <string name="no_one_comments_gallery">暂时没有评论</string>
     <string name="comment_successfully">评论成功</string>
     <string name="comment_failed">评论失败</string>
     <string name="copy_comment_text">复制评论文字</string>

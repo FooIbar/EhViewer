@@ -109,10 +109,6 @@ android {
             compileOptions {
                 isCoreLibraryDesugaringEnabled = true
             }
-            lint {
-                checkOnly += setOf("InlinedApi", "NewApi", "UnusedAttribute")
-                error += setOf("InlinedApi", "UnusedAttribute")
-            }
         }
         create("oss") {
             dimension = "oss"
@@ -154,9 +150,9 @@ android {
     }
 
     lint {
-        abortOnError = true
-        checkReleaseBuilds = false
-        disable.add("MissingTranslation")
+        baseline = file("lint-baseline.xml")
+        disable += setOf("MissingTranslation", "MissingQuantity")
+        fatal += setOf("NewApi", "InlineApi")
     }
 
     packaging {

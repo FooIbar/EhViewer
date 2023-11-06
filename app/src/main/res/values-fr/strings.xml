@@ -211,7 +211,6 @@
 
     <!-- Gallery Comments -->
     <string name="gallery_comments">Commentaires de la galerie</string>
-    <string name="no_one_comments_gallery">Personne n\'a commenté sur la galerie</string>
     <string name="comment_successfully">Commentaire posté</string>
     <string name="comment_failed">Impossible de commenter</string>
     <string name="copy_comment_text">Copier le texte du commentaire</string>

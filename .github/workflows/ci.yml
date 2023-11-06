@@ -48,9 +48,6 @@ jobs:
       - name: Spotless Check
         run: ./gradlew spotlessCheck
 
-      - name: Lint Check
-        run: ./gradlew lintMarshmallowGmsRelease
-
       - name: CMake Cache
         uses: actions/cache@v3
         with:

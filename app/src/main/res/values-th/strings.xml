@@ -200,7 +200,6 @@
 
     <!-- Gallery Comments -->
     <string name="gallery_comments">การแสดงความคิดเห็นในแกลเลอรี่</string>
-    <string name="no_one_comments_gallery">ไม่มีความคิดเห็น</string>
     <string name="comment_successfully">แสดงความคิดเห็นเสร็จเรียบร้อยแล้ว</string>
     <string name="comment_failed">การแสดงความคิดเห็นล้มเหลว</string>
     <string name="copy_comment_text">คัดลอกข้อความของความคิดเห็น</string>

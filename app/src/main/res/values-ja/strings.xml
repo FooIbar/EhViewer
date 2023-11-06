@@ -210,7 +210,6 @@
 
     <!-- Gallery Comments -->
     <string name="gallery_comments">ギャラリーコメント</string>
-    <string name="no_one_comments_gallery">コメントはまだありません。</string>
     <string name="comment_successfully">コメントを送信しました。</string>
     <string name="comment_failed">コメントに失敗しました。</string>
     <string name="copy_comment_text">コメントをコピー</string>

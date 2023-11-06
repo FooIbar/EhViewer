@@ -246,7 +246,6 @@
     <string name="key_torrent_url">Torrent URL</string>
     <!-- Gallery Comments -->
     <string name="gallery_comments">Gallery Comments</string>
-    <string name="no_one_comments_gallery">No comment.</string>
     <string name="comment_successfully">Comment post successfully</string>
     <string name="comment_failed">Failed to post the comment</string>
     <string name="copy_comment_text">Copy comment text</string>
