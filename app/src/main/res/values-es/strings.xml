@@ -198,7 +198,6 @@
 
     <!-- Gallery Comments -->
     <string name="gallery_comments">Comentarios de la galería</string>
-    <string name="no_one_comments_gallery">Sin comentarios en esta galería</string>
     <string name="comment_successfully">Comentario publicado</string>
     <string name="copy_comment_text">Copiar texto de comentario</string>
     <string name="vote_up">Votar positivo</string>
