@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0-alpha12" type="baseline" client="gradle" dependencies="false" name="AGP (8.1.2)" variant="fatal" version="8.3.0-alpha12">
+
+    <issue
+        id="NewApi"
+        message="Field requires version 7 of the S Extensions SDK (current min is 0): `setConsumer`"
+        errorLine1="            consumer = {"
+        errorLine2="            ~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/cronet/CronetExtensions.kt"
+            line="18"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `android.net.http.UrlRequest#read`"
+        errorLine1="                request.read(buffer)"
+        errorLine2="                        ~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/cronet/CronetExtensions.kt"
+            line="21"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Field requires version 7 of the S Extensions SDK (current min is 0): `getRequest`"
+        errorLine1="                request.read(buffer)"
+        errorLine2="                ~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/cronet/CronetExtensions.kt"
+            line="21"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Field requires version 7 of the S Extensions SDK (current min is 0): `getReaderCont`"
+        errorLine1="            onError = { readerCont.resumeWithException(it) }"
+        errorLine2="                        ~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/cronet/CronetExtensions.kt"
+            line="23"
+            column="25"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Field requires version 7 of the S Extensions SDK (current min is 0): `setOnError`"
+        errorLine1="            onError = { readerCont.resumeWithException(it) }"
+        errorLine2="            ~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/cronet/CronetExtensions.kt"
+            line="23"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Field requires version 7 of the S Extensions SDK (current min is 0): `setReaderCont`"
+        errorLine1="            readerCont = cont"
+        errorLine2="            ~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/cronet/CronetExtensions.kt"
+            line="24"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `android.net.http.UrlRequest#read`"
+        errorLine1="            request.read(buffer)"
+        errorLine2="                    ~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/cronet/CronetExtensions.kt"
+            line="25"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Field requires version 7 of the S Extensions SDK (current min is 0): `getRequest`"
+        errorLine1="            request.read(buffer)"
+        errorLine2="            ~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/cronet/CronetExtensions.kt"
+            line="25"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `cronetRequest`"
+        errorLine1="            val success = cronetRequest(data) {"
+        errorLine2="                          ~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/coil/CronetHttpUriFetcher.kt"
+            line="30"
+            column="27"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `noCache`"
+        errorLine1="                noCache()"
+        errorLine2="                ~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/coil/CronetHttpUriFetcher.kt"
+            line="31"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `execute`"
+        errorLine1="            }.execute {"
+        errorLine2="              ~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/coil/CronetHttpUriFetcher.kt"
+            line="32"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `cronetRequest`"
+        errorLine1="        cronetRequest(url, referer).execute {"
+        errorLine2="        ~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/client/EhEngine.kt"
+            line="123"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `execute`"
+        errorLine1="        cronetRequest(url, referer).execute {"
+        errorLine2="                                    ~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/client/EhEngine.kt"
+            line="123"
+            column="37"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `cronetRequest`"
+        errorLine1="            cronetRequest(url, referer) {"
+        errorLine2="            ~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="137"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `noCache`"
+        errorLine1="                noCache()"
+        errorLine2="                ~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="138"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `execute`"
+        errorLine1="            }.execute { info ->"
+        errorLine2="              ~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="139"
+            column="15"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `getHeadersMap`"
+        errorLine1="                val headers = info.getHeadersMap()"
+        errorLine2="                                   ~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="140"
+            column="36"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires version 7 of the S Extensions SDK (current min is 0): `android.net.http.UrlResponseInfo#getReceivedByteCount`"
+        errorLine1="                            notifyProgress(length, info.receivedByteCount, it)"
+        errorLine2="                                                        ~~~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/kotlin/com/hippo/ehviewer/spider/SpiderDen.kt"
+            line="148"
+            column="57"/>
+    </issue>
+
+</issues>
