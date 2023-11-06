@@ -394,6 +394,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                             value = userComment,
                             onValueChange = { userComment = it },
                             modifier = Modifier.weight(1f).padding(keylineMargin),
+                            textStyle = MaterialTheme.typography.bodyLarge,
                         )
                         IconButton(
                             onClick = {
