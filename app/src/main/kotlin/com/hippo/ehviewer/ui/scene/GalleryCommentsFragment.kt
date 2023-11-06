@@ -22,7 +22,6 @@ import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
-import android.text.style.URLSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -338,24 +337,17 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                                 context.doCommentAction(item)
                             }
                         },
+                        onUrlClick = {
+                            val activity = context.findActivity<MainActivity>()
+                            if (!activity.jumpToReaderByPage(it, galleryDetail)) {
+                                if (!navigator.navWithUrl(it)) {
+                                    activity.openBrowser(it)
+                                }
+                            }
+                        },
                     ) {
                         maxLines = 5
                         text = context.generateComment(this, item)
-                        setOnClickListener {
-                            val span = currentSpan.apply { clearCurrentSpan() }
-                            if (span is URLSpan) {
-                                val activity = context.findActivity<MainActivity>()
-                                if (!activity.jumpToReaderByPage(span.url, galleryDetail)) {
-                                    if (!navigator.navWithUrl(span.url)) {
-                                        activity.openBrowser(span.url)
-                                    }
-                                }
-                            } else {
-                                coroutineScope.launch {
-                                    context.doCommentAction(item)
-                                }
-                            }
-                        }
                     }
                 }
                 if (comments.hasMore) {

@@ -1,5 +1,7 @@
 package com.hippo.ehviewer.ui.main
 
+import android.text.style.ClickableSpan
+import android.text.style.URLSpan
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -8,6 +10,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -25,10 +31,19 @@ fun GalleryCommentCard(
     comment: GalleryComment,
     onCardClick: () -> Unit,
     onUserClick: () -> Unit,
+    onUrlClick: (String) -> Unit,
     update: LinkifyTextView.() -> Unit,
 ) = comment.run {
+    var currentSpan by remember(comment) { mutableStateOf<ClickableSpan?>(null) }
     Card(
-        onClick = onCardClick,
+        onClick = {
+            val span = currentSpan.apply { currentSpan = null }
+            if (span is URLSpan) {
+                onUrlClick(span.url)
+            } else {
+                onCardClick()
+            }
+        },
         modifier = modifier,
     ) {
         val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
@@ -52,7 +67,7 @@ fun GalleryCommentCard(
                 )
             }
             AndroidView(
-                factory = { LinkifyTextView(it) },
+                factory = { context -> LinkifyTextView(context) { currentSpan = it } },
                 modifier = Modifier.constrainAs(commentRef) {
                     start.linkTo(parent.start)
                     top.linkTo(userRef.bottom, margin = 8.dp)
