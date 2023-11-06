@@ -34,7 +34,6 @@ kotlinx-serialization = "1.6.0"
 ksp = "1.9.20-1.0.14"
 ktlint = "1.0.1"
 ktor = "2.3.5"
-leakcanary = "2.12"
 okhttp3 = "5.0.0-alpha.11"
 okio = "3.6.0"
 splitties = "3.0.0"
@@ -114,8 +113,6 @@ ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
 
 ktor-io-jvm = { module = "io.ktor:ktor-io-jvm", version.ref = "ktor" }
 ktor-utils-jvm = { module = "io.ktor:ktor-utils-jvm", version.ref = "ktor" }
-
-leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
 
 material = { module = "com.google.android.material:material", version.ref = "google-android-material" }
 
