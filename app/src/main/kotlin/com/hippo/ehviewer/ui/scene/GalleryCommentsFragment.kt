@@ -350,7 +350,6 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                             }
                         },
                     ) {
-                        maxLines = 5
                         text = context.generateComment(this, item)
                     }
                 }
