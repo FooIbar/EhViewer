@@ -400,7 +400,6 @@ class FavoritesScene : SearchBarScene() {
                 lifecycleScope.launchIO {
                     dialogState.awaitPermissionOrCancel(
                         confirmText = R.string.delete,
-                        dismissText = android.R.string.cancel,
                         title = R.string.delete_favorites_dialog_title,
                         onDismiss = { mAdapter!!.notifyItemChanged(position) },
                     ) {

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.jamal.composeprefs3.ui.ifNotNullThen
+import com.jamal.composeprefs3.ui.ifTrueThen
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.launch
@@ -157,8 +159,9 @@ class DialogState {
     }
 
     suspend fun awaitPermissionOrCancel(
-        @StringRes confirmText: Int? = null,
-        @StringRes dismissText: Int? = null,
+        @StringRes confirmText: Int = android.R.string.ok,
+        @StringRes dismissText: Int = android.R.string.cancel,
+        showCancelButton: Boolean = true,
         @StringRes title: Int? = null,
         onDismiss: () -> Unit = {},
         text: (@Composable () -> Unit)? = null,
@@ -171,15 +174,15 @@ class DialogState {
                 },
                 confirmButton = {
                     TextButton(onClick = { cont.resume(Unit) }) {
-                        Text(text = stringResource(id = confirmText ?: android.R.string.ok))
+                        Text(text = stringResource(id = confirmText))
                     }
                 },
-                dismissButton = dismissText.ifNotNullThen {
+                dismissButton = showCancelButton.ifTrueThen {
                     TextButton(onClick = {
                         onDismiss()
                         cont.cancel()
                     }) {
-                        Text(text = stringResource(id = dismissText!!))
+                        Text(text = stringResource(id = dismissText))
                     }
                 },
                 title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
@@ -188,7 +191,7 @@ class DialogState {
         }
     }
 
-    private suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable DismissDialogScope<R>.() -> Unit): R {
+    suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable DismissDialogScope<R>.() -> Unit): R {
         return dialog { cont ->
             val impl = remember(cont) {
                 DismissDialogScope<R> {
@@ -212,21 +215,31 @@ class DialogState {
     }
 
     suspend fun showSelectItem(
-        vararg items: String,
+        vararg items: String?,
         @StringRes title: Int,
-    ): Int = showNoButton {
+    ) = showSelectItem(
+        *items.filterNotNull().mapIndexed { a, b -> b to a }.toTypedArray(),
+        title = title,
+    )
+
+    suspend fun <R> showSelectItem(
+        vararg items: Pair<String, R>,
+        @StringRes title: Int? = null,
+    ): R = showNoButton {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            Text(
-                text = stringResource(id = title),
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-                style = MaterialTheme.typography.headlineSmall,
-            )
+            title.ifNotNullThen {
+                Text(
+                    text = stringResource(id = title!!),
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            }
             LazyColumn {
-                itemsIndexed(items) { index, text ->
+                items(items) { (text, item) ->
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
                         Text(
                             text = text,
-                            modifier = Modifier.clickable { dismissWith(index) }.fillMaxWidth()
+                            modifier = Modifier.clickable { dismissWith(item) }.fillMaxWidth()
                                 .padding(horizontal = 24.dp, vertical = 16.dp),
                             style = MaterialTheme.typography.titleMedium,
                         )

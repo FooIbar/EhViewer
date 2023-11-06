@@ -169,10 +169,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                                 IconButton(
                                     onClick = {
                                         scope.launch {
-                                            dialogState.awaitPermissionOrCancel(
-                                                confirmText = R.string.delete,
-                                                dismissText = android.R.string.cancel,
-                                            ) {
+                                            dialogState.awaitPermissionOrCancel(confirmText = R.string.delete) {
                                                 Text(text = stringResource(id = R.string.delete_filter, filter.text))
                                             }
                                             filter.forget {

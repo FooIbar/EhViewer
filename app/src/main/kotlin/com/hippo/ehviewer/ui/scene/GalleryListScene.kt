@@ -388,11 +388,7 @@ class GalleryListScene : SearchBarScene() {
                                 binding.tip.text = ExceptionUtils.getReadableString(state.error)
                                 transition.showView(2)
                                 if (state.error.cause is CloudflareBypassException) {
-                                    dialogState.awaitPermissionOrCancel(
-                                        android.R.string.ok,
-                                        android.R.string.cancel,
-                                        R.string.cloudflare_bypass_failed,
-                                    ) {
+                                    dialogState.awaitPermissionOrCancel(title = R.string.cloudflare_bypass_failed) {
                                         Text(text = stringResource(id = R.string.open_in_webview))
                                     }
                                     navAnimated(R.id.webView, bundleOf(WebViewActivity.KEY_URL to EhUrl.host))

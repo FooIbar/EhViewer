@@ -21,7 +21,6 @@ import android.app.Activity
 import android.app.Dialog
 import android.app.DownloadManager
 import android.content.DialogInterface
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -91,7 +90,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -129,7 +128,6 @@ import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.databinding.DialogArchiveListBinding
 import com.hippo.ehviewer.databinding.DialogRateBinding
 import com.hippo.ehviewer.databinding.DialogTorrentListBinding
-import com.hippo.ehviewer.databinding.ItemGalleryCommentBinding
 import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderQueen
@@ -138,12 +136,14 @@ import com.hippo.ehviewer.ui.CommonOperations
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.getFavoriteIcon
+import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CheckBoxDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.legacy.GalleryRatingBar.OnUserRateListener
 import com.hippo.ehviewer.ui.legacy.calculateSuitableSpanCount
 import com.hippo.ehviewer.ui.main.EhPreviewItem
+import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
 import com.hippo.ehviewer.ui.main.GalleryDetailHeaderCard
 import com.hippo.ehviewer.ui.main.GalleryTags
@@ -161,8 +161,8 @@ import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.IntList
-import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.addTextToClipboard
+import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
@@ -330,7 +330,6 @@ class GalleryDetailScene : BaseScene() {
         lifecycleScope.launchIO {
             dialogState.awaitPermissionOrCancel(
                 confirmText = R.string.clear_all,
-                dismissText = android.R.string.cancel,
                 title = R.string.clear_image_cache,
             ) {
                 Text(text = stringResource(id = R.string.clear_image_cache_confirm))
@@ -974,28 +973,15 @@ class GalleryDetailScene : BaseScene() {
 
     private fun onNavigateToCommentScene() {
         val galleryDetail = composeBindingGD ?: return
-        val args = Bundle()
-        args.putLong(GalleryCommentsScene.KEY_API_UID, galleryDetail.apiUid)
-        args.putString(
-            GalleryCommentsScene.KEY_API_KEY,
-            galleryDetail.apiKey,
+        navAnimated(
+            R.id.galleryCommentsScene,
+            bundleOf(GalleryCommentsFragment.KEY_GALLERY_DETAIL to galleryDetail),
         )
-        args.putLong(GalleryCommentsScene.KEY_GID, galleryDetail.gid)
-        args.putString(GalleryCommentsScene.KEY_TOKEN, galleryDetail.token)
-        args.putParcelable(
-            GalleryCommentsScene.KEY_COMMENT_LIST,
-            galleryDetail.comments,
-        )
-        args.putParcelable(
-            GalleryCommentsScene.KEY_GALLERY_DETAIL,
-            galleryDetail,
-        )
-        navAnimated(R.id.galleryCommentsScene, args)
     }
 
     @SuppressLint("InflateParams")
     @Composable
-    private fun GalleryDetailComment(commentsList: Array<GalleryComment>) {
+    private fun GalleryDetailComment(commentsList: List<GalleryComment>) {
         val maxShowCount = 2
         val commentText = if (commentsList.isEmpty()) {
             stringResource(R.string.no_comments)
@@ -1008,13 +994,27 @@ class GalleryDetailScene : BaseScene() {
             val length = maxShowCount.coerceAtMost(commentsList.size)
             for (i in 0 until length) {
                 val item = commentsList[i]
-                AndroidViewBinding(factory = ItemGalleryCommentBinding::inflate) {
-                    card.setOnClickListener { onNavigateToCommentScene() }
-                    user.text = item.user
-                    user.setBackgroundColor(Color.TRANSPARENT)
-                    time.text = ReadableTime.getTimeAgo(item.time)
-                    comment.maxLines = 5
-                    comment.text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(comment))
+                GalleryCommentCard(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    comment = item,
+                    onCardClick = {
+                        onNavigateToCommentScene()
+                    },
+                    onUserClick = {
+                        onNavigateToCommentScene()
+                    },
+                    onUrlClick = {
+                        val activity = context?.findActivity<MainActivity>() ?: return@GalleryCommentCard
+                        val galleryDetail = composeBindingGD ?: return@GalleryCommentCard
+                        if (!activity.jumpToReaderByPage(it, galleryDetail)) {
+                            if (!findNavController().navWithUrl(it)) {
+                                activity.openBrowser(it)
+                            }
+                        }
+                    },
+                ) {
+                    maxLines = 5
+                    text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(this))
                 }
             }
             Box(

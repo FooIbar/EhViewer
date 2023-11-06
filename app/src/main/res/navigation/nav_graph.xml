@@ -49,7 +49,7 @@
         android:label="GalleryDetailScene" />
     <fragment
         android:id="@+id/galleryCommentsScene"
-        android:name="com.hippo.ehviewer.ui.scene.GalleryCommentsScene"
+        android:name="com.hippo.ehviewer.ui.scene.GalleryCommentsFragment"
         android:label="GalleryCommentsScene" />
     <fragment
         android:id="@+id/galleryPreviewsScene"

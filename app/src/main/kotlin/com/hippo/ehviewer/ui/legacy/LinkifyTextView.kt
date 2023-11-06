@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.ui.legacy
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Spanned
 import android.text.style.ClickableSpan
@@ -26,15 +25,8 @@ import androidx.appcompat.widget.AppCompatTextView
 class LinkifyTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
+    private val onCurrentSpanUpdate: (ClickableSpan?) -> Unit,
 ) : AppCompatTextView(context, attrs) {
-    var currentSpan: ClickableSpan? = null
-        private set
-
-    fun clearCurrentSpan() {
-        currentSpan = null
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         // Let the parent or grandparent of TextView to handles click aciton.
         // Otherwise click effect like ripple will not work, and if touch area
@@ -42,10 +34,8 @@ class LinkifyTextView @JvmOverloads constructor(
         // onTouchEven must be called with MotionEvent.ACTION_DOWN for each touch
         // action on it, so we analyze touched url here.
         if (event.action == MotionEvent.ACTION_DOWN) {
-            currentSpan = null
+            onCurrentSpanUpdate(null)
             if (text is Spanned) {
-                // Get this code from android.text.method.LinkMovementMethod.
-                // Work fine !
                 var x = event.x.toInt()
                 var y = event.y.toInt()
                 x -= totalPaddingLeft
@@ -58,7 +48,7 @@ class LinkifyTextView @JvmOverloads constructor(
                     val off = layout.getOffsetForHorizontal(line, x.toFloat())
                     val spans = (text as Spanned).getSpans(off, off, ClickableSpan::class.java)
                     if (spans.isNotEmpty()) {
-                        currentSpan = spans[0]
+                        onCurrentSpanUpdate(spans[0])
                     }
                 }
             }
