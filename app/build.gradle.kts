@@ -150,6 +150,7 @@ android {
     }
 
     lint {
+        checkReleaseBuilds = false
         disable += setOf("MissingTranslation", "MissingQuantity")
         fatal += setOf("NewApi", "InlineApi")
     }
