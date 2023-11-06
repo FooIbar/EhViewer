@@ -262,7 +262,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         },
     ) { paddingValues ->
         val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().imePadding()) {
             LazyColumn(
                 modifier = Modifier.padding(horizontal = keylineMargin),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -373,7 +373,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             }
             if (commenting) {
                 Surface(
-                    modifier = Modifier.align(Alignment.BottomCenter).imePadding(),
+                    modifier = Modifier.align(Alignment.BottomCenter),
                     color = MaterialTheme.colorScheme.primaryContainer,
                 ) {
                     Row(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
