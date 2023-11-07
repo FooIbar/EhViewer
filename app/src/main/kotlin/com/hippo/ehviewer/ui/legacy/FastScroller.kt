@@ -331,6 +331,6 @@ class FastScroller : View {
         private const val INVALID = -1
         private const val SCROLL_BAR_FADE_DURATION = 500
         private const val SCROLL_BAR_DELAY = 1000
-        private const val MIN_HANDLER_HEIGHT_DP = 32
+        private const val MIN_HANDLER_HEIGHT_DP = 48
     }
 }
