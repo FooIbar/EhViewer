@@ -141,7 +141,6 @@
     <string name="star_5">5 星</string>
 
     <!-- Gallery detail -->
-    <string name="error_cannot_find_gallery">找不到畫廊</string>
     <string name="download">下載</string>
     <string name="read">閲讀</string>
     <plurals name="page_count">

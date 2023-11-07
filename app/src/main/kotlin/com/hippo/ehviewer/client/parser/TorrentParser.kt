@@ -21,6 +21,6 @@ class Torrent(
 
 fun Torrent.format() = "[$posted] $name [$size] [↑$seeds ↓$peers ✓$downloads]"
 
-typealias TorrentResult = ArrayList<Torrent>
+typealias TorrentResult = List<Torrent>
 
 private external fun parseTorrent(body: ByteBuffer, size: Int = body.limit()): ArrayList<Torrent>
