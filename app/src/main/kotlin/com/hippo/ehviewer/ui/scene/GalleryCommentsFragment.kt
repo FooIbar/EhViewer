@@ -110,7 +110,7 @@ interface ActionScope {
     infix fun String.thenDo(that: suspend () -> Unit)
 }
 
-private inline fun buildAction(builder: ActionScope.() -> Unit) = buildList {
+inline fun buildAction(builder: ActionScope.() -> Unit) = buildList {
     builder(object : ActionScope {
         override fun String.thenDo(that: suspend () -> Unit) {
             add(this to that)
