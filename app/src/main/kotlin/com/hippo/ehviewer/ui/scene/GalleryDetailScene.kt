@@ -119,6 +119,8 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
 import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.ListUrlBuilder
+import com.hippo.ehviewer.client.data.asGalleryDetail
+import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.NoHAtHClientException
 import com.hippo.ehviewer.client.getImageKey
@@ -178,6 +180,7 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.parcelize.Parcelize
@@ -732,24 +735,50 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
     @Composable
     fun GalleryDetailContent(
         galleryInfo: GalleryInfo,
-        galleryDetail: GalleryDetail?,
         contentPadding: PaddingValues,
         modifier: Modifier,
     ) {
+        val galleryDetail = galleryInfo.asGalleryDetail()
         val windowSizeClass = calculateWindowSizeClass(activity)
         val columnCount = calculateSuitableSpanCount()
-
-        var readButtonText by rememberSaveable { mutableStateOf("") }
-        var downloadButtonText by rememberSaveable { mutableStateOf("") }
-
-        fun onReadButtonClick() = context.navToReader(galleryInfo as BaseGalleryInfo)
+        val readText = stringResource(R.string.read)
+        val downloadText = stringResource(R.string.download)
+        var readButtonText by rememberSaveable { mutableStateOf(readText) }
+        LaunchedEffect(Unit) {
+            runSuspendCatching {
+                val queen = SpiderQueen.obtainSpiderQueen(galleryInfo, MODE_READ)
+                val startPage = queen.awaitStartPage()
+                SpiderQueen.releaseSpiderQueen(queen, MODE_READ)
+                readButtonText = if (startPage == 0) {
+                    readText
+                } else {
+                    context.getString(R.string.read_from, startPage + 1)
+                }
+            }
+        }
+        var downloadButtonText by rememberSaveable { mutableStateOf(downloadText) }
+        LaunchedEffect(Unit) {
+            EhDownloadManager.stateFlow(gid).collect {
+                context.run {
+                    downloadButtonText = when (EhDownloadManager.getDownloadState(gid)) {
+                        DownloadInfo.STATE_INVALID -> getString(R.string.download)
+                        DownloadInfo.STATE_NONE -> getString(R.string.download_state_none)
+                        DownloadInfo.STATE_WAIT -> getString(R.string.download_state_wait)
+                        DownloadInfo.STATE_DOWNLOAD -> getString(R.string.download_state_downloading)
+                        DownloadInfo.STATE_FINISH -> getString(R.string.download_state_downloaded)
+                        DownloadInfo.STATE_FAILED -> getString(R.string.download_state_failed)
+                        else -> error("Invalid DownloadState!!!")
+                    }
+                }
+            }
+        }
+        fun onReadButtonClick() = context.navToReader(galleryInfo.findBaseInfo())
         fun onCategoryChipClick() {
             val category = galleryInfo.category
             if (category == EhUtils.NONE || category == EhUtils.PRIVATE || category == EhUtils.UNKNOWN) {
                 return
             }
-            val lub = ListUrlBuilder()
-            lub.category = category
+            val lub = ListUrlBuilder(category = category)
             navigator.navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
         }
         fun onUploaderChipClick() {
@@ -834,7 +863,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                     LocalPinnableContainer.current!!.run { remember { pin() } }
                     Column {
                         GalleryDetailHeaderCard(
-                            info = galleryDetail ?: galleryInfo,
+                            info = galleryInfo,
                             onInfoCardClick = ::onGalleryInfoCardClick,
                             onCategoryChipClick = ::onCategoryChipClick,
                             onUploaderChipClick = ::onUploaderChipClick,
@@ -1052,7 +1081,6 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
             if (gi != null) {
                 GalleryDetailContent(
                     galleryInfo = gi,
-                    galleryDetail = galleryInfo as? GalleryDetail,
                     contentPadding = it,
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 )
@@ -1079,7 +1107,6 @@ class GalleryDetailScene : BaseScene() {
 
     private var composeBindingGI by mutableStateOf<BaseGalleryInfo?>(null)
     private var composeBindingGD by mutableStateOf<GalleryDetail?>(null)
-    private var readButtonText by mutableStateOf("")
     private var downloadButtonText by mutableStateOf("")
     private var ratingText by mutableStateOf("")
     private var torrentText by mutableStateOf("")
@@ -1088,38 +1115,11 @@ class GalleryDetailScene : BaseScene() {
     private var mTorrentList: TorrentResult? = null
     private var favoritesLock = Mutex()
 
-    override fun onResume() {
-        super.onResume()
-        composeBindingGI?.let {
-            viewLifecycleOwner.lifecycleScope.launchIO {
-                runCatching {
-                    val queen = SpiderQueen.obtainSpiderQueen(it, MODE_READ)
-                    val startPage = queen.awaitStartPage()
-                    SpiderQueen.releaseSpiderQueen(queen, MODE_READ)
-                    readButtonText = if (startPage == 0) {
-                        getString(R.string.read)
-                    } else {
-                        getString(R.string.read_from, startPage + 1)
-                    }
-                }.onFailure {
-                    it.printStackTrace()
-                }
-            }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        readButtonText = getString(R.string.read)
-        composeBindingGI?.let { gi ->
-            if (mAction == ACTION_GALLERY_INFO) {
-                composeBindingGI = gi
-                updateDownloadText()
-            }
-        }
         val args = requireNotNull(arguments)
         val composeArgs = when (requireNotNull(args.getString(KEY_ACTION))) {
             ACTION_GID_TOKEN -> {
@@ -1150,9 +1150,6 @@ class GalleryDetailScene : BaseScene() {
                 Snackbar.LENGTH_LONG,
             ).setAction(R.string.read) { context?.navToReader(gd.galleryInfo, mPage) }.show()
         }
-        composeBindingGI = gd.galleryInfo
-        composeBindingGD = gd
-        updateDownloadText()
         // ratingText = getAllRatingText(gd.rating, gd.ratingCount)
         torrentText = resources.getString(R.string.torrent_count, gd.torrentCount)
     }
@@ -1287,22 +1284,6 @@ class GalleryDetailScene : BaseScene() {
                     }
                 }
             }.show()
-    }
-
-    private fun updateDownloadText() {
-        downloadButtonText = when (mDownloadState) {
-            DownloadInfo.STATE_INVALID -> getString(R.string.download)
-            DownloadInfo.STATE_NONE -> getString(R.string.download_state_none)
-            DownloadInfo.STATE_WAIT -> getString(R.string.download_state_wait)
-            DownloadInfo.STATE_DOWNLOAD -> getString(R.string.download_state_downloading)
-            DownloadInfo.STATE_FINISH -> getString(R.string.download_state_downloaded)
-            DownloadInfo.STATE_FAILED -> getString(R.string.download_state_failed)
-            else -> throw IllegalArgumentException()
-        }
-    }
-
-    private fun updateDownloadState() {
-        updateDownloadText()
     }
 
     private inner class TorrentListDialogHelper :
