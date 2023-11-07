@@ -16,19 +16,17 @@
 package com.hippo.ehviewer.ui.scene
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Dialog
 import android.app.DownloadManager
 import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.Parcelable
 import android.text.TextUtils.TruncateAt.END
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
@@ -76,10 +74,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,13 +88,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LocalPinnableContainer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
-import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import arrow.core.partially1
 import coil.imageLoader
@@ -115,6 +117,8 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
 import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.ListUrlBuilder
+import com.hippo.ehviewer.client.data.asGalleryDetail
+import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.NoHAtHClientException
 import com.hippo.ehviewer.client.getImageKey
@@ -153,10 +157,10 @@ import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.CrystalCard
-import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.AppHelper
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -167,498 +171,308 @@ import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
+import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import splitties.systemservices.downloadManager
+import splitties.systemservices.layoutInflater
 
-class GalleryDetailScene : BaseScene() {
-    private var mDownloadState = 0
-    private var mAction: String? = null
-    private var mGid: Long = 0
-    private var mToken: String? = null
-    private var mPage = 0
+sealed interface GalleryDetailScreenArgs : Parcelable {
+    @Parcelize
+    data class GalleryDetailScreenArgsGalleryInfo(
+        val galleryInfo: BaseGalleryInfo,
+    ) : GalleryDetailScreenArgs
 
-    private var composeBindingGI by mutableStateOf<BaseGalleryInfo?>(null)
-    private var composeBindingGD by mutableStateOf<GalleryDetail?>(null)
-    private var readButtonText by mutableStateOf("")
-    private var downloadButtonText by mutableStateOf("")
-    private var ratingText by mutableStateOf("")
-    private var torrentText by mutableStateOf("")
-    private var getDetailError by mutableStateOf("")
+    @Parcelize
+    data class GalleryDetailScreenArgsToken(
+        val gid: Long,
+        val token: String,
+        val page: Int,
+    ) : GalleryDetailScreenArgs
+}
 
-    private var mTorrentList: TorrentResult? = null
-    private var mArchiveFormParamOr: String? = null
-    private var mArchiveList: List<ArchiveParser.Archive>? = null
-    private var mCurrentFunds: HomeParser.Funds? = null
-    private var favoritesLock = Mutex()
+@StringRes
+private fun getRatingText(rating: Float): Int {
+    return when ((rating * 2).roundToInt()) {
+        0 -> R.string.rating0
+        1 -> R.string.rating1
+        2 -> R.string.rating2
+        3 -> R.string.rating3
+        4 -> R.string.rating4
+        5 -> R.string.rating5
+        6 -> R.string.rating6
+        7 -> R.string.rating7
+        8 -> R.string.rating8
+        9 -> R.string.rating9
+        10 -> R.string.rating10
+        else -> R.string.rating_none
+    }
+}
 
-    @StringRes
-    private fun getRatingText(rating: Float): Int {
-        return when ((rating * 2).roundToInt()) {
-            0 -> R.string.rating0
-            1 -> R.string.rating1
-            2 -> R.string.rating2
-            3 -> R.string.rating3
-            4 -> R.string.rating4
-            5 -> R.string.rating5
-            6 -> R.string.rating6
-            7 -> R.string.rating7
-            8 -> R.string.rating8
-            9 -> R.string.rating9
-            10 -> R.string.rating10
-            else -> R.string.rating_none
+private fun getArtist(tagGroups: Array<GalleryTagGroup>?): String? {
+    if (null == tagGroups) {
+        return null
+    }
+    for (tagGroup in tagGroups) {
+        if ("artist" == tagGroup.groupName && tagGroup.size > 0) {
+            return tagGroup[0].removePrefix("_")
         }
     }
+    return null
+}
 
-    private fun handleArgs(args: Bundle?) {
-        val action = args?.getString(KEY_ACTION) ?: return
-        mAction = action
-        if (ACTION_GALLERY_INFO == action) {
-            composeBindingGI = args.getParcelableCompat(KEY_GALLERY_INFO)
-        } else if (ACTION_GID_TOKEN == action) {
-            mGid = args.getLong(KEY_GID)
-            mToken = args.getString(KEY_TOKEN)
-            mPage = args.getInt(KEY_PAGE)
+@Destination
+@Composable
+fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController) {
+    var galleryInfo by rememberSaveable {
+        val casted = args as? GalleryDetailScreenArgs.GalleryDetailScreenArgsGalleryInfo
+        mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
+    }
+    val (gid, token) = remember {
+        when (args) {
+            is GalleryDetailScreenArgs.GalleryDetailScreenArgsGalleryInfo -> args.galleryInfo.run { gid to token }
+            is GalleryDetailScreenArgs.GalleryDetailScreenArgsToken -> args.gid to args.token
         }
     }
+    val galleryDetailUrl = remember { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
+    val context = LocalContext.current
+    val activity = remember(context) { context.findActivity<MainActivity>() }
+    LaunchedEffect(args, galleryInfo) {
+        val page = (args as? GalleryDetailScreenArgs.GalleryDetailScreenArgsToken)?.page ?: 0
+        val gi = galleryInfo
+        if (page != 0 && gi != null) {
+            Snackbar.make(
+                activity.findViewById(R.id.fragment_container),
+                context.getString(R.string.read_from, page),
+                Snackbar.LENGTH_LONG,
+            ).setAction(R.string.read) { context.navToReader(gi.findBaseInfo(), page) }.show()
+        }
+    }
+    DisposableEffect(galleryDetailUrl) {
+        activity.mShareUrl = galleryDetailUrl
+        onDispose {
+            activity.mShareUrl = null
+        }
+    }
+    var getDetailError by rememberSaveable { mutableStateOf("") }
+    val dialogState = LocalDialogState.current
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val coroutineScope = rememberCoroutineScope()
 
-    private val galleryDetailUrl: String?
-        get() {
-            val gid: Long
-            val token: String?
-            if (composeBindingGD != null) {
-                gid = composeBindingGD!!.gid
-                token = composeBindingGD!!.token
-            } else if (composeBindingGI != null) {
-                gid = composeBindingGI!!.gid
-                token = composeBindingGI!!.token
-            } else if (ACTION_GID_TOKEN == mAction) {
-                gid = mGid
-                token = mToken
+    val voteSuccess = stringResource(R.string.tag_vote_successfully)
+    val voteFailed = stringResource(R.string.vote_failed)
+
+    val noGallery = stringResource(R.string.error_cannot_find_gallery)
+
+    LaunchedEffect(getDetailError) {
+        if (getDetailError.isBlank()) {
+            // Fast path: Get from cache
+            val cached = galleryDetailCache[gid]
+            if (cached != null) {
+                galleryInfo = cached
             } else {
-                return null
-            }
-            return EhUrl.getGalleryDetailUrl(gid, token, 0, false)
-        }
-
-    // -1 for error
-    private val gid: Long
-        get() = composeBindingGD?.gid ?: composeBindingGI?.gid
-            ?: mGid.takeIf { mAction == ACTION_GID_TOKEN } ?: -1
-
-    private val uploader: String?
-        get() = composeBindingGD?.uploader ?: composeBindingGI?.uploader
-
-    // Judging by the uploader to exclude the cooldown period
-    private val disowned: Boolean
-        get() = uploader == "(Disowned)"
-
-    // -1 for error
-    private val category: Int
-        get() = composeBindingGD?.category ?: composeBindingGI?.category ?: -1
-
-    private val dialogState = DialogState()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) {
-            onInit()
-        } else {
-            onRestore(savedInstanceState)
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        composeBindingGI?.let {
-            viewLifecycleOwner.lifecycleScope.launchIO {
-                runCatching {
-                    val queen = SpiderQueen.obtainSpiderQueen(it, MODE_READ)
-                    val startPage = queen.awaitStartPage()
-                    SpiderQueen.releaseSpiderQueen(queen, MODE_READ)
-                    readButtonText = if (startPage == 0) {
-                        getString(R.string.read)
-                    } else {
-                        getString(R.string.read_from, startPage + 1)
+                // Slow path
+                runSuspendCatching {
+                    EhEngine.getGalleryDetail(galleryDetailUrl)
+                }.onSuccess { galleryDetail ->
+                    galleryDetailCache.put(galleryDetail.gid, galleryDetail)
+                    // Don't update gallery info in database if previous destination is favorites,
+                    // since it will invalidate local favorites PagingSource and lose scroll state
+                    val previousDestinationId = navigator.previousBackStackEntry?.destination?.id
+                    EhDB.putHistoryInfo(galleryDetail.galleryInfo, previousDestinationId != R.id.nav_favourite)
+                    if (Settings.preloadThumbAggressively) {
+                        coroutineScope.launchIO {
+                            galleryDetail.previewList.forEach {
+                                context.run { imageLoader.enqueue(imageRequest(it) { justDownload() }) }
+                            }
+                        }
                     }
+                    galleryInfo = galleryDetail
                 }.onFailure {
-                    it.printStackTrace()
+                    getDetailError = ExceptionUtils.getReadableString(it)
                 }
             }
         }
     }
 
-    private fun onInit() {
-        handleArgs(arguments)
-    }
-
-    private fun onRestore(savedInstanceState: Bundle) {
-        mAction = savedInstanceState.getString(KEY_ACTION)
-        composeBindingGI = savedInstanceState.getParcelableCompat(KEY_GALLERY_INFO)
-        mGid = savedInstanceState.getLong(KEY_GID)
-        mToken = savedInstanceState.getString(KEY_TOKEN)
-        composeBindingGD = savedInstanceState.getParcelableCompat(KEY_GALLERY_DETAIL)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        if (mAction != null) {
-            outState.putString(KEY_ACTION, mAction)
-        }
-        if (composeBindingGI != null) {
-            outState.putParcelable(KEY_GALLERY_INFO, composeBindingGI)
-        }
-        outState.putLong(KEY_GID, mGid)
-        if (mToken != null) {
-            outState.putString(KEY_TOKEN, mAction)
-        }
-        if (composeBindingGD != null) {
-            outState.putParcelable(KEY_GALLERY_DETAIL, composeBindingGD)
+    suspend fun GalleryDetail.voteTag(tag: String, vote: Int) {
+        runSuspendCatching {
+            EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
+        }.onSuccess { result ->
+            result?.let {
+                activity.showTip(result, BaseScene.LENGTH_SHORT)
+            } ?: activity.showTip(voteSuccess, BaseScene.LENGTH_SHORT)
+        }.onFailure {
+            activity.showTip(voteFailed, BaseScene.LENGTH_LONG)
         }
     }
 
-    private fun actionClearCache() {
-        val gd = composeBindingGD ?: return
-        lifecycleScope.launchIO {
-            dialogState.awaitPermissionOrCancel(
-                confirmText = R.string.clear_all,
-                title = R.string.clear_image_cache,
-            ) {
-                Text(text = stringResource(id = R.string.clear_image_cache_confirm))
-            }
-            (0..<gd.pages).forEach {
-                val key = getImageKey(gd.gid, it)
-                imageCache.remove(key)
-            }
-            showTip(R.string.image_cache_cleared, LENGTH_SHORT)
-        }
-    }
+    var mArchiveFormParamOr by remember { mutableStateOf<String?>(null) }
+    var mArchiveList by remember { mutableStateOf<List<ArchiveParser.Archive>?>(null) }
+    var mCurrentFunds by remember { mutableStateOf<HomeParser.Funds?>(null) }
 
-    private fun actionOpenInOtherApp() {
-        val url = galleryDetailUrl ?: return
-        val activity: Activity = mainActivity ?: return
-        activity.openBrowser(url)
-    }
-
-    private fun actionRefresh() {
-        if (composeBindingGD == null && getDetailError == "") return
-        getDetailError = ""
-        composeBindingGD = null
-        request()
-    }
-
-    private fun actionAddTag() {
-        composeBindingGD ?: return
-        if (composeBindingGD!!.apiUid < 0) {
-            showTip(R.string.sign_in_first, LENGTH_LONG)
+    val archiveFree = stringResource(R.string.archive_free)
+    val archiveOriginal = stringResource(R.string.archive_original)
+    val archiveResample = stringResource(R.string.archive_resample)
+    fun showArchiveDialog() {
+        val galleryDetail = galleryInfo as? GalleryDetail ?: return
+        if (galleryDetail.apiUid < 0) {
+            activity.showTip(R.string.sign_in_first, BaseScene.LENGTH_LONG)
             return
         }
-        lifecycleScope.launchIO {
-            val text = dialogState.awaitInputText(
-                title = getString(R.string.action_add_tag),
-                hint = getString(R.string.action_add_tag_tip),
+        class ArchiveListDialogHelper : DialogInterface.OnDismissListener {
+            private var _binding: DialogArchiveListBinding? = null
+            private val binding get() = _binding!!
+            private var mJob: Job? = null
+            private var mDialog: Dialog? = null
+            fun setDialog(dialog: Dialog?, dialogBinding: DialogArchiveListBinding, url: String?) {
+                mDialog = dialog
+                _binding = dialogBinding
+                binding.listView.setOnItemClickListener { _, _, position, _ ->
+                    val gi = galleryInfo ?: return@setOnItemClickListener
+                    if (null != mArchiveList && position < mArchiveList!!.size) {
+                        val res = mArchiveList!![position].res
+                        val isHAtH = mArchiveList!![position].isHAtH
+                        coroutineScope.launchIO {
+                            runSuspendCatching {
+                                EhEngine.downloadArchive(gid, token, mArchiveFormParamOr, res, isHAtH)
+                            }.onSuccess { result ->
+                                result?.let {
+                                    val r = DownloadManager.Request(Uri.parse(result))
+                                    val name = "$gid-" + EhUtils.getSuitableTitle(gi) + ".zip"
+                                    r.setDestinationInExternalPublicDir(
+                                        Environment.DIRECTORY_DOWNLOADS,
+                                        FileUtils.sanitizeFilename(name),
+                                    )
+                                    r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                                    runCatching {
+                                        downloadManager.enqueue(r)
+                                    }.onFailure {
+                                        it.printStackTrace()
+                                    }
+                                }
+                                activity.showTip(R.string.download_archive_started, BaseScene.LENGTH_SHORT)
+                            }.onFailure {
+                                when (it) {
+                                    is NoHAtHClientException -> activity.showTip(R.string.download_archive_failure_no_hath, BaseScene.LENGTH_LONG)
+                                    is EhException -> activity.showTip(ExceptionUtils.getReadableString(it), BaseScene.LENGTH_LONG)
+                                    else -> activity.showTip(R.string.download_archive_failure, BaseScene.LENGTH_LONG)
+                                }
+                            }
+                        }
+                    }
+                    mDialog?.dismiss()
+                    mDialog = null
+                }
+                if (mArchiveList == null) {
+                    binding.text.visibility = View.GONE
+                    binding.listView.visibility = View.GONE
+                    mJob = coroutineScope.launchIO {
+                        runSuspendCatching {
+                            EhEngine.getArchiveList(url!!, gid, token)
+                        }.onSuccess { result ->
+                            mArchiveFormParamOr = result.paramOr
+                            mArchiveList = result.archiveList
+                            mCurrentFunds = result.funds
+                            withUIContext {
+                                bind(result.archiveList, result.funds)
+                            }
+                        }.onFailure {
+                            withUIContext {
+                                binding.progress.visibility = View.GONE
+                                binding.text.visibility = View.VISIBLE
+                                binding.listView.visibility = View.GONE
+                                binding.text.text = ExceptionUtils.getReadableString(it)
+                            }
+                        }
+                        mJob = null
+                    }
+                } else {
+                    bind(mArchiveList, mCurrentFunds)
+                }
+            }
+
+            fun bind(data: List<ArchiveParser.Archive>?, funds: HomeParser.Funds?) {
+                mDialog ?: return
+                if (data.isNullOrEmpty()) {
+                    binding.progress.visibility = View.GONE
+                    binding.text.visibility = View.VISIBLE
+                    binding.listView.visibility = View.GONE
+                    binding.text.setText(R.string.no_archives)
+                } else {
+                    val nameArray = data.map {
+                        it.run {
+                            if (isHAtH) {
+                                val costStr = if (cost == "Free") archiveFree else cost
+                                "[H@H] $name [$size] [$costStr]"
+                            } else {
+                                val nameStr = if (res == "org") archiveOriginal else archiveResample
+                                val costStr = if (cost == "Free!") archiveFree else cost
+                                "$nameStr [$size] [$costStr]"
+                            }
+                        }
+                    }.toTypedArray()
+                    binding.progress.visibility = View.GONE
+                    binding.text.visibility = View.GONE
+                    binding.listView.visibility = View.VISIBLE
+                    binding.listView.adapter = ArrayAdapter(mDialog!!.context, R.layout.item_select_dialog, nameArray)
+                    if (funds != null) {
+                        var fundsGP = funds.fundsGP.toString()
+                        // Ex GP numbers are rounded down to the nearest thousand
+                        if (EhUtils.isExHentai) {
+                            fundsGP += "+"
+                        }
+                        mDialog!!.setTitle(context.resources.getString(R.string.current_funds, fundsGP, funds.fundsC))
+                    }
+                }
+            }
+
+            override fun onDismiss(dialog: DialogInterface) {
+                mJob?.cancel()
+                mJob = null
+                mDialog = null
+                _binding = null
+            }
+        }
+        val helper = ArchiveListDialogHelper()
+        val binding = DialogArchiveListBinding.inflate(context.layoutInflater)
+        val dialog: Dialog = BaseDialogBuilder(context)
+            .setTitle(R.string.settings_download)
+            .setView(binding.root)
+            .setOnDismissListener(helper)
+            .show()
+        helper.setDialog(dialog, binding, galleryDetail.archiveUrl)
+    }
+
+    val keylineMargin = dimensionResource(R.dimen.keyline_margin)
+
+    fun navigateToPreview(nextPage: Boolean = false) {
+        (galleryInfo as? GalleryDetail)?.let {
+            navigator.navAnimated(
+                R.id.galleryPreviewsScene,
+                bundleOf(
+                    GalleryDetailScene.KEY_GALLERY_DETAIL to it,
+                    KEY_NEXT_PAGE to nextPage,
+                ),
             )
-            voteTag(text.trim(), 1)
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        // Get download state
-        val gid = gid
-        mDownloadState = if (gid != -1L) {
-            EhDownloadManager.getDownloadState(gid)
-        } else {
-            DownloadInfo.STATE_INVALID
-        }
-        readButtonText = getString(R.string.read)
-        composeBindingGI?.let { gi ->
-            if (mAction == ACTION_GALLERY_INFO) {
-                composeBindingGI = gi
-                updateDownloadText()
-            }
-        }
-        if (prepareData()) {
-            if (composeBindingGD != null) {
-                bindViewSecond()
-            }
-        } else {
-            getDetailError = getString(R.string.error_cannot_find_gallery)
-        }
-        (requireActivity() as MainActivity).mShareUrl = galleryDetailUrl
-        return ComposeWithMD3 {
-            LaunchedEffect(gid) {
-                EhDownloadManager.stateFlow(gid).collect {
-                    updateDownloadState()
-                }
-            }
-            dialogState.Intercept()
-            val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-            Scaffold(
-                topBar = {
-                    LargeTopAppBar(
-                        title = {
-                            composeBindingGI?.let {
-                                Text(
-                                    text = EhUtils.getSuitableTitle(it),
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = {
-                                findNavController().popBackStack()
-                            }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                    contentDescription = null,
-                                )
-                            }
-                        },
-                        scrollBehavior = scrollBehavior,
-                        actions = {
-                            IconButton(onClick = ::showArchiveDialog) {
-                                Icon(
-                                    imageVector = Icons.Default.FolderZip,
-                                    contentDescription = null,
-                                )
-                            }
-                            IconButton(onClick = ::doShareGallery) {
-                                Icon(
-                                    imageVector = Icons.Default.Share,
-                                    contentDescription = null,
-                                )
-                            }
-                            var dropdown by remember { mutableStateOf(false) }
-                            IconButton(onClick = { dropdown = !dropdown }) {
-                                Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = null,
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = dropdown,
-                                onDismissRequest = { dropdown = false },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(id = R.string.action_add_tag)) },
-                                    onClick = {
-                                        dropdown = false
-                                        actionAddTag()
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(id = R.string.refresh)) },
-                                    onClick = {
-                                        dropdown = false
-                                        actionRefresh()
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(id = R.string.clear_image_cache)) },
-                                    onClick = {
-                                        dropdown = false
-                                        actionClearCache()
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(id = R.string.open_in_other_app)) },
-                                    onClick = {
-                                        dropdown = false
-                                        actionOpenInOtherApp()
-                                    },
-                                )
-                            }
-                        },
-                    )
-                },
-            ) {
-                Surface {
-                    val gi = composeBindingGI
-                    if (gi != null) {
-                        GalleryDetailContent(
-                            galleryInfo = gi,
-                            galleryDetail = composeBindingGD,
-                            contentPadding = it,
-                            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                        )
-                    } else if (getDetailError.isNotBlank()) {
-                        GalleryDetailErrorTip(error = getDetailError, onClick = ::actionRefresh)
-                    } else {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun onGalleryInfoCardClick() {
-        composeBindingGD?.let {
-            GalleryInfoBottomSheet(it).show(requireActivity().supportFragmentManager, "GalleryInfoBottomSheet")
-        }
-    }
-
-    @Composable
-    private fun GalleryDetailContent(
-        galleryInfo: GalleryInfo,
-        galleryDetail: GalleryDetail?,
-        contentPadding: PaddingValues,
-        modifier: Modifier,
-    ) {
-        val windowSizeClass = calculateWindowSizeClass(requireActivity())
-        val columnCount = calculateSuitableSpanCount()
-        when (windowSizeClass.widthSizeClass) {
-            WindowWidthSizeClass.Medium, WindowWidthSizeClass.Compact -> LazyVerticalGrid(
-                columns = GridCells.Fixed(columnCount),
-                contentPadding = contentPadding,
-                modifier = modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
-            ) {
-                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
-                    LocalPinnableContainer.current!!.run { remember { pin() } }
-                    Column {
-                        GalleryDetailHeaderCard(
-                            info = galleryDetail ?: galleryInfo,
-                            onInfoCardClick = ::onGalleryInfoCardClick,
-                            onCategoryChipClick = ::onCategoryChipClick,
-                            onUploaderChipClick = ::onUploaderChipClick,
-                            onBlockUploaderIconClick = ::showFilterUploaderDialog,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = dimensionResource(id = R.dimen.keyline_margin)),
-                        )
-                        Row {
-                            FilledTonalButton(
-                                onClick = ::onDownloadButtonClick,
-                                modifier = Modifier
-                                    .padding(horizontal = 4.dp)
-                                    .weight(1F),
-                            ) {
-                                Text(text = downloadButtonText, maxLines = 1)
-                            }
-                            Button(
-                                onClick = ::onReadButtonClick,
-                                modifier = Modifier
-                                    .padding(horizontal = 4.dp)
-                                    .weight(1F),
-                            ) {
-                                Text(text = readButtonText, maxLines = 1)
-                            }
-                        }
-                        if (getDetailError.isNotBlank()) {
-                            GalleryDetailErrorTip(error = getDetailError, onClick = ::actionRefresh)
-                        } else if (galleryDetail != null) {
-                            BelowHeader(galleryDetail)
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
-                }
-                if (galleryDetail != null) {
-                    galleryDetailPreview(galleryDetail)
-                }
-            }
-
-            WindowWidthSizeClass.Expanded -> LazyVerticalGrid(
-                columns = GridCells.Fixed(columnCount),
-                contentPadding = contentPadding,
-                modifier = modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
-            ) {
-                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
-                    LocalPinnableContainer.current!!.run { remember { pin() } }
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            GalleryDetailHeaderCard(
-                                info = galleryDetail ?: galleryInfo,
-                                onInfoCardClick = ::onGalleryInfoCardClick,
-                                onCategoryChipClick = ::onCategoryChipClick,
-                                onUploaderChipClick = ::onUploaderChipClick,
-                                onBlockUploaderIconClick = ::showFilterUploaderDialog,
-                                modifier = Modifier
-                                    .width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width))
-                                    .padding(vertical = dimensionResource(id = R.dimen.keyline_margin)),
-                            )
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Spacer(modifier = modifier.height(16.dp))
-                                Button(
-                                    onClick = ::onReadButtonClick,
-                                    modifier = Modifier
-                                        .height(56.dp)
-                                        .padding(horizontal = 16.dp)
-                                        .width(192.dp),
-                                ) {
-                                    Text(text = readButtonText, maxLines = 1)
-                                }
-                                Spacer(modifier = modifier.height(24.dp))
-                                FilledTonalButton(
-                                    onClick = ::onDownloadButtonClick,
-                                    modifier = Modifier
-                                        .height(56.dp)
-                                        .padding(horizontal = 16.dp)
-                                        .width(192.dp),
-                                ) {
-                                    Text(text = downloadButtonText, maxLines = 1)
-                                }
-                            }
-                        }
-                        if (getDetailError.isNotBlank()) {
-                            GalleryDetailErrorTip(error = getDetailError, onClick = ::actionRefresh)
-                        } else if (galleryDetail != null) {
-                            BelowHeader(galleryDetail)
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
-                }
-                if (galleryDetail != null) {
-                    galleryDetailPreview(galleryDetail)
-                }
-            }
-        }
-    }
-
-    private fun LazyGridScope.galleryDetailPreview(gd: GalleryDetail) {
+    fun LazyGridScope.galleryDetailPreview(gd: GalleryDetail) {
         val previewList = gd.previewList
         items(previewList) {
             EhPreviewItem(
                 galleryPreview = it,
                 position = it.position,
-                onClick = { context?.navToReader(gd.galleryInfo, it.position) },
+                onClick = { context.navToReader(gd.galleryInfo, it.position) },
             )
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -676,7 +490,7 @@ class GalleryDetailScene : BaseScene() {
     }
 
     @Composable
-    private fun BelowHeader(galleryDetail: GalleryDetail) {
+    fun BelowHeader(galleryDetail: GalleryDetail) {
         @Composable
         fun EhIconButton(
             icon: ImageVector,
@@ -691,23 +505,91 @@ class GalleryDetailScene : BaseScene() {
             }
             Text(text = text)
         }
+
+        @Composable
+        fun GalleryDetailComment(commentsList: List<GalleryComment>) {
+            val maxShowCount = 2
+            val commentText = when {
+                commentsList.isEmpty() -> stringResource(R.string.no_comments)
+                commentsList.size <= maxShowCount -> stringResource(R.string.no_more_comments)
+                else -> stringResource(R.string.more_comment)
+            }
+            fun onNavigateToCommentScene() {
+                navigator.navAnimated(
+                    R.id.galleryCommentsScene,
+                    bundleOf(GalleryCommentsFragment.KEY_GALLERY_DETAIL to galleryDetail),
+                )
+            }
+            CrystalCard {
+                commentsList.take(maxShowCount).forEach { item ->
+                    GalleryCommentCard(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        comment = item,
+                        onCardClick = ::onNavigateToCommentScene,
+                        onUserClick = ::onNavigateToCommentScene,
+                        onUrlClick = {
+                            if (!activity.jumpToReaderByPage(it, galleryDetail)) {
+                                if (!navigator.navWithUrl(it)) {
+                                    activity.openBrowser(it)
+                                }
+                            }
+                        },
+                    ) {
+                        maxLines = 5
+                        ellipsize = END
+                        text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(this))
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = dimensionResource(id = R.dimen.strip_item_padding_v))
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable(onClick = ::onNavigateToCommentScene),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(commentText)
+                }
+            }
+        }
+        suspend fun showNewerVersionDialog() {
+            val items = galleryDetail.newerVersions.map {
+                context.getString(
+                    R.string.newer_version_title,
+                    it.title,
+                    it.posted,
+                ) to {
+                    navigator.navAnimated(
+                        R.id.galleryDetailScene,
+                        bundleOf(
+                            GalleryDetailScene.KEY_ACTION to GalleryDetailScene.ACTION_GID_TOKEN,
+                            GalleryDetailScene.KEY_GID to it.gid,
+                            GalleryDetailScene.KEY_TOKEN to it.token,
+                        ),
+                    )
+                }
+            }.toTypedArray()
+            val navAction = dialogState.showSelectItem(*items)
+            navAction.invoke()
+        }
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
         if (galleryDetail.newerVersions.isNotEmpty()) {
             Box(contentAlignment = Alignment.Center) {
                 CrystalCard(
-                    onClick = ::showNewerVersionDialog,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(32.dp),
-                ) {}
+                    onClick = {
+                        coroutineScope.launchIO {
+                            showNewerVersionDialog()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(32.dp),
+                ) {
+                }
                 Text(text = stringResource(id = R.string.newer_version_available))
             }
             Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
         }
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
         ) {
             val favored by FavouriteStatusRouter.collectAsState(galleryDetail) {
@@ -718,10 +600,33 @@ class GalleryDetailScene : BaseScene() {
             } else {
                 stringResource(id = R.string.not_favorited)
             }
+            val favoritesLock = remember { Mutex() }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 FilledTertiaryIconToggleButton(
                     checked = favored,
-                    onCheckedChange = { modifyFavourite() },
+                    onCheckedChange = {
+                        coroutineScope.launchIO {
+                            favoritesLock.withLock {
+                                var remove = false
+                                runCatching {
+                                    remove = !dialogState.modifyFavorites(galleryDetail.galleryInfo)
+                                    if (remove) {
+                                        activity.showTip(R.string.remove_from_favorite_success, BaseScene.LENGTH_SHORT)
+                                    } else {
+                                        activity.showTip(R.string.add_to_favorite_success, BaseScene.LENGTH_SHORT)
+                                    }
+                                }.onFailure {
+                                    if (it !is CancellationException) {
+                                        if (remove) {
+                                            activity.showTip(R.string.remove_from_favorite_failure, BaseScene.LENGTH_LONG)
+                                        } else {
+                                            activity.showTip(R.string.add_to_favorite_failure, BaseScene.LENGTH_LONG)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                 ) {
                     Icon(
                         imageVector = getFavoriteIcon(favored),
@@ -733,27 +638,222 @@ class GalleryDetailScene : BaseScene() {
             EhIconButton(
                 icon = Icons.Default.Search,
                 text = stringResource(id = R.string.similar_gallery),
-                onClick = ::showSimilarGalleryList,
+                onClick = {
+                    val keyword = EhUtils.extractTitle(galleryDetail.title)
+                    val artist = getArtist(galleryDetail.tags)
+                    if (null != keyword) {
+                        navigator.navAnimated(
+                            R.id.galleryListScene,
+                            ListUrlBuilder(
+                                mode = ListUrlBuilder.MODE_NORMAL,
+                                mKeyword = "\"" + keyword + "\"",
+                            ).toStartArgs(),
+                            true,
+                        )
+                    } else if (artist != null) {
+                        navigator.navAnimated(
+                            R.id.galleryListScene,
+                            ListUrlBuilder(
+                                mode = ListUrlBuilder.MODE_TAG,
+                                mKeyword = "artist:$artist",
+                            ).toStartArgs(),
+                            true,
+                        )
+                    } else if (null != galleryDetail.uploader) {
+                        navigator.navAnimated(
+                            R.id.galleryListScene,
+                            ListUrlBuilder(
+                                mode = ListUrlBuilder.MODE_UPLOADER,
+                                mKeyword = galleryDetail.uploader,
+                            ).toStartArgs(),
+                            true,
+                        )
+                    }
+                },
             )
             EhIconButton(
                 icon = Icons.Default.ImageSearch,
                 text = stringResource(id = R.string.search_cover),
-                onClick = ::showCoverGalleryList,
+                onClick = {
+                    val key = galleryDetail.thumbKey.orEmpty()
+                    navigator.navAnimated(
+                        R.id.galleryListScene,
+                        ListUrlBuilder(
+                            mode = ListUrlBuilder.MODE_NORMAL,
+                            hash = key.substringAfterLast('/').substringBefore('-'),
+                        ).toStartArgs(),
+                    )
+                },
             )
+            val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
+            val permissionDenied = stringResource(R.string.permission_denied)
+            var mTorrentList by remember { mutableStateOf<TorrentResult?>(null) }
             EhIconButton(
                 icon = Icons.Default.SwapVerticalCircle,
                 text = torrentText,
-                onClick = ::showTorrentDialog,
+                onClick = {
+                    coroutineScope.launchIO {
+                        val granted = isAtLeastQ || context.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        if (granted) {
+                            class TorrentListDialogHelper : DialogInterface.OnDismissListener {
+                                private var _binding: DialogTorrentListBinding? = null
+                                private val binding get() = _binding!!
+                                private var mJob: Job? = null
+                                private var mDialog: Dialog? = null
+                                fun setDialog(dialog: Dialog?, dialogBinding: DialogTorrentListBinding, url: String?) {
+                                    mDialog = dialog
+                                    _binding = dialogBinding
+                                    binding.listView.setOnItemClickListener { _, _, position, _ ->
+                                        if (null != mTorrentList && position < mTorrentList!!.size) {
+                                            val itemUrl = mTorrentList!![position].url
+                                            val name = mTorrentList!![position].name
+                                            val r = DownloadManager.Request(Uri.parse(itemUrl.replace("exhentai.org", "ehtracker.org")))
+                                            r.setDestinationInExternalPublicDir(
+                                                Environment.DIRECTORY_DOWNLOADS,
+                                                FileUtils.sanitizeFilename("$name.torrent"),
+                                            )
+                                            r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                                            r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(itemUrl.toHttpUrl()))
+                                            try {
+                                                downloadManager.enqueue(r)
+                                                activity.showTip(R.string.download_torrent_started, BaseScene.LENGTH_SHORT)
+                                            } catch (e: Throwable) {
+                                                e.printStackTrace()
+                                                ExceptionUtils.throwIfFatal(e)
+                                                activity.showTip(R.string.download_torrent_failure, BaseScene.LENGTH_SHORT)
+                                            }
+                                        }
+                                        mDialog?.dismiss()
+                                        mDialog = null
+                                    }
+                                    if (mTorrentList == null) {
+                                        binding.text.visibility = View.GONE
+                                        binding.listView.visibility = View.GONE
+                                        mJob = coroutineScope.launchIO {
+                                            runSuspendCatching {
+                                                EhEngine.getTorrentList(url!!, gid, token)
+                                            }.onSuccess {
+                                                mTorrentList = it
+                                                withUIContext {
+                                                    bind(it)
+                                                }
+                                            }.onFailure {
+                                                withUIContext {
+                                                    binding.progress.visibility = View.GONE
+                                                    binding.text.visibility = View.VISIBLE
+                                                    binding.listView.visibility = View.GONE
+                                                    binding.text.text = ExceptionUtils.getReadableString(it)
+                                                }
+                                            }
+                                            mJob = null
+                                        }
+                                    } else {
+                                        bind(mTorrentList)
+                                    }
+                                }
+
+                                private fun bind(data: TorrentResult?) {
+                                    mDialog ?: return
+                                    if (data.isNullOrEmpty()) {
+                                        binding.progress.visibility = View.GONE
+                                        binding.text.visibility = View.VISIBLE
+                                        binding.listView.visibility = View.GONE
+                                        binding.text.setText(R.string.no_torrents)
+                                    } else {
+                                        val nameArray = data.map { it.format() }.toTypedArray()
+                                        binding.progress.visibility = View.GONE
+                                        binding.text.visibility = View.GONE
+                                        binding.listView.visibility = View.VISIBLE
+                                        binding.listView.adapter =
+                                            ArrayAdapter(mDialog!!.context, R.layout.item_select_dialog, nameArray)
+                                    }
+                                }
+
+                                override fun onDismiss(dialog: DialogInterface) {
+                                    mJob?.cancel()
+                                    mJob = null
+                                    mDialog = null
+                                    _binding = null
+                                }
+                            }
+                            val helper = TorrentListDialogHelper()
+                            withUIContext {
+                                val binding = DialogTorrentListBinding.inflate(context.layoutInflater)
+                                val dialog: Dialog = BaseDialogBuilder(context)
+                                    .setTitle(R.string.torrents)
+                                    .setView(binding.root)
+                                    .setOnDismissListener(helper)
+                                    .show()
+                                helper.setDialog(dialog, binding, galleryDetail.torrentUrl)
+                            }
+                        } else {
+                            activity.showTip(permissionDenied, BaseScene.LENGTH_SHORT)
+                        }
+                    }
+                },
             )
         }
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-        CrystalCard(
-            onClick = ::showRateDialog,
-        ) {
+        fun getAllRatingText(rating: Float, ratingCount: Int): String {
+            return context.getString(
+                R.string.rating_text,
+                context.getString(getRatingText(rating)),
+                rating,
+                ratingCount,
+            )
+        }
+        var ratingText by rememberSaveable {
+            mutableStateOf(getAllRatingText(galleryDetail.rating, galleryDetail.ratingCount))
+        }
+        fun showRateDialog() {
+            if (galleryDetail.apiUid < 0) {
+                activity.showTip(R.string.sign_in_first, BaseScene.LENGTH_LONG)
+                return
+            }
+            val binding = DialogRateBinding.inflate(context.layoutInflater)
+            class RateDialogHelper(rating: Float) : OnUserRateListener, DialogInterface.OnClickListener {
+                init {
+                    binding.ratingText.setText(getRatingText(rating))
+                    binding.ratingView.rating = rating
+                    binding.ratingView.setOnUserRateListener(this)
+                }
+
+                override fun onUserRate(rating: Float) {
+                    binding.ratingText.setText(getRatingText(rating))
+                }
+
+                override fun onClick(dialog: DialogInterface, which: Int) {
+                    if (which != DialogInterface.BUTTON_POSITIVE) return
+                    val r = binding.ratingView.rating
+                    val gd = galleryDetail
+                    coroutineScope.launchIO {
+                        runSuspendCatching {
+                            EhEngine.rateGallery(gd.apiUid, gd.apiKey, gd.gid, gd.token, r)
+                        }.onSuccess { result ->
+                            activity.showTip(R.string.rate_successfully, BaseScene.LENGTH_SHORT)
+                            galleryInfo = galleryDetail.apply {
+                                rating = result.rating
+                                ratingCount = result.ratingCount
+                            }
+                            ratingText = getAllRatingText(result.rating, result.ratingCount)
+                        }.onFailure {
+                            it.printStackTrace()
+                            activity.showTip(R.string.rate_failed, BaseScene.LENGTH_LONG)
+                        }
+                    }
+                }
+            }
+            val helper = RateDialogHelper(galleryDetail.rating)
+            BaseDialogBuilder(context)
+                .setTitle(R.string.rate)
+                .setView(binding.root)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(android.R.string.ok, helper)
+                .show()
+        }
+        CrystalCard(onClick = ::showRateDialog) {
             Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth(),
+                modifier = Modifier.padding(8.dp).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 GalleryDetailRating(rating = galleryDetail.rating)
@@ -777,10 +877,63 @@ class GalleryDetailScene : BaseScene() {
                     val lub = ListUrlBuilder()
                     lub.mode = ListUrlBuilder.MODE_TAG
                     lub.keyword = it
-                    navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
+                    navigator.navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
                 },
-                onTagLongClick = { translation, realTag ->
-                    showTagDialog(translation, realTag)
+                onTagLongClick = { translated, tag ->
+                    val temp: String
+                    val index = tag.indexOf(':')
+                    temp = if (index >= 0) {
+                        tag.substring(index + 1)
+                    } else {
+                        tag
+                    }
+                    val menu: MutableList<String> = ArrayList()
+                    val menuId = IntList()
+                    val resources = context.resources
+                    menu.add(resources.getString(android.R.string.copy))
+                    menuId.add(R.id.copy)
+                    if (temp != translated) {
+                        menu.add(resources.getString(R.string.copy_trans))
+                        menuId.add(R.id.copy_trans)
+                    }
+                    menu.add(resources.getString(R.string.show_definition))
+                    menuId.add(R.id.show_definition)
+                    menu.add(resources.getString(R.string.add_filter))
+                    menuId.add(R.id.add_filter)
+                    if (galleryDetail.apiUid >= 0) {
+                        menu.add(resources.getString(R.string.tag_vote_up))
+                        menuId.add(R.id.vote_up)
+                        menu.add(resources.getString(R.string.tag_vote_down))
+                        menuId.add(R.id.vote_down)
+                    }
+                    BaseDialogBuilder(context)
+                        .setTitle(tag)
+                        .setItems(menu.toTypedArray()) { _: DialogInterface?, which: Int ->
+                            if (which < 0 || which >= menuId.size) {
+                                return@setItems
+                            }
+                            when (menuId[which]) {
+                                R.id.vote_up -> coroutineScope.launchIO {
+                                    galleryDetail.voteTag(tag, 1)
+                                }
+                                R.id.vote_down -> coroutineScope.launchIO {
+                                    galleryDetail.voteTag(tag, -1)
+                                }
+                                R.id.show_definition -> context.openBrowser(EhUrl.getTagDefinitionUrl(temp))
+                                R.id.add_filter -> {
+                                    BaseDialogBuilder(context)
+                                        .setMessage(context.getString(R.string.filter_the_tag, tag))
+                                        .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                                            Filter(FilterMode.TAG, tag).remember()
+                                            activity.showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
+                                        }
+                                        .setNegativeButton(android.R.string.cancel, null)
+                                        .show()
+                                }
+                                R.id.copy -> activity.addTextToClipboard(tag)
+                                R.id.copy_trans -> activity.addTextToClipboard(translated)
+                            }
+                        }.show()
                 },
             )
         }
@@ -791,760 +944,391 @@ class GalleryDetailScene : BaseScene() {
         }
     }
 
-    private fun onCategoryChipClick() {
-        val category = category
-        if (category == EhUtils.NONE || category == EhUtils.PRIVATE || category == EhUtils.UNKNOWN) {
-            return
-        }
-        val lub = ListUrlBuilder()
-        lub.category = category
-        navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-    }
-
-    private fun onUploaderChipClick() {
-        if (uploader.isNullOrEmpty() || disowned) {
-            return
-        }
-        val lub = ListUrlBuilder()
-        lub.mode = ListUrlBuilder.MODE_UPLOADER
-        lub.keyword = uploader
-        navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-    }
-
-    private fun onDownloadButtonClick() {
-        val galleryDetail = composeBindingGD ?: return
-        if (EhDownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
-            CommonOperations.startDownload(
-                activity as MainActivity,
-                galleryDetail.galleryInfo,
-                false,
-            )
-        } else {
-            val builder = CheckBoxDialogBuilder(
-                requireContext(),
-                getString(
-                    R.string.download_remove_dialog_message,
-                    galleryDetail.title,
-                ),
-                getString(R.string.download_remove_dialog_check_text),
-                Settings.removeImageFiles,
-            )
-            val helper = DeleteDialogHelper(
-                galleryDetail,
-                builder,
-            )
-            builder.setTitle(R.string.download_remove_dialog_title)
-                .setPositiveButton(android.R.string.ok, helper)
-                .show()
-        }
-    }
-
-    private fun onReadButtonClick() = composeBindingGI?.let { context?.navToReader(it) }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        (requireActivity() as MainActivity).mShareUrl = null
-    }
-
-    private fun prepareData(): Boolean {
-        composeBindingGD?.let { return true }
-        val gid = gid
-        if (gid == -1L) {
-            return false
-        }
-
-        // Get from cache
-        composeBindingGD = galleryDetailCache[gid]
-        composeBindingGD?.let { return true }
-        request()
-        return true
-    }
-
-    private fun request() {
-        val url = galleryDetailUrl ?: return
-        viewLifecycleOwner.lifecycleScope.launchIO {
-            runSuspendCatching {
-                EhEngine.getGalleryDetail(url)
-            }.onSuccess { galleryDetail ->
-                galleryDetailCache.put(galleryDetail.gid, galleryDetail)
-                // Don't update gallery info in database if previous destination is favorites,
-                // since it will invalidate local favorites PagingSource and lose scroll state
-                val previousDestinationId = findNavController().previousBackStackEntry?.destination?.id
-                EhDB.putHistoryInfo(galleryDetail.galleryInfo, previousDestinationId != R.id.nav_favourite)
-                if (Settings.preloadThumbAggressively) {
-                    lifecycleScope.launchIO {
-                        galleryDetail.previewList.forEach {
-                            context?.run { imageLoader.enqueue(imageRequest(it) { justDownload() }) }
-                        }
-                    }
-                }
-                composeBindingGD = galleryDetail
-                composeBindingGI = galleryDetail.galleryInfo
-                updateDownloadState()
-                bindViewSecond()
-            }.onFailure {
-                getDetailError = ExceptionUtils.getReadableString(it)
-            }
-        }
-    }
-
-    private fun doShareGallery() {
-        galleryDetailUrl?.let { AppHelper.share(requireActivity(), it) }
-    }
-
-    private fun modifyFavourite() {
-        val galleryDetail = composeBindingGD ?: return
-        lifecycleScope.launchIO {
-            favoritesLock.withLock {
-                var remove = false
-                runCatching {
-                    remove = !dialogState.modifyFavorites(galleryDetail.galleryInfo)
-                    if (remove) {
-                        showTip(R.string.remove_from_favorite_success, LENGTH_SHORT)
-                    } else {
-                        showTip(R.string.add_to_favorite_success, LENGTH_SHORT)
-                    }
-                }.onFailure {
-                    if (it !is CancellationException) {
-                        if (remove) {
-                            showTip(R.string.remove_from_favorite_failure, LENGTH_LONG)
-                        } else {
-                            showTip(R.string.add_to_favorite_failure, LENGTH_LONG)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun showNewerVersionDialog() {
-        val galleryDetail = composeBindingGD ?: return
-        val titles = ArrayList<CharSequence>()
-        for (newerVersion in galleryDetail.newerVersions) {
-            titles.add(
-                getString(
-                    R.string.newer_version_title,
-                    newerVersion.title,
-                    newerVersion.posted,
-                ),
-            )
-        }
-        BaseDialogBuilder(requireContext())
-            .setItems(titles.toTypedArray()) { _: DialogInterface?, which: Int ->
-                val newerVersion = galleryDetail.newerVersions[which]
-                val args = Bundle()
-                args.putString(KEY_ACTION, ACTION_GID_TOKEN)
-                args.putLong(KEY_GID, newerVersion.gid)
-                args.putString(KEY_TOKEN, newerVersion.token)
-                navAnimated(R.id.galleryDetailScene, args)
-            }
-            .show()
-    }
-
-    private fun showArchiveDialog() {
-        val galleryDetail = composeBindingGD ?: return
-        if (galleryDetail.apiUid < 0) {
-            showTip(R.string.sign_in_first, LENGTH_LONG)
-            return
-        }
-        val helper = ArchiveListDialogHelper()
-        val binding = DialogArchiveListBinding.inflate(layoutInflater)
-        val dialog: Dialog = BaseDialogBuilder(requireContext())
-            .setTitle(R.string.settings_download)
-            .setView(binding.root)
-            .setOnDismissListener(helper)
-            .show()
-        helper.setDialog(dialog, binding, galleryDetail.archiveUrl)
-    }
-
-    private fun bindViewSecond() {
-        val gd = composeBindingGD ?: return
-        context ?: return
-        if (mPage != 0) {
-            Snackbar.make(
-                requireActivity().findViewById(R.id.fragment_container),
-                getString(R.string.read_from, mPage),
-                Snackbar.LENGTH_LONG,
-            ).setAction(R.string.read) { context?.navToReader(gd.galleryInfo, mPage) }.show()
-        }
-        composeBindingGI = gd.galleryInfo
-        composeBindingGD = gd
-        updateDownloadText()
-        ratingText = getAllRatingText(gd.rating, gd.ratingCount)
-        torrentText = resources.getString(R.string.torrent_count, gd.torrentCount)
-    }
-
-    private fun onNavigateToCommentScene() {
-        val galleryDetail = composeBindingGD ?: return
-        navAnimated(
-            R.id.galleryCommentsScene,
-            bundleOf(GalleryCommentsFragment.KEY_GALLERY_DETAIL to galleryDetail),
-        )
-    }
-
-    @SuppressLint("InflateParams")
     @Composable
-    private fun GalleryDetailComment(commentsList: List<GalleryComment>) {
-        val maxShowCount = 2
-        val commentText = if (commentsList.isEmpty()) {
-            stringResource(R.string.no_comments)
-        } else if (commentsList.size <= maxShowCount) {
-            stringResource(R.string.no_more_comments)
-        } else {
-            stringResource(R.string.more_comment)
-        }
-        CrystalCard {
-            commentsList.take(maxShowCount).forEach { item ->
-                GalleryCommentCard(
-                    modifier = Modifier.padding(vertical = 4.dp),
-                    comment = item,
-                    onCardClick = {
-                        onNavigateToCommentScene()
-                    },
-                    onUserClick = {
-                        onNavigateToCommentScene()
-                    },
-                    onUrlClick = {
-                        val activity = context?.findActivity<MainActivity>() ?: return@GalleryCommentCard
-                        val galleryDetail = composeBindingGD ?: return@GalleryCommentCard
-                        if (!activity.jumpToReaderByPage(it, galleryDetail)) {
-                            if (!findNavController().navWithUrl(it)) {
-                                activity.openBrowser(it)
-                            }
-                        }
-                    },
-                ) {
-                    maxLines = 5
-                    ellipsize = END
-                    text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(this))
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = dimensionResource(id = R.dimen.strip_item_padding_v))
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable(onClick = ::onNavigateToCommentScene),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(commentText)
-            }
-        }
-    }
-
-    private fun getAllRatingText(rating: Float, ratingCount: Int): String {
-        return getString(
-            R.string.rating_text,
-            getString(getRatingText(rating)),
-            rating,
-            ratingCount,
-        )
-    }
-
-    private fun showSimilarGalleryList() {
-        val gd = composeBindingGD ?: return
-        val keyword = EhUtils.extractTitle(gd.title)
-        if (null != keyword) {
-            val lub = ListUrlBuilder()
-            lub.mode = ListUrlBuilder.MODE_NORMAL
-            lub.keyword = "\"" + keyword + "\""
-            navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-            return
-        }
-        val artist = getArtist(gd.tags)
-        if (null != artist) {
-            val lub = ListUrlBuilder()
-            lub.mode = ListUrlBuilder.MODE_TAG
-            lub.keyword = "artist:$artist"
-            navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-            return
-        }
-        if (null != gd.uploader) {
-            val lub = ListUrlBuilder()
-            lub.mode = ListUrlBuilder.MODE_UPLOADER
-            lub.keyword = gd.uploader
-            navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-        }
-    }
-
-    private fun showCoverGalleryList() {
-        context ?: return
-        val gid = gid
-        if (-1L == gid) {
-            return
-        }
-        try {
-            val key = composeBindingGI!!.thumbKey!!
-            val lub = ListUrlBuilder()
-            lub.mode = ListUrlBuilder.MODE_NORMAL
-            lub.hash = key.substringAfterLast('/').substringBefore('-')
-            navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-        } catch (e: Throwable) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun navigateToPreview(nextPage: Boolean = false) {
-        composeBindingGD?.let {
-            val args = Bundle()
-            args.putParcelable(KEY_GALLERY_DETAIL, it)
-            args.putBoolean(KEY_NEXT_PAGE, nextPage)
-            navAnimated(R.id.galleryPreviewsScene, args)
-        }
-    }
-
-    private fun showTorrentDialog() {
-        val galleryDetail = composeBindingGD ?: return
-        viewLifecycleOwner.lifecycleScope.launchUI {
-            val granted = isAtLeastQ || requireContext().requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            if (granted) {
-                val helper = TorrentListDialogHelper()
-                val binding = DialogTorrentListBinding.inflate(layoutInflater)
-                val dialog: Dialog = BaseDialogBuilder(requireContext())
-                    .setTitle(R.string.torrents)
-                    .setView(binding.root)
-                    .setOnDismissListener(helper)
-                    .show()
-                helper.setDialog(dialog, binding, galleryDetail.torrentUrl)
-            } else {
-                showTip(getString(R.string.permission_denied), LENGTH_SHORT)
-            }
-        }
-    }
-
-    private fun showRateDialog() {
-        val galleryDetail = composeBindingGD ?: return
-        if (galleryDetail.apiUid < 0) {
-            showTip(R.string.sign_in_first, LENGTH_LONG)
-            return
-        }
-        val binding = DialogRateBinding.inflate(layoutInflater)
-        val helper = RateDialogHelper(binding, galleryDetail.rating)
-        BaseDialogBuilder(requireContext())
-            .setTitle(R.string.rate)
-            .setView(binding.root)
-            .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(android.R.string.ok, helper)
-            .show()
-    }
-
-    private fun showFilterTagDialog(tag: String) {
-        val context = context ?: return
-        BaseDialogBuilder(context)
-            .setMessage(getString(R.string.filter_the_tag, tag))
-            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                Filter(FilterMode.TAG, tag).remember()
-                showTip(R.string.filter_added, LENGTH_SHORT)
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
-    }
-
-    private fun showTagDialog(translated: String, tag: String) {
-        val context = context ?: return
-        val temp: String
-        val index = tag.indexOf(':')
-        temp = if (index >= 0) {
-            tag.substring(index + 1)
-        } else {
-            tag
-        }
-        val menu: MutableList<String> = ArrayList()
-        val menuId = IntList()
-        val resources = context.resources
-        menu.add(resources.getString(android.R.string.copy))
-        menuId.add(R.id.copy)
-        if (temp != translated) {
-            menu.add(resources.getString(R.string.copy_trans))
-            menuId.add(R.id.copy_trans)
-        }
-        menu.add(resources.getString(R.string.show_definition))
-        menuId.add(R.id.show_definition)
-        menu.add(resources.getString(R.string.add_filter))
-        menuId.add(R.id.add_filter)
-        if (composeBindingGD != null && composeBindingGD!!.apiUid >= 0) {
-            menu.add(resources.getString(R.string.tag_vote_up))
-            menuId.add(R.id.vote_up)
-            menu.add(resources.getString(R.string.tag_vote_down))
-            menuId.add(R.id.vote_down)
-        }
-        BaseDialogBuilder(context)
-            .setTitle(tag)
-            .setItems(menu.toTypedArray()) { _: DialogInterface?, which: Int ->
-                if (which < 0 || which >= menuId.size) {
-                    return@setItems
-                }
-                when (menuId[which]) {
-                    R.id.vote_up -> {
-                        voteTag(tag, 1)
-                    }
-
-                    R.id.vote_down -> {
-                        voteTag(tag, -1)
-                    }
-
-                    R.id.show_definition -> {
-                        context.openBrowser(EhUrl.getTagDefinitionUrl(temp))
-                    }
-
-                    R.id.add_filter -> {
-                        showFilterTagDialog(tag)
-                    }
-
-                    R.id.copy -> {
-                        requireActivity().addTextToClipboard(tag)
-                    }
-
-                    R.id.copy_trans -> {
-                        requireActivity().addTextToClipboard(translated)
-                    }
-                }
-            }.show()
-    }
-
-    private fun voteTag(tag: String, vote: Int) {
-        composeBindingGD?.run {
-            lifecycleScope.launchIO {
-                runSuspendCatching {
-                    EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
-                }.onSuccess { result ->
-                    result?.let {
-                        showTip(result, LENGTH_SHORT)
-                    } ?: showTip(R.string.tag_vote_successfully, LENGTH_SHORT)
-                }.onFailure {
-                    showTip(R.string.vote_failed, LENGTH_LONG)
+    fun GalleryDetailContent(
+        galleryInfo: GalleryInfo,
+        contentPadding: PaddingValues,
+        modifier: Modifier,
+    ) {
+        val galleryDetail = galleryInfo.asGalleryDetail()
+        val windowSizeClass = calculateWindowSizeClass(activity)
+        val columnCount = calculateSuitableSpanCount()
+        val readText = stringResource(R.string.read)
+        val downloadText = stringResource(R.string.download)
+        var readButtonText by rememberSaveable { mutableStateOf(readText) }
+        LaunchedEffect(Unit) {
+            runSuspendCatching {
+                val queen = SpiderQueen.obtainSpiderQueen(galleryInfo, MODE_READ)
+                val startPage = queen.awaitStartPage()
+                SpiderQueen.releaseSpiderQueen(queen, MODE_READ)
+                readButtonText = if (startPage == 0) {
+                    readText
+                } else {
+                    context.getString(R.string.read_from, startPage + 1)
                 }
             }
         }
-    }
-
-    private fun showFilterUploaderDialog() {
-        if (uploader.isNullOrEmpty() || disowned) {
-            return
-        }
-        val context = context
-        val uploader = uploader
-        if (context == null || uploader == null) {
-            return
-        }
-        BaseDialogBuilder(context)
-            .setMessage(getString(R.string.filter_the_uploader, uploader))
-            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                Filter(FilterMode.UPLOADER, uploader).remember()
-                showTip(R.string.filter_added, LENGTH_SHORT)
+        var downloadButtonText by rememberSaveable { mutableStateOf(downloadText) }
+        LaunchedEffect(Unit) {
+            EhDownloadManager.stateFlow(gid).collect {
+                context.run {
+                    downloadButtonText = when (EhDownloadManager.getDownloadState(gid)) {
+                        DownloadInfo.STATE_INVALID -> getString(R.string.download)
+                        DownloadInfo.STATE_NONE -> getString(R.string.download_state_none)
+                        DownloadInfo.STATE_WAIT -> getString(R.string.download_state_wait)
+                        DownloadInfo.STATE_DOWNLOAD -> getString(R.string.download_state_downloading)
+                        DownloadInfo.STATE_FINISH -> getString(R.string.download_state_downloaded)
+                        DownloadInfo.STATE_FAILED -> getString(R.string.download_state_failed)
+                        else -> error("Invalid DownloadState!!!")
+                    }
+                }
             }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
-    }
-
-    private fun updateDownloadText() {
-        downloadButtonText = when (mDownloadState) {
-            DownloadInfo.STATE_INVALID -> getString(R.string.download)
-            DownloadInfo.STATE_NONE -> getString(R.string.download_state_none)
-            DownloadInfo.STATE_WAIT -> getString(R.string.download_state_wait)
-            DownloadInfo.STATE_DOWNLOAD -> getString(R.string.download_state_downloading)
-            DownloadInfo.STATE_FINISH -> getString(R.string.download_state_downloaded)
-            DownloadInfo.STATE_FAILED -> getString(R.string.download_state_failed)
-            else -> throw IllegalArgumentException()
         }
-    }
-
-    private fun updateDownloadState() {
-        val context = context
-        val gid = gid
-        if (null == context || -1L == gid) {
-            return
-        }
-        val downloadState = EhDownloadManager.getDownloadState(gid)
-        if (downloadState == mDownloadState) {
-            return
-        }
-        mDownloadState = downloadState
-        updateDownloadText()
-    }
-
-    private inner class DeleteDialogHelper(
-        private val mGalleryInfo: GalleryInfo,
-        private val mBuilder: CheckBoxDialogBuilder,
-    ) : DialogInterface.OnClickListener {
-        override fun onClick(dialog: DialogInterface, which: Int) {
-            if (which != DialogInterface.BUTTON_POSITIVE) {
+        fun onReadButtonClick() = context.navToReader(galleryInfo.findBaseInfo())
+        fun onCategoryChipClick() {
+            val category = galleryInfo.category
+            if (category == EhUtils.NONE || category == EhUtils.PRIVATE || category == EhUtils.UNKNOWN) {
                 return
             }
-
-            lifecycleScope.launchIO {
-                val checked = mBuilder.isChecked
-                Settings.removeImageFiles = checked
-                EhDownloadManager.deleteDownload(mGalleryInfo.gid, checked)
-            }
+            val lub = ListUrlBuilder(category = category)
+            navigator.navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
         }
-    }
-
-    private inner class ArchiveListDialogHelper :
-        AdapterView.OnItemClickListener,
-        DialogInterface.OnDismissListener {
-        private var _binding: DialogArchiveListBinding? = null
-        private val binding get() = _binding!!
-        private var mJob: Job? = null
-        private var mDialog: Dialog? = null
-        fun setDialog(dialog: Dialog?, dialogBinding: DialogArchiveListBinding, url: String?) {
-            mDialog = dialog
-            _binding = dialogBinding
-            binding.listView.onItemClickListener = this
-            val context = context
-            if (context != null) {
-                if (mArchiveList == null) {
-                    binding.text.visibility = View.GONE
-                    binding.listView.visibility = View.GONE
-                    mJob = lifecycleScope.launchIO {
-                        runSuspendCatching {
-                            EhEngine.getArchiveList(url!!, mGid, mToken)
-                        }.onSuccess { result ->
-                            mArchiveFormParamOr = result.paramOr
-                            mArchiveList = result.archiveList
-                            mCurrentFunds = result.funds
-                            withUIContext {
-                                bind(result.archiveList, result.funds)
-                            }
-                        }.onFailure {
-                            withUIContext {
-                                binding.progress.visibility = View.GONE
-                                binding.text.visibility = View.VISIBLE
-                                binding.listView.visibility = View.GONE
-                                binding.text.text = ExceptionUtils.getReadableString(it)
-                            }
-                        }
-                        mJob = null
-                    }
-                } else {
-                    bind(mArchiveList, mCurrentFunds)
+        fun onUploaderChipClick() {
+            val uploader = galleryInfo.uploader
+            val disowned = uploader == "(Disowned)"
+            if (uploader.isNullOrEmpty() || disowned) {
+                return
+            }
+            val lub = ListUrlBuilder()
+            lub.mode = ListUrlBuilder.MODE_UPLOADER
+            lub.keyword = uploader
+            navigator.navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
+        }
+        fun onGalleryInfoCardClick() {
+            galleryDetail ?: return
+            GalleryInfoBottomSheet(galleryDetail).show(activity.supportFragmentManager, "GalleryInfoBottomSheet")
+        }
+        fun showFilterUploaderDialog() {
+            val uploader = galleryInfo.uploader
+            val disowned = uploader == "(Disowned)"
+            if (uploader.isNullOrEmpty() || disowned) {
+                return
+            }
+            coroutineScope.launchIO {
+                dialogState.awaitPermissionOrCancel {
+                    Text(text = stringResource(R.string.filter_the_uploader, uploader))
                 }
+                Filter(FilterMode.UPLOADER, uploader).remember()
+                activity.showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
             }
         }
-
-        private fun bind(data: List<ArchiveParser.Archive>?, funds: HomeParser.Funds?) {
-            mDialog ?: return
-            if (data.isNullOrEmpty()) {
-                binding.progress.visibility = View.GONE
-                binding.text.visibility = View.VISIBLE
-                binding.listView.visibility = View.GONE
-                binding.text.setText(R.string.no_archives)
-            } else {
-                val nameArray = data.map {
-                    it.run {
-                        if (isHAtH) {
-                            val costStr =
-                                if (cost == "Free") resources.getString(R.string.archive_free) else cost
-                            "[H@H] $name [$size] [$costStr]"
-                        } else {
-                            val nameStr =
-                                resources.getString(if (res == "org") R.string.archive_original else R.string.archive_resample)
-                            val costStr =
-                                if (cost == "Free!") resources.getString(R.string.archive_free) else cost
-                            "$nameStr [$size] [$costStr]"
-                        }
-                    }
-                }.toTypedArray()
-                binding.progress.visibility = View.GONE
-                binding.text.visibility = View.GONE
-                binding.listView.visibility = View.VISIBLE
-                binding.listView.adapter =
-                    ArrayAdapter(mDialog!!.context, R.layout.item_select_dialog, nameArray)
-                if (funds != null) {
-                    var fundsGP = funds.fundsGP.toString()
-                    // Ex GP numbers are rounded down to the nearest thousand
-                    if (EhUtils.isExHentai) {
-                        fundsGP += "+"
-                    }
-                    mDialog!!.setTitle(getString(R.string.current_funds, fundsGP, funds.fundsC))
-                }
-            }
-        }
-
-        override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-            val context = context
-            val activity = mainActivity
-            if (null != context && null != activity && null != mArchiveList && position < mArchiveList!!.size) {
-                val res = mArchiveList!![position].res
-                val isHAtH = mArchiveList!![position].isHAtH
-                composeBindingGD?.run {
-                    lifecycleScope.launchIO {
-                        runSuspendCatching {
-                            EhEngine.downloadArchive(gid, token, mArchiveFormParamOr, res, isHAtH)
-                        }.onSuccess { result ->
-                            result?.let {
-                                val r = DownloadManager.Request(Uri.parse(result))
-                                val name = "$gid-" + EhUtils.getSuitableTitle(this@run) + ".zip"
-                                r.setDestinationInExternalPublicDir(
-                                    Environment.DIRECTORY_DOWNLOADS,
-                                    FileUtils.sanitizeFilename(name),
-                                )
-                                r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                                runCatching {
-                                    downloadManager.enqueue(r)
-                                }.onFailure {
-                                    it.printStackTrace()
-                                }
-                            }
-                            showTip(R.string.download_archive_started, LENGTH_SHORT)
-                        }.onFailure {
-                            when (it) {
-                                is NoHAtHClientException -> {
-                                    showTip(R.string.download_archive_failure_no_hath, LENGTH_LONG)
-                                }
-
-                                is EhException -> {
-                                    showTip(ExceptionUtils.getReadableString(it), LENGTH_LONG)
-                                }
-
-                                else -> {
-                                    showTip(R.string.download_archive_failure, LENGTH_LONG)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if (mDialog != null) {
-                mDialog!!.dismiss()
-                mDialog = null
-            }
-        }
-
-        override fun onDismiss(dialog: DialogInterface) {
-            mJob?.cancel()
-            mJob = null
-            mDialog = null
-            _binding = null
-        }
-    }
-
-    private inner class TorrentListDialogHelper :
-        AdapterView.OnItemClickListener,
-        DialogInterface.OnDismissListener {
-        private var _binding: DialogTorrentListBinding? = null
-        private val binding get() = _binding!!
-        private var mJob: Job? = null
-        private var mDialog: Dialog? = null
-        fun setDialog(dialog: Dialog?, dialogBinding: DialogTorrentListBinding, url: String?) {
-            mDialog = dialog
-            _binding = dialogBinding
-            binding.listView.onItemClickListener = this
-            val context = context
-            if (context != null) {
-                if (mTorrentList == null) {
-                    binding.text.visibility = View.GONE
-                    binding.listView.visibility = View.GONE
-                    mJob = lifecycleScope.launchIO {
-                        runSuspendCatching {
-                            EhEngine.getTorrentList(url!!, mGid, mToken)
-                        }.onSuccess {
-                            mTorrentList = it
-                            withUIContext {
-                                bind(it)
-                            }
-                        }.onFailure {
-                            withUIContext {
-                                binding.progress.visibility = View.GONE
-                                binding.text.visibility = View.VISIBLE
-                                binding.listView.visibility = View.GONE
-                                binding.text.text = ExceptionUtils.getReadableString(it)
-                            }
-                        }
-                        mJob = null
-                    }
-                } else {
-                    bind(mTorrentList)
-                }
-            }
-        }
-
-        private fun bind(data: TorrentResult?) {
-            mDialog ?: return
-            if (data.isNullOrEmpty()) {
-                binding.progress.visibility = View.GONE
-                binding.text.visibility = View.VISIBLE
-                binding.listView.visibility = View.GONE
-                binding.text.setText(R.string.no_torrents)
-            } else {
-                val nameArray = data.map { it.format() }.toTypedArray()
-                binding.progress.visibility = View.GONE
-                binding.text.visibility = View.GONE
-                binding.listView.visibility = View.VISIBLE
-                binding.listView.adapter =
-                    ArrayAdapter(mDialog!!.context, R.layout.item_select_dialog, nameArray)
-            }
-        }
-
-        override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-            val context = context
-            if (null != context && null != mTorrentList && position < mTorrentList!!.size) {
-                val url = mTorrentList!![position].url
-                val name = mTorrentList!![position].name
-                // TODO: Don't use buggy system download service
-                val r =
-                    DownloadManager.Request(Uri.parse(url.replace("exhentai.org", "ehtracker.org")))
-                r.setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS,
-                    FileUtils.sanitizeFilename("$name.torrent"),
+        fun onDownloadButtonClick() {
+            galleryDetail ?: return
+            if (EhDownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
+                CommonOperations.startDownload(
+                    activity,
+                    galleryDetail.galleryInfo,
+                    false,
                 )
-                r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(url.toHttpUrl()))
-                try {
-                    downloadManager.enqueue(r)
-                    showTip(R.string.download_torrent_started, LENGTH_SHORT)
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    ExceptionUtils.throwIfFatal(e)
-                    showTip(R.string.download_torrent_failure, LENGTH_SHORT)
+            } else {
+                class DeleteDialogHelper(
+                    private val mGalleryInfo: GalleryInfo,
+                    private val mBuilder: CheckBoxDialogBuilder,
+                ) : DialogInterface.OnClickListener {
+                    override fun onClick(dialog: DialogInterface, which: Int) {
+                        if (which != DialogInterface.BUTTON_POSITIVE) return
+                        coroutineScope.launchIO {
+                            val checked = mBuilder.isChecked
+                            Settings.removeImageFiles = checked
+                            EhDownloadManager.deleteDownload(mGalleryInfo.gid, checked)
+                        }
+                    }
                 }
-            }
-            if (mDialog != null) {
-                mDialog!!.dismiss()
-                mDialog = null
+                val builder = CheckBoxDialogBuilder(
+                    context,
+                    context.getString(
+                        R.string.download_remove_dialog_message,
+                        galleryDetail.title,
+                    ),
+                    context.getString(R.string.download_remove_dialog_check_text),
+                    Settings.removeImageFiles,
+                )
+                val helper = DeleteDialogHelper(
+                    galleryDetail,
+                    builder,
+                )
+                builder.setTitle(R.string.download_remove_dialog_title)
+                    .setPositiveButton(android.R.string.ok, helper)
+                    .show()
             }
         }
 
-        override fun onDismiss(dialog: DialogInterface) {
-            mJob?.cancel()
-            mJob = null
-            mDialog = null
-            _binding = null
+        when (windowSizeClass.widthSizeClass) {
+            WindowWidthSizeClass.Medium, WindowWidthSizeClass.Compact -> LazyVerticalGrid(
+                columns = GridCells.Fixed(columnCount),
+                contentPadding = contentPadding,
+                modifier = modifier.padding(horizontal = keylineMargin),
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
+            ) {
+                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                    LocalPinnableContainer.current!!.run { remember { pin() } }
+                    Column {
+                        GalleryDetailHeaderCard(
+                            info = galleryInfo,
+                            onInfoCardClick = ::onGalleryInfoCardClick,
+                            onCategoryChipClick = ::onCategoryChipClick,
+                            onUploaderChipClick = ::onUploaderChipClick,
+                            onBlockUploaderIconClick = ::showFilterUploaderDialog,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
+                        )
+                        Row {
+                            FilledTonalButton(
+                                onClick = ::onDownloadButtonClick,
+                                modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
+                            ) {
+                                Text(text = downloadButtonText, maxLines = 1)
+                            }
+                            Button(
+                                onClick = ::onReadButtonClick,
+                                modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
+                            ) {
+                                Text(text = readButtonText, maxLines = 1)
+                            }
+                        }
+                        if (getDetailError.isNotBlank()) {
+                            GalleryDetailErrorTip(error = getDetailError, onClick = { getDetailError = "" })
+                        } else if (galleryDetail != null) {
+                            BelowHeader(galleryDetail)
+                        } else {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    }
+                }
+                if (galleryDetail != null) {
+                    galleryDetailPreview(galleryDetail)
+                }
+            }
+
+            WindowWidthSizeClass.Expanded -> LazyVerticalGrid(
+                columns = GridCells.Fixed(columnCount),
+                contentPadding = contentPadding,
+                modifier = modifier.padding(horizontal = keylineMargin),
+                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
+            ) {
+                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                    LocalPinnableContainer.current!!.run { remember { pin() } }
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            GalleryDetailHeaderCard(
+                                info = galleryDetail ?: galleryInfo,
+                                onInfoCardClick = ::onGalleryInfoCardClick,
+                                onCategoryChipClick = ::onCategoryChipClick,
+                                onUploaderChipClick = ::onUploaderChipClick,
+                                onBlockUploaderIconClick = ::showFilterUploaderDialog,
+                                modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
+                            )
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                Spacer(modifier = modifier.height(16.dp))
+                                Button(
+                                    onClick = ::onReadButtonClick,
+                                    modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
+                                ) {
+                                    Text(text = readButtonText, maxLines = 1)
+                                }
+                                Spacer(modifier = modifier.height(24.dp))
+                                FilledTonalButton(
+                                    onClick = ::onDownloadButtonClick,
+                                    modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
+                                ) {
+                                    Text(text = downloadButtonText, maxLines = 1)
+                                }
+                            }
+                        }
+                        if (getDetailError.isNotBlank()) {
+                            GalleryDetailErrorTip(error = getDetailError, onClick = { getDetailError = "" })
+                        } else if (galleryDetail != null) {
+                            BelowHeader(galleryDetail)
+                        } else {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    }
+                }
+                if (galleryDetail != null) {
+                    galleryDetailPreview(galleryDetail)
+                }
+            }
         }
     }
 
-    private inner class RateDialogHelper(private var binding: DialogRateBinding, rating: Float) :
-        OnUserRateListener,
-        DialogInterface.OnClickListener {
-        init {
-            binding.ratingText.setText(getRatingText(rating))
-            binding.ratingView.rating = rating
-            binding.ratingView.setOnUserRateListener(this)
-        }
-
-        override fun onUserRate(rating: Float) {
-            binding.ratingText.setText(getRatingText(rating))
-        }
-
-        override fun onClick(dialog: DialogInterface, which: Int) {
-            if (which != DialogInterface.BUTTON_POSITIVE) return
-            val gd = composeBindingGD ?: return
-            val r = binding.ratingView.rating
-            lifecycleScope.launchIO {
-                runSuspendCatching {
-                    EhEngine.rateGallery(gd.apiUid, gd.apiKey, gd.gid, gd.token, r)
-                }.onSuccess { result ->
-                    showTip(R.string.rate_successfully, LENGTH_SHORT)
-                    composeBindingGD = composeBindingGD?.apply {
-                        rating = result.rating
-                        ratingCount = result.ratingCount
+    Scaffold(
+        topBar = {
+            LargeTopAppBar(
+                title = {
+                    galleryInfo?.let {
+                        Text(
+                            text = EhUtils.getSuitableTitle(it),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                     }
-                    ratingText = getAllRatingText(result.rating, result.ratingCount)
-                }.onFailure {
-                    it.printStackTrace()
-                    showTip(R.string.rate_failed, LENGTH_LONG)
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navigator.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            contentDescription = null,
+                        )
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    IconButton(onClick = ::showArchiveDialog) {
+                        Icon(
+                            imageVector = Icons.Default.FolderZip,
+                            contentDescription = null,
+                        )
+                    }
+                    IconButton(onClick = { AppHelper.share(activity, galleryDetailUrl) }) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = null,
+                        )
+                    }
+                    var dropdown by rememberSaveable { mutableStateOf(false) }
+                    IconButton(onClick = { dropdown = !dropdown }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = null,
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = dropdown,
+                        onDismissRequest = { dropdown = false },
+                    ) {
+                        val addTag = stringResource(R.string.action_add_tag)
+                        val addTagTip = stringResource(R.string.action_add_tag_tip)
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.action_add_tag)) },
+                            onClick = {
+                                dropdown = false
+                                val detail = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
+                                if (detail.apiUid < 0) {
+                                    activity.showTip(R.string.sign_in_first, BaseScene.LENGTH_LONG)
+                                } else {
+                                    coroutineScope.launchIO {
+                                        val text = dialogState.awaitInputText(
+                                            title = addTag,
+                                            hint = addTagTip,
+                                        )
+                                        detail.voteTag(text.trim(), 1)
+                                    }
+                                }
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.refresh)) },
+                            onClick = {
+                                dropdown = false
+                                // Invalidate cache
+                                galleryDetailCache.remove(gid)
+                                galleryInfo = null
+
+                                // Trigger recompose
+                                getDetailError = "*"
+                                getDetailError = ""
+                            },
+                        )
+                        val imageCacheClear = stringResource(R.string.image_cache_cleared)
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.clear_image_cache)) },
+                            onClick = {
+                                dropdown = false
+                                val gd = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
+                                coroutineScope.launchIO {
+                                    dialogState.awaitPermissionOrCancel(
+                                        confirmText = R.string.clear_all,
+                                        title = R.string.clear_image_cache,
+                                    ) {
+                                        Text(text = stringResource(id = R.string.clear_image_cache_confirm))
+                                    }
+                                    (0..<gd.pages).forEach {
+                                        val key = getImageKey(gd.gid, it)
+                                        imageCache.remove(key)
+                                    }
+                                    activity.showTip(imageCacheClear, BaseScene.LENGTH_SHORT)
+                                }
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.open_in_other_app)) },
+                            onClick = {
+                                dropdown = false
+                                context.openBrowser(galleryDetailUrl)
+                            },
+                        )
+                    }
+                },
+            )
+        },
+    ) {
+        Surface {
+            val gi = galleryInfo
+            if (gi != null) {
+                GalleryDetailContent(
+                    galleryInfo = gi,
+                    contentPadding = it,
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                )
+            } else if (getDetailError.isNotBlank()) {
+                GalleryDetailErrorTip(error = getDetailError, onClick = { getDetailError = "" })
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
                 }
             }
+        }
+    }
+}
+
+class GalleryDetailScene : BaseScene() {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val args = requireNotNull(arguments)
+        val composeArgs = when (requireNotNull(args.getString(KEY_ACTION))) {
+            ACTION_GID_TOKEN -> {
+                val gid = args.getLong(KEY_GID)
+                val token = requireNotNull(args.getString(KEY_TOKEN))
+                val page = args.getInt(KEY_PAGE)
+                GalleryDetailScreenArgs.GalleryDetailScreenArgsToken(gid, token, page)
+            }
+            ACTION_GALLERY_INFO -> {
+                val info = requireNotNull(args.getParcelableCompat<BaseGalleryInfo>(KEY_GALLERY_INFO))
+                GalleryDetailScreenArgs.GalleryDetailScreenArgsGalleryInfo(info)
+            }
+            else -> error("Action is not ACTION_GALLERY_INFO neither ACTION_GALLERY_INFO!!!")
+        }
+        return ComposeWithMD3 {
+            val navigator = remember { findNavController() }
+            GalleryDetailScreen(composeArgs, navigator)
         }
     }
 
@@ -1556,17 +1340,6 @@ class GalleryDetailScene : BaseScene() {
         const val KEY_GID = "gid"
         const val KEY_TOKEN = "token"
         const val KEY_PAGE = "page"
-        private const val KEY_GALLERY_DETAIL = "gallery_detail"
-        private fun getArtist(tagGroups: Array<GalleryTagGroup>?): String? {
-            if (null == tagGroups) {
-                return null
-            }
-            for (tagGroup in tagGroups) {
-                if ("artist" == tagGroup.groupName && tagGroup.size > 0) {
-                    return tagGroup[0].removePrefix("_")
-                }
-            }
-            return null
-        }
+        const val KEY_GALLERY_DETAIL = "gallery_detail"
     }
 }

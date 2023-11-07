@@ -16,6 +16,7 @@
 package com.hippo.ehviewer.client.data
 
 import java.util.regex.Pattern
+import moe.tarsin.kt.unreachable
 
 interface GalleryInfo {
     var gid: Long
@@ -132,4 +133,16 @@ interface GalleryInfo {
         const val NOT_FAVORITED = -2
         const val LOCAL_FAVORITED = -1
     }
+}
+
+fun GalleryInfo.findBaseInfo(): BaseGalleryInfo {
+    return when (this) {
+        is BaseGalleryInfo -> this
+        is GalleryDetail -> galleryInfo
+        else -> unreachable()
+    }
+}
+
+fun GalleryInfo.asGalleryDetail(): GalleryDetail? {
+    return this as? GalleryDetail
 }
