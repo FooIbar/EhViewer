@@ -777,13 +777,15 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                                 }
                             }
                             val helper = TorrentListDialogHelper()
-                            val binding = DialogTorrentListBinding.inflate(context.layoutInflater)
-                            val dialog: Dialog = BaseDialogBuilder(context)
-                                .setTitle(R.string.torrents)
-                                .setView(binding.root)
-                                .setOnDismissListener(helper)
-                                .show()
-                            helper.setDialog(dialog, binding, galleryDetail.torrentUrl)
+                            withUIContext {
+                                val binding = DialogTorrentListBinding.inflate(context.layoutInflater)
+                                val dialog: Dialog = BaseDialogBuilder(context)
+                                    .setTitle(R.string.torrents)
+                                    .setView(binding.root)
+                                    .setOnDismissListener(helper)
+                                    .show()
+                                helper.setDialog(dialog, binding, galleryDetail.torrentUrl)
+                            }
                         } else {
                             activity.showTip(permissionDenied, BaseScene.LENGTH_SHORT)
                         }
