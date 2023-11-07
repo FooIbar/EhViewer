@@ -270,8 +270,6 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
     val voteSuccess = stringResource(R.string.tag_vote_successfully)
     val voteFailed = stringResource(R.string.vote_failed)
 
-    val noGallery = stringResource(R.string.error_cannot_find_gallery)
-
     LaunchedEffect(getDetailError) {
         if (getDetailError.isBlank()) {
             // Fast path: Get from cache
@@ -748,13 +746,13 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                                             mJob = null
                                         }
                                     } else {
-                                        bind(mTorrentList)
+                                        bind(mTorrentList!!)
                                     }
                                 }
 
-                                private fun bind(data: TorrentResult?) {
+                                private fun bind(data: TorrentResult) {
                                     mDialog ?: return
-                                    if (data.isNullOrEmpty()) {
+                                    if (data.isEmpty()) {
                                         binding.progress.visibility = View.GONE
                                         binding.text.visibility = View.VISIBLE
                                         binding.listView.visibility = View.GONE
@@ -825,10 +823,15 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 override fun onClick(dialog: DialogInterface, which: Int) {
                     if (which != DialogInterface.BUTTON_POSITIVE) return
                     val r = binding.ratingView.rating
-                    val gd = galleryDetail
                     coroutineScope.launchIO {
                         runSuspendCatching {
-                            EhEngine.rateGallery(gd.apiUid, gd.apiKey, gd.gid, gd.token, r)
+                            EhEngine.rateGallery(
+                                galleryDetail.apiUid,
+                                galleryDetail.apiKey,
+                                galleryDetail.gid,
+                                galleryDetail.token,
+                                r,
+                            )
                         }.onSuccess { result ->
                             activity.showTip(R.string.rate_successfully, BaseScene.LENGTH_SHORT)
                             galleryInfo = galleryDetail.apply {

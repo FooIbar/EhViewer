@@ -135,7 +135,6 @@
     <string name="star_5">5 étoiles</string>
 
     <!-- Gallery detail -->
-    <string name="error_cannot_find_gallery">La galerie introuvable</string>
     <string name="download">Télécharger</string>
     <string name="read">Lire</string>
     <plurals name="page_count">

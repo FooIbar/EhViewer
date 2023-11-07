@@ -164,7 +164,6 @@
     <string name="star_4">4 stars</string>
     <string name="star_5">5 stars</string>
     <!-- Gallery detail -->
-    <string name="error_cannot_find_gallery">Couldn\'t find the gallery</string>
     <string name="download">Download</string>
     <string name="read">Read</string>
     <plurals name="page_count">

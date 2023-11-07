@@ -128,7 +128,6 @@
     <string name="star_5">5개</string>
 
     <!-- Gallery detail -->
-    <string name="error_cannot_find_gallery">갤러리를 찾을 수 없습니다.</string>
     <string name="download">다운로드</string>
     <string name="read">읽기</string>
     <plurals name="page_count">

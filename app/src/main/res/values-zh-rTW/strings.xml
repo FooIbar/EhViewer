@@ -124,7 +124,6 @@
     <string name="star_4">4 星</string>
     <string name="star_5">5 星</string>
     <!-- Gallery detail -->
-    <string name="error_cannot_find_gallery">找不到圖庫</string>
     <string name="download">下載</string>
     <string name="read">閱讀</string>
     <plurals name="page_count">
