@@ -165,7 +165,6 @@ import com.hippo.ehviewer.util.AppHelper
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.ehviewer.util.IntList
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
@@ -173,6 +172,7 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
@@ -217,11 +217,8 @@ private fun getRatingText(rating: Float): Int {
     }
 }
 
-private fun getArtist(tagGroups: Array<GalleryTagGroup>?): String? {
-    if (null == tagGroups) {
-        return null
-    }
-    for (tagGroup in tagGroups) {
+private fun Array<GalleryTagGroup>.getArtist(): String? {
+    for (tagGroup in this) {
         if ("artist" == tagGroup.groupName && tagGroup.size > 0) {
             return tagGroup[0].removePrefix("_")
         }
@@ -257,9 +254,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
         }
     }
     DisposableEffect(galleryDetailUrl) {
-        activity.mShareUrl = galleryDetailUrl
+        activity.shareUrl = galleryDetailUrl
         onDispose {
-            activity.mShareUrl = null
+            activity.shareUrl = null
         }
     }
     var getDetailError by rememberSaveable { mutableStateOf("") }
@@ -272,14 +269,14 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
 
     LaunchedEffect(getDetailError) {
         if (getDetailError.isBlank()) {
-            // Fast path: Get from cache
             val cached = galleryDetailCache[gid]
             if (cached != null) {
+                // Fast path: Get from cache
                 galleryInfo = cached
             } else {
-                // Slow path
+                // Slow path: Network Request
                 runSuspendCatching {
-                    EhEngine.getGalleryDetail(galleryDetailUrl)
+                    withIOContext { EhEngine.getGalleryDetail(galleryDetailUrl) }
                 }.onSuccess { galleryDetail ->
                     galleryDetailCache.put(galleryDetail.gid, galleryDetail)
                     // Don't update gallery info in database if previous destination is favorites,
@@ -305,9 +302,11 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
         runSuspendCatching {
             EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
         }.onSuccess { result ->
-            result?.let {
+            if (result != null) {
                 activity.showTip(result, BaseScene.LENGTH_SHORT)
-            } ?: activity.showTip(voteSuccess, BaseScene.LENGTH_SHORT)
+            } else {
+                activity.showTip(voteSuccess, BaseScene.LENGTH_SHORT)
+            }
         }.onFailure {
             activity.showTip(voteFailed, BaseScene.LENGTH_LONG)
         }
@@ -638,7 +637,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 text = stringResource(id = R.string.similar_gallery),
                 onClick = {
                     val keyword = EhUtils.extractTitle(galleryDetail.title)
-                    val artist = getArtist(galleryDetail.tags)
+                    val artist = galleryDetail.tags.getArtist()
                     if (null != keyword) {
                         navigator.navAnimated(
                             R.id.galleryListScene,
@@ -824,14 +823,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                     if (which != DialogInterface.BUTTON_POSITIVE) return
                     val r = binding.ratingView.rating
                     coroutineScope.launchIO {
-                        runSuspendCatching {
-                            EhEngine.rateGallery(
-                                galleryDetail.apiUid,
-                                galleryDetail.apiKey,
-                                galleryDetail.gid,
-                                galleryDetail.token,
-                                r,
-                            )
+                        galleryDetail.runSuspendCatching {
+                            EhEngine.rateGallery(apiUid, apiKey, gid, token, r)
                         }.onSuccess { result ->
                             activity.showTip(R.string.rate_successfully, BaseScene.LENGTH_SHORT)
                             galleryInfo = galleryDetail.apply {
@@ -874,6 +867,13 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 Text(text = stringResource(id = R.string.no_tags))
             }
         } else {
+            val copy = stringResource(android.R.string.copy)
+            val copyTrans = stringResource(R.string.copy_trans)
+            val showDefine = stringResource(R.string.show_definition)
+            val addFilter = stringResource(R.string.add_filter)
+            val filterAdded = stringResource(R.string.filter_added)
+            val upTag = stringResource(R.string.tag_vote_up)
+            val downTag = stringResource(R.string.tag_vote_down)
             GalleryTags(
                 tagGroups = tags,
                 onTagClick = {
@@ -883,60 +883,32 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                     navigator.navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
                 },
                 onTagLongClick = { translated, tag ->
-                    val temp: String
                     val index = tag.indexOf(':')
-                    temp = if (index >= 0) {
+                    val temp = if (index >= 0) {
                         tag.substring(index + 1)
                     } else {
                         tag
                     }
-                    val menu: MutableList<String> = ArrayList()
-                    val menuId = IntList()
-                    val resources = context.resources
-                    menu.add(resources.getString(android.R.string.copy))
-                    menuId.add(R.id.copy)
-                    if (temp != translated) {
-                        menu.add(resources.getString(R.string.copy_trans))
-                        menuId.add(R.id.copy_trans)
+                    val actions = buildAction {
+                        copy thenDo { activity.addTextToClipboard(tag) }
+                        if (temp != translated) {
+                            copyTrans thenDo { activity.addTextToClipboard(translated) }
+                        }
+                        showDefine thenDo { context.openBrowser(EhUrl.getTagDefinitionUrl(temp)) }
+                        addFilter thenDo {
+                            dialogState.awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
+                            Filter(FilterMode.TAG, tag).remember()
+                            activity.showTip(filterAdded, BaseScene.LENGTH_SHORT)
+                        }
+                        if (galleryDetail.apiUid >= 0) {
+                            upTag thenDo { galleryDetail.voteTag(tag, 1) }
+                            downTag thenDo { galleryDetail.voteTag(tag, -1) }
+                        }
+                    }.toTypedArray()
+                    coroutineScope.launchIO {
+                        val action = dialogState.showSelectItem(*actions)
+                        action.invoke()
                     }
-                    menu.add(resources.getString(R.string.show_definition))
-                    menuId.add(R.id.show_definition)
-                    menu.add(resources.getString(R.string.add_filter))
-                    menuId.add(R.id.add_filter)
-                    if (galleryDetail.apiUid >= 0) {
-                        menu.add(resources.getString(R.string.tag_vote_up))
-                        menuId.add(R.id.vote_up)
-                        menu.add(resources.getString(R.string.tag_vote_down))
-                        menuId.add(R.id.vote_down)
-                    }
-                    BaseDialogBuilder(context)
-                        .setTitle(tag)
-                        .setItems(menu.toTypedArray()) { _: DialogInterface?, which: Int ->
-                            if (which < 0 || which >= menuId.size) {
-                                return@setItems
-                            }
-                            when (menuId[which]) {
-                                R.id.vote_up -> coroutineScope.launchIO {
-                                    galleryDetail.voteTag(tag, 1)
-                                }
-                                R.id.vote_down -> coroutineScope.launchIO {
-                                    galleryDetail.voteTag(tag, -1)
-                                }
-                                R.id.show_definition -> context.openBrowser(EhUrl.getTagDefinitionUrl(temp))
-                                R.id.add_filter -> {
-                                    BaseDialogBuilder(context)
-                                        .setMessage(context.getString(R.string.filter_the_tag, tag))
-                                        .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                                            Filter(FilterMode.TAG, tag).remember()
-                                            activity.showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
-                                        }
-                                        .setNegativeButton(android.R.string.cancel, null)
-                                        .show()
-                                }
-                                R.id.copy -> activity.addTextToClipboard(tag)
-                                R.id.copy_trans -> activity.addTextToClipboard(translated)
-                            }
-                        }.show()
                 },
             )
         }

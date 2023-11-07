@@ -479,9 +479,9 @@ class MainActivity : EhActivity() {
         }
     }
 
-    var mShareUrl: String? = null
+    var shareUrl: String? = null
     override fun onProvideAssistContent(outContent: AssistContent?) {
         super.onProvideAssistContent(outContent)
-        mShareUrl?.let { outContent?.webUri = Uri.parse(mShareUrl) }
+        shareUrl?.let { outContent?.webUri = Uri.parse(shareUrl) }
     }
 }
