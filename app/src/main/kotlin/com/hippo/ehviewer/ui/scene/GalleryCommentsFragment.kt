@@ -106,18 +106,6 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
 
-interface ActionScope {
-    infix fun String.thenDo(that: suspend () -> Unit)
-}
-
-inline fun buildAction(builder: ActionScope.() -> Unit) = buildList {
-    builder(object : ActionScope {
-        override fun String.thenDo(that: suspend () -> Unit) {
-            add(this to that)
-        }
-    })
-}
-
 private fun Context.generateComment(
     textView: TextView,
     comment: GalleryComment,
