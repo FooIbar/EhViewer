@@ -292,10 +292,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 }
             }
             galleryInfo?.let {
-                // Don't update gallery info in database if previous destination is favorites,
-                // since it will invalidate local favorites PagingSource and lose scroll state
-                val previousDestinationId = navigator.previousBackStackEntry?.destination?.id
-                EhDB.putHistoryInfo(it.findBaseInfo(), previousDestinationId != R.id.nav_favourite)
+                EhDB.putHistoryInfo(it.findBaseInfo())
             }
         }
     }

@@ -38,13 +38,8 @@ import splitties.arch.room.roomDb
 object EhDB {
     private val db = roomDb<EhDatabase>("eh.db")
 
-    private suspend fun putGalleryInfo(galleryInfo: BaseGalleryInfo, update: Boolean = false) {
-        val dao = db.galleryDao()
-        if (update) {
-            dao.upsert(galleryInfo)
-        } else {
-            dao.insertOrIgnore(galleryInfo)
-        }
+    private suspend fun putGalleryInfo(galleryInfo: BaseGalleryInfo) {
+        db.galleryDao().upsert(galleryInfo)
     }
 
     private suspend fun deleteGalleryInfo(galleryInfo: BaseGalleryInfo) {
@@ -195,8 +190,8 @@ object EhDB {
 
     fun searchLocalFav(keyword: String) = db.localFavoritesDao().joinListLazy("%$keyword%")
 
-    suspend fun putHistoryInfo(galleryInfo: BaseGalleryInfo, updateGalleryInfo: Boolean = false) {
-        putGalleryInfo(galleryInfo, updateGalleryInfo)
+    suspend fun putHistoryInfo(galleryInfo: BaseGalleryInfo) {
+        putGalleryInfo(galleryInfo)
         db.historyDao().upsert(HistoryInfo(galleryInfo.gid))
     }
 
