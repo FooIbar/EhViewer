@@ -133,8 +133,6 @@ class VMStorage : ViewModel() {
         }
     }.flow.cachedIn(viewModelScope)
 
-    // TODO: Disable placeholders
-    // https://issuetracker.google.com/issues/235319241
     private val localFavDataFlow = Pager(PagingConfig(20, jumpThreshold = 40)) {
         val keyword = urlBuilder.keyword
         if (keyword.isNullOrBlank()) {
