@@ -279,10 +279,6 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                     withIOContext { EhEngine.getGalleryDetail(galleryDetailUrl) }
                 }.onSuccess { galleryDetail ->
                     galleryDetailCache.put(galleryDetail.gid, galleryDetail)
-                    // Don't update gallery info in database if previous destination is favorites,
-                    // since it will invalidate local favorites PagingSource and lose scroll state
-                    val previousDestinationId = navigator.previousBackStackEntry?.destination?.id
-                    EhDB.putHistoryInfo(galleryDetail.galleryInfo, previousDestinationId != R.id.nav_favourite)
                     if (Settings.preloadThumbAggressively) {
                         coroutineScope.launchIO {
                             galleryDetail.previewList.forEach {
@@ -294,6 +290,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 }.onFailure {
                     getDetailError = ExceptionUtils.getReadableString(it)
                 }
+            }
+            galleryInfo?.let {
+                // Don't update gallery info in database if previous destination is favorites,
+                // since it will invalidate local favorites PagingSource and lose scroll state
+                val previousDestinationId = navigator.previousBackStackEntry?.destination?.id
+                EhDB.putHistoryInfo(it.findBaseInfo(), previousDestinationId != R.id.nav_favourite)
             }
         }
     }
