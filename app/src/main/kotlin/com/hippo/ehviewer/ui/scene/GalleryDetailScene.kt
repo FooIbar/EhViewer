@@ -506,12 +506,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                     GalleryCommentCard(
                         modifier = Modifier.padding(vertical = 4.dp),
                         comment = item,
-                        onCardClick = {
-                            onNavigateToCommentScene()
-                        },
-                        onUserClick = {
-                            onNavigateToCommentScene()
-                        },
+                        onCardClick = ::onNavigateToCommentScene,
+                        onUserClick = ::onNavigateToCommentScene,
                         onUrlClick = {
                             if (!activity.jumpToReaderByPage(it, galleryDetail)) {
                                 if (!navigator.navWithUrl(it)) {
@@ -537,38 +533,38 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 }
             }
         }
-        fun showNewerVersionDialog() {
-            val titles = ArrayList<CharSequence>()
-            for (newerVersion in galleryDetail.newerVersions) {
-                titles.add(
-                    context.getString(
-                        R.string.newer_version_title,
-                        newerVersion.title,
-                        newerVersion.posted,
-                    ),
-                )
-            }
-            BaseDialogBuilder(context)
-                .setItems(titles.toTypedArray()) { _, which ->
-                    val newerVersion = galleryDetail.newerVersions[which]
+        suspend fun showNewerVersionDialog() {
+            val items = galleryDetail.newerVersions.map {
+                context.getString(
+                    R.string.newer_version_title,
+                    it.title,
+                    it.posted,
+                ) to {
                     navigator.navAnimated(
                         R.id.galleryDetailScene,
                         bundleOf(
                             GalleryDetailScene.KEY_ACTION to GalleryDetailScene.ACTION_GID_TOKEN,
-                            GalleryDetailScene.KEY_GID to newerVersion.gid,
-                            GalleryDetailScene.KEY_TOKEN to newerVersion.token,
+                            GalleryDetailScene.KEY_GID to it.gid,
+                            GalleryDetailScene.KEY_TOKEN to it.token,
                         ),
                     )
                 }
-                .show()
+            }.toTypedArray()
+            val navAction = dialogState.showSelectItem(*items)
+            navAction.invoke()
         }
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
         if (galleryDetail.newerVersions.isNotEmpty()) {
             Box(contentAlignment = Alignment.Center) {
                 CrystalCard(
-                    onClick = ::showNewerVersionDialog,
+                    onClick = {
+                        coroutineScope.launchIO {
+                            showNewerVersionDialog()
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth().height(32.dp),
-                ) {}
+                ) {
+                }
                 Text(text = stringResource(id = R.string.newer_version_available))
             }
             Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
