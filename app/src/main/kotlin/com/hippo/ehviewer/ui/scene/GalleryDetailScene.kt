@@ -17,13 +17,13 @@ package com.hippo.ehviewer.ui.scene
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.Dialog
 import android.app.DownloadManager
 import android.content.DialogInterface
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.Parcelable
 import android.text.TextUtils.TruncateAt.END
 import android.view.LayoutInflater
 import android.view.View
@@ -76,10 +76,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,6 +90,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LocalPinnableContainer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -94,6 +98,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import arrow.core.partially1
 import coil.imageLoader
@@ -157,6 +162,7 @@ import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.AppHelper
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -167,6 +173,7 @@ import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
+import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -175,9 +182,510 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import splitties.systemservices.downloadManager
+
+sealed interface GalleryDetailScreenArgs : Parcelable {
+    @Parcelize
+    data class GalleryDetailScreenArgsGalleryInfo(
+        val galleryInfo: BaseGalleryInfo,
+    ) : GalleryDetailScreenArgs
+
+    @Parcelize
+    data class GalleryDetailScreenArgsToken(
+        val gid: Long,
+        val token: String,
+        val page: Int,
+    ) : GalleryDetailScreenArgs
+}
+
+@Composable
+private fun GalleryDetailContent(
+    galleryInfo: GalleryInfo,
+    galleryDetail: GalleryDetail?,
+    contentPadding: PaddingValues,
+    modifier: Modifier,
+) {
+    val context = LocalContext.current
+    val windowSizeClass = calculateWindowSizeClass(remember { context.findActivity() })
+    val columnCount = calculateSuitableSpanCount()
+    when (windowSizeClass.widthSizeClass) {
+        WindowWidthSizeClass.Medium, WindowWidthSizeClass.Compact -> LazyVerticalGrid(
+            columns = GridCells.Fixed(columnCount),
+            contentPadding = contentPadding,
+            modifier = modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
+        ) {
+            item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                LocalPinnableContainer.current!!.run { remember { pin() } }
+                Column {
+                    GalleryDetailHeaderCard(
+                        info = galleryDetail ?: galleryInfo,
+                        onInfoCardClick = ::onGalleryInfoCardClick,
+                        onCategoryChipClick = ::onCategoryChipClick,
+                        onUploaderChipClick = ::onUploaderChipClick,
+                        onBlockUploaderIconClick = ::showFilterUploaderDialog,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = dimensionResource(id = R.dimen.keyline_margin)),
+                    )
+                    Row {
+                        FilledTonalButton(
+                            onClick = ::onDownloadButtonClick,
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .weight(1F),
+                        ) {
+                            Text(text = downloadButtonText, maxLines = 1)
+                        }
+                        Button(
+                            onClick = ::onReadButtonClick,
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .weight(1F),
+                        ) {
+                            Text(text = readButtonText, maxLines = 1)
+                        }
+                    }
+                    if (getDetailError.isNotBlank()) {
+                        GalleryDetailErrorTip(error = getDetailError, onClick = ::actionRefresh)
+                    } else if (galleryDetail != null) {
+                        BelowHeader(galleryDetail)
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
+            }
+            if (galleryDetail != null) {
+                galleryDetailPreview(galleryDetail)
+            }
+        }
+
+        WindowWidthSizeClass.Expanded -> LazyVerticalGrid(
+            columns = GridCells.Fixed(columnCount),
+            contentPadding = contentPadding,
+            modifier = modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
+            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
+        ) {
+            item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                LocalPinnableContainer.current!!.run { remember { pin() } }
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        GalleryDetailHeaderCard(
+                            info = galleryDetail ?: galleryInfo,
+                            onInfoCardClick = ::onGalleryInfoCardClick,
+                            onCategoryChipClick = ::onCategoryChipClick,
+                            onUploaderChipClick = ::onUploaderChipClick,
+                            onBlockUploaderIconClick = ::showFilterUploaderDialog,
+                            modifier = Modifier
+                                .width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width))
+                                .padding(vertical = dimensionResource(id = R.dimen.keyline_margin)),
+                        )
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Spacer(modifier = modifier.height(16.dp))
+                            Button(
+                                onClick = ::onReadButtonClick,
+                                modifier = Modifier
+                                    .height(56.dp)
+                                    .padding(horizontal = 16.dp)
+                                    .width(192.dp),
+                            ) {
+                                Text(text = readButtonText, maxLines = 1)
+                            }
+                            Spacer(modifier = modifier.height(24.dp))
+                            FilledTonalButton(
+                                onClick = ::onDownloadButtonClick,
+                                modifier = Modifier
+                                    .height(56.dp)
+                                    .padding(horizontal = 16.dp)
+                                    .width(192.dp),
+                            ) {
+                                Text(text = downloadButtonText, maxLines = 1)
+                            }
+                        }
+                    }
+                    if (getDetailError.isNotBlank()) {
+                        GalleryDetailErrorTip(error = getDetailError, onClick = ::actionRefresh)
+                    } else if (galleryDetail != null) {
+                        BelowHeader(galleryDetail)
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
+            }
+            if (galleryDetail != null) {
+                galleryDetailPreview(galleryDetail)
+            }
+        }
+    }
+}
+
+private fun LazyGridScope.galleryDetailPreview(gd: GalleryDetail) {
+    val previewList = gd.previewList
+    items(previewList) {
+        EhPreviewItem(
+            galleryPreview = it,
+            position = it.position,
+            onClick = { context?.navToReader(gd.galleryInfo, it.position) },
+        )
+    }
+    item(span = { GridItemSpan(maxLineSpan) }) {
+        val footerText = if (gd.previewPages <= 0 || previewList.isEmpty()) {
+            stringResource(R.string.no_previews)
+        } else if (gd.previewPages == 1) {
+            stringResource(R.string.no_more_previews)
+        } else {
+            stringResource(R.string.more_previews)
+        }
+        TextButton(onClick = ::navigateToPreview.partially1(true)) {
+            Text(footerText)
+        }
+    }
+}
+
+@Composable
+private fun BelowHeader(galleryDetail: GalleryDetail) {
+    @Composable
+    fun EhIconButton(
+        icon: ImageVector,
+        text: String,
+        onClick: () -> Unit,
+    ) = Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        FilledTertiaryIconButton(onClick = onClick) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+            )
+        }
+        Text(text = text)
+    }
+    Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+    if (galleryDetail.newerVersions.isNotEmpty()) {
+        Box(contentAlignment = Alignment.Center) {
+            CrystalCard(
+                onClick = ::showNewerVersionDialog,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(32.dp),
+            ) {}
+            Text(text = stringResource(id = R.string.newer_version_available))
+        }
+        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+    ) {
+        val favored by FavouriteStatusRouter.collectAsState(galleryDetail) {
+            it != NOT_FAVORITED
+        }
+        val favButtonText = if (favored) {
+            galleryDetail.favoriteName ?: stringResource(id = R.string.local_favorites)
+        } else {
+            stringResource(id = R.string.not_favorited)
+        }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            FilledTertiaryIconToggleButton(
+                checked = favored,
+                onCheckedChange = { modifyFavourite() },
+            ) {
+                Icon(
+                    imageVector = getFavoriteIcon(favored),
+                    contentDescription = null,
+                )
+            }
+            Text(text = favButtonText)
+        }
+        EhIconButton(
+            icon = Icons.Default.Search,
+            text = stringResource(id = R.string.similar_gallery),
+            onClick = ::showSimilarGalleryList,
+        )
+        EhIconButton(
+            icon = Icons.Default.ImageSearch,
+            text = stringResource(id = R.string.search_cover),
+            onClick = ::showCoverGalleryList,
+        )
+        EhIconButton(
+            icon = Icons.Default.SwapVerticalCircle,
+            text = torrentText,
+            onClick = ::showTorrentDialog,
+        )
+    }
+    Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+    CrystalCard(
+        onClick = ::showRateDialog,
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(8.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            GalleryDetailRating(rating = galleryDetail.rating)
+            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+            Text(text = ratingText)
+        }
+    }
+    Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+    val tags = galleryDetail.tags
+    if (tags.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(text = stringResource(id = R.string.no_tags))
+        }
+    } else {
+        GalleryTags(
+            tagGroups = tags,
+            onTagClick = {
+                val lub = ListUrlBuilder()
+                lub.mode = ListUrlBuilder.MODE_TAG
+                lub.keyword = it
+                navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
+            },
+            onTagLongClick = { translation, realTag ->
+                showTagDialog(translation, realTag)
+            },
+        )
+    }
+    Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+    if (Settings.showComments) {
+        GalleryDetailComment(galleryDetail.comments.comments)
+        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.strip_item_padding_v)))
+    }
+}
+
+@Destination
+@Composable
+fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController) {
+    var galleryInfo by rememberSaveable {
+        val casted = args as? GalleryDetailScreenArgs.GalleryDetailScreenArgsGalleryInfo
+        mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
+    }
+    val (gid, token) = remember {
+        when (args) {
+            is GalleryDetailScreenArgs.GalleryDetailScreenArgsGalleryInfo -> args.galleryInfo.run { gid to token }
+            is GalleryDetailScreenArgs.GalleryDetailScreenArgsToken -> args.gid to args.token
+        }
+    }
+    val galleryDetailUrl = remember { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
+    val context = LocalContext.current
+    DisposableEffect(galleryDetailUrl) {
+        val activity = context.findActivity<MainActivity>()
+        activity.mShareUrl = galleryDetailUrl
+        onDispose {
+            activity.mShareUrl = null
+        }
+    }
+    var getDetailError by rememberSaveable { mutableStateOf("") }
+    val dialogState = LocalDialogState.current
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val coroutineScope = rememberCoroutineScope()
+
+    val voteSuccess = stringResource(R.string.tag_vote_successfully)
+    val voteFailed = stringResource(R.string.vote_failed)
+
+    val noGallery = stringResource(R.string.error_cannot_find_gallery)
+
+    LaunchedEffect(getDetailError) {
+        if (getDetailError.isBlank()) {
+            // Fast path: Get from cache
+            val cached = galleryDetailCache[gid]
+            if (cached != null) {
+                galleryInfo = cached
+            } else {
+                // Slow path
+                runSuspendCatching {
+                    EhEngine.getGalleryDetail(galleryDetailUrl)
+                }.onSuccess { galleryDetail ->
+                    galleryDetailCache.put(galleryDetail.gid, galleryDetail)
+                    // Don't update gallery info in database if previous destination is favorites,
+                    // since it will invalidate local favorites PagingSource and lose scroll state
+                    val previousDestinationId = navigator.previousBackStackEntry?.destination?.id
+                    EhDB.putHistoryInfo(galleryDetail.galleryInfo, previousDestinationId != R.id.nav_favourite)
+                    if (Settings.preloadThumbAggressively) {
+                        coroutineScope.launchIO {
+                            galleryDetail.previewList.forEach {
+                                context.run { imageLoader.enqueue(imageRequest(it) { justDownload() }) }
+                            }
+                        }
+                    }
+                    galleryInfo = galleryDetail
+                }.onFailure {
+                    getDetailError = ExceptionUtils.getReadableString(it)
+                }
+            }
+        }
+    }
+
+    suspend fun GalleryDetail.voteTag(tag: String, vote: Int) {
+        runSuspendCatching {
+            EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
+        }.onSuccess { result ->
+            result?.let {
+                context.findActivity<MainActivity>().showTip(result, BaseScene.LENGTH_SHORT)
+            } ?: context.findActivity<MainActivity>().showTip(voteSuccess, BaseScene.LENGTH_SHORT)
+        }.onFailure {
+            context.findActivity<MainActivity>().showTip(voteFailed, BaseScene.LENGTH_LONG)
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            LargeTopAppBar(
+                title = {
+                    galleryInfo?.let {
+                        Text(
+                            text = EhUtils.getSuitableTitle(it),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navigator.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            contentDescription = null,
+                        )
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    IconButton(onClick = ::showArchiveDialog) {
+                        Icon(
+                            imageVector = Icons.Default.FolderZip,
+                            contentDescription = null,
+                        )
+                    }
+                    IconButton(onClick = { AppHelper.share(context.findActivity(), galleryDetailUrl) }) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = null,
+                        )
+                    }
+                    var dropdown by rememberSaveable { mutableStateOf(false) }
+                    IconButton(onClick = { dropdown = !dropdown }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = null,
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = dropdown,
+                        onDismissRequest = { dropdown = false },
+                    ) {
+                        val addTag = stringResource(R.string.action_add_tag)
+                        val addTagTip = stringResource(R.string.action_add_tag_tip)
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.action_add_tag)) },
+                            onClick = {
+                                dropdown = false
+                                val detail = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
+                                if (detail.apiUid < 0) {
+                                    context.findActivity<MainActivity>().showTip(R.string.sign_in_first, BaseScene.LENGTH_LONG)
+                                } else {
+                                    coroutineScope.launchIO {
+                                        val text = dialogState.awaitInputText(
+                                            title = addTag,
+                                            hint = addTagTip,
+                                        )
+                                        detail.voteTag(text.trim(), 1)
+                                    }
+                                }
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.refresh)) },
+                            onClick = {
+                                dropdown = false
+                                // Invalidate cache
+                                galleryDetailCache.remove(gid)
+                                galleryInfo = null
+
+                                // Trigger recompose
+                                getDetailError = "*"
+                                getDetailError = ""
+                            },
+                        )
+                        val imageCacheClear = stringResource(R.string.image_cache_cleared)
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.clear_image_cache)) },
+                            onClick = {
+                                dropdown = false
+                                val gd = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
+                                coroutineScope.launchIO {
+                                    dialogState.awaitPermissionOrCancel(
+                                        confirmText = R.string.clear_all,
+                                        title = R.string.clear_image_cache,
+                                    ) {
+                                        Text(text = stringResource(id = R.string.clear_image_cache_confirm))
+                                    }
+                                    (0..<gd.pages).forEach {
+                                        val key = getImageKey(gd.gid, it)
+                                        imageCache.remove(key)
+                                    }
+                                    context.findActivity<MainActivity>().showTip(imageCacheClear, BaseScene.LENGTH_SHORT)
+                                }
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.open_in_other_app)) },
+                            onClick = {
+                                dropdown = false
+                                context.openBrowser(galleryDetailUrl)
+                            },
+                        )
+                    }
+                },
+            )
+        },
+    ) {
+        Surface {
+            val gi = galleryInfo
+            if (gi != null) {
+                GalleryDetailContent(
+                    galleryInfo = gi,
+                    galleryDetail = galleryInfo as? GalleryDetail,
+                    contentPadding = it,
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                )
+            } else if (getDetailError.isNotBlank()) {
+                GalleryDetailErrorTip(error = getDetailError, onClick = { getDetailError = "" })
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
+    }
+}
 
 class GalleryDetailScene : BaseScene() {
     private var mDownloadState = 0
@@ -218,45 +726,6 @@ class GalleryDetailScene : BaseScene() {
         }
     }
 
-    private fun handleArgs(args: Bundle?) {
-        val action = args?.getString(KEY_ACTION) ?: return
-        mAction = action
-        if (ACTION_GALLERY_INFO == action) {
-            composeBindingGI = args.getParcelableCompat(KEY_GALLERY_INFO)
-        } else if (ACTION_GID_TOKEN == action) {
-            mGid = args.getLong(KEY_GID)
-            mToken = args.getString(KEY_TOKEN)
-            mPage = args.getInt(KEY_PAGE)
-        }
-    }
-
-    private val galleryDetailUrl: String?
-        get() {
-            val gid: Long
-            val token: String?
-            if (composeBindingGD != null) {
-                gid = composeBindingGD!!.gid
-                token = composeBindingGD!!.token
-            } else if (composeBindingGI != null) {
-                gid = composeBindingGI!!.gid
-                token = composeBindingGI!!.token
-            } else if (ACTION_GID_TOKEN == mAction) {
-                gid = mGid
-                token = mToken
-            } else {
-                return null
-            }
-            return EhUrl.getGalleryDetailUrl(gid, token, 0, false)
-        }
-
-    // -1 for error
-    private val gid: Long
-        get() = composeBindingGD?.gid ?: composeBindingGI?.gid
-            ?: mGid.takeIf { mAction == ACTION_GID_TOKEN } ?: -1
-
-    private val uploader: String?
-        get() = composeBindingGD?.uploader ?: composeBindingGI?.uploader
-
     // Judging by the uploader to exclude the cooldown period
     private val disowned: Boolean
         get() = uploader == "(Disowned)"
@@ -266,15 +735,6 @@ class GalleryDetailScene : BaseScene() {
         get() = composeBindingGD?.category ?: composeBindingGI?.category ?: -1
 
     private val dialogState = DialogState()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) {
-            onInit()
-        } else {
-            onRestore(savedInstanceState)
-        }
-    }
 
     override fun onResume() {
         super.onResume()
@@ -293,80 +753,6 @@ class GalleryDetailScene : BaseScene() {
                     it.printStackTrace()
                 }
             }
-        }
-    }
-
-    private fun onInit() {
-        handleArgs(arguments)
-    }
-
-    private fun onRestore(savedInstanceState: Bundle) {
-        mAction = savedInstanceState.getString(KEY_ACTION)
-        composeBindingGI = savedInstanceState.getParcelableCompat(KEY_GALLERY_INFO)
-        mGid = savedInstanceState.getLong(KEY_GID)
-        mToken = savedInstanceState.getString(KEY_TOKEN)
-        composeBindingGD = savedInstanceState.getParcelableCompat(KEY_GALLERY_DETAIL)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        if (mAction != null) {
-            outState.putString(KEY_ACTION, mAction)
-        }
-        if (composeBindingGI != null) {
-            outState.putParcelable(KEY_GALLERY_INFO, composeBindingGI)
-        }
-        outState.putLong(KEY_GID, mGid)
-        if (mToken != null) {
-            outState.putString(KEY_TOKEN, mAction)
-        }
-        if (composeBindingGD != null) {
-            outState.putParcelable(KEY_GALLERY_DETAIL, composeBindingGD)
-        }
-    }
-
-    private fun actionClearCache() {
-        val gd = composeBindingGD ?: return
-        lifecycleScope.launchIO {
-            dialogState.awaitPermissionOrCancel(
-                confirmText = R.string.clear_all,
-                title = R.string.clear_image_cache,
-            ) {
-                Text(text = stringResource(id = R.string.clear_image_cache_confirm))
-            }
-            (0..<gd.pages).forEach {
-                val key = getImageKey(gd.gid, it)
-                imageCache.remove(key)
-            }
-            showTip(R.string.image_cache_cleared, LENGTH_SHORT)
-        }
-    }
-
-    private fun actionOpenInOtherApp() {
-        val url = galleryDetailUrl ?: return
-        val activity: Activity = mainActivity ?: return
-        activity.openBrowser(url)
-    }
-
-    private fun actionRefresh() {
-        if (composeBindingGD == null && getDetailError == "") return
-        getDetailError = ""
-        composeBindingGD = null
-        request()
-    }
-
-    private fun actionAddTag() {
-        composeBindingGD ?: return
-        if (composeBindingGD!!.apiUid < 0) {
-            showTip(R.string.sign_in_first, LENGTH_LONG)
-            return
-        }
-        lifecycleScope.launchIO {
-            val text = dialogState.awaitInputText(
-                title = getString(R.string.action_add_tag),
-                hint = getString(R.string.action_add_tag_tip),
-            )
-            voteTag(text.trim(), 1)
         }
     }
 
@@ -389,405 +775,34 @@ class GalleryDetailScene : BaseScene() {
                 updateDownloadText()
             }
         }
-        if (prepareData()) {
-            if (composeBindingGD != null) {
-                bindViewSecond()
+        val args = requireNotNull(arguments)
+        val composeArgs = when (requireNotNull(args.getString(KEY_ACTION))) {
+            ACTION_GID_TOKEN -> {
+                val gid = args.getLong(KEY_GID)
+                val token = requireNotNull(args.getString(KEY_TOKEN))
+                val page = args.getInt(KEY_PAGE)
+                GalleryDetailScreenArgs.GalleryDetailScreenArgsToken(gid, token, page)
             }
-        } else {
-            getDetailError = getString(R.string.error_cannot_find_gallery)
+            ACTION_GALLERY_INFO -> {
+                val info = requireNotNull(args.getParcelableCompat<BaseGalleryInfo>(KEY_GALLERY_INFO))
+                GalleryDetailScreenArgs.GalleryDetailScreenArgsGalleryInfo(info)
+            }
+            else -> error("Action is not ACTION_GALLERY_INFO neither ACTION_GALLERY_INFO!!!")
         }
-        (requireActivity() as MainActivity).mShareUrl = galleryDetailUrl
         return ComposeWithMD3 {
             LaunchedEffect(gid) {
                 EhDownloadManager.stateFlow(gid).collect {
                     updateDownloadState()
                 }
             }
-            dialogState.Intercept()
-            val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-            Scaffold(
-                topBar = {
-                    LargeTopAppBar(
-                        title = {
-                            composeBindingGI?.let {
-                                Text(
-                                    text = EhUtils.getSuitableTitle(it),
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = {
-                                findNavController().popBackStack()
-                            }) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                    contentDescription = null,
-                                )
-                            }
-                        },
-                        scrollBehavior = scrollBehavior,
-                        actions = {
-                            IconButton(onClick = ::showArchiveDialog) {
-                                Icon(
-                                    imageVector = Icons.Default.FolderZip,
-                                    contentDescription = null,
-                                )
-                            }
-                            IconButton(onClick = ::doShareGallery) {
-                                Icon(
-                                    imageVector = Icons.Default.Share,
-                                    contentDescription = null,
-                                )
-                            }
-                            var dropdown by remember { mutableStateOf(false) }
-                            IconButton(onClick = { dropdown = !dropdown }) {
-                                Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = null,
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = dropdown,
-                                onDismissRequest = { dropdown = false },
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(id = R.string.action_add_tag)) },
-                                    onClick = {
-                                        dropdown = false
-                                        actionAddTag()
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(id = R.string.refresh)) },
-                                    onClick = {
-                                        dropdown = false
-                                        actionRefresh()
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(id = R.string.clear_image_cache)) },
-                                    onClick = {
-                                        dropdown = false
-                                        actionClearCache()
-                                    },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(text = stringResource(id = R.string.open_in_other_app)) },
-                                    onClick = {
-                                        dropdown = false
-                                        actionOpenInOtherApp()
-                                    },
-                                )
-                            }
-                        },
-                    )
-                },
-            ) {
-                Surface {
-                    val gi = composeBindingGI
-                    if (gi != null) {
-                        GalleryDetailContent(
-                            galleryInfo = gi,
-                            galleryDetail = composeBindingGD,
-                            contentPadding = it,
-                            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                        )
-                    } else if (getDetailError.isNotBlank()) {
-                        GalleryDetailErrorTip(error = getDetailError, onClick = ::actionRefresh)
-                    } else {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                }
-            }
+            val navigator = remember { findNavController() }
+            GalleryDetailScreen(composeArgs, navigator)
         }
     }
 
     private fun onGalleryInfoCardClick() {
         composeBindingGD?.let {
             GalleryInfoBottomSheet(it).show(requireActivity().supportFragmentManager, "GalleryInfoBottomSheet")
-        }
-    }
-
-    @Composable
-    private fun GalleryDetailContent(
-        galleryInfo: GalleryInfo,
-        galleryDetail: GalleryDetail?,
-        contentPadding: PaddingValues,
-        modifier: Modifier,
-    ) {
-        val windowSizeClass = calculateWindowSizeClass(requireActivity())
-        val columnCount = calculateSuitableSpanCount()
-        when (windowSizeClass.widthSizeClass) {
-            WindowWidthSizeClass.Medium, WindowWidthSizeClass.Compact -> LazyVerticalGrid(
-                columns = GridCells.Fixed(columnCount),
-                contentPadding = contentPadding,
-                modifier = modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
-            ) {
-                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
-                    LocalPinnableContainer.current!!.run { remember { pin() } }
-                    Column {
-                        GalleryDetailHeaderCard(
-                            info = galleryDetail ?: galleryInfo,
-                            onInfoCardClick = ::onGalleryInfoCardClick,
-                            onCategoryChipClick = ::onCategoryChipClick,
-                            onUploaderChipClick = ::onUploaderChipClick,
-                            onBlockUploaderIconClick = ::showFilterUploaderDialog,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = dimensionResource(id = R.dimen.keyline_margin)),
-                        )
-                        Row {
-                            FilledTonalButton(
-                                onClick = ::onDownloadButtonClick,
-                                modifier = Modifier
-                                    .padding(horizontal = 4.dp)
-                                    .weight(1F),
-                            ) {
-                                Text(text = downloadButtonText, maxLines = 1)
-                            }
-                            Button(
-                                onClick = ::onReadButtonClick,
-                                modifier = Modifier
-                                    .padding(horizontal = 4.dp)
-                                    .weight(1F),
-                            ) {
-                                Text(text = readButtonText, maxLines = 1)
-                            }
-                        }
-                        if (getDetailError.isNotBlank()) {
-                            GalleryDetailErrorTip(error = getDetailError, onClick = ::actionRefresh)
-                        } else if (galleryDetail != null) {
-                            BelowHeader(galleryDetail)
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
-                }
-                if (galleryDetail != null) {
-                    galleryDetailPreview(galleryDetail)
-                }
-            }
-
-            WindowWidthSizeClass.Expanded -> LazyVerticalGrid(
-                columns = GridCells.Fixed(columnCount),
-                contentPadding = contentPadding,
-                modifier = modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
-            ) {
-                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
-                    LocalPinnableContainer.current!!.run { remember { pin() } }
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            GalleryDetailHeaderCard(
-                                info = galleryDetail ?: galleryInfo,
-                                onInfoCardClick = ::onGalleryInfoCardClick,
-                                onCategoryChipClick = ::onCategoryChipClick,
-                                onUploaderChipClick = ::onUploaderChipClick,
-                                onBlockUploaderIconClick = ::showFilterUploaderDialog,
-                                modifier = Modifier
-                                    .width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width))
-                                    .padding(vertical = dimensionResource(id = R.dimen.keyline_margin)),
-                            )
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Spacer(modifier = modifier.height(16.dp))
-                                Button(
-                                    onClick = ::onReadButtonClick,
-                                    modifier = Modifier
-                                        .height(56.dp)
-                                        .padding(horizontal = 16.dp)
-                                        .width(192.dp),
-                                ) {
-                                    Text(text = readButtonText, maxLines = 1)
-                                }
-                                Spacer(modifier = modifier.height(24.dp))
-                                FilledTonalButton(
-                                    onClick = ::onDownloadButtonClick,
-                                    modifier = Modifier
-                                        .height(56.dp)
-                                        .padding(horizontal = 16.dp)
-                                        .width(192.dp),
-                                ) {
-                                    Text(text = downloadButtonText, maxLines = 1)
-                                }
-                            }
-                        }
-                        if (getDetailError.isNotBlank()) {
-                            GalleryDetailErrorTip(error = getDetailError, onClick = ::actionRefresh)
-                        } else if (galleryDetail != null) {
-                            BelowHeader(galleryDetail)
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
-                }
-                if (galleryDetail != null) {
-                    galleryDetailPreview(galleryDetail)
-                }
-            }
-        }
-    }
-
-    private fun LazyGridScope.galleryDetailPreview(gd: GalleryDetail) {
-        val previewList = gd.previewList
-        items(previewList) {
-            EhPreviewItem(
-                galleryPreview = it,
-                position = it.position,
-                onClick = { context?.navToReader(gd.galleryInfo, it.position) },
-            )
-        }
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            val footerText = if (gd.previewPages <= 0 || previewList.isEmpty()) {
-                stringResource(R.string.no_previews)
-            } else if (gd.previewPages == 1) {
-                stringResource(R.string.no_more_previews)
-            } else {
-                stringResource(R.string.more_previews)
-            }
-            TextButton(onClick = ::navigateToPreview.partially1(true)) {
-                Text(footerText)
-            }
-        }
-    }
-
-    @Composable
-    private fun BelowHeader(galleryDetail: GalleryDetail) {
-        @Composable
-        fun EhIconButton(
-            icon: ImageVector,
-            text: String,
-            onClick: () -> Unit,
-        ) = Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            FilledTertiaryIconButton(onClick = onClick) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                )
-            }
-            Text(text = text)
-        }
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-        if (galleryDetail.newerVersions.isNotEmpty()) {
-            Box(contentAlignment = Alignment.Center) {
-                CrystalCard(
-                    onClick = ::showNewerVersionDialog,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(32.dp),
-                ) {}
-                Text(text = stringResource(id = R.string.newer_version_available))
-            }
-            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
-        ) {
-            val favored by FavouriteStatusRouter.collectAsState(galleryDetail) {
-                it != NOT_FAVORITED
-            }
-            val favButtonText = if (favored) {
-                galleryDetail.favoriteName ?: stringResource(id = R.string.local_favorites)
-            } else {
-                stringResource(id = R.string.not_favorited)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                FilledTertiaryIconToggleButton(
-                    checked = favored,
-                    onCheckedChange = { modifyFavourite() },
-                ) {
-                    Icon(
-                        imageVector = getFavoriteIcon(favored),
-                        contentDescription = null,
-                    )
-                }
-                Text(text = favButtonText)
-            }
-            EhIconButton(
-                icon = Icons.Default.Search,
-                text = stringResource(id = R.string.similar_gallery),
-                onClick = ::showSimilarGalleryList,
-            )
-            EhIconButton(
-                icon = Icons.Default.ImageSearch,
-                text = stringResource(id = R.string.search_cover),
-                onClick = ::showCoverGalleryList,
-            )
-            EhIconButton(
-                icon = Icons.Default.SwapVerticalCircle,
-                text = torrentText,
-                onClick = ::showTorrentDialog,
-            )
-        }
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-        CrystalCard(
-            onClick = ::showRateDialog,
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                GalleryDetailRating(rating = galleryDetail.rating)
-                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-                Text(text = ratingText)
-            }
-        }
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-        val tags = galleryDetail.tags
-        if (tags.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(text = stringResource(id = R.string.no_tags))
-            }
-        } else {
-            GalleryTags(
-                tagGroups = tags,
-                onTagClick = {
-                    val lub = ListUrlBuilder()
-                    lub.mode = ListUrlBuilder.MODE_TAG
-                    lub.keyword = it
-                    navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-                },
-                onTagLongClick = { translation, realTag ->
-                    showTagDialog(translation, realTag)
-                },
-            )
-        }
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-        if (Settings.showComments) {
-            GalleryDetailComment(galleryDetail.comments.comments)
-            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.strip_item_padding_v)))
         }
     }
 
@@ -840,57 +855,6 @@ class GalleryDetailScene : BaseScene() {
     }
 
     private fun onReadButtonClick() = composeBindingGI?.let { context?.navToReader(it) }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        (requireActivity() as MainActivity).mShareUrl = null
-    }
-
-    private fun prepareData(): Boolean {
-        composeBindingGD?.let { return true }
-        val gid = gid
-        if (gid == -1L) {
-            return false
-        }
-
-        // Get from cache
-        composeBindingGD = galleryDetailCache[gid]
-        composeBindingGD?.let { return true }
-        request()
-        return true
-    }
-
-    private fun request() {
-        val url = galleryDetailUrl ?: return
-        viewLifecycleOwner.lifecycleScope.launchIO {
-            runSuspendCatching {
-                EhEngine.getGalleryDetail(url)
-            }.onSuccess { galleryDetail ->
-                galleryDetailCache.put(galleryDetail.gid, galleryDetail)
-                // Don't update gallery info in database if previous destination is favorites,
-                // since it will invalidate local favorites PagingSource and lose scroll state
-                val previousDestinationId = findNavController().previousBackStackEntry?.destination?.id
-                EhDB.putHistoryInfo(galleryDetail.galleryInfo, previousDestinationId != R.id.nav_favourite)
-                if (Settings.preloadThumbAggressively) {
-                    lifecycleScope.launchIO {
-                        galleryDetail.previewList.forEach {
-                            context?.run { imageLoader.enqueue(imageRequest(it) { justDownload() }) }
-                        }
-                    }
-                }
-                composeBindingGD = galleryDetail
-                composeBindingGI = galleryDetail.galleryInfo
-                updateDownloadState()
-                bindViewSecond()
-            }.onFailure {
-                getDetailError = ExceptionUtils.getReadableString(it)
-            }
-        }
-    }
-
-    private fun doShareGallery() {
-        galleryDetailUrl?.let { AppHelper.share(requireActivity(), it) }
-    }
 
     private fun modifyFavourite() {
         val galleryDetail = composeBindingGD ?: return
@@ -1200,22 +1164,6 @@ class GalleryDetailScene : BaseScene() {
                     }
                 }
             }.show()
-    }
-
-    private fun voteTag(tag: String, vote: Int) {
-        composeBindingGD?.run {
-            lifecycleScope.launchIO {
-                runSuspendCatching {
-                    EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
-                }.onSuccess { result ->
-                    result?.let {
-                        showTip(result, LENGTH_SHORT)
-                    } ?: showTip(R.string.tag_vote_successfully, LENGTH_SHORT)
-                }.onFailure {
-                    showTip(R.string.vote_failed, LENGTH_LONG)
-                }
-            }
-        }
     }
 
     private fun showFilterUploaderDialog() {
