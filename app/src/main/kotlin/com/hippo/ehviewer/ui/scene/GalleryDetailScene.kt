@@ -27,7 +27,6 @@ import android.text.TextUtils.TruncateAt.END
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
@@ -96,7 +95,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import arrow.core.partially1
@@ -175,12 +173,10 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.parcelize.Parcelize
@@ -221,6 +217,18 @@ private fun getRatingText(rating: Float): Int {
     }
 }
 
+private fun getArtist(tagGroups: Array<GalleryTagGroup>?): String? {
+    if (null == tagGroups) {
+        return null
+    }
+    for (tagGroup in tagGroups) {
+        if ("artist" == tagGroup.groupName && tagGroup.size > 0) {
+            return tagGroup[0].removePrefix("_")
+        }
+    }
+    return null
+}
+
 @Destination
 @Composable
 fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController) {
@@ -237,6 +245,17 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
     val galleryDetailUrl = remember { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity<MainActivity>() }
+    LaunchedEffect(args, galleryInfo) {
+        val page = (args as? GalleryDetailScreenArgs.GalleryDetailScreenArgsToken)?.page ?: 0
+        val gi = galleryInfo
+        if (page != 0 && gi != null) {
+            Snackbar.make(
+                activity.findViewById(R.id.fragment_container),
+                context.getString(R.string.read_from, page),
+                Snackbar.LENGTH_LONG,
+            ).setAction(R.string.read) { context.navToReader(gi.findBaseInfo(), page) }.show()
+        }
+    }
     DisposableEffect(galleryDetailUrl) {
         activity.mShareUrl = galleryDetailUrl
         onDispose {
@@ -619,21 +638,160 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
             EhIconButton(
                 icon = Icons.Default.Search,
                 text = stringResource(id = R.string.similar_gallery),
-                onClick = { },
+                onClick = {
+                    val keyword = EhUtils.extractTitle(galleryDetail.title)
+                    val artist = getArtist(galleryDetail.tags)
+                    if (null != keyword) {
+                        navigator.navAnimated(
+                            R.id.galleryListScene,
+                            ListUrlBuilder(
+                                mode = ListUrlBuilder.MODE_NORMAL,
+                                mKeyword = "\"" + keyword + "\"",
+                            ).toStartArgs(),
+                            true,
+                        )
+                    } else if (artist != null) {
+                        navigator.navAnimated(
+                            R.id.galleryListScene,
+                            ListUrlBuilder(
+                                mode = ListUrlBuilder.MODE_TAG,
+                                mKeyword = "artist:$artist",
+                            ).toStartArgs(),
+                            true,
+                        )
+                    } else if (null != galleryDetail.uploader) {
+                        navigator.navAnimated(
+                            R.id.galleryListScene,
+                            ListUrlBuilder(
+                                mode = ListUrlBuilder.MODE_UPLOADER,
+                                mKeyword = galleryDetail.uploader,
+                            ).toStartArgs(),
+                            true,
+                        )
+                    }
+                },
             )
             EhIconButton(
                 icon = Icons.Default.ImageSearch,
                 text = stringResource(id = R.string.search_cover),
-                onClick = { },
+                onClick = {
+                    val key = galleryDetail.thumbKey.orEmpty()
+                    navigator.navAnimated(
+                        R.id.galleryListScene,
+                        ListUrlBuilder(
+                            mode = ListUrlBuilder.MODE_NORMAL,
+                            hash = key.substringAfterLast('/').substringBefore('-'),
+                        ).toStartArgs(),
+                    )
+                },
             )
+            val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
+            val permissionDenied = stringResource(R.string.permission_denied)
+            var mTorrentList by remember { mutableStateOf<TorrentResult?>(null) }
             EhIconButton(
                 icon = Icons.Default.SwapVerticalCircle,
-                text = "",
-                onClick = { },
+                text = torrentText,
+                onClick = {
+                    coroutineScope.launchIO {
+                        val granted = isAtLeastQ || context.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        if (granted) {
+                            class TorrentListDialogHelper : DialogInterface.OnDismissListener {
+                                private var _binding: DialogTorrentListBinding? = null
+                                private val binding get() = _binding!!
+                                private var mJob: Job? = null
+                                private var mDialog: Dialog? = null
+                                fun setDialog(dialog: Dialog?, dialogBinding: DialogTorrentListBinding, url: String?) {
+                                    mDialog = dialog
+                                    _binding = dialogBinding
+                                    binding.listView.setOnItemClickListener { _, _, position, _ ->
+                                        if (null != mTorrentList && position < mTorrentList!!.size) {
+                                            val itemUrl = mTorrentList!![position].url
+                                            val name = mTorrentList!![position].name
+                                            val r = DownloadManager.Request(Uri.parse(itemUrl.replace("exhentai.org", "ehtracker.org")))
+                                            r.setDestinationInExternalPublicDir(
+                                                Environment.DIRECTORY_DOWNLOADS,
+                                                FileUtils.sanitizeFilename("$name.torrent"),
+                                            )
+                                            r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                                            r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(itemUrl.toHttpUrl()))
+                                            try {
+                                                downloadManager.enqueue(r)
+                                                activity.showTip(R.string.download_torrent_started, BaseScene.LENGTH_SHORT)
+                                            } catch (e: Throwable) {
+                                                e.printStackTrace()
+                                                ExceptionUtils.throwIfFatal(e)
+                                                activity.showTip(R.string.download_torrent_failure, BaseScene.LENGTH_SHORT)
+                                            }
+                                        }
+                                        mDialog?.dismiss()
+                                        mDialog = null
+                                    }
+                                    if (mTorrentList == null) {
+                                        binding.text.visibility = View.GONE
+                                        binding.listView.visibility = View.GONE
+                                        mJob = coroutineScope.launchIO {
+                                            runSuspendCatching {
+                                                EhEngine.getTorrentList(url!!, gid, token)
+                                            }.onSuccess {
+                                                mTorrentList = it
+                                                withUIContext {
+                                                    bind(it)
+                                                }
+                                            }.onFailure {
+                                                withUIContext {
+                                                    binding.progress.visibility = View.GONE
+                                                    binding.text.visibility = View.VISIBLE
+                                                    binding.listView.visibility = View.GONE
+                                                    binding.text.text = ExceptionUtils.getReadableString(it)
+                                                }
+                                            }
+                                            mJob = null
+                                        }
+                                    } else {
+                                        bind(mTorrentList)
+                                    }
+                                }
+
+                                private fun bind(data: TorrentResult?) {
+                                    mDialog ?: return
+                                    if (data.isNullOrEmpty()) {
+                                        binding.progress.visibility = View.GONE
+                                        binding.text.visibility = View.VISIBLE
+                                        binding.listView.visibility = View.GONE
+                                        binding.text.setText(R.string.no_torrents)
+                                    } else {
+                                        val nameArray = data.map { it.format() }.toTypedArray()
+                                        binding.progress.visibility = View.GONE
+                                        binding.text.visibility = View.GONE
+                                        binding.listView.visibility = View.VISIBLE
+                                        binding.listView.adapter =
+                                            ArrayAdapter(mDialog!!.context, R.layout.item_select_dialog, nameArray)
+                                    }
+                                }
+
+                                override fun onDismiss(dialog: DialogInterface) {
+                                    mJob?.cancel()
+                                    mJob = null
+                                    mDialog = null
+                                    _binding = null
+                                }
+                            }
+                            val helper = TorrentListDialogHelper()
+                            val binding = DialogTorrentListBinding.inflate(context.layoutInflater)
+                            val dialog: Dialog = BaseDialogBuilder(context)
+                                .setTitle(R.string.torrents)
+                                .setView(binding.root)
+                                .setOnDismissListener(helper)
+                                .show()
+                            helper.setDialog(dialog, binding, galleryDetail.torrentUrl)
+                        } else {
+                            activity.showTip(permissionDenied, BaseScene.LENGTH_SHORT)
+                        }
+                    }
+                },
             )
         }
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-        var ratingText by rememberSaveable { mutableStateOf("") }
         fun getAllRatingText(rating: Float, ratingCount: Int): String {
             return context.getString(
                 R.string.rating_text,
@@ -641,6 +799,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 rating,
                 ratingCount,
             )
+        }
+        var ratingText by rememberSaveable {
+            mutableStateOf(getAllRatingText(galleryDetail.rating, galleryDetail.ratingCount))
         }
         fun showRateDialog() {
             if (galleryDetail.apiUid < 0) {
@@ -716,8 +877,61 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                     lub.keyword = it
                     navigator.navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
                 },
-                onTagLongClick = { translation, realTag ->
-                    // showTagDialog(translation, realTag)
+                onTagLongClick = { translated, tag ->
+                    val temp: String
+                    val index = tag.indexOf(':')
+                    temp = if (index >= 0) {
+                        tag.substring(index + 1)
+                    } else {
+                        tag
+                    }
+                    val menu: MutableList<String> = ArrayList()
+                    val menuId = IntList()
+                    val resources = context.resources
+                    menu.add(resources.getString(android.R.string.copy))
+                    menuId.add(R.id.copy)
+                    if (temp != translated) {
+                        menu.add(resources.getString(R.string.copy_trans))
+                        menuId.add(R.id.copy_trans)
+                    }
+                    menu.add(resources.getString(R.string.show_definition))
+                    menuId.add(R.id.show_definition)
+                    menu.add(resources.getString(R.string.add_filter))
+                    menuId.add(R.id.add_filter)
+                    if (galleryDetail.apiUid >= 0) {
+                        menu.add(resources.getString(R.string.tag_vote_up))
+                        menuId.add(R.id.vote_up)
+                        menu.add(resources.getString(R.string.tag_vote_down))
+                        menuId.add(R.id.vote_down)
+                    }
+                    BaseDialogBuilder(context)
+                        .setTitle(tag)
+                        .setItems(menu.toTypedArray()) { _: DialogInterface?, which: Int ->
+                            if (which < 0 || which >= menuId.size) {
+                                return@setItems
+                            }
+                            when (menuId[which]) {
+                                R.id.vote_up -> coroutineScope.launchIO {
+                                    galleryDetail.voteTag(tag, 1)
+                                }
+                                R.id.vote_down -> coroutineScope.launchIO {
+                                    galleryDetail.voteTag(tag, -1)
+                                }
+                                R.id.show_definition -> context.openBrowser(EhUrl.getTagDefinitionUrl(temp))
+                                R.id.add_filter -> {
+                                    BaseDialogBuilder(context)
+                                        .setMessage(context.getString(R.string.filter_the_tag, tag))
+                                        .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
+                                            Filter(FilterMode.TAG, tag).remember()
+                                            activity.showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
+                                        }
+                                        .setNegativeButton(android.R.string.cancel, null)
+                                        .show()
+                                }
+                                R.id.copy -> activity.addTextToClipboard(tag)
+                                R.id.copy_trans -> activity.addTextToClipboard(translated)
+                            }
+                        }.show()
                 },
             )
         }
@@ -1095,27 +1309,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
 }
 
 class GalleryDetailScene : BaseScene() {
-    private var mDownloadState = 0
-    private var mAction: String? = null
-    private var mGid: Long = 0
-    private var mToken: String? = null
-    private var mPage = 0
-
-    private var composeBindingGI by mutableStateOf<BaseGalleryInfo?>(null)
-    private var composeBindingGD by mutableStateOf<GalleryDetail?>(null)
-    private var downloadButtonText by mutableStateOf("")
-    private var ratingText by mutableStateOf("")
-    private var torrentText by mutableStateOf("")
-    private var getDetailError by mutableStateOf("")
-
-    private var mTorrentList: TorrentResult? = null
-    private var favoritesLock = Mutex()
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val args = requireNotNull(arguments)
         val composeArgs = when (requireNotNull(args.getString(KEY_ACTION))) {
             ACTION_GID_TOKEN -> {
@@ -1136,246 +1330,6 @@ class GalleryDetailScene : BaseScene() {
         }
     }
 
-    private fun bindViewSecond() {
-        val gd = composeBindingGD ?: return
-        context ?: return
-        if (mPage != 0) {
-            Snackbar.make(
-                requireActivity().findViewById(R.id.fragment_container),
-                getString(R.string.read_from, mPage),
-                Snackbar.LENGTH_LONG,
-            ).setAction(R.string.read) { context?.navToReader(gd.galleryInfo, mPage) }.show()
-        }
-        // ratingText = getAllRatingText(gd.rating, gd.ratingCount)
-        torrentText = resources.getString(R.string.torrent_count, gd.torrentCount)
-    }
-
-    private fun showSimilarGalleryList() {
-        val gd = composeBindingGD ?: return
-        val keyword = EhUtils.extractTitle(gd.title)
-        if (null != keyword) {
-            val lub = ListUrlBuilder()
-            lub.mode = ListUrlBuilder.MODE_NORMAL
-            lub.keyword = "\"" + keyword + "\""
-            navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-            return
-        }
-        val artist = getArtist(gd.tags)
-        if (null != artist) {
-            val lub = ListUrlBuilder()
-            lub.mode = ListUrlBuilder.MODE_TAG
-            lub.keyword = "artist:$artist"
-            navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-            return
-        }
-        if (null != gd.uploader) {
-            val lub = ListUrlBuilder()
-            lub.mode = ListUrlBuilder.MODE_UPLOADER
-            lub.keyword = gd.uploader
-            navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-        }
-    }
-
-    private fun showCoverGalleryList() {
-        context ?: return
-        try {
-            val key = composeBindingGI!!.thumbKey!!
-            val lub = ListUrlBuilder()
-            lub.mode = ListUrlBuilder.MODE_NORMAL
-            lub.hash = key.substringAfterLast('/').substringBefore('-')
-            navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
-        } catch (e: Throwable) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun showTorrentDialog() {
-        val galleryDetail = composeBindingGD ?: return
-        viewLifecycleOwner.lifecycleScope.launchUI {
-            val granted = isAtLeastQ || requireContext().requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            if (granted) {
-                val helper = TorrentListDialogHelper()
-                val binding = DialogTorrentListBinding.inflate(layoutInflater)
-                val dialog: Dialog = BaseDialogBuilder(requireContext())
-                    .setTitle(R.string.torrents)
-                    .setView(binding.root)
-                    .setOnDismissListener(helper)
-                    .show()
-                helper.setDialog(dialog, binding, galleryDetail.torrentUrl)
-            } else {
-                showTip(getString(R.string.permission_denied), LENGTH_SHORT)
-            }
-        }
-    }
-
-    private fun showFilterTagDialog(tag: String) {
-        val context = context ?: return
-        BaseDialogBuilder(context)
-            .setMessage(getString(R.string.filter_the_tag, tag))
-            .setPositiveButton(android.R.string.ok) { _: DialogInterface?, _: Int ->
-                Filter(FilterMode.TAG, tag).remember()
-                showTip(R.string.filter_added, LENGTH_SHORT)
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
-    }
-
-    private fun showTagDialog(translated: String, tag: String) {
-        val context = context ?: return
-        val temp: String
-        val index = tag.indexOf(':')
-        temp = if (index >= 0) {
-            tag.substring(index + 1)
-        } else {
-            tag
-        }
-        val menu: MutableList<String> = ArrayList()
-        val menuId = IntList()
-        val resources = context.resources
-        menu.add(resources.getString(android.R.string.copy))
-        menuId.add(R.id.copy)
-        if (temp != translated) {
-            menu.add(resources.getString(R.string.copy_trans))
-            menuId.add(R.id.copy_trans)
-        }
-        menu.add(resources.getString(R.string.show_definition))
-        menuId.add(R.id.show_definition)
-        menu.add(resources.getString(R.string.add_filter))
-        menuId.add(R.id.add_filter)
-        if (composeBindingGD != null && composeBindingGD!!.apiUid >= 0) {
-            menu.add(resources.getString(R.string.tag_vote_up))
-            menuId.add(R.id.vote_up)
-            menu.add(resources.getString(R.string.tag_vote_down))
-            menuId.add(R.id.vote_down)
-        }
-        BaseDialogBuilder(context)
-            .setTitle(tag)
-            .setItems(menu.toTypedArray()) { _: DialogInterface?, which: Int ->
-                if (which < 0 || which >= menuId.size) {
-                    return@setItems
-                }
-                when (menuId[which]) {
-                    R.id.vote_up -> {
-                        // voteTag(tag, 1)
-                    }
-
-                    R.id.vote_down -> {
-                        // voteTag(tag, -1)
-                    }
-
-                    R.id.show_definition -> {
-                        context.openBrowser(EhUrl.getTagDefinitionUrl(temp))
-                    }
-
-                    R.id.add_filter -> {
-                        showFilterTagDialog(tag)
-                    }
-
-                    R.id.copy -> {
-                        requireActivity().addTextToClipboard(tag)
-                    }
-
-                    R.id.copy_trans -> {
-                        requireActivity().addTextToClipboard(translated)
-                    }
-                }
-            }.show()
-    }
-
-    private inner class TorrentListDialogHelper :
-        AdapterView.OnItemClickListener,
-        DialogInterface.OnDismissListener {
-        private var _binding: DialogTorrentListBinding? = null
-        private val binding get() = _binding!!
-        private var mJob: Job? = null
-        private var mDialog: Dialog? = null
-        fun setDialog(dialog: Dialog?, dialogBinding: DialogTorrentListBinding, url: String?) {
-            mDialog = dialog
-            _binding = dialogBinding
-            binding.listView.onItemClickListener = this
-            val context = context
-            if (context != null) {
-                if (mTorrentList == null) {
-                    binding.text.visibility = View.GONE
-                    binding.listView.visibility = View.GONE
-                    mJob = lifecycleScope.launchIO {
-                        runSuspendCatching {
-                            EhEngine.getTorrentList(url!!, mGid, mToken)
-                        }.onSuccess {
-                            mTorrentList = it
-                            withUIContext {
-                                bind(it)
-                            }
-                        }.onFailure {
-                            withUIContext {
-                                binding.progress.visibility = View.GONE
-                                binding.text.visibility = View.VISIBLE
-                                binding.listView.visibility = View.GONE
-                                binding.text.text = ExceptionUtils.getReadableString(it)
-                            }
-                        }
-                        mJob = null
-                    }
-                } else {
-                    bind(mTorrentList)
-                }
-            }
-        }
-
-        private fun bind(data: TorrentResult?) {
-            mDialog ?: return
-            if (data.isNullOrEmpty()) {
-                binding.progress.visibility = View.GONE
-                binding.text.visibility = View.VISIBLE
-                binding.listView.visibility = View.GONE
-                binding.text.setText(R.string.no_torrents)
-            } else {
-                val nameArray = data.map { it.format() }.toTypedArray()
-                binding.progress.visibility = View.GONE
-                binding.text.visibility = View.GONE
-                binding.listView.visibility = View.VISIBLE
-                binding.listView.adapter =
-                    ArrayAdapter(mDialog!!.context, R.layout.item_select_dialog, nameArray)
-            }
-        }
-
-        override fun onItemClick(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
-            val context = context
-            if (null != context && null != mTorrentList && position < mTorrentList!!.size) {
-                val url = mTorrentList!![position].url
-                val name = mTorrentList!![position].name
-                // TODO: Don't use buggy system download service
-                val r =
-                    DownloadManager.Request(Uri.parse(url.replace("exhentai.org", "ehtracker.org")))
-                r.setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS,
-                    FileUtils.sanitizeFilename("$name.torrent"),
-                )
-                r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(url.toHttpUrl()))
-                try {
-                    downloadManager.enqueue(r)
-                    showTip(R.string.download_torrent_started, LENGTH_SHORT)
-                } catch (e: Throwable) {
-                    e.printStackTrace()
-                    ExceptionUtils.throwIfFatal(e)
-                    showTip(R.string.download_torrent_failure, LENGTH_SHORT)
-                }
-            }
-            if (mDialog != null) {
-                mDialog!!.dismiss()
-                mDialog = null
-            }
-        }
-
-        override fun onDismiss(dialog: DialogInterface) {
-            mJob?.cancel()
-            mJob = null
-            mDialog = null
-            _binding = null
-        }
-    }
-
     companion object {
         const val KEY_ACTION = "action"
         const val ACTION_GALLERY_INFO = "action_gallery_info"
@@ -1385,16 +1339,5 @@ class GalleryDetailScene : BaseScene() {
         const val KEY_TOKEN = "token"
         const val KEY_PAGE = "page"
         const val KEY_GALLERY_DETAIL = "gallery_detail"
-        private fun getArtist(tagGroups: Array<GalleryTagGroup>?): String? {
-            if (null == tagGroups) {
-                return null
-            }
-            for (tagGroup in tagGroups) {
-                if ("artist" == tagGroup.groupName && tagGroup.size > 0) {
-                    return tagGroup[0].removePrefix("_")
-                }
-            }
-            return null
-        }
     }
 }
