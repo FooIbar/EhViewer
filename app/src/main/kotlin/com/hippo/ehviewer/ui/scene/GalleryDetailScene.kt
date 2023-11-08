@@ -566,7 +566,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 }
             }.toTypedArray()
             val navAction = dialogState.showSelectItem(*items)
-            navAction.invoke()
+            withUIContext { navAction.invoke() }
         }
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
         if (galleryDetail.newerVersions.isNotEmpty()) {
