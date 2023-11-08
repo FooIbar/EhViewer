@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.CallSuper
+import androidx.annotation.Keep
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.imePadding
@@ -56,6 +57,8 @@ import kotlinx.coroutines.flow.toList
 
 abstract class SearchBarScene : BaseScene(), ToolBarScene {
     private var _binding: SceneSearchbarBinding? = null
+
+    @get:Keep
     private val binding get() = _binding!!
     private var mSuggestionList by mutableStateOf(emptyList<Suggestion>())
     private var mSuggestionProvider: SuggestionProvider? = null

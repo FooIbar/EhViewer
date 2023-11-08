@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.client.parser
 
+import androidx.annotation.Keep
 import com.hippo.ehviewer.client.exception.ParseException
 import java.nio.ByteBuffer
 
@@ -9,6 +10,7 @@ object TorrentParser {
     }.getOrElse { throw ParseException("Can't parse torrent list", it) }
 }
 
+@Keep
 class Torrent(
     val posted: String,
     val size: String,
