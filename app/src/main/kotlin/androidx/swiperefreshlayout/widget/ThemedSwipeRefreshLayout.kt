@@ -3,6 +3,7 @@ package androidx.swiperefreshlayout.widget
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.ShapeDrawable
+import android.os.Parcelable
 import android.util.AttributeSet
 import androidx.core.graphics.ColorUtils
 import rikka.core.res.resolveColor
@@ -21,5 +22,10 @@ class ThemedSwipeRefreshLayout @JvmOverloads constructor(
         val backgroundColor = ColorUtils.compositeColors(overlayColor, surfaceColor)
         (mCircleView.background as ShapeDrawable).paint.color = backgroundColor
         setColorSchemeColors(context.theme.resolveColor(com.google.android.material.R.attr.colorAccent))
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        isRefreshing = false
+        return super.onSaveInstanceState()
     }
 }
