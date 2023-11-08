@@ -195,7 +195,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         val commenter = comment.user ?: return
         dialogState.awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_commenter, commenter)) }
         Filter(FilterMode.COMMENTER, commenter).remember()
-        comments = comments.copy(comments = comments.comments.filter { it == comment })
+        comments = comments.copy(comments = comments.comments.filterNot { it == comment })
         findActivity<MainActivity>().showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
     }
 
