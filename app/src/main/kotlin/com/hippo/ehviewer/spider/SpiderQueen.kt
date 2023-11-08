@@ -619,8 +619,9 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             var originImageUrl: String? = null
             var error: String? = null
             var forceHtml = false
+            val original = Settings.downloadOriginImage || orgImg
             runCatching {
-                repeat(2) {
+                repeat(2) { index ->
                     var imageUrl: String? = null
                     var localShowKey: String?
 
@@ -630,11 +631,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                             var pageUrl = EhUrl.getPageUrl(mSpiderInfo.gid, index, pToken)
                             // Skipping H@H costs 50 points, only use it as last resort
                             if (skipHathKey != null) {
-                                pageUrl += if ("?" in pageUrl) {
-                                    "&nl=$skipHathKey"
-                                } else {
-                                    "?nl=$skipHathKey"
-                                }
+                                pageUrl += "?nl=$skipHathKey"
                             }
                             EhEngine.getGalleryPage(pageUrl, mSpiderInfo.gid, mSpiderInfo.token)
                                 .let { result ->
@@ -671,7 +668,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     val targetImageUrl: String?
                     val referer: String?
 
-                    if ((Settings.downloadOriginImage || orgImg) && !originImageUrl.isNullOrBlank()) {
+                    if (original && originImageUrl != null) {
+                        if (index == 1 && skipHathKey != null) {
+                            originImageUrl += "?nl=$skipHathKey"
+                        }
                         val pageUrl = EhUrl.getPageUrl(mSpiderInfo.gid, index, pToken)
                         targetImageUrl = EhEngine.getOriginalImageUrl(originImageUrl!!, pageUrl)
                         referer = EhUrl.referer
@@ -771,14 +771,9 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 private val PTOKEN_FAILED_MESSAGE = appCtx.getString(R.string.error_get_ptoken_error)
 private val ERROR_TIMEOUT = appCtx.getString(R.string.error_timeout)
 private val DECODE_ERROR = appCtx.getString(R.string.error_decoding_failed)
-private val URL_509_ARRAY = arrayOf(
-    "https://ehgt.org/g/509.gif",
-    "https://ehgt.org/g/509s.gif",
-    "https://exhentai.org/img/509.gif",
-    "https://exhentai.org/img/509s.gif",
-)
+private val URL_509_PATTERN = Regex("\\.org/.+/509s?\\.gif")
 private const val WORKER_DEBUG_TAG = "SpiderQueenWorker"
 
 private fun check509(url: String) {
-    if (url in URL_509_ARRAY) throw QuotaExceededException()
+    if (URL_509_PATTERN in url) throw QuotaExceededException()
 }
