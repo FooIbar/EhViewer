@@ -66,12 +66,12 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 
 # Download
 
-| Flavor | Feature |
-|-|-|
-| Default | Android 9+, full support |
+| Flavor      | Feature                           |
+|-------------|-----------------------------------|
+| Default     | Android 9+, full support          |
 | Marshmallow | Android 6.0-8.1, limited support* |
-| OSS | FOSS dependencies**  |
-| GMS | Proprietary GMS component |
+| OSS         | FOSS dependencies**               |
+| GMS         | Proprietary GMS component         |
 
 \* Archives and GIFs are not supported
 
@@ -93,14 +93,12 @@ Here is the libraries
 - [Arrow](https://arrow-kt.io/)
 - [AOSP & AndroidX](http://source.android.com/)
 - [Kotlin & KotlinX](https://kotlinlang.org/)
-- [FullDraggableDrawer](https://github.com/PureWriter/FullDraggableDrawer)
-- [MCA](https://github.com/material-components/material-components-android)
-- [material-design-icons](https://github.com/google/material-design-icons)
-- [Okhttp](https://square.github.io/okhttp/)
-- [RikkaX](https://github.com/RikkaApps/RikkaX)
-- [Libarchive](http://www.libarchive.org/)
+- [MDC-Android](https://github.com/material-components/material-components-android)
+- [Material Icons](https://github.com/google/material-design-icons)
+- [OkHttp](https://square.github.io/okhttp/)
+- [libarchive](http://www.libarchive.org/)
 - [Coil](https://coil-kt.github.io/coil/)
-- [Jsoup](https://jsoup.org/)
+- [jsoup](https://jsoup.org/)
 
 Specially thanks [Tachiyomi](https://tachiyomi.org/) for its reader implementation!
 
