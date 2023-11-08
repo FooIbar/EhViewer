@@ -107,6 +107,7 @@ import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
+import com.hippo.ehviewer.util.isAtLeastU
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlin.math.max
@@ -168,7 +169,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     // User predictive back animation progress holder && value correspond with UI State
     var animationProgress by remember { mutableFloatStateOf(0F) }
     // Update UI animation state
-    animationProgress = if (commenting) coState else min(animationProgress, coState)
+    animationProgress = if (commenting || !isAtLeastU) coState else min(animationProgress, coState)
 
     PredictiveBackHandler(commenting) { progress ->
         try {
