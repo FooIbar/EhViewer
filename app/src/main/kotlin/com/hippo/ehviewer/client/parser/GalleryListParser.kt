@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.client.parser
 
+import androidx.annotation.Keep
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -31,6 +32,7 @@ object GalleryListParser {
     val emptyResult = GalleryListResult(null, null, arrayListOf())
 }
 
+@Keep
 class GalleryListResult(
     val prev: String?,
     val next: String?,
