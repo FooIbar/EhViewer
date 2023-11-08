@@ -65,6 +65,17 @@
 
 # 下載
 
+| 變種          | 功能                     |
+|-------------|------------------------|
+| Default     | Android 9+, 完全支援       |
+| Marshmallow | Android 6.0-8.1, 有限支援* |
+| OSS         | FOSS 依賴項**             |
+| GMS         | 專有 GMS 元件              |
+
+\* 不支援壓縮包和 GIF
+
+** 在不支援 [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine) 的裝置上回退到 OkHttp
+
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
 </a>
@@ -81,14 +92,15 @@
 - [Arrow](https://arrow-kt.io/)
 - [AOSP & AndroidX](http://source.android.com/)
 - [Kotlin & KotlinX](https://kotlinlang.org/)
-- [FullDraggableDrawer](https://github.com/PureWriter/FullDraggableDrawer)
-- [MCA](https://github.com/material-components/material-components-android)
-- [material-design-icons](https://github.com/google/material-design-icons)
-- [Okhttp](https://square.github.io/okhttp/)
-- [RikkaX](https://github.com/RikkaApps/RikkaX)
-- [Libarchive](http://www.libarchive.org/)
+- [MDC-Android](https://github.com/material-components/material-components-android)
+- [Material Icons](https://github.com/google/material-design-icons)
+- [OkHttp](https://square.github.io/okhttp/)
 - [Coil](https://coil-kt.github.io/coil/)
-- [Jsoup](https://jsoup.org/)
+- [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
+- [libarchive](http://www.libarchive.org/)
+- [jsoup](https://jsoup.org/)
+
+特別感謝[Tachiyomi](https://tachiyomi.org/)的閱讀器實現
 
 # 許可證書
 

@@ -65,12 +65,12 @@
 
 # 下载
 
-| 变种 | 功能 |
-|-|-|
-| Default | Android 9+, 完全支持 |
+| 变种          | 功能                     |
+|-------------|------------------------|
+| Default     | Android 9+, 完全支持       |
 | Marshmallow | Android 6.0-8.1, 有限支持* |
-| OSS | FOSS 依赖项**  |
-| GMS | 专有 GMS 组件 |
+| OSS         | FOSS 依赖项**             |
+| GMS         | 专有 GMS 组件              |
 
 \* 不支持压缩包和 GIF
 
@@ -92,14 +92,13 @@
 - [Arrow](https://arrow-kt.io/)
 - [AOSP & AndroidX](http://source.android.com/)
 - [Kotlin & KotlinX](https://kotlinlang.org/)
-- [FullDraggableDrawer](https://github.com/PureWriter/FullDraggableDrawer)
-- [MCA](https://github.com/material-components/material-components-android)
-- [material-design-icons](https://github.com/google/material-design-icons)
-- [Okhttp](https://square.github.io/okhttp/)
-- [RikkaX](https://github.com/RikkaApps/RikkaX)
-- [Libarchive](http://www.libarchive.org/)
+- [MDC-Android](https://github.com/material-components/material-components-android)
+- [Material Icons](https://github.com/google/material-design-icons)
+- [OkHttp](https://square.github.io/okhttp/)
 - [Coil](https://coil-kt.github.io/coil/)
-- [Jsoup](https://jsoup.org/)
+- [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
+- [libarchive](http://www.libarchive.org/)
+- [jsoup](https://jsoup.org/)
 
 特别感谢[Tachiyomi](https://tachiyomi.org/)的阅读器实现
 
