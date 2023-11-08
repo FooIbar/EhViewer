@@ -161,6 +161,7 @@ import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.rememberLambda
 import com.hippo.ehviewer.util.AppHelper
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -996,8 +997,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 activity.showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
             }
         }
-        fun onDownloadButtonClick() {
-            galleryDetail ?: return
+        val onDownloadButtonClick = rememberLambda(galleryInfo) {
+            galleryDetail ?: return@rememberLambda
             if (EhDownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
                 CommonOperations.startDownload(
                     activity,
@@ -1058,7 +1059,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                         )
                         Row {
                             FilledTonalButton(
-                                onClick = ::onDownloadButtonClick,
+                                onClick = onDownloadButtonClick,
                                 modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
                             ) {
                                 Text(text = downloadButtonText, maxLines = 1)
@@ -1123,7 +1124,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                                 }
                                 Spacer(modifier = modifier.height(24.dp))
                                 FilledTonalButton(
-                                    onClick = ::onDownloadButtonClick,
+                                    onClick = onDownloadButtonClick,
                                     modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
                                 ) {
                                     Text(text = downloadButtonText, maxLines = 1)
