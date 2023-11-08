@@ -146,6 +146,9 @@ android {
             "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
             "-opt-in=splitties.experimental.ExperimentalSplittiesApi",
             "-opt-in=splitties.preferences.DataStorePreferencesPreview",
+
+            "-P", "plugin:androidx.compose.compiler.plugins.kotlin:experimentalStrongSkipping=true",
+            "-P", "plugin:androidx.compose.compiler.plugins.kotlin:intrinsicRemember=true",
         )
     }
 
