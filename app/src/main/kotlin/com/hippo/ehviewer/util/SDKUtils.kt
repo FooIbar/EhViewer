@@ -8,5 +8,6 @@ val isAtLeastO = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
 val isAtLeastP = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
 val isAtLeastQ = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 val isAtLeastR = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+val isAtLeastT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 val isAtLeastU = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 val isAtLeastSExtension7 = isAtLeastR && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 7

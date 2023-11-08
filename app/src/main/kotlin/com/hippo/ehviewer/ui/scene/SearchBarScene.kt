@@ -45,6 +45,7 @@ import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.util.AnimationUtils
 import com.hippo.ehviewer.util.SimpleAnimatorListener
 import com.hippo.ehviewer.util.applyNavigationBarsPadding
+import com.hippo.ehviewer.util.isAtLeastT
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import dev.chrisbanes.insetter.applyInsetter
@@ -119,10 +120,12 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
             }
         }
         onCreateViewWithToolbar(inflater, binding.root, savedInstanceState)
-        // This has to be placed after onCreateViewWithToolbar() since
-        // callbacks are invoked in the reverse order in which they are added
-        binding.searchview.addTransitionListener(mSearchViewOnBackPressedCallback)
-        requireActivity().onBackPressedDispatcher.addCallback(mSearchViewOnBackPressedCallback)
+        if (!isAtLeastT) {
+            // This has to be placed after onCreateViewWithToolbar() since
+            // callbacks are invoked in the reverse order in which they are added
+            binding.searchview.addTransitionListener(mSearchViewOnBackPressedCallback)
+            requireActivity().onBackPressedDispatcher.addCallback(mSearchViewOnBackPressedCallback)
+        }
         binding.appbar.bringToFront()
         fabLayout.applyNavigationBarsPadding()
         fastScroller.applyNavigationBarsPadding()
@@ -149,7 +152,7 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        mSearchViewOnBackPressedCallback.remove()
+        if (!isAtLeastT) mSearchViewOnBackPressedCallback.remove()
         binding.root.removeAllViews()
         _binding = null
     }

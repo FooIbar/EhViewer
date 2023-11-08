@@ -23,6 +23,7 @@
         android:allowBackup="true"
         android:appCategory="image"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_scheme"
         android:hasFragileUserData="true"
         android:icon="@mipmap/ic_launcher"
@@ -135,8 +136,7 @@
             android:launchMode="singleTask"
             android:taskAffinity=""
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <activity
-            android:name=".ui.WebViewActivity" />
+        <activity android:name=".ui.WebViewActivity" />
 
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
