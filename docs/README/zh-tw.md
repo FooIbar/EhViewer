@@ -95,8 +95,9 @@
 - [MDC-Android](https://github.com/material-components/material-components-android)
 - [Material Icons](https://github.com/google/material-design-icons)
 - [OkHttp](https://square.github.io/okhttp/)
-- [libarchive](http://www.libarchive.org/)
 - [Coil](https://coil-kt.github.io/coil/)
+- [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
+- [libarchive](http://www.libarchive.org/)
 - [jsoup](https://jsoup.org/)
 
 特別感謝[Tachiyomi](https://tachiyomi.org/)的閱讀器實現

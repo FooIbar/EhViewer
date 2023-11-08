@@ -96,8 +96,9 @@ Here is the libraries
 - [MDC-Android](https://github.com/material-components/material-components-android)
 - [Material Icons](https://github.com/google/material-design-icons)
 - [OkHttp](https://square.github.io/okhttp/)
-- [libarchive](http://www.libarchive.org/)
 - [Coil](https://coil-kt.github.io/coil/)
+- [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
+- [libarchive](http://www.libarchive.org/)
 - [jsoup](https://jsoup.org/)
 
 Specially thanks [Tachiyomi](https://tachiyomi.org/) for its reader implementation!
