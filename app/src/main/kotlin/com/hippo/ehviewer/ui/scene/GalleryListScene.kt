@@ -92,9 +92,7 @@ import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.LayoutManagerUtils.firstVisibleItemPosition
 import com.hippo.ehviewer.ui.legacy.ViewTransition
 import com.hippo.ehviewer.ui.legacy.WindowInsetsAnimationHelper
-import com.hippo.ehviewer.ui.settings.showNewVersion
 import com.hippo.ehviewer.ui.tools.DialogState
-import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AnimationUtils
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.SimpleAnimatorListener
@@ -297,17 +295,6 @@ class GalleryListScene : SearchBarScene() {
 
     private val dialogState = DialogState()
 
-    // TODO: Move this out
-    private fun checkForUpdates() {
-        lifecycleScope.launchIO {
-            runSuspendCatching {
-                AppUpdater.checkForUpdate()?.let {
-                    dialogState.showNewVersion(requireContext(), it)
-                }
-            }
-        }
-    }
-
     private val SceneGalleryListBinding.fastScroller get() = contentLayout.fastScroller
     private val SceneGalleryListBinding.refreshLayout get() = contentLayout.refreshLayout
     private val SceneGalleryListBinding.recyclerView get() = contentLayout.recyclerView
@@ -321,7 +308,6 @@ class GalleryListScene : SearchBarScene() {
     ): View {
         _binding = SceneGalleryListBinding.inflate(inflater, container!!)
         container.addView(ComposeWithMD3 { dialogState.Intercept() })
-        checkForUpdates()
         requireActivity().onBackPressedDispatcher.addCallback(stateBackPressedCallback)
         mHideActionFabSlop = ViewConfiguration.get(requireContext()).scaledTouchSlop
         mShowActionFab = true

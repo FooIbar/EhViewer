@@ -531,6 +531,7 @@
     <string name="update_frequency_weekly">每周</string>
     <string name="update_frequency_biweekly">每两周</string>
     <string name="update_frequency_monthly">每月</string>
+    <string name="update_failed">更新失败：%s</string>
     <string name="new_version_available">有新版本！</string>
     <string name="already_latest_version">已是最新版本</string>
     <string name="permission_denied">权限被拒</string>

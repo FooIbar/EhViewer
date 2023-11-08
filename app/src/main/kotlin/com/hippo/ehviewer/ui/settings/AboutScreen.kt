@@ -123,7 +123,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                         dialogState.showNewVersion(context, it)
                     } ?: launchSnackBar(context.getString(R.string.already_latest_version))
                 }.onFailure {
-                    launchSnackBar(ExceptionUtils.getReadableString(it))
+                    launchSnackBar(context.getString(R.string.update_failed, ExceptionUtils.getReadableString(it)))
                 }
             }
         }
