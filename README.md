@@ -1,7 +1,3 @@
-# Maintenance Mode
-
-The project is in maintenance mode, will only receive bugfixes.
-
 <p align="right">
   <strong>English</strong>
   <span> | </span>
@@ -28,9 +24,6 @@ The project is in maintenance mode, will only receive bugfixes.
   </a>
   <a href="https://www.codefactor.io/repository/github/FooIbar/EhViewer">
     <img src="https://www.codefactor.io/repository/github/FooIbar/EhViewer/badge" alt="CodeFactor">
-  </a>
-  <a href="https://github.com/FooIbar/EhViewer/releases">
-    <img src="https://img.shields.io/github/downloads/FooIbar/EhViewer/total.svg" alt="Downloads">
   </a>
   <a href="https://github.com/FooIbar/EhViewer/releases">
     <img src="https://img.shields.io/github/v/release/FooIbar/EhViewer" alt="Release">
