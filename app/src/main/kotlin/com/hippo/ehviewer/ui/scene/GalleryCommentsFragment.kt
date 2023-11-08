@@ -26,8 +26,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.activity.compose.BackHandler
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text2.BasicTextField2
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -60,6 +62,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -67,13 +70,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
 import androidx.navigation.NavController
@@ -100,8 +107,13 @@ import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
+import com.hippo.ehviewer.util.isAtLeastU
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
@@ -145,7 +157,32 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val dialogState = LocalDialogState.current
     val coroutineScope = rememberCoroutineScope()
+
+    // Predictive animation pattern, extract it out if needed
+    // Principal Value
     var commenting by rememberSaveable { mutableStateOf(false) }
+    // Natural animator state correspond with principal value
+    val coState by animateFloatAsState(
+        targetValue = if (commenting) 1f else 0f,
+        label = "animationProgress",
+    )
+    // User predictive back animation progress holder && value correspond with UI State
+    var animationProgress by remember { mutableFloatStateOf(0F) }
+    // Update UI animation state
+    animationProgress = if (commenting || !isAtLeastU) coState else min(animationProgress, coState)
+
+    PredictiveBackHandler(commenting) { progress ->
+        try {
+            progress.collect {
+                animationProgress = 1F - it.progress
+            }
+            commenting = false
+        } catch (e: CancellationException) {
+            commenting = true
+            animationProgress = 1F
+        }
+    }
+
     var userComment by rememberSaveable { mutableStateOf("") }
     var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
     var refreshing by remember { mutableStateOf(false) }
@@ -225,10 +262,6 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 }
             }
         }
-    }
-
-    BackHandler(commenting) {
-        commenting = false
     }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -369,34 +402,41 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                     }
                 }
             }
-            if (commenting) {
-                Surface(
-                    modifier = Modifier.align(Alignment.BottomCenter).onGloballyPositioned { coordinates ->
-                        editTextMeasured = with(density) { coordinates.size.height.toDp() }
-                    },
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                ) {
-                    Row(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
-                        BasicTextField2(
-                            value = userComment,
-                            onValueChange = { userComment = it },
-                            modifier = Modifier.weight(1f).padding(keylineMargin),
-                            textStyle = MaterialTheme.typography.bodyLarge,
+            Surface(
+                modifier = Modifier.align(Alignment.BottomCenter).onGloballyPositioned { coordinates ->
+                    editTextMeasured = with(density) { coordinates.size.height.toDp() }
+                }.layout { measurable, constraints ->
+                    val startHeight = max(constraints.minHeight, 80.dp.roundToPx()).coerceAtMost(constraints.maxHeight)
+                    val endWidth = constraints.maxWidth
+                    val width = lerp(0, endWidth, animationProgress)
+                    val height = lerp(0, startHeight, animationProgress)
+                    val placeable = measurable.measure(Constraints.fixed(width, height))
+                    layout(width, height) {
+                        placeable.placeRelative(0, 0)
+                    }
+                }.clip(RoundedCornerShape(((1 - animationProgress) * 100).roundToInt())),
+                color = MaterialTheme.colorScheme.primaryContainer,
+            ) {
+                Row(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
+                    BasicTextField2(
+                        value = userComment,
+                        onValueChange = { userComment = it },
+                        modifier = Modifier.weight(1f).padding(keylineMargin),
+                        textStyle = MaterialTheme.typography.bodyLarge,
+                    )
+                    IconButton(
+                        onClick = {
+                            coroutineScope.launchIO {
+                                context.sendComment()
+                            }
+                        },
+                        modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.Send,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
-                        IconButton(
-                            onClick = {
-                                coroutineScope.launchIO {
-                                    context.sendComment()
-                                }
-                            },
-                            modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Default.Send,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            )
-                        }
                     }
                 }
             }
