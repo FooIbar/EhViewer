@@ -98,14 +98,19 @@ import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.scene.ProgressFragment
 import com.hippo.ehviewer.ui.scene.navAnimated
 import com.hippo.ehviewer.ui.scene.navWithUrl
+import com.hippo.ehviewer.ui.settings.showNewVersion
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
+import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AppConfig
+import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.buildWindowInsets
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.hippo.ehviewer.util.set
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import java.io.FileOutputStream
@@ -115,6 +120,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
@@ -226,11 +232,23 @@ class MainActivity : EhActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setMD3Content {
             val configuration = LocalConfiguration.current
+            val dialogState = LocalDialogState.current
             val drawerState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
             val recomposeScope = currentRecomposeScope
             fun isSelected(id: Int) = ::navController.isInitialized && id == navController.currentDestination?.id
             fun closeDrawer() = scope.launch { drawerState.close() }
+            LaunchedEffect(Unit) {
+                runSuspendCatching {
+                    withIOContext {
+                        AppUpdater.checkForUpdate()?.let {
+                            dialogState.showNewVersion(this@MainActivity, it)
+                        }
+                    }
+                }.onFailure {
+                    showTip(getString(R.string.update_failed, ExceptionUtils.getReadableString(it)), BaseScene.LENGTH_LONG)
+                }
+            }
             LaunchedEffect(Unit) {
                 openDrawerFlow.collectLatest {
                     drawerState.open()
