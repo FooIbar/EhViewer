@@ -218,7 +218,7 @@ private fun getRatingText(rating: Float): Int {
     }
 }
 
-private fun Array<GalleryTagGroup>.getArtist(): String? {
+private fun List<GalleryTagGroup>.getArtist(): String? {
     for (tagGroup in this) {
         if ("artist" == tagGroup.groupName && tagGroup.size > 0) {
             return tagGroup[0].removePrefix("_")

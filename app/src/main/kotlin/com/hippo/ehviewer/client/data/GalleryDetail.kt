@@ -37,7 +37,7 @@ private val LANGUAGES = arrayOf(
 )
 
 @Parcelize
-class GalleryDetail(
+data class GalleryDetail(
     val galleryInfo: BaseGalleryInfo = BaseGalleryInfo(),
     var apiUid: Long = -1L,
     var apiKey: String? = null,
@@ -51,7 +51,7 @@ class GalleryDetail(
     var size: String? = null,
     var favoriteCount: Int = 0,
     var ratingCount: Int = 0,
-    val tags: Array<GalleryTagGroup>,
+    val tags: List<GalleryTagGroup>,
     var comments: GalleryCommentList,
     val previewPages: Int,
     val previewList: List<GalleryPreview>,

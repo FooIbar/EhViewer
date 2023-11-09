@@ -76,7 +76,7 @@ object GalleryDetailParser {
     private val PATTERN_NEWER_DATE = Regex(", added (.+?)<br />")
     private val PATTERN_FAVORITE_SLOT =
         Regex("/fav.png\\); background-position:0px -(\\d+)px")
-    private val EMPTY_GALLERY_TAG_GROUP_ARRAY = arrayOf<GalleryTagGroup>()
+    private val EMPTY_GALLERY_TAG_GROUP_ARRAY = emptyList<GalleryTagGroup>()
     private val EMPTY_GALLERY_COMMENT_ARRAY = GalleryCommentList(emptyList(), false)
     private val WEB_COMMENT_DATE_FORMAT = DateTimeFormatter
         .ofPattern("dd MMMM yyyy, HH:mm", Locale.US).withZone(ZoneOffset.UTC)
@@ -308,7 +308,7 @@ object GalleryDetailParser {
     /**
      * Parse tag groups with html parser
      */
-    private fun parseTagGroups(document: Document): Array<GalleryTagGroup> {
+    private fun parseTagGroups(document: Document): List<GalleryTagGroup> {
         return try {
             val taglist = document.getElementById("taglist")!!
             val tagGroups = taglist.child(0).child(0).children()
@@ -320,9 +320,9 @@ object GalleryDetailParser {
         }
     }
 
-    private fun parseTagGroups(trs: Elements): Array<GalleryTagGroup> {
+    private fun parseTagGroups(trs: Elements): List<GalleryTagGroup> {
         return try {
-            trs.mapNotNull { parseTagGroup(it) }.toTypedArray()
+            trs.mapNotNull { parseTagGroup(it) }
         } catch (e: Throwable) {
             ExceptionUtils.throwIfFatal(e)
             e.printStackTrace()

@@ -22,7 +22,7 @@ import com.hippo.ehviewer.ui.tools.includeFontPadding
 
 @Composable
 fun GalleryTags(
-    tagGroups: Array<GalleryTagGroup>,
+    tagGroups: List<GalleryTagGroup>,
     onTagClick: (String) -> Unit,
     onTagLongClick: (String, String) -> Unit,
     modifier: Modifier = Modifier,
