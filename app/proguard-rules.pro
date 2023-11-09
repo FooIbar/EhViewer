@@ -13,4 +13,3 @@
 
 -allowaccessmodification
 -repackageclasses
--overloadaggressively
