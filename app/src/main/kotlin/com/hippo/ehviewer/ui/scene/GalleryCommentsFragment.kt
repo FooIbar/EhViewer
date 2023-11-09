@@ -377,10 +377,10 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             }
             Surface(
                 modifier = Modifier.align(Alignment.BottomCenter).layout { measurable, constraints ->
-                    val endWidth = constraints.maxWidth
-                    val width = lerp(0, endWidth, 1 - animationProgress)
-                    val placeable = measurable.measure(Constraints.fixedWidth(width))
-                    val height = lerp(0, placeable.height, 1 - animationProgress)
+                    val origin = measurable.measure(constraints)
+                    val width = lerp(0, origin.width, 1 - animationProgress)
+                    val height = lerp(0, origin.height, 1 - animationProgress)
+                    val placeable = measurable.measure(Constraints.fixed(width, height))
                     layout(width, height) {
                         placeable.placeRelative(0, 0)
                     }
