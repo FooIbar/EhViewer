@@ -259,7 +259,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         },
     ) { paddingValues ->
         val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
-        var editTextMeasured by remember { mutableStateOf(80.dp) }
+        var editTextMeasured by remember { mutableStateOf(88.dp) }
         Box(modifier = Modifier.fillMaxSize().imePadding()) {
             val additionalPadding = if (commenting) {
                 editTextMeasured
@@ -390,7 +390,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().navigationBarsPadding().onGloballyPositioned { coordinates ->
-                        editTextMeasured = max(with(density) { coordinates.size.height.toDp() }, 80.dp)
+                        editTextMeasured = max(with(density) { coordinates.size.height.toDp() }, 88.dp)
                     },
                 ) {
                     BasicTextField2(
