@@ -621,7 +621,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             var forceHtml = false
             val original = Settings.downloadOriginImage || orgImg
             runCatching {
-                repeat(2) { index ->
+                repeat(2) { retries ->
                     var imageUrl: String? = null
                     var localShowKey: String?
 
@@ -669,7 +669,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     val referer: String?
 
                     if (original && originImageUrl != null) {
-                        if (index == 1 && skipHathKey != null) {
+                        if (retries == 1 && skipHathKey != null) {
                             originImageUrl += "?nl=$skipHathKey"
                         }
                         val pageUrl = EhUrl.getPageUrl(mSpiderInfo.gid, index, pToken)
