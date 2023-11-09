@@ -26,9 +26,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,7 +60,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -73,9 +70,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
@@ -101,19 +96,17 @@ import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
-import com.hippo.ehviewer.util.isAtLeastU
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.roundToInt
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
@@ -151,6 +144,8 @@ private fun Context.generateComment(
     return TextUrl.handleTextUrl(ssb)
 }
 
+private val EditTextHeight = 120.dp
+
 @Destination
 @Composable
 fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController) {
@@ -158,36 +153,14 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     val dialogState = LocalDialogState.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Predictive animation pattern, extract it out if needed
-    // Principal Value
-    var commenting by rememberSaveable { mutableStateOf(false) }
-    // Natural animator state correspond with principal value
-    val coState by animateFloatAsState(
-        targetValue = if (commenting) 1f else 0f,
-        label = "animationProgress",
-    )
-    // User predictive back animation progress holder && value correspond with UI State
-    var animationProgress by remember { mutableFloatStateOf(0F) }
-    // Update UI animation state
-    animationProgress = if (commenting || !isAtLeastU) coState else min(animationProgress, coState)
-
-    PredictiveBackHandler(commenting) { progress ->
-        try {
-            progress.collect {
-                animationProgress = 1F - it.progress
-            }
-            commenting = false
-        } catch (e: CancellationException) {
-            commenting = true
-            animationProgress = 1F
-        }
-    }
+    val commentingBackField = rememberSaveable { mutableStateOf(false) }
+    var commenting by commentingBackField
+    val animationProgress by animateFloatMergePredictiveBackAsState(enable = commentingBackField)
 
     var userComment by rememberSaveable { mutableStateOf("") }
     var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
     var refreshing by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val density = LocalDensity.current
 
     suspend fun refreshComment(showAll: Boolean) {
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
@@ -285,13 +258,12 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         },
     ) { paddingValues ->
         val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
-        var editTextMeasured by remember { mutableStateOf(0.dp) }
         Box(modifier = Modifier.fillMaxSize().imePadding()) {
             val additionalPadding = if (commenting) {
-                editTextMeasured
+                EditTextHeight
             } else {
                 if (!comments.hasMore) {
-                    16.dp + 56.dp // Fab space + Fab size
+                    16.dp + 56.dp + 16.dp // Fab space + Fab size + Fab space
                 } else {
                     16.dp // Fab space
                 }
@@ -403,18 +375,16 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 }
             }
             Surface(
-                modifier = Modifier.align(Alignment.BottomCenter).onGloballyPositioned { coordinates ->
-                    editTextMeasured = with(density) { coordinates.size.height.toDp() }
-                }.layout { measurable, constraints ->
-                    val startHeight = max(constraints.minHeight, 80.dp.roundToPx()).coerceAtMost(constraints.maxHeight)
+                modifier = Modifier.align(Alignment.BottomCenter).layout { measurable, constraints ->
+                    val startHeight = max(constraints.minHeight, 120.dp.roundToPx()).coerceAtMost(constraints.maxHeight)
                     val endWidth = constraints.maxWidth
-                    val width = lerp(0, endWidth, animationProgress)
-                    val height = lerp(0, startHeight, animationProgress)
+                    val width = lerp(0, endWidth, 1 - animationProgress)
+                    val height = lerp(0, startHeight, 1 - animationProgress)
                     val placeable = measurable.measure(Constraints.fixed(width, height))
                     layout(width, height) {
                         placeable.placeRelative(0, 0)
                     }
-                }.clip(RoundedCornerShape(((1 - animationProgress) * 100).roundToInt())),
+                }.clip(RoundedCornerShape((animationProgress * 100).roundToInt())),
                 color = MaterialTheme.colorScheme.primaryContainer,
             ) {
                 Row(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
