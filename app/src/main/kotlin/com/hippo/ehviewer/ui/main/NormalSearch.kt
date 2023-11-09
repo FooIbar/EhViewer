@@ -74,7 +74,7 @@ fun NormalSearch(
                         Icon(imageVector = Icons.Default.Check, contentDescription = null)
                     }
                 },
-                modifier = Modifier.padding(horizontal = 4.dp).align(alignment = Alignment.CenterVertically).widthIn(min = 145.dp),
+                modifier = Modifier.padding(horizontal = 4.dp).align(alignment = Alignment.CenterVertically).widthIn(min = 142.dp),
             )
         }
     }
