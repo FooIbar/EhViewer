@@ -384,12 +384,14 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                     layout(width, height) {
                         placeable.placeRelative(0, 0)
                     }
-                }.onGloballyPositioned { coordinates ->
-                    editTextMeasured = with(density) { coordinates.size.height.toDp() }
                 }.clip(RoundedCornerShape((animationProgress * 100).roundToInt())),
                 color = MaterialTheme.colorScheme.primaryContainer,
             ) {
-                Row(modifier = Modifier.fillMaxWidth().navigationBarsPadding()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().onGloballyPositioned { coordinates ->
+                        editTextMeasured = with(density) { coordinates.size.height.toDp() }
+                    },
+                ) {
                     BasicTextField2(
                         value = userComment,
                         onValueChange = { userComment = it },
