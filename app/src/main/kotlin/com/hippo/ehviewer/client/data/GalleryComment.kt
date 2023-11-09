@@ -19,7 +19,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class GalleryComment(
+data class GalleryComment(
     // 0 for uploader comment. can't vote
     var id: Long = 0,
     var score: Int = 0,
