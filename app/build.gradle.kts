@@ -173,7 +173,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles("proguard-rules.pro")
             signingConfig = signConfig
             buildConfigField("String", "BUILD_TIME", "\"$buildTime\"")
         }
