@@ -144,7 +144,7 @@ private fun Context.generateComment(
     return TextUrl.handleTextUrl(ssb)
 }
 
-private val EditTextHeight = 120.dp
+private val EditTextHeight = 80.dp
 
 @Destination
 @Composable
@@ -376,7 +376,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             }
             Surface(
                 modifier = Modifier.align(Alignment.BottomCenter).layout { measurable, constraints ->
-                    val startHeight = max(constraints.minHeight, 120.dp.roundToPx()).coerceAtMost(constraints.maxHeight)
+                    val startHeight = max(constraints.minHeight, EditTextHeight.roundToPx()).coerceAtMost(constraints.maxHeight)
                     val endWidth = constraints.maxWidth
                     val width = lerp(0, endWidth, 1 - animationProgress)
                     val height = lerp(0, startHeight, 1 - animationProgress)
