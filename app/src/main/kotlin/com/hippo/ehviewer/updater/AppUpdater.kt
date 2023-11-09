@@ -44,7 +44,9 @@ object AppUpdater {
                         val commitComparisonUrl = "$API_URL/compare/$curSha...$shortSha"
                         val result = ghRequest(commitComparisonUrl).executeAndParseAs<GithubCommitComparison>()
                         // TODO: Prettier format, Markdown?
-                        result.commits.joinToString("\n") { "${it.commit.message} (@${it.author.name})" }
+                        result.commits.joinToString("\n") { commit ->
+                            "${commit.commit.message.takeWhile { it != '\n' }} (@${commit.author.name})"
+                        }
                     }.getOrDefault(workflowRun.title)
                     return Release(shortSha, changelog, archiveUrl)
                 }
