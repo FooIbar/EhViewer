@@ -268,15 +268,10 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
     val voteSuccess = stringResource(R.string.tag_vote_successfully)
     val voteFailed = stringResource(R.string.vote_failed)
 
-    LaunchedEffect(getDetailError) {
-        if (getDetailError.isBlank()) {
-            val cached = galleryDetailCache[gid]
-            if (cached != null) {
-                // Fast path: Get from cache
-                galleryInfo = cached
-            } else {
-                // Slow path: Network Request
-                runSuspendCatching {
+    if (galleryInfo !is GalleryDetail && getDetailError.isBlank()) {
+        LaunchedEffect(Unit) {
+            val galleryDetail = galleryDetailCache[gid]
+                ?: runSuspendCatching {
                     withIOContext { EhEngine.getGalleryDetail(galleryDetailUrl) }
                 }.onSuccess { galleryDetail ->
                     galleryDetailCache.put(galleryDetail.gid, galleryDetail)
@@ -287,13 +282,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                             }
                         }
                     }
-                    galleryInfo = galleryDetail
                 }.onFailure {
                     getDetailError = ExceptionUtils.getReadableString(it)
-                }
-            }
-            galleryInfo?.let {
-                EhDB.putHistoryInfo(it.findBaseInfo())
+                }.getOrNull()
+            galleryDetail?.let {
+                EhDB.putHistoryInfo(it.galleryInfo)
+                galleryInfo = it
             }
         }
     }
@@ -1223,10 +1217,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                                 dropdown = false
                                 // Invalidate cache
                                 galleryDetailCache.remove(gid)
-                                galleryInfo = null
 
                                 // Trigger recompose
-                                getDetailError = "*"
+                                galleryInfo = galleryInfo?.findBaseInfo()
                                 getDetailError = ""
                             },
                         )
