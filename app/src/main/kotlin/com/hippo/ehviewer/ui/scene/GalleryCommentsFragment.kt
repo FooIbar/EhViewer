@@ -77,6 +77,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.util.lerp
 import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
@@ -389,7 +390,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().navigationBarsPadding().onGloballyPositioned { coordinates ->
-                        editTextMeasured = with(density) { coordinates.size.height.toDp() }
+                        editTextMeasured = max(with(density) { coordinates.size.height.toDp() }, 80.dp)
                     },
                 ) {
                     BasicTextField2(
