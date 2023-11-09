@@ -35,8 +35,7 @@ object HomeParser {
     class Result(val limits: Limits, val funds: Funds)
 }
 
-@Keep
 @Parcelize
-data class Limits(val current: Int, val maximum: Int, val resetCost: Int) : Parcelable
+data class Limits @Keep constructor(val current: Int, val maximum: Int, val resetCost: Int) : Parcelable
 
 private external fun parseLimit(body: ByteBuffer, limit: Int = body.limit()): Limits

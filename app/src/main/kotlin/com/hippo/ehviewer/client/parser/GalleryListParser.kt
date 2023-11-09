@@ -32,8 +32,7 @@ object GalleryListParser {
     val emptyResult = GalleryListResult(null, null, arrayListOf())
 }
 
-@Keep
-class GalleryListResult(
+class GalleryListResult @Keep constructor(
     val prev: String?,
     val next: String?,
     val galleryInfoList: ArrayList<BaseGalleryInfo>,
