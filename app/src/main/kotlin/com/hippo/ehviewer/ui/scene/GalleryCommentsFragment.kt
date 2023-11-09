@@ -267,7 +267,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 if (!comments.hasMore) {
                     16.dp + 56.dp + 16.dp // Fab space + Fab size + Fab space
                 } else {
-                    16.dp // Fab space
+                    0.dp
                 }
             }
             LazyColumn(
