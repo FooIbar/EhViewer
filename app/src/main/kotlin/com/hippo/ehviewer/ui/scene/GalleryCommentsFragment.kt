@@ -146,6 +146,8 @@ private fun Context.generateComment(
     return TextUrl.handleTextUrl(ssb)
 }
 
+private val MiniumContentPaddingEditText = 88.dp
+
 @Destination
 @Composable
 fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController) {
@@ -259,13 +261,13 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         },
     ) { paddingValues ->
         val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
-        var editTextMeasured by remember { mutableStateOf(88.dp) }
+        var editTextMeasured by remember { mutableStateOf(MiniumContentPaddingEditText) }
         Box(modifier = Modifier.fillMaxSize().imePadding()) {
             val additionalPadding = if (commenting) {
                 editTextMeasured
             } else {
                 if (!comments.hasMore) {
-                    16.dp + 56.dp + 16.dp // Fab space + Fab size + Fab space
+                    MiniumContentPaddingEditText
                 } else {
                     0.dp
                 }
@@ -390,7 +392,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().navigationBarsPadding().onGloballyPositioned { coordinates ->
-                        editTextMeasured = max(with(density) { coordinates.size.height.toDp() }, 88.dp)
+                        editTextMeasured = max(with(density) { coordinates.size.height.toDp() }, MiniumContentPaddingEditText)
                     },
                 ) {
                     BasicTextField2(
