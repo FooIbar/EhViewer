@@ -70,7 +70,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
@@ -105,7 +107,6 @@ import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
-import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
@@ -144,8 +145,6 @@ private fun Context.generateComment(
     return TextUrl.handleTextUrl(ssb)
 }
 
-private val EditTextHeight = 80.dp
-
 @Destination
 @Composable
 fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController) {
@@ -161,6 +160,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
     var refreshing by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val density = LocalDensity.current
 
     suspend fun refreshComment(showAll: Boolean) {
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
@@ -258,9 +258,10 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         },
     ) { paddingValues ->
         val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
+        var editTextMeasured by remember { mutableStateOf(80.dp) }
         Box(modifier = Modifier.fillMaxSize().imePadding()) {
             val additionalPadding = if (commenting) {
-                EditTextHeight
+                editTextMeasured
             } else {
                 if (!comments.hasMore) {
                     16.dp + 56.dp + 16.dp // Fab space + Fab size + Fab space
@@ -376,14 +377,15 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             }
             Surface(
                 modifier = Modifier.align(Alignment.BottomCenter).layout { measurable, constraints ->
-                    val startHeight = max(constraints.minHeight, EditTextHeight.roundToPx()).coerceAtMost(constraints.maxHeight)
                     val endWidth = constraints.maxWidth
                     val width = lerp(0, endWidth, 1 - animationProgress)
-                    val height = lerp(0, startHeight, 1 - animationProgress)
-                    val placeable = measurable.measure(Constraints.fixed(width, height))
+                    val placeable = measurable.measure(Constraints.fixedWidth(width))
+                    val height = lerp(0, placeable.height, 1 - animationProgress)
                     layout(width, height) {
                         placeable.placeRelative(0, 0)
                     }
+                }.onGloballyPositioned { coordinates ->
+                    editTextMeasured = with(density) { coordinates.size.height.toDp() }
                 }.clip(RoundedCornerShape((animationProgress * 100).roundToInt())),
                 color = MaterialTheme.colorScheme.primaryContainer,
             ) {
