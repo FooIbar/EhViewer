@@ -17,9 +17,9 @@ package com.hippo.ehviewer.ui
 
 import android.content.res.Resources.Theme
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.annotation.StyleRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
 import androidx.navigation.ActivityNavigator
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -43,8 +43,7 @@ abstract class EhActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !isNightMode()
-        WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = !isNightMode()
+        enableEdgeToEdge()
     }
 
     override fun onResume() {

@@ -28,13 +28,6 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
 
-        <!-- Transparent Status Bar -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
-
-        <!-- Transparent Navigation Bar -->
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
-
         <!-- Apply blur on Android 12 above -->
         <item name="materialCalendarTheme">@style/MaterialCalendarTheme</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme</item>
