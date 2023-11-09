@@ -24,10 +24,9 @@ import androidx.room.PrimaryKey
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
 import kotlinx.parcelize.Parcelize
 
-@Keep
 @Parcelize
 @Entity(tableName = "GALLERIES")
-data class BaseGalleryInfo(
+data class BaseGalleryInfo @Keep constructor(
     @PrimaryKey
     @ColumnInfo(name = "GID")
     override var gid: Long = 0,
