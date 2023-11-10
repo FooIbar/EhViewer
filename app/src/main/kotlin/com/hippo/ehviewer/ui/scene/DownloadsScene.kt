@@ -79,7 +79,6 @@ import com.hippo.ehviewer.databinding.ItemDownloadBinding
 import com.hippo.ehviewer.databinding.ItemDrawerListBinding
 import com.hippo.ehviewer.databinding.SceneDownloadBinding
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.download.DownloadManager as downloadManager
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.DownloadService.Companion.clear
 import com.hippo.ehviewer.download.downloadDir
@@ -149,7 +148,7 @@ class DownloadsScene :
 
     private fun initLabels() {
         context ?: return
-        val listLabel = downloadManager.labelList
+        val listLabel = DownloadManager.labelList
         // Add "All" and "Default" label names
         mLabels = arrayListOf(
             getString(R.string.download_all),
@@ -582,7 +581,7 @@ class DownloadsScene :
 
                 4 -> {
                     // Move
-                    val labelRawList = downloadManager.labelList
+                    val labelRawList = DownloadManager.labelList
                     val labelList: MutableList<String> = ArrayList(labelRawList.size + 1)
                     labelList.add(getString(R.string.default_download_label_name))
                     labelRawList.forEach {
@@ -718,7 +717,7 @@ class DownloadsScene :
                 mLabels[which]
             }
             lifecycleScope.launchIO {
-                downloadManager.changeLabel(mDownloadInfoList, label)
+                DownloadManager.changeLabel(mDownloadInfoList, label)
                 withUIContext {
                     if (mLabelAdapter != null) {
                         mLabelAdapter!!.notifyDataSetChanged()
@@ -964,13 +963,13 @@ class DownloadsScene :
                 mBuilder.setError(getString(R.string.label_text_is_empty))
             } else if (getString(R.string.default_download_label_name) == text) {
                 mBuilder.setError(getString(R.string.label_text_is_invalid))
-            } else if (downloadManager.containLabel(text)) {
+            } else if (DownloadManager.containLabel(text)) {
                 mBuilder.setError(getString(R.string.label_text_exist))
             } else {
                 mBuilder.setError(null)
                 mDialog.dismiss()
                 lifecycleScope.launchIO {
-                    downloadManager.renameLabel(mOriginalLabel!!, text)
+                    DownloadManager.renameLabel(mOriginalLabel!!, text)
                     if (mLabelAdapter != null) {
                         withUIContext {
                             initLabels()
@@ -1002,13 +1001,13 @@ class DownloadsScene :
                 mBuilder.setError(getString(R.string.label_text_is_empty))
             } else if (getString(R.string.default_download_label_name) == text) {
                 mBuilder.setError(getString(R.string.label_text_is_invalid))
-            } else if (downloadManager.containLabel(text)) {
+            } else if (DownloadManager.containLabel(text)) {
                 mBuilder.setError(getString(R.string.label_text_exist))
             } else {
                 mBuilder.setError(null)
                 mDialog.dismiss()
                 lifecycleScope.launchIO {
-                    downloadManager.addLabel(text)
+                    DownloadManager.addLabel(text)
                     initLabels()
                     withUIContext {
                         mLabelAdapter?.notifyItemInserted(mLabels.size)
@@ -1046,7 +1045,7 @@ class DownloadsScene :
                 return false
             }
             lifecycleScope.launchIO {
-                downloadManager.moveLabel(fromPosition - LABEL_OFFSET, toPosition - LABEL_OFFSET)
+                DownloadManager.moveLabel(fromPosition - LABEL_OFFSET, toPosition - LABEL_OFFSET)
             }
             val item = mLabels.removeAt(fromPosition)
             mLabels.add(toPosition, item)
