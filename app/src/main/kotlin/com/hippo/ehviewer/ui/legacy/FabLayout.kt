@@ -22,9 +22,11 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewPropertyAnimator
 import android.view.animation.Interpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
+import androidx.core.view.isVisible
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.AnimationUtils
@@ -46,6 +48,7 @@ class FabLayout @JvmOverloads constructor(
     private var mMainFabCenterY = -1f
     private var mOnExpandListeners = arrayListOf<OnExpandListener>()
     private var mOnClickFabListener: OnClickFabListener? = null
+    private var fabAnimator: ViewPropertyAnimator? = null
 
     private val mOnBackPressedCallback = object : OnBackPressedCallback(false), OnExpandListener {
         override fun handleOnBackPressed() {
@@ -54,6 +57,11 @@ class FabLayout @JvmOverloads constructor(
 
         override fun onExpand(expanded: Boolean) {
             isEnabled = expanded
+        }
+    }
+    private val mFabAnimatorListener = object : SimpleAnimatorListener() {
+        override fun onAnimationEnd(animation: Animator) {
+            primaryFab.isVisible = false
         }
     }
 
@@ -85,8 +93,8 @@ class FabLayout @JvmOverloads constructor(
         super.addView(child, index, params)
     }
 
-    val primaryFab: FloatingActionButton?
-        get() = getChildAt(childCount - 1) as? FloatingActionButton
+    val primaryFab: FloatingActionButton
+        get() = getChildAt(childCount - 1) as FloatingActionButton
 
     private val secondaryFabCount: Int
         get() = 0.coerceAtLeast(childCount - 1)
@@ -414,6 +422,43 @@ class FabLayout @JvmOverloads constructor(
         }
     }
 
+    fun show(animation: Boolean = true, delay: Long = 0L) {
+        val fab = primaryFab
+        if (!fab.isVisible) {
+            fab.isVisible = true
+            if (animation) {
+                fabAnimator?.cancel()
+                fabAnimator = fab.animate().scaleX(1.0f).scaleY(1.0f).setListener(null)
+                    .setDuration(ANIMATE_TIME).setStartDelay(delay)
+                    .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).apply { start() }
+            } else {
+                fab.scaleX = 1.0f
+                fab.scaleY = 1.0f
+            }
+        }
+    }
+
+    fun hide(animation: Boolean = true): Long {
+        val fab = primaryFab
+        setExpanded(expanded = false, animation = true)
+        return if (!fab.isVisible) {
+            0L
+        } else {
+            if (animation) {
+                fabAnimator?.cancel()
+                fabAnimator = fab.animate().scaleX(0.0f).scaleY(0.0f).setListener(mFabAnimatorListener)
+                    .setDuration(ANIMATE_TIME).setStartDelay(0L)
+                    .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).apply { start() }
+                ANIMATE_TIME
+            } else {
+                fab.isVisible = false
+                fab.scaleX = 0.0f
+                fab.scaleY = 0.0f
+                0L
+            }
+        }
+    }
+
     fun interface OnExpandListener {
         fun onExpand(expanded: Boolean)
     }
@@ -424,7 +469,7 @@ class FabLayout @JvmOverloads constructor(
     }
 
     companion object {
-        private const val ANIMATE_TIME = 300L
+        const val ANIMATE_TIME = 300L
         private const val STATE_KEY_SUPER = "super"
         private const val STATE_KEY_AUTO_CANCEL = "auto_cancel"
         private const val STATE_KEY_EXPANDED = "expanded"

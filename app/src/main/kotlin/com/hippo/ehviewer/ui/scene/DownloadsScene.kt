@@ -362,7 +362,7 @@ class DownloadsScene :
     }
 
     override fun onSearchViewExpanded() {
-        hideActionFab(true)
+        binding.fabLayout.hide()
         super.onSearchViewExpanded()
     }
 

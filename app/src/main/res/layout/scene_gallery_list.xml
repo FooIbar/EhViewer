@@ -61,6 +61,7 @@
     </com.hippo.ehviewer.ui.legacy.FabLayout>
 
     <com.hippo.ehviewer.ui.legacy.FabLayout
+        android:id="@+id/search_fab_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingEnd="@dimen/corner_fab_margin"
