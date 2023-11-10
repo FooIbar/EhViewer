@@ -447,7 +447,7 @@ class FabLayout @JvmOverloads constructor(
         } else {
             if (animation) {
                 fabAnimator?.cancel()
-                fabAnimator = fab.animate().scaleX(0f).scaleY(0f).rotation(ROTATION_DEGREE)
+                fabAnimator = fab.animate().scaleX(0f).scaleY(0f).rotation(-ROTATION_DEGREE)
                     .setListener(mFabAnimatorListener).setDuration(ANIMATE_TIME).setStartDelay(0L)
                     .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).apply { start() }
                 ANIMATE_TIME
@@ -471,7 +471,7 @@ class FabLayout @JvmOverloads constructor(
 
     companion object {
         const val ANIMATE_TIME = 300L
-        private const val ROTATION_DEGREE = -90f
+        private const val ROTATION_DEGREE = 90f
         private const val STATE_KEY_SUPER = "super"
         private const val STATE_KEY_AUTO_CANCEL = "auto_cancel"
         private const val STATE_KEY_EXPANDED = "expanded"
