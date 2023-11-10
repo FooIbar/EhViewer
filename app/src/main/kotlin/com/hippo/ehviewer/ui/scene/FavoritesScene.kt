@@ -32,7 +32,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -155,6 +157,7 @@ class FavoritesScene : SearchBarScene() {
     private var showNormalFabsJob: Job? = null
 
     private val dialogState = DialogState()
+    private var drawerComposeView: ComposeView? = null
 
     override val fabLayout get() = binding.fabLayout
     override val fastScroller get() = binding.fastScroller
@@ -224,7 +227,14 @@ class FavoritesScene : SearchBarScene() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = SceneFavoritesBinding.inflate(inflater, container!!)
-        container.addView(ComposeWithMD3 { dialogState.Intercept() })
+        val stub = ComposeWithMD3 {
+            dialogState.Intercept()
+            val context = rememberCompositionContext()
+            LaunchedEffect(context) {
+                drawerComposeView!!.setParentCompositionContext(context)
+            }
+        }
+        container.addView(stub)
         setOnApplySearch {
             if (!tracker.isInCustomChoice) {
                 switchFav(urlBuilder.favCat, it)
@@ -467,6 +477,11 @@ class FavoritesScene : SearchBarScene() {
                 }
             }
         }
+    }.apply { drawerComposeView = this }
+
+    override fun onDestroyDrawerView() {
+        drawerComposeView = null
+        super.onDestroyDrawerView()
     }
 
     override fun onSearchViewExpanded() {
