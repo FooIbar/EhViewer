@@ -29,7 +29,6 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import com.google.android.material.sidesheet.SideSheetBehavior
 import com.google.android.material.sidesheet.SideSheetDialog
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.util.getSparseParcelableArrayCompat
@@ -51,18 +50,10 @@ abstract class BaseScene : Fragment() {
         mainActivity?.drawerLocked = false
     }
 
-    fun openDrawer() {
-        mainActivity?.openDrawer()
-    }
+    fun openDrawer() = mainActivity?.openDrawer()
 
-    fun openSideSheet() {
-        sideSheetDialog!!.show()
-        val behavior = sideSheetDialog!!.behavior
-        if (behavior.state == SideSheetBehavior.STATE_HIDDEN) {
-            behavior.expand()
-        }
-    }
-    fun closeSideSheet() = sideSheetDialog!!.hide()
+    fun openSideSheet() = sideSheetDialog!!.show()
+    fun closeSideSheet() = sideSheetDialog!!.dismiss()
 
     fun showTip(message: CharSequence?, length: Int) {
         mainActivity?.showTip(message!!, length)
@@ -115,10 +106,7 @@ abstract class BaseScene : Fragment() {
         }
         hideSoftInput()
         createDrawerView(savedInstanceState)?.let {
-            sideSheetDialog = object : SideSheetDialog(requireContext()) {
-                // Dirty workaround
-                override fun cancel() = hide()
-            }.apply {
+            sideSheetDialog = SideSheetDialog(requireContext()).apply {
                 window?.decorView?.apply {
                     val owner = viewLifecycleOwner
                     setViewTreeLifecycleOwner(owner)

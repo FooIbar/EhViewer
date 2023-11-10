@@ -68,6 +68,7 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.client.ehUrl
 import com.hippo.ehviewer.databinding.SceneFavoritesBinding
 import com.hippo.ehviewer.ui.CommonOperations
+import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.legacy.AddDeleteDrawable
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.FabLayout
@@ -224,7 +225,8 @@ class FavoritesScene : SearchBarScene() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = SceneFavoritesBinding.inflate(inflater, container!!)
-        container.addView(ComposeWithMD3 { dialogState.Intercept() })
+        val stub = ComposeWithMD3 { dialogState.Intercept() }
+        container.addView(stub)
         setOnApplySearch {
             if (!tracker.isInCustomChoice) {
                 switchFav(urlBuilder.favCat, it)
@@ -467,6 +469,9 @@ class FavoritesScene : SearchBarScene() {
                 }
             }
         }
+    }.apply {
+        val compositionContext = (requireActivity() as MainActivity).compositionContext!!
+        setParentCompositionContext(compositionContext)
     }
 
     override fun onSearchViewExpanded() {
