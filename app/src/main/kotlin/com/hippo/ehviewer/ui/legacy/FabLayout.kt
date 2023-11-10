@@ -428,12 +428,13 @@ class FabLayout @JvmOverloads constructor(
             fab.isVisible = true
             if (animation) {
                 fabAnimator?.cancel()
-                fabAnimator = fab.animate().scaleX(1.0f).scaleY(1.0f).setListener(null)
-                    .setDuration(ANIMATE_TIME).setStartDelay(delay)
+                fab.rotation = ROTATION_DEGREE
+                fabAnimator = fab.animate().scaleX(1f).scaleY(1f).rotation(0f)
+                    .setListener(null).setDuration(ANIMATE_TIME).setStartDelay(delay)
                     .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).apply { start() }
             } else {
-                fab.scaleX = 1.0f
-                fab.scaleY = 1.0f
+                fab.scaleX = 1f
+                fab.scaleY = 1f
             }
         }
     }
@@ -446,14 +447,14 @@ class FabLayout @JvmOverloads constructor(
         } else {
             if (animation) {
                 fabAnimator?.cancel()
-                fabAnimator = fab.animate().scaleX(0.0f).scaleY(0.0f).setListener(mFabAnimatorListener)
-                    .setDuration(ANIMATE_TIME).setStartDelay(0L)
+                fabAnimator = fab.animate().scaleX(0f).scaleY(0f).rotation(ROTATION_DEGREE)
+                    .setListener(mFabAnimatorListener).setDuration(ANIMATE_TIME).setStartDelay(0L)
                     .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).apply { start() }
                 ANIMATE_TIME
             } else {
                 fab.isVisible = false
-                fab.scaleX = 0.0f
-                fab.scaleY = 0.0f
+                fab.scaleX = 0f
+                fab.scaleY = 0f
                 0L
             }
         }
@@ -470,6 +471,7 @@ class FabLayout @JvmOverloads constructor(
 
     companion object {
         const val ANIMATE_TIME = 300L
+        private const val ROTATION_DEGREE = -90f
         private const val STATE_KEY_SUPER = "super"
         private const val STATE_KEY_AUTO_CANCEL = "auto_cancel"
         private const val STATE_KEY_EXPANDED = "expanded"
