@@ -32,9 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -70,6 +68,7 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.client.ehUrl
 import com.hippo.ehviewer.databinding.SceneFavoritesBinding
 import com.hippo.ehviewer.ui.CommonOperations
+import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.legacy.AddDeleteDrawable
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.FabLayout
@@ -157,7 +156,6 @@ class FavoritesScene : SearchBarScene() {
     private var showNormalFabsJob: Job? = null
 
     private val dialogState = DialogState()
-    private var drawerComposeView: ComposeView? = null
 
     override val fabLayout get() = binding.fabLayout
     override val fastScroller get() = binding.fastScroller
@@ -227,13 +225,7 @@ class FavoritesScene : SearchBarScene() {
         savedInstanceState: Bundle?,
     ): View {
         _binding = SceneFavoritesBinding.inflate(inflater, container!!)
-        val stub = ComposeWithMD3 {
-            dialogState.Intercept()
-            val context = rememberCompositionContext()
-            LaunchedEffect(context) {
-                drawerComposeView!!.setParentCompositionContext(context)
-            }
-        }
+        val stub = ComposeWithMD3 { dialogState.Intercept() }
         container.addView(stub)
         setOnApplySearch {
             if (!tracker.isInCustomChoice) {
@@ -477,11 +469,9 @@ class FavoritesScene : SearchBarScene() {
                 }
             }
         }
-    }.apply { drawerComposeView = this }
-
-    override fun onDestroyDrawerView() {
-        drawerComposeView = null
-        super.onDestroyDrawerView()
+    }.apply {
+        val compositionContext = (requireActivity() as MainActivity).compositionContext!!
+        setParentCompositionContext(compositionContext)
     }
 
     override fun onSearchViewExpanded() {
