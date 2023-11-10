@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.scene
 
-import android.animation.Animator
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -43,8 +42,6 @@ import com.hippo.ehviewer.databinding.SceneSearchbarBinding
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.FabLayout
 import com.hippo.ehviewer.ui.setMD3Content
-import com.hippo.ehviewer.util.AnimationUtils
-import com.hippo.ehviewer.util.SimpleAnimatorListener
 import com.hippo.ehviewer.util.applyNavigationBarsPadding
 import com.hippo.ehviewer.util.isAtLeastT
 import com.jamal.composeprefs3.ui.ifNotNullThen
@@ -65,12 +62,6 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
     private var allowEmptySearch = true
     private val mSearchDatabase = searchDatabase.searchDao()
     private var onApplySearch: (String) -> Unit = {}
-    protected var mShowActionFab = true
-    protected val mActionFabAnimatorListener = object : SimpleAnimatorListener() {
-        override fun onAnimationEnd(animation: Animator) {
-            fabLayout.primaryFab?.visibility = View.INVISIBLE
-        }
-    }
 
     protected abstract val fabLayout: FabLayout
     protected abstract val fastScroller: View
@@ -177,46 +168,6 @@ abstract class SearchBarScene : BaseScene(), ToolBarScene {
         if (drawerLocked) {
             unlockDrawer()
             drawerLocked = false
-        }
-    }
-
-    fun showActionFab(animation: Boolean, delay: Long = ANIMATE_TIME) {
-        mShowActionFab = true
-        if (animation) {
-            val fab = fabLayout.primaryFab!!
-            fab.visibility = View.VISIBLE
-            fab.animate().scaleX(1.0f).scaleY(1.0f).setListener(null)
-                .setDuration(ANIMATE_TIME).setStartDelay(delay)
-                .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).start()
-        } else {
-            fabLayout.setExpanded(expanded = false, animation = false)
-            val fab = fabLayout.primaryFab!!
-            fab.visibility = View.VISIBLE
-            fab.scaleX = 1.0f
-            fab.scaleY = 1.0f
-        }
-    }
-
-    fun hideActionFab(animation: Boolean): Long {
-        mShowActionFab = false
-        return if (animation) {
-            val fab = fabLayout.primaryFab!!
-            if (View.INVISIBLE == fab.visibility) {
-                0L
-            } else {
-                fabLayout.setExpanded(expanded = false, animation = true)
-                fab.animate().scaleX(0.0f).scaleY(0.0f).setListener(mActionFabAnimatorListener)
-                    .setDuration(ANIMATE_TIME).setStartDelay(0L)
-                    .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).start()
-                ANIMATE_TIME
-            }
-        } else {
-            fabLayout.setExpanded(expanded = false, animation = false)
-            val fab = fabLayout.primaryFab!!
-            fab.visibility = View.INVISIBLE
-            fab.scaleX = 0.0f
-            fab.scaleY = 0.0f
-            0L
         }
     }
 
@@ -403,4 +354,4 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String {
     }
 }
 
-const val ANIMATE_TIME = 300L
+const val SEARCH_VIEW_ANIMATE_TIME = 300L
