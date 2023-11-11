@@ -195,6 +195,7 @@ class WebtoonPageHolder(
      */
     private fun setImage(drawable: Drawable) {
         progressIndicator.setProgress(0)
+        progressIndicator.hide()
         removeErrorLayout()
         frame.setImage(
             drawable,
