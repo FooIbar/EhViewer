@@ -195,12 +195,12 @@ class FavoritesScene : SearchBarScene() {
             else -> getString(R.string.cloud_favorites)
         }
         if (keyword.isNullOrEmpty()) {
-            setSearchBarHint(getString(R.string.favorites_title, favCatName))
-            setSearchBarText(null)
+            setTitle(getString(R.string.favorites_title, favCatName))
+            clearSearchBarText()
         } else {
-            setSearchBarHint(getString(R.string.favorites_title_2, favCatName, keyword))
+            setTitle(getString(R.string.favorites_title_2, favCatName, keyword))
         }
-        setEditTextHint(getString(R.string.search_bar_hint, favCatName))
+        setSearchBarHint(getString(R.string.search_bar_hint, favCatName))
         Settings.recentFavCat = urlBuilder.favCat
     }
 

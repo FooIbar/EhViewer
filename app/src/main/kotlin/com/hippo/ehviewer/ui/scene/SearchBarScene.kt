@@ -318,7 +318,7 @@ fun SearchBarScreen(
 abstract class SearchBarScene : BaseScene() {
     private var mSuggestionProvider: SuggestionProvider? = null
     private var onApplySearch: (String) -> Unit = {}
-    private var query by mutableStateOf("")
+    var initialQuery = ""
     private var hint by mutableStateOf("")
     var showSearchFab by mutableStateOf(false)
 
@@ -340,7 +340,7 @@ abstract class SearchBarScene : BaseScene() {
             val density = LocalDensity.current
             val fabPadding = with(density) { 16.dp.roundToPx() }
             SearchBarScreen(
-                initialQuery = query,
+                initialQuery = initialQuery,
                 hint = hint,
                 showSearchFab = showSearchFab,
                 onApplySearch = onApplySearch,
@@ -383,15 +383,15 @@ abstract class SearchBarScene : BaseScene() {
 
     open fun onSearchViewHidden() {}
 
+    fun setTitle(title: String?) {
+        // TODO
+    }
+
+    fun clearSearchBarText() {
+        // TODO
+    }
+
     fun setSearchBarHint(hint: String?) {
-        this.hint = hint.orEmpty()
-    }
-
-    fun setSearchBarText(text: String?) {
-        query = text.orEmpty()
-    }
-
-    fun setEditTextHint(hint: String?) {
         this.hint = hint.orEmpty()
     }
 

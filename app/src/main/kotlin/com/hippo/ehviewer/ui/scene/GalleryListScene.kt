@@ -218,6 +218,15 @@ class GalleryListScene : SearchBarScene() {
         } else {
             onRestore(savedInstanceState)
         }
+
+        val mode = mUrlBuilder.mode
+        if (mode != MODE_TOPLIST) {
+            var keyword = mUrlBuilder.keyword
+            if (mode == MODE_TAG) {
+                keyword = wrapTagKeyword(keyword!!)
+            }
+            initialQuery = keyword.orEmpty()
+        }
     }
 
     override fun onResume() {
@@ -241,13 +250,12 @@ class GalleryListScene : SearchBarScene() {
     }
 
     private fun setSearchBarHint() {
-        setEditTextHint(getString(if (EhUtils.isExHentai) R.string.gallery_list_search_bar_hint_exhentai else R.string.gallery_list_search_bar_hint_e_hentai))
+        setSearchBarHint(getString(if (EhUtils.isExHentai) R.string.gallery_list_search_bar_hint_exhentai else R.string.gallery_list_search_bar_hint_e_hentai))
     }
 
     // Update search bar title, drawer checked item
     private fun onUpdateUrlBuilder() {
         _binding ?: return
-        var keyword = mUrlBuilder.keyword
         val category = mUrlBuilder.category
         val mode = mUrlBuilder.mode
         val isPopular = mode == MODE_WHATS_HOT
@@ -263,20 +271,12 @@ class GalleryListScene : SearchBarScene() {
             binding.searchLayout.setCategory(category)
         }
 
-        // Update search edit text
-        if (!mIsTopList) {
-            if (mode == MODE_TAG) {
-                keyword = wrapTagKeyword(keyword!!)
-            }
-            setSearchBarText(keyword)
-        }
-
         // Update title
         var title = requireContext().getSuitableTitleForUrlBuilder(mUrlBuilder, true)
         if (null == title) {
             title = resources.getString(R.string.search)
         }
-        setSearchBarHint(title)
+        setTitle(title)
     }
 
     private val dialogState = DialogState()
