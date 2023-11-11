@@ -33,7 +33,9 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,12 +43,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.view.updatePadding
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import androidx.viewbinding.ViewBinding
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
@@ -90,6 +95,7 @@ fun SearchBarScreen(
     onSearchExpanded: () -> Unit,
     onSearchHidden: () -> Unit,
     suggestionProvider: SuggestionProvider? = null,
+    searchBarOffsetY: State<Int>,
     trailingIcon: @Composable () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -200,7 +206,13 @@ fun SearchBarScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         SearchBar(
-            modifier = Modifier.align(Alignment.TopCenter),
+            modifier = Modifier.layout { measurable, constraints ->
+                val placeable = measurable.measure(constraints)
+                val ofs by searchBarOffsetY
+                layout(placeable.width, placeable.height) {
+                    placeable.placeRelative(0, ofs)
+                }
+            }.align(Alignment.TopCenter),
             query = query,
             onQueryChange = {
                 query = it
@@ -301,11 +313,18 @@ abstract class SearchBarScene : BaseScene() {
 
     protected abstract val fabLayout: View
     protected abstract val fastScroller: View
-    protected abstract val recyclerView: View
+    protected abstract val recyclerView: RecyclerView
 
     override val enableDrawerGestures = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val ofs = mutableIntStateOf(0)
+        val onScrollListener = object : OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                var toChange by ofs
+                toChange = (toChange - dy).coerceIn(-300, 0)
+            }
+        }
         return ComposeWithMD3 {
             val density = LocalDensity.current
             val fabPadding = with(density) { 16.dp.roundToPx() }
@@ -317,6 +336,7 @@ abstract class SearchBarScene : BaseScene() {
                 onSearchExpanded = ::onSearchViewExpanded,
                 onSearchHidden = ::onSearchViewHidden,
                 suggestionProvider = mSuggestionProvider,
+                searchBarOffsetY = ofs,
                 trailingIcon = {
                     TrailingIcon()
                 },
@@ -332,6 +352,7 @@ abstract class SearchBarScene : BaseScene() {
                     fabLayout.updatePadding(bottom = fabPadding + bottomPadding)
                     fastScroller.updatePadding(bottom = bottomPadding)
                     recyclerView.updatePadding(bottom = bottomPadding)
+                    recyclerView.addOnScrollListener(onScrollListener)
                 }
             }
         }
