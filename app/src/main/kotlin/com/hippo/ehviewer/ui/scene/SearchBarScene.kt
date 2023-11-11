@@ -17,6 +17,10 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text2.input.clearText
+import androidx.compose.foundation.text2.input.forEachTextValue
+import androidx.compose.foundation.text2.input.rememberTextFieldState
+import androidx.compose.foundation.text2.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -101,7 +105,7 @@ fun SearchBarScreen(
 ) {
     var mSuggestionList by remember { mutableStateOf(emptyList<Suggestion>()) }
     val mSearchDatabase = searchDatabase.searchDao()
-    var query by remember { mutableStateOf(initialQuery) }
+    val searchFieldState = rememberTextFieldState(initialQuery)
     var active by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
@@ -113,11 +117,12 @@ fun SearchBarScreen(
         override val keyword: String,
     ) : Suggestion() {
         override fun onClick() {
+            val query = searchFieldState.text.toString()
             var keywords = query.substringBeforeLast(' ', "")
             if (keywords.isNotEmpty()) keywords += ' '
             keywords += wrapTagKeyword(keyword)
             if (!keywords.endsWith(':')) keywords += ' '
-            query = keywords
+            searchFieldState.setTextAndPlaceCursorAtEnd(keywords)
         }
     }
 
@@ -126,11 +131,12 @@ fun SearchBarScreen(
     ) : Suggestion() {
         override val canDelete = true
         override fun onClick() {
-            query = keyword
+            searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
         }
     }
 
     fun mergedSuggestionFlow(): Flow<Suggestion> = flow {
+        val query = searchFieldState.text.toString()
         suggestionProvider?.run { providerSuggestions(query)?.let { emit(it) } }
         mSearchDatabase.suggestions(query, 128).forEach { emit(KeywordSuggestion(it)) }
         EhTagDatabase.takeIf { it.initialized }?.run {
@@ -170,8 +176,10 @@ fun SearchBarScreen(
     }
 
     if (active) {
-        LaunchedEffect(query) {
-            updateSuggestions()
+        LaunchedEffect(Unit) {
+            searchFieldState.forEachTextValue {
+                updateSuggestions()
+            }
         }
     }
 
@@ -181,7 +189,7 @@ fun SearchBarScreen(
     }
 
     fun onApplySearch() {
-        query = query.trim()
+        val query = searchFieldState.text.trim().toString()
         if (query.isNotEmpty()) {
             scope.launchIO {
                 mSearchDatabase.deleteQuery(query)
@@ -213,10 +221,7 @@ fun SearchBarScreen(
                     placeable.placeRelative(0, searchbarOfs)
                 }
             }.align(Alignment.TopCenter),
-            query = query,
-            onQueryChange = {
-                query = it
-            },
+            state = searchFieldState,
             onSearch = {
                 hideSearchView()
                 onApplySearch()
@@ -245,8 +250,8 @@ fun SearchBarScreen(
             },
             trailingIcon = {
                 if (active) {
-                    if (query.isNotEmpty()) {
-                        IconButton(onClick = { query = "" }) {
+                    if (searchFieldState.text.isNotEmpty()) {
+                        IconButton(onClick = { searchFieldState.clearText() }) {
                             Icon(Icons.Default.Close, contentDescription = null)
                         }
                     }
