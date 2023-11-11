@@ -296,8 +296,6 @@ class DownloadsScene :
             layoutManager.setStrategy(STRATEGY_MIN_SIZE)
             layoutManager.supportsPredictiveItemAnimations = false
             recyclerView.layoutManager = layoutManager
-            recyclerView.clipToPadding = false
-            recyclerView.clipChildren = false
             val interval = resources.getDimensionPixelOffset(R.dimen.gallery_list_interval)
             val decoration = object : RecyclerView.ItemDecoration() {
                 override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {

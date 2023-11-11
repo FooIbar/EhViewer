@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ElevatedCard
@@ -32,6 +33,7 @@ import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
@@ -81,7 +83,10 @@ class SearchLayout @JvmOverloads constructor(
             }
         }
         Mdc3Theme {
-            Column(modifier = Modifier.imePadding().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h))) {
+            Column(
+                modifier = Modifier.imePadding().statusBarsPadding().padding(top = 72.dp)
+                    .verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h)),
+            ) {
                 AnimatedVisibility(visible = vm.isNormalMode) {
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                         Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {

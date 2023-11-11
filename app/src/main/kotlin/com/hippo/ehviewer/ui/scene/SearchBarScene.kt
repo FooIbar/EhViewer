@@ -14,9 +14,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text2.input.clearText
@@ -265,8 +265,7 @@ fun SearchBarScreen(
             },
         ) {
             LazyColumn(
-                modifier = Modifier.imePadding(),
-                contentPadding = WindowInsets.navigationBars.asPaddingValues(),
+                contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues(),
             ) {
                 items(mSuggestionList) {
                     ListItem(
@@ -339,6 +338,7 @@ abstract class SearchBarScene : BaseScene() {
         return ComposeWithMD3 {
             val density = LocalDensity.current
             val fabPadding = with(density) { 16.dp.roundToPx() }
+            val margin = with(density) { 8.dp.roundToPx() }
             SearchBarScreen(
                 initialQuery = initialQuery,
                 hint = hint,
@@ -352,19 +352,19 @@ abstract class SearchBarScene : BaseScene() {
                     TrailingIcon()
                 },
             ) { contentPadding ->
+                val topPadding = with(density) { contentPadding.calculateTopPadding().roundToPx() }
                 val bottomPadding = with(density) { contentPadding.calculateBottomPadding().roundToPx() }
                 AndroidViewBinding(
-                    modifier = Modifier.padding(top = contentPadding.calculateTopPadding()).fillMaxSize(),
+                    modifier = Modifier.fillMaxSize(),
                     factory = { inflater, parent, _ ->
-                        parent.clipChildren = false
                         onCreateViewWithToolbar(inflater, parent, savedInstanceState).apply {
                             recyclerView.addOnScrollListener(onScrollListener)
                         }
                     },
                 ) {
                     fabLayout.updatePadding(bottom = fabPadding + bottomPadding)
-                    fastScroller.updatePadding(bottom = bottomPadding)
-                    recyclerView.updatePadding(bottom = bottomPadding)
+                    fastScroller.updatePadding(top = topPadding + margin, bottom = bottomPadding)
+                    recyclerView.updatePadding(top = topPadding + margin, bottom = bottomPadding)
                 }
             }
         }

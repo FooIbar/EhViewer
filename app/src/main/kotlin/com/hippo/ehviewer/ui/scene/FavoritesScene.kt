@@ -89,7 +89,6 @@ import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.setValue
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.system.dpToPx
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -329,7 +328,6 @@ class FavoritesScene : SearchBarScene() {
                 drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
                 binding.tip.setCompoundDrawables(null, drawable, null, null)
                 binding.tip.setOnClickListener { mAdapter?.retry() }
-                binding.refreshLayout.setProgressViewOffset(true, 0, 64.dpToPx)
                 binding.refreshLayout.setOnRefreshListener { switchFav(urlBuilder.favCat) }
                 val transition = ViewTransition(binding.refreshLayout, binding.progress, binding.tip)
                 val empty = getString(R.string.gallery_list_empty_hit)

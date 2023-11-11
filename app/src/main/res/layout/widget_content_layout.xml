@@ -19,7 +19,6 @@
     android:id="@+id/content_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clipChildren="false"
     app:layout_behavior="@string/searchbar_scrolling_view_behavior">
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
@@ -41,14 +40,12 @@
     <androidx.swiperefreshlayout.widget.ThemedSwipeRefreshLayout
         android:id="@+id/refresh_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipChildren="false">
+        android:layout_height="match_parent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipChildren="false"
             android:clipToPadding="false"
             android:paddingHorizontal="@dimen/gallery_list_margin_h"
             android:paddingVertical="@dimen/gallery_list_margin_v" />
