@@ -4,6 +4,7 @@ import androidx.annotation.CallSuper
 import androidx.collection.lruCache
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
+import com.hippo.ehviewer.util.isAtLeastO
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 
@@ -13,7 +14,11 @@ private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 abstract class PageLoader {
 
     private val mImageCache = lruCache<Int, Image>(
-        maxSize = (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE),
+        maxSize = if (isAtLeastO) {
+            (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
+        } else {
+            (OSUtils.appMaxMemory / 3 * 2).toInt()
+        },
         sizeOf = { _, v -> v.size },
         onEntryRemoved = { _, _, o, _ -> o.recycle() },
     )
