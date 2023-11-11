@@ -234,8 +234,8 @@ class DownloadsScene :
 
     private fun updateTitle() {
         val title = getString(R.string.scene_download_title, mLabel ?: getString(R.string.download_all))
-        setSearchBarHint(title)
-        setEditTextHint(getString(R.string.search_bar_hint, title))
+        setTitle(title)
+        setSearchBarHint(getString(R.string.search_bar_hint, title))
     }
 
     private fun onInit() {
@@ -624,7 +624,7 @@ class DownloadsScene :
                 val label = mLabels[position].takeUnless { position == 0 }
                 if (mLabel != label) {
                     mKeyword = null
-                    setSearchBarText(null)
+                    clearSearchBarText()
                     mLabel = label
                     updateForLabel()
                 }
