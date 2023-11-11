@@ -347,13 +347,14 @@ abstract class SearchBarScene : BaseScene() {
                     modifier = Modifier.padding(top = contentPadding.calculateTopPadding()).fillMaxSize(),
                     factory = { inflater, parent, _ ->
                         parent.clipChildren = false
-                        onCreateViewWithToolbar(inflater, parent, savedInstanceState)
+                        onCreateViewWithToolbar(inflater, parent, savedInstanceState).apply {
+                            recyclerView.addOnScrollListener(onScrollListener)
+                        }
                     },
                 ) {
                     fabLayout.updatePadding(bottom = fabPadding + bottomPadding)
                     fastScroller.updatePadding(bottom = bottomPadding)
                     recyclerView.updatePadding(bottom = bottomPadding)
-                    recyclerView.addOnScrollListener(onScrollListener)
                 }
             }
         }
