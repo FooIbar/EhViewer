@@ -8,10 +8,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -197,92 +198,92 @@ fun SearchBarScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            SearchBar(
-                modifier = Modifier.fillMaxWidth(),
-                query = query,
-                onQueryChange = {
-                    query = it
-                },
-                onSearch = {
-                    hideSearchView()
-                    onApplySearch()
-                },
-                active = active,
-                onActiveChange = {
-                    if (it) {
-                        onSearchViewExpanded()
-                    } else {
-                        onSearchViewHidden()
+    Box(modifier = Modifier.fillMaxSize()) {
+        SearchBar(
+            modifier = Modifier.align(Alignment.TopCenter),
+            query = query,
+            onQueryChange = {
+                query = it
+            },
+            onSearch = {
+                hideSearchView()
+                onApplySearch()
+            },
+            active = active,
+            onActiveChange = {
+                if (it) {
+                    onSearchViewExpanded()
+                } else {
+                    onSearchViewHidden()
+                }
+                active = it
+            },
+            placeholder = { Text(hint) },
+            leadingIcon = {
+                if (active) {
+                    IconButton(onClick = { hideSearchView() }) {
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
-                    active = it
-                },
-                placeholder = { Text(hint) },
-                leadingIcon = {
-                    if (active) {
-                        IconButton(onClick = { hideSearchView() }) {
-                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
-                        }
-                    } else {
-                        IconButton(onClick = { activity.openDrawer() }) {
-                            Icon(Icons.Default.Menu, contentDescription = null)
-                        }
+                } else {
+                    IconButton(onClick = { activity.openDrawer() }) {
+                        Icon(Icons.Default.Menu, contentDescription = null)
                     }
-                },
-                trailingIcon = {
-                    if (active) {
-                        if (query.isNotEmpty()) {
-                            IconButton(onClick = { query = "" }) {
-                                Icon(Icons.Default.Close, contentDescription = null)
-                            }
-                        }
-                    } else {
-                        Row {
-                            trailingIcon()
+                }
+            },
+            trailingIcon = {
+                if (active) {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { query = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = null)
                         }
                     }
-                },
-            ) {
-                LazyColumn(modifier = Modifier.navigationBarsPadding().imePadding()) {
-                    items(mSuggestionList) {
-                        ListItem(
-                            headlineContent = { Text(text = it.keyword) },
-                            supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
-                            leadingContent = it.canOpenDirectly.ifTrueThen {
+                } else {
+                    Row {
+                        trailingIcon()
+                    }
+                }
+            },
+        ) {
+            LazyColumn(modifier = Modifier.navigationBarsPadding().imePadding()) {
+                items(mSuggestionList) {
+                    ListItem(
+                        headlineContent = { Text(text = it.keyword) },
+                        supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
+                        leadingContent = it.canOpenDirectly.ifTrueThen {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.MenuBook,
+                                contentDescription = null,
+                            )
+                        },
+                        trailingContent = it.canDelete.ifTrueThen {
+                            IconButton(onClick = { deleteKeyword(it.keyword) }) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Default.MenuBook,
+                                    imageVector = Icons.Default.Close,
                                     contentDescription = null,
                                 )
-                            },
-                            trailingContent = it.canDelete.ifTrueThen {
-                                IconButton(onClick = { deleteKeyword(it.keyword) }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = null,
-                                    )
-                                }
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            modifier = Modifier.clickable { it.onClick() },
-                        )
+                            }
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        modifier = Modifier.clickable { it.onClick() },
+                    )
+                }
+            }
+        }
+        Scaffold(
+            floatingActionButton = {
+                AnimatedVisibility(
+                    visible = showSearchFab,
+                    enter = scaleIn(),
+                    exit = scaleOut(),
+                ) {
+                    FloatingActionButton(onClick = ::onApplySearch) {
+                        Icon(imageVector = Icons.Default.Search, contentDescription = null)
                     }
                 }
-            }
-        },
-        floatingActionButton = {
-            AnimatedVisibility(
-                visible = showSearchFab,
-                enter = scaleIn(),
-                exit = scaleOut(),
-            ) {
-                FloatingActionButton(onClick = ::onApplySearch) {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = null)
-                }
-            }
-        },
-        content = content,
-    )
+            },
+            content = content,
+        )
+    }
 }
 
 abstract class SearchBarScene : BaseScene() {
