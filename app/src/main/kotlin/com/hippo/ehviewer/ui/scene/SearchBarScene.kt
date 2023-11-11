@@ -281,8 +281,14 @@ fun SearchBarScreen(
                     }
                 }
             },
-            content = content,
-        )
+        ) {
+            content(
+                PaddingValues(
+                    top = it.calculateTopPadding() + 64.dp,
+                    bottom = it.calculateBottomPadding(),
+                ),
+            )
+        }
     }
 }
 
@@ -319,6 +325,7 @@ abstract class SearchBarScene : BaseScene() {
                 AndroidViewBinding(
                     modifier = Modifier.padding(top = contentPadding.calculateTopPadding()).fillMaxSize(),
                     factory = { inflater, parent, _ ->
+                        parent.clipChildren = false
                         onCreateViewWithToolbar(inflater, parent, savedInstanceState)
                     },
                 ) {
