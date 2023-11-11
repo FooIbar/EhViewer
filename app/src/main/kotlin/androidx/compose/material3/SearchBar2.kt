@@ -230,7 +230,7 @@ fun SearchBar(
     ) {
         Column {
             val animatedInputFieldPadding = remember {
-                AnimatedPaddingValues(animationProgress, topPadding)
+                AnimatedPaddingValues2(animationProgress, topPadding)
             }
             SearchBarInputField(
                 state = state,
@@ -341,7 +341,7 @@ private fun SearchBarInputField(
 }
 
 @Stable
-private class AnimatedPaddingValues(
+private class AnimatedPaddingValues2(
     val animationProgress: State<Float>,
     val topPadding: State<Dp>,
 ) : PaddingValues {
