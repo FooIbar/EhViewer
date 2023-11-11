@@ -102,7 +102,6 @@ import com.hippo.ehviewer.util.setValue
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.system.dpToPx
 import java.io.File
 import java.time.Instant
 import java.time.LocalDateTime
@@ -321,7 +320,6 @@ class GalleryListScene : SearchBarScene() {
                 drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
                 binding.tip.setCompoundDrawables(null, drawable, null, null)
                 binding.tip.setOnClickListener { mAdapter?.retry() }
-                binding.refreshLayout.setProgressViewOffset(true, 0, 64.dpToPx)
                 binding.refreshLayout.setOnRefreshListener {
                     mUrlBuilder.setIndex(null, true)
                     mUrlBuilder.mJumpTo = null

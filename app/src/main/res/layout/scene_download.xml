@@ -21,13 +21,13 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipChildren="false"
         app:layout_behavior="@string/searchbar_scrolling_view_behavior">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipToPadding="false"
             android:paddingHorizontal="@dimen/gallery_list_margin_h"
             android:paddingVertical="@dimen/gallery_list_margin_v" />
 

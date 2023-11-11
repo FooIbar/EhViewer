@@ -6,6 +6,7 @@ import android.graphics.drawable.ShapeDrawable
 import android.os.Parcelable
 import android.util.AttributeSet
 import androidx.core.graphics.ColorUtils
+import eu.kanade.tachiyomi.util.system.dpToPx
 import rikka.core.res.resolveColor
 
 @SuppressLint("PrivateResource")
@@ -22,6 +23,7 @@ class ThemedSwipeRefreshLayout @JvmOverloads constructor(
         val backgroundColor = ColorUtils.compositeColors(overlayColor, surfaceColor)
         (mCircleView.background as ShapeDrawable).paint.color = backgroundColor
         setColorSchemeColors(context.theme.resolveColor(com.google.android.material.R.attr.colorAccent))
+        setProgressViewOffset(true, 64.dpToPx, 128.dpToPx)
     }
 
     override fun onSaveInstanceState(): Parcelable? {
