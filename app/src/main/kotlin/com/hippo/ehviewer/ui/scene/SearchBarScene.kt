@@ -33,7 +33,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -95,7 +95,7 @@ fun SearchBarScreen(
     onSearchExpanded: () -> Unit,
     onSearchHidden: () -> Unit,
     suggestionProvider: SuggestionProvider? = null,
-    searchBarOffsetY: State<Int>,
+    searchBarOffsetY: MutableState<Int>,
     trailingIcon: @Composable () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -204,13 +204,13 @@ fun SearchBarScreen(
         }
     }
 
+    var searchbarOfs by searchBarOffsetY
     Box(modifier = Modifier.fillMaxSize()) {
         SearchBar(
             modifier = Modifier.layout { measurable, constraints ->
                 val placeable = measurable.measure(constraints)
-                val ofs by searchBarOffsetY
                 layout(placeable.width, placeable.height) {
-                    placeable.placeRelative(0, ofs)
+                    placeable.placeRelative(0, searchbarOfs)
                 }
             }.align(Alignment.TopCenter),
             query = query,
@@ -224,6 +224,7 @@ fun SearchBarScreen(
             active = active,
             onActiveChange = {
                 if (it) {
+                    searchbarOfs = 0
                     onSearchViewExpanded()
                 } else {
                     onSearchViewHidden()
