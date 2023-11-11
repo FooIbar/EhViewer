@@ -9,6 +9,7 @@ import androidx.annotation.IntRange
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -27,19 +28,22 @@ class ReaderProgressIndicator @JvmOverloads constructor(
     }
 
     private var progress by mutableFloatStateOf(0f)
+    private var visible by mutableStateOf(false)
 
     @Composable
     override fun Content() {
         Mdc3Theme {
-            CombinedCircularProgressIndicator(progress = progress)
+            if (visible) CombinedCircularProgressIndicator(progress = progress)
         }
     }
 
     fun show() {
+        visible = true
         isVisible = true
     }
 
     fun hide() {
+        visible = false
         isVisible = false
     }
 

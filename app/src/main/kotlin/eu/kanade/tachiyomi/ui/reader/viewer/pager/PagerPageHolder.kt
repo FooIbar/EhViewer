@@ -149,6 +149,7 @@ class PagerPageHolder(
      */
     private fun setImage(drawable: Drawable) {
         progressIndicator.setProgress(0)
+        progressIndicator.hide()
         errorLayout?.root?.isVisible = false
         setImage(
             drawable,
