@@ -1,4 +1,4 @@
-@file:RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
+@file:Suppress("NewApi")
 
 package com.hippo.ehviewer.cronet
 
@@ -8,8 +8,6 @@ import android.net.http.UploadDataProvider
 import android.net.http.UploadDataSink
 import android.net.http.UrlRequest
 import android.net.http.UrlResponseInfo
-import android.os.Build
-import androidx.annotation.RequiresExtension
 import com.hippo.ehviewer.client.CHROME_ACCEPT
 import com.hippo.ehviewer.client.CHROME_ACCEPT_LANGUAGE
 import com.hippo.ehviewer.client.CHROME_USER_AGENT

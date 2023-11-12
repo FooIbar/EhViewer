@@ -12,6 +12,7 @@ val pool = DirectByteBufferPool(32)
 
 val cronetHttpClientExecutor = EhApplication.baseOkHttpClient.dispatcher.executorService
 
+@Suppress("NewApi")
 suspend inline fun CronetRequest.awaitBodyFully(crossinline callback: (ByteBuffer) -> Unit) {
     return pool.useInstance { buffer ->
         suspendCancellableCoroutine { cont ->
@@ -29,6 +30,7 @@ suspend inline fun CronetRequest.awaitBodyFully(crossinline callback: (ByteBuffe
     }
 }
 
+@Suppress("NewApi")
 suspend inline fun CronetRequest.awaitBodyFully(buffer: ByteBuffer) {
     return suspendCancellableCoroutine { cont ->
         consumer = {

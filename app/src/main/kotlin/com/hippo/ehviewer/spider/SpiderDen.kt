@@ -127,6 +127,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
         return dir.createFile(perFilename(index, ext))
     }
 
+    @Suppress("NewApi")
     suspend fun makeHttpCallAndSaveImage(
         index: Int,
         url: String,
