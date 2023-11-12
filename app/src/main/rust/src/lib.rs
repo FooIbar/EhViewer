@@ -13,7 +13,7 @@ extern crate regex_lite;
 extern crate tl;
 
 use android_logger::Config;
-use jnix::jni::objects::{JByteBuffer, JString};
+use jnix::jni::objects::JByteBuffer;
 use jnix::jni::sys::{jint, JavaVM, JNI_VERSION_1_6};
 use jnix::JnixEnv;
 use log::LevelFilter;
@@ -60,16 +60,6 @@ where
         Some(tag) => tag.attributes().id().map_or(false, |x| x.eq(&bytes)),
     })?;
     handle.get(parser)
-}
-
-fn parse_jni_string<F, R>(env: &mut JnixEnv, str: &JString, mut f: F) -> Option<R>
-where
-    F: FnMut(&VDom, &Parser, &JnixEnv) -> Option<R>,
-{
-    let html = env.get_string(*str).ok()?;
-    let dom = tl::parse(html.to_str().ok()?, tl::ParserOptions::default()).ok()?;
-    let parser = dom.parser();
-    f(&dom, parser, env)
 }
 
 fn parse_bytebuffer<F, R>(env: &mut JnixEnv, str: JByteBuffer, limit: jint, mut f: F) -> Option<R>

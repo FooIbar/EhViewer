@@ -33,11 +33,6 @@ object GalleryListParser {
         }
     }
 
-    suspend fun parse(body: String): GalleryListResult {
-        val buffer = ByteBuffer.wrap(body.toByteArray())
-        return parse(buffer)
-    }
-
     val emptyResult = GalleryListResult(null, null, arrayListOf())
 }
 

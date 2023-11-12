@@ -229,8 +229,7 @@ object EhEngine {
         GalleryDetailParser.parsePreviewList(this) to GalleryDetailParser.parsePreviewPages(this)
     }
 
-    suspend fun getFavorites(url: String) = ehRequest(url, EhUrl.referer)
-        .executeAndParsingWith(FavoritesParser::parse)
+    suspend fun getFavorites(url: String) = fetchCompat(url, EhUrl.referer, FavoritesParser::parse)
         .apply { fillGalleryList(galleryInfoList, url) }
 
     suspend fun signIn(username: String, password: String): String {
@@ -355,7 +354,13 @@ object EhEngine {
                 add("ddact", catStr)
                 gidArray.forEach { add("modifygids[]", it.toString()) }
             }
-        }.executeAndParsingWith(FavoritesParser::parse).apply { fillGalleryList(galleryInfoList, url) }
+        }.executeAndParsingWith {
+            httpContentPool.useInstance {
+                it.put(ByteBuffer.wrap(toByteArray()))
+                it.flip()
+                FavoritesParser.parse(it)
+            }
+        }.apply { fillGalleryList(galleryInfoList, url) }
     }
 
     suspend fun getGalleryPageApi(
@@ -474,7 +479,13 @@ object EhEngine {
             if (osc) addFormDataPart("fs_covers", "on")
             addFormDataPart("f_sfile", "File Search")
         }
-    }.executeAndParsingWith(GalleryListParser::parse).apply { fillGalleryList(galleryInfoList, EhUrl.imageSearchUrl) }
+    }.executeAndParsingWith {
+        httpContentPool.useInstance {
+            it.put(ByteBuffer.wrap(toByteArray()))
+            it.flip()
+            GalleryListParser.parse(it)
+        }
+    }.apply { fillGalleryList(galleryInfoList, EhUrl.imageSearchUrl) }
 
     private suspend fun fillGalleryList(list: MutableList<BaseGalleryInfo>, url: String, filter: Boolean = false) {
         // Filter title and uploader
