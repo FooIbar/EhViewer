@@ -49,6 +49,7 @@ class FabLayout @JvmOverloads constructor(
     private var mOnExpandListeners = arrayListOf<OnExpandListener>()
     private var mOnClickFabListener: OnClickFabListener? = null
     private var fabAnimator: ViewPropertyAnimator? = null
+    private var isHiding = false
 
     private val mOnBackPressedCallback = object : OnBackPressedCallback(false), OnExpandListener {
         override fun handleOnBackPressed() {
@@ -62,6 +63,7 @@ class FabLayout @JvmOverloads constructor(
     private val mFabAnimatorListener = object : SimpleAnimatorListener() {
         override fun onAnimationEnd(animation: Animator) {
             primaryFab.isVisible = false
+            isHiding = false
         }
     }
 
@@ -442,10 +444,11 @@ class FabLayout @JvmOverloads constructor(
     fun hide(animation: Boolean = true): Long {
         val fab = primaryFab
         setExpanded(expanded = false, animation = true)
-        return if (!fab.isVisible) {
+        return if (!fab.isVisible || isHiding) {
             0L
         } else {
             if (animation) {
+                isHiding = true
                 fabAnimator?.cancel()
                 fabAnimator = fab.animate().scaleX(0f).scaleY(0f).rotation(-ROTATION_DEGREE)
                     .setListener(mFabAnimatorListener).setDuration(ANIMATE_TIME).setStartDelay(0L)
