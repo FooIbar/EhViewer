@@ -362,18 +362,12 @@ object EhEngine {
             in 0..9 -> "fav$dstCat"
             else -> throw EhException("Invalid dstCat: $dstCat")
         }
-        return ehRequest(url, url, EhUrl.origin) {
-            formBody {
-                add("ddact", catStr)
-                gidArray.forEach { add("modifygids[]", it.toString()) }
-            }
-        }.executeAndParsingWith {
-            httpContentPool.useInstance {
-                it.put(ByteBuffer.wrap(toByteArray()))
-                it.flip()
-                FavoritesParser.parse(it)
-            }
-        }.apply { fillGalleryList(galleryInfoList, url) }
+        val body = formBody {
+            add("ddact", catStr)
+            gidArray.forEach { add("modifygids[]", it.toString()) }
+        }
+        return fetchCompat(url, url, EhUrl.origin, body, FavoritesParser::parse)
+            .apply { fillGalleryList(galleryInfoList, url) }
     }
 
     suspend fun getGalleryPageApi(
