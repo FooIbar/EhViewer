@@ -116,9 +116,9 @@ private fun rethrowExactly(code: Int, body: String, e: Throwable): Nothing {
     throw e
 }
 
-val httpContentPool = DirectByteBufferPool(16, 0x20000)
+val httpContentPool = DirectByteBufferPool(8, 0x100000)
 
-suspend inline fun <T> fetchCompat(url: String, referer: String? = null, crossinline parser: (ByteBuffer) -> T): T {
+suspend inline fun <T> fetchCompat(url: String, referer: String? = null, crossinline parser: suspend (ByteBuffer) -> T): T {
     return if (isCronetSupported) {
         cronetRequest(url, referer).execute {
             httpContentPool.useInstance { buffer ->
@@ -213,8 +213,7 @@ object EhEngine {
         return ehRequest(url, referer).executeAndParsingWith(GalleryPageParser::parse)
     }
 
-    suspend fun getGalleryList(url: String) = ehRequest(url, EhUrl.referer)
-        .executeAndParsingWith(GalleryListParser::parse)
+    suspend fun getGalleryList(url: String) = fetchCompat(url, EhUrl.referer) { GalleryListParser.parse(it) }
         .apply { fillGalleryList(galleryInfoList, url, true) }
         .takeUnless { it.galleryInfoList.isEmpty() } ?: GalleryListParser.emptyResult
 

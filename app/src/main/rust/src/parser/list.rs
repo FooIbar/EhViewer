@@ -1,11 +1,11 @@
 use catch_panic::catch_panic;
 use jni_fn::jni_fn;
-use jnix::jni::objects::{JClass, JString};
-use jnix::jni::sys::jobject;
+use jnix::jni::objects::{JByteBuffer, JClass};
+use jnix::jni::sys::{jint, jobject};
 use jnix::jni::JNIEnv;
 use jnix::{IntoJava, JnixEnv};
 use jnix_macros::IntoJava;
-use parse_jni_string;
+use parse_bytebuffer;
 use quick_xml::escape::unescape;
 use std::borrow::Cow;
 use std::ops::Index;
@@ -197,9 +197,20 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
 #[catch_panic(default = "std::ptr::null_mut()")]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryListParserKt")]
-pub fn parseGalleryInfoList(env: JNIEnv, _class: JClass, input: JString) -> jobject {
+pub fn parseGalleryInfoList(
+    env: JNIEnv,
+    _class: JClass,
+    buffer: JByteBuffer,
+    limit: jint,
+) -> jobject {
     let mut env = JnixEnv { env };
-    parse_jni_string(&mut env, &input, |dom, parser, _env| {
+    parse_bytebuffer(&mut env, buffer, limit, |dom, parser, _, str| {
+        if str.contains("<p>You do not have any watched tags") {
+            panic!("No watched tags!")
+        }
+        if str.contains("No hits found</p>") {
+            panic!("No hits found!")
+        }
         let itg = get_vdom_first_element_by_class_name(dom, "itg")?;
         let children = itg.children()?;
         let iter = children.top().iter();

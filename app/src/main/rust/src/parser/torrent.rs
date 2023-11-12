@@ -27,7 +27,7 @@ pub struct Torrent {
 #[jni_fn("com.hippo.ehviewer.client.parser.TorrentParserKt")]
 pub fn parseTorrent(env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jobject {
     let mut env = JnixEnv { env };
-    parse_bytebuffer(&mut env, buffer, limit, |dom, parser, _env| {
+    parse_bytebuffer(&mut env, buffer, limit, |dom, parser, _, _| {
         Some(dom.query_selector("table")?.filter_map(|e| {
             let html = e.get(parser)?.inner_html(parser);
             if html.contains("Expunged") {
