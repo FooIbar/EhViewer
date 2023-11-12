@@ -47,6 +47,7 @@ import com.hippo.ehviewer.client.parser.VoteTagParser
 import com.hippo.ehviewer.cronet.awaitBodyFully
 import com.hippo.ehviewer.cronet.cronetRequest
 import com.hippo.ehviewer.cronet.execute
+import com.hippo.ehviewer.cronet.withRequestBody
 import com.hippo.ehviewer.dailycheck.showEventNotification
 import com.hippo.ehviewer.dailycheck.today
 import com.hippo.ehviewer.util.AppConfig
@@ -68,6 +69,7 @@ import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import org.jsoup.Jsoup
 import splitties.init.appCtx
@@ -118,19 +120,27 @@ private fun rethrowExactly(code: Int, body: String, e: Throwable): Nothing {
 
 val httpContentPool = DirectByteBufferPool(8, 0x80000)
 
-suspend inline fun <T> fetchCompat(url: String, referer: String? = null, crossinline parser: suspend (ByteBuffer) -> T): T {
+suspend inline fun <T> fetchCompat(
+    url: String,
+    referer: String? = null,
+    origin: String? = null,
+    reqBody: RequestBody? = null,
+    crossinline parser: suspend (ByteBuffer) -> T,
+): T {
     return if (isCronetSupported) {
-        cronetRequest(url, referer).execute {
+        cronetRequest(url, referer, origin) {
+            reqBody?.let { withRequestBody(it) }
+        }.execute {
             httpContentPool.useInstance { buffer ->
-                awaitBodyFully {
-                    buffer.put(it)
-                }
+                awaitBodyFully(buffer)
                 buffer.flip()
                 parser(buffer)
             }
         }
     } else {
-        ehRequest(url, referer).execute {
+        ehRequest(url, referer, origin) {
+            reqBody?.let { post(it) }
+        }.execute {
             httpContentPool.useInstance { buffer ->
                 while (true) {
                     if (body.source().read(buffer) == -1) break
@@ -169,7 +179,7 @@ object EhEngine {
 
     suspend fun getTorrentList(url: String, gid: Long, token: String?): TorrentResult {
         val referer = EhUrl.getGalleryDetailUrl(gid, token)
-        return fetchCompat(url, referer, TorrentParser::parse)
+        return fetchCompat(url, referer, parser = TorrentParser::parse)
     }
 
     suspend fun getArchiveList(url: String, gid: Long, token: String?) = ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
@@ -213,7 +223,7 @@ object EhEngine {
         return ehRequest(url, referer).executeAndParsingWith(GalleryPageParser::parse)
     }
 
-    suspend fun getGalleryList(url: String) = fetchCompat(url, EhUrl.referer) { GalleryListParser.parse(it) }
+    suspend fun getGalleryList(url: String) = fetchCompat(url, EhUrl.referer, parser = GalleryListParser::parse)
         .apply { fillGalleryList(galleryInfoList, url, true) }
         .takeUnless { it.galleryInfoList.isEmpty() } ?: GalleryListParser.emptyResult
 
@@ -229,7 +239,7 @@ object EhEngine {
         GalleryDetailParser.parsePreviewList(this) to GalleryDetailParser.parsePreviewPages(this)
     }
 
-    suspend fun getFavorites(url: String) = fetchCompat(url, EhUrl.referer, FavoritesParser::parse)
+    suspend fun getFavorites(url: String) = fetchCompat(url, EhUrl.referer, parser = FavoritesParser::parse)
         .apply { fillGalleryList(galleryInfoList, url) }
 
     suspend fun signIn(username: String, password: String): String {
@@ -349,18 +359,12 @@ object EhEngine {
             in 0..9 -> "fav$dstCat"
             else -> throw EhException("Invalid dstCat: $dstCat")
         }
-        return ehRequest(url, url, EhUrl.origin) {
-            formBody {
-                add("ddact", catStr)
-                gidArray.forEach { add("modifygids[]", it.toString()) }
-            }
-        }.executeAndParsingWith {
-            httpContentPool.useInstance {
-                it.put(ByteBuffer.wrap(toByteArray()))
-                it.flip()
-                FavoritesParser.parse(it)
-            }
-        }.apply { fillGalleryList(galleryInfoList, url) }
+        val body = formBody {
+            add("ddact", catStr)
+            gidArray.forEach { add("modifygids[]", it.toString()) }
+        }
+        return fetchCompat(url, url, EhUrl.origin, body, FavoritesParser::parse)
+            .apply { fillGalleryList(galleryInfoList, url) }
     }
 
     suspend fun getGalleryPageApi(
@@ -471,21 +475,19 @@ object EhEngine {
     /**
      * @param image Must be jpeg
      */
-    suspend fun imageSearch(image: File, uss: Boolean, osc: Boolean) = ehRequest(EhUrl.imageSearchUrl, EhUrl.referer, EhUrl.origin) {
+    suspend fun imageSearch(image: File, uss: Boolean, osc: Boolean) = fetchCompat(
+        EhUrl.imageSearchUrl,
+        EhUrl.referer,
+        EhUrl.origin,
         multipartBody {
             setType(MultipartBody.FORM)
             addFormDataPart("sfile", "a.jpg", image.asRequestBody(MEDIA_TYPE_JPEG))
             if (uss) addFormDataPart("fs_similar", "on")
             if (osc) addFormDataPart("fs_covers", "on")
             addFormDataPart("f_sfile", "File Search")
-        }
-    }.executeAndParsingWith {
-        httpContentPool.useInstance {
-            it.put(ByteBuffer.wrap(toByteArray()))
-            it.flip()
-            GalleryListParser.parse(it)
-        }
-    }.apply { fillGalleryList(galleryInfoList, EhUrl.imageSearchUrl) }
+        },
+        parser = GalleryListParser::parse,
+    ).apply { fillGalleryList(galleryInfoList, EhUrl.imageSearchUrl) }
 
     private suspend fun fillGalleryList(list: MutableList<BaseGalleryInfo>, url: String, filter: Boolean = false) {
         // Filter title and uploader

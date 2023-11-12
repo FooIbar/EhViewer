@@ -153,7 +153,6 @@ android {
     }
 
     lint {
-        baseline = file("lint-baseline.xml")
         disable += setOf("MissingTranslation", "MissingQuantity")
         fatal += setOf("NewApi", "InlineApi")
     }
