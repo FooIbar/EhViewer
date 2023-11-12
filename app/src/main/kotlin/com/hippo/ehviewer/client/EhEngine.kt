@@ -132,9 +132,7 @@ suspend inline fun <T> fetchCompat(
             reqBody?.let { withRequestBody(it) }
         }.execute {
             httpContentPool.useInstance { buffer ->
-                awaitBodyFully {
-                    buffer.put(it)
-                }
+                awaitBodyFully(buffer)
                 buffer.flip()
                 parser(buffer)
             }

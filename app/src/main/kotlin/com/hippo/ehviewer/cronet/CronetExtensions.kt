@@ -16,6 +16,8 @@ suspend inline fun CronetRequest.awaitBodyFully(crossinline callback: (ByteBuffe
     return pool.useInstance { buffer ->
         suspendCancellableCoroutine { cont ->
             consumer = {
+                check(it === buffer)
+                buffer.flip()
                 callback(it)
                 buffer.clear()
                 request.read(buffer)
@@ -24,6 +26,18 @@ suspend inline fun CronetRequest.awaitBodyFully(crossinline callback: (ByteBuffe
             readerCont = cont
             request.read(buffer)
         }
+    }
+}
+
+suspend inline fun CronetRequest.awaitBodyFully(buffer: ByteBuffer) {
+    return suspendCancellableCoroutine { cont ->
+        consumer = {
+            request.read(buffer)
+            check(buffer.hasRemaining())
+        }
+        onError = { readerCont.resumeWithException(it) }
+        readerCont = cont
+        request.read(buffer)
     }
 }
 

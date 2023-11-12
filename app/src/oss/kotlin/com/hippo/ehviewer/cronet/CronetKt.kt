@@ -53,7 +53,6 @@ class CronetRequest {
         }
 
         override fun onReadCompleted(req: UrlRequest, info: UrlResponseInfo, data: ByteBuffer) {
-            data.flip()
             consumer(data)
         }
 
