@@ -128,8 +128,7 @@ suspend inline fun <T> fetchCompat(
     crossinline parser: suspend (ByteBuffer) -> T,
 ): T {
     return if (isCronetSupported) {
-        cronetRequest(url, referer) {
-            origin?.let { addHeader("Origin", it) }
+        cronetRequest(url, referer, origin) {
             reqBody?.let { withRequestBody(it) }
         }.execute {
             httpContentPool.useInstance { buffer ->

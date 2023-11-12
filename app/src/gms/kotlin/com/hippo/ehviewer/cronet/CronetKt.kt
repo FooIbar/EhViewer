@@ -63,12 +63,13 @@ class CronetRequest {
     }
 }
 
-inline fun cronetRequest(url: String, referer: String? = null, conf: UrlRequest.Builder.() -> Unit = {}) = CronetRequest().apply {
+inline fun cronetRequest(url: String, referer: String? = null, origin: String? = null, conf: UrlRequest.Builder.() -> Unit = {}) = CronetRequest().apply {
     request = cronetHttpClient.newUrlRequestBuilder(url, callback, cronetHttpClientExecutor).apply {
         addHeader("Cookie", EhCookieStore.getCookieHeader(url.toHttpUrl()))
         addHeader("Accept", CHROME_ACCEPT)
         addHeader("Accept-Language", CHROME_ACCEPT_LANGUAGE)
         referer?.let { addHeader("Referer", it) }
+        origin?.let { addHeader("Origin", it) }
     }.apply(conf).build()
 }
 
