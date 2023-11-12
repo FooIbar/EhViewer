@@ -14,9 +14,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.RequestBody
+import okio.Buffer
 import okio.Path.Companion.toOkioPath
 import org.chromium.net.CronetEngine
 import org.chromium.net.CronetException
+import org.chromium.net.UploadDataProvider
+import org.chromium.net.UploadDataSink
 import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
 import splitties.init.appCtx
@@ -80,6 +84,22 @@ suspend inline fun <R> CronetRequest.execute(crossinline callback: suspend Crone
             request.start()
         }
     }
+}
+
+fun UrlRequest.Builder.withRequestBody(body: RequestBody) {
+    addHeader("Content-Type", body.contentType().toString())
+    val buffer = Buffer().apply { body.writeTo(this) }
+    val provider = object : UploadDataProvider() {
+        override fun getLength() = body.contentLength()
+        override fun read(uploadDataSink: UploadDataSink, byteBuffer: ByteBuffer) {
+            buffer.read(byteBuffer)
+            uploadDataSink.onReadSucceeded(false)
+        }
+        override fun rewind(uploadDataSink: UploadDataSink) {
+            error("OneShot!")
+        }
+    }
+    setUploadDataProvider(provider, cronetHttpClientExecutor)
 }
 
 fun UrlRequest.Builder.noCache(): UrlRequest.Builder = disableCache()
