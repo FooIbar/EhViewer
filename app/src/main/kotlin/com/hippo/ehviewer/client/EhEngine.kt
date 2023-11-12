@@ -116,7 +116,7 @@ private fun rethrowExactly(code: Int, body: String, e: Throwable): Nothing {
     throw e
 }
 
-val httpContentPool = DirectByteBufferPool(8, 0x100000)
+val httpContentPool = DirectByteBufferPool(8, 0x80000)
 
 suspend inline fun <T> fetchCompat(url: String, referer: String? = null, crossinline parser: suspend (ByteBuffer) -> T): T {
     return if (isCronetSupported) {
