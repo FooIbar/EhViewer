@@ -1,20 +1,29 @@
 use apply::Also;
 use catch_panic::catch_panic;
 use jni_fn::jni_fn;
-use jnix::jni::objects::{JClass, JString};
-use jnix::jni::sys::{jintArray, jobjectArray};
+use jnix::jni::objects::{JByteBuffer, JClass};
+use jnix::jni::sys::{jint, jintArray, jobjectArray};
 use jnix::jni::JNIEnv;
 use jnix::JnixEnv;
-use parse_jni_string;
+use parse_bytebuffer;
 use quick_xml::escape::unescape;
 
 #[no_mangle]
 #[catch_panic(default = "std::ptr::null_mut()")]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.FavoritesParserKt")]
-pub fn parseFav(env: JNIEnv, _class: JClass, input: JString, str: jobjectArray) -> jintArray {
+pub fn parseFav(
+    env: JNIEnv,
+    _class: JClass,
+    input: JByteBuffer,
+    limit: jint,
+    str: jobjectArray,
+) -> jintArray {
     let mut env = JnixEnv { env };
-    let vec = parse_jni_string(&mut env, &input, |dom, parser, env| {
+    let vec = parse_bytebuffer(&mut env, input, limit, |dom, parser, env, html| {
+        if html.contains("This page requires you to log on.</p>") {
+            panic!("Not logged in!")
+        }
         let vec: Vec<i32> = dom
             .get_elements_by_class_name("fp")
             .enumerate()

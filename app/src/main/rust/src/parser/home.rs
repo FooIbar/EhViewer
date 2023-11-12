@@ -22,7 +22,7 @@ pub struct Limits {
 #[jni_fn("com.hippo.ehviewer.client.parser.HomeParserKt")]
 pub fn parseLimit(env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jobject {
     let mut env = JnixEnv { env };
-    parse_bytebuffer(&mut env, input, limit, |dom, parser, _env| {
+    parse_bytebuffer(&mut env, input, limit, |dom, parser, _, _| {
         let iter = get_vdom_first_element_by_class_name(dom, "homebox")?
             .as_tag()?
             .query_selector(parser, "strong")?;
