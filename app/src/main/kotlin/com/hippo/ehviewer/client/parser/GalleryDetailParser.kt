@@ -331,57 +331,53 @@ object GalleryDetailParser {
 
     private suspend fun parseComment(element: Element): GalleryComment? {
         return try {
-            val comment = GalleryComment()
             // Id
             val a = element.previousElementSibling()
             val name = a!!.attr("name")
-            comment.id = name trimAnd { substring(1).toInt().toLong() }
+            val id = name trimAnd { substring(1).toInt().toLong() }
             // Editable, vote up and vote down
             val c4 = element.getElementsByClass("c4").first()
+            var voteUpAble = false
+            var voteUpEd = false
+            var voteDownAble = false
+            var voteDownEd = false
+            var editable = false
+            var uploader = false
             if (null != c4) {
                 if ("Uploader Comment" == c4.text()) {
-                    comment.uploader = true
+                    uploader = true
                 }
                 for (e in c4.children()) {
                     when (e.text()) {
                         "Vote+" -> {
-                            comment.voteUpAble = true
-                            comment.voteUpEd = e.attr("style").trim().isNotEmpty()
+                            voteUpAble = true
+                            voteUpEd = e.attr("style").trim().isNotEmpty()
                         }
 
                         "Vote-" -> {
-                            comment.voteDownAble = true
-                            comment.voteDownEd = e.attr("style").trim().isNotEmpty()
+                            voteDownAble = true
+                            voteDownEd = e.attr("style").trim().isNotEmpty()
                         }
 
-                        "Edit" -> comment.editable = true
+                        "Edit" -> editable = true
                     }
                 }
             }
             // Vote state
             val c7 = element.getElementsByClass("c7").first()
-            if (null != c7) {
-                comment.voteState = c7.text().trim()
-            }
+            val voteState = c7?.text()?.trim()
             // Score
             val c5 = element.getElementsByClass("c5").first()
-            if (null != c5) {
-                val es = c5.children()
-                if (!es.isEmpty()) {
-                    comment.score = es[0].text().trim().toIntOrDefault(0)
-                }
-            }
+            val score = c5?.children()?.first()?.text()?.trim()?.toIntOrDefault(0) ?: 0
             // time
             val c3 = element.getElementsByClass("c3").first()
             val temp = c3!!.ownText()
-            val time = if (temp.endsWith(':')) {
-                // user
-                comment.user = c3.child(0).text()
-                temp.substring("Posted on ".length, temp.length - " by:".length)
+            val (timeStr, user) = if (temp.endsWith(':')) {
+                temp.substring("Posted on ".length, temp.length - " by:".length) to c3.child(0).text()
             } else {
-                temp.substring("Posted on ".length)
+                temp.substring("Posted on ".length) to null
             }
-            comment.time = Instant.from(WEB_COMMENT_DATE_FORMAT.parse(time)).toEpochMilli()
+            val time = Instant.from(WEB_COMMENT_DATE_FORMAT.parse(timeStr)).toEpochMilli()
             // comment
             val c6 = element.getElementsByClass("c6").first()
             // fix underline support
@@ -390,24 +386,21 @@ object GalleryDetailParser {
                     e.tagName("u")
                 }
             }
-            comment.comment = c6.html()
+            val commentHtml = c6.html()
             // filter comment
-            if (!comment.uploader) {
+            if (!uploader) {
                 val sEhFilter = EhFilter
-                if (comment.score <= Settings.commentThreshold || sEhFilter.filterCommenter(comment.user!!) || sEhFilter.filterComment(comment.comment!!)) {
+                if (score <= Settings.commentThreshold || sEhFilter.filterCommenter(user.orEmpty()) || sEhFilter.filterComment(commentHtml)) {
                     return null
                 }
             }
             // last edited
             val c8 = element.getElementsByClass("c8").first()
-            if (c8 != null) {
-                val e = c8.children().first()
-                if (e != null) {
-                    comment.lastEdited =
-                        Instant.from(WEB_COMMENT_DATE_FORMAT.parse(e.text())).toEpochMilli()
-                }
-            }
-            comment
+            val lastEdited = c8?.children()?.first()?.run { Instant.from(WEB_COMMENT_DATE_FORMAT.parse(text())).toEpochMilli() } ?: 0
+            GalleryComment(
+                id, score, editable, voteUpAble, voteUpEd, voteDownAble,
+                voteDownEd, uploader, voteState, time, user, commentHtml, lastEdited,
+            )
         } catch (e: Throwable) {
             ExceptionUtils.throwIfFatal(e)
             e.printStackTrace()
