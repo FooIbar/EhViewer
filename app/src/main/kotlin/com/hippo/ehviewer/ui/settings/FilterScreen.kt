@@ -72,30 +72,17 @@ fun FilterScreen(navigator: DestinationsNavigator) {
             dialog.getButton(DialogInterface.BUTTON_POSITIVE)!!.setOnClickListener(this)
         }
         override fun onClick(v: View) {
-            val emptyError = context.getString(R.string.text_is_empty)
-            val text1: String?
-            binding.spinner.run {
-                text1 = editText?.text?.toString()
-                if (text1.isNullOrBlank()) {
-                    error = emptyError
+            binding.textInputLayout.run {
+                val text = editText!!.text.toString().trim()
+                if (text.isBlank()) {
+                    error = context.getString(R.string.text_is_empty)
                     return
                 } else {
                     error = null
                 }
-            }
-            val text: String?
-            binding.textInputLayout.run {
-                text = editText?.text?.toString()?.trim()
-                if (text.isNullOrBlank()) {
-                    error = emptyError
-                    return
-                } else {
-                    error = null
-                }
-            }
-            binding.textInputLayout.run {
-                val mode = FilterMode.entries[mArray.indexOf(text1)]
-                val filter = Filter(mode, text!!)
+                val modeText = binding.spinner.editText!!.text.toString()
+                val mode = FilterMode.entries[mArray.indexOf(modeText)]
+                val filter = Filter(mode, text)
                 filter.remember {
                     if (it) {
                         post { dialog.dismiss() }

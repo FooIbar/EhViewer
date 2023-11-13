@@ -34,6 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="none"
+            android:text="@string/filter_title"
             app:simpleItems="@array/filter_entries" />
 
     </com.google.android.material.textfield.TextInputLayout>
