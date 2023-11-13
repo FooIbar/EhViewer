@@ -395,11 +395,12 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         editTextMeasured = max(with(density) { coordinates.size.height.toDp() }, MiniumContentPaddingEditText)
                     },
                 ) {
+                    val color = MaterialTheme.colorScheme.onPrimaryContainer
                     BasicTextField2(
                         value = userComment,
                         onValueChange = { userComment = it },
                         modifier = Modifier.weight(1f).padding(keylineMargin),
-                        textStyle = MaterialTheme.typography.bodyLarge,
+                        textStyle = MaterialTheme.typography.bodyLarge.merge(color = color),
                     )
                     IconButton(
                         onClick = {
