@@ -20,8 +20,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material3.ElevatedCard
@@ -456,8 +457,8 @@ class FavoritesScene : SearchBarScene() {
             } else {
                 arrayOf(localFav)
             }
-            LazyColumn {
-                itemsIndexed(faves) { index, (name, count) ->
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                faves.forEachIndexed { index, (name, count) ->
                     ListItem(
                         headlineContent = { Text(text = name) },
                         trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
