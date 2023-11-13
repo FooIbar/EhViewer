@@ -68,6 +68,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -401,6 +402,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         onValueChange = { userComment = it },
                         modifier = Modifier.weight(1f).padding(keylineMargin),
                         textStyle = MaterialTheme.typography.bodyLarge.merge(color = color),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     )
                     IconButton(
                         onClick = {
