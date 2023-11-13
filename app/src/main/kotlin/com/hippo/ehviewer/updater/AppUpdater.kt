@@ -4,12 +4,12 @@ import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.execute
 import com.hippo.ehviewer.client.executeAndParseAs
-import eu.kanade.tachiyomi.util.system.logcat
-import io.ktor.util.encodeBase64
 import java.io.File
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.zip.ZipInputStream
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.Request
 import okio.sink
@@ -81,11 +81,11 @@ object AppUpdater {
         }
 }
 
+@OptIn(ExperimentalEncodingApi::class)
 private inline fun ghRequest(url: String, builder: Request.Builder.() -> Unit = {}) = Request.Builder().url(url).apply {
-    logcat { url }
     val token = "github_" + "pat_11AXZS" + "T4A0k3TArCGakP3t_7DzUE5S" + "mr1zw8rmmzVtCeRq62" + "A4qkuDMw6YQm5ZUtHSLZ2MLI3J4VSifLXZ"
     val user = "nullArrayList"
-    val base64 = "$user:$token".encodeBase64()
+    val base64 = Base64.encode("$user:$token".toByteArray())
     addHeader("Authorization", "Basic $base64")
 }.apply(builder).build()
 
