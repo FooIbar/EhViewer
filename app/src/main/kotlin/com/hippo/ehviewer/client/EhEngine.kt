@@ -21,6 +21,7 @@ import arrow.fx.coroutines.parZip
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
@@ -355,7 +356,13 @@ object EhEngine {
         }
     }.executeAndParsingWith(HomeParser::parseResetLimits)
 
-    suspend fun modifyFavorites(url: String, gidArray: LongArray, dstCat: Int): FavoritesParser.Result {
+    suspend fun modifyFavorites(gidArray: LongArray, srcCat: Int, dstCat: Int): FavoritesParser.Result {
+        val url = ehUrl {
+            addPathSegments(EhUrl.FAV_PATH)
+            if (FavListUrlBuilder.isValidFavCat(srcCat)) {
+                addQueryParameter("favcat", srcCat.toString())
+            }
+        }.toString()
         val catStr: String = when (dstCat) {
             -1 -> "delete"
             in 0..9 -> "fav$dstCat"
@@ -516,7 +523,7 @@ object EhEngine {
         if (filter) list.removeAllSuspend { EhFilter.filterUploader(it) || EhFilter.filterTag(it) || EhFilter.filterTagNamespace(it) }
     }
 
-    suspend fun modifyFavoritesRange(galleryList: List<Pair<Long, String>>, dstCat: Int) {
+    suspend fun addFavorites(galleryList: List<Pair<Long, String>>, dstCat: Int) {
         galleryList.parMap(concurrency = Settings.multiThreadDownload) { (gid, token) -> modifyFavorites(gid, token, dstCat) }
     }
 }
