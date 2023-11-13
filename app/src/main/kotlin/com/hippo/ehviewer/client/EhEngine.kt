@@ -120,13 +120,23 @@ private fun rethrowExactly(code: Int, body: String, e: Throwable): Nothing {
 
 val httpContentPool = DirectByteBufferPool(8, 0x80000)
 
-suspend inline fun <T> fetchCompat(
+suspend fun <T> fetchCompat(
     url: String,
     referer: String? = null,
     origin: String? = null,
     reqBody: RequestBody? = null,
-    crossinline parser: suspend (ByteBuffer) -> T,
+    parser: suspend (ByteBuffer) -> T,
 ): T {
+    fun commonChecks(body: ByteBuffer) {
+        // Check sad panda(without panda)
+        if (!body.hasRemaining()) {
+            if (EhUtils.isExHentai) {
+                throw EhException("Sad Panda\n(without panda)")
+            } else {
+                throw EhException("IP banned")
+            }
+        }
+    }
     return if (isCronetSupported) {
         cronetRequest(url, referer, origin) {
             reqBody?.let { withRequestBody(it) }
@@ -134,6 +144,7 @@ suspend inline fun <T> fetchCompat(
             httpContentPool.useInstance { buffer ->
                 awaitBodyFully(buffer)
                 buffer.flip()
+                commonChecks(buffer)
                 parser(buffer)
             }
         }
@@ -146,6 +157,7 @@ suspend inline fun <T> fetchCompat(
                     if (body.source().read(buffer) == -1) break
                 }
                 buffer.flip()
+                commonChecks(buffer)
                 parser(buffer)
             }
         }
