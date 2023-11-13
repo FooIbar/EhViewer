@@ -56,13 +56,10 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.CompositionContext
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -228,8 +225,6 @@ class MainActivity : EhActivity() {
         recomposeFlow.tryEmit(Unit)
     }
 
-    var compositionContext: CompositionContext? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -242,13 +237,6 @@ class MainActivity : EhActivity() {
             fun isSelected(id: Int) = ::navController.isInitialized && id == navController.currentDestination?.id
             fun closeDrawer() = scope.launch { drawerState.close() }
 
-            val currentCompositionContext = rememberCompositionContext()
-            DisposableEffect(Unit) {
-                compositionContext = currentCompositionContext
-                onDispose {
-                    compositionContext = null
-                }
-            }
             LaunchedEffect(Unit) {
                 runSuspendCatching {
                     withIOContext {
