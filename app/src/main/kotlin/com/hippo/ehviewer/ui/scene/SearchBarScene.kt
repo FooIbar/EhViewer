@@ -1,9 +1,12 @@
 package com.hippo.ehviewer.ui.scene
 
 import android.os.Bundle
+import android.os.Parcelable
+import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.CallSuper
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
@@ -44,21 +47,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.view.updatePadding
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import androidx.viewbinding.ViewBinding
+import com.google.android.material.sidesheet.SideSheetDialog
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -68,6 +79,7 @@ import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.findActivity
+import com.hippo.ehviewer.util.getSparseParcelableArrayCompat
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -315,6 +327,10 @@ fun SearchBarScreen(
 }
 
 abstract class SearchBarScene : BaseScene() {
+    private var drawerView: View? = null
+    private var drawerViewState: SparseArray<Parcelable>? = null
+    private var sideSheetDialog: SideSheetDialog? = null
+
     private var mSuggestionProvider: SuggestionProvider? = null
     private var onApplySearch: (String) -> Unit = {}
     var initialQuery = ""
@@ -336,6 +352,7 @@ abstract class SearchBarScene : BaseScene() {
             }
         }
         return ComposeWithMD3 {
+            val compositionContext = rememberCompositionContext()
             val density = LocalDensity.current
             val fabPadding = with(density) { 16.dp.roundToPx() }
             val margin = with(density) { 8.dp.roundToPx() }
@@ -357,9 +374,24 @@ abstract class SearchBarScene : BaseScene() {
                 AndroidViewBinding(
                     modifier = Modifier.fillMaxSize(),
                     factory = { inflater, parent, _ ->
-                        onCreateViewWithToolbar(inflater, parent, savedInstanceState).apply {
+                        onCreateViewWithToolbar(inflater, parent, savedInstanceState).also {
                             recyclerView.addOnScrollListener(onScrollListener)
+                            createDrawerView(savedInstanceState)?.apply {
+                                if (this is ComposeView) {
+                                    val owner = viewLifecycleOwner
+                                    setViewTreeLifecycleOwner(owner)
+                                    setViewTreeViewModelStoreOwner(owner as ViewModelStoreOwner)
+                                    setViewTreeSavedStateRegistryOwner(owner as SavedStateRegistryOwner)
+                                    setParentCompositionContext(compositionContext)
+                                }
+                                sideSheetDialog = SideSheetDialog(parent.context).also {
+                                    it.setContentView(this)
+                                }
+                            }
                         }
+                    },
+                    onRelease = {
+                        onRelease()
                     },
                 ) {
                     fabLayout.updatePadding(bottom = fabPadding + bottomPadding)
@@ -375,6 +407,49 @@ abstract class SearchBarScene : BaseScene() {
         container: ViewGroup,
         savedInstanceState: Bundle?,
     ): ViewBinding
+
+    fun openSideSheet() = sideSheetDialog!!.show()
+    fun closeSideSheet() = sideSheetDialog!!.dismiss()
+
+    private fun createDrawerView(savedInstanceState: Bundle?): View? {
+        drawerView = onCreateDrawerView(layoutInflater)?.apply {
+            val saved = drawerViewState ?: savedInstanceState?.getSparseParcelableArrayCompat(KEY_DRAWER_VIEW_STATE)
+            saved?.let {
+                restoreHierarchyState(it)
+            }
+        }
+        return drawerView
+    }
+
+    open fun onCreateDrawerView(inflater: LayoutInflater): View? = null
+
+    private fun destroyDrawerView() {
+        drawerView?.let {
+            drawerViewState = SparseArray()
+            it.saveHierarchyState(drawerViewState)
+        }
+        onDestroyDrawerView()
+        drawerView = null
+    }
+
+    open fun onDestroyDrawerView() {
+        sideSheetDialog?.dismiss()
+        sideSheetDialog = null
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        drawerView?.let {
+            drawerViewState = SparseArray()
+            it.saveHierarchyState(drawerViewState)
+            outState.putSparseParcelableArray(KEY_DRAWER_VIEW_STATE, drawerViewState)
+        }
+    }
+
+    @CallSuper
+    open fun onRelease() {
+        destroyDrawerView()
+    }
 
     @Composable
     abstract fun TrailingIcon()

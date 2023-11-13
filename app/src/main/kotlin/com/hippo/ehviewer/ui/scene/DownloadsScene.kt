@@ -370,8 +370,8 @@ class DownloadsScene :
         super.onSearchViewExpanded()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onRelease() {
+        super.onRelease()
         binding.recyclerView.stopScroll()
         mViewTransition = null
         mAdapter = null

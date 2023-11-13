@@ -445,8 +445,8 @@ class GalleryListScene : SearchBarScene() {
         return binding
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onRelease() {
+        super.onRelease()
         stateBackPressedCallback.remove()
         binding.recyclerView.stopScroll()
         _binding = null
