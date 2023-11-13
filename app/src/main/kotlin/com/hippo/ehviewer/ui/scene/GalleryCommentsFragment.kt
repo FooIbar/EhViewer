@@ -58,7 +58,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -110,6 +109,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
+import moe.tarsin.coroutines.replace
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
 
@@ -281,8 +281,6 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 ),
             ) {
                 items(comments.comments) { item ->
-                    val recomposeScope = currentRecomposeScope
-
                     suspend fun Context.voteComment(comment: GalleryComment, isUp: Boolean) {
                         galleryDetail.runSuspendCatching {
                             EhEngine.voteComment(apiUid, apiKey, gid, token, comment.id, if (isUp) 1 else -1)
@@ -291,15 +289,13 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                                 if (isUp) (if (0 != result.vote) R.string.vote_up_successfully else R.string.cancel_vote_up_successfully) else if (0 != result.vote) R.string.vote_down_successfully else R.string.cancel_vote_down_successfully,
                                 BaseScene.LENGTH_SHORT,
                             )
-                            comment.score = result.score
-                            if (isUp) {
-                                comment.voteUpEd = 0 != result.vote
-                                comment.voteDownEd = false
-                            } else {
-                                comment.voteDownEd = 0 != result.vote
-                                comment.voteUpEd = false
-                            }
-                            recomposeScope.invalidate()
+                            val newComment = comment.copy(
+                                score = result.score,
+                                voteUpEd = 0 != result.vote && isUp,
+                                voteDownEd = 0 != result.vote && !isUp,
+                            )
+                            val list = comments.comments.replace(comment, newComment)
+                            comments = comments.copy(comments = list)
                         }.onFailure {
                             findActivity<MainActivity>().showTip(R.string.vote_failed, BaseScene.LENGTH_LONG)
                         }
