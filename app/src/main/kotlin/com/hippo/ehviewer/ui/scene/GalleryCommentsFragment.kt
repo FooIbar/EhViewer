@@ -58,6 +58,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -161,6 +162,9 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
 
     var userComment by rememberSaveable { mutableStateOf("") }
     var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
+    LaunchedEffect(comments) {
+        galleryDetail.comments = comments
+    }
     var refreshing by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val density = LocalDensity.current
