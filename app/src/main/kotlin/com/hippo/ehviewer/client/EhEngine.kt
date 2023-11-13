@@ -505,6 +505,6 @@ object EhEngine {
     }
 
     suspend fun modifyFavoritesRange(galleryList: List<Pair<Long, String>>, dstCat: Int) {
-        galleryList.forEach { (gid, token) -> modifyFavorites(gid, token, dstCat) }
+        galleryList.parMap(concurrency = Settings.multiThreadDownload) { (gid, token) -> modifyFavorites(gid, token, dstCat) }
     }
 }
