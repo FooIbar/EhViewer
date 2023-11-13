@@ -276,31 +276,21 @@ object EhEngine {
         GalleryDetailParser.parseComments(document)
     }
 
-    /**
-     * @param dstCat -1 for delete, 0 - 9 for cloud favorite, others throw Exception
-     * @param note   max 250 characters
-     */
-    suspend fun modifyFavorites(
-        gid: Long,
-        token: String?,
-        dstCat: Int = -1,
-        note: String = "",
-    ) {
+    suspend fun modifyFavorites(gid: Long, token: String?, dstCat: Int = -1, note: String = "") {
         val catStr: String = when (dstCat) {
             -1 -> "favdel"
             in 0..9 -> dstCat.toString()
             else -> throw EhException("Invalid dstCat: $dstCat")
         }
         val url = EhUrl.getAddFavorites(gid, token)
-        return ehRequest(url, url, EhUrl.origin) {
-            formBody {
-                add("favcat", catStr)
-                add("favnote", note)
-                // apply=Add+to+Favorites is not necessary, just use apply=Apply+Changes all the time
-                add("apply", "Apply Changes")
-                add("update", "1")
-            }
-        }.executeAndParsingWith { }
+        val body = formBody {
+            add("favcat", catStr)
+            add("favnote", note)
+            // apply=Add+to+Favorites is not necessary, just use apply=Apply+Changes all the time
+            add("apply", "Apply Changes")
+            add("update", "1")
+        }
+        fetchCompat(url, url, EhUrl.origin, body) { }
     }
 
     suspend fun downloadArchive(
