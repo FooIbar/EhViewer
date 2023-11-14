@@ -117,10 +117,17 @@ import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.toBBCode
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.system.logcat
+import io.github.petertrr.diffutils.diffInline
+import io.github.petertrr.diffutils.patch.ChangeDelta
+import io.github.petertrr.diffutils.patch.DeleteDelta
+import io.github.petertrr.diffutils.patch.EqualDelta
+import io.github.petertrr.diffutils.patch.InsertDelta
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.replace
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.kt.unreachable
 import rikka.core.res.resolveColor
 
 private fun Context.generateComment(
@@ -427,24 +434,64 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         BasicTextField(
                             value = userComment,
                             onValueChange = { textFieldValue ->
-                                // Hacky: BasicTextField would clear text spans
-                                val end = textFieldValue.text.length
-                                fun <T> List<AnnotatedString.Range<T>>.keepRange() = filterNot {
-                                    it.start > end
-                                }.map {
-                                    if (it.end > end) {
-                                        it.copy(end = end)
-                                    } else {
-                                        it
-                                    }
+                                if (userComment.annotatedString.spanStyles.isEmpty()) {
+                                    userComment = textFieldValue
+                                    return@BasicTextField
                                 }
-                                userComment = textFieldValue.copy(
-                                    AnnotatedString(
-                                        textFieldValue.text,
-                                        userComment.annotatedString.spanStyles.keepRange(),
-                                        userComment.annotatedString.paragraphStyles.keepRange(),
-                                    ),
-                                )
+                                // Hacky: BasicTextField would clear text spans
+                                val diff = diffInline(userComment.text, textFieldValue.text).deltas
+                                if (diff.isNotEmpty()) {
+                                    if (diff.size == 1) {
+                                        val spans = when (val delta = diff.first()) {
+                                            is DeleteDelta -> {
+                                                val pos = delta.source.position
+                                                val toIns = delta.source.lines.first()
+                                                val ofs = toIns.length
+                                                userComment.annotatedString.spanStyles.map {
+                                                    if (it.start < pos && it.end <= pos) {
+                                                        it
+                                                    } else if (it.start < pos) {
+                                                        it.copy(end = it.end - ofs)
+                                                    } else if (it.start > pos && it.end > pos) {
+                                                        it.copy(start = it.start - ofs, end = it.end - ofs)
+                                                    } else {
+                                                        unreachable()
+                                                    }
+                                                }
+                                            }
+                                            is ChangeDelta -> unreachable()
+                                            is EqualDelta -> unreachable()
+                                            is InsertDelta -> {
+                                                val pos = delta.source.position
+                                                val toIns = delta.target.lines.first()
+                                                val ofs = toIns.length
+                                                userComment.annotatedString.spanStyles.map {
+                                                    logcat { "${it.start} ${it.end}" }
+                                                    if (it.start < pos && it.end <= pos) {
+                                                        it
+                                                    } else if (it.start < pos) {
+                                                        it.copy(end = it.end + ofs)
+                                                    } else if (it.start > pos && it.end > pos) {
+                                                        it.copy(start = it.start + ofs, end = it.end + ofs)
+                                                    } else {
+                                                        unreachable()
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        userComment = textFieldValue.copy(
+                                            annotatedString = AnnotatedString(textFieldValue.text, spans),
+                                        )
+                                    } else {
+                                        // Cannot handle diff, override directly
+                                        userComment = textFieldValue
+                                    }
+                                } else {
+                                    // Raw Text not changed, copy annotatedString
+                                    userComment = textFieldValue.copy(
+                                        annotatedString = userComment.annotatedString,
+                                    )
+                                }
                             },
                             modifier = Modifier.weight(1f).padding(keylineMargin),
                             textStyle = MaterialTheme.typography.bodyLarge.merge(color = color),
