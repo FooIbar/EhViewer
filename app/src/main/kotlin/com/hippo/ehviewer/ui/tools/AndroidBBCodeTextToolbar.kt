@@ -11,10 +11,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.TextToolbar
 import androidx.compose.ui.platform.TextToolbarStatus
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -33,6 +35,7 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
     val view = LocalView.current
     val context = LocalContext.current
     val activity = remember { context.findActivity<ComponentActivity>() }
+    val clipboardManager = LocalClipboardManager.current
     val toolbar = remember {
         object : TextToolbar {
             private var actionMode: ActionMode? = null
@@ -83,12 +86,12 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                                 )
 
                                 // Hacky: Notify BasicTextField clear state
-                                val data = clipboardManager.primaryClip
-                                onCopyRequested?.invoke()
-                                if (data == null) {
-                                    clipboardManager.clearPrimaryClip()
+                                if (clipboardManager.hasText()) {
+                                    val data = clipboardManager.getText() ?: AnnotatedString("")
+                                    onCopyRequested?.invoke()
+                                    clipboardManager.setText(data)
                                 } else {
-                                    clipboardManager.setPrimaryClip(data)
+                                    onPasteRequested?.invoke()
                                 }
 
                                 p0.finish()

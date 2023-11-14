@@ -429,7 +429,9 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                             onValueChange = { textFieldValue ->
                                 // Hacky: BasicTextField would clear text spans
                                 val end = textFieldValue.text.length
-                                fun <T> List<AnnotatedString.Range<T>>.keepRange() = map {
+                                fun <T> List<AnnotatedString.Range<T>>.keepRange() = filterNot {
+                                    it.start > end
+                                }.map {
                                     if (it.end > end) {
                                         it.copy(end = end)
                                     } else {
