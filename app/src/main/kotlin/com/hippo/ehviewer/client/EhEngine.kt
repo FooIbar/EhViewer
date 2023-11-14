@@ -143,6 +143,7 @@ suspend fun <T> fetchCompat(
         cronetRequest(url, referer, origin) {
             reqBody?.let { withRequestBody(it) }
         }.execute {
+            @Suppress("NewApi")
             val code = it.httpStatusCode
             if (code >= 400) {
                 throw StatusCodeException(code)
