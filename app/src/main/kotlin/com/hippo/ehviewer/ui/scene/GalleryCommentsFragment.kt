@@ -58,6 +58,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -75,6 +76,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -103,6 +105,7 @@ import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
+import com.hippo.ehviewer.ui.tools.rememberBBCodeTextToolbar
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.ReadableTime
@@ -417,13 +420,16 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                     },
                 ) {
                     val color = MaterialTheme.colorScheme.onPrimaryContainer
-                    BasicTextField(
-                        value = userComment,
-                        onValueChange = { userComment = it },
-                        modifier = Modifier.weight(1f).padding(keylineMargin),
-                        textStyle = MaterialTheme.typography.bodyLarge.merge(color = color),
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    )
+                    val toolbar = rememberBBCodeTextToolbar(userComment)
+                    CompositionLocalProvider(LocalTextToolbar provides toolbar) {
+                        BasicTextField(
+                            value = userComment,
+                            onValueChange = { userComment = it },
+                            modifier = Modifier.weight(1f).padding(keylineMargin),
+                            textStyle = MaterialTheme.typography.bodyLarge.merge(color = color),
+                            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                        )
+                    }
                     IconButton(
                         onClick = {
                             coroutineScope.launchIO {
