@@ -74,6 +74,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalTextToolbar
@@ -105,6 +106,7 @@ import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.NoopClipboardManager
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.rememberBBCodeTextToolbar
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
@@ -430,7 +432,10 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 ) {
                     val color = MaterialTheme.colorScheme.onPrimaryContainer
                     val toolbar = rememberBBCodeTextToolbar(userCommentBackField)
-                    CompositionLocalProvider(LocalTextToolbar provides toolbar) {
+                    CompositionLocalProvider(
+                        LocalTextToolbar provides toolbar,
+                        LocalClipboardManager provides NoopClipboardManager,
+                    ) {
                         BasicTextField(
                             value = userComment,
                             onValueChange = { textFieldValue ->

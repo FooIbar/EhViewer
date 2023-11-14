@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -22,12 +23,19 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.getSelectedText
+import androidx.compose.ui.text.input.getTextAfterSelection
+import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.style.TextDecoration
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.findActivity
-import splitties.systemservices.clipboardManager
 
 typealias PlatformRect = android.graphics.Rect
+
+object NoopClipboardManager : ClipboardManager {
+    override fun getText() = null
+    override fun setText(annotatedString: AnnotatedString) = Unit
+}
 
 @Composable
 fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): TextToolbar {
@@ -70,31 +78,28 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                             override fun onActionItemClicked(p0: ActionMode, p1: MenuItem): Boolean {
                                 tfv = TextFieldValue(
                                     buildAnnotatedString {
-                                        append(tfv.annotatedString)
-                                        fun addStyle(style: SpanStyle) = addStyle(
-                                            style,
-                                            tfv.selection.start,
-                                            tfv.selection.end,
-                                        )
+                                        val len = tfv.text.length
+                                        fun addStyle(style: SpanStyle) {
+                                            append(tfv.annotatedString)
+                                            addStyle(style, tfv.selection.start, tfv.selection.end)
+                                        }
                                         when (p1.itemId) {
                                             R.id.action_bold -> addStyle(SpanStyle(fontWeight = FontWeight.Bold))
                                             R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
                                             R.id.action_underline -> addStyle(SpanStyle(textDecoration = TextDecoration.Underline))
                                             R.id.action_strikethrough -> addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+                                            R.id.action_url -> TODO()
+                                            R.id.action_clear -> {
+                                                append(tfv.getTextBeforeSelection(len))
+                                                append(tfv.getSelectedText().text)
+                                                append(tfv.getTextAfterSelection(len))
+                                            }
                                         }
                                     },
                                 )
 
                                 // Hacky: Notify BasicTextField clear state
-                                if (clipboardManager.hasText()) {
-                                    val data = clipboardManager.getText() ?: AnnotatedString("")
-                                    onCopyRequested?.invoke()
-                                    clipboardManager.setText(data)
-                                } else {
-                                    onPasteRequested?.invoke()
-                                }
-
-                                p0.finish()
+                                onCopyRequested?.invoke()
                                 return true
                             }
 
