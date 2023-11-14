@@ -49,6 +49,7 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
+import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.ehviewer.util.isCronetSupported
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
@@ -68,7 +69,10 @@ class EhApplication : Application(), ImageLoaderFactory {
     override fun onCreate() {
         // Initialize Settings on first access
         lifecycleScope.launchIO {
-            AppCompatDelegate.setDefaultNightMode(Settings.theme)
+            val mode = Settings.theme
+            if (!isAtLeastS) {
+                AppCompatDelegate.setDefaultNightMode(mode)
+            }
         }
         lifecycle.addObserver(lockObserver)
         val handler = Thread.getDefaultUncaughtExceptionHandler()
