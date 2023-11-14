@@ -98,32 +98,47 @@ fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
     }
 }
 
+// Overlapped SpanStyle is support through stack based builder
+// Does BBCode allow interlaced tags? If not, split interlaced span first?
 fun AnnotatedString.toBBCode() = buildString {
-    var current = 0
-    spanStyles.sortedBy { it.start }.forEach {
-        append(text.subSequence(current, it.start))
-        with(it.item) {
-            when {
-                fontWeight == FontWeight.Bold -> append("[b]")
-                fontStyle == FontStyle.Italic -> append("[i]")
-                textDecoration == TextDecoration.Underline -> append("[u]")
-                textDecoration == TextDecoration.LineThrough -> append("[s]")
-                else -> Unit
-            }
-        }
-        append(text.subSequence(it.start, it.end))
-        with(it.item) {
-            when {
-                fontWeight == FontWeight.Bold -> append("[/b]")
-                fontStyle == FontStyle.Italic -> append("[/i]")
-                textDecoration == TextDecoration.Underline -> append("[/u]")
-                textDecoration == TextDecoration.LineThrough -> append("[/s]")
-                else -> Unit
-            }
-        }
-        current = it.end
+    val len = text.length
+    fun SpanStyle.push() = when {
+        fontWeight == FontWeight.Bold -> append("[b]")
+        fontStyle == FontStyle.Italic -> append("[i]")
+        textDecoration == TextDecoration.Underline -> append("[u]")
+        textDecoration == TextDecoration.LineThrough -> append("[s]")
+        else -> this@buildString
     }
-    append(text.subSequence(current, text.length))
+    fun SpanStyle.pop() = when {
+        fontWeight == FontWeight.Bold -> append("[/b]")
+        fontStyle == FontStyle.Italic -> append("[/i]")
+        textDecoration == TextDecoration.Underline -> append("[/u]")
+        textDecoration == TextDecoration.LineThrough -> append("[/s]")
+        else -> this@buildString
+    }
+    var current = 0
+    val stack = ArrayDeque<AnnotatedString.Range<SpanStyle>>()
+    val spans = spanStyles.groupBy { it.start }
+    tailrec fun next() {
+        tailrec fun popSpans() {
+            val pk = stack.lastOrNull()
+            if (pk?.end == current) {
+                stack.removeLast().item.pop()
+                popSpans()
+            }
+        }
+        popSpans()
+        if (current != len) {
+            spans[current]?.sortedBy { it.end }?.forEach {
+                it.item.push()
+                stack.addLast(it)
+            }
+            append(text[current])
+            current++
+            next()
+        }
+    }
+    next()
 }
 
 fun Spanned.toAnnotatedString(): AnnotatedString = buildAnnotatedString {

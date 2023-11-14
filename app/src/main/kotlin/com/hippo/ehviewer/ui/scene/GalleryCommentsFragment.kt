@@ -120,6 +120,7 @@ import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.replace
@@ -206,7 +207,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
 
     suspend fun Context.sendComment() {
         commenting = false
-        focusManager.clearFocus()
+        withUIContext { focusManager.clearFocus() }
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, false)
         runSuspendCatching {
             val bbcode = userComment.annotatedString.toBBCode()
