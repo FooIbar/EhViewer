@@ -94,7 +94,7 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                                                 R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
                                                 R.id.action_underline -> addStyle(SpanStyle(textDecoration = TextDecoration.Underline))
                                                 R.id.action_strikethrough -> addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
-                                                R.id.action_url -> TODO()
+                                                R.id.action_url -> {}
                                                 R.id.action_clear -> {
                                                     append(capturedTfv.getTextBeforeSelection(len))
                                                     append(capturedTfv.getSelectedText().text)
