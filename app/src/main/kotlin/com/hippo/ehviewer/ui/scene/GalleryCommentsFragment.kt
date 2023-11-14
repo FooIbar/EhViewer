@@ -77,6 +77,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -201,8 +202,11 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     val editCommentFail = stringResource(R.string.edit_comment_failed)
     val commentFail = stringResource(R.string.comment_failed)
 
+    val focusManager = LocalFocusManager.current
+
     suspend fun Context.sendComment() {
         commenting = false
+        focusManager.clearFocus()
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, false)
         runSuspendCatching {
             val bbcode = userComment.annotatedString.toBBCode()
