@@ -9,10 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.ClipboardManager
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.TextToolbar
@@ -29,6 +29,8 @@ import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.style.TextDecoration
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.findActivity
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 typealias PlatformRect = android.graphics.Rect
 
@@ -43,7 +45,7 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
     val view = LocalView.current
     val context = LocalContext.current
     val activity = remember { context.findActivity<ComponentActivity>() }
-    val clipboardManager = LocalClipboardManager.current
+    val coroutineScope = rememberCoroutineScope()
     val toolbar = remember {
         object : TextToolbar {
             private var actionMode: ActionMode? = null
@@ -76,27 +78,32 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                             }
 
                             override fun onActionItemClicked(p0: ActionMode, p1: MenuItem): Boolean {
-                                tfv = TextFieldValue(
-                                    buildAnnotatedString {
-                                        val len = tfv.text.length
-                                        fun addStyle(style: SpanStyle) {
-                                            append(tfv.annotatedString)
-                                            addStyle(style, tfv.selection.start, tfv.selection.end)
-                                        }
-                                        when (p1.itemId) {
-                                            R.id.action_bold -> addStyle(SpanStyle(fontWeight = FontWeight.Bold))
-                                            R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
-                                            R.id.action_underline -> addStyle(SpanStyle(textDecoration = TextDecoration.Underline))
-                                            R.id.action_strikethrough -> addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
-                                            R.id.action_url -> TODO()
-                                            R.id.action_clear -> {
-                                                append(tfv.getTextBeforeSelection(len))
-                                                append(tfv.getSelectedText().text)
-                                                append(tfv.getTextAfterSelection(len))
+                                val capturedTfv = tfv
+                                coroutineScope.launch {
+                                    // Hacky: Let TextField recompose first
+                                    delay(100)
+                                    tfv = TextFieldValue(
+                                        buildAnnotatedString {
+                                            val len = capturedTfv.text.length
+                                            fun addStyle(style: SpanStyle) {
+                                                append(capturedTfv.annotatedString)
+                                                addStyle(style, capturedTfv.selection.start, capturedTfv.selection.end)
                                             }
-                                        }
-                                    },
-                                )
+                                            when (p1.itemId) {
+                                                R.id.action_bold -> addStyle(SpanStyle(fontWeight = FontWeight.Bold))
+                                                R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
+                                                R.id.action_underline -> addStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+                                                R.id.action_strikethrough -> addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+                                                R.id.action_url -> TODO()
+                                                R.id.action_clear -> {
+                                                    append(capturedTfv.getTextBeforeSelection(len))
+                                                    append(capturedTfv.getSelectedText().text)
+                                                    append(capturedTfv.getTextAfterSelection(len))
+                                                }
+                                            }
+                                        },
+                                    )
+                                }
 
                                 // Hacky: Notify BasicTextField clear state
                                 onCopyRequested?.invoke()
