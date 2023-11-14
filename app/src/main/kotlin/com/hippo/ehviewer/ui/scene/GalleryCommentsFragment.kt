@@ -167,7 +167,8 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     var commenting by commentingBackField
     val animationProgress by animateFloatMergePredictiveBackAsState(enable = commentingBackField)
 
-    var userComment by remember { mutableStateOf(TextFieldValue()) }
+    val userCommentBackField = remember { mutableStateOf(TextFieldValue()) }
+    var userComment by userCommentBackField
     var commentId by remember { mutableLongStateOf(-1) }
     var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
     LaunchedEffect(comments) {
@@ -420,7 +421,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                     },
                 ) {
                     val color = MaterialTheme.colorScheme.onPrimaryContainer
-                    val toolbar = rememberBBCodeTextToolbar(userComment)
+                    val toolbar = rememberBBCodeTextToolbar(userCommentBackField)
                     CompositionLocalProvider(LocalTextToolbar provides toolbar) {
                         BasicTextField(
                             value = userComment,

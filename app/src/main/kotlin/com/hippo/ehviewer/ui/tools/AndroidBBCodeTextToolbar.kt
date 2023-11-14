@@ -4,22 +4,33 @@ import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.TextToolbar
 import androidx.compose.ui.platform.TextToolbarStatus
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextDecoration
+import com.hippo.ehviewer.R
+import com.hippo.ehviewer.util.findActivity
 
 typealias PlatformRect = android.graphics.Rect
 
 @Composable
-fun rememberBBCodeTextToolbar(textFieldValue: TextFieldValue): TextToolbar {
-    val tfv by rememberUpdatedState(newValue = textFieldValue)
+fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): TextToolbar {
+    var tfv by textFieldValue
     val view = LocalView.current
+    val context = LocalContext.current
+    val activity = remember { context.findActivity<ComponentActivity>() }
     val toolbar = remember {
         object : TextToolbar {
             private var actionMode: ActionMode? = null
@@ -43,17 +54,32 @@ fun rememberBBCodeTextToolbar(textFieldValue: TextFieldValue): TextToolbar {
                     actionMode = view.startActionMode(
                         object : ActionMode.Callback2() {
                             override fun onCreateActionMode(p0: ActionMode, p1: Menu): Boolean {
-                                // TODO("Not yet implemented")
+                                activity.menuInflater.inflate(R.menu.context_comment, p1)
                                 return true
                             }
 
                             override fun onPrepareActionMode(p0: ActionMode, p1: Menu): Boolean {
-                                // TODO("Not yet implemented")
                                 return true
                             }
 
                             override fun onActionItemClicked(p0: ActionMode, p1: MenuItem): Boolean {
-                                // TODO("Not yet implemented")
+                                tfv = TextFieldValue(
+                                    buildAnnotatedString {
+                                        append(tfv.annotatedString)
+                                        fun addStyle(style: SpanStyle) = addStyle(
+                                            style,
+                                            tfv.selection.start,
+                                            tfv.selection.end,
+                                        )
+                                        when (p1.itemId) {
+                                            R.id.action_bold -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
+                                            R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
+                                            R.id.action_underline -> addStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+                                            R.id.action_strikethrough -> addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+                                        }
+                                    },
+                                )
+                                p0.finish()
                                 return true
                             }
 
