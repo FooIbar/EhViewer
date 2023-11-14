@@ -40,7 +40,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text2.BasicTextField2
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Reply
@@ -60,6 +60,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -76,6 +77,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -101,6 +103,7 @@ import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
+import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.TextUrl
@@ -119,7 +122,7 @@ private fun Context.generateComment(
     textView: TextView,
     comment: GalleryComment,
 ): CharSequence {
-    val sp = comment.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(textView))
+    val sp = comment.comment.parseAsHtml(imageGetter = CoilImageGetter(textView))
     val ssb = SpannableStringBuilder(sp)
     if (0L != comment.id && 0 != comment.score) {
         val score = comment.score
@@ -161,7 +164,8 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     var commenting by commentingBackField
     val animationProgress by animateFloatMergePredictiveBackAsState(enable = commentingBackField)
 
-    var userComment by rememberSaveable { mutableStateOf("") }
+    var userComment by remember { mutableStateOf(TextFieldValue()) }
+    var commentId by remember { mutableLongStateOf(-1) }
     var comments by rememberSaveable { mutableStateOf(galleryDetail.comments) }
     LaunchedEffect(comments) {
         galleryDetail.comments = comments
@@ -178,6 +182,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
 
     val copyComment = stringResource(R.string.copy_comment_text)
     val blockCommenter = stringResource(R.string.block_commenter)
+    val editComment = stringResource(R.string.edit_comment)
     val cancelVoteUp = stringResource(R.string.cancel_vote_up)
     val cancelVoteDown = stringResource(R.string.cancel_vote_down)
     val voteUp = stringResource(R.string.vote_up)
@@ -192,16 +197,19 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         commenting = false
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, false)
         runSuspendCatching {
-            EhEngine.commentGallery(url, userComment, null)
+            // TODO: Convert annotatedString to bbcode
+            val bbcode = userComment.annotatedString.text
+            EhEngine.commentGallery(url, bbcode, commentId)
         }.onSuccess {
             findActivity<MainActivity>().showTip(
-                if (false) editCommentSuccess else commentSuccess,
+                if (commentId != -1L) editCommentSuccess else commentSuccess,
                 BaseScene.LENGTH_SHORT,
             )
-            userComment = ""
+            userComment = TextFieldValue()
+            commentId = -1L
             comments = it
         }.onFailure {
-            val text = if (false) editCommentFail else commentFail
+            val text = if (commentId != -1L) editCommentFail else commentFail
             findActivity<MainActivity>().showTip(
                 text + "\n" + ExceptionUtils.getReadableString(it),
                 BaseScene.LENGTH_LONG,
@@ -259,7 +267,12 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         },
         floatingActionButton = {
             if (!commenting) {
-                FloatingActionButton(onClick = { commenting = true }) {
+                FloatingActionButton(
+                    onClick = {
+                        commentId = -1L
+                        commenting = true
+                    },
+                ) {
                     Icon(imageVector = Icons.AutoMirrored.Default.Reply, contentDescription = null)
                 }
             }
@@ -308,9 +321,16 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
 
                     suspend fun Context.doCommentAction(comment: GalleryComment) {
                         val actions = buildAction {
-                            copyComment thenDo { findActivity<MainActivity>().addTextToClipboard(comment.comment.orEmpty().parseAsHtml()) }
+                            copyComment thenDo { findActivity<MainActivity>().addTextToClipboard(comment.comment.parseAsHtml()) }
                             if (!comment.uploader && !comment.editable) {
                                 blockCommenter thenDo { showFilterCommenter(comment) }
+                            }
+                            if (comment.editable) {
+                                editComment thenDo {
+                                    userComment = TextFieldValue(comment.comment.parseAsHtml().toAnnotatedString())
+                                    commentId = comment.id
+                                    commenting = true
+                                }
                             }
                             if (comment.voteUpAble) {
                                 (if (comment.voteUpEd) cancelVoteUp else voteUp) thenDo { voteComment(comment, true) }
@@ -397,7 +417,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                     },
                 ) {
                     val color = MaterialTheme.colorScheme.onPrimaryContainer
-                    BasicTextField2(
+                    BasicTextField(
                         value = userComment,
                         onValueChange = { userComment = it },
                         modifier = Modifier.weight(1f).padding(keylineMargin),
