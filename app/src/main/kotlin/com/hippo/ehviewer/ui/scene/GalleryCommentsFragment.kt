@@ -426,13 +426,21 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                     CompositionLocalProvider(LocalTextToolbar provides toolbar) {
                         BasicTextField(
                             value = userComment,
-                            onValueChange = {
+                            onValueChange = { textFieldValue ->
                                 // Hacky: BasicTextField would clear text spans
-                                userComment = it.copy(
+                                val end = textFieldValue.text.length
+                                fun <T> List<AnnotatedString.Range<T>>.keepRange() = map {
+                                    if (it.end > end) {
+                                        it.copy(end = end)
+                                    } else {
+                                        it
+                                    }
+                                }
+                                userComment = textFieldValue.copy(
                                     AnnotatedString(
-                                        it.text,
-                                        userComment.annotatedString.spanStyles,
-                                        userComment.annotatedString.paragraphStyles,
+                                        textFieldValue.text,
+                                        userComment.annotatedString.spanStyles.keepRange(),
+                                        userComment.annotatedString.paragraphStyles.keepRange(),
                                     ),
                                 )
                             },
