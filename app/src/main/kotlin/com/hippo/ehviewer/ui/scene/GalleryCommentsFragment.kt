@@ -80,7 +80,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
@@ -111,6 +110,7 @@ import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.rememberBBCodeTextToolbar
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.ui.tools.toBBCode
+import com.hippo.ehviewer.ui.tools.updateSpan
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.TextUrl
@@ -119,17 +119,10 @@ import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.system.logcat
-import io.github.petertrr.diffutils.diffInline
-import io.github.petertrr.diffutils.patch.ChangeDelta
-import io.github.petertrr.diffutils.patch.DeleteDelta
-import io.github.petertrr.diffutils.patch.EqualDelta
-import io.github.petertrr.diffutils.patch.InsertDelta
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.replace
 import moe.tarsin.coroutines.runSuspendCatching
-import moe.tarsin.kt.unreachable
 import rikka.core.res.resolveColor
 
 private fun Context.generateComment(
@@ -439,67 +432,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         BasicTextField(
                             value = userComment,
                             onValueChange = { textFieldValue ->
-                                val oriSpan = userComment.annotatedString.spanStyles
-                                if (oriSpan.isEmpty()) {
-                                    // User have no spanned comment, just update
-                                    userComment = textFieldValue
-                                    return@BasicTextField
-                                }
-                                // Hacky: BasicTextField would clear text spans
-                                val diff = diffInline(userComment.text, textFieldValue.text).deltas
-                                if (diff.isNotEmpty()) {
-                                    if (diff.size == 1) {
-                                        val spans = when (val delta = diff.first()) {
-                                            is DeleteDelta -> {
-                                                val pos = delta.source.position
-                                                val toIns = delta.source.lines.first()
-                                                val ofs = toIns.length
-                                                oriSpan.map {
-                                                    if (it.start < pos && it.end <= pos) {
-                                                        it
-                                                    } else if (it.start < pos) {
-                                                        it.copy(end = it.end - ofs)
-                                                    } else if (it.start > pos && it.end > pos) {
-                                                        it.copy(start = it.start - ofs, end = it.end - ofs)
-                                                    } else {
-                                                        unreachable()
-                                                    }
-                                                }
-                                            }
-                                            is ChangeDelta -> unreachable()
-                                            is EqualDelta -> unreachable()
-                                            is InsertDelta -> {
-                                                val pos = delta.source.position
-                                                val toIns = delta.target.lines.first()
-                                                val ofs = toIns.length
-                                                oriSpan.map {
-                                                    logcat { "${it.start} ${it.end}" }
-                                                    if (it.start < pos && it.end <= pos) {
-                                                        it
-                                                    } else if (it.start < pos) {
-                                                        it.copy(end = it.end + ofs)
-                                                    } else if (it.start > pos && it.end > pos) {
-                                                        it.copy(start = it.start + ofs, end = it.end + ofs)
-                                                    } else {
-                                                        unreachable()
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        // Update span range for updated comment
-                                        userComment = textFieldValue.copy(
-                                            annotatedString = AnnotatedString(textFieldValue.text, spans),
-                                        )
-                                    } else {
-                                        // Cannot handle diff, override directly
-                                        userComment = textFieldValue
-                                    }
-                                } else {
-                                    // Raw Text not changed, copy annotatedString
-                                    userComment = textFieldValue.copy(
-                                        annotatedString = userComment.annotatedString,
-                                    )
-                                }
+                                userComment = textFieldValue.updateSpan(userComment)
                             },
                             modifier = Modifier.weight(1f).padding(keylineMargin),
                             textStyle = MaterialTheme.typography.bodyLarge.merge(color = color),

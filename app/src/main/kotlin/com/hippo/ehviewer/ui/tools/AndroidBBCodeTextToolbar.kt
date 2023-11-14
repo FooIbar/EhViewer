@@ -34,14 +34,84 @@ import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.style.TextDecoration
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.findActivity
+import eu.kanade.tachiyomi.util.system.logcat
+import io.github.petertrr.diffutils.diffInline
+import io.github.petertrr.diffutils.patch.ChangeDelta
+import io.github.petertrr.diffutils.patch.DeleteDelta
+import io.github.petertrr.diffutils.patch.EqualDelta
+import io.github.petertrr.diffutils.patch.InsertDelta
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import moe.tarsin.kt.unreachable
 
 typealias PlatformRect = android.graphics.Rect
 
 object NoopClipboardManager : ClipboardManager {
     override fun getText() = null
     override fun setText(annotatedString: AnnotatedString) = Unit
+}
+
+fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
+    val oriSpan = origin.annotatedString.spanStyles
+    if (oriSpan.isEmpty()) {
+        // User have no spanned comment, just update
+        return this
+    }
+    // Hacky: BasicTextField would clear text spans
+    val diff = diffInline(origin.text, text).deltas
+    if (diff.isNotEmpty()) {
+        if (diff.size == 1) {
+            val spans = when (val delta = diff.first()) {
+                is DeleteDelta -> {
+                    val pos = delta.source.position
+                    val toIns = delta.source.lines.first()
+                    val ofs = toIns.length
+                    oriSpan.map {
+                        if (it.start < pos && it.end <= pos) {
+                            it
+                        } else if (it.start < pos) {
+                            it.copy(end = it.end - ofs)
+                        } else if (it.start > pos && it.end > pos) {
+                            it.copy(start = it.start - ofs, end = it.end - ofs)
+                        } else {
+                            unreachable()
+                        }
+                    }
+                }
+                is ChangeDelta -> unreachable()
+                is EqualDelta -> unreachable()
+                is InsertDelta -> {
+                    val pos = delta.source.position
+                    val toIns = delta.target.lines.first()
+                    val ofs = toIns.length
+                    oriSpan.map {
+                        logcat { "${it.start} ${it.end}" }
+                        if (it.start < pos && it.end <= pos) {
+                            it
+                        } else if (it.start < pos) {
+                            it.copy(end = it.end + ofs)
+                        } else if (it.start > pos && it.end > pos) {
+                            it.copy(start = it.start + ofs, end = it.end + ofs)
+                        } else {
+                            unreachable()
+                        }
+                    }
+                }
+            }
+            // Update span range for updated comment
+            return copy(
+                annotatedString = AnnotatedString(text, spans),
+            )
+        } else {
+            // Cannot handle diff, override directly
+            return this
+        }
+    } else {
+        // Raw Text not changed, copy annotatedString
+        return copy(
+            annotatedString = origin.annotatedString,
+        )
+    }
 }
 
 fun AnnotatedString.toBBCode() = buildString {
