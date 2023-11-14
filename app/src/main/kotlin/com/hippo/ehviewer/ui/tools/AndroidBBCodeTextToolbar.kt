@@ -99,10 +99,9 @@ fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
 }
 
 fun AnnotatedString.toBBCode() = buildString {
-    var start = 0
+    var current = 0
     spanStyles.sortedBy { it.start }.forEach {
-        val prev = it.start - 1
-        if (prev >= start) append(text.subSequence(start, prev))
+        append(text.subSequence(current, it.start))
         with(it.item) {
             when {
                 fontWeight == FontWeight.Bold -> append("[b]")
@@ -122,9 +121,9 @@ fun AnnotatedString.toBBCode() = buildString {
                 else -> Unit
             }
         }
-        start = it.end + 1
+        current = it.end
     }
-    if (start <= text.length) append(text.subSequence(start - 1, text.length))
+    append(text.subSequence(current, text.length))
 }
 
 fun Spanned.toAnnotatedString(): AnnotatedString = buildAnnotatedString {
