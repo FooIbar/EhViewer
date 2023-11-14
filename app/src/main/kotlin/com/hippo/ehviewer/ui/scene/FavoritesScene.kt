@@ -193,7 +193,7 @@ class FavoritesScene : SearchBarScene() {
         }
         if (keyword.isNullOrEmpty()) {
             setTitle(getString(R.string.favorites_title, favCatName))
-            clearSearchBarText()
+            setSearchBarText(null)
         } else {
             setTitle(getString(R.string.favorites_title_2, favCatName, keyword))
         }

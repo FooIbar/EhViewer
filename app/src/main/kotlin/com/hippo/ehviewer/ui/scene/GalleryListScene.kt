@@ -217,15 +217,6 @@ class GalleryListScene : SearchBarScene() {
         } else {
             onRestore(savedInstanceState)
         }
-
-        val mode = mUrlBuilder.mode
-        if (mode != MODE_TOPLIST) {
-            var keyword = mUrlBuilder.keyword
-            if (mode == MODE_TAG) {
-                keyword = wrapTagKeyword(keyword!!)
-            }
-            initialQuery = keyword.orEmpty()
-        }
     }
 
     override fun onResume() {
@@ -255,6 +246,7 @@ class GalleryListScene : SearchBarScene() {
     // Update search bar title, drawer checked item
     private fun onUpdateUrlBuilder() {
         _binding ?: return
+        var keyword = mUrlBuilder.keyword
         val category = mUrlBuilder.category
         val mode = mUrlBuilder.mode
         val isPopular = mode == MODE_WHATS_HOT
@@ -268,6 +260,14 @@ class GalleryListScene : SearchBarScene() {
         binding.searchLayout.setSearchMyTags(mode == MODE_SUBSCRIPTION)
         if (category != EhUtils.NONE) {
             binding.searchLayout.setCategory(category)
+        }
+
+        // Update search edit text
+        if (!mIsTopList) {
+            if (mode == MODE_TAG) {
+                keyword = wrapTagKeyword(keyword!!)
+            }
+            setSearchBarText(keyword)
         }
 
         // Update title
