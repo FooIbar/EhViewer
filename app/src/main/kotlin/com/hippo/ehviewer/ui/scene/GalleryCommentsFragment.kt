@@ -114,6 +114,7 @@ import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
+import com.hippo.ehviewer.util.toBBCode
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlin.math.roundToInt
@@ -202,8 +203,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         commenting = false
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, false)
         runSuspendCatching {
-            // TODO: Convert annotatedString to bbcode
-            val bbcode = userComment.annotatedString.text
+            val bbcode = userComment.annotatedString.toBBCode()
             EhEngine.commentGallery(url, bbcode, commentId)
         }.onSuccess {
             findActivity<MainActivity>().showTip(
