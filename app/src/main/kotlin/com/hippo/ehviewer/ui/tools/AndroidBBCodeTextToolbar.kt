@@ -1,5 +1,10 @@
 package com.hippo.ehviewer.ui.tools
 
+import android.graphics.Typeface
+import android.text.Spanned
+import android.text.style.StrikethroughSpan
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
@@ -37,6 +42,54 @@ typealias PlatformRect = android.graphics.Rect
 object NoopClipboardManager : ClipboardManager {
     override fun getText() = null
     override fun setText(annotatedString: AnnotatedString) = Unit
+}
+
+fun AnnotatedString.toBBCode() = buildString {
+    var start = 0
+    spanStyles.sortedBy { it.start }.forEach {
+        val prev = it.start - 1
+        if (prev >= start) append(text.subSequence(start, prev))
+        with(it.item) {
+            when {
+                fontWeight == FontWeight.Bold -> append("[b]")
+                fontStyle == FontStyle.Italic -> append("[i]")
+                textDecoration == TextDecoration.Underline -> append("[u]")
+                textDecoration == TextDecoration.LineThrough -> append("[s]")
+                else -> Unit
+            }
+        }
+        append(text.subSequence(it.start, it.end))
+        with(it.item) {
+            when {
+                fontWeight == FontWeight.Bold -> append("[/b]")
+                fontStyle == FontStyle.Italic -> append("[/i]")
+                textDecoration == TextDecoration.Underline -> append("[/u]")
+                textDecoration == TextDecoration.LineThrough -> append("[/s]")
+                else -> Unit
+            }
+        }
+        start = it.end + 1
+    }
+    if (start <= text.length) append(text.subSequence(start - 1, text.length))
+}
+
+fun Spanned.toAnnotatedString(): AnnotatedString = buildAnnotatedString {
+    val spanned = this@toAnnotatedString
+    append(spanned.toString())
+    getSpans(0, spanned.length, Any::class.java).forEach { span ->
+        val start = getSpanStart(span)
+        val end = getSpanEnd(span)
+        fun addStyle(spanStyle: SpanStyle) = addStyle(spanStyle, start, end)
+        when (span) {
+            is StrikethroughSpan -> addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+            is UnderlineSpan -> addStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+            is StyleSpan -> {
+                val s = span.style
+                if (s and Typeface.BOLD != 0) addStyle(SpanStyle(fontWeight = FontWeight.Bold))
+                if (s and Typeface.ITALIC != 0) addStyle(SpanStyle(fontStyle = FontStyle.Italic))
+            }
+        }
+    }
 }
 
 @Composable

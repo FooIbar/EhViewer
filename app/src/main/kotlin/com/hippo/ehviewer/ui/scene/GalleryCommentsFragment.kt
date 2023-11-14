@@ -110,13 +110,13 @@ import com.hippo.ehviewer.ui.tools.NoopClipboardManager
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.rememberBBCodeTextToolbar
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
+import com.hippo.ehviewer.ui.tools.toBBCode
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
-import com.hippo.ehviewer.util.toBBCode
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.logcat
