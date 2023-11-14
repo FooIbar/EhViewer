@@ -622,7 +622,7 @@ class DownloadsScene :
                 val label = mLabels[position].takeUnless { position == 0 }
                 if (mLabel != label) {
                     mKeyword = null
-                    clearSearchBarText()
+                    setSearchBarText(null)
                     mLabel = label
                     updateForLabel()
                 }

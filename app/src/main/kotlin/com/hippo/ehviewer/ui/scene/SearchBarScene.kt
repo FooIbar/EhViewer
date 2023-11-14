@@ -22,9 +22,9 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text2.input.TextFieldState
 import androidx.compose.foundation.text2.input.clearText
 import androidx.compose.foundation.text2.input.forEachTextValue
-import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.foundation.text2.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -106,8 +106,8 @@ suspend fun SearchDao.suggestions(prefix: String, limit: Int) =
 
 @Composable
 fun SearchBarScreen(
-    initialQuery: String = "",
-    hint: String = "",
+    searchFieldState: TextFieldState,
+    searchFieldHint: String = "",
     showSearchFab: Boolean = false,
     onApplySearch: (String) -> Unit,
     onSearchExpanded: () -> Unit,
@@ -119,7 +119,6 @@ fun SearchBarScreen(
 ) {
     var mSuggestionList by remember { mutableStateOf(emptyList<Suggestion>()) }
     val mSearchDatabase = searchDatabase.searchDao()
-    val searchFieldState = rememberTextFieldState(initialQuery)
     var active by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
@@ -250,7 +249,7 @@ fun SearchBarScreen(
                 }
                 active = it
             },
-            placeholder = { Text(hint) },
+            placeholder = { Text(searchFieldHint) },
             leadingIcon = {
                 if (active) {
                     IconButton(onClick = { hideSearchView() }) {
@@ -331,10 +330,10 @@ abstract class SearchBarScene : BaseScene() {
     private var drawerViewState: SparseArray<Parcelable>? = null
     private var sideSheetDialog: SideSheetDialog? = null
 
+    private val searchFieldState = TextFieldState()
     private var mSuggestionProvider: SuggestionProvider? = null
     private var onApplySearch: (String) -> Unit = {}
-    var initialQuery = ""
-    private var hint by mutableStateOf("")
+    private var searchFieldHint by mutableStateOf("")
     var showSearchFab by mutableStateOf(false)
 
     protected abstract val fabLayout: View
@@ -357,8 +356,8 @@ abstract class SearchBarScene : BaseScene() {
             val fabPadding = with(density) { 16.dp.roundToPx() }
             val margin = with(density) { 8.dp.roundToPx() }
             SearchBarScreen(
-                initialQuery = initialQuery,
-                hint = hint,
+                searchFieldState = searchFieldState,
+                searchFieldHint = searchFieldHint,
                 showSearchFab = showSearchFab,
                 onApplySearch = onApplySearch,
                 onSearchExpanded = ::onSearchViewExpanded,
@@ -462,12 +461,16 @@ abstract class SearchBarScene : BaseScene() {
         // TODO
     }
 
-    fun clearSearchBarText() {
-        // TODO
+    fun setSearchBarText(text: String?) {
+        if (text != null) {
+            searchFieldState.setTextAndPlaceCursorAtEnd(text)
+        } else {
+            searchFieldState.clearText()
+        }
     }
 
     fun setSearchBarHint(hint: String?) {
-        this.hint = hint.orEmpty()
+        searchFieldHint = hint.orEmpty()
     }
 
     fun setOnApplySearch(lambda: (String) -> Unit) {
