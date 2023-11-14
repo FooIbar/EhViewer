@@ -439,7 +439,9 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         BasicTextField(
                             value = userComment,
                             onValueChange = { textFieldValue ->
-                                if (userComment.annotatedString.spanStyles.isEmpty()) {
+                                val oriSpan = userComment.annotatedString.spanStyles
+                                if (oriSpan.isEmpty()) {
+                                    // User have no spanned comment, just update
                                     userComment = textFieldValue
                                     return@BasicTextField
                                 }
@@ -452,7 +454,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                                                 val pos = delta.source.position
                                                 val toIns = delta.source.lines.first()
                                                 val ofs = toIns.length
-                                                userComment.annotatedString.spanStyles.map {
+                                                oriSpan.map {
                                                     if (it.start < pos && it.end <= pos) {
                                                         it
                                                     } else if (it.start < pos) {
@@ -470,7 +472,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                                                 val pos = delta.source.position
                                                 val toIns = delta.target.lines.first()
                                                 val ofs = toIns.length
-                                                userComment.annotatedString.spanStyles.map {
+                                                oriSpan.map {
                                                     logcat { "${it.start} ${it.end}" }
                                                     if (it.start < pos && it.end <= pos) {
                                                         it
@@ -484,6 +486,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                                                 }
                                             }
                                         }
+                                        // Update span range for updated comment
                                         userComment = textFieldValue.copy(
                                             annotatedString = AnnotatedString(textFieldValue.text, spans),
                                         )
