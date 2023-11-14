@@ -61,6 +61,7 @@ import java.nio.ByteBuffer
 import kotlin.math.ceil
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.addJsonArray
 import kotlinx.serialization.json.put
@@ -106,7 +107,7 @@ private fun rethrowExactly(code: Int, body: String, e: Throwable): Nothing {
         throw StatusCodeException(code)
     }
 
-    if (e is ParseException) {
+    if (e is ParseException || e is SerializationException) {
         if ("<" !in body) {
             throw EhException(body)
         } else {
@@ -142,6 +143,11 @@ suspend fun <T> fetchCompat(
         cronetRequest(url, referer, origin) {
             reqBody?.let { withRequestBody(it) }
         }.execute {
+            @Suppress("NewApi")
+            val code = it.httpStatusCode
+            if (code >= 400) {
+                throw StatusCodeException(code)
+            }
             httpContentPool.useInstance { buffer ->
                 awaitBodyFully(buffer)
                 buffer.flip()

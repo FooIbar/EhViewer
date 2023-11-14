@@ -5,11 +5,11 @@ use jnix::jni::sys::{jint, jobject};
 use jnix::jni::JNIEnv;
 use jnix::{IntoJava, JnixEnv};
 use jnix_macros::IntoJava;
-use parse_bytebuffer;
 use quick_xml::escape::unescape;
 use std::borrow::Cow;
 use std::ops::Index;
 use tl::{Node, Parser};
+use {check_html, parse_bytebuffer};
 use {get_element_by_id, get_vdom_first_element_by_class_name};
 use {get_first_element_by_class_name, query_childs_first_match_attr};
 use {get_node_attr, get_node_handle_attr, regex};
@@ -205,6 +205,7 @@ pub fn parseGalleryInfoList(
 ) -> jobject {
     let mut env = JnixEnv { env };
     parse_bytebuffer(&mut env, buffer, limit, |dom, parser, _, str| {
+        check_html(str);
         if str.contains("<p>You do not have any watched tags") {
             panic!("No watched tags!")
         }

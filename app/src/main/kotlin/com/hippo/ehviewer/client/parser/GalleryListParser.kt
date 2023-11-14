@@ -16,6 +16,9 @@ object GalleryListParser {
         parseGalleryInfoList(body)
     }.onFailure {
         if (it is RuntimeException) {
+            if (it.message?.startsWith("Your IP address") == true) {
+                throw EhException(it.message)
+            }
             if (it.message == "No watched tags!") {
                 throw EhException(R.string.gallery_list_empty_hit_subscription)
             }

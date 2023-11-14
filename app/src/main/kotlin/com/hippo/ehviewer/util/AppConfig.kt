@@ -16,7 +16,6 @@
 package com.hippo.ehviewer.util
 
 import android.os.Environment
-import com.hippo.ehviewer.client.exception.ParseException
 import java.io.File
 import splitties.init.appCtx
 
@@ -60,7 +59,7 @@ object AppConfig {
         return FileUtils.createTempFile(tempDir, null)
     }
 
-    fun saveParseErrorBody(e: ParseException, body: String) {
+    fun saveParseErrorBody(e: Throwable, body: String) {
         val dir = externalParseErrorDir ?: return
         File(dir, ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".txt").writer().use {
             it.write(e.message)
