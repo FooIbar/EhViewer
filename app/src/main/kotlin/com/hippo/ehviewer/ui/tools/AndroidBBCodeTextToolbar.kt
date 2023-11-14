@@ -22,6 +22,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.findActivity
+import splitties.systemservices.clipboardManager
 
 typealias PlatformRect = android.graphics.Rect
 
@@ -79,6 +80,16 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                                         }
                                     },
                                 )
+
+                                // Hacky: Notify BasicTextField clear state
+                                val data = clipboardManager.primaryClip
+                                onCopyRequested?.invoke()
+                                if (data == null) {
+                                    clipboardManager.clearPrimaryClip()
+                                } else {
+                                    clipboardManager.setPrimaryClip(data)
+                                }
+
                                 p0.finish()
                                 return true
                             }

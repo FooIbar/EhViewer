@@ -79,6 +79,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
@@ -425,7 +426,16 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                     CompositionLocalProvider(LocalTextToolbar provides toolbar) {
                         BasicTextField(
                             value = userComment,
-                            onValueChange = { userComment = it },
+                            onValueChange = {
+                                // Hacky: BasicTextField would clear text spans
+                                userComment = it.copy(
+                                    AnnotatedString(
+                                        it.text,
+                                        userComment.annotatedString.spanStyles,
+                                        userComment.annotatedString.paragraphStyles,
+                                    ),
+                                )
+                            },
                             modifier = Modifier.weight(1f).padding(keylineMargin),
                             textStyle = MaterialTheme.typography.bodyLarge.merge(color = color),
                             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
