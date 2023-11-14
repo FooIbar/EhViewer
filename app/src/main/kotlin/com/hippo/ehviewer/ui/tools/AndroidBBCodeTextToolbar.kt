@@ -34,7 +34,6 @@ import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.style.TextDecoration
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.findActivity
-import eu.kanade.tachiyomi.util.system.logcat
 import io.github.petertrr.diffutils.diffInline
 import io.github.petertrr.diffutils.patch.ChangeDelta
 import io.github.petertrr.diffutils.patch.DeleteDelta
@@ -53,6 +52,8 @@ object NoopClipboardManager : ClipboardManager {
 
 fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
     val oriSpan = origin.annotatedString.spanStyles
+    val annoStr = origin.annotatedString
+    val len = origin.text.length
     if (oriSpan.isEmpty()) {
         // User have no spanned comment, just update
         return this
@@ -61,21 +62,14 @@ fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
     val diff = diffInline(origin.text, text).deltas
     if (diff.isNotEmpty()) {
         if (diff.size == 1) {
-            val spans = when (val delta = diff.first()) {
+            val str = when (val delta = diff.first()) {
                 is DeleteDelta -> {
                     val pos = delta.source.position
                     val toIns = delta.source.lines.first()
-                    val ofs = toIns.length
-                    oriSpan.map {
-                        if (it.start < pos && it.end <= pos) {
-                            it
-                        } else if (it.start < pos) {
-                            it.copy(end = it.end - ofs)
-                        } else if (it.start > pos && it.end > pos) {
-                            it.copy(start = it.start - ofs, end = it.end - ofs)
-                        } else {
-                            unreachable()
-                        }
+                    val end = pos + toIns.length // Exclusive
+                    buildAnnotatedString {
+                        append(annoStr.subSequence(0, pos))
+                        append(annoStr.subSequence(end, len))
                     }
                 }
                 is ChangeDelta -> unreachable()
@@ -83,25 +77,15 @@ fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
                 is InsertDelta -> {
                     val pos = delta.source.position
                     val toIns = delta.target.lines.first()
-                    val ofs = toIns.length
-                    oriSpan.map {
-                        logcat { "${it.start} ${it.end}" }
-                        if (it.start < pos && it.end <= pos) {
-                            it
-                        } else if (it.start < pos) {
-                            it.copy(end = it.end + ofs)
-                        } else if (it.start > pos && it.end > pos) {
-                            it.copy(start = it.start + ofs, end = it.end + ofs)
-                        } else {
-                            unreachable()
-                        }
+                    buildAnnotatedString {
+                        append(annoStr.subSequence(0, pos))
+                        append(toIns)
+                        append(annoStr.subSequence(pos, len))
                     }
                 }
             }
             // Update span range for updated comment
-            return copy(
-                annotatedString = AnnotatedString(text, spans),
-            )
+            return copy(annotatedString = str)
         } else {
             // Cannot handle diff, override directly
             return this
