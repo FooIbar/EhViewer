@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.TextToolbarStatus
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import com.hippo.ehviewer.R
@@ -73,7 +74,7 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                                             tfv.selection.end,
                                         )
                                         when (p1.itemId) {
-                                            R.id.action_bold -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
+                                            R.id.action_bold -> addStyle(SpanStyle(fontWeight = FontWeight.Bold))
                                             R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
                                             R.id.action_underline -> addStyle(SpanStyle(textDecoration = TextDecoration.Underline))
                                             R.id.action_strikethrough -> addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
