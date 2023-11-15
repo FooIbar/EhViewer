@@ -201,7 +201,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.browser)
-    implementation(libs.androidx.collection)
 
     // https://developer.android.com/jetpack/androidx/releases/compose-material3
     api(platform(libs.compose.bom))
