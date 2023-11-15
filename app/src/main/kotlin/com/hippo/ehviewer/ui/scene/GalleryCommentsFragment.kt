@@ -162,7 +162,7 @@ private fun Context.generateComment(
     return TextUrl.handleTextUrl(ssb)
 }
 
-private val MiniumContentPaddingEditText = 88.dp
+private val MinimumContentPaddingEditText = 88.dp
 
 @Destination
 @Composable
@@ -294,13 +294,13 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         },
     ) { paddingValues ->
         val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
-        var editTextMeasured by remember { mutableStateOf(MiniumContentPaddingEditText) }
+        var editTextMeasured by remember { mutableStateOf(MinimumContentPaddingEditText) }
         Box(modifier = Modifier.fillMaxSize().imePadding()) {
             val additionalPadding = if (commenting) {
                 editTextMeasured
             } else {
                 if (!comments.hasMore) {
-                    MiniumContentPaddingEditText
+                    MinimumContentPaddingEditText
                 } else {
                     0.dp
                 }
@@ -417,8 +417,8 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             Surface(
                 modifier = Modifier.align(Alignment.BottomCenter).layout { measurable, constraints ->
                     val origin = measurable.measure(constraints)
-                    val width = lerp(0, origin.width, 1 - animationProgress)
-                    val height = lerp(0, origin.height, 1 - animationProgress)
+                    val width = lerp(origin.width, 0, animationProgress)
+                    val height = lerp(origin.height, 0, animationProgress)
                     val placeable = measurable.measure(Constraints.fixed(width, height))
                     layout(width, height) {
                         placeable.placeRelative(0, 0)
@@ -428,7 +428,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().navigationBarsPadding().onGloballyPositioned { coordinates ->
-                        editTextMeasured = max(with(density) { coordinates.size.height.toDp() }, MiniumContentPaddingEditText)
+                        editTextMeasured = max(with(density) { coordinates.size.height.toDp() }, MinimumContentPaddingEditText)
                     },
                 ) {
                     val color = MaterialTheme.colorScheme.onPrimaryContainer
