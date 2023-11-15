@@ -139,14 +139,8 @@ fun AnnotatedString.toBBCode() = buildString {
     val stack = ArrayDeque<AnnotatedString.Range<SpanStyle>>()
     val spans = spanStyles.groupBy { it.start }
     tailrec fun next() {
-        tailrec fun popSpans() {
-            val pk = stack.lastOrNull()
-            if (pk?.end == current) {
-                stack.removeLast().item.pop()
-                popSpans()
-            }
-        }
-        popSpans()
+        while (stack.lastOrNull()?.end == current)
+            stack.removeLast().item.pop()
         if (current != len) {
             spans[current]?.sortedBy { it.end }?.forEach {
                 it.item.push()
