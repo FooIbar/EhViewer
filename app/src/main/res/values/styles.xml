@@ -42,11 +42,6 @@
         <item name="android:maxLines">1</item>
     </style>
 
-    <style name="Indicating">
-        <item name="indicatorHeight">1dp</item>
-        <item name="indicatorColor">?attr/dividerColor</item>
-    </style>
-
     <style name="Snackbar" parent="Widget.Material3.Snackbar">
         <item name="materialThemeOverlay">@style/SnackbarTheme</item>
         <item name="actionTextColorAlpha">1</item>

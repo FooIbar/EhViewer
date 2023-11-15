@@ -16,19 +16,10 @@
 
 <resources>
 
-    <declare-styleable name="Theme">
-        <attr name="dividerColor" format="color" />
-    </declare-styleable>
-
     <declare-styleable name="ProgressView">
         <attr name="color" />
         <attr name="indeterminate" format="boolean" />
         <attr name="progress" format="float" />
-    </declare-styleable>
-
-    <declare-styleable name="Indicating">
-        <attr name="indicatorHeight" format="dimension" />
-        <attr name="indicatorColor" format="color" />
     </declare-styleable>
 
     <declare-styleable name="FastScroller">
