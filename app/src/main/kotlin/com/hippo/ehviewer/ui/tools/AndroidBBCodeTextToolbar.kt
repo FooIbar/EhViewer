@@ -34,6 +34,7 @@ import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.style.TextDecoration
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.findActivity
+import com.hippo.ehviewer.util.toRangeSet
 import io.github.petertrr.diffutils.diffInline
 import io.github.petertrr.diffutils.patch.ChangeDelta
 import io.github.petertrr.diffutils.patch.DeleteDelta
@@ -96,6 +97,24 @@ fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
             annotatedString = origin.annotatedString,
         )
     }
+}
+
+inline fun List<AnnotatedString.Range<SpanStyle>>.filterMerged(singleSpan: SpanStyle, predicate: (SpanStyle) -> Boolean) = filter {
+    predicate(it.item) && it.start != it.end
+}.map { it.start..<it.end }.toRangeSet().map {
+    AnnotatedString.Range(singleSpan, it.start, it.endInclusive + 1)
+}
+
+fun AnnotatedString.normalizeSpan(): AnnotatedString {
+    if (spanStyles.isEmpty()) return this
+    val spans = with(spanStyles) {
+        val bold = filterMerged(SpanStyle(fontWeight = FontWeight.Bold)) { it.fontWeight == FontWeight.Bold }
+        val italic = filterMerged(SpanStyle(fontStyle = FontStyle.Italic)) { it.fontStyle == FontStyle.Italic }
+        val underline = filterMerged(SpanStyle(textDecoration = TextDecoration.Underline)) { it.textDecoration == TextDecoration.Underline }
+        val linethrough = filterMerged(SpanStyle(textDecoration = TextDecoration.LineThrough)) { it.textDecoration == TextDecoration.LineThrough }
+        listOf(bold, italic, underline, linethrough).flatten()
+    }
+    return AnnotatedString(text, spans)
 }
 
 // Overlapped SpanStyle is support through stack based builder

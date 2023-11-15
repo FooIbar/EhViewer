@@ -108,6 +108,7 @@ import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.NoopClipboardManager
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
+import com.hippo.ehviewer.ui.tools.normalizeSpan
 import com.hippo.ehviewer.ui.tools.rememberBBCodeTextToolbar
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.ui.tools.toBBCode
@@ -121,6 +122,7 @@ import com.hippo.ehviewer.util.getParcelableCompat
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.replace
@@ -210,7 +212,8 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
         withUIContext { focusManager.clearFocus() }
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, false)
         runSuspendCatching {
-            val bbcode = userComment.annotatedString.toBBCode()
+            val bbcode = userComment.annotatedString.normalizeSpan().toBBCode()
+            logcat { bbcode }
             EhEngine.commentGallery(url, bbcode, commentId)
         }.onSuccess {
             findActivity<MainActivity>().showTip(
