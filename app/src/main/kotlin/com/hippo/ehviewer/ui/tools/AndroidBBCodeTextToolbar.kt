@@ -138,20 +138,17 @@ fun AnnotatedString.toBBCode() = buildString {
     var current = 0
     val stack = ArrayDeque<AnnotatedString.Range<SpanStyle>>()
     val spans = spanStyles.groupBy { it.start }
-    tailrec fun next() {
+    while (true) {
         while (stack.lastOrNull()?.end == current)
             stack.removeLast().item.pop()
-        if (current != len) {
-            spans[current]?.sortedBy { it.end }?.forEach {
-                it.item.push()
-                stack.addLast(it)
-            }
-            append(text[current])
-            current++
-            next()
+        if (current == len) break
+        spans[current]?.sortedByDescending { it.end }?.forEach {
+            it.item.push()
+            stack.addLast(it)
         }
+        append(text[current])
+        current++
     }
-    next()
 }
 
 fun Spanned.toAnnotatedString(): AnnotatedString = buildAnnotatedString {
