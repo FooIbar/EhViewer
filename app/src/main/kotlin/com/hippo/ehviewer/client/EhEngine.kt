@@ -277,13 +277,13 @@ object EhEngine {
         }.executeAndParsingWith(SignInParser::parse)
     }
 
-    suspend fun commentGallery(url: String, comment: String, id: String?) = ehRequest(url, url, EhUrl.origin) {
+    suspend fun commentGallery(url: String, comment: String, id: Long = -1) = ehRequest(url, url, EhUrl.origin) {
         formBody {
-            if (id == null) {
+            if (id == -1L) {
                 add("commenttext_new", comment)
             } else {
                 add("commenttext_edit", comment)
-                add("edit_comment", id)
+                add("edit_comment", id.toString())
             }
         }
     }.executeAndParsingWith {

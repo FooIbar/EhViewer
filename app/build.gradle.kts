@@ -247,6 +247,8 @@ dependencies {
 
     implementation(libs.okio.jvm)
 
+    implementation(libs.diff)
+
     implementation(libs.aboutlibraries.core)
 
     implementation(libs.insetter) // Dead Dependency
