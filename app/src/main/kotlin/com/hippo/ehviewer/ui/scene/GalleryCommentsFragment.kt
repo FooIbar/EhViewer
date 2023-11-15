@@ -284,7 +284,10 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
             if (!commenting) {
                 FloatingActionButton(
                     onClick = {
-                        commentId = -1L
+                        if (commentId != -1L) {
+                            commentId = -1L
+                            userComment = TextFieldValue()
+                        }
                         commenting = true
                     },
                 ) {
