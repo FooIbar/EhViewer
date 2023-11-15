@@ -59,6 +59,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -123,6 +125,7 @@ import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
@@ -300,7 +303,16 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     ) { paddingValues ->
         val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
         var editTextMeasured by remember { mutableStateOf(MinimumContentPaddingEditText) }
-        Box(modifier = Modifier.fillMaxSize().imePadding()) {
+        val refreshState = rememberPullToRefreshState()
+        if (refreshState.isRefreshing) {
+            LaunchedEffect(Unit) {
+                runSuspendCatching {
+                    withIOContext { refreshComment(true) }
+                }
+                refreshState.endRefresh()
+            }
+        }
+        Box(modifier = Modifier.fillMaxSize().imePadding().nestedScroll(refreshState.nestedScrollConnection)) {
             val additionalPadding = if (commenting) {
                 editTextMeasured
             } else {
@@ -419,6 +431,10 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                     }
                 }
             }
+            PullToRefreshContainer(
+                state = refreshState,
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = paddingValues.calculateTopPadding()),
+            )
             Surface(
                 modifier = Modifier.align(Alignment.BottomCenter).layout { measurable, constraints ->
                     val origin = measurable.measure(constraints)
