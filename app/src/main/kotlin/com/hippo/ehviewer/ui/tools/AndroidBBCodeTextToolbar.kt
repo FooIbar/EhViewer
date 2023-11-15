@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.getSelectedText
 import androidx.compose.ui.text.input.getTextAfterSelection
 import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.toRangeSet
@@ -220,11 +221,22 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                                                 append(capturedTfv.annotatedString)
                                                 addStyle(style, capturedTfv.selection.start, capturedTfv.selection.end)
                                             }
+                                            fun addTextDecoration(decoration: TextDecoration) {
+                                                append(capturedTfv.getTextBeforeSelection(len))
+                                                val ans = capturedTfv.getSelectedText()
+                                                val spans = ans.spanStyles.filter {
+                                                    it.item.textDecoration == null || it.item.textDecoration == decoration
+                                                }
+                                                withStyle(SpanStyle(textDecoration = decoration)) {
+                                                    append(AnnotatedString(ans.text, spans))
+                                                }
+                                                append(capturedTfv.getTextAfterSelection(len))
+                                            }
                                             when (p1.itemId) {
                                                 R.id.action_bold -> addStyle(SpanStyle(fontWeight = FontWeight.Bold))
                                                 R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
-                                                R.id.action_underline -> addStyle(SpanStyle(textDecoration = TextDecoration.Underline))
-                                                R.id.action_strikethrough -> addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+                                                R.id.action_underline -> addTextDecoration(TextDecoration.Underline)
+                                                R.id.action_strikethrough -> addTextDecoration(TextDecoration.LineThrough)
                                                 R.id.action_url -> {}
                                                 R.id.action_clear -> {
                                                     append(capturedTfv.getTextBeforeSelection(len))
