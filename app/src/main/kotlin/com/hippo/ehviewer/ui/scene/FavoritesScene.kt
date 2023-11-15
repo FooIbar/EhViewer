@@ -71,7 +71,6 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.databinding.SceneFavoritesBinding
-import com.hippo.ehviewer.ui.CommonOperations
 import com.hippo.ehviewer.ui.legacy.AddDeleteDrawable
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.FabLayout
@@ -79,6 +78,7 @@ import com.hippo.ehviewer.ui.legacy.FabLayout.OnClickFabListener
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.ViewTransition
 import com.hippo.ehviewer.ui.legacy.WindowInsetsAnimationHelper
+import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.SimpleHandler
@@ -86,6 +86,7 @@ import com.hippo.ehviewer.util.getValue
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.setValue
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import java.time.Instant
 import java.time.LocalDateTime
@@ -273,7 +274,9 @@ class FavoritesScene : SearchBarScene() {
                         // Check all
                         3 -> tracker.selectAll()
                         // Download
-                        4 -> CommonOperations.startDownload(mainActivity!!, takeCheckedInfo(), false)
+                        4 -> lifecycleScope.launchUI {
+                            dialogState.startDownload(context, false, *takeCheckedInfo().toTypedArray())
+                        }
                         // Delete
                         5 -> {
                             val helper = DeleteDialogHelper()
