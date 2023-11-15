@@ -26,106 +26,9 @@
         <attr name="progress" format="float" />
     </declare-styleable>
 
-    <declare-styleable name="MaxSizeContainer">
-        <attr name="maxWidth" format="dimension" />
-        <attr name="maxHeight" format="dimension" />
-    </declare-styleable>
-
-    <declare-styleable name="FixedAspectImageView">
-        <attr name="aspect" format="float" />
-    </declare-styleable>
-
-    <declare-styleable name="LoadImageView">
-        <attr name="retryType">
-            <enum name="none" value="0" />
-            <enum name="click" value="1" />
-            <enum name="longClick" value="2" />
-        </attr>
-    </declare-styleable>
-
-    <declare-styleable name="FixedThumb">
-        <attr name="minAspect" format="float" />
-        <attr name="maxAspect" format="float" />
-        <attr name="alwaysCutAndScale" format="boolean" />
-    </declare-styleable>
-
-    <declare-styleable name="CheckTextView">
-        <attr name="android:foregroundGravity" />
-        <attr name="android:foreground" />
-        <attr name="foregroundInsidePadding" format="boolean" />
-    </declare-styleable>
-
-    <declare-styleable name="DividerView">
-        <attr name="dividerWidth" format="dimension" />
-        <attr name="dividerHeight" format="dimension" />
-        <attr name="dividerColor" />
-    </declare-styleable>
-
-    <declare-styleable name="AutoWrapLayout">
-        <attr name="alignment">
-            <enum name="top" value="0" />
-            <enum name="center" value="1" />
-            <enum name="bottom" value="2" />
-        </attr>
-    </declare-styleable>
-
-    <declare-styleable name="SimpleGridLayout">
-        <attr name="columnCount" format="integer" />
-        <attr name="itemMargin" format="dimension" />
-    </declare-styleable>
-
-    <declare-styleable name="Slider">
-        <attr name="start" format="integer" />
-        <attr name="end" format="integer" />
-        <attr name="slider_progress" format="integer" />
-        <attr name="thickness" />
-        <attr name="radius" format="dimension" />
-        <attr name="color" />
-        <attr name="textColor" format="color" />
-        <attr name="textSize" format="dimension" />
-        <attr name="dark" format="boolean" />
-    </declare-styleable>
-
-    <declare-styleable name="BatteryView">
-        <attr name="color" />
-        <attr name="warningColor" format="color" />
-    </declare-styleable>
-
     <declare-styleable name="Indicating">
         <attr name="indicatorHeight" format="dimension" />
         <attr name="indicatorColor" format="color" />
-    </declare-styleable>
-
-    <declare-styleable name="DialogPreference">
-        <attr name="dialogTitle" format="string" />
-        <attr name="dialogIcon" format="reference" />
-        <attr name="positiveButtonText" format="string" />
-        <attr name="negativeButtonText" format="string" />
-        <attr name="dialogLayout" format="reference" />
-    </declare-styleable>
-
-    <declare-styleable name="MessagePreference">
-        <attr name="dialogMessage" format="string" />
-        <attr name="dialogMessageHtml" format="boolean" />
-        <attr name="dialogMessageLinkify" format="boolean" />
-    </declare-styleable>
-
-    <declare-styleable name="ListPreference">
-        <!-- The human-readable array to present as a list. Each entry must have a corresponding
-             index in entryValues. -->
-        <attr name="entries" format="reference" />
-        <!-- The array to find the value to save for a preference when an entry from
-             entries is selected. If a user clicks on the second item in entries, the
-             second item in this array will be saved to the preference. -->
-        <attr name="entryValues" format="reference" />
-    </declare-styleable>
-
-    <declare-styleable name="ActivityPreference">
-        <attr name="activity" format="string" />
-    </declare-styleable>
-
-    <declare-styleable name="UrlPreference">
-        <attr name="url" format="string" />
     </declare-styleable>
 
     <declare-styleable name="FastScroller">
@@ -134,8 +37,8 @@
     </declare-styleable>
 
     <declare-styleable name="MaterialSpinnerView">
-        <attr name="title" format="reference|string"/>
-        <attr name="android:entries"/>
+        <attr name="title" format="reference|string" />
+        <attr name="android:entries" />
         <attr name="summary" format="reference|string" />
     </declare-styleable>
 

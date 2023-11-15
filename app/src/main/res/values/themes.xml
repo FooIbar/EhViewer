@@ -16,17 +16,13 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Base.AppTheme" parent="Theme.Material3.DynamicColors.DayNight">
+    <style name="Base.AppTheme" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
         <item name="dividerColor">@color/divider</item>
         <item name="snackbarStyle">@style/Snackbar</item>
         <item name="snackbarButtonStyle">@style/SnackbarButton</item>
 
         <!-- Non-overhead workaround for ROMs enable it by default, MIUI etc. -->
         <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
-
-        <!-- Window No Action Bar -->
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
 
         <!-- Apply blur on Android 12 above -->
         <item name="materialCalendarTheme">@style/MaterialCalendarTheme</item>
