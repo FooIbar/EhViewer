@@ -419,7 +419,7 @@ private fun SearchBarInputField(
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = { onSearch() }),
         interactionSource = interactionSource,
-        decorationBox = @Composable { innerTextField ->
+        decorator = @Composable { innerTextField ->
             TextFieldDefaults.DecorationBox(
                 value = state.text.toString(),
                 innerTextField = innerTextField,
