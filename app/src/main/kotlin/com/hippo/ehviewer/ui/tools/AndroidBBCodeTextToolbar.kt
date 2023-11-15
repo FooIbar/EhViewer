@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.TextToolbar
 import androidx.compose.ui.platform.TextToolbarStatus
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -214,12 +215,15 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                                 coroutineScope.launch {
                                     // Hacky: Let TextField recompose first
                                     delay(100)
+                                    // Reversed range is not supported by AnnotatedString
+                                    val start = capturedTfv.selection.start.coerceAtMost(capturedTfv.selection.end)
+                                    val end = capturedTfv.selection.start.coerceAtLeast(capturedTfv.selection.end)
                                     tfv = TextFieldValue(
                                         buildAnnotatedString {
                                             val len = capturedTfv.text.length
                                             fun addStyle(style: SpanStyle) {
                                                 append(capturedTfv.annotatedString)
-                                                addStyle(style, capturedTfv.selection.start, capturedTfv.selection.end)
+                                                addStyle(style, start, end)
                                             }
                                             fun addTextDecoration(decoration: TextDecoration) {
                                                 append(capturedTfv.getTextBeforeSelection(len))
@@ -237,7 +241,7 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                                                 R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
                                                 R.id.action_underline -> addTextDecoration(TextDecoration.Underline)
                                                 R.id.action_strikethrough -> addTextDecoration(TextDecoration.LineThrough)
-                                                R.id.action_url -> {}
+                                                R.id.action_url -> append(capturedTfv.annotatedString)
                                                 R.id.action_clear -> {
                                                     append(capturedTfv.getTextBeforeSelection(len))
                                                     append(capturedTfv.getSelectedText().text)
@@ -245,6 +249,7 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                                                 }
                                             }
                                         },
+                                        selection = TextRange(end),
                                     )
                                 }
 
