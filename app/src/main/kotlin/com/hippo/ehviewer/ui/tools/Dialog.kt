@@ -305,7 +305,7 @@ class DialogState {
                 }
             }
             Row(
-                modifier = Modifier.clickable { checked = !checked },
+                modifier = Modifier.clickable { checked = !checked }.fillMaxWidth().padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(
