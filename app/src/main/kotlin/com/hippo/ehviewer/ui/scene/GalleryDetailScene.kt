@@ -529,7 +529,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                     ) {
                         maxLines = 5
                         ellipsize = END
-                        text = item.comment.orEmpty().parseAsHtml(imageGetter = CoilImageGetter(this))
+                        text = item.comment.parseAsHtml(imageGetter = CoilImageGetter(this))
                     }
                 }
                 Box(
@@ -584,10 +584,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
             modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
         ) {
-            val favored by FavouriteStatusRouter.collectAsState(galleryDetail) {
-                it != NOT_FAVORITED
-            }
-            val favButtonText = if (favored) {
+            val favSlot by FavouriteStatusRouter.collectAsState(galleryDetail) { it }
+            val favButtonText = if (favSlot != NOT_FAVORITED) {
                 galleryDetail.favoriteName ?: stringResource(id = R.string.local_favorites)
             } else {
                 stringResource(id = R.string.not_favorited)
@@ -595,7 +593,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
             val favoritesLock = remember { Mutex() }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 FilledTertiaryIconToggleButton(
-                    checked = favored,
+                    checked = favSlot != NOT_FAVORITED,
                     onCheckedChange = {
                         coroutineScope.launchIO {
                             favoritesLock.withLock {
@@ -621,7 +619,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                     },
                 ) {
                     Icon(
-                        imageVector = getFavoriteIcon(favored),
+                        imageVector = getFavoriteIcon(favSlot != NOT_FAVORITED),
                         contentDescription = null,
                     )
                 }
