@@ -22,7 +22,7 @@ androidx-work = "2.8.1"
 arrow = "1.2.1"
 chucker = "4.0.0"
 coil = "2.5.0"
-compose-bom = "2023.11.00-alpha01"
+compose-bom = "2023.12.00-alpha01"
 compose-compiler = "1.5.4"
 compose-destinations = "1.9.54"
 google-accompanist = "0.32.0"
@@ -84,7 +84,7 @@ compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "co
 # For renovate
 compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose-compiler" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-compose-material3 = { module = "androidx.compose.material3:material3", version = "1.2.0-SNAPSHOT" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
 compose-ui-util = { module = "androidx.compose.ui:ui-util" }
 compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding" }
