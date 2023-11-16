@@ -149,6 +149,7 @@ fun SearchBar(
     onActiveChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    title: @Composable (() -> Unit)? = null,
     placeholder: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
@@ -277,6 +278,7 @@ fun SearchBar(
                 onActiveChange = onActiveChange,
                 modifier = Modifier.padding(paddingValues = animatedInputFieldPadding),
                 enabled = enabled,
+                label = title.takeUnless { active || animationProgress.value > 0 || state.text.isNotEmpty() },
                 placeholder = placeholder,
                 leadingIcon = leadingIcon,
                 trailingIcon = trailingIcon,
@@ -387,6 +389,7 @@ private fun SearchBarInputField(
     onActiveChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    label: @Composable (() -> Unit)? = null,
     placeholder: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
@@ -427,6 +430,7 @@ private fun SearchBarInputField(
                 singleLine = true,
                 visualTransformation = VisualTransformation.None,
                 interactionSource = interactionSource,
+                label = label,
                 placeholder = placeholder,
                 leadingIcon = leadingIcon?.let { leading ->
                     {
