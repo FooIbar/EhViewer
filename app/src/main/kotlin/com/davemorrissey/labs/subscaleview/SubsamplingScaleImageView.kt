@@ -4,32 +4,21 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
-import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.util.Log
 import android.util.TypedValue
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
-import androidx.annotation.AnyThread
 import androidx.annotation.IntDef
-import com.davemorrissey.labs.subscaleview.decoder.Decoder
-import com.davemorrissey.labs.subscaleview.decoder.ImageDecoder
-import com.davemorrissey.labs.subscaleview.provider.InputProvider
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
-import java.util.Locale
-import java.util.concurrent.locks.ReadWriteLock
-import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +27,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * Displays an image subsampled as necessary to avoid loading too much image data into memory. After zooming in,
@@ -64,8 +52,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     context: Context,
     attr: AttributeSet? = null,
 ) : View(context, attr) {
-    private val decoderLock: ReadWriteLock = ReentrantReadWriteLock(true)
-
     // Coroutines scope
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -74,9 +60,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
 
     // Long click handler
     private var longClickJob: Job? = null
-
-    private val srcArray = FloatArray(8)
-    private val dstArray = FloatArray(8)
 
     // The logical density of the display
     private val density: Float = resources.displayMetrics.density
@@ -87,18 +70,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     // Specifies if a cache handler is also referencing the bitmap. Do not recycle if so.
     private var bitmapIsCached = false
 
-    // Provider of full size image
-    private var provider: InputProvider? = null
-
-    // Sample size used to display the whole image when fully zoomed out
-    private var fullImageSampleSize = 0
-
-    // Map of zoom level to tile grid
-    private val tileMap: MutableMap<Int, List<Tile>> = mutableMapOf()
-
-    // Overlay tile boundaries and other info
-    private var debug = false
-
     /**
      * Maximum scale allowed. A value of 1 means 1:1 pixels at maximum scale. You may wish to set this according
      * to screen density - on a retina screen, 1:1 may still be too small. Consider using [setMinimumDpi],
@@ -106,22 +77,16 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      */
     var maxScale = 2F
 
-    // Density to reach before loading higher resolution tiles
-    private var minimumTileDpi = -1
-
     // Pan limiting style
-    @PanLimit private var panLimit = PAN_LIMIT_INSIDE
+    @PanLimit
+    private var panLimit = PAN_LIMIT_INSIDE
 
     // Minimum scale type
-    @ScaleType private var minimumScaleType = SCALE_TYPE_CENTER_INSIDE
+    @ScaleType
+    private var minimumScaleType = SCALE_TYPE_CENTER_INSIDE
 
     // Whether to crop borders.
     private var cropBorders = false
-    private var maxTileWidth = TILE_SIZE_AUTO
-    private var maxTileHeight = TILE_SIZE_AUTO
-
-    // Whether tiles should be loaded while gestures and animations are still in progress
-    private var eagerLoadingEnabled = true
 
     // Gesture detection settings
     private var panEnabled = true
@@ -139,7 +104,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     // Double tap zoom behaviour
     private var doubleTapZoomScale = 1F
 
-    @ZoomStyle private var doubleTapZoomStyle = ZOOM_FOCUS_FIXED
+    @ZoomStyle
+    private var doubleTapZoomStyle = ZOOM_FOCUS_FIXED
     private var doubleTapZoomDuration = 500
 
     /**
@@ -155,30 +121,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     private var vTranslate: PointF? = null
     private var vTranslateStart: PointF? = null
     private var vTranslateBefore: PointF? = null
-
-    /**
-     * Sets left extra space for the view in view pixels.
-     * @see setExtraSpace
-     */
-    var extraSpaceLeft = 0F
-
-    /**
-     * Sets top extra space for the view in view pixels.
-     * @see setExtraSpace
-     */
-    var extraSpaceTop = 0F
-
-    /**
-     * Sets right extra space for the view in view pixels.
-     * @see setExtraSpace
-     */
-    var extraSpaceRight = 0F
-
-    /**
-     * Sets bottom extra space for the view in view pixels.
-     * @see setExtraSpace
-     */
-    var extraSpaceBottom = 0F
 
     // Source coordinate to center on, used when new position is set externally before view is ready
     private var pendingScale = -1F
@@ -220,9 +162,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     // Fling detector
     private var detector: GestureDetector? = null
     private var singleDetector: GestureDetector? = null
-
-    // Tile and image decoding
-    private var decoder: Decoder? = null
 
     // Debug values
     private var vCenterStart: PointF? = null
@@ -273,26 +212,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             isDither = true
         }
     }
-    private val debugTextPaint by lazy {
-        Paint().apply {
-            textSize = px(12).toFloat()
-            color = Color.MAGENTA
-            style = Paint.Style.FILL
-        }
-    }
-    private val debugLinePaint by lazy {
-        Paint().apply {
-            color = Color.MAGENTA
-            style = Paint.Style.STROKE
-            strokeWidth = px(1).toFloat()
-        }
-    }
-    private var tileBgPaint: Paint? = null
 
     // Volatile fields used to reduce object creation
     private var satTemp: ScaleAndTranslate? = null
     private val mtrx = Matrix()
-    private val sRect = RectF()
 
     init {
         setMinimumDpi(160)
@@ -305,78 +228,17 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     /**
      * Set the image source from a bitmap, resource, asset, file or other URI.
      *
-     * @param imageSource Image source.
+     * @param bitmap Image source.
      */
-    fun setImage(imageSource: ImageSource) {
-        setImage(imageSource, null)
-    }
-
-    /**
-     * Set the image source from a bitmap, resource, asset, file or other URI, starting with a given orientation
-     * setting, scale and center. This is the best method to use when you want scale and center to be restored
-     * after screen orientation change; it avoids any redundant loading of tiles in the wrong orientation.
-     *
-     * @param imageSource Image source.
-     * @param state       State to be restored. Nullable.
-     */
-    fun setImage(imageSource: ImageSource, state: ImageViewState?) {
+    fun setImage(bitmap: Bitmap) {
         reset(true)
-        state?.let { restoreState(it) }
-        if (imageSource.bitmap != null && !imageSource.sRegion.isEmpty) {
-            onImageLoaded(
-                Bitmap.createBitmap(
-                    imageSource.bitmap,
-                    imageSource.sRegion.left,
-                    imageSource.sRegion.top,
-                    imageSource.sRegion.width(),
-                    imageSource.sRegion.height(),
-                ),
-                false,
-            )
-        } else if (imageSource.bitmap != null) {
-            onImageLoaded(imageSource.bitmap, imageSource.isCached)
-        } else {
-            // Load the bitmap using tile decoding.
-            provider = imageSource.provider
-            sRegion.set(imageSource.sRegion)
-            initTiles()
-        }
-    }
-
-    private fun initTiles() = coroutineScope.launch {
-        try {
-            debug("initTiles")
-            val imageProvider = provider ?: throw IllegalStateException("Image provider not set")
-            decoder = ImageDecoder(cropBorders)
-            val dimensions = decoder!!.init(context, imageProvider)
-            var sWidth = dimensions.x
-            var sHeight = dimensions.y
-            sRegion.apply {
-                if (!isEmpty) {
-                    left = left.coerceAtLeast(0)
-                    top = top.coerceAtLeast(0)
-                    right = right.coerceAtLeast(sWidth)
-                    bottom = bottom.coerceAtLeast(sHeight)
-                    sWidth = width()
-                    sHeight = height()
-                }
-            }
-            withContext(Dispatchers.Main) {
-                onTilesInited(decoder!!, sWidth, sHeight)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, e.message, e)
-            withContext(Dispatchers.Main) {
-                onImageEventListener?.onImageLoadError(e)
-            }
-        }
+        onImageLoaded(bitmap)
     }
 
     /**
      * Reset all state before setting/changing image or setting new rotation.
      */
     private fun reset(newImage: Boolean) {
-        debug("reset newImage=$newImage")
         scale = 0F
         scaleStart = 0F
         vTranslate = null
@@ -389,7 +251,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         isPanning = false
         isQuickScaling = false
         maxTouchCount = 0
-        fullImageSampleSize = 0
         vCenterStart = null
         vDistStart = 0F
         quickScaleLastDistance = 0F
@@ -400,16 +261,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         anim = null
         satTemp = null
         mtrx.reset()
-        sRect.setEmpty()
         if (newImage) {
-            provider = null
-            decoderLock.writeLock().lock()
-            try {
-                decoder?.recycle()
-                decoder = null
-            } finally {
-                decoderLock.writeLock().unlock()
-            }
             if (!bitmapIsCached) {
                 bitmap?.recycle()
             }
@@ -420,16 +272,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             isImageLoaded = false
             bitmap = null
             bitmapIsCached = false
-        }
-        if (tileMap.isNotEmpty()) {
-            tileMap.forEach { (_, value) ->
-                value.forEach { tile ->
-                    tile.visible = false
-                    tile.bitmap?.recycle()
-                    tile.bitmap = null
-                }
-            }
-            tileMap.clear()
         }
         setGestureDetector(context)
     }
@@ -511,7 +353,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      * On resize, preserve center and scale. Various behaviours are possible, override this method to use another.
      */
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        debug("onSizeChanged %dx%d -> %dx%d", oldw, oldh, w, h)
         if (isReady && center != null) {
             anim = null
             pendingScale = scale
@@ -558,13 +399,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             return true
         }
 
-        try {
-            anim?.listener?.onInterruptedByUser()
-        } catch (e: Exception) {
-            Log.w(TAG, "Error thrown by animation listener", e)
-        } finally {
-            anim = null
-        }
+        anim = null
 
         // Abort if not ready
         if (vTranslate == null) {
@@ -682,7 +517,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
                                 vTranslate!!.y = height / 2 - scale * (sHeight / 2)
                             }
                             fitToBounds(true)
-                            refreshRequiredTiles(eagerLoadingEnabled)
                         }
                     } else if (isQuickScaling) {
                         // One finger zoom
@@ -728,7 +562,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
                         }
                         quickScaleLastDistance = dist
                         fitToBounds(true)
-                        refreshRequiredTiles(eagerLoadingEnabled)
                         consumed = true
                     } else if (!isZooming) {
                         // One finger pan - translate the image. We do this calculation even with pan disabled so click
@@ -763,7 +596,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
                                 vTranslate!!.y = vTranslateStart!!.y
                                 requestDisallowInterceptTouchEvent(false)
                             }
-                            refreshRequiredTiles(eagerLoadingEnabled)
                         }
                     }
                 }
@@ -802,7 +634,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
                         maxTouchCount = 0
                     }
                     // Trigger load of tiles now required
-                    refreshRequiredTiles(true)
                     return true
                 }
                 if (touchCount == 1) {
@@ -869,11 +700,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             return
         }
 
-        // When using tiles, on first render with no tile map ready, initialise it and kick off async base image loading.
-        if (tileMap.isEmpty() && decoder != null) {
-            initialiseBaseLayer(getMaxBitmapDimensions(canvas))
-        }
-
         // If image has been loaded or supplied as a bitmap, onDraw may be the first time the view has
         // dimensions and therefore the first opportunity to set scale and translate. If this call returns
         // false there is nothing to be drawn so return immediately.
@@ -925,220 +751,26 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             // For translate anims, showing the image non-centered is never allowed, for scaling anims it is during the animation.
             fitToBounds(finished || anim!!.scaleStart == anim!!.scaleEnd)
             sendStateChanged(scaleBefore, vTranslateBefore!!, anim!!.origin)
-            refreshRequiredTiles(finished)
             if (finished) {
-                try {
-                    anim?.listener?.onComplete()
-                } catch (e: Exception) {
-                    Log.w(TAG, "Error thrown by animation listener", e)
-                }
                 anim = null
             }
             invalidate()
         }
-        if (tileMap.isNotEmpty() && isBaseLayerReady) {
-            // Optimum sample size for current scale
-            val sampleSize = calculateInSampleSize(scale).coerceAtMost(fullImageSampleSize)
-
-            // First check for missing tiles - if there are any we need the base layer underneath to avoid gaps
-            var hasMissingTiles = false
-            tileMap.forEach { (key, value) ->
-                if (key == sampleSize) {
-                    value.forEach { tile ->
-                        if (tile.visible && (tile.loading || tile.bitmap == null)) {
-                            hasMissingTiles = true
-                        }
-                    }
-                }
-            }
-
-            // Render all loaded tiles. LinkedHashMap used for bottom up rendering - lower res tiles underneath.
-            tileMap.forEach { (key, value) ->
-                if (key == sampleSize || hasMissingTiles) {
-                    value.forEach { tile ->
-                        sourceToViewRect(tile.sRect, tile.vRect)
-                        if (!tile.loading && tile.bitmap != null) {
-                            tileBgPaint?.let {
-                                canvas.drawRect(tile.vRect, it)
-                            }
-                            mtrx.reset()
-                            val tileWidth = tile.bitmap!!.width.toFloat()
-                            val tileHeight = tile.bitmap!!.height.toFloat()
-                            setMatrixArray(
-                                srcArray,
-                                0F,
-                                0F,
-                                tileWidth,
-                                0F,
-                                tileWidth,
-                                tileHeight,
-                                0F,
-                                tileHeight,
-                            )
-                            setMatrixArray(
-                                dstArray,
-                                tile.vRect.left.toFloat(),
-                                tile.vRect.top.toFloat(),
-                                tile.vRect.right.toFloat(),
-                                tile.vRect.top.toFloat(),
-                                tile.vRect.right.toFloat(),
-                                tile.vRect.bottom.toFloat(),
-                                tile.vRect.left.toFloat(),
-                                tile.vRect.bottom.toFloat(),
-                            )
-                            mtrx.setPolyToPoly(srcArray, 0, dstArray, 0, 4)
-                            canvas.drawBitmap(tile.bitmap!!, mtrx, bitmapPaint)
-                            if (debug) {
-                                canvas.drawRect(tile.vRect, debugLinePaint)
-                            }
-                        } else if (tile.loading && debug) {
-                            canvas.drawText(
-                                "LOADING",
-                                (tile.vRect.left + px(5)).toFloat(),
-                                (tile.vRect.top + px(35)).toFloat(),
-                                debugTextPaint,
-                            )
-                        }
-                        if (tile.visible && debug) {
-                            canvas.drawText(
-                                "ISS " + tile.sampleSize + " RECT " + tile.sRect.top + "," + tile.sRect.left + "," + tile.sRect.bottom + "," + tile.sRect.right,
-                                (tile.vRect.left + px(5)).toFloat(),
-                                (tile.vRect.top + px(15)).toFloat(),
-                                debugTextPaint,
-                            )
-                        }
-                    }
-                }
-            }
-        } else if (bitmap != null && !bitmap!!.isRecycled) {
+        if (bitmap != null && !bitmap!!.isRecycled) {
             val xScale = scale
             val yScale = scale
             mtrx.reset()
             mtrx.postScale(xScale, yScale)
             mtrx.postTranslate(vTranslate!!.x, vTranslate!!.y)
-            tileBgPaint?.let {
-                sRect.setEmpty()
-                sRect[0F, 0F, sWidth.toFloat()] = sHeight.toFloat()
-                mtrx.mapRect(sRect)
-                canvas.drawRect(sRect, it)
-            }
             canvas.drawBitmap(bitmap!!, mtrx, bitmapPaint)
         }
-        if (debug) {
-            canvas.drawText(
-                "Scale: " + String.format(Locale.ENGLISH, "%.2f", scale) + " (" + String.format(
-                    Locale.ENGLISH,
-                    "%.2f",
-                    minScale(),
-                ) + " - " + String.format(
-                    Locale.ENGLISH,
-                    "%.2f",
-                    maxScale,
-                ) + ")",
-                px(5).toFloat(),
-                px(15).toFloat(),
-                debugTextPaint,
-            )
-            canvas.drawText(
-                "Translate: " + String.format(Locale.ENGLISH, "%.2f", vTranslate!!.x) + ":" + String.format(
-                    Locale.ENGLISH,
-                    "%.2f",
-                    vTranslate!!.y,
-                ),
-                px(5).toFloat(),
-                px(30).toFloat(),
-                debugTextPaint,
-            )
-            val center = center
-            canvas.drawText(
-                "Source center: " + String.format(Locale.ENGLISH, "%.2f", center!!.x) + ":" + String.format(
-                    Locale.ENGLISH,
-                    "%.2f",
-                    center.y,
-                ),
-                px(5).toFloat(),
-                px(45).toFloat(),
-                debugTextPaint,
-            )
-            if (anim != null) {
-                val vCenterStart = sourceToViewCoord(anim!!.sCenterStart)
-                val vCenterEndRequested = sourceToViewCoord(anim!!.sCenterEndRequested)
-                val vCenterEnd = sourceToViewCoord(anim!!.sCenterEnd)
-                canvas.drawCircle(vCenterStart!!.x, vCenterStart.y, px(10).toFloat(), debugLinePaint)
-                debugLinePaint.color = Color.RED
-                canvas.drawCircle(vCenterEndRequested!!.x, vCenterEndRequested.y, px(20).toFloat(), debugLinePaint)
-                debugLinePaint.color = Color.BLUE
-                canvas.drawCircle(vCenterEnd!!.x, vCenterEnd.y, px(25).toFloat(), debugLinePaint)
-                debugLinePaint.color = Color.CYAN
-                canvas.drawCircle((width / 2).toFloat(), (height / 2).toFloat(), px(30).toFloat(), debugLinePaint)
-            }
-            if (vCenterStart != null) {
-                debugLinePaint.color = Color.RED
-                canvas.drawCircle(vCenterStart!!.x, vCenterStart!!.y, px(20).toFloat(), debugLinePaint)
-            }
-            if (quickScaleSCenter != null) {
-                debugLinePaint.color = Color.BLUE
-                canvas.drawCircle(
-                    sourceToViewX(quickScaleSCenter!!.x),
-                    sourceToViewY(quickScaleSCenter!!.y),
-                    px(35).toFloat(),
-                    debugLinePaint,
-                )
-            }
-            if (quickScaleVStart != null && isQuickScaling) {
-                debugLinePaint.color = Color.CYAN
-                canvas.drawCircle(quickScaleVStart!!.x, quickScaleVStart!!.y, px(30).toFloat(), debugLinePaint)
-            }
-            debugLinePaint.color = Color.MAGENTA
-        }
-    }
-
-    /**
-     * Helper method for setting the values of a tile matrix array.
-     */
-    private fun setMatrixArray(
-        array: FloatArray,
-        f0: Float,
-        f1: Float,
-        f2: Float,
-        f3: Float,
-        f4: Float,
-        f5: Float,
-        f6: Float,
-        f7: Float,
-    ) {
-        array[0] = f0
-        array[1] = f1
-        array[2] = f2
-        array[3] = f3
-        array[4] = f4
-        array[5] = f5
-        array[6] = f6
-        array[7] = f7
     }
 
     /**
      * Checks whether the base layer of tiles or full size bitmap is ready.
      */
     private val isBaseLayerReady: Boolean
-        get() {
-            if (bitmap != null) {
-                return true
-            } else if (tileMap.isNotEmpty()) {
-                var baseLayerReady = true
-                tileMap.forEach { (key, value) ->
-                    if (key == fullImageSampleSize) {
-                        value.forEach { tile ->
-                            if (tile.loading || tile.bitmap == null) {
-                                baseLayerReady = false
-                            }
-                        }
-                    }
-                }
-                return baseLayerReady
-            }
-            return false
-        }
+        get() = bitmap != null
 
     /**
      * Check whether view and image dimensions are known and either a preview, full size image or
@@ -1150,7 +782,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         if (!isReady && ready) {
             preDraw()
             isReady = true
-            onReady()
             onImageEventListener?.onReady()
         }
         return ready
@@ -1165,113 +796,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         if (!isImageLoaded && imageLoaded) {
             preDraw()
             isImageLoaded = true
-            onImageLoaded()
-            onImageEventListener?.onImageLoaded()
         }
         return imageLoaded
-    }
-
-    private fun loadTile(tile: Tile) = coroutineScope.launch {
-        try {
-            val imageDecoder = decoder ?: return@launch
-            if (!imageDecoder.isReady || !tile.visible) return@launch
-
-            debug(
-                "loadTile, tile.sRect=%s, tile.sampleSize=%d",
-                tile.sRect,
-                tile.sampleSize,
-            )
-            decoderLock.readLock().lock()
-            try {
-                if (imageDecoder.isReady) {
-                    tile.bitmap = imageDecoder.decodeRegion(tile.fileSRect, tile.sampleSize)
-                    onTileLoaded()
-                }
-            } finally {
-                decoderLock.readLock().unlock()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to decode tile", e)
-            onImageEventListener?.onTileLoadError(e)
-        } catch (e: OutOfMemoryError) {
-            Log.e(TAG, "Failed to decode tile - OutOfMemoryError", e)
-            onImageEventListener?.onTileLoadError(Exception(e))
-        } finally {
-            tile.loading = false
-        }
-    }
-
-    /**
-     * Called on first draw when the view has dimensions. Calculates the initial sample size and starts async loading of
-     * the base layer image - the whole source subsampled as necessary.
-     */
-    @Synchronized
-    private fun initialiseBaseLayer(maxTileDimensions: Point) {
-        debug("initialiseBaseLayer maxTileDimensions=%dx%d", maxTileDimensions.x, maxTileDimensions.y)
-        satTemp = ScaleAndTranslate(0F, PointF(0F, 0F))
-        fitToBounds(true, satTemp!!)
-
-        // Load double resolution - next level will be split into four tiles and at the center all four are required,
-        // so don't bother with tiling until the next level 16 tiles are needed.
-        fullImageSampleSize = calculateInSampleSize(satTemp!!.scale)
-        if (fullImageSampleSize > 1) {
-            fullImageSampleSize /= 2
-        }
-        initialiseTileMap(maxTileDimensions)
-        tileMap[fullImageSampleSize]?.forEach {
-            loadTile(it)
-        }
-        refreshRequiredTiles(true)
-    }
-
-    /**
-     * Loads the optimum tiles for display at the current scale and translate, so the screen can be filled with tiles
-     * that are at least as high resolution as the screen. Frees up bitmaps that are now off the screen.
-     *
-     * @param load Whether to load the new tiles needed. Use false while scrolling/panning for performance.
-     */
-    private fun refreshRequiredTiles(load: Boolean) {
-        if (decoder == null || tileMap.isEmpty()) {
-            return
-        }
-        val sampleSize = calculateInSampleSize(scale).coerceAtMost(fullImageSampleSize)
-
-        // Load tiles of the correct sample size that are on screen. Discard tiles off screen, and those that are higher
-        // resolution than required, or lower res than required but not the base layer, so the base layer is always present.
-        tileMap.forEach { (_, value) ->
-            value.forEach { tile ->
-                if (tile.sampleSize < sampleSize || tile.sampleSize > sampleSize && tile.sampleSize != fullImageSampleSize) {
-                    tile.visible = false
-                    tile.bitmap?.recycle()
-                    tile.bitmap = null
-                }
-                if (tile.sampleSize == sampleSize) {
-                    if (tileVisible(tile)) {
-                        tile.visible = true
-                        if (!tile.loading && tile.bitmap == null && load) {
-                            loadTile(tile)
-                        }
-                    } else if (tile.sampleSize != fullImageSampleSize) {
-                        tile.visible = false
-                        tile.bitmap?.recycle()
-                        tile.bitmap = null
-                    }
-                } else if (tile.sampleSize == fullImageSampleSize) {
-                    tile.visible = true
-                }
-            }
-        }
-    }
-
-    /**
-     * Determine whether tile is visible.
-     */
-    private fun tileVisible(tile: Tile): Boolean {
-        val sVisLeft = viewToSourceX(0F)
-        val sVisRight = viewToSourceX(width.toFloat())
-        val sVisTop = viewToSourceY(0F)
-        val sVisBottom = viewToSourceY(height.toFloat())
-        return !(sVisLeft > tile.sRect.right || tile.sRect.left > sVisRight || sVisTop > tile.sRect.bottom || tile.sRect.top > sVisBottom)
     }
 
     /**
@@ -1293,48 +819,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             sPendingCenter = null
             pendingScale = -1F
             fitToBounds(true)
-            refreshRequiredTiles(true)
         }
 
         // On first display of base image set up position, and in other cases make sure scale is correct.
         fitToBounds(false)
-    }
-
-    /**
-     * Calculates sample size to fit the source image in given bounds.
-     */
-    private fun calculateInSampleSize(_scale: Float): Int {
-        var scale = _scale
-        if (minimumTileDpi > 0) {
-            val metrics = resources.displayMetrics
-            val averageDpi = (metrics.xdpi + metrics.ydpi) / 2
-            scale *= minimumTileDpi / averageDpi
-        }
-        val reqWidth = (sWidth * scale).toInt()
-        val reqHeight = (sHeight * scale).toInt()
-
-        // Raw height and width of image
-        var inSampleSize = 1
-        if (reqWidth == 0 || reqHeight == 0) {
-            return 32
-        }
-        if (sHeight > reqHeight || sWidth > reqWidth) {
-            // Calculate ratios of height and width to requested height and width
-            val heightRatio = (sHeight.toFloat() / reqHeight.toFloat()).roundToInt()
-            val widthRatio = (sWidth.toFloat() / reqWidth.toFloat()).roundToInt()
-
-            // Choose the smallest ratio as inSampleSize value, this will guarantee
-            // a final image with both dimensions larger than or equal to the
-            // requested height and width.
-            inSampleSize = if (heightRatio < widthRatio) heightRatio else widthRatio
-        }
-
-        // We want the actual sample size that will be used, so round down to nearest power of 2.
-        var power = 1
-        while (power * 2 < inSampleSize) {
-            power *= 2
-        }
-        return power
     }
 
     /**
@@ -1354,20 +842,15 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         val scale = limitedScale(sat.scale)
         val scaleWidth = scale * sWidth
         val scaleHeight = scale * sHeight
-        val extra = panLimit == PAN_LIMIT_INSIDE
-        val extraLeft = if (extra) extraSpaceLeft else 0F
-        val extraRight = if (extra) extraSpaceRight else 0F
-        val extraTop = if (extra) extraSpaceTop else 0F
-        val extraBottom = if (extra) extraSpaceBottom else 0F
         if (panLimit == PAN_LIMIT_CENTER && isReady) {
             vTranslate.x = vTranslate.x.coerceAtLeast(width / 2 - scaleWidth)
             vTranslate.y = vTranslate.y.coerceAtLeast(height / 2 - scaleHeight)
         } else if (center) {
-            vTranslate.x = vTranslate.x.coerceAtLeast(width - scaleWidth - extraRight)
-            vTranslate.y = vTranslate.y.coerceAtLeast(height - scaleHeight - extraBottom)
+            vTranslate.x = vTranslate.x.coerceAtLeast(width - scaleWidth)
+            vTranslate.y = vTranslate.y.coerceAtLeast(height - scaleHeight)
         } else {
-            vTranslate.x = vTranslate.x.coerceAtLeast(-scaleWidth - extraRight)
-            vTranslate.y = vTranslate.y.coerceAtLeast(-scaleHeight - extraBottom)
+            vTranslate.x = vTranslate.x.coerceAtLeast(-scaleWidth)
+            vTranslate.y = vTranslate.y.coerceAtLeast(-scaleHeight)
         }
 
         // Asymmetric padding adjustments
@@ -1382,11 +865,11 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             maxTx = (width / 2F).coerceAtLeast(0F)
             maxTy = (height / 2F).coerceAtLeast(0F)
         } else if (center) {
-            maxTx = ((width - scaleWidth) * xPaddingRatio).coerceAtLeast(extraLeft)
-            maxTy = ((height - scaleHeight) * yPaddingRatio).coerceAtLeast(extraTop)
+            maxTx = ((width - scaleWidth) * xPaddingRatio).coerceAtLeast(0F)
+            maxTy = ((height - scaleHeight) * yPaddingRatio).coerceAtLeast(0F)
         } else {
-            maxTx = width.toFloat().coerceAtLeast(extraLeft)
-            maxTy = height.toFloat().coerceAtLeast(extraTop)
+            maxTx = width.toFloat().coerceAtLeast(0F)
+            maxTy = height.toFloat().coerceAtLeast(0F)
         }
 
         vTranslate.x = vTranslate.x.coerceAtMost(maxTx)
@@ -1420,105 +903,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     }
 
     /**
-     * Once source image and view dimensions are known, creates a map of sample size to tile grid.
-     */
-    private fun initialiseTileMap(maxTileDimensions: Point) {
-        debug("initialiseTileMap maxTileDimensions=%dx%d", maxTileDimensions.x, maxTileDimensions.y)
-        tileMap.clear()
-        var sampleSize = fullImageSampleSize
-        var xTiles = 1
-        var yTiles = 1
-        while (true) {
-            var sTileWidth = sWidth / xTiles
-            var sTileHeight = sHeight / yTiles
-            var subTileWidth = sTileWidth / sampleSize
-            var subTileHeight = sTileHeight / sampleSize
-            while (subTileWidth + xTiles + 1 > maxTileDimensions.x || subTileWidth > width * 1.25 && sampleSize < fullImageSampleSize) {
-                xTiles += 1
-                sTileWidth = sWidth / xTiles
-                subTileWidth = sTileWidth / sampleSize
-            }
-            while (subTileHeight + yTiles + 1 > maxTileDimensions.y || subTileHeight > height * 1.25 && sampleSize < fullImageSampleSize) {
-                yTiles += 1
-                sTileHeight = sHeight / yTiles
-                subTileHeight = sTileHeight / sampleSize
-            }
-            val tileGrid: MutableList<Tile> = ArrayList(xTiles * yTiles)
-            for (x in 0 until xTiles) {
-                for (y in 0 until yTiles) {
-                    val sRect = Rect(
-                        x * sTileWidth,
-                        y * sTileHeight,
-                        if (x == xTiles - 1) sWidth else (x + 1) * sTileWidth,
-                        if (y == yTiles - 1) sHeight else (y + 1) * sTileHeight,
-                    )
-                    val tile = Tile(
-                        sRect = sRect,
-                        sampleSize = sampleSize,
-                        vRect = Rect(0, 0, 0, 0),
-                        fileSRect = Rect(sRect),
-                    )
-                    tileGrid.add(tile)
-                }
-            }
-            tileMap[sampleSize] = tileGrid
-            sampleSize /= if (sampleSize == 1) break else 2
-        }
-    }
-
-    /**
-     * Called by worker task when decoder is ready and image size and EXIF orientation is known.
-     */
-    @Synchronized
-    private fun onTilesInited(decoder: Decoder, sWidth: Int, sHeight: Int) {
-        debug("onTilesInited sWidth=%d, sHeight=%d", sWidth, sHeight)
-        // If actual dimensions don't match the declared size, reset everything.
-        if (this.sWidth > 0 && this.sHeight > 0 && (this.sWidth != sWidth || this.sHeight != sHeight)) {
-            reset(false)
-            if (bitmap != null) {
-                if (!bitmapIsCached) {
-                    bitmap!!.recycle()
-                }
-                bitmap = null
-                bitmapIsCached = false
-            }
-        }
-        this.decoder = decoder
-        this.sWidth = sWidth
-        this.sHeight = sHeight
-        checkReady()
-        debug("maxTile $maxTileWidth, $maxTileHeight view size: $width, $height")
-        if (!checkImageLoaded() && maxTileWidth > 0 && maxTileWidth != TILE_SIZE_AUTO && maxTileHeight > 0 && maxTileHeight != TILE_SIZE_AUTO && width > 0 && height > 0) {
-            initialiseBaseLayer(Point(maxTileWidth, maxTileHeight))
-        }
-        invalidate()
-        requestLayout()
-    }
-
-    /**
-     * Called by worker task when a tile has loaded. Redraws the view.
-     */
-    @Synchronized
-    private fun onTileLoaded() {
-        debug("onTileLoaded")
-        checkReady()
-        checkImageLoaded()
-        if (isBaseLayerReady && bitmap != null) {
-            if (!bitmapIsCached) {
-                bitmap!!.recycle()
-            }
-            bitmap = null
-            bitmapIsCached = false
-        }
-        invalidate()
-    }
-
-    /**
      * Called by worker task when full size image bitmap is ready (tiling is disabled).
      */
     @Synchronized
-    private fun onImageLoaded(bitmap: Bitmap, bitmapIsCached: Boolean) {
-        debug("onImageLoaded")
+    private fun onImageLoaded(bitmap: Bitmap) {
         // If actual dimensions don't match the declared size, reset everything.
         if (sWidth > 0 && sHeight > 0 && (sWidth != bitmap.width || sHeight != bitmap.height)) {
             reset(false)
@@ -1526,7 +914,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         if (!this.bitmapIsCached) {
             this.bitmap?.recycle()
         }
-        this.bitmapIsCached = bitmapIsCached
+        this.bitmapIsCached = true
         this.bitmap = bitmap
         sWidth = bitmap.width
         sHeight = bitmap.height
@@ -1539,63 +927,12 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     }
 
     /**
-     * Set scale, center and orientation from saved state.
-     */
-    private fun restoreState(state: ImageViewState?) {
-        if (state != null) {
-            pendingScale = state.scale
-            sPendingCenter = state.center
-            invalidate()
-        }
-    }
-
-    /**
      * Set border crop of non-filled (white or black) content.
      *
      * @param cropBorders Whether to crop image borders.
      */
     fun setCropBorders(cropBorders: Boolean) {
         this.cropBorders = cropBorders
-    }
-
-    /**
-     * By default the View automatically calculates the optimal tile size. Set this to override this, and force an upper limit to the dimensions of the generated tiles. Passing [.TILE_SIZE_AUTO] will re-enable the default behaviour.
-     *
-     * @param maxPixels Maximum tile size X and Y in pixels.
-     */
-    fun setMaxTileSize(maxPixels: Int) {
-        maxTileWidth = maxPixels
-        maxTileHeight = maxPixels
-    }
-
-    /**
-     * By default the View automatically calculates the optimal tile size. Set this to override this, and force an upper limit to the dimensions of the generated tiles. Passing [.TILE_SIZE_AUTO] will re-enable the default behaviour.
-     *
-     * @param maxPixelsX Maximum tile width.
-     * @param maxPixelsY Maximum tile height.
-     */
-    fun setMaxTileSize(maxPixelsX: Int, maxPixelsY: Int) {
-        maxTileWidth = maxPixelsX
-        maxTileHeight = maxPixelsY
-    }
-
-    /**
-     * Use canvas max bitmap width and height instead of the default 2048, to avoid redundant tiling.
-     */
-    private fun getMaxBitmapDimensions(canvas: Canvas): Point {
-        return Point(
-            canvas.maximumBitmapWidth.coerceAtMost(maxTileWidth),
-            canvas.maximumBitmapHeight.coerceAtMost(maxTileHeight),
-        )
-    }
-
-    /**
-     * Converts source rectangle from tile, which treats the image file as if it were in the correct orientation already,
-     * to the rectangle of the image that needs to be loaded.
-     */
-    @AnyThread
-    private fun fileSRect(sRect: Rect, target: Rect) {
-        target.set(sRect)
     }
 
     /**
@@ -1614,7 +951,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      */
     fun recycle() {
         reset(true)
-        tileBgPaint = null
     }
 
     /**
@@ -1632,55 +968,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     }
 
     /**
-     * Converts a rectangle within the view to the corresponding rectangle from the source file, taking
-     * into account the current scale, translation, orientation and clipped region. This can be used
-     * to decode a bitmap from the source file.
-     *
-     *
-     * This method will only work when the image has fully initialised, after [.isReady] returns
-     * true. It is not guaranteed to work with preloaded bitmaps.
-     *
-     *
-     * The result is written to the fRect argument. Re-use a single instance for efficiency.
-     *
-     * @param vRect rectangle representing the view area to interpret.
-     * @param fRect rectangle instance to which the result will be written. Re-use for efficiency.
-     */
-    fun viewToFileRect(vRect: Rect, fRect: Rect) {
-        if (vTranslate == null || !isReady) return
-
-        fRect[
-            viewToSourceX(vRect.left.toFloat()).toInt(),
-            viewToSourceY(vRect.top.toFloat()).toInt(),
-            viewToSourceX(vRect.right.toFloat()).toInt(),
-        ] = viewToSourceY(vRect.bottom.toFloat()).toInt()
-        fileSRect(fRect, fRect)
-        fRect[
-            fRect.left.coerceAtLeast(0),
-            fRect.top.coerceAtLeast(0),
-            fRect.right.coerceAtLeast(sWidth),
-        ] = fRect.bottom.coerceAtLeast(sHeight)
-        if (!sRegion.isEmpty) {
-            fRect.offset(sRegion.left, sRegion.top)
-        }
-    }
-
-    /**
-     * Find the area of the source file that is currently visible on screen, taking into account the
-     * current scale, translation, orientation and clipped region. This is a convenience method; see
-     * [.viewToFileRect].
-     *
-     * @param fRect rectangle instance to which the result will be written. Re-use for efficiency.
-     */
-    fun visibleFileRect(fRect: Rect) {
-        if (vTranslate == null || !isReady) {
-            return
-        }
-        fRect[0, 0, width] = height
-        viewToFileRect(fRect, fRect)
-    }
-
-    /**
      * Convert screen coordinate to source coordinate.
      *
      * @param vxy view X/Y coordinate.
@@ -1688,17 +975,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      */
     fun viewToSourceCoord(vxy: PointF): PointF? {
         return viewToSourceCoord(vxy.x, vxy.y, PointF())
-    }
-
-    /**
-     * Convert screen coordinate to source coordinate.
-     *
-     * @param vxy     view coordinates to convert.
-     * @param sTarget target object for result. The same instance is also returned.
-     * @return source coordinates. This is the same instance passed to the sTarget param.
-     */
-    fun viewToSourceCoord(vxy: PointF, sTarget: PointF): PointF? {
-        return viewToSourceCoord(vxy.x, vxy.y, sTarget)
     }
 
     /**
@@ -1744,17 +1020,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     /**
      * Convert source coordinate to view coordinate.
      *
-     * @param sxy     source coordinates to convert.
-     * @param vTarget target object for result. The same instance is also returned.
-     * @return view coordinates. This is the same instance passed to the vTarget param.
-     */
-    fun sourceToViewCoord(sxy: PointF, vTarget: PointF): PointF? {
-        return sourceToViewCoord(sxy.x, sxy.y, vTarget)
-    }
-
-    /**
-     * Convert source coordinate to view coordinate.
-     *
      * @param sx source X coordinate.
      * @param sy source Y coordinate.
      * @param vTarget target object for result. The same instance is also returned.
@@ -1766,17 +1031,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         }
         vTarget[sourceToViewX(sx)] = sourceToViewY(sy)
         return vTarget
-    }
-
-    /**
-     * Convert source rect to screen rect, integer values.
-     */
-    private fun sourceToViewRect(sRect: Rect, vTarget: Rect) {
-        vTarget[
-            sourceToViewX(sRect.left.toFloat()).toInt(),
-            sourceToViewY(sRect.top.toFloat()).toInt(),
-            sourceToViewX(sRect.right.toFloat()).toInt(),
-        ] = sourceToViewY(sRect.bottom.toFloat()).toInt()
     }
 
     /**
@@ -1814,11 +1068,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      * Returns the minimum allowed scale.
      */
     private fun minScale(): Float {
-        val extra = panLimit == PAN_LIMIT_INSIDE
-        val vExtra = if (extra) (extraSpaceBottom + extraSpaceTop).roundToInt() else 0
-        val hExtra = if (extra) (extraSpaceLeft + extraSpaceRight).roundToInt() else 0
-        val vPadding = paddingBottom + paddingTop + vExtra
-        val hPadding = paddingLeft + paddingRight + hExtra
+        val vPadding = paddingBottom + paddingTop
+        val hPadding = paddingLeft + paddingRight
         return when (minimumScaleType) {
             SCALE_TYPE_CENTER_INSIDE -> min(
                 (width - hPadding) / sWidth.toFloat(),
@@ -1899,23 +1150,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             timeF--
             -change / 2f * (timeF * (timeF - 2) - 1) + from
         }
-    }
-
-    /**
-     * Debug logger
-     */
-    @AnyThread
-    private fun debug(message: String, vararg args: Any) {
-        if (debug) {
-            Log.d(TAG, String.format(message, *args))
-        }
-    }
-
-    /**
-     * For debug overlays. Scale pixel value according to screen density.
-     */
-    private fun px(px: Int): Int {
-        return (density * px).toInt()
     }
 
     /**
@@ -2024,50 +1258,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     }
 
     /**
-     * By default, image tiles are at least as high resolution as the screen. For a retina screen this may not be
-     * necessary, and may increase the likelihood of an OutOfMemoryError. This method sets a DPI at which higher
-     * resolution tiles should be loaded. Using a lower number will on average use less memory but result in a lower
-     * quality image. 160-240dpi will usually be enough. This should be called before setting the image source,
-     * because it affects which tiles get loaded. When using an untiled source image this method has no effect.
-     *
-     * @param minimumTileDpi Tile loading threshold.
-     */
-    fun setMinimumTileDpi(minimumTileDpi: Int) {
-        val metrics = resources.displayMetrics
-        val averageDpi = (metrics.xdpi + metrics.ydpi) / 2
-        this.minimumTileDpi = minimumTileDpi.coerceAtMost(averageDpi.roundToInt())
-        if (isReady) {
-            reset(false)
-            invalidate()
-        }
-    }
-
-    /**
-     * Sets extra space for the view.
-     * Extra space artificially increases image size, allowing to pan further from the side.
-     * Extra space also lowers minScale.
-     * Extra space is zoom-agnostic thus constant in terms of view pixels not source pixels.
-     * Extra space is respected only in [.PAN_LIMIT_INSIDE] pan mode and ignored in others.
-     * @param vLeft extra space on the left
-     * @param vTop extra space on the top
-     * @param vRight extra space on the right
-     * @param vBottom extra space on the bottom
-     */
-    fun setExtraSpace(vLeft: Float, vTop: Float, vRight: Float, vBottom: Float) {
-        extraSpaceLeft = vLeft
-        extraSpaceTop = vTop
-        extraSpaceRight = vRight
-        extraSpaceBottom = vBottom
-    }
-
-    /**
-     * Returns extra space for the view contained in [RectF].
-     * @return extra space for all sides of view in view pixels
-     */
-    val extraSpace: RectF
-        get() = RectF(extraSpaceLeft, extraSpaceTop, extraSpaceRight, extraSpaceBottom)
-
-    /**
      * Returns the source point at the center of the view.
      *
      * @return the source coordinates current at the center of the view.
@@ -2091,90 +1281,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         pendingScale = scale
         sPendingCenter = sCenter
         sRequestedCenter = sCenter
-        invalidate()
-    }
-
-    /**
-     * Fully zoom out and return the image to the middle of the screen. This might be useful if you have a view pager
-     * and want images to be reset when the user has moved to another page.
-     */
-    fun resetScaleAndCenter() {
-        anim = null
-        pendingScale = limitedScale(0F)
-        sPendingCenter = if (isReady) {
-            PointF((sWidth / 2F), (sHeight / 2F))
-        } else {
-            PointF(0F, 0F)
-        }
-        invalidate()
-    }
-
-    /**
-     * Called once when the view is initialised, has dimensions, and will display an image on the
-     * next draw. This is triggered at the same time as [OnImageEventListener.onReady] but
-     * allows a subclass to receive this event without using a listener.
-     */
-    protected fun onReady() {}
-
-    /**
-     * Called once when the full size image or its base layer tiles have been loaded.
-     */
-    protected fun onImageLoaded() {}
-
-    /**
-     * Get the current state of the view (scale, center, orientation) for restoration after rotate. Will return null if
-     * the view is not ready.
-     *
-     * @return an [ImageViewState] instance representing the current position of the image. null if the view isn't ready.
-     */
-    val state: ImageViewState?
-        get() = if (vTranslate != null && sWidth > 0 && sHeight > 0) {
-            ImageViewState(scale, center!!)
-        } else {
-            null
-        }
-
-    /**
-     * Returns true if pan gesture detection is enabled.
-     *
-     * @return true if pan gesture detection is enabled.
-     */
-    fun isPanEnabled(): Boolean {
-        return panEnabled
-    }
-
-    /**
-     * Enable or disable pan gesture detection. Disabling pan causes the image to be centered. Pan
-     * can still be changed from code.
-     *
-     * @param panEnabled true to enable panning, false to disable.
-     */
-    fun setPanEnabled(panEnabled: Boolean) {
-        this.panEnabled = panEnabled
-        if (!panEnabled && vTranslate != null) {
-            vTranslate!!.x = width / 2 - scale * (sWidth / 2)
-            vTranslate!!.y = height / 2 - scale * (sHeight / 2)
-            if (isReady) {
-                refreshRequiredTiles(true)
-                invalidate()
-            }
-        }
-    }
-
-    /**
-     * Set a solid color to render behind tiles, useful for displaying transparent PNGs.
-     *
-     * @param tileBgColor Background color for tiles.
-     */
-    fun setTileBackgroundColor(tileBgColor: Int) {
-        if (Color.alpha(tileBgColor) == 0) {
-            tileBgPaint = null
-        } else {
-            tileBgPaint = Paint().apply {
-                style = Paint.Style.FILL
-                color = tileBgColor
-            }
-        }
         invalidate()
     }
 
@@ -2221,38 +1327,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     }
 
     /**
-     * Enable or disable eager loading of tiles that appear on screen during gestures or animations,
-     * while the gesture or animation is still in progress. By default this is enabled to improve
-     * responsiveness, but it can result in tiles being loaded and discarded more rapidly than
-     * necessary and reduce the animation frame rate on old/cheap devices. Disable this on older
-     * devices if you see poor performance. Tiles will then be loaded only when gestures and animations
-     * are completed.
-     *
-     * @param eagerLoadingEnabled true to enable loading during gestures, false to delay loading until gestures end
-     */
-    fun setEagerLoadingEnabled(eagerLoadingEnabled: Boolean) {
-        this.eagerLoadingEnabled = eagerLoadingEnabled
-    }
-
-    /**
-     * Enables visual debugging, showing tile boundaries and sizes.
-     *
-     * @param debug true to enable debugging, false to disable.
-     */
-    fun setDebug(debug: Boolean) {
-        this.debug = debug
-    }
-
-    /**
-     * Check if an image has been set. The image may not have been loaded and displayed yet.
-     *
-     * @return If an image is currently set.
-     */
-    fun hasImage(): Boolean {
-        return provider != null || bitmap != null
-    }
-
-    /**
      * {@inheritDoc}
      */
     override fun setOnLongClickListener(onLongClickListener: OnLongClickListener?) {
@@ -2270,8 +1344,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     }
 
     /**
-     * Add a listener for pan and zoom events. Extend [DefaultOnStateChangedListener] to simplify
-     * implementation.
+     * Add a listener for pan and zoom events.
      *
      * @param onStateChangedListener an [OnStateChangedListener] instance.
      */
@@ -2305,46 +1378,12 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      * Creates a scale animation builder, that when started will animate a zoom in or out. If this would move the image
      * beyond the panning limits, the image is automatically panned during the animation.
      *
-     * @param scale Target scale.
-     * @return [AnimationBuilder] instance. Call [SubsamplingScaleImageView.AnimationBuilder.start] to start the anim.
-     */
-    fun animateScale(scale: Float): AnimationBuilder? {
-        return if (isReady) AnimationBuilder(scale) else null
-    }
-
-    /**
-     * Creates a scale animation builder, that when started will animate a zoom in or out. If this would move the image
-     * beyond the panning limits, the image is automatically panned during the animation.
-     *
      * @param scale   Target scale.
      * @param sCenter Target source center.
      * @return [AnimationBuilder] instance. Call [SubsamplingScaleImageView.AnimationBuilder.start] to start the anim.
      */
     fun animateScaleAndCenter(scale: Float, sCenter: PointF?): AnimationBuilder? {
         return if (isReady) AnimationBuilder(scale, sCenter) else null
-    }
-
-    /**
-     * An event listener for animations, allows events to be triggered when an animation completes,
-     * is aborted by another animation starting, or is aborted by a touch event. Note that none of
-     * these events are triggered if the activity is paused, the image is swapped, or in other cases
-     * where the view's internal state gets wiped or draw events stop.
-     */
-    interface OnAnimationEventListener {
-        /**
-         * The animation has completed, having reached its endpoint.
-         */
-        fun onComplete()
-
-        /**
-         * The animation has been aborted before reaching its endpoint because the user touched the screen.
-         */
-        fun onInterruptedByUser()
-
-        /**
-         * The animation has been aborted before reaching its endpoint because a new animation has been started.
-         */
-        fun onInterruptedByNewAnim()
     }
 
     /**
@@ -2360,15 +1399,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         fun onReady()
 
         /**
-         * Called when the full size image is ready. When using tiling, this means the lowest resolution
-         * base layer of tiles are loaded, and when tiling is disabled, the image bitmap is loaded.
-         * This event could be used as a trigger to enable gestures if you wanted interaction disabled
-         * while only a preview is displayed, otherwise for most cases [.onReady] is the best
-         * event to listen to.
-         */
-        fun onImageLoaded()
-
-        /**
          * Indicates an error initiliasing the decoder when using a tiling, or when loading the full
          * size bitmap when tiling is disabled. This method cannot be relied upon; certain encoding
          * types of supported image formats can result in corrupt or blank images being loaded and
@@ -2377,16 +1407,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
          * @param e The exception thrown. This error is also logged by the view.
          */
         fun onImageLoadError(e: Exception)
-
-        /**
-         * Called when an image tile could not be loaded. This method cannot be relied upon; certain
-         * encoding types of supported image formats can result in corrupt or blank images being loaded
-         * and displayed with no detectable error. Most cases where an unsupported file is used will
-         * result in an error caught by [.onImageLoadError].
-         *
-         * @param e The exception thrown. This error is logged by the view.
-         */
-        fun onTileLoadError(e: Exception)
     }
 
     /**
@@ -2414,17 +1434,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         fun onCenterChanged(newCenter: PointF?, origin: Int)
     }
 
-    private data class Tile(
-        val sRect: Rect,
-        val sampleSize: Int,
-        val vRect: Rect,
-        val fileSRect: Rect,
-    ) {
-        var bitmap: Bitmap? = null
-        var loading = false
-        var visible = false
-    }
-
     /**
      * @param scaleStart Scale at start of anim
      * @param scaleEnd Scale at end of anim (target)
@@ -2438,7 +1447,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      * @param easing Easing style
      * @param origin Animation origin (API, double tap or fling)
      * @param time Start time
-     * @param listener Event listener
      */
     private data class Anim(
         val scaleStart: Float,
@@ -2453,36 +1461,16 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         val easing: Int,
         val origin: Int,
         val time: Long = System.currentTimeMillis(),
-        val listener: OnAnimationEventListener?,
     )
 
     private data class ScaleAndTranslate(var scale: Float, val vTranslate: PointF)
-
-    /**
-     * Default implementation of [OnAnimationEventListener] for extension. This does nothing in any method.
-     */
-    open class DefaultOnAnimationEventListener : OnAnimationEventListener {
-        override fun onComplete() {}
-        override fun onInterruptedByUser() {}
-        override fun onInterruptedByNewAnim() {}
-    }
 
     /**
      * Default implementation of [OnImageEventListener] for extension. This does nothing in any method.
      */
     open class DefaultOnImageEventListener : OnImageEventListener {
         override fun onReady() {}
-        override fun onImageLoaded() {}
         override fun onImageLoadError(e: Exception) {}
-        override fun onTileLoadError(e: Exception) {}
-    }
-
-    /**
-     * Default implementation of [OnStateChangedListener]. This does nothing in any method.
-     */
-    open class DefaultOnStateChangedListener : OnStateChangedListener {
-        override fun onCenterChanged(newCenter: PointF?, origin: Int) {}
-        override fun onScaleChanged(newScale: Float, origin: Int) {}
     }
 
     /**
@@ -2498,17 +1486,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         private var origin = ORIGIN_ANIM
         private var interruptible = true
         private var panLimited = true
-        private var listener: OnAnimationEventListener? = null
 
         constructor(sCenter: PointF) {
             targetScale = scale
             targetSCenter = sCenter
-            vFocus = null
-        }
-
-        constructor(scale: Float) {
-            targetScale = scale
-            targetSCenter = center
             vFocus = null
         }
 
@@ -2558,17 +1539,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         }
 
         /**
-         * Add an animation event listener.
-         *
-         * @param listener The listener.
-         * @return this builder for method chaining.
-         */
-        fun withOnAnimationEventListener(listener: OnAnimationEventListener?): AnimationBuilder {
-            this.listener = listener
-            return this
-        }
-
-        /**
          * Only for internal use. When set to true, the animation proceeds towards the actual end point - the nearest
          * point to the center allowed by pan limits. When false, animation is in the direction of the requested end
          * point and is stopped when the limit for each axis is reached. The latter behaviour is used for flings but
@@ -2591,11 +1561,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
          * Starts the animation.
          */
         fun start() {
-            try {
-                anim?.listener?.onInterruptedByNewAnim()
-            } catch (e: Exception) {
-                Log.w(TAG, "Error thrown by animation listener", e)
-            }
             val vxCenter = paddingLeft + (width - paddingRight - paddingLeft) / 2
             val vyCenter = paddingTop + (height - paddingBottom - paddingTop) / 2
             val targetScale = limitedScale(targetScale)
@@ -2624,7 +1589,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
                 interruptible = interruptible,
                 easing = easing,
                 origin = origin,
-                listener = listener,
             )
             if (vFocus != null) {
                 // Calculate where translation will be at the end of the anim
@@ -2758,16 +1722,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
          */
         const val ORIGIN_DOUBLE_TAP_ZOOM = 4
 
-        // overrides for the dimensions of the generated tiles
-        const val TILE_SIZE_AUTO = Int.MAX_VALUE
         private val TAG = SubsamplingScaleImageView::class.java.simpleName
-
-        /**
-         * Global preferred bitmap config shared by all view instances and applied to new instances
-         * initialised after the call is made. This is a hint only; the bundled [Decoder]
-         * classes all respect this (except when they were constructed with
-         * an instance-specific config) but custom decoder classes will not.
-         */
-        var preferredBitmapConfig: Bitmap.Config? = null
     }
 }
