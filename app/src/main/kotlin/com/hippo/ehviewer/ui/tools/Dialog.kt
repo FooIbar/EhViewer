@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -201,7 +202,7 @@ class DialogState {
                     cont.resume(it)
                 }
             }
-            AlertDialog(
+            BasicAlertDialog(
                 onDismissRequest = { cont.cancel() },
                 properties = DialogProperties(usePlatformDefaultWidth = respectDefaultWidth),
                 content = {

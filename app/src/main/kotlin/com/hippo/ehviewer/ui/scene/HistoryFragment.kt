@@ -35,7 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SwipeToDismiss
+import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -144,10 +144,10 @@ fun HistoryScreen(navigator: NavController) {
                         },
                     )
                     LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
-                        SwipeToDismiss(
+                        SwipeToDismissBox(
                             state = dismissState,
-                            background = {},
-                            dismissContent = {
+                            backgroundContent = {},
+                            content = {
                                 // TODO: item delete & add animation
                                 // Bug tracker: https://issuetracker.google.com/issues/150812265
                                 GalleryInfoListItem(
