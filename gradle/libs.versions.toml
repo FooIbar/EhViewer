@@ -84,7 +84,7 @@ compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "co
 # For renovate
 compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose-compiler" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-material3 = { module = "androidx.compose.material3:material3", version = "1.2.0-SNAPSHOT" }
 compose-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
 compose-ui-util = { module = "androidx.compose.ui:ui-util" }
 compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding" }
