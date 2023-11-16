@@ -54,9 +54,8 @@ fun updateWhenThemeChanges() {
                 else -> UiModeManager.MODE_NIGHT_AUTO
             }
             uiModeManager.setApplicationNightMode(mode)
-        } else {
-            AppCompatDelegate.setDefaultNightMode(Settings.theme)
         }
+        AppCompatDelegate.setDefaultNightMode(Settings.theme)
     }
 }
 
