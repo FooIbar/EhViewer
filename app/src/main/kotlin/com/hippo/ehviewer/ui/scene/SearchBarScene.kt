@@ -105,8 +105,9 @@ suspend fun SearchDao.suggestions(prefix: String, limit: Int) =
 
 @Composable
 fun SearchBarScreen(
+    title: String? = null,
     searchFieldState: TextFieldState,
-    searchFieldHint: String = "",
+    searchFieldHint: String? = null,
     showSearchFab: Boolean = false,
     onApplySearch: (String) -> Unit,
     onSearchExpanded: () -> Unit,
@@ -249,7 +250,8 @@ fun SearchBarScreen(
                     }
                     active = it
                 },
-                placeholder = { Text(searchFieldHint) },
+                title = title?.let { { Text(it) } },
+                placeholder = searchFieldHint?.let { { Text(it) } },
                 leadingIcon = {
                     if (active) {
                         IconButton(onClick = { hideSearchView() }) {
@@ -327,7 +329,8 @@ abstract class SearchBarScene : BaseScene() {
     private val searchFieldState = TextFieldState()
     private var mSuggestionProvider: SuggestionProvider? = null
     private var onApplySearch: (String) -> Unit = {}
-    private var searchFieldHint by mutableStateOf("")
+    private var searchFieldHint by mutableStateOf<String?>(null)
+    private var searchBarTitle by mutableStateOf<String?>(null)
     var showSearchFab by mutableStateOf(false)
 
     protected abstract val fabLayout: View
@@ -350,6 +353,7 @@ abstract class SearchBarScene : BaseScene() {
             val fabPadding = with(density) { 16.dp.roundToPx() }
             val margin = with(density) { 8.dp.roundToPx() }
             SearchBarScreen(
+                title = searchBarTitle,
                 searchFieldState = searchFieldState,
                 searchFieldHint = searchFieldHint,
                 showSearchFab = showSearchFab,
@@ -452,7 +456,7 @@ abstract class SearchBarScene : BaseScene() {
     open fun onSearchViewHidden() {}
 
     fun setTitle(title: String?) {
-        // TODO
+        searchBarTitle = title
     }
 
     fun setSearchBarText(text: String?) {
@@ -464,7 +468,7 @@ abstract class SearchBarScene : BaseScene() {
     }
 
     fun setSearchBarHint(hint: String?) {
-        searchFieldHint = hint.orEmpty()
+        searchFieldHint = hint
     }
 
     fun setOnApplySearch(lambda: (String) -> Unit) {
