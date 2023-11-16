@@ -235,7 +235,10 @@ class MainActivity : EhActivity() {
             val scope = rememberCoroutineScope()
             val recomposeScope = currentRecomposeScope
             fun isSelected(id: Int) = ::navController.isInitialized && id == navController.currentDestination?.id
-            fun closeDrawer() = scope.launch { drawerState.close() }
+            fun closeDrawer(callback: () -> Unit = {}) = scope.launch {
+                drawerState.close()
+                callback()
+            }
 
             LaunchedEffect(Unit) {
                 runSuspendCatching {
@@ -285,8 +288,14 @@ class MainActivity : EhActivity() {
                                         },
                                         selected = isSelected(id),
                                         onClick = {
-                                            closeDrawer()
-                                            onNavDestinationSelected2(id, navController)
+                                            if (id == R.id.nav_settings) {
+                                                closeDrawer {
+                                                    onNavDestinationSelected2(id, navController)
+                                                }
+                                            } else {
+                                                closeDrawer()
+                                                onNavDestinationSelected2(id, navController)
+                                            }
                                         },
                                         modifier = Modifier.padding(horizontal = 12.dp),
                                         icon = {
