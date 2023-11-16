@@ -41,6 +41,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -56,6 +57,8 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
@@ -352,48 +355,52 @@ abstract class SearchBarScene : BaseScene() {
             val density = LocalDensity.current
             val fabPadding = with(density) { 16.dp.roundToPx() }
             val margin = with(density) { 8.dp.roundToPx() }
-            SearchBarScreen(
-                title = searchBarTitle,
-                searchFieldState = searchFieldState,
-                searchFieldHint = searchFieldHint,
-                showSearchFab = showSearchFab,
-                onApplySearch = onApplySearch,
-                onSearchExpanded = ::onSearchViewExpanded,
-                onSearchHidden = ::onSearchViewHidden,
-                suggestionProvider = mSuggestionProvider,
-                searchBarOffsetY = ofs,
-                trailingIcon = {
-                    TrailingIcon()
-                },
-            ) { contentPadding ->
-                val topPadding = with(density) { contentPadding.calculateTopPadding().roundToPx() }
-                val bottomPadding = with(density) { contentPadding.calculateBottomPadding().roundToPx() }
-                AndroidViewBinding(
-                    modifier = Modifier.fillMaxSize(),
-                    factory = { inflater, parent, _ ->
-                        onCreateViewWithToolbar(inflater, parent, savedInstanceState).also {
-                            recyclerView.addOnScrollListener(onScrollListener)
-                            createDrawerView(savedInstanceState)?.apply {
-                                if (this is ComposeView) {
-                                    val owner = viewLifecycleOwner
-                                    setViewTreeLifecycleOwner(owner)
-                                    setViewTreeViewModelStoreOwner(owner as ViewModelStoreOwner)
-                                    setViewTreeSavedStateRegistryOwner(owner as SavedStateRegistryOwner)
-                                    setParentCompositionContext(compositionContext)
-                                }
-                                sideSheetDialog = SideSheetDialog(parent.context).also {
-                                    it.setContentView(this)
+            // Workaround for BTF2 cursor not showing
+            // https://issuetracker.google.com/issues/307323842
+            CompositionLocalProvider(LocalWindowInfo provides FocusedWindowInfo) {
+                SearchBarScreen(
+                    title = searchBarTitle,
+                    searchFieldState = searchFieldState,
+                    searchFieldHint = searchFieldHint,
+                    showSearchFab = showSearchFab,
+                    onApplySearch = onApplySearch,
+                    onSearchExpanded = ::onSearchViewExpanded,
+                    onSearchHidden = ::onSearchViewHidden,
+                    suggestionProvider = mSuggestionProvider,
+                    searchBarOffsetY = ofs,
+                    trailingIcon = {
+                        TrailingIcon()
+                    },
+                ) { contentPadding ->
+                    val topPadding = with(density) { contentPadding.calculateTopPadding().roundToPx() }
+                    val bottomPadding = with(density) { contentPadding.calculateBottomPadding().roundToPx() }
+                    AndroidViewBinding(
+                        modifier = Modifier.fillMaxSize(),
+                        factory = { inflater, parent, _ ->
+                            onCreateViewWithToolbar(inflater, parent, savedInstanceState).also {
+                                recyclerView.addOnScrollListener(onScrollListener)
+                                createDrawerView(savedInstanceState)?.apply {
+                                    if (this is ComposeView) {
+                                        val owner = viewLifecycleOwner
+                                        setViewTreeLifecycleOwner(owner)
+                                        setViewTreeViewModelStoreOwner(owner as ViewModelStoreOwner)
+                                        setViewTreeSavedStateRegistryOwner(owner as SavedStateRegistryOwner)
+                                        setParentCompositionContext(compositionContext)
+                                    }
+                                    sideSheetDialog = SideSheetDialog(parent.context).also {
+                                        it.setContentView(this)
+                                    }
                                 }
                             }
-                        }
-                    },
-                    onRelease = {
-                        onRelease()
-                    },
-                ) {
-                    fabLayout.updatePadding(bottom = fabPadding + bottomPadding)
-                    fastScroller.updatePadding(top = topPadding + margin, bottom = bottomPadding)
-                    recyclerView.updatePadding(top = topPadding + margin, bottom = bottomPadding)
+                        },
+                        onRelease = {
+                            onRelease()
+                        },
+                    ) {
+                        fabLayout.updatePadding(bottom = fabPadding + bottomPadding)
+                        fastScroller.updatePadding(top = topPadding + margin, bottom = bottomPadding)
+                        recyclerView.updatePadding(top = topPadding + margin, bottom = bottomPadding)
+                    }
                 }
             }
         }
@@ -497,6 +504,11 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String {
             "$keyword$"
         }
     }
+}
+
+private val FocusedWindowInfo = object : WindowInfo {
+    override val isWindowFocused: Boolean
+        get() = true
 }
 
 const val SEARCH_VIEW_ANIMATE_TIME = 300L
