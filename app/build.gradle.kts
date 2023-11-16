@@ -274,6 +274,14 @@ dependencies {
     "gmsImplementation"(libs.bundles.cronet)
 }
 
+configurations.all {
+    resolutionStrategy {
+        // Workaround IME won't show again once hidden.
+        // Google issue-tracker link?
+        force("androidx.compose.ui:ui-text-android:1.6.0-alpha08")
+    }
+}
+
 kotlin {
     jvmToolchain(17)
 }
