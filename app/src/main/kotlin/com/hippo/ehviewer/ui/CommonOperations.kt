@@ -54,9 +54,9 @@ import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.FavouriteStatusRouter
-import com.hippo.ehviewer.util.LongList
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastT
+import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.requestPermission
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
@@ -99,19 +99,12 @@ suspend fun DialogState.startDownload(
     if (isAtLeastT) {
         requestPermission(Manifest.permission.POST_NOTIFICATIONS)
     }
-    val toStart = LongList()
-    val toAdd = mutableListOf<BaseGalleryInfo>()
-    for (gi in galleryInfos) {
-        if (DownloadManager.containDownloadInfo(gi.gid)) {
-            toStart.add(gi.gid)
-        } else {
-            toAdd.add(gi)
-        }
-    }
+    val (toStart, toAdd) = galleryInfos.partition { DownloadManager.containDownloadInfo(it.gid) }
     if (toStart.isNotEmpty()) {
         val intent = Intent(context, DownloadService::class.java)
         intent.action = DownloadService.ACTION_START_RANGE
-        intent.putExtra(DownloadService.KEY_GID_LIST, toStart)
+        val list = toStart.mapToLongArray(GalleryInfo::gid)
+        intent.putExtra(DownloadService.KEY_GID_LIST, list)
         ContextCompat.startForegroundService(context, intent)
     }
     if (toAdd.isEmpty()) {

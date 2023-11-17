@@ -32,9 +32,9 @@ import com.hippo.ehviewer.spider.readCompatFromUniFile
 import com.hippo.ehviewer.spider.write
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ConcurrentPool
-import com.hippo.ehviewer.util.LongList
 import com.hippo.ehviewer.util.SimpleHandler
 import com.hippo.ehviewer.util.assertNotMainThread
+import com.hippo.ehviewer.util.mapNotNull
 import com.hippo.ehviewer.util.runAssertingNotMainThread
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -218,13 +218,12 @@ object DownloadManager : OnSpiderListener {
         }
     }
 
-    suspend fun startRangeDownload(gidList: LongList) {
+    suspend fun startRangeDownload(gidList: LongArray) {
         var update = false
-        for (i in 0 until gidList.size) {
-            val gid = gidList[i]
-            val info = mAllInfoMap[gid]
+        for (element in gidList) {
+            val info = mAllInfoMap[element]
             if (null == info) {
-                Log.d(TAG, "Can't get download info with gid: $gid")
+                Log.d(TAG, "Can't get download info with gid: $element")
                 continue
             }
             if (info.state == DownloadInfo.STATE_NONE || info.state == DownloadInfo.STATE_FAILED || info.state == DownloadInfo.STATE_FINISH) {
@@ -374,7 +373,7 @@ object DownloadManager : OnSpiderListener {
         }
     }
 
-    suspend fun stopRangeDownload(gidList: LongList) {
+    suspend fun stopRangeDownload(gidList: LongArray) {
         stopRangeDownloadInternal(gidList)
 
         // Update listener
@@ -432,7 +431,7 @@ object DownloadManager : OnSpiderListener {
         }
     }
 
-    suspend fun deleteRangeDownload(gidList: LongList) {
+    suspend fun deleteRangeDownload(gidList: LongArray) {
         stopRangeDownloadInternal(gidList)
         val list = gidList.mapNotNull { gid ->
             mAllInfoMap.remove(gid)?.also { getInfoListForLabel(it.label)?.remove(it) }
@@ -546,11 +545,11 @@ object DownloadManager : OnSpiderListener {
 
     // Update in DB
     // Update mDownloadListener
-    private suspend fun stopRangeDownloadInternal(gidList: LongList) {
+    private suspend fun stopRangeDownloadInternal(gidList: LongArray) {
         // Two way
         if (gidList.size < mWaitList.size) {
-            for (i in 0 until gidList.size) {
-                stopDownloadInternal(gidList[i])
+            for (element in gidList) {
+                stopDownloadInternal(element)
             }
         } else {
             // Check current task

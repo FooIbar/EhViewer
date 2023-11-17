@@ -37,7 +37,6 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.scene.DownloadsScene
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.ehviewer.util.LongList
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.SimpleHandler
 import com.hippo.ehviewer.util.getParcelableExtraCompat
@@ -105,7 +104,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
             }
 
             ACTION_START_RANGE -> {
-                val gidList = intent.getParcelableExtraCompat<LongList>(KEY_GID_LIST)
+                val gidList = intent.getLongArrayExtra(KEY_GID_LIST)
                 if (gidList != null) {
                     deferredMgr.await().startRangeDownload(gidList)
                 }
@@ -125,7 +124,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
             ACTION_STOP_CURRENT -> deferredMgr.await().stopCurrentDownload()
 
             ACTION_STOP_RANGE -> {
-                val gidList = intent.getParcelableExtraCompat<LongList>(KEY_GID_LIST)
+                val gidList = intent.getLongArrayExtra(KEY_GID_LIST)
                 if (gidList != null) {
                     deferredMgr.await().stopRangeDownload(gidList)
                 }
@@ -141,7 +140,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
             }
 
             ACTION_DELETE_RANGE -> {
-                val gidList = intent.getParcelableExtraCompat<LongList>(KEY_GID_LIST)
+                val gidList = intent.getLongArrayExtra(KEY_GID_LIST)
                 if (gidList != null) {
                     deferredMgr.await().deleteRangeDownload(gidList)
                 }
