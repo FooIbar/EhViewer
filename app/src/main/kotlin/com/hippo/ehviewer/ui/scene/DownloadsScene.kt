@@ -62,6 +62,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachReversed
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -773,13 +774,10 @@ class DownloadsScene :
             }
             when (v) {
                 binding.thumb -> {
-                    val args = Bundle()
-                    args.putString(
-                        GalleryDetailScene.KEY_ACTION,
-                        GalleryDetailScene.ACTION_GALLERY_INFO,
+                    navAnimated(
+                        R.id.galleryDetailScene,
+                        bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(list[index].galleryInfo)),
                     )
-                    args.putParcelable(GalleryDetailScene.KEY_GALLERY_INFO, list[index].galleryInfo)
-                    navAnimated(R.id.galleryDetailScene, args)
                 }
 
                 binding.start -> {

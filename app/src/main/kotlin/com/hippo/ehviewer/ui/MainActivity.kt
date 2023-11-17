@@ -69,6 +69,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
+import androidx.core.os.bundleOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -95,6 +96,7 @@ import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.scene.GalleryDetailScene
 import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
 import com.hippo.ehviewer.ui.scene.ProgressFragment
+import com.hippo.ehviewer.ui.scene.TokenArgs
 import com.hippo.ehviewer.ui.scene.navAnimated
 import com.hippo.ehviewer.ui.scene.navWithUrl
 import com.hippo.ehviewer.ui.settings.showNewVersion
@@ -447,11 +449,12 @@ class MainActivity : EhActivity() {
             val result1 = GalleryDetailUrlParser.parse(text, false)
             var launch: (() -> Unit)? = null
             if (result1 != null) {
-                val args = Bundle()
-                args.putString(GalleryDetailScene.KEY_ACTION, GalleryDetailScene.ACTION_GID_TOKEN)
-                args.putLong(GalleryDetailScene.KEY_GID, result1.gid)
-                args.putString(GalleryDetailScene.KEY_TOKEN, result1.token)
-                launch = { navController.navAnimated(R.id.galleryDetailScene, args) }
+                launch = {
+                    navController.navAnimated(
+                        R.id.galleryDetailScene,
+                        bundleOf(GalleryDetailScene.KEY_ARGS to TokenArgs(result1.gid, result1.token)),
+                    )
+                }
             }
             val result2 = GalleryPageUrlParser.parse(text, false)
             if (result2 != null) {

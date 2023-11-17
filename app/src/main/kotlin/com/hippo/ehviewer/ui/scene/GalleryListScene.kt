@@ -303,10 +303,7 @@ class GalleryListScene : SearchBarScene() {
             { info ->
                 navAnimated(
                     R.id.galleryDetailScene,
-                    bundleOf(
-                        GalleryDetailScene.KEY_ACTION to GalleryDetailScene.ACTION_GALLERY_INFO,
-                        GalleryDetailScene.KEY_GALLERY_INFO to info,
-                    ),
+                    bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
                 )
             },
             { info ->
@@ -877,11 +874,7 @@ class GalleryListScene : SearchBarScene() {
         token: String,
     ) : UrlSuggestion() {
         override val destination = R.id.galleryDetailScene
-        override val args = bundleOf(
-            GalleryDetailScene.KEY_ACTION to GalleryDetailScene.ACTION_GID_TOKEN,
-            GalleryDetailScene.KEY_GID to gid,
-            GalleryDetailScene.KEY_TOKEN to token,
-        )
+        override val args = bundleOf(GalleryDetailScene.KEY_ARGS to TokenArgs(gid, token))
     }
 
     private inner class GalleryPageUrlSuggestion(
