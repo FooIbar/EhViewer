@@ -42,11 +42,7 @@ fun NavController.navWithUrl(url: String): Boolean {
     GalleryDetailUrlParser.parse(url)?.apply {
         navAnimated(
             R.id.galleryDetailScene,
-            bundleOf(
-                GalleryDetailScene.KEY_ACTION to GalleryDetailScene.ACTION_GID_TOKEN,
-                GalleryDetailScene.KEY_GID to gid,
-                GalleryDetailScene.KEY_TOKEN to token,
-            ),
+            bundleOf(GalleryDetailScene.KEY_ARGS to TokenArgs(gid, token)),
         )
         return true
     }

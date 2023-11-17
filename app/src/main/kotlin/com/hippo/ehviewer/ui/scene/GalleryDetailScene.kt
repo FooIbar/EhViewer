@@ -187,19 +187,19 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
 import splitties.systemservices.downloadManager
 import splitties.systemservices.layoutInflater
 
-sealed interface GalleryDetailScreenArgs : Parcelable {
-    @Parcelize
-    data class GalleryDetailScreenArgsGalleryInfo(
-        val galleryInfo: BaseGalleryInfo,
-    ) : GalleryDetailScreenArgs
+sealed interface GalleryDetailScreenArgs : Parcelable
 
-    @Parcelize
-    data class GalleryDetailScreenArgsToken(
-        val gid: Long,
-        val token: String,
-        val page: Int,
-    ) : GalleryDetailScreenArgs
-}
+@Parcelize
+data class GalleryInfoArgs(
+    val galleryInfo: BaseGalleryInfo,
+) : GalleryDetailScreenArgs
+
+@Parcelize
+data class TokenArgs(
+    val gid: Long,
+    val token: String,
+    val page: Int = 0,
+) : GalleryDetailScreenArgs
 
 @StringRes
 private fun getRatingText(rating: Float): Int {
@@ -232,20 +232,20 @@ private fun List<GalleryTagGroup>.getArtist(): String? {
 @Composable
 fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController) {
     var galleryInfo by rememberSaveable {
-        val casted = args as? GalleryDetailScreenArgs.GalleryDetailScreenArgsGalleryInfo
+        val casted = args as? GalleryInfoArgs
         mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
     }
     val (gid, token) = remember {
         when (args) {
-            is GalleryDetailScreenArgs.GalleryDetailScreenArgsGalleryInfo -> args.galleryInfo.run { gid to token }
-            is GalleryDetailScreenArgs.GalleryDetailScreenArgsToken -> args.gid to args.token
+            is GalleryInfoArgs -> args.galleryInfo.run { gid to token }
+            is TokenArgs -> args.gid to args.token
         }
     }
     val galleryDetailUrl = remember { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity<MainActivity>() }
     LaunchedEffect(args, galleryInfo) {
-        val page = (args as? GalleryDetailScreenArgs.GalleryDetailScreenArgsToken)?.page ?: 0
+        val page = (args as? TokenArgs)?.page ?: 0
         val gi = galleryInfo
         if (page != 0 && gi != null) {
             Snackbar.make(
@@ -451,7 +451,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
             navigator.navAnimated(
                 R.id.galleryPreviewsScene,
                 bundleOf(
-                    GalleryDetailScene.KEY_GALLERY_DETAIL to it,
+                    KEY_GALLERY_DETAIL to it,
                     KEY_NEXT_PAGE to nextPage,
                 ),
             )
@@ -553,11 +553,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 ) to {
                     navigator.navAnimated(
                         R.id.galleryDetailScene,
-                        bundleOf(
-                            GalleryDetailScene.KEY_ACTION to GalleryDetailScene.ACTION_GID_TOKEN,
-                            GalleryDetailScene.KEY_GID to it.gid,
-                            GalleryDetailScene.KEY_TOKEN to it.token,
-                        ),
+                        bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(it)),
                     )
                 }
             }.toTypedArray()
@@ -1278,19 +1274,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
 class GalleryDetailScene : BaseScene() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val args = requireNotNull(arguments)
-        val composeArgs = when (requireNotNull(args.getString(KEY_ACTION))) {
-            ACTION_GID_TOKEN -> {
-                val gid = args.getLong(KEY_GID)
-                val token = requireNotNull(args.getString(KEY_TOKEN))
-                val page = args.getInt(KEY_PAGE)
-                GalleryDetailScreenArgs.GalleryDetailScreenArgsToken(gid, token, page)
-            }
-            ACTION_GALLERY_INFO -> {
-                val info = requireNotNull(args.getParcelableCompat<BaseGalleryInfo>(KEY_GALLERY_INFO))
-                GalleryDetailScreenArgs.GalleryDetailScreenArgsGalleryInfo(info)
-            }
-            else -> error("Action is not ACTION_GALLERY_INFO neither ACTION_GALLERY_INFO!!!")
-        }
+        val composeArgs = requireNotNull(args.getParcelableCompat<GalleryDetailScreenArgs>(KEY_ARGS))
         return ComposeWithMD3 {
             val navigator = remember { findNavController() }
             GalleryDetailScreen(composeArgs, navigator)
@@ -1298,13 +1282,6 @@ class GalleryDetailScene : BaseScene() {
     }
 
     companion object {
-        const val KEY_ACTION = "action"
-        const val ACTION_GALLERY_INFO = "action_gallery_info"
-        const val ACTION_GID_TOKEN = "action_gid_token"
-        const val KEY_GALLERY_INFO = "gallery_info"
-        const val KEY_GID = "gid"
-        const val KEY_TOKEN = "token"
-        const val KEY_PAGE = "page"
-        const val KEY_GALLERY_DETAIL = "gallery_detail"
+        const val KEY_ARGS = "args"
     }
 }

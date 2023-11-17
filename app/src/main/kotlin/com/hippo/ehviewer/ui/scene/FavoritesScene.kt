@@ -317,10 +317,7 @@ class FavoritesScene : SearchBarScene() {
                 { info ->
                     navAnimated(
                         R.id.galleryDetailScene,
-                        bundleOf(
-                            GalleryDetailScene.KEY_ACTION to GalleryDetailScene.ACTION_GALLERY_INFO,
-                            GalleryDetailScene.KEY_GALLERY_INFO to info,
-                        ),
+                        bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
                     )
                 },
                 {},
