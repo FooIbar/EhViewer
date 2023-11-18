@@ -23,7 +23,7 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/searchbar_scrolling_view_behavior">
 
-        <androidx.recyclerview.widget.RecyclerView
+        <com.hippo.ehviewer.ui.legacy.IgnoreCancelRV
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
