@@ -406,7 +406,7 @@ class GalleryListScene : SearchBarScene() {
                     }
                 },
             )
-            secondFabs = if (!isPop) {
+            secondaryFab = if (!isPop) {
                 fab
             } else {
                 fab.take(1)

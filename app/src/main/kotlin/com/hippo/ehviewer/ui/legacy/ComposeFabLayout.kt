@@ -2,8 +2,8 @@ package com.hippo.ehviewer.ui.legacy
 
 import android.content.Context
 import android.util.AttributeSet
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,14 +14,16 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.unit.dp
@@ -36,10 +38,10 @@ class ComposeFabLayout @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyle: Int = 0,
 ) : AbstractComposeView(context, attrs, defStyle) {
-    var isModeExpand by mutableStateOf(true)
+    private var expandable by mutableStateOf(true)
     var onPrimaryFabClick by mutableStateOf<(() -> Unit)?>(null)
     var primaryFabIcon by mutableStateOf(Icons.Default.Add)
-    var secondFabs by mutableStateOf<List<Pair<ImageVector, () -> Unit>>?>(null)
+    var secondaryFab by mutableStateOf<List<Pair<ImageVector, () -> Unit>>?>(null)
 
     private var hidden by mutableStateOf(false)
     private val expandedBackingField = mutableStateOf(false)
@@ -51,25 +53,35 @@ class ComposeFabLayout @JvmOverloads constructor(
     }
 
     fun show() {
-        expanded = true
+        hidden = true
     }
 
     fun hide() {
         expanded = false
+        hidden = false
     }
 
     @Composable
     override fun Content() {
         Mdc3Theme {
             if (expanded) {
+                DisposableEffect(Unit) {
+                    listeners.forEach { it.invoke(true) }
+                    onDispose {
+                        listeners.forEach { it.invoke(false) }
+                    }
+                }
                 Spacer(
-                    modifier = Modifier.fillMaxSize().clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { expanded = false },
-                    ),
+                    modifier = Modifier.fillMaxSize().pointerInput(expanded) {
+                        awaitPointerEventScope { expanded = false }
+                    },
                 )
             }
+            val hiddenState by animateFloatAsState(
+                targetValue = if (hidden) 1f else 0f,
+                animationSpec = tween(300),
+                label = "hiddenState",
+            )
             Box(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
                 contentAlignment = Alignment.BottomEnd,
@@ -78,13 +90,13 @@ class ComposeFabLayout @JvmOverloads constructor(
                     val animatedProgress by animateFloatMergePredictiveBackAsState(expandedBackingField)
                     FloatingActionButton(
                         onClick = {
-                            if (isModeExpand) {
+                            if (expandable) {
                                 expanded = !expanded
-                                listeners.forEach { it.invoke(expanded) }
                             } else {
                                 onPrimaryFabClick?.invoke()
                             }
                         },
+                        modifier = Modifier.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
                     ) {
                         Icon(
                             imageVector = primaryFabIcon,
@@ -92,7 +104,7 @@ class ComposeFabLayout @JvmOverloads constructor(
                             modifier = Modifier.rotate(lerp(135f, 0f, animatedProgress)),
                         )
                     }
-                    secondFabs?.forEachIndexed { index, (imageVector, onClick) ->
+                    secondaryFab?.forEachIndexed { index, (imageVector, onClick) ->
                         SmallFloatingActionButton(
                             onClick = {
                                 expanded = false
@@ -104,7 +116,7 @@ class ComposeFabLayout @JvmOverloads constructor(
                                     val distance = lerp((150 * (index + 1) + 50), 0, animatedProgress)
                                     placeable.placeRelative(0, -distance, -(index + 1).toFloat())
                                 }
-                            },
+                            }.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
                         ) {
                             Icon(imageVector = imageVector, contentDescription = null)
                         }
