@@ -81,6 +81,7 @@ import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.legacy.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getSparseParcelableArrayCompat
@@ -314,7 +315,7 @@ fun SearchBarScreen(
         floatingActionButton = {
             val hiddenState by animateFloatAsState(
                 targetValue = if (showSearchFab) 1f else 0f,
-                animationSpec = tween(300),
+                animationSpec = tween(FAB_ANIMATE_TIME),
                 label = "hiddenState",
             )
             FloatingActionButton(

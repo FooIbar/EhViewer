@@ -89,6 +89,7 @@ import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.BringOutTransition
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
+import com.hippo.ehviewer.ui.legacy.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.LayoutManagerUtils.firstVisibleItemPosition
 import com.hippo.ehviewer.ui.legacy.SecondaryFab
@@ -648,12 +649,12 @@ class GalleryListScene : SearchBarScene() {
 
     private fun selectSearchFab() {
         binding.fabLayout.hide()
-        showSearchFab(300)
+        showSearchFab(FAB_ANIMATE_TIME.toLong())
     }
 
     private fun selectActionFab() {
         showSearchFab = false
-        showPrimaryFab(300)
+        showPrimaryFab(FAB_ANIMATE_TIME.toLong())
     }
 
     override fun onSearchViewExpanded() {

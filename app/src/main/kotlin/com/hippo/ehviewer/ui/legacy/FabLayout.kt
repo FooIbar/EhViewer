@@ -87,7 +87,7 @@ class FabLayout @JvmOverloads constructor(
             val coroutineScope = rememberCoroutineScope()
             val appearState by animateFloatAsState(
                 targetValue = if (hidden) 0f else 1f,
-                animationSpec = tween(300),
+                animationSpec = tween(FAB_ANIMATE_TIME),
                 label = "hiddenState",
             )
             Box(
@@ -132,3 +132,5 @@ class FabLayout @JvmOverloads constructor(
         }
     }
 }
+
+const val FAB_ANIMATE_TIME = 300
