@@ -28,9 +28,8 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Redo
+import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.Icon
@@ -84,6 +83,8 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.databinding.DrawerListRvBinding
 import com.hippo.ehviewer.databinding.ItemDrawerListBinding
 import com.hippo.ehviewer.databinding.SceneGalleryListBinding
+import com.hippo.ehviewer.icons.EhIcons
+import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.WebViewActivity
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
@@ -392,10 +393,10 @@ class GalleryListScene : SearchBarScene() {
                     mUrlBuilder.mJumpTo = null
                     mAdapter?.refresh()
                 },
-                Icons.AutoMirrored.Filled.Redo to {
+                EhIcons.Default.GoTo to {
                     showGoToDialog()
                 },
-                Icons.Default.ArrowDownward to {
+                Icons.AutoMirrored.Default.LastPage to {
                     if (mIsTopList) {
                         mUrlBuilder.mJumpTo = "${TOPLIST_PAGES - 1}"
                         mAdapter?.refresh()
