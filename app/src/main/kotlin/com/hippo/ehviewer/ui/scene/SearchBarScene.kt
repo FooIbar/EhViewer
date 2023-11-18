@@ -81,7 +81,6 @@ import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.legacy.FabLayout
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getSparseParcelableArrayCompat
@@ -358,7 +357,6 @@ abstract class SearchBarScene : BaseScene() {
         return ComposeWithMD3 {
             val compositionContext = rememberCompositionContext()
             val density = LocalDensity.current
-            val fabPadding = with(density) { 16.dp.roundToPx() }
             val margin = with(density) { 8.dp.roundToPx() }
             // Workaround for BTF2 cursor not showing
             // https://issuetracker.google.com/issues/307323842
@@ -402,11 +400,7 @@ abstract class SearchBarScene : BaseScene() {
                             onRelease()
                         },
                     ) {
-                        if (fabLayout is FabLayout) {
-                            fabLayout.updatePadding(bottom = fabPadding + bottomPadding)
-                        } else {
-                            fabLayout.updatePadding(bottom = bottomPadding)
-                        }
+                        fabLayout.updatePadding(bottom = bottomPadding)
                         fastScroller.updatePadding(top = topPadding + margin, bottom = bottomPadding)
                         recyclerView.updatePadding(top = topPadding + margin, bottom = bottomPadding)
                     }

@@ -89,7 +89,6 @@ import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.BringOutTransition
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
-import com.hippo.ehviewer.ui.legacy.FabLayout
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.LayoutManagerUtils.firstVisibleItemPosition
 import com.hippo.ehviewer.ui.legacy.SecondaryFab
@@ -647,14 +646,14 @@ class GalleryListScene : SearchBarScene() {
         }
     }
 
-    private fun selectSearchFab(animation: Boolean) {
+    private fun selectSearchFab() {
         binding.fabLayout.hide()
-        showSearchFab(FabLayout.ANIMATE_TIME)
+        showSearchFab(300)
     }
 
-    private fun selectActionFab(animation: Boolean) {
+    private fun selectActionFab() {
         showSearchFab = false
-        showPrimaryFab(FabLayout.ANIMATE_TIME)
+        showPrimaryFab(300)
     }
 
     override fun onSearchViewExpanded() {
@@ -703,27 +702,27 @@ class GalleryListScene : SearchBarScene() {
             when (oldState) {
                 State.NORMAL -> when (state) {
                     State.SIMPLE_SEARCH -> {
-                        selectSearchFab(animation)
+                        selectSearchFab()
                     }
                     State.SEARCH -> {
                         mViewTransition!!.showView(1, animation)
-                        selectSearchFab(animation)
+                        selectSearchFab()
                     }
                     State.SEARCH_SHOW_LIST -> {
                         mViewTransition!!.showView(1, animation)
-                        selectSearchFab(animation)
+                        selectSearchFab()
                     }
                     else -> error("Unreachable!!!")
                 }
                 State.SIMPLE_SEARCH -> when (state) {
-                    State.NORMAL -> selectActionFab(animation)
+                    State.NORMAL -> selectActionFab()
                     State.SEARCH -> mViewTransition!!.showView(1, animation)
                     State.SEARCH_SHOW_LIST -> mViewTransition!!.showView(1, animation)
                     else -> error("Unreachable!!!")
                 }
                 State.SEARCH, State.SEARCH_SHOW_LIST -> if (state == State.NORMAL) {
                     mViewTransition!!.showView(0, animation)
-                    selectActionFab(animation)
+                    selectActionFab()
                 } else if (state == State.SIMPLE_SEARCH) {
                     mViewTransition!!.showView(0, animation)
                 }
