@@ -37,7 +37,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -93,6 +92,7 @@ import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.legacy.FabLayout
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.LayoutManagerUtils.firstVisibleItemPosition
+import com.hippo.ehviewer.ui.legacy.SecondaryFab
 import com.hippo.ehviewer.ui.legacy.ViewTransition
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.ExceptionUtils
@@ -386,7 +386,7 @@ class GalleryListScene : SearchBarScene() {
         }
         val isPop = mUrlBuilder.mode == MODE_WHATS_HOT
         binding.fabLayout.apply {
-            val fab = listOf<Pair<ImageVector, () -> Unit>>(
+            val fab = listOf<SecondaryFab>(
                 Icons.Default.Refresh to {
                     mUrlBuilder.setIndex(null, true)
                     mUrlBuilder.mJumpTo = null

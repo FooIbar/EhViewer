@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,23 +32,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.google.accompanist.themeadapter.material3.Mdc3Theme
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
+import eu.kanade.tachiyomi.util.lang.launchIO
+import moe.tarsin.coroutines.runSuspendCatching
 
 typealias OnExpandStateListener = (Boolean) -> Unit
-typealias SecondaryFab = Pair<ImageVector, () -> Unit>
+typealias SecondaryFab = Pair<ImageVector, suspend () -> Unit>
 
 class ComposeFabLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0,
 ) : AbstractComposeView(context, attrs, defStyle) {
-    private var expandable by mutableStateOf(true)
-    var onPrimaryFabClick by mutableStateOf<(() -> Unit)?>(null)
-    var primaryFabIcon by mutableStateOf(Icons.Default.Add)
+    private var primaryFabIcon by mutableStateOf(Icons.Default.Add)
     var secondaryFab by mutableStateOf<List<SecondaryFab>?>(null)
+    var autoCancel by mutableStateOf(true)
 
     private var hidden by mutableStateOf(false)
     private val expandedBackingField = mutableStateOf(false)
-    private var expanded by expandedBackingField
+    var expanded by expandedBackingField
     private val listeners = mutableListOf<OnExpandStateListener>()
 
     fun addOnExpandStateListener(listener: OnExpandStateListener) {
@@ -55,12 +57,12 @@ class ComposeFabLayout @JvmOverloads constructor(
     }
 
     fun show() {
-        hidden = true
+        hidden = false
     }
 
     fun hide() {
         expanded = false
-        hidden = false
+        hidden = true
     }
 
     @Composable
@@ -73,16 +75,19 @@ class ComposeFabLayout @JvmOverloads constructor(
                         listeners.forEach { it.invoke(false) }
                     }
                 }
-                Spacer(
-                    modifier = Modifier.fillMaxSize().pointerInput(expanded) {
-                        detectTapGestures {
-                            expanded = false
-                        }
-                    },
-                )
+                if (autoCancel) {
+                    Spacer(
+                        modifier = Modifier.fillMaxSize().pointerInput(expanded) {
+                            detectTapGestures {
+                                expanded = false
+                            }
+                        },
+                    )
+                }
             }
-            val hiddenState by animateFloatAsState(
-                targetValue = if (hidden) 1f else 0f,
+            val coroutineScope = rememberCoroutineScope()
+            val appearState by animateFloatAsState(
+                targetValue = if (hidden) 0f else 1f,
                 animationSpec = tween(300),
                 label = "hiddenState",
             )
@@ -93,14 +98,8 @@ class ComposeFabLayout @JvmOverloads constructor(
                 Box(contentAlignment = Alignment.Center) {
                     val animatedProgress by animateFloatMergePredictiveBackAsState(expandedBackingField)
                     FloatingActionButton(
-                        onClick = {
-                            if (expandable) {
-                                expanded = !expanded
-                            } else {
-                                onPrimaryFabClick?.invoke()
-                            }
-                        },
-                        modifier = Modifier.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
+                        onClick = { expanded = !expanded },
+                        modifier = Modifier.rotate(lerp(90f, 0f, appearState)).scale(appearState),
                     ) {
                         Icon(
                             imageVector = primaryFabIcon,
@@ -111,8 +110,12 @@ class ComposeFabLayout @JvmOverloads constructor(
                     secondaryFab?.forEachIndexed { index, (imageVector, onClick) ->
                         SmallFloatingActionButton(
                             onClick = {
-                                expanded = false
-                                onClick()
+                                coroutineScope.launchIO {
+                                    runSuspendCatching {
+                                        onClick()
+                                    }
+                                    expanded = false
+                                }
                             },
                             modifier = Modifier.layout { measurable, constraints ->
                                 val placeable = measurable.measure(constraints)
@@ -120,7 +123,7 @@ class ComposeFabLayout @JvmOverloads constructor(
                                     val distance = lerp(150 * (index + 1) + 50, 0, animatedProgress)
                                     placeable.placeRelative(0, -distance, -(index + 1).toFloat())
                                 }
-                            }.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
+                            }.rotate(lerp(90f, 0f, appearState)).scale(appearState),
                         ) {
                             Icon(imageVector = imageVector, contentDescription = null)
                         }
