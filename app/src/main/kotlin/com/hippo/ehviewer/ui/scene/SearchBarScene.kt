@@ -79,6 +79,7 @@ import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.legacy.FabLayout
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getSparseParcelableArrayCompat
@@ -397,7 +398,11 @@ abstract class SearchBarScene : BaseScene() {
                             onRelease()
                         },
                     ) {
-                        fabLayout.updatePadding(bottom = fabPadding + bottomPadding)
+                        if (fabLayout is FabLayout) {
+                            fabLayout.updatePadding(bottom = fabPadding + bottomPadding)
+                        } else {
+                            fabLayout.updatePadding(bottom = bottomPadding)
+                        }
                         fastScroller.updatePadding(top = topPadding + margin, bottom = bottomPadding)
                         recyclerView.updatePadding(top = topPadding + margin, bottom = bottomPadding)
                     }
