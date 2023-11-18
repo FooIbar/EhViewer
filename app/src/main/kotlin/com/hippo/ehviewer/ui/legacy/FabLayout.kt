@@ -106,25 +106,27 @@ class FabLayout @JvmOverloads constructor(
                             modifier = Modifier.rotate(lerp(135f, 0f, animatedProgress)),
                         )
                     }
-                    secondaryFab?.forEachIndexed { index, (imageVector, onClick) ->
-                        SmallFloatingActionButton(
-                            onClick = {
-                                coroutineScope.launchIO {
-                                    runSuspendCatching {
-                                        onClick()
+                    secondaryFab?.run {
+                        forEachIndexed { index, (imageVector, onClick) ->
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    coroutineScope.launchIO {
+                                        runSuspendCatching {
+                                            onClick()
+                                        }
+                                        expanded = false
                                     }
-                                    expanded = false
-                                }
-                            },
-                            modifier = Modifier.layout { measurable, constraints ->
-                                val placeable = measurable.measure(constraints)
-                                layout(placeable.width, placeable.height) {
-                                    val distance = lerp(150 * (index + 1) + 50, 0, animatedProgress)
-                                    placeable.placeRelative(0, -distance, -(index + 1).toFloat())
-                                }
-                            }.rotate(lerp(90f, 0f, appearState)).scale(appearState),
-                        ) {
-                            Icon(imageVector = imageVector, contentDescription = null)
+                                },
+                                modifier = Modifier.layout { measurable, constraints ->
+                                    val placeable = measurable.measure(constraints)
+                                    layout(placeable.width, placeable.height) {
+                                        val distance = lerp(150 * (size - index) + 50, 0, animatedProgress)
+                                        placeable.placeRelative(0, -distance, -(size - index).toFloat())
+                                    }
+                                }.rotate(lerp(90f, 0f, appearState)).scale(appearState),
+                            ) {
+                                Icon(imageVector = imageVector, contentDescription = null)
+                            }
                         }
                     }
                 }
