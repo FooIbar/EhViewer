@@ -35,8 +35,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.outlined.Label
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -73,7 +78,6 @@ import androidx.viewbinding.ViewBinding
 import arrow.core.partially1
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
@@ -98,8 +102,6 @@ import com.hippo.ehviewer.ui.legacy.AutoStaggeredGridLayoutManager
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CheckBoxDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
-import com.hippo.ehviewer.ui.legacy.FabLayout
-import com.hippo.ehviewer.ui.legacy.FabLayout.OnClickFabListener
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.STRATEGY_MIN_SIZE
 import com.hippo.ehviewer.ui.legacy.ViewTransition
@@ -119,15 +121,14 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.pxToDp
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import rikka.core.res.resolveColor
 
 @SuppressLint("RtlHardcoded")
-class DownloadsScene :
-    SearchBarScene(),
-    OnClickFabListener {
+class DownloadsScene : SearchBarScene() {
     /*---------------
      Whole life cycle
      ---------------*/
@@ -275,10 +276,12 @@ class DownloadsScene :
                 { (this as DownloadHolder).itemId },
             ).apply {
                 addCustomChoiceListener({
-                    binding.fabLayout.isExpanded = true
+                    binding.fabLayout.show()
+                    binding.fabLayout.expanded = true
                     lockDrawer()
                 }) {
-                    binding.fabLayout.isExpanded = false
+                    binding.fabLayout.expanded = false
+                    binding.fabLayout.hide()
                     unlockDrawer()
                 }
                 restoreSelection(savedInstanceState)
@@ -346,11 +349,60 @@ class DownloadsScene :
             val handlerDrawable = HandlerDrawable()
             handlerDrawable.setColor(theme.resolveColor(com.google.android.material.R.attr.colorPrimary))
             fastScroller.setHandlerDrawable(handlerDrawable)
-            fabLayout.setExpanded(expanded = false, animation = false)
-            fabLayout.addOnExpandListener { if (!it && tracker.isInCustomChoice) tracker.clearSelection() }
-            fabLayout.setHidePrimaryFab(true)
-            fabLayout.setAutoCancel(false)
-            fabLayout.setOnClickFabListener(this@DownloadsScene)
+            with(fabLayout) {
+                autoCancel = false
+                hide()
+                addOnExpandStateListener { if (!it && tracker.isInCustomChoice) tracker.clearSelection() }
+                secondaryFab = listOf(
+                    Icons.Default.DoneAll to {
+                        tracker.selectAll()
+                        throw CancellationException()
+                    },
+                    Icons.Default.PlayArrow to {
+                        val gidList = tracker.getAndClearSelection().mapToLongArray(DownloadInfo::gid)
+                        val intent = Intent(activity, DownloadService::class.java)
+                        intent.action = DownloadService.ACTION_START_RANGE
+                        intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
+                        ContextCompat.startForegroundService(context, intent)
+                    },
+                    Icons.Default.Pause to {
+                        val gidList = tracker.getAndClearSelection().mapToLongArray(DownloadInfo::gid)
+                        DownloadManager.stopRangeDownload(gidList)
+                    },
+                    Icons.Default.Delete to {
+                        val downloadInfoList = tracker.getAndClearSelection()
+                        val builder = CheckBoxDialogBuilder(
+                            context,
+                            getString(R.string.download_remove_dialog_message_2, downloadInfoList.size),
+                            getString(R.string.download_remove_dialog_check_text),
+                            Settings.removeImageFiles,
+                        )
+                        val helper = DeleteRangeDialogHelper(
+                            downloadInfoList,
+                            downloadInfoList.mapToLongArray(DownloadInfo::gid),
+                            builder,
+                        )
+                        builder.setTitle(R.string.download_remove_dialog_title)
+                            .setPositiveButton(android.R.string.ok, helper)
+                            .apply { withUIContext { show() } }
+                    },
+                    Icons.AutoMirrored.Default.DriveFileMove to {
+                        val downloadInfoList = tracker.getAndClearSelection()
+                        val labelRawList = DownloadManager.labelList
+                        val labelList: MutableList<String> = ArrayList(labelRawList.size + 1)
+                        labelList.add(getString(R.string.default_download_label_name))
+                        labelRawList.forEach {
+                            labelList.add(it.label)
+                        }
+                        val labels = labelList.toTypedArray()
+                        val helper = MoveDialogHelper(labels, downloadInfoList)
+                        BaseDialogBuilder(context)
+                            .setTitle(R.string.download_move_dialog_title)
+                            .setItems(labels, helper)
+                            .apply { withUIContext { show() } }
+                    },
+                )
+            }
             updateForLabel()
         }
         viewLifecycleOwner.lifecycleScope.launch {
@@ -529,80 +581,6 @@ class DownloadsScene :
         }
         context.navToReader(list[position].galleryInfo)
         return true
-    }
-
-    override fun onClickPrimaryFab(view: FabLayout, fab: FloatingActionButton) {
-        if (tracker.isInCustomChoice) {
-            tracker.clearSelection()
-        }
-    }
-
-    override fun onClickSecondaryFab(view: FabLayout, fab: FloatingActionButton, position: Int) {
-        val context = context
-        val activity: Activity? = mainActivity
-        if (null == context || null == activity) {
-            return
-        }
-        if (0 == position) {
-            tracker.selectAll()
-        } else {
-            val downloadInfoList = tracker.getAndClearSelection()
-            val gidList = if (position in 1..3) {
-                downloadInfoList.mapToLongArray(DownloadInfo::gid)
-            } else {
-                null
-            }
-            when (position) {
-                1 -> {
-                    // Start
-                    val intent = Intent(activity, DownloadService::class.java)
-                    intent.action = DownloadService.ACTION_START_RANGE
-                    intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
-                    ContextCompat.startForegroundService(activity, intent)
-                }
-
-                2 -> {
-                    // Stop
-                    lifecycleScope.launchIO {
-                        DownloadManager.stopRangeDownload(gidList!!)
-                    }
-                }
-
-                3 -> {
-                    // Delete
-                    val builder = CheckBoxDialogBuilder(
-                        context,
-                        getString(R.string.download_remove_dialog_message_2, gidList!!.size),
-                        getString(R.string.download_remove_dialog_check_text),
-                        Settings.removeImageFiles,
-                    )
-                    val helper = DeleteRangeDialogHelper(
-                        downloadInfoList,
-                        gidList,
-                        builder,
-                    )
-                    builder.setTitle(R.string.download_remove_dialog_title)
-                        .setPositiveButton(android.R.string.ok, helper)
-                        .show()
-                }
-
-                4 -> {
-                    // Move
-                    val labelRawList = DownloadManager.labelList
-                    val labelList: MutableList<String> = ArrayList(labelRawList.size + 1)
-                    labelList.add(getString(R.string.default_download_label_name))
-                    labelRawList.forEach {
-                        labelList.add(it.label)
-                    }
-                    val labels = labelList.toTypedArray()
-                    val helper = MoveDialogHelper(labels, downloadInfoList)
-                    BaseDialogBuilder(context)
-                        .setTitle(R.string.download_move_dialog_title)
-                        .setItems(labels, helper)
-                        .show()
-                }
-            }
-        }
     }
 
     private class DownloadLabelHolder(val binding: ItemDrawerListBinding) :
