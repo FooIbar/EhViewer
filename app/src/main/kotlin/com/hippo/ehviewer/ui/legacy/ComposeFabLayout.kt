@@ -117,7 +117,7 @@ class ComposeFabLayout @JvmOverloads constructor(
                             modifier = Modifier.layout { measurable, constraints ->
                                 val placeable = measurable.measure(constraints)
                                 layout(placeable.width, placeable.height) {
-                                    val distance = lerp((150 * (index + 1) + 50), 0, animatedProgress)
+                                    val distance = lerp(150 * (index + 1) + 50, 0, animatedProgress)
                                     placeable.placeRelative(0, -distance, -(index + 1).toFloat())
                                 }
                             }.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
