@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,6 +33,7 @@ import com.google.accompanist.themeadapter.material3.Mdc3Theme
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 
 typealias OnExpandStateListener = (Boolean) -> Unit
+typealias SecondaryFab = Pair<ImageVector, () -> Unit>
 
 class ComposeFabLayout @JvmOverloads constructor(
     context: Context,
@@ -41,7 +43,7 @@ class ComposeFabLayout @JvmOverloads constructor(
     private var expandable by mutableStateOf(true)
     var onPrimaryFabClick by mutableStateOf<(() -> Unit)?>(null)
     var primaryFabIcon by mutableStateOf(Icons.Default.Add)
-    var secondaryFab by mutableStateOf<List<Pair<ImageVector, () -> Unit>>?>(null)
+    var secondaryFab by mutableStateOf<List<SecondaryFab>?>(null)
 
     private var hidden by mutableStateOf(false)
     private val expandedBackingField = mutableStateOf(false)
@@ -73,7 +75,9 @@ class ComposeFabLayout @JvmOverloads constructor(
                 }
                 Spacer(
                     modifier = Modifier.fillMaxSize().pointerInput(expanded) {
-                        awaitPointerEventScope { expanded = false }
+                        detectTapGestures {
+                            expanded = false
+                        }
                     },
                 )
             }
