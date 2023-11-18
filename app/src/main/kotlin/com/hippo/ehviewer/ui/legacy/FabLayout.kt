@@ -38,12 +38,11 @@ import moe.tarsin.coroutines.runSuspendCatching
 typealias OnExpandStateListener = (Boolean) -> Unit
 typealias SecondaryFab = Pair<ImageVector, suspend () -> Unit>
 
-class ComposeFabLayout @JvmOverloads constructor(
+class FabLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0,
 ) : AbstractComposeView(context, attrs, defStyle) {
-    private var primaryFabIcon by mutableStateOf(Icons.Default.Add)
     var secondaryFab by mutableStateOf<List<SecondaryFab>?>(null)
     var autoCancel by mutableStateOf(true)
 
@@ -102,7 +101,7 @@ class ComposeFabLayout @JvmOverloads constructor(
                         modifier = Modifier.rotate(lerp(90f, 0f, appearState)).scale(appearState),
                     ) {
                         Icon(
-                            imageVector = primaryFabIcon,
+                            imageVector = Icons.Default.Add,
                             contentDescription = null,
                             modifier = Modifier.rotate(lerp(135f, 0f, animatedProgress)),
                         )

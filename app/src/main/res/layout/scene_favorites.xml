@@ -20,7 +20,7 @@
         android:id="@+id/content_layout"
         layout="@layout/widget_content_layout" />
 
-    <com.hippo.ehviewer.ui.legacy.ComposeFabLayout
+    <com.hippo.ehviewer.ui.legacy.FabLayout
         android:id="@+id/fab_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

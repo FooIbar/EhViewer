@@ -27,7 +27,7 @@
         android:layout_marginStart="@dimen/gallery_search_bar_margin_v"
         android:layout_marginEnd="@dimen/gallery_search_bar_margin_v" />
 
-    <com.hippo.ehviewer.ui.legacy.ComposeFabLayout
+    <com.hippo.ehviewer.ui.legacy.FabLayout
         android:id="@+id/fab_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
