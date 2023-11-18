@@ -98,7 +98,7 @@ class FabLayout @JvmOverloads constructor(
                     val animatedProgress by animateFloatMergePredictiveBackAsState(expandedBackingField)
                     FloatingActionButton(
                         onClick = { expanded = !expanded },
-                        modifier = Modifier.rotate(lerp(90f, 0f, appearState)).scale(appearState),
+                        modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
