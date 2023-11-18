@@ -101,7 +101,6 @@ import com.hippo.ehviewer.util.getValue
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.setValue
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
@@ -634,9 +633,17 @@ class GalleryListScene : SearchBarScene() {
     }
 
     private fun showSearchFab(delay: Long) {
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             delay(delay)
             showSearchFab = true
+        }
+    }
+
+    private fun showPrimaryFab(delay: Long) {
+        lifecycleScope.launch {
+            delay(delay)
+            _binding ?: return@launch
+            binding.fabLayout.show()
         }
     }
 
@@ -647,7 +654,7 @@ class GalleryListScene : SearchBarScene() {
 
     private fun selectActionFab(animation: Boolean) {
         showSearchFab = false
-        binding.fabLayout.show()
+        showPrimaryFab(FabLayout.ANIMATE_TIME)
     }
 
     override fun onSearchViewExpanded() {
@@ -663,11 +670,7 @@ class GalleryListScene : SearchBarScene() {
     override fun onSearchViewHidden() {
         super.onSearchViewHidden()
         if (mState == State.NORMAL) {
-            lifecycleScope.launchUI {
-                delay(SEARCH_VIEW_ANIMATE_TIME)
-                _binding ?: return@launchUI
-                binding.fabLayout.show()
-            }
+            showPrimaryFab(SEARCH_VIEW_ANIMATE_TIME)
         } else {
             showSearchFab(SEARCH_VIEW_ANIMATE_TIME)
             stateBackPressedCallback.isEnabled = true
