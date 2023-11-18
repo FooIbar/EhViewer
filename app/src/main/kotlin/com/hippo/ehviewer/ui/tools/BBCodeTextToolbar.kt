@@ -8,7 +8,6 @@ import android.text.style.UnderlineSpan
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -17,7 +16,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.TextToolbar
@@ -47,11 +45,6 @@ import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
 
 typealias PlatformRect = android.graphics.Rect
-
-object NoopClipboardManager : ClipboardManager {
-    override fun getText() = null
-    override fun setText(annotatedString: AnnotatedString) = Unit
-}
 
 fun TextFieldValue.updateSpan(origin: TextFieldValue): TextFieldValue {
     val oriSpan = origin.annotatedString.spanStyles
@@ -182,6 +175,82 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
     val toolbar = remember {
         object : TextToolbar {
             private var actionMode: ActionMode? = null
+            private val callback = object : TextActionModeCallback() {
+                override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
+                    super.onCreateActionMode(mode, menu)
+                    activity.menuInflater.inflate(R.menu.context_comment, menu)
+                    return true
+                }
+
+                override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+                    super.onPrepareActionMode(mode, menu)
+                    if (tfv.selection.collapsed) {
+                        menu.removeGroup(R.id.bbcode_group)
+                    }
+                    return true
+                }
+
+                override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+                    val handled = super.onActionItemClicked(mode, item)
+                    if (handled) {
+                        return true
+                    }
+                    val capturedTfv = tfv
+                    val start = capturedTfv.selection.min
+                    val end = capturedTfv.selection.max
+                    val annotatedString = buildAnnotatedString {
+                        val len = capturedTfv.text.length
+                        fun addStyle(style: SpanStyle) {
+                            append(capturedTfv.annotatedString)
+                            addStyle(style, start, end)
+                        }
+                        fun addTextDecoration(decoration: TextDecoration) {
+                            append(capturedTfv.getTextBeforeSelection(len))
+                            val ans = capturedTfv.getSelectedText()
+                            val spans = ans.spanStyles.filter {
+                                it.item.textDecoration == null || it.item.textDecoration == decoration
+                            }
+                            withStyle(SpanStyle(textDecoration = decoration)) {
+                                append(AnnotatedString(ans.text, spans))
+                            }
+                            append(capturedTfv.getTextAfterSelection(len))
+                        }
+                        when (item.itemId) {
+                            R.id.action_bold -> addStyle(SpanStyle(fontWeight = FontWeight.Bold))
+                            R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
+                            R.id.action_underline -> addTextDecoration(TextDecoration.Underline)
+                            R.id.action_strikethrough -> addTextDecoration(TextDecoration.LineThrough)
+                            R.id.action_url -> append(capturedTfv.annotatedString)
+                            R.id.action_clear -> {
+                                append(capturedTfv.getTextBeforeSelection(len))
+                                append(capturedTfv.getSelectedText().text)
+                                append(capturedTfv.getTextAfterSelection(len))
+                            }
+                        }
+                    }
+                    tfv = TextFieldValue(
+                        annotatedString = buildAnnotatedString {
+                            append(annotatedString)
+                            // Hacky: Trigger recomposition to hide text toolbar
+                            append(Char.MIN_VALUE)
+                        },
+                        selection = TextRange(end),
+                    )
+                    coroutineScope.launch {
+                        // Hacky: Let TextField recompose first
+                        delay(100)
+                        tfv = tfv.copy(annotatedString = annotatedString)
+                    }
+
+                    mode.finish()
+                    return true
+                }
+
+                override fun onDestroyActionMode(mode: ActionMode) {
+                    actionMode = null
+                }
+            }
+
             override var status = TextToolbarStatus.Hidden
 
             override fun hide() {
@@ -197,77 +266,14 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                 onCutRequested: (() -> Unit)?,
                 onSelectAllRequested: (() -> Unit)?,
             ) {
+                callback.rect = rect
+                callback.onCopyRequested = onCopyRequested
+                callback.onCutRequested = onCutRequested
+                callback.onPasteRequested = onPasteRequested
+                callback.onSelectAllRequested = onSelectAllRequested
                 if (actionMode == null) {
                     status = TextToolbarStatus.Shown
-                    actionMode = view.startActionMode(
-                        object : ActionMode.Callback2() {
-                            override fun onCreateActionMode(p0: ActionMode, p1: Menu): Boolean {
-                                activity.menuInflater.inflate(R.menu.context_comment, p1)
-                                return true
-                            }
-
-                            override fun onPrepareActionMode(p0: ActionMode, p1: Menu): Boolean {
-                                return true
-                            }
-
-                            override fun onActionItemClicked(p0: ActionMode, p1: MenuItem): Boolean {
-                                val capturedTfv = tfv
-                                coroutineScope.launch {
-                                    // Hacky: Let TextField recompose first
-                                    delay(100)
-                                    // Reversed range is not supported by AnnotatedString
-                                    val start = capturedTfv.selection.start.coerceAtMost(capturedTfv.selection.end)
-                                    val end = capturedTfv.selection.start.coerceAtLeast(capturedTfv.selection.end)
-                                    tfv = TextFieldValue(
-                                        buildAnnotatedString {
-                                            val len = capturedTfv.text.length
-                                            fun addStyle(style: SpanStyle) {
-                                                append(capturedTfv.annotatedString)
-                                                addStyle(style, start, end)
-                                            }
-                                            fun addTextDecoration(decoration: TextDecoration) {
-                                                append(capturedTfv.getTextBeforeSelection(len))
-                                                val ans = capturedTfv.getSelectedText()
-                                                val spans = ans.spanStyles.filter {
-                                                    it.item.textDecoration == null || it.item.textDecoration == decoration
-                                                }
-                                                withStyle(SpanStyle(textDecoration = decoration)) {
-                                                    append(AnnotatedString(ans.text, spans))
-                                                }
-                                                append(capturedTfv.getTextAfterSelection(len))
-                                            }
-                                            when (p1.itemId) {
-                                                R.id.action_bold -> addStyle(SpanStyle(fontWeight = FontWeight.Bold))
-                                                R.id.action_italic -> addStyle(SpanStyle(fontStyle = FontStyle.Italic))
-                                                R.id.action_underline -> addTextDecoration(TextDecoration.Underline)
-                                                R.id.action_strikethrough -> addTextDecoration(TextDecoration.LineThrough)
-                                                R.id.action_url -> append(capturedTfv.annotatedString)
-                                                R.id.action_clear -> {
-                                                    append(capturedTfv.getTextBeforeSelection(len))
-                                                    append(capturedTfv.getSelectedText().text)
-                                                    append(capturedTfv.getTextAfterSelection(len))
-                                                }
-                                            }
-                                        },
-                                        selection = TextRange(end),
-                                    )
-                                }
-
-                                // Hacky: Notify BasicTextField clear state
-                                onCopyRequested?.invoke()
-                                return true
-                            }
-
-                            override fun onDestroyActionMode(p0: ActionMode) {
-                                actionMode = null
-                            }
-
-                            override fun onGetContentRect(mode: ActionMode, view: View, outRect: PlatformRect) {
-                                outRect.set(rect.left.toInt(), rect.top.toInt(), rect.right.toInt(), rect.bottom.toInt())
-                            }
-                        },
-                        ActionMode.TYPE_FLOATING,
-                    )
+                    actionMode = view.startActionMode(callback, ActionMode.TYPE_FLOATING)
                 } else {
                     actionMode?.invalidate()
                 }
