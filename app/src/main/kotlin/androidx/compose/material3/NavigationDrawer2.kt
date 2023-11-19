@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 private val AnimationSpec = TweenSpec<Float>(durationMillis = 256)
@@ -277,30 +276,28 @@ fun ModalNavigationDrawer(
     val dragModifier = if (gesturesEnabled) {
         Modifier.pointerInput(isRtl) {
             val multiplier = if (isRtl) -1 else 1
-            coroutineScope {
-                awaitEachGesture {
-                    fun canConsume(slop: Float) = (slop > 0 && drawerState.isClosed) || (slop < 0 && drawerState.isOpen)
-                    val down = awaitFirstDown(requireUnconsumed = false)
-                    var overSlop: Float
-                    val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
-                        overSlop = over * multiplier
-                        if (canConsume(overSlop)) {
-                            velocityTracker.addPointerInputChange(change)
-                            change.consume()
-                            drawerState.anchoredDraggableState.dispatchRawDelta(overSlop)
-                        }
+            awaitEachGesture {
+                fun canConsume(slop: Float) = (slop > 0 && drawerState.isClosed) || (slop < 0 && drawerState.isOpen)
+                val down = awaitFirstDown(requireUnconsumed = false)
+                var overSlop: Float
+                val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
+                    overSlop = over * multiplier
+                    if (canConsume(overSlop)) {
+                        velocityTracker.addPointerInputChange(change)
+                        change.consume()
+                        drawerState.anchoredDraggableState.dispatchRawDelta(overSlop)
                     }
-                    if (drag != null) {
-                        horizontalDrag(drag.id) {
-                            velocityTracker.addPointerInputChange(it)
-                            drag.consume()
-                            drawerState.anchoredDraggableState.dispatchRawDelta(it.positionChange().x * multiplier)
-                        }
-                        val velocity = velocityTracker.calculateVelocity()
-                        velocityTracker.resetTracking()
-                        scope.launch {
-                            drawerState.anchoredDraggableState.settle(velocity.x * multiplier)
-                        }
+                }
+                if (drag != null) {
+                    horizontalDrag(drag.id) {
+                        velocityTracker.addPointerInputChange(it)
+                        drag.consume()
+                        drawerState.anchoredDraggableState.dispatchRawDelta(it.positionChange().x * multiplier)
+                    }
+                    val velocity = velocityTracker.calculateVelocity()
+                    velocityTracker.resetTracking()
+                    scope.launch {
+                        drawerState.anchoredDraggableState.settle(velocity.x * multiplier)
                     }
                 }
             }
