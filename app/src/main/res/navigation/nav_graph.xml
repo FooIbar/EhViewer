@@ -57,7 +57,7 @@
         android:label="GalleryPreviewsScene" />
     <fragment
         android:id="@+id/nav_favourite"
-        android:name="com.hippo.ehviewer.ui.scene.FavoritesScene"
+        android:name="com.hippo.ehviewer.ui.scene.FavoritesFragment"
         android:label="FavoritesScene" />
     <fragment
         android:id="@+id/nav_history"

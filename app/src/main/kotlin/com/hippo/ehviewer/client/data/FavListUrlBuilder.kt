@@ -22,7 +22,7 @@ import com.hippo.ehviewer.client.ehUrl
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class FavListUrlBuilder(
+data class FavListUrlBuilder(
     var mPrev: String? = null,
     var mNext: String? = null,
     var jumpTo: String? = null,
