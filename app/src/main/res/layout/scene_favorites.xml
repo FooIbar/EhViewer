@@ -14,8 +14,7 @@
   ~ limitations under the License.
   -->
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
 
     <include
         android:id="@+id/content_layout"
@@ -24,59 +23,5 @@
     <com.hippo.ehviewer.ui.legacy.FabLayout
         android:id="@+id/fab_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingEnd="@dimen/corner_fab_margin"
-        android:paddingBottom="@dimen/corner_fab_margin">
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            style="@style/Widget.Material3.FloatingActionButton.Small.Primary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@drawable/v_go_to_dark_x24" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            style="@style/Widget.Material3.FloatingActionButton.Small.Primary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@drawable/v_refresh_dark_x24" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            style="@style/Widget.Material3.FloatingActionButton.Small.Primary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@drawable/v_last_page_x24" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            style="@style/Widget.Material3.FloatingActionButton.Small.Primary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:srcCompat="@drawable/v_check_all_dark_x24" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            style="@style/Widget.Material3.FloatingActionButton.Small.Primary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:srcCompat="@drawable/v_download_x24" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            style="@style/Widget.Material3.FloatingActionButton.Small.Primary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:srcCompat="@drawable/v_delete_x24" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            style="@style/Widget.Material3.FloatingActionButton.Small.Primary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:srcCompat="@drawable/v_folder_move_x24" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-    </com.hippo.ehviewer.ui.legacy.FabLayout>
+        android:layout_height="match_parent" />
 </merge>

@@ -1,482 +1,138 @@
-/*
- * Copyright (C) 2015 Hippo Seven
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.hippo.ehviewer.ui.legacy
 
-import android.animation.Animator
 import android.content.Context
-import android.os.Bundle
-import android.os.Parcelable
 import android.util.AttributeSet
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewPropertyAnimator
-import android.view.animation.Interpolator
-import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
-import androidx.core.view.isVisible
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.hippo.ehviewer.R
-import com.hippo.ehviewer.util.AnimationUtils
-import com.hippo.ehviewer.util.SimpleAnimatorListener
-import com.hippo.ehviewer.util.getParcelableCompat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.AbstractComposeView
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
+import com.google.accompanist.themeadapter.material3.Mdc3Theme
+import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
+import eu.kanade.tachiyomi.util.lang.launchIO
+import moe.tarsin.coroutines.runSuspendCatching
+
+typealias OnExpandStateListener = (Boolean) -> Unit
+typealias SecondaryFab = Pair<ImageVector, suspend () -> Unit>
 
 class FabLayout @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
-) : ViewGroup(context, attrs, defStyleAttr), View.OnClickListener {
-    private var mFabSize = 0
-    private var mFabMiniSize = 0
-    private var mIntervalPrimary = 0
-    private var mIntervalSecondary = 0
-    private var mExpanded = true
-    private var mAutoCancel = true
-    private var mHidePrimaryFab = false
-    private var mMainFabCenterY = -1f
-    private var mOnExpandListeners = arrayListOf<OnExpandListener>()
-    private var mOnClickFabListener: OnClickFabListener? = null
-    private var fabAnimator: ViewPropertyAnimator? = null
-    private var isHiding = false
+    defStyle: Int = 0,
+) : AbstractComposeView(context, attrs, defStyle) {
+    var secondaryFab by mutableStateOf<List<SecondaryFab>?>(null)
+    var autoCancel by mutableStateOf(true)
 
-    private val mOnBackPressedCallback = object : OnBackPressedCallback(false), OnExpandListener {
-        override fun handleOnBackPressed() {
-            isExpanded = false
-        }
+    private var hidden by mutableStateOf(false)
+    private val expandedBackingField = mutableStateOf(false)
+    var expanded by expandedBackingField
+    private val listeners = mutableListOf<OnExpandStateListener>()
 
-        override fun onExpand(expanded: Boolean) {
-            isEnabled = expanded
-        }
-    }
-    private val mFabAnimatorListener = object : SimpleAnimatorListener() {
-        override fun onAnimationEnd(animation: Animator) {
-            primaryFab.isVisible = false
-            isHiding = false
-        }
+    fun addOnExpandStateListener(listener: OnExpandStateListener) {
+        listeners.add(listener)
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        (context as ComponentActivity).onBackPressedDispatcher.addCallback(mOnBackPressedCallback)
-        mOnExpandListeners.add(mOnBackPressedCallback)
+    fun show() {
+        hidden = false
     }
 
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
-        mOnBackPressedCallback.remove()
-        mOnExpandListeners.remove(mOnBackPressedCallback)
+    fun hide() {
+        expanded = false
+        hidden = true
     }
 
-    init {
-        isSoundEffectsEnabled = false
-        clipToPadding = false
-        mFabSize = context.resources.getDimensionPixelOffset(R.dimen.fab_size)
-        mFabMiniSize = context.resources.getDimensionPixelOffset(R.dimen.fab_min_size)
-        mIntervalPrimary =
-            context.resources.getDimensionPixelOffset(R.dimen.fab_layout_primary_margin)
-        mIntervalSecondary =
-            context.resources.getDimensionPixelOffset(R.dimen.fab_layout_secondary_margin)
-    }
-
-    override fun addView(child: View, index: Int, params: LayoutParams) {
-        check(child is FloatingActionButton) { "FloatingActionBarLayout should only " + "contain FloatingActionButton, but try to add " + child.javaClass.name }
-        super.addView(child, index, params)
-    }
-
-    val primaryFab: FloatingActionButton
-        get() = getChildAt(childCount - 1) as FloatingActionButton
-
-    private val secondaryFabCount: Int
-        get() = 0.coerceAtLeast(childCount - 1)
-
-    private fun getSecondaryFabAt(index: Int): FloatingActionButton? {
-        return if (index < 0 || index >= secondaryFabCount) {
-            null
-        } else {
-            getChildAt(index) as FloatingActionButton
-        }
-    }
-
-    fun setSecondaryFabVisibilityAt(index: Int, visible: Boolean) {
-        getSecondaryFabAt(index)?.run {
-            if (visible && visibility == GONE) {
-                animate().cancel()
-                visibility = if (mExpanded) VISIBLE else INVISIBLE
-            } else if (!visible && visibility != GONE) {
-                animate().cancel()
-                visibility = GONE
-            }
-        }
-    }
-
-    private fun getChildMeasureSpec(parentMeasureSpec: Int): Int {
-        val parentMode = MeasureSpec.getMode(parentMeasureSpec)
-        val parentSize = MeasureSpec.getSize(parentMeasureSpec)
-        val childMode: Int
-        val childSize: Int
-        when (parentMode) {
-            MeasureSpec.AT_MOST, MeasureSpec.EXACTLY -> {
-                childMode = MeasureSpec.AT_MOST
-                childSize = parentSize
-            }
-
-            MeasureSpec.UNSPECIFIED -> {
-                childMode = MeasureSpec.UNSPECIFIED
-                childSize = parentSize
-            }
-
-            else -> {
-                childMode = MeasureSpec.AT_MOST
-                childSize = parentSize
-            }
-        }
-        return MeasureSpec.makeMeasureSpec(childSize, childMode)
-    }
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val childWidthMeasureSpec = getChildMeasureSpec(widthMeasureSpec)
-        val childHeightMeasureSpec = getChildMeasureSpec(heightMeasureSpec)
-        measureChildren(childWidthMeasureSpec, childHeightMeasureSpec)
-        var maxWidth = 0
-        var maxHeight = 0
-        val count = childCount
-        for (i in 0 until count) {
-            val child = getChildAt(i)
-            if (child.visibility == GONE) {
-                continue
-            }
-            maxWidth = maxWidth.coerceAtLeast(child.measuredWidth)
-            maxHeight += child.measuredHeight
-        }
-        maxWidth += paddingLeft + paddingRight
-        maxHeight += paddingTop + paddingBottom
-        maxHeight = maxHeight.coerceAtLeast(suggestedMinimumHeight)
-        maxWidth = maxWidth.coerceAtLeast(suggestedMinimumWidth)
-        setMeasuredDimension(
-            resolveSizeAndState(maxWidth, widthMeasureSpec, 0),
-            resolveSizeAndState(maxHeight, heightMeasureSpec, 0),
-        )
-    }
-
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        var centerX = 0
-        var bottom = measuredHeight - paddingBottom
-        val count = childCount
-        var i = count
-        while (--i >= 0) {
-            val child = getChildAt(i)
-            if (child.visibility == GONE) {
-                continue
-            }
-            val childWidth = child.measuredWidth
-            val childHeight = child.measuredHeight
-            var layoutBottom: Int
-            var layoutRight: Int
-            if (i == count - 1) {
-                layoutBottom = bottom + (childHeight - mFabSize) / 2
-                layoutRight = measuredWidth - paddingRight + (childWidth - mFabSize) / 2
-                bottom -= mFabSize + mIntervalPrimary
-                centerX = layoutRight - childWidth / 2
-                mMainFabCenterY = layoutBottom - childHeight / 2f
-            } else {
-                layoutBottom = bottom + (childHeight - mFabMiniSize) / 2
-                layoutRight = centerX + childWidth / 2
-                bottom -= mFabMiniSize + mIntervalSecondary
-            }
-            child.layout(
-                layoutRight - childWidth,
-                layoutBottom - childHeight,
-                layoutRight,
-                layoutBottom,
-            )
-        }
-    }
-
-    fun addOnExpandListener(listener: OnExpandListener) {
-        mOnExpandListeners.add(listener)
-    }
-
-    fun setOnClickFabListener(listener: OnClickFabListener?) {
-        mOnClickFabListener = listener
-        if (listener != null) {
-            var i = 0
-            val n = childCount
-            while (i < n) {
-                getChildAt(i).setOnClickListener(this)
-                i++
-            }
-        } else {
-            var i = 0
-            val n = childCount
-            while (i < n) {
-                getChildAt(i).isClickable = false
-                i++
-            }
-        }
-    }
-
-    fun setHidePrimaryFab(hidePrimaryFab: Boolean) {
-        if (mHidePrimaryFab != hidePrimaryFab) {
-            mHidePrimaryFab = hidePrimaryFab
-            val expanded = mExpanded
-            val count = childCount
-            if (!expanded && count > 0) {
-                getChildAt(count - 1).visibility = if (hidePrimaryFab) INVISIBLE else VISIBLE
-            }
-        }
-    }
-
-    fun setAutoCancel(autoCancel: Boolean) {
-        if (mAutoCancel != autoCancel) {
-            mAutoCancel = autoCancel
-            if (mExpanded) {
+    @Composable
+    override fun Content() {
+        Mdc3Theme {
+            if (expanded) {
+                DisposableEffect(Unit) {
+                    listeners.forEach { it.invoke(true) }
+                    onDispose {
+                        listeners.forEach { it.invoke(false) }
+                    }
+                }
                 if (autoCancel) {
-                    setOnClickListener(this)
-                } else {
-                    isClickable = false
+                    Spacer(
+                        modifier = Modifier.fillMaxSize().pointerInput(expanded) {
+                            detectTapGestures {
+                                expanded = false
+                            }
+                        },
+                    )
                 }
             }
-        }
-    }
-
-    fun toggle() {
-        isExpanded = !mExpanded
-    }
-
-    var isExpanded: Boolean
-        get() = mExpanded
-        set(expanded) {
-            setExpanded(expanded, true)
-        }
-
-    fun setExpanded(expanded: Boolean, animation: Boolean) {
-        if (mExpanded != expanded) {
-            mExpanded = expanded
-            if (mAutoCancel) {
-                if (expanded) {
-                    setOnClickListener(this)
-                } else {
-                    isClickable = false
-                }
-            }
-            val count = childCount
-            if (count > 0) {
-                if (mMainFabCenterY == -1f || !animation) {
-                    // It is before first onLayout
-                    val checkCount = if (mHidePrimaryFab) count else count - 1
-                    for (i in 0 until checkCount) {
-                        val child = getChildAt(i)
-                        if (child.visibility == GONE) {
-                            continue
+            val coroutineScope = rememberCoroutineScope()
+            val appearState by animateFloatAsState(
+                targetValue = if (hidden) 0f else 1f,
+                animationSpec = tween(FAB_ANIMATE_TIME),
+                label = "hiddenState",
+            )
+            Box(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                contentAlignment = Alignment.BottomEnd,
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    val animatedProgress by animateFloatMergePredictiveBackAsState(expandedBackingField)
+                    FloatingActionButton(
+                        onClick = { expanded = !expanded },
+                        modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.rotate(lerp(135f, 0f, animatedProgress)),
+                        )
+                    }
+                    secondaryFab?.run {
+                        forEachIndexed { index, (imageVector, onClick) ->
+                            SmallFloatingActionButton(
+                                onClick = {
+                                    coroutineScope.launchIO {
+                                        runSuspendCatching {
+                                            onClick()
+                                        }
+                                        expanded = false
+                                    }
+                                },
+                                modifier = Modifier.layout { measurable, constraints ->
+                                    val placeable = measurable.measure(constraints)
+                                    layout(placeable.width, placeable.height) {
+                                        val distance = lerp(150 * (size - index) + 50, 0, animatedProgress)
+                                        placeable.placeRelative(0, -distance, -(size - index).toFloat())
+                                    }
+                                }.rotate(lerp(90f, 0f, appearState)).scale(appearState),
+                            ) {
+                                Icon(imageVector = imageVector, contentDescription = null)
+                            }
                         }
-                        child.visibility = if (expanded) VISIBLE else INVISIBLE
-                        if (expanded) {
-                            child.alpha = 1f
-                        }
-                    }
-                } else {
-                    if (mHidePrimaryFab) {
-                        setPrimaryFabAnimation(getChildAt(count - 1), expanded, !expanded)
-                    }
-                    for (i in 0 until count - 1) {
-                        val child = getChildAt(i)
-                        if (child.visibility == GONE) {
-                            continue
-                        }
-                        setSecondaryFabAnimation(child, expanded, expanded)
                     }
                 }
             }
-            mOnExpandListeners.forEach { it.onExpand(expanded) }
         }
-    }
-
-    private fun setPrimaryFabAnimation(child: View, expanded: Boolean, delay: Boolean) {
-        val startRotation: Float
-        val endRotation: Float
-        val startScale: Float
-        val endScale: Float
-        val interpolator: Interpolator
-        if (expanded) {
-            startRotation = -45.0f
-            endRotation = 0.0f
-            startScale = 0.0f
-            endScale = 1.0f
-            interpolator = AnimationUtils.FAST_SLOW_INTERPOLATOR
-        } else {
-            startRotation = 0.0f
-            endRotation = 0.0f
-            startScale = 1.0f
-            endScale = 0.0f
-            interpolator = AnimationUtils.SLOW_FAST_INTERPOLATOR
-        }
-        child.scaleX = startScale
-        child.scaleY = startScale
-        child.rotation = startRotation
-        child.animate()
-            .scaleX(endScale)
-            .scaleY(endScale)
-            .rotation(endRotation)
-            .setStartDelay(if (delay) ANIMATE_TIME else 0L)
-            .setDuration(ANIMATE_TIME)
-            .setInterpolator(interpolator)
-            .setListener(object : SimpleAnimatorListener() {
-                override fun onAnimationStart(animation: Animator) {
-                    if (expanded) {
-                        child.visibility = VISIBLE
-                    }
-                }
-
-                override fun onAnimationEnd(animation: Animator) {
-                    if (!expanded) {
-                        child.visibility = INVISIBLE
-                    }
-                }
-            }).start()
-    }
-
-    private fun setSecondaryFabAnimation(child: View, expanded: Boolean, delay: Boolean) {
-        val startTranslationY: Float
-        val endTranslationY: Float
-        val startAlpha: Float
-        val endAlpha: Float
-        val interpolator: Interpolator
-        if (expanded) {
-            startTranslationY = mMainFabCenterY - child.top - child.height / 2
-            endTranslationY = 0f
-            startAlpha = 0f
-            endAlpha = 1f
-            interpolator = AnimationUtils.FAST_SLOW_INTERPOLATOR
-        } else {
-            startTranslationY = 0f
-            endTranslationY = mMainFabCenterY - child.top - child.height / 2
-            startAlpha = 1f
-            endAlpha = 0f
-            interpolator = AnimationUtils.SLOW_FAST_INTERPOLATOR
-        }
-        child.alpha = startAlpha
-        child.translationY = startTranslationY
-        child.animate()
-            .alpha(endAlpha)
-            .translationY(endTranslationY)
-            .setStartDelay(if (delay) ANIMATE_TIME else 0L)
-            .setDuration(ANIMATE_TIME)
-            .setInterpolator(interpolator)
-            .setListener(object : SimpleAnimatorListener() {
-                override fun onAnimationStart(animation: Animator) {
-                    if (expanded) {
-                        child.visibility = VISIBLE
-                    }
-                }
-
-                override fun onAnimationEnd(animation: Animator) {
-                    if (!expanded) {
-                        child.visibility = INVISIBLE
-                    }
-                }
-            }).start()
-    }
-
-    override fun onClick(v: View) {
-        if (this === v) {
-            isExpanded = false
-        } else {
-            mOnClickFabListener?.let {
-                val position = indexOfChild(v)
-                if (position == childCount - 1) {
-                    it.onClickPrimaryFab(this, v as FloatingActionButton)
-                } else if (position >= 0 && mExpanded) {
-                    it.onClickSecondaryFab(this, v as FloatingActionButton, position)
-                }
-            }
-        }
-    }
-
-    override fun dispatchSetPressed(pressed: Boolean) {
-        // Don't dispatch it to children
-    }
-
-    override fun onSaveInstanceState(): Parcelable {
-        val state = Bundle()
-        state.putParcelable(STATE_KEY_SUPER, super.onSaveInstanceState())
-        state.putBoolean(STATE_KEY_AUTO_CANCEL, mAutoCancel)
-        state.putBoolean(STATE_KEY_EXPANDED, mExpanded)
-        return state
-    }
-
-    override fun onRestoreInstanceState(state: Parcelable) {
-        if (state is Bundle) {
-            super.onRestoreInstanceState(state.getParcelableCompat(STATE_KEY_SUPER))
-            setAutoCancel(state.getBoolean(STATE_KEY_AUTO_CANCEL))
-            setExpanded(state.getBoolean(STATE_KEY_EXPANDED), false)
-        }
-    }
-
-    fun show(animation: Boolean = true, delay: Long = 0L) {
-        val fab = primaryFab
-        if (!fab.isVisible) {
-            fab.isVisible = true
-            if (animation) {
-                fabAnimator?.cancel()
-                fab.rotation = ROTATION_DEGREE
-                fabAnimator = fab.animate().scaleX(1f).scaleY(1f).rotation(0f)
-                    .setListener(null).setDuration(ANIMATE_TIME).setStartDelay(delay)
-                    .setInterpolator(AnimationUtils.FAST_SLOW_INTERPOLATOR).apply { start() }
-            } else {
-                fab.scaleX = 1f
-                fab.scaleY = 1f
-            }
-        }
-    }
-
-    fun hide(animation: Boolean = true): Long {
-        val fab = primaryFab
-        setExpanded(expanded = false, animation = true)
-        return if (!fab.isVisible || isHiding) {
-            0L
-        } else {
-            if (animation) {
-                isHiding = true
-                fabAnimator?.cancel()
-                fabAnimator = fab.animate().scaleX(0f).scaleY(0f).rotation(-ROTATION_DEGREE)
-                    .setListener(mFabAnimatorListener).setDuration(ANIMATE_TIME).setStartDelay(0L)
-                    .setInterpolator(AnimationUtils.SLOW_FAST_INTERPOLATOR).apply { start() }
-                ANIMATE_TIME
-            } else {
-                fab.isVisible = false
-                fab.scaleX = 0f
-                fab.scaleY = 0f
-                0L
-            }
-        }
-    }
-
-    fun interface OnExpandListener {
-        fun onExpand(expanded: Boolean)
-    }
-
-    interface OnClickFabListener {
-        fun onClickPrimaryFab(view: FabLayout, fab: FloatingActionButton)
-        fun onClickSecondaryFab(view: FabLayout, fab: FloatingActionButton, position: Int)
-    }
-
-    companion object {
-        const val ANIMATE_TIME = 300L
-        private const val ROTATION_DEGREE = 90f
-        private const val STATE_KEY_SUPER = "super"
-        private const val STATE_KEY_AUTO_CANCEL = "auto_cancel"
-        private const val STATE_KEY_EXPANDED = "expanded"
     }
 }
+
+const val FAB_ANIMATE_TIME = 300

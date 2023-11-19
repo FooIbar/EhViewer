@@ -16,15 +16,9 @@
 
 <resources>
 
-    <string name="pd_close" translatable="false">M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z</string>
     <string name="pd_pause" translatable="false">M14,19.14H18V5.14H14M6,19.14H10V5.14H6V19.14Z</string>
     <string name="pd_play" translatable="false">M8,5.14V19.14L19,12.14L8,5.14Z</string>
-    <string name="pd_check_all" translatable="false">M0.41,13.41L6,19L7.41,17.58L1.83,12M22.24,5.58L11.66,16.17L7.5,12L6.07,13.41L11.66,19L23.66,7M18,7L16.59,5.58L10.24,11.93L11.66,13.34L18,7Z</string>
-    <string name="pd_folder_move" translatable="false">M9,18V15H5V11H9V8L14,13M20,6H12L10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6Z</string>
     <string name="pd_plus" translatable="false">M21,13H13V21H11V13H3V11H11V3H13V11H21V13Z</string>
-    <string name="pd_download" translatable="false">M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z</string>
-    <string name="pd_delete" translatable="false">M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z</string>
-    <string name="pd_go_to" translatable="false">M13,13L17,17L21,13H18V10C18,6.1,14.9,3,11,3S4,6.1,4,10V17H6V10C6,7.2,8.2,5,11,5S16,7.2,16,10V13H13M,16,19H18V21H16V19Z</string>
     <string name="pd_help_circle" translatable="false">M15.07,11.25L14.17,12.17C13.45,12.89 13,13.5 13,15H11V14.5C11,13.39 11.45,12.39 12.17,11.67L13.41,10.41C13.78,10.05 14,9.55 14,9C14,7.89 13.1,7 12,7A2,2 0 0,0 10,9H8A4,4 0 0,1 12,5A4,4 0 0,1 16,9C16,9.88 15.64,10.67 15.07,11.25M13,19H11V17H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z</string>
     <string name="pd_download_box" translatable="false">M19,3H5C3.9,3,3,3.9,3,5V19C3,20.1,3.9,21,5,21H19C20.1,21,21,20.1,21,19V5C21,3.9,20.1,3,19,3ZM12,17L7,12H10V8H14V12H17L12,17Z</string>
     <string name="pd_refresh" translatable="false">M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z</string>

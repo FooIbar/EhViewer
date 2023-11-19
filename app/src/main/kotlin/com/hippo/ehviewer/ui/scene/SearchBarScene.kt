@@ -7,9 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -52,6 +51,8 @@ import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.ComposeView
@@ -61,6 +62,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.view.updatePadding
 import androidx.lifecycle.ViewModelStoreOwner
@@ -79,6 +81,7 @@ import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.legacy.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getSparseParcelableArrayCompat
@@ -310,14 +313,16 @@ fun SearchBarScreen(
             }
         },
         floatingActionButton = {
-            AnimatedVisibility(
-                visible = showSearchFab,
-                enter = scaleIn(),
-                exit = scaleOut(),
+            val hiddenState by animateFloatAsState(
+                targetValue = if (showSearchFab) 1f else 0f,
+                animationSpec = tween(FAB_ANIMATE_TIME),
+                label = "hiddenState",
+            )
+            FloatingActionButton(
+                onClick = ::onApplySearch,
+                modifier = Modifier.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
             ) {
-                FloatingActionButton(onClick = ::onApplySearch) {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = null)
-                }
+                Icon(imageVector = Icons.Default.Search, contentDescription = null)
             }
         },
         content = content,
@@ -353,7 +358,6 @@ abstract class SearchBarScene : BaseScene() {
         return ComposeWithMD3 {
             val compositionContext = rememberCompositionContext()
             val density = LocalDensity.current
-            val fabPadding = with(density) { 16.dp.roundToPx() }
             val margin = with(density) { 8.dp.roundToPx() }
             // Workaround for BTF2 cursor not showing
             // https://issuetracker.google.com/issues/307323842
@@ -397,7 +401,7 @@ abstract class SearchBarScene : BaseScene() {
                             onRelease()
                         },
                     ) {
-                        fabLayout.updatePadding(bottom = fabPadding + bottomPadding)
+                        fabLayout.updatePadding(bottom = bottomPadding)
                         fastScroller.updatePadding(top = topPadding + margin, bottom = bottomPadding)
                         recyclerView.updatePadding(top = topPadding + margin, bottom = bottomPadding)
                     }

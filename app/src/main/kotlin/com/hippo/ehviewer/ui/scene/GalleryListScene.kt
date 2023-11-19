@@ -28,7 +28,9 @@ import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -58,7 +60,6 @@ import com.google.android.material.datepicker.CompositeDateValidator
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -82,16 +83,17 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.databinding.DrawerListRvBinding
 import com.hippo.ehviewer.databinding.ItemDrawerListBinding
 import com.hippo.ehviewer.databinding.SceneGalleryListBinding
+import com.hippo.ehviewer.icons.EhIcons
+import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.WebViewActivity
 import com.hippo.ehviewer.ui.doGalleryInfoAction
-import com.hippo.ehviewer.ui.legacy.AddDeleteDrawable
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.BringOutTransition
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
-import com.hippo.ehviewer.ui.legacy.FabLayout
-import com.hippo.ehviewer.ui.legacy.FabLayout.OnClickFabListener
+import com.hippo.ehviewer.ui.legacy.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.LayoutManagerUtils.firstVisibleItemPosition
+import com.hippo.ehviewer.ui.legacy.SecondaryFab
 import com.hippo.ehviewer.ui.legacy.ViewTransition
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.ExceptionUtils
@@ -249,12 +251,7 @@ class GalleryListScene : SearchBarScene() {
         var keyword = mUrlBuilder.keyword
         val category = mUrlBuilder.category
         val mode = mUrlBuilder.mode
-        val isPopular = mode == MODE_WHATS_HOT
         mIsTopList = mode == MODE_TOPLIST
-
-        // Update fab visibility
-        binding.fabLayout.setSecondaryFabVisibilityAt(0, !isPopular)
-        binding.fabLayout.setSecondaryFabVisibilityAt(2, !isPopular)
 
         // Update normal search mode and category
         binding.searchLayout.setSearchMyTags(mode == MODE_SUBSCRIPTION)
@@ -388,49 +385,40 @@ class GalleryListScene : SearchBarScene() {
                 GalleryPageUrlSuggestion(gid, pToken, page)
             }
         }
-        binding.fabLayout.setAutoCancel(true)
-        binding.fabLayout.isExpanded = false
-        binding.fabLayout.setHidePrimaryFab(false)
-        binding.fabLayout.setOnClickFabListener(object : OnClickFabListener {
-            override fun onClickPrimaryFab(view: FabLayout, fab: FloatingActionButton) {
-                if (State.NORMAL == mState) {
-                    view.toggle()
-                }
-            }
-            override fun onClickSecondaryFab(view: FabLayout, fab: FloatingActionButton, position: Int) {
-                when (position) {
-                    0 -> showGoToDialog()
-                    1 -> { // First
-                        mUrlBuilder.setIndex(null, true)
-                        mUrlBuilder.mJumpTo = null
+        val isPop = mUrlBuilder.mode == MODE_WHATS_HOT
+        binding.fabLayout.apply {
+            val fab = listOf<SecondaryFab>(
+                Icons.Default.Refresh to {
+                    mUrlBuilder.setIndex(null, true)
+                    mUrlBuilder.mJumpTo = null
+                    mAdapter?.refresh()
+                },
+                EhIcons.Default.GoTo to {
+                    showGoToDialog()
+                },
+                Icons.AutoMirrored.Default.LastPage to {
+                    if (mIsTopList) {
+                        mUrlBuilder.mJumpTo = "${TOPLIST_PAGES - 1}"
+                        mAdapter?.refresh()
+                    } else {
+                        mUrlBuilder.setIndex("1", false)
                         mAdapter?.refresh()
                     }
-
-                    2 -> { // Last
-                        if (mIsTopList) {
-                            mUrlBuilder.mJumpTo = "${TOPLIST_PAGES - 1}"
-                            mAdapter?.refresh()
-                        } else {
-                            mUrlBuilder.setIndex("1", false)
-                            mAdapter?.refresh()
-                        }
-                    }
-                }
-                view.isExpanded = false
-            }
-        })
-        val colorID = theme.resolveColor(com.google.android.material.R.attr.colorOnSurface)
-        val actionFabDrawable = AddDeleteDrawable(requireContext(), colorID)
-        binding.fabLayout.addOnExpandListener {
-            if (it) {
-                lockDrawer()
-                actionFabDrawable.setDelete(FabLayout.ANIMATE_TIME)
+                },
+            )
+            secondaryFab = if (!isPop) {
+                fab
             } else {
-                unlockDrawer()
-                actionFabDrawable.setAdd(FabLayout.ANIMATE_TIME)
+                fab.take(1)
             }
         }
-        binding.fabLayout.primaryFab.setImageDrawable(actionFabDrawable)
+        binding.fabLayout.addOnExpandStateListener {
+            if (it) {
+                lockDrawer()
+            } else {
+                unlockDrawer()
+            }
+        }
 
         // Update list url builder
         onUpdateUrlBuilder()
@@ -646,20 +634,28 @@ class GalleryListScene : SearchBarScene() {
     }
 
     private fun showSearchFab(delay: Long) {
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             delay(delay)
             showSearchFab = true
         }
     }
 
-    private fun selectSearchFab(animation: Boolean) {
-        val delay = binding.fabLayout.hide(animation)
-        showSearchFab(delay)
+    private fun showPrimaryFab(delay: Long) {
+        lifecycleScope.launch {
+            delay(delay)
+            _binding ?: return@launch
+            binding.fabLayout.show()
+        }
     }
 
-    private fun selectActionFab(animation: Boolean) {
+    private fun selectSearchFab() {
+        binding.fabLayout.hide()
+        showSearchFab(FAB_ANIMATE_TIME.toLong())
+    }
+
+    private fun selectActionFab() {
         showSearchFab = false
-        binding.fabLayout.show(animation, FabLayout.ANIMATE_TIME)
+        showPrimaryFab(FAB_ANIMATE_TIME.toLong())
     }
 
     override fun onSearchViewExpanded() {
@@ -675,7 +671,7 @@ class GalleryListScene : SearchBarScene() {
     override fun onSearchViewHidden() {
         super.onSearchViewHidden()
         if (mState == State.NORMAL) {
-            binding.fabLayout.show(delay = SEARCH_VIEW_ANIMATE_TIME)
+            showPrimaryFab(SEARCH_VIEW_ANIMATE_TIME)
         } else {
             showSearchFab(SEARCH_VIEW_ANIMATE_TIME)
             stateBackPressedCallback.isEnabled = true
@@ -708,27 +704,27 @@ class GalleryListScene : SearchBarScene() {
             when (oldState) {
                 State.NORMAL -> when (state) {
                     State.SIMPLE_SEARCH -> {
-                        selectSearchFab(animation)
+                        selectSearchFab()
                     }
                     State.SEARCH -> {
                         mViewTransition!!.showView(1, animation)
-                        selectSearchFab(animation)
+                        selectSearchFab()
                     }
                     State.SEARCH_SHOW_LIST -> {
                         mViewTransition!!.showView(1, animation)
-                        selectSearchFab(animation)
+                        selectSearchFab()
                     }
                     else -> error("Unreachable!!!")
                 }
                 State.SIMPLE_SEARCH -> when (state) {
-                    State.NORMAL -> selectActionFab(animation)
+                    State.NORMAL -> selectActionFab()
                     State.SEARCH -> mViewTransition!!.showView(1, animation)
                     State.SEARCH_SHOW_LIST -> mViewTransition!!.showView(1, animation)
                     else -> error("Unreachable!!!")
                 }
                 State.SEARCH, State.SEARCH_SHOW_LIST -> if (state == State.NORMAL) {
                     mViewTransition!!.showView(0, animation)
-                    selectActionFab(animation)
+                    selectActionFab()
                 } else if (state == State.SIMPLE_SEARCH) {
                     mViewTransition!!.showView(0, animation)
                 }
