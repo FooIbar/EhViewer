@@ -62,15 +62,18 @@ import androidx.compose.material3.SideDrawer
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -113,6 +116,7 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.buildWindowInsets
+import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.hippo.ehviewer.util.set
@@ -541,5 +545,23 @@ class MainActivity : EhActivity() {
     override fun onProvideAssistContent(outContent: AssistContent?) {
         super.onProvideAssistContent(outContent)
         shareUrl?.let { outContent?.webUri = Uri.parse(shareUrl) }
+    }
+}
+
+@Composable
+fun ProvideSideSheetContent(content: @Composable ColumnScope.(DrawerState2) -> Unit) {
+    val context = LocalContext.current
+    val activity = remember(context) { context.findActivity<MainActivity>() }
+    DisposableEffect(content, context) {
+        require(activity.sideSheet == null) {
+            "Provide SideSheet content when previous content not released!!!"
+        }
+        activity.sideSheet = content
+        onDispose {
+            require(activity.sideSheet == content) {
+                "Try to release SideSheetContent not belong to us"
+            }
+            activity.sideSheet = null
+        }
     }
 }
