@@ -71,21 +71,25 @@ import moe.tarsin.coroutines.runSuspendCatching
 fun FavouritesScreen(navigator: NavController) {
     var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
     var keyword by rememberSaveable { mutableStateOf("") }
-    val favCatName: String = when (val favCat = urlBuilder.favCat) {
-        in 0..9 -> Settings.favCat[favCat]
-        FavListUrlBuilder.FAV_CAT_LOCAL -> stringResource(R.string.local_favorites)
-        else -> stringResource(R.string.cloud_favorites)
+
+    val localFavName = stringResource(R.string.local_favorites)
+    val cloudFavName = stringResource(R.string.cloud_favorites)
+    val favCatName = remember(urlBuilder) {
+        when (val favCat = urlBuilder.favCat) {
+            in 0..9 -> Settings.favCat[favCat]
+            FavListUrlBuilder.FAV_CAT_LOCAL -> localFavName
+            else -> cloudFavName
+        }
     }
-    val title = if (keyword.isEmpty()) {
-        stringResource(R.string.favorites_title, favCatName)
-    } else {
-        stringResource(R.string.favorites_title_2, favCatName, keyword)
-    }
+    val favTitle = stringResource(R.string.favorites_title, favCatName)
+    val favTitleWithKeyword = stringResource(R.string.favorites_title_2, favCatName, keyword)
+    val title = remember(keyword) { if (keyword.isBlank()) favTitle else favTitleWithKeyword }
     val context = LocalContext.current
-    val activity = remember { context.findActivity<MainActivity>() }
+    val activity = remember(context) { context.findActivity<MainActivity>() }
     val coroutineScope = rememberCoroutineScope()
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
     val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
+
     fun switchFav(newCat: Int, keyword: String? = null) {
         urlBuilder = urlBuilder.copy(
             keyword = keyword,
@@ -94,6 +98,7 @@ fun FavouritesScreen(navigator: NavController) {
         ).apply { setIndex(null, true) }
         Settings.recentFavCat = urlBuilder.favCat
     }
+
     DisposableEffect(Unit) {
         activity.sideSheet = { sheetState ->
             val localFavCount by localFavCountFlow.collectAsState(0)
@@ -153,7 +158,7 @@ fun FavouritesScreen(navigator: NavController) {
                                 val key = params.key
                                 if (key.isNullOrBlank()) {
                                     if (urlBuilder.jumpTo != null) {
-                                        urlBuilder.mNext ?: urlBuilder.setIndex("2", true)
+                                        urlBuilder.next ?: urlBuilder.setIndex("2", true)
                                     }
                                 } else {
                                     urlBuilder.setIndex(key, false)

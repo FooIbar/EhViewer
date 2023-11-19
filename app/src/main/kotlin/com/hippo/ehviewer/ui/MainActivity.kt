@@ -331,7 +331,6 @@ class MainActivity : EhActivity() {
                                 ModalDrawerSheet(
                                     modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
                                     drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
-                                    windowInsets = WindowInsets(0, 0, 0, 0),
                                 ) {
                                     sheet(sideDrawerState)
                                 }
