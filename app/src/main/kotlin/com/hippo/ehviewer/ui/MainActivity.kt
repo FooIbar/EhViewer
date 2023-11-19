@@ -260,6 +260,7 @@ class MainActivity : EhActivity() {
 
     var drawerLocked by mutableStateOf(false)
     private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private var openSideSheetFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private var recomposeFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     fun recompose() {
@@ -352,6 +353,11 @@ class MainActivity : EhActivity() {
                 ) {
                     val sheet = sideSheet
                     val sideDrawerState = rememberDrawerState(DrawerValue.Closed)
+                    LaunchedEffect(Unit) {
+                        openSideSheetFlow.collectLatest {
+                            sideDrawerState.open()
+                        }
+                    }
                     BackHandler(sideDrawerState.isOpen) {
                         scope.launch {
                             sideDrawerState.close()
@@ -544,6 +550,10 @@ class MainActivity : EhActivity() {
 
     fun openDrawer() {
         openDrawerFlow.tryEmit(Unit)
+    }
+
+    fun openSideSheet() {
+        openSideSheetFlow.tryEmit(Unit)
     }
 
     fun showTip(@StringRes id: Int, length: Int, useToast: Boolean = false) {

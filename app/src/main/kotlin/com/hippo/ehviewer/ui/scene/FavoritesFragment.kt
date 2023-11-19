@@ -14,6 +14,10 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FolderSpecial
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -179,6 +183,7 @@ fun FavouritesScreen(navigator: NavController) {
             }
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
+
     SearchBarScreen(
         title = title,
         searchFieldState = searchFieldState,
@@ -192,6 +197,9 @@ fun FavouritesScreen(navigator: NavController) {
         },
         searchBarOffsetY = mutableStateOf(0),
         trailingIcon = {
+            IconButton(onClick = { activity.openSideSheet() }) {
+                Icon(imageVector = Icons.Outlined.FolderSpecial, contentDescription = null)
+            }
         },
     ) {
         val realPadding = PaddingValues(
