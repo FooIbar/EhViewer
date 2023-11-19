@@ -33,6 +33,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -66,6 +70,7 @@ import com.hippo.ehviewer.util.findActivity
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.pxToDp
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
@@ -185,6 +190,15 @@ fun FavouritesScreen(navigator: NavController) {
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
 
+    val searchBarConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                searchBarOffsetY = (searchBarOffsetY + consumed.y).roundToInt().coerceIn(-300, 0)
+                return Offset.Zero // We never consume it
+            }
+        }
+    }
+
     SearchBarScreen(
         title = title,
         searchFieldState = searchFieldState,
@@ -208,11 +222,12 @@ fun FavouritesScreen(navigator: NavController) {
         val listMode by remember {
             Settings.listModeBackField.valueFlow()
         }.collectAsState(Settings.listMode)
+        val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
         if (listMode == 0) {
             val height = (3 * Settings.listThumbSize * 3).pxToDp.dp
             val showPages = Settings.showGalleryPages
             FastScrollLazyColumn(
-                modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.gallery_list_margin_h)),
+                modifier = Modifier.padding(horizontal = marginH),
                 contentPadding = realPadding,
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
             ) {
@@ -244,7 +259,7 @@ fun FavouritesScreen(navigator: NavController) {
             val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
             FastScrollLazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Adaptive(Settings.thumbSizeDp.dp),
-                modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.gallery_list_margin_h)),
+                modifier = Modifier.padding(horizontal = marginH).nestedScroll(searchBarConnection),
                 verticalItemSpacing = gridInterval,
                 horizontalArrangement = Arrangement.spacedBy(gridInterval),
                 contentPadding = realPadding,
