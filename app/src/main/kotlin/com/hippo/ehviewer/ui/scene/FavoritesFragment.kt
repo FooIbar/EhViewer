@@ -74,6 +74,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 fun FavouritesScreen(navigator: NavController) {
     // Meta State
     var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
+    var searchBarOffsetY by remember { mutableStateOf(0) }
 
     // Derived State
     val keyword = remember(urlBuilder) { urlBuilder.keyword.orEmpty() }
@@ -193,7 +194,7 @@ fun FavouritesScreen(navigator: NavController) {
         },
         onSearchHidden = {
         },
-        searchBarOffsetY = mutableStateOf(0),
+        searchBarOffsetY = searchBarOffsetY,
         trailingIcon = {
             IconButton(onClick = { activity.openSideSheet() }) {
                 Icon(imageVector = Icons.Outlined.FolderSpecial, contentDescription = null)

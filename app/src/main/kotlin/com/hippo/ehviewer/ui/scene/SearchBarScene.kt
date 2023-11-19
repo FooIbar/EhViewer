@@ -42,13 +42,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -119,7 +119,7 @@ fun SearchBarScreen(
     onSearchExpanded: () -> Unit,
     onSearchHidden: () -> Unit,
     suggestionProvider: SuggestionProvider? = null,
-    searchBarOffsetY: MutableState<Int>,
+    searchBarOffsetY: Int,
     trailingIcon: @Composable () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -231,16 +231,21 @@ fun SearchBarScreen(
         }
     }
 
-    var searchbarOfs by searchBarOffsetY
+    val searchbarOfs by rememberUpdatedState(searchBarOffsetY)
+    val scrollAwayModifier = if (!active) {
+        Modifier.layout { measurable, constraints ->
+            val placeable = measurable.measure(constraints)
+            layout(placeable.width, placeable.height) {
+                placeable.placeRelative(0, searchbarOfs)
+            }
+        }
+    } else {
+        Modifier
+    }
     Scaffold(
         topBar = {
             SearchBar(
-                modifier = Modifier.fillMaxWidth().layout { measurable, constraints ->
-                    val placeable = measurable.measure(constraints)
-                    layout(placeable.width, placeable.height) {
-                        placeable.placeRelative(0, searchbarOfs)
-                    }
-                },
+                modifier = Modifier.fillMaxWidth() then scrollAwayModifier,
                 state = searchFieldState,
                 onSearch = {
                     hideSearchView()
@@ -249,7 +254,6 @@ fun SearchBarScreen(
                 active = active,
                 onActiveChange = {
                     if (it) {
-                        searchbarOfs = 0
                         onSearchViewExpanded()
                     } else {
                         onSearchViewHidden()
@@ -348,11 +352,10 @@ abstract class SearchBarScene : BaseScene() {
     override val enableDrawerGestures = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val ofs = mutableIntStateOf(0)
+        var ofs by mutableIntStateOf(0)
         val onScrollListener = object : OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                var toChange by ofs
-                toChange = (toChange - dy).coerceIn(-300, 0)
+                ofs = (ofs - dy).coerceIn(-300, 0)
             }
         }
         return ComposeWithMD3 {
