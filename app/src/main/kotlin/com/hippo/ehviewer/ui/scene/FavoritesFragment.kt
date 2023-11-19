@@ -53,7 +53,6 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.ProvideSideSheetContent
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
@@ -101,35 +100,37 @@ fun FavouritesScreen(navigator: NavController) {
         Settings.recentFavCat = urlBuilder.favCat
     }
 
-    ProvideSideSheetContent { sheetState ->
-        val localFavCount by localFavCountFlow.collectAsState(0)
-        TopAppBar(title = { Text(text = stringResource(id = R.string.collections)) })
-        val scope = currentRecomposeScope
-        LaunchedEffect(Unit) {
-            Settings.favChangesFlow.collect {
-                scope.invalidate()
+    with(activity) {
+        ProvideSideSheetContent { sheetState ->
+            val localFavCount by localFavCountFlow.collectAsState(0)
+            TopAppBar(title = { Text(text = stringResource(id = R.string.collections)) })
+            val scope = currentRecomposeScope
+            LaunchedEffect(Unit) {
+                Settings.favChangesFlow.collect {
+                    scope.invalidate()
+                }
             }
-        }
-        val localFav = stringResource(id = R.string.local_favorites) to localFavCount
-        val faves = if (EhCookieStore.hasSignedIn()) {
-            arrayOf(
-                localFav,
-                stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
-                *Settings.favCat.zip(Settings.favCount.toTypedArray()).toTypedArray(),
-            )
-        } else {
-            arrayOf(localFav)
-        }
-        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            faves.forEachIndexed { index, (name, count) ->
-                ListItem(
-                    headlineContent = { Text(text = name) },
-                    trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
-                    modifier = Modifier.clickable {
-                        switchFav(index - 2)
-                        coroutineScope.launch { sheetState.close() }
-                    },
+            val localFav = stringResource(id = R.string.local_favorites) to localFavCount
+            val faves = if (EhCookieStore.hasSignedIn()) {
+                arrayOf(
+                    localFav,
+                    stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
+                    *Settings.favCat.zip(Settings.favCount.toTypedArray()).toTypedArray(),
                 )
+            } else {
+                arrayOf(localFav)
+            }
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                faves.forEachIndexed { index, (name, count) ->
+                    ListItem(
+                        headlineContent = { Text(text = name) },
+                        trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
+                        modifier = Modifier.clickable {
+                            switchFav(index - 2)
+                            coroutineScope.launch { sheetState.close() }
+                        },
+                    )
+                }
             }
         }
     }

@@ -67,13 +67,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -116,7 +115,6 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.buildWindowInsets
-import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.hippo.ehviewer.util.set
@@ -149,6 +147,37 @@ private val navItems = arrayOf(
 class MainActivity : EhActivity() {
     private lateinit var navController: NavController
     private val isInitializedFlow = MutableStateFlow(false)
+
+    private var sideSheet by mutableStateOf<(@Composable ColumnScope.(DrawerState2) -> Unit)?>(null)
+
+    @Composable
+    fun ProvideSideSheetContent(content: @Composable ColumnScope.(DrawerState2) -> Unit) {
+        DisposableEffect(content) {
+            require(sideSheet == null) {
+                "Provide SideSheet content when previous content not released!!!"
+            }
+            sideSheet = content
+            onDispose {
+                require(sideSheet == content) {
+                    "Try to release SideSheetContent not belong to us"
+                }
+                sideSheet = null
+            }
+        }
+    }
+
+    private var shareUrl: String? = null
+
+    @Composable
+    fun ProvideAssistContent(url: String?) {
+        val urlState by rememberUpdatedState(url)
+        DisposableEffect(urlState) {
+            shareUrl = urlState
+            onDispose {
+                shareUrl = null
+            }
+        }
+    }
 
     private fun saveImageToTempFile(uri: Uri): File? {
         val bitmap = runCatching {
@@ -230,7 +259,6 @@ class MainActivity : EhActivity() {
     }
 
     var drawerLocked by mutableStateOf(false)
-    var sideSheet by mutableStateOf<(@Composable ColumnScope.(DrawerState2) -> Unit)?>(null)
     private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private var recomposeFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
@@ -541,27 +569,8 @@ class MainActivity : EhActivity() {
         }
     }
 
-    var shareUrl: String? = null
     override fun onProvideAssistContent(outContent: AssistContent?) {
         super.onProvideAssistContent(outContent)
         shareUrl?.let { outContent?.webUri = Uri.parse(shareUrl) }
-    }
-}
-
-@Composable
-fun ProvideSideSheetContent(content: @Composable ColumnScope.(DrawerState2) -> Unit) {
-    val context = LocalContext.current
-    val activity = remember(context) { context.findActivity<MainActivity>() }
-    DisposableEffect(content, context) {
-        require(activity.sideSheet == null) {
-            "Provide SideSheet content when previous content not released!!!"
-        }
-        activity.sideSheet = content
-        onDispose {
-            require(activity.sideSheet == content) {
-                "Try to release SideSheetContent not belong to us"
-            }
-            activity.sideSheet = null
-        }
     }
 }
