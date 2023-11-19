@@ -30,19 +30,17 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.outlined.FolderSpecial
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
@@ -57,8 +55,6 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.CalendarConstraints.DateValidator
@@ -74,6 +70,7 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.databinding.SceneFavoritesBinding
+import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.SecondaryFab
 import com.hippo.ehviewer.ui.legacy.ViewTransition
@@ -94,7 +91,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -198,8 +194,44 @@ class FavoritesScene : SearchBarScene() {
     @Composable
     override fun TrailingIcon() {
         dialogState.Intercept()
-        IconButton(onClick = { openSideSheet() }) {
-            Icon(imageVector = Icons.Outlined.FolderSpecial, contentDescription = stringResource(id = R.string.collections))
+        val activity = activity as MainActivity
+        val coroutineScope = rememberCoroutineScope()
+        DisposableEffect(Unit) {
+            activity.sideSheet = { sheetState ->
+                val localFavCount by vm.localFavCount.collectAsState(0)
+                TopAppBar(title = { Text(text = stringResource(id = R.string.collections)) })
+                val scope = currentRecomposeScope
+                LaunchedEffect(Unit) {
+                    Settings.favChangesFlow.collect {
+                        scope.invalidate()
+                    }
+                }
+                val localFav = stringResource(id = R.string.local_favorites) to localFavCount
+                val faves = if (EhCookieStore.hasSignedIn()) {
+                    arrayOf(
+                        localFav,
+                        stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
+                        *Settings.favCat.zip(Settings.favCount.toTypedArray()).toTypedArray(),
+                    )
+                } else {
+                    arrayOf(localFav)
+                }
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    faves.forEachIndexed { index, (name, count) ->
+                        ListItem(
+                            headlineContent = { Text(text = name) },
+                            trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
+                            modifier = Modifier.clickable {
+                                onDrawerItemClick?.invoke(index)
+                                coroutineScope.launch { sheetState.close() }
+                            },
+                        )
+                    }
+                }
+            }
+            onDispose {
+                activity.sideSheet = null
+            }
         }
     }
 
@@ -303,7 +335,6 @@ class FavoritesScene : SearchBarScene() {
             if (!tracker.isInCustomChoice) {
                 switchFav(it - 2)
                 updateJumpFab()
-                closeSideSheet()
             }
         }
         setOnApplySearch {
@@ -395,39 +426,6 @@ class FavoritesScene : SearchBarScene() {
             }
             switchFav(Settings.recentFavCat)
         }
-        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.Callback() {
-            override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-                return if (tracker.isInCustomChoice) {
-                    0
-                } else {
-                    makeMovementFlags(0, ItemTouchHelper.LEFT)
-                }
-            }
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder,
-            ) = false
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.bindingAdapterPosition
-                val info = mAdapter!!.peek(position)!!
-                lifecycleScope.launchIO {
-                    dialogState.awaitPermissionOrCancel(
-                        confirmText = R.string.delete,
-                        title = R.string.delete_favorites_dialog_title,
-                        onDismiss = { mAdapter!!.notifyItemChanged(position) },
-                    ) {
-                        Text(text = stringResource(id = R.string.delete_favorites_dialog_message, 1))
-                    }
-                    if (urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
-                        EhDB.removeLocalFavorites(info)
-                    } else {
-                        EhEngine.modifyFavorites(info.gid, info.token)
-                    }
-                }
-            }
-        })
-        itemTouchHelper.attachToRecyclerView(binding.recyclerView)
         return binding
     }
 
@@ -438,38 +436,6 @@ class FavoritesScene : SearchBarScene() {
         _binding = null
         showNormalFabsJob = null
         onDrawerItemClick = null
-    }
-
-    override fun onCreateDrawerView(inflater: LayoutInflater) = ComposeWithMD3 {
-        val localFavCount by vm.localFavCount.collectAsState(0)
-        ElevatedCard {
-            TopAppBar(title = { Text(text = stringResource(id = R.string.collections)) })
-            val scope = currentRecomposeScope
-            LaunchedEffect(Unit) {
-                Settings.favChangesFlow.collect {
-                    scope.invalidate()
-                }
-            }
-            val localFav = stringResource(id = R.string.local_favorites) to localFavCount
-            val faves = if (EhCookieStore.hasSignedIn()) {
-                arrayOf(
-                    localFav,
-                    stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
-                    *Settings.favCat.zip(Settings.favCount.toTypedArray()).toTypedArray(),
-                )
-            } else {
-                arrayOf(localFav)
-            }
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                faves.forEachIndexed { index, (name, count) ->
-                    ListItem(
-                        headlineContent = { Text(text = name) },
-                        trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
-                        modifier = Modifier.clickable { onDrawerItemClick?.invoke(index) },
-                    )
-                }
-            }
-        }
     }
 
     override fun onSearchViewExpanded() {

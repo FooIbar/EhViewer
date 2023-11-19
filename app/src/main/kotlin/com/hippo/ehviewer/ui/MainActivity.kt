@@ -31,6 +31,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
@@ -40,6 +41,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
@@ -49,13 +51,17 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material3.DrawerState2
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.SideDrawer
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
@@ -220,6 +226,7 @@ class MainActivity : EhActivity() {
     }
 
     var drawerLocked by mutableStateOf(false)
+    var sideSheet by mutableStateOf<(@Composable ColumnScope.(DrawerState2) -> Unit)?>(null)
     private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private var recomposeFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
@@ -311,33 +318,56 @@ class MainActivity : EhActivity() {
                     drawerState = drawerState,
                     gesturesEnabled = !drawerLocked || drawerState.isOpen,
                 ) {
-                    val insets = buildWindowInsets {
-                        set(
-                            WindowInsetsCompat.Type.statusBars(),
-                            WindowInsets.statusBars,
-                        )
-                        set(
-                            WindowInsetsCompat.Type.navigationBars(),
-                            WindowInsets.navigationBars,
-                        )
-                        set(
-                            WindowInsetsCompat.Type.ime(),
-                            WindowInsets.ime,
-                        )
+                    val sheet = sideSheet
+                    val sideDrawerState = rememberDrawerState(DrawerValue.Closed)
+                    BackHandler(sideDrawerState.isOpen) {
+                        scope.launch {
+                            sideDrawerState.close()
+                        }
                     }
-                    AndroidViewBinding(factory = { inflater, parent, attachToParent ->
-                        ActivityMainBinding.inflate(inflater, parent, attachToParent).apply {
-                            val navHostFragment = fragmentContainer.getFragment<NavHostFragment>()
-                            navController = navHostFragment.navController.apply {
-                                graph = navInflater.inflate(R.navigation.nav_graph).apply {
-                                    check(launchPage in 0..3)
-                                    setStartDestination(navItems[launchPage].first)
+                    SideDrawer(
+                        drawerContent = {
+                            if (sheet != null) {
+                                ModalDrawerSheet(
+                                    modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
+                                    drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
+                                    windowInsets = WindowInsets(0, 0, 0, 0),
+                                ) {
+                                    sheet(sideDrawerState)
                                 }
                             }
-                            isInitializedFlow.value = true
+                        },
+                        drawerState = sideDrawerState,
+                        gesturesEnabled = sheet != null,
+                    ) {
+                        val insets = buildWindowInsets {
+                            set(
+                                WindowInsetsCompat.Type.statusBars(),
+                                WindowInsets.statusBars,
+                            )
+                            set(
+                                WindowInsetsCompat.Type.navigationBars(),
+                                WindowInsets.navigationBars,
+                            )
+                            set(
+                                WindowInsetsCompat.Type.ime(),
+                                WindowInsets.ime,
+                            )
                         }
-                    }) {
-                        ViewCompat.dispatchApplyWindowInsets(root, insets)
+                        AndroidViewBinding(factory = { inflater, parent, attachToParent ->
+                            ActivityMainBinding.inflate(inflater, parent, attachToParent).apply {
+                                val navHostFragment = fragmentContainer.getFragment<NavHostFragment>()
+                                navController = navHostFragment.navController.apply {
+                                    graph = navInflater.inflate(R.navigation.nav_graph).apply {
+                                        check(launchPage in 0..3)
+                                        setStartDestination(navItems[launchPage].first)
+                                    }
+                                }
+                                isInitializedFlow.value = true
+                            }
+                        }) {
+                            ViewCompat.dispatchApplyWindowInsets(root, insets)
+                        }
                     }
                 }
             }
