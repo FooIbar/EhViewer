@@ -188,9 +188,7 @@ fun FavouritesScreen(navigator: NavController) {
         title = title,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
-        onApplySearch = {
-            switchFav(urlBuilder.favCat, it)
-        },
+        onApplySearch = { switchFav(urlBuilder.favCat, it) },
         onSearchExpanded = {
         },
         onSearchHidden = {
@@ -206,7 +204,10 @@ fun FavouritesScreen(navigator: NavController) {
             top = it.calculateTopPadding() + 8.dp,
             bottom = it.calculateBottomPadding(),
         )
-        if (Settings.listMode == 0) {
+        val listMode by remember {
+            Settings.listModeBackField.valueFlow()
+        }.collectAsState(Settings.listMode)
+        if (listMode == 0) {
             val height = (3 * Settings.listThumbSize * 3).pxToDp.dp
             val showPages = Settings.showGalleryPages
             FastScrollLazyColumn(
