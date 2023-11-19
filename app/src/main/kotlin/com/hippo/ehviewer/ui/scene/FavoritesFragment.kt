@@ -15,6 +15,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LastPage
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,7 +62,10 @@ import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.icons.EhIcons
+import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
@@ -285,6 +290,24 @@ fun FavouritesScreen(navigator: NavController) {
                     }
                 }
             }
+        }
+    }
+
+    val expanded = remember { mutableStateOf(false) }
+    FabLayout(
+        hidden = false,
+        expandedField = expanded,
+        onExpandChanged = { expanded.value = it },
+        autoCancel = true,
+    ) {
+        EhIcons.Default.GoTo onClick {
+            // showGoToDialog()
+        }
+        Icons.Default.Refresh onClick {
+            switchFav(urlBuilder.favCat)
+        }
+        Icons.AutoMirrored.Default.LastPage onClick {
+            urlBuilder = urlBuilder.copy().apply { setIndex("1-0", false) }
         }
     }
 }
