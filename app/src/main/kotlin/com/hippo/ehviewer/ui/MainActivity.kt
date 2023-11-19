@@ -169,7 +169,7 @@ class MainActivity : EhActivity() {
     private var shareUrl: String? = null
 
     @Composable
-    fun ProvideAssistContent(url: String?) {
+    fun ProvideAssistContent(url: String) {
         val urlState by rememberUpdatedState(url)
         DisposableEffect(urlState) {
             shareUrl = urlState
