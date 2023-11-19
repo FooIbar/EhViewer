@@ -36,12 +36,6 @@ import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.dismiss
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.paneTitle
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
@@ -264,7 +258,6 @@ fun ModalNavigationDrawer(
     content: @Composable () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val navigationMenu = stringResource(androidx.compose.ui.R.string.navigation_menu)
     val density = LocalDensity.current
     val minValue = -with(density) { ContainerWidth.toPx() }
     val maxValue = 0f
@@ -281,49 +274,48 @@ fun ModalNavigationDrawer(
 
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val velocityTracker = remember { VelocityTracker() }
-    Box(
-        modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                coroutineScope {
-                    awaitEachGesture {
-                        fun canConsume(slop: Float) = (slop > 0 && drawerState.isClosed) || (slop < 0 && drawerState.isOpen)
-                        val down = awaitFirstDown(requireUnconsumed = false)
-                        var overSlop: Float
-                        val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
-                            overSlop = over
-                            if (canConsume(overSlop)) {
-                                velocityTracker.addPointerInputChange(change)
-                                change.consume()
-                                drawerState.anchoredDraggableState.dispatchRawDelta(overSlop)
-                            }
+    val dragModifier = if (gesturesEnabled) {
+        Modifier.pointerInput(isRtl) {
+            val multiplier = if (isRtl) -1 else 1
+            coroutineScope {
+                awaitEachGesture {
+                    fun canConsume(slop: Float) = (slop > 0 && drawerState.isClosed) || (slop < 0 && drawerState.isOpen)
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    var overSlop: Float
+                    val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
+                        overSlop = over * multiplier
+                        if (canConsume(overSlop)) {
+                            velocityTracker.addPointerInputChange(change)
+                            change.consume()
+                            drawerState.anchoredDraggableState.dispatchRawDelta(overSlop)
                         }
-                        if (drag != null) {
-                            horizontalDrag(drag.id) {
-                                velocityTracker.addPointerInputChange(it)
-                                drag.consume()
-                                drawerState.anchoredDraggableState.dispatchRawDelta(it.positionChange().x)
-                            }
-                            val velocity = velocityTracker.calculateVelocity()
-                            velocityTracker.resetTracking()
-                            launch {
-                                drawerState.anchoredDraggableState.settle(velocity.x)
-                            }
+                    }
+                    if (drag != null) {
+                        horizontalDrag(drag.id) {
+                            velocityTracker.addPointerInputChange(it)
+                            drag.consume()
+                            drawerState.anchoredDraggableState.dispatchRawDelta(it.positionChange().x * multiplier)
+                        }
+                        val velocity = velocityTracker.calculateVelocity()
+                        velocityTracker.resetTracking()
+                        scope.launch {
+                            drawerState.anchoredDraggableState.settle(velocity.x * multiplier)
                         }
                     }
                 }
-            },
-    ) {
+            }
+        }
+    } else {
+        Modifier
+    }
+    Box(modifier.fillMaxSize().then(dragModifier)) {
         Box {
             content()
         }
         Scrim(
             open = drawerState.isOpen,
             onClose = {
-                if (
-                    gesturesEnabled &&
-                    drawerState.confirmStateChange(DrawerValue.Closed)
-                ) {
+                if (gesturesEnabled && drawerState.confirmStateChange(DrawerValue.Closed)) {
                     scope.launch { drawerState.close() }
                 }
             },
@@ -333,29 +325,9 @@ fun ModalNavigationDrawer(
             color = scrimColor,
         )
         Box(
-            Modifier
-                .offset {
-                    IntOffset(
-                        drawerState
-                            .requireOffset()
-                            .roundToInt(),
-                        0,
-                    )
-                }
-                .semantics {
-                    paneTitle = navigationMenu
-                    if (drawerState.isOpen) {
-                        dismiss {
-                            if (drawerState.confirmStateChange(
-                                    DrawerValue.Closed,
-                                )
-                            ) {
-                                scope.launch { drawerState.close() }
-                            }
-                            true
-                        }
-                    }
-                },
+            modifier = Modifier.offset {
+                IntOffset(drawerState.requireOffset().roundToInt(), 0)
+            },
         ) {
             drawerContent()
         }
@@ -363,36 +335,17 @@ fun ModalNavigationDrawer(
 }
 
 @Suppress("SameParameterValue")
-private fun calculateFraction(a: Float, b: Float, pos: Float) =
-    ((pos - a) / (b - a)).coerceIn(0f, 1f)
+private fun calculateFraction(a: Float, b: Float, pos: Float) = ((pos - a) / (b - a)).coerceIn(0f, 1f)
 
 @Composable
-private fun Scrim(
-    open: Boolean,
-    onClose: () -> Unit,
-    fraction: () -> Float,
-    color: Color,
-) {
-    val closeDrawer = stringResource(androidx.compose.ui.R.string.close_drawer)
+private fun Scrim(open: Boolean, onClose: () -> Unit, fraction: () -> Float, color: Color) {
     val dismissDrawer = if (open) {
-        Modifier
-            .pointerInput(onClose) { detectTapGestures { onClose() } }
-            .semantics(mergeDescendants = true) {
-                contentDescription = closeDrawer
-                onClick {
-                    onClose()
-                    true
-                }
-            }
+        Modifier.pointerInput(onClose) { detectTapGestures { onClose() } }
     } else {
         Modifier
     }
 
-    Canvas(
-        Modifier
-            .fillMaxSize()
-            .then(dismissDrawer),
-    ) {
+    Canvas(Modifier.fillMaxSize().then(dismissDrawer)) {
         drawRect(color, alpha = fraction())
     }
 }
