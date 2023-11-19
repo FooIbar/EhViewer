@@ -14,11 +14,9 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -40,12 +38,11 @@ fun interface FabBuilder {
 @Composable
 fun FabLayout(
     hidden: Boolean,
-    expandedField: MutableState<Boolean>,
+    expanded: Boolean,
     onExpandChanged: (Boolean) -> Unit,
     autoCancel: Boolean,
     fabBuilder: FabBuilder.() -> Unit,
 ) {
-    var expanded by expandedField
     val secondaryFab = remember(fabBuilder) {
         buildList {
             fabBuilder { that ->
@@ -75,7 +72,7 @@ fun FabLayout(
         contentAlignment = Alignment.BottomEnd,
     ) {
         Box(contentAlignment = Alignment.Center) {
-            val animatedProgress by animateFloatMergePredictiveBackAsState(expandedField)
+            val animatedProgress by animateFloatMergePredictiveBackAsState(expanded) { onExpandChanged(false) }
             FloatingActionButton(
                 onClick = { onExpandChanged(!expanded) },
                 modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),
@@ -94,7 +91,7 @@ fun FabLayout(
                                 runSuspendCatching {
                                     onClick()
                                 }
-                                expanded = false
+                                onExpandChanged(false)
                             }
                         },
                         modifier = Modifier.layout { measurable, constraints ->

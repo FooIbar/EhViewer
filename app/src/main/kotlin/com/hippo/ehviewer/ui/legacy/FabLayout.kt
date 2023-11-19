@@ -47,8 +47,7 @@ class FabLayout @JvmOverloads constructor(
     var autoCancel by mutableStateOf(true)
 
     private var hidden by mutableStateOf(false)
-    private val expandedBackingField = mutableStateOf(false)
-    var expanded by expandedBackingField
+    var expanded by mutableStateOf(false)
     private val listeners = mutableListOf<OnExpandStateListener>()
 
     fun addOnExpandStateListener(listener: OnExpandStateListener) {
@@ -95,7 +94,7 @@ class FabLayout @JvmOverloads constructor(
                 contentAlignment = Alignment.BottomEnd,
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    val animatedProgress by animateFloatMergePredictiveBackAsState(expandedBackingField)
+                    val animatedProgress by animateFloatMergePredictiveBackAsState(expanded) { expanded = false }
                     FloatingActionButton(
                         onClick = { expanded = !expanded },
                         modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),

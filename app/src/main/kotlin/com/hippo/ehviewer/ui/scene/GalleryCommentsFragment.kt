@@ -176,9 +176,8 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
     val dialogState = LocalDialogState.current
     val coroutineScope = rememberCoroutineScope()
 
-    val commentingBackField = rememberSaveable { mutableStateOf(false) }
-    var commenting by commentingBackField
-    val animationProgress by animateFloatMergePredictiveBackAsState(enable = commentingBackField)
+    var commenting by rememberSaveable { mutableStateOf(false) }
+    val animationProgress by animateFloatMergePredictiveBackAsState(enable = commenting) { commenting = false }
 
     val userCommentBackField = remember { mutableStateOf(TextFieldValue()) }
     var userComment by userCommentBackField

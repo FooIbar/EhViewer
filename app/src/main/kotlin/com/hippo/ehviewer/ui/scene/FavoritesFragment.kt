@@ -15,7 +15,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.LastPage
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material3.Icon
@@ -26,9 +30,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -73,10 +79,13 @@ import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
+import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.findActivity
+import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.pxToDp
@@ -87,6 +96,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
@@ -112,6 +122,7 @@ fun FavouritesScreen(navigator: NavController) {
     val favTitleWithKeyword = stringResource(R.string.favorites_title_2, favCatName, keyword)
     val title = remember(urlBuilder) { if (keyword.isBlank()) favTitle else favTitleWithKeyword }
     val context = LocalContext.current
+    val dialogState = LocalDialogState.current
     val activity = remember(context) { context.findActivity<MainActivity>() }
     val coroutineScope = rememberCoroutineScope()
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
@@ -215,6 +226,14 @@ fun FavouritesScreen(navigator: NavController) {
         }
     }
 
+    var expanded by remember { mutableStateOf(false) }
+    var selectMode by remember { mutableStateOf(false) }
+    val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
+    SideEffect {
+        if (checkedInfoMap.isEmpty()) selectMode = false
+        if (selectMode) expanded = true
+    }
+
     SearchBarScreen(
         title = title,
         searchFieldState = searchFieldState,
@@ -254,20 +273,33 @@ fun FavouritesScreen(navigator: NavController) {
                 ) { index ->
                     val info = data[index]
                     if (info != null) {
-                        GalleryInfoListItem(
-                            onClick = {
-                                navigator.navAnimated(
-                                    R.id.galleryDetailScene,
-                                    bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
-                                )
-                            },
-                            onLongClick = {
-                            },
-                            info = info,
-                            isInFavScene = true,
-                            showPages = showPages,
-                            modifier = Modifier.height(height),
-                        )
+                        val checked = info.gid in checkedInfoMap
+                        CheckableItem(checked = checked) {
+                            GalleryInfoListItem(
+                                onClick = {
+                                    if (selectMode) {
+                                        if (checked) {
+                                            checkedInfoMap.remove(info.gid)
+                                        } else {
+                                            checkedInfoMap[info.gid] = info
+                                        }
+                                    } else {
+                                        navigator.navAnimated(
+                                            R.id.galleryDetailScene,
+                                            bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
+                                        )
+                                    }
+                                },
+                                onLongClick = {
+                                    selectMode = true
+                                    checkedInfoMap[info.gid] = info
+                                },
+                                info = info,
+                                isInFavScene = true,
+                                showPages = showPages,
+                                modifier = Modifier.height(height),
+                            )
+                        }
                     }
                 }
             }
@@ -287,58 +319,134 @@ fun FavouritesScreen(navigator: NavController) {
                 ) { index ->
                     val info = data[index]
                     if (info != null) {
-                        GalleryInfoGridItem(
-                            onClick = {
-                                navigator.navAnimated(
-                                    R.id.galleryDetailScene,
-                                    bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
-                                )
-                            },
-                            onLongClick = {
-                            },
-                            info = info,
-                        )
+                        val checked = info.gid in checkedInfoMap
+                        CheckableItem(checked = checked) {
+                            GalleryInfoGridItem(
+                                onClick = {
+                                    if (selectMode) {
+                                        if (checked) {
+                                            checkedInfoMap.remove(info.gid)
+                                        } else {
+                                            checkedInfoMap[info.gid] = info
+                                        }
+                                    } else {
+                                        navigator.navAnimated(
+                                            R.id.galleryDetailScene,
+                                            bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
+                                        )
+                                    }
+                                },
+                                onLongClick = {
+                                    selectMode = true
+                                    checkedInfoMap[info.gid] = info
+                                },
+                                info = info,
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
-    val expanded = remember { mutableStateOf(false) }
+    // Explicitly reallocate fabBuilder lambda to recompose secondary fab
+    val select = selectMode
     FabLayout(
         hidden = false,
-        expandedField = expanded,
-        onExpandChanged = { expanded.value = it },
-        autoCancel = true,
+        expanded = expanded,
+        onExpandChanged = {
+            expanded = it
+            checkedInfoMap.clear()
+            selectMode = false
+        },
+        autoCancel = !selectMode,
     ) {
-        EhIcons.Default.GoTo onClick {
-            val local = LocalDateTime.of(2007, 3, 21, 0, 0)
-            val fromDate = local.atZone(ZoneId.ofOffset("UTC", ZoneOffset.UTC)).toInstant().toEpochMilli()
-            val toDate = MaterialDatePicker.todayInUtcMilliseconds()
-            val listValidators = ArrayList<CalendarConstraints.DateValidator>()
-            listValidators.add(DateValidatorPointForward.from(fromDate))
-            listValidators.add(DateValidatorPointBackward.before(toDate))
-            val constraintsBuilder = CalendarConstraints.Builder()
-                .setStart(fromDate)
-                .setEnd(toDate)
-                .setValidator(CompositeDateValidator.allOf(listValidators))
-            val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setCalendarConstraints(constraintsBuilder.build())
-                .setTitleText(R.string.go_to)
-                .setSelection(toDate)
-                .build()
-            datePicker.show(activity.supportFragmentManager, "date-picker")
-            datePicker.addOnPositiveButtonClickListener { time: Long ->
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.US).withZone(ZoneOffset.UTC)
-                val jumpTo = formatter.format(Instant.ofEpochMilli(time))
-                urlBuilder = urlBuilder.copy(jumpTo = jumpTo)
+        if (!select) {
+            EhIcons.Default.GoTo onClick {
+                val local = LocalDateTime.of(2007, 3, 21, 0, 0)
+                val fromDate = local.atZone(ZoneId.ofOffset("UTC", ZoneOffset.UTC)).toInstant().toEpochMilli()
+                val toDate = MaterialDatePicker.todayInUtcMilliseconds()
+                val listValidators = ArrayList<CalendarConstraints.DateValidator>()
+                listValidators.add(DateValidatorPointForward.from(fromDate))
+                listValidators.add(DateValidatorPointBackward.before(toDate))
+                val constraintsBuilder = CalendarConstraints.Builder()
+                    .setStart(fromDate)
+                    .setEnd(toDate)
+                    .setValidator(CompositeDateValidator.allOf(listValidators))
+                val datePicker = MaterialDatePicker.Builder.datePicker()
+                    .setCalendarConstraints(constraintsBuilder.build())
+                    .setTitleText(R.string.go_to)
+                    .setSelection(toDate)
+                    .build()
+                datePicker.show(activity.supportFragmentManager, "date-picker")
+                datePicker.addOnPositiveButtonClickListener { time: Long ->
+                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.US).withZone(ZoneOffset.UTC)
+                    val jumpTo = formatter.format(Instant.ofEpochMilli(time))
+                    urlBuilder = urlBuilder.copy(jumpTo = jumpTo)
+                }
             }
-        }
-        Icons.Default.Refresh onClick {
-            switchFav(urlBuilder.favCat)
-        }
-        Icons.AutoMirrored.Default.LastPage onClick {
-            urlBuilder = urlBuilder.copy().apply { setIndex("1-0", false) }
+            Icons.Default.Refresh onClick {
+                switchFav(urlBuilder.favCat)
+            }
+            Icons.AutoMirrored.Default.LastPage onClick {
+                urlBuilder = urlBuilder.copy().apply { setIndex("1-0", false) }
+            }
+        } else {
+            Icons.Default.DoneAll onClick {
+                val info = data.itemSnapshotList.filterNotNull().associateBy { it.gid }
+                checkedInfoMap.putAll(info)
+                throw CancellationException()
+            }
+            Icons.Default.Download onClick {
+                val info = checkedInfoMap.run { values.also { clear() } }
+                dialogState.startDownload(context, false, *info.toTypedArray())
+            }
+            Icons.Default.Delete onClick {
+                val info = checkedInfoMap.run { values.also { clear() } }
+                dialogState.awaitPermissionOrCancel(title = R.string.delete_favorites_dialog_title) {
+                    Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
+                }
+                val srcCat = urlBuilder.favCat
+                if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) { // Delete local fav
+                    EhDB.removeLocalFavorites(info)
+                } else {
+                    val delList = info.mapToLongArray(BaseGalleryInfo::gid)
+                    EhEngine.modifyFavorites(delList, srcCat, -1)
+                }
+                switchFav(urlBuilder.favCat, urlBuilder.keyword)
+            }
+            Icons.AutoMirrored.Default.DriveFileMove onClick {
+                // First is local favorite, the other 10 is cloud favorite
+                val array = if (EhCookieStore.hasSignedIn()) {
+                    arrayOf(localFavName, *Settings.favCat)
+                } else {
+                    arrayOf(localFavName)
+                }
+                val index = dialogState.showSelectItem(*array, title = R.string.move_favorites_dialog_title)
+                val srcCat = urlBuilder.favCat
+                val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
+                val info = checkedInfoMap.run { values.also { clear() } }
+                if (srcCat != dstCat) {
+                    if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
+                        // Move from local to cloud
+                        EhDB.removeLocalFavorites(info)
+                        val galleryList = info.map { it.gid to it.token!! }
+                        runSuspendCatching {
+                            EhEngine.addFavorites(galleryList, dstCat)
+                        }
+                    } else if (dstCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
+                        // Move from cloud to local
+                        EhDB.putLocalFavorites(info)
+                    } else {
+                        // Move from cloud to cloud
+                        val gidArray = info.mapToLongArray(BaseGalleryInfo::gid)
+                        runSuspendCatching {
+                            EhEngine.modifyFavorites(gidArray, srcCat, dstCat)
+                        }
+                    }
+                    switchFav(urlBuilder.favCat, urlBuilder.keyword)
+                }
+            }
         }
     }
 }
