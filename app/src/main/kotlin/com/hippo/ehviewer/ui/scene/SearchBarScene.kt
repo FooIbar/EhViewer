@@ -10,12 +10,15 @@ import androidx.annotation.CallSuper
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.union
@@ -50,6 +53,7 @@ import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
@@ -242,95 +246,96 @@ fun SearchBarScreen(
     } else {
         Modifier
     }
-    Scaffold(
-        topBar = {
-            SearchBar(
-                modifier = Modifier.fillMaxWidth() then scrollAwayModifier,
-                state = searchFieldState,
-                onSearch = {
-                    hideSearchView()
-                    onApplySearch()
-                },
-                active = active,
-                onActiveChange = {
-                    if (it) {
-                        onSearchViewExpanded()
-                    } else {
-                        onSearchViewHidden()
+    Box(modifier = Modifier.fillMaxSize()) {
+        SearchBar(
+            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier,
+            state = searchFieldState,
+            onSearch = {
+                hideSearchView()
+                onApplySearch()
+            },
+            active = active,
+            onActiveChange = {
+                if (it) {
+                    onSearchViewExpanded()
+                } else {
+                    onSearchViewHidden()
+                }
+                active = it
+            },
+            title = title?.let { { Text(it) } },
+            placeholder = searchFieldHint?.let { { Text(it) } },
+            leadingIcon = {
+                if (active) {
+                    IconButton(onClick = { hideSearchView() }) {
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
-                    active = it
-                },
-                title = title?.let { { Text(it) } },
-                placeholder = searchFieldHint?.let { { Text(it) } },
-                leadingIcon = {
-                    if (active) {
-                        IconButton(onClick = { hideSearchView() }) {
-                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
-                        }
-                    } else {
-                        IconButton(onClick = { activity.openDrawer() }) {
-                            Icon(Icons.Default.Menu, contentDescription = null)
-                        }
-                    }
-                },
-                trailingIcon = {
-                    if (active) {
-                        if (searchFieldState.text.isNotEmpty()) {
-                            IconButton(onClick = { searchFieldState.clearText() }) {
-                                Icon(Icons.Default.Close, contentDescription = null)
-                            }
-                        }
-                    } else {
-                        Row {
-                            trailingIcon()
-                        }
-                    }
-                },
-            ) {
-                LazyColumn(
-                    contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime)
-                        .asPaddingValues(),
-                ) {
-                    items(mSuggestionList) {
-                        ListItem(
-                            headlineContent = { Text(text = it.keyword) },
-                            supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
-                            leadingContent = it.canOpenDirectly.ifTrueThen {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Default.MenuBook,
-                                    contentDescription = null,
-                                )
-                            },
-                            trailingContent = it.canDelete.ifTrueThen {
-                                IconButton(onClick = { deleteKeyword(it.keyword) }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = null,
-                                    )
-                                }
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            modifier = Modifier.clickable { it.onClick() },
-                        )
+                } else {
+                    IconButton(onClick = { activity.openDrawer() }) {
+                        Icon(Icons.Default.Menu, contentDescription = null)
                     }
                 }
+            },
+            trailingIcon = {
+                if (active) {
+                    if (searchFieldState.text.isNotEmpty()) {
+                        IconButton(onClick = { searchFieldState.clearText() }) {
+                            Icon(Icons.Default.Close, contentDescription = null)
+                        }
+                    }
+                } else {
+                    Row {
+                        trailingIcon()
+                    }
+                }
+            },
+        ) {
+            LazyColumn(contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues()) {
+                items(mSuggestionList) {
+                    ListItem(
+                        headlineContent = { Text(text = it.keyword) },
+                        supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
+                        leadingContent = it.canOpenDirectly.ifTrueThen {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.MenuBook,
+                                contentDescription = null,
+                            )
+                        },
+                        trailingContent = it.canDelete.ifTrueThen {
+                            IconButton(onClick = { deleteKeyword(it.keyword) }) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = null,
+                                )
+                            }
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        modifier = Modifier.clickable { it.onClick() },
+                    )
+                }
             }
-        },
-        floatingActionButton = {
-            val hiddenState by animateFloatAsState(
-                targetValue = if (showSearchFab) 1f else 0f,
-                animationSpec = tween(FAB_ANIMATE_TIME),
-                label = "hiddenState",
-            )
-            FloatingActionButton(
-                onClick = ::onApplySearch,
-                modifier = Modifier.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
-            ) {
-                Icon(imageVector = Icons.Default.Search, contentDescription = null)
-            }
-        },
-        content = content,
-    )
+        }
+        Scaffold(
+            topBar = {
+                // Placeholder, fill immutable SearchBar padding
+                Spacer(modifier = Modifier.height(112.dp))
+            },
+            floatingActionButton = {
+                val hiddenState by animateFloatAsState(
+                    targetValue = if (showSearchFab) 1f else 0f,
+                    animationSpec = tween(FAB_ANIMATE_TIME),
+                    label = "hiddenState",
+                )
+                FloatingActionButton(
+                    onClick = ::onApplySearch,
+                    modifier = Modifier.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
+                ) {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                }
+            },
+            content = content,
+        )
+    }
 }
 
 abstract class SearchBarScene : BaseScene() {
