@@ -197,8 +197,7 @@ fun HistoryScreen(navigator: NavController) {
 }
 
 class HistoryFragment : BaseScene() {
-    // Disabled for breaking swipe-to-dismiss
-    override val enableDrawerGestures = false
+    override val enableDrawerGestures = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return ComposeWithMD3 {
