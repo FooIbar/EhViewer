@@ -18,4 +18,11 @@ class IgnoreCancelRV @JvmOverloads constructor(
         if (e.action == MotionEvent.ACTION_CANCEL) return false
         return super.onTouchEvent(e)
     }
+
+    override fun onInterceptTouchEvent(e: MotionEvent): Boolean {
+        // Intercept MotionEvent.ACTION_CANCEL for rv have SelectionTracker attached
+        // Otherwise predictive back will not work
+        if (e.action == MotionEvent.ACTION_CANCEL) return false
+        return super.onInterceptTouchEvent(e)
+    }
 }
