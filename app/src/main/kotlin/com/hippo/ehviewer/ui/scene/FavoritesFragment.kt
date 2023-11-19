@@ -227,6 +227,7 @@ fun FavouritesScreen(navigator: NavController) {
     }
 
     var expanded by remember { mutableStateOf(false) }
+    var hidden by remember { mutableStateOf(false) }
     var selectMode by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
     SideEffect {
@@ -239,10 +240,8 @@ fun FavouritesScreen(navigator: NavController) {
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
         onApplySearch = { switchFav(urlBuilder.favCat, it) },
-        onSearchExpanded = {
-        },
-        onSearchHidden = {
-        },
+        onSearchExpanded = { hidden = true },
+        onSearchHidden = { hidden = false },
         searchBarOffsetY = searchBarOffsetY,
         trailingIcon = {
             IconButton(onClick = { activity.openSideSheet() }) {
@@ -352,7 +351,7 @@ fun FavouritesScreen(navigator: NavController) {
     // Explicitly reallocate fabBuilder lambda to recompose secondary fab
     val select = selectMode
     FabLayout(
-        hidden = false,
+        hidden = hidden,
         expanded = expanded,
         onExpandChanged = {
             expanded = it
