@@ -69,9 +69,11 @@ import moe.tarsin.coroutines.runSuspendCatching
 @Destination
 @Composable
 fun FavouritesScreen(navigator: NavController) {
+    // Meta State
     var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
-    var keyword by rememberSaveable { mutableStateOf("") }
 
+    // Derived State
+    val keyword = remember(urlBuilder) { urlBuilder.keyword.orEmpty() }
     val localFavName = stringResource(R.string.local_favorites)
     val cloudFavName = stringResource(R.string.cloud_favorites)
     val favCatName = remember(urlBuilder) {
@@ -83,7 +85,7 @@ fun FavouritesScreen(navigator: NavController) {
     }
     val favTitle = stringResource(R.string.favorites_title, favCatName)
     val favTitleWithKeyword = stringResource(R.string.favorites_title_2, favCatName, keyword)
-    val title = remember(keyword) { if (keyword.isBlank()) favTitle else favTitleWithKeyword }
+    val title = remember(urlBuilder) { if (keyword.isBlank()) favTitle else favTitleWithKeyword }
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity<MainActivity>() }
     val coroutineScope = rememberCoroutineScope()
