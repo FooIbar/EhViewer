@@ -262,19 +262,21 @@ fun ModalNavigationDrawer(
             awaitEachGesture {
                 fun canConsume(slop: Float) = (slop > 0 && drawerState.isClosed) || (slop < 0 && drawerState.isOpen)
                 val down = awaitFirstDown(requireUnconsumed = false)
-                var overSlop: Float
+                var ignore = false
                 val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
-                    overSlop = over * multiplier
-                    if (canConsume(overSlop)) {
+                    val overSlop = over * multiplier
+                    val canConsume = canConsume(overSlop)
+                    if (canConsume && !ignore) {
                         velocityTracker.addPointerInputChange(change)
                         change.consume()
                         drawerState.anchoredDraggableState.dispatchRawDelta(overSlop)
+                    } else {
+                        ignore = true
                     }
                 }
                 if (drag != null) {
                     horizontalDrag(drag.id) {
                         velocityTracker.addPointerInputChange(it)
-                        drag.consume()
                         drawerState.anchoredDraggableState.dispatchRawDelta(it.positionChange().x * multiplier)
                     }
                     val velocity = velocityTracker.calculateVelocity()
@@ -346,13 +348,16 @@ fun SideDrawer(
             awaitEachGesture {
                 fun canConsume(slop: Float) = (slop > 0 && drawerState.isOpen) || (slop < 0 && drawerState.isClosed)
                 val down = awaitFirstDown(requireUnconsumed = false)
-                var overSlop: Float
+                var ignore = false
                 val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
-                    overSlop = over * multiplier
-                    if (canConsume(overSlop)) {
+                    val overSlop = over * multiplier
+                    val canConsume = canConsume(overSlop)
+                    if (canConsume && !ignore) {
                         velocityTracker.addPointerInputChange(change)
                         change.consume()
                         drawerState.anchoredDraggableState.dispatchRawDelta(overSlop)
+                    } else {
+                        ignore = true
                     }
                 }
                 if (drag != null) {
