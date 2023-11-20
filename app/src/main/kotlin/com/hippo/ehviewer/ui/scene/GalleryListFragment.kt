@@ -299,7 +299,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         },
         searchBarOffsetY = searchBarOffsetY,
         trailingIcon = {
-            IconButton(onClick = { showSearchLayout = true }) {
+            IconButton(onClick = { showSearchLayout = !showSearchLayout }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
         },
@@ -318,8 +318,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         var path by rememberSaveable { mutableStateOf("") }
         if (showSearchLayout) {
             Column(
-                modifier = Modifier.imePadding().statusBarsPadding().padding(top = 72.dp)
-                    .verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h)),
+                modifier = Modifier.imePadding().statusBarsPadding().padding(top = 72.dp).verticalScroll(rememberScrollState())
+                    .navigationBarsPadding().padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h)),
             ) {
                 AnimatedVisibility(visible = isNormalMode) {
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
@@ -353,7 +353,12 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 AnimatedVisibility(visible = isNormalMode && isAdvancedMode) {
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                         Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {
-                            Text(text = stringResource(id = R.string.search_advance), modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = stringResource(id = R.string.search_advance),
+                                modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium,
+                            )
                             SearchAdvanced(
                                 state = advancedState,
                                 onStateChanged = { advancedState = it },
@@ -364,14 +369,18 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 AnimatedVisibility(visible = !isNormalMode) {
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                         Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {
-                            Text(text = stringResource(id = R.string.search_image), modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                text = stringResource(id = R.string.search_image),
+                                modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium,
+                            )
                             ImageSearch(
                                 imagePath = path,
                                 onSelectImage = {
                                     coroutineScope.launch {
-                                        context.pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly)?.let {
-                                            path = it.toString()
-                                        }
+                                        val image = context.pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        if (image != null) path = image.toString()
                                     }
                                 },
                                 uss = uss,
