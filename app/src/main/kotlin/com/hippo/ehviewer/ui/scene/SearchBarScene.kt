@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -255,7 +256,7 @@ fun SearchBarScreen(
         Scaffold(
             topBar = {
                 // Placeholder, fill immutable SearchBar padding
-                Spacer(modifier = Modifier.height(112.dp))
+                Spacer(modifier = Modifier.safeDrawingPadding().height(40.dp))
             },
             floatingActionButton = {
                 val hiddenState by animateFloatAsState(
