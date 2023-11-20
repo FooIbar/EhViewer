@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.scene
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -48,6 +47,7 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -194,7 +194,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
     val exHint = stringResource(R.string.gallery_list_search_bar_hint_exhentai)
     val searchBarHint = remember { if (EhUtils.isExHentai) exHint else ehHint }
     val search = stringResource(R.string.search)
-    val title = remember(urlBuilder) { context.getSuitableTitleForUrlBuilder(urlBuilder, true) ?: search }
+    val suitableTitle = getSuitableTitleForUrlBuilder(urlBuilder)
+    val title = suitableTitle ?: search
     val data = rememberInVM(urlBuilder) {
         Pager(PagingConfig(25)) {
             object : PagingSource<String, BaseGalleryInfo>() {
@@ -713,37 +714,37 @@ class GalleryListFragment : BaseScene() {
 
 private const val TOPLIST_PAGES = 200
 
-private fun Context.getSuitableTitleForUrlBuilder(
-    urlBuilder: ListUrlBuilder,
-    appName: Boolean,
-): String? {
+@Composable
+@Stable
+private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder): String? {
+    val context = LocalContext.current
     val keyword = urlBuilder.keyword
     val category = urlBuilder.category
     val mode = urlBuilder.mode
     return if (mode == MODE_WHATS_HOT) {
-        getString(R.string.whats_hot)
+        stringResource(R.string.whats_hot)
     } else if (!keyword.isNullOrEmpty()) {
         when (mode) {
             MODE_TOPLIST -> {
                 when (keyword) {
-                    "11" -> getString(R.string.toplist_alltime)
-                    "12" -> getString(R.string.toplist_pastyear)
-                    "13" -> getString(R.string.toplist_pastmonth)
-                    "15" -> getString(R.string.toplist_yesterday)
+                    "11" -> stringResource(R.string.toplist_alltime)
+                    "12" -> stringResource(R.string.toplist_pastyear)
+                    "13" -> stringResource(R.string.toplist_pastmonth)
+                    "15" -> stringResource(R.string.toplist_yesterday)
                     else -> null
                 }
             }
-
             MODE_TAG -> {
-                val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(this) && EhTagDatabase.initialized
+                val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(context) && EhTagDatabase.initialized
                 wrapTagKeyword(keyword, canTranslate)
             }
             else -> keyword
         }
     } else if (category == EhUtils.NONE && urlBuilder.advanceSearch == -1) {
+        val appNameStr = stringResource(R.string.app_name)
         when (mode) {
-            MODE_NORMAL -> getString(if (appName) R.string.app_name else R.string.homepage)
-            MODE_SUBSCRIPTION -> getString(R.string.subscription)
+            MODE_NORMAL -> appNameStr
+            MODE_SUBSCRIPTION -> stringResource(R.string.subscription)
             else -> null
         }
     } else if (category.countOneBits() == 1) {
