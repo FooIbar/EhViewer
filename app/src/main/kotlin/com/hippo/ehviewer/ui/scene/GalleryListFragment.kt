@@ -317,9 +317,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         var osc by rememberSaveable { mutableStateOf(false) }
         var path by rememberSaveable { mutableStateOf("") }
         if (showSearchLayout) {
+            val margin = dimensionResource(R.dimen.gallery_search_bar_margin_v)
             Column(
                 modifier = Modifier.imePadding().statusBarsPadding().padding(top = 72.dp).verticalScroll(rememberScrollState())
-                    .navigationBarsPadding().padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h)),
+                    .navigationBarsPadding().padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h))
+                    .padding(horizontal = margin),
             ) {
                 AnimatedVisibility(visible = isNormalMode) {
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
