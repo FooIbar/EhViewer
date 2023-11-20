@@ -355,25 +355,25 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
 
                     suspend fun Context.doCommentAction(comment: GalleryComment) {
                         val actions = buildAction {
-                            copyComment thenDo { findActivity<MainActivity>().addTextToClipboard(comment.comment.parseAsHtml()) }
+                            onSelect(copyComment) { findActivity<MainActivity>().addTextToClipboard(comment.comment.parseAsHtml()) }
                             if (!comment.uploader && !comment.editable) {
-                                blockCommenter thenDo { showFilterCommenter(comment) }
+                                onSelect(blockCommenter) { showFilterCommenter(comment) }
                             }
                             if (comment.editable) {
-                                editComment thenDo {
+                                onSelect(editComment) {
                                     userComment = TextFieldValue(comment.comment.parseAsHtml().toAnnotatedString())
                                     commentId = comment.id
                                     commenting = true
                                 }
                             }
                             if (comment.voteUpAble) {
-                                (if (comment.voteUpEd) cancelVoteUp else voteUp) thenDo { voteComment(comment, true) }
+                                onSelect(if (comment.voteUpEd) cancelVoteUp else voteUp) { voteComment(comment, true) }
                             }
                             if (comment.voteDownAble) {
-                                (if (comment.voteDownEd) cancelVoteDown else voteDown) thenDo { voteComment(comment, false) }
+                                onSelect(if (comment.voteDownEd) cancelVoteDown else voteDown) { voteComment(comment, false) }
                             }
                             if (!comment.voteState.isNullOrEmpty()) {
-                                checkVoteStatus thenDo { showCommentVoteStatus(comment) }
+                                onSelect(checkVoteStatus) { showCommentVoteStatus(comment) }
                             }
                         }
                         dialogState.showSelectItem(*actions.toTypedArray()).invoke()
