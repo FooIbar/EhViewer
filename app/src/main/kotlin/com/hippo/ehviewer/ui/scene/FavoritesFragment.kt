@@ -9,11 +9,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
@@ -153,7 +158,10 @@ fun FavouritesScreen(navigator: NavController) {
     with(activity) {
         ProvideSideSheetContent { sheetState ->
             val localFavCount by localFavCountFlow.collectAsState(0)
-            TopAppBar(title = { Text(text = stringResource(id = R.string.collections)) })
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.collections)) },
+                windowInsets = WindowInsets(0, 0, 0, 0),
+            )
             val scope = currentRecomposeScope
             LaunchedEffect(Unit) {
                 Settings.favChangesFlow.collect {
@@ -170,7 +178,10 @@ fun FavouritesScreen(navigator: NavController) {
             } else {
                 arrayOf(localFav)
             }
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
+            ) {
                 faves.forEachIndexed { index, (name, count) ->
                     ListItem(
                         headlineContent = { Text(text = name) },
@@ -446,7 +457,7 @@ fun FavouritesScreen(navigator: NavController) {
             }
         } else {
             onClick(Icons.Default.DoneAll) {
-                val info = data.itemSnapshotList.filterNotNull().associateBy { it.gid }
+                val info = data.itemSnapshotList.items.associateBy { it.gid }
                 checkedInfoMap.putAll(info)
                 throw CancellationException()
             }
