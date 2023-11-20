@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
+import androidx.compose.foundation.text2.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LastPage
@@ -153,9 +154,33 @@ import moe.tarsin.coroutines.runSuspendCatching
 @Destination
 @Composable
 fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
+    val searchFieldState = rememberTextFieldState()
     var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
     var searchBarOffsetY by remember { mutableStateOf(0) }
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
+
+    var searchNormalMode by rememberSaveable { mutableStateOf(true) }
+    var searchAdvancedMode by rememberSaveable { mutableStateOf(false) }
+    var category by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
+    var searchMethod by rememberSaveable { mutableIntStateOf(1) }
+    var advancedSearchOption by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
+    var useSimilarityScan by rememberSaveable { mutableStateOf(false) }
+    var searchCoverOnly by rememberSaveable { mutableStateOf(false) }
+    var imagePath by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(urlBuilder) {
+        if (urlBuilder.mode == MODE_SUBSCRIPTION) searchMethod = 2
+        if (urlBuilder.category != EhUtils.NONE) category = urlBuilder.category
+        if (urlBuilder.mode != MODE_TOPLIST) {
+            var keyword = urlBuilder.keyword.orEmpty()
+            if (urlBuilder.mode == MODE_TAG) {
+                keyword = wrapTagKeyword(keyword)
+            }
+            if (keyword.isNotBlank()) {
+                searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
+            }
+        }
+    }
 
     val animatedSearchLayout by animateFloatMergePredictiveBackAsState(showSearchLayout) { showSearchLayout = false }
     val context = LocalContext.current
@@ -245,8 +270,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
     }
     val combinedModifier = Modifier.nestedScroll(searchBarConnection).nestedScroll(refreshState.nestedScrollConnection)
 
-    val searchFieldState = rememberTextFieldState()
-
     val openGalleryKeyword = stringResource(R.string.gallery_list_search_bar_open_gallery)
     abstract class UrlSuggestion : Suggestion() {
         override val keyword = openGalleryKeyword
@@ -282,15 +305,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
 
     var expanded by remember { mutableStateOf(false) }
     var hidden by remember { mutableStateOf(false) }
-
-    var searchNormalMode by rememberSaveable { mutableStateOf(true) }
-    var searchAdvancedMode by rememberSaveable { mutableStateOf(false) }
-    var category by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
-    var searchMethod by rememberSaveable { mutableIntStateOf(1) }
-    var advancedSearchOption by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
-    var useSimilarityScan by rememberSaveable { mutableStateOf(false) }
-    var searchCoverOnly by rememberSaveable { mutableStateOf(false) }
-    var imagePath by rememberSaveable { mutableStateOf("") }
 
     val searchErr1 = stringResource(R.string.search_sp_err1)
     val searchErr2 = stringResource(R.string.search_sp_err2)
