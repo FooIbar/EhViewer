@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,6 +43,9 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -122,6 +126,7 @@ fun SearchBarScreen(
     onApplySearch: (String) -> Unit,
     onSearchExpanded: () -> Unit,
     onSearchHidden: () -> Unit,
+    refreshState: PullToRefreshState = rememberPullToRefreshState(),
     suggestionProvider: SuggestionProvider? = null,
     searchBarOffsetY: Int,
     trailingIcon: @Composable () -> Unit,
@@ -247,6 +252,30 @@ fun SearchBarScreen(
         Modifier
     }
     Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                // Placeholder, fill immutable SearchBar padding
+                Spacer(modifier = Modifier.height(112.dp))
+            },
+            floatingActionButton = {
+                val hiddenState by animateFloatAsState(
+                    targetValue = if (showSearchFab) 1f else 0f,
+                    animationSpec = tween(FAB_ANIMATE_TIME),
+                    label = "hiddenState",
+                )
+                FloatingActionButton(
+                    onClick = ::onApplySearch,
+                    modifier = Modifier.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
+                ) {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                }
+            },
+            content = content,
+        )
+        PullToRefreshContainer(
+            state = refreshState,
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = 96.dp) then scrollAwayModifier,
+        )
         SearchBar(
             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier,
             state = searchFieldState,
@@ -315,26 +344,6 @@ fun SearchBarScreen(
                 }
             }
         }
-        Scaffold(
-            topBar = {
-                // Placeholder, fill immutable SearchBar padding
-                Spacer(modifier = Modifier.height(112.dp))
-            },
-            floatingActionButton = {
-                val hiddenState by animateFloatAsState(
-                    targetValue = if (showSearchFab) 1f else 0f,
-                    animationSpec = tween(FAB_ANIMATE_TIME),
-                    label = "hiddenState",
-                )
-                FloatingActionButton(
-                    onClick = ::onApplySearch,
-                    modifier = Modifier.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
-                ) {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = null)
-                }
-            },
-            content = content,
-        )
     }
 }
 

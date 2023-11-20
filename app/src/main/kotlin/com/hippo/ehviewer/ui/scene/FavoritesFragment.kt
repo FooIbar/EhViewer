@@ -33,6 +33,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -182,6 +183,7 @@ fun FavouritesScreen(navigator: NavController) {
         }
     }
 
+    val refreshState = rememberPullToRefreshState()
     val searchFieldState = rememberTextFieldState()
     val data = rememberInVM(urlBuilder) {
         if (urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
@@ -235,6 +237,7 @@ fun FavouritesScreen(navigator: NavController) {
             }
         }
     }
+    val combinedModifier = Modifier.nestedScroll(searchBarConnection).nestedScroll(refreshState.nestedScrollConnection)
 
     var expanded by remember { mutableStateOf(false) }
     var hidden by remember { mutableStateOf(false) }
@@ -252,6 +255,7 @@ fun FavouritesScreen(navigator: NavController) {
         onApplySearch = { switchFav(urlBuilder.favCat, it) },
         onSearchExpanded = { hidden = true },
         onSearchHidden = { hidden = false },
+        refreshState = refreshState,
         searchBarOffsetY = searchBarOffsetY,
         trailingIcon = {
             IconButton(onClick = { activity.openSideSheet() }) {
@@ -275,7 +279,7 @@ fun FavouritesScreen(navigator: NavController) {
                 val height = (3 * Settings.listThumbSize * 3).pxToDp.dp
                 val showPages = Settings.showGalleryPages
                 FastScrollLazyColumn(
-                    modifier = Modifier.padding(horizontal = marginH),
+                    modifier = Modifier.padding(horizontal = marginH) then combinedModifier,
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
                 ) {
@@ -320,7 +324,7 @@ fun FavouritesScreen(navigator: NavController) {
                 val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Adaptive(Settings.thumbSizeDp.dp),
-                    modifier = Modifier.padding(horizontal = marginH).nestedScroll(searchBarConnection),
+                    modifier = Modifier.padding(horizontal = marginH) then combinedModifier,
                     verticalItemSpacing = gridInterval,
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
                     contentPadding = realPadding,
