@@ -94,6 +94,7 @@ import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
+import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
@@ -120,7 +121,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 @Destination
 @Composable
 fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
-    val urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
+    var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
     var searchBarOffsetY by remember { mutableStateOf(0) }
     var state by rememberSaveable { mutableStateOf(State.NORMAL) }
 
@@ -256,7 +257,19 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         title = title,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
-        onApplySearch = { },
+        onApplySearch = {
+            val builder = ListUrlBuilder()
+            val oldMode = urlBuilder.mode
+            // If it's MODE_SUBSCRIPTION, keep it
+            val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
+            builder.mode = newMode
+            builder.keyword = it
+            when (oldMode) {
+                MODE_TOPLIST, MODE_WHATS_HOT -> navigator.navAnimated(R.id.galleryListScene, builder.toStartArgs())
+                else -> urlBuilder = builder
+            }
+            state = State.NORMAL
+        },
         onSearchExpanded = { hidden = true },
         onSearchHidden = { hidden = false },
         refreshState = refreshState,
