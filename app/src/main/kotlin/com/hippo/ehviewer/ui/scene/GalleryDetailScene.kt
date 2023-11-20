@@ -74,7 +74,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -255,11 +254,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
             ).setAction(R.string.read) { context.navToReader(gi.findBaseInfo(), page) }.show()
         }
     }
-    DisposableEffect(galleryDetailUrl) {
-        activity.shareUrl = galleryDetailUrl
-        onDispose {
-            activity.shareUrl = null
-        }
+    with(activity) {
+        ProvideAssistContent(galleryDetailUrl)
     }
     var getDetailError by rememberSaveable { mutableStateOf("") }
     val dialogState = LocalDialogState.current

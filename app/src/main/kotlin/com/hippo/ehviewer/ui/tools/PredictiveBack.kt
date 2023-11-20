@@ -5,7 +5,6 @@ import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -30,15 +29,13 @@ import kotlinx.coroutines.CancellationException
  */
 @Composable
 fun animateFloatMergePredictiveBackAsState(
-    enable: MutableState<Boolean>,
+    enable: Boolean,
     animationSpec: AnimationSpec<Float> = spring(),
+    onBack: () -> Unit,
 ): State<Float> {
-    // Principal Value
-    var principal by enable
-
     // Natural animator state correspond with principal value
     val coState by animateFloatAsState(
-        targetValue = if (principal) 0f else 1f,
+        targetValue = if (enable) 0f else 1f,
         animationSpec = animationSpec,
         label = "animationProgress",
     )
@@ -46,16 +43,15 @@ fun animateFloatMergePredictiveBackAsState(
     val ret = remember { mutableFloatStateOf(1F) }
     var animationProgress by ret
     // Update UI animation state
-    animationProgress = if (principal || !isAtLeastU) coState else max(animationProgress, coState)
+    animationProgress = if (enable || !isAtLeastU) coState else max(animationProgress, coState)
 
-    PredictiveBackHandler(principal) { progress ->
+    PredictiveBackHandler(enable) { progress ->
         try {
             progress.collect {
                 animationProgress = it.progress
             }
-            principal = false
+            onBack()
         } catch (e: CancellationException) {
-            principal = true
             animationProgress = 0F
         }
     }

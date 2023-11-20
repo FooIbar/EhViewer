@@ -25,6 +25,9 @@ object Settings : DataStorePreferences(null) {
     var favCount by intArrayPref("fav_count", 10).emitTo(_favFlow)
     var favCloudCount by intPref("fav_cloud", 0).emitTo(_favFlow)
 
+    val listModeBackField = intPref("list_mode_2", 0)
+    var listMode by listModeBackField
+
     val needSignInFlow: Flow<Boolean>
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)
@@ -38,7 +41,6 @@ object Settings : DataStorePreferences(null) {
     var preloadImage by intPref("preload_image_2", 5)
     var downloadTimeout by intPref("download_timeout", 60)
     var theme by intPref("theme_2", -1).observed { updateWhenThemeChanges() }
-    var listMode by intPref("list_mode_2", 0)
     var detailSize by intPref("detail_size_2", 0)
     var thumbResolution by intPref("thumb_resolution_2", 0)
     var readCacheSize by intPref("read_cache_size_2", 640)

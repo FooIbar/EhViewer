@@ -17,6 +17,7 @@ import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
@@ -28,12 +29,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
@@ -228,25 +231,6 @@ fun rememberDrawerState(
     }
 }
 
-/**
- * <a href="https://m3.material.io/components/navigation-drawer/overview" class="external" target="_blank">Material Design navigation drawer</a>.
- *
- * Navigation drawers provide ergonomic access to destinations in an app.
- *
- * Modal navigation drawers block interaction with the rest of an app’s content with a scrim.
- * They are elevated above most of the app’s UI and don’t affect the screen’s layout grid.
- *
- * ![Navigation drawer image](https://developer.android.com/images/reference/androidx/compose/material3/navigation-drawer.png)
- *
- * @sample androidx.compose.material3.samples.ModalNavigationDrawerSample
- *
- * @param drawerContent content inside this drawer
- * @param modifier the [Modifier] to be applied to this drawer
- * @param drawerState state of the drawer
- * @param gesturesEnabled whether or not the drawer can be interacted by gestures
- * @param scrimColor color of the scrim that obscures content when the drawer is open
- * @param content content of the rest of the UI
- */
 @Composable
 fun ModalNavigationDrawer(
     drawerContent: @Composable () -> Unit,
@@ -258,7 +242,7 @@ fun ModalNavigationDrawer(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    val minValue = -with(density) { ContainerWidth.toPx() }
+    var minValue by remember { mutableStateOf(-with(density) { ContainerWidth.toPx() }) }
     val maxValue = 0f
 
     SideEffect {
@@ -279,13 +263,107 @@ fun ModalNavigationDrawer(
             awaitEachGesture {
                 fun canConsume(slop: Float) = (slop > 0 && drawerState.isClosed) || (slop < 0 && drawerState.isOpen)
                 val down = awaitFirstDown(requireUnconsumed = false)
-                var overSlop: Float
+                var ignore = false
                 val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
-                    overSlop = over * multiplier
-                    if (canConsume(overSlop)) {
+                    val overSlop = over * multiplier
+                    val canConsume = canConsume(overSlop)
+                    if (canConsume && !ignore) {
                         velocityTracker.addPointerInputChange(change)
                         change.consume()
                         drawerState.anchoredDraggableState.dispatchRawDelta(overSlop)
+                    } else {
+                        ignore = true
+                    }
+                }
+                if (drag != null) {
+                    horizontalDrag(drag.id) {
+                        velocityTracker.addPointerInputChange(it)
+                        drawerState.anchoredDraggableState.dispatchRawDelta(it.positionChange().x * multiplier)
+                    }
+                    val velocity = velocityTracker.calculateVelocity()
+                    velocityTracker.resetTracking()
+                    scope.launch {
+                        drawerState.anchoredDraggableState.settle(velocity.x * multiplier)
+                    }
+                }
+            }
+        }
+    } else {
+        Modifier
+    }
+    Box(modifier.fillMaxSize().then(dragModifier)) {
+        Box {
+            content()
+        }
+        Scrim(
+            open = drawerState.isOpen,
+            onClose = {
+                if (gesturesEnabled && drawerState.confirmStateChange(DrawerValue.Closed)) {
+                    scope.launch { drawerState.close() }
+                }
+            },
+            fraction = {
+                calculateFraction(minValue, maxValue, drawerState.requireOffset())
+            },
+            color = scrimColor,
+        )
+        Box(
+            modifier = Modifier.offset {
+                IntOffset(drawerState.requireOffset().roundToInt(), 0)
+            }.onGloballyPositioned {
+                val w = it.size.width
+                if (w != 0) {
+                    minValue = -it.size.width.toFloat()
+                }
+            },
+        ) {
+            drawerContent()
+        }
+    }
+}
+
+@Composable
+fun SideDrawer(
+    drawerContent: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    drawerState: DrawerState2 = rememberDrawerState(DrawerValue.Closed),
+    gesturesEnabled: Boolean = true,
+    scrimColor: Color = DrawerDefaults.scrimColor,
+    content: @Composable () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    var minValue by remember { mutableStateOf(with(density) { ContainerWidth.toPx() }) }
+    val maxValue = 0f
+
+    SideEffect {
+        drawerState.density = density
+        drawerState.anchoredDraggableState.updateAnchors(
+            DraggableAnchors {
+                DrawerValue.Closed at minValue
+                DrawerValue.Open at maxValue
+            },
+        )
+    }
+
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val velocityTracker = remember { VelocityTracker() }
+    val dragModifier = if (gesturesEnabled) {
+        Modifier.pointerInput(isRtl) {
+            val multiplier = if (isRtl) -1 else 1
+            awaitEachGesture {
+                fun canConsume(slop: Float) = (slop > 0 && drawerState.isOpen) || (slop < 0 && drawerState.isClosed)
+                val down = awaitFirstDown(requireUnconsumed = false)
+                var ignore = false
+                val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
+                    val overSlop = over * multiplier
+                    val canConsume = canConsume(overSlop)
+                    if (canConsume && !ignore) {
+                        velocityTracker.addPointerInputChange(change)
+                        change.consume()
+                        drawerState.anchoredDraggableState.dispatchRawDelta(overSlop)
+                    } else {
+                        ignore = true
                     }
                 }
                 if (drag != null) {
@@ -324,7 +402,12 @@ fun ModalNavigationDrawer(
         Box(
             modifier = Modifier.offset {
                 IntOffset(drawerState.requireOffset().roundToInt(), 0)
-            },
+            }.onGloballyPositioned {
+                val w = it.size.width
+                if (w != 0) {
+                    minValue = it.size.width.toFloat()
+                }
+            }.align(Alignment.TopEnd).systemBarsPadding(),
         ) {
             drawerContent()
         }

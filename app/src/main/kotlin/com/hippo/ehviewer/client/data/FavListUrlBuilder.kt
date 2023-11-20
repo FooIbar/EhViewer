@@ -22,16 +22,16 @@ import com.hippo.ehviewer.client.ehUrl
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class FavListUrlBuilder(
-    var mPrev: String? = null,
-    var mNext: String? = null,
+data class FavListUrlBuilder(
+    val favCat: Int = FAV_CAT_ALL,
+    val keyword: String? = null,
     var jumpTo: String? = null,
-    var keyword: String? = null,
-    var favCat: Int = FAV_CAT_ALL,
+    var prev: String? = null,
+    var next: String? = null,
 ) : Parcelable {
     fun setIndex(index: String?, isNext: Boolean) {
-        mNext = index.takeIf { isNext }
-        mPrev = index.takeUnless { isNext }
+        next = index.takeIf { isNext }
+        prev = index.takeUnless { isNext }
     }
 
     fun build() = ehUrl {
@@ -42,8 +42,8 @@ class FavListUrlBuilder(
             addQueryParameter("favcat", "all")
         }
         addQueryParameterIfNotBlank("f_search", keyword)
-        addQueryParameterIfNotBlank("prev", mPrev)
-        addQueryParameterIfNotBlank("next", mNext)
+        addQueryParameterIfNotBlank("prev", prev)
+        addQueryParameterIfNotBlank("next", next)
         addQueryParameterIfNotBlank("seek", jumpTo)
     }.toString()
 
