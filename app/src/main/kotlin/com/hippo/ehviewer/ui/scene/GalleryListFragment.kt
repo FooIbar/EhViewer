@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -260,10 +261,18 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         }
     }
 
+    var hidden by remember { mutableStateOf(false) }
     val searchBarConnection = remember {
+        val slop = ViewConfiguration.get(context).scaledTouchSlop
         object : NestedScrollConnection {
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                searchBarOffsetY = (searchBarOffsetY + consumed.y).roundToInt().coerceIn(-300, 0)
+                val dy = -consumed.y
+                if (dy >= slop) {
+                    hidden = true
+                } else if (dy <= -slop / 2) {
+                    hidden = false
+                }
+                searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-300, 0)
                 return Offset.Zero // We never consume it
             }
         }
@@ -304,7 +313,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
     }
 
     var expanded by remember { mutableStateOf(false) }
-    var hidden by remember { mutableStateOf(false) }
 
     val searchErr1 = stringResource(R.string.search_sp_err1)
     val searchErr2 = stringResource(R.string.search_sp_err2)
