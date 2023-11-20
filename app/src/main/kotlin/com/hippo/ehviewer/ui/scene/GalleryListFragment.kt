@@ -280,6 +280,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         title = title,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
+        showSearchFab = showSearchLayout,
         onApplySearch = {
             val builder = ListUrlBuilder()
             val oldMode = urlBuilder.mode
