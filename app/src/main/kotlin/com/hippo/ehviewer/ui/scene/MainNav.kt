@@ -32,8 +32,8 @@ fun NavController.navWithUrl(url: String): Boolean {
         navAnimated(
             R.id.galleryListScene,
             bundleOf(
-                GalleryListScene.KEY_ACTION to GalleryListScene.ACTION_LIST_URL_BUILDER,
-                GalleryListScene.KEY_LIST_URL_BUILDER to it,
+                GalleryListFragment.KEY_ACTION to GalleryListFragment.ACTION_LIST_URL_BUILDER,
+                GalleryListFragment.KEY_LIST_URL_BUILDER to it,
             ),
         )
         return true

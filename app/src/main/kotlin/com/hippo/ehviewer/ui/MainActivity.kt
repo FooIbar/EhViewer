@@ -105,7 +105,7 @@ import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.scene.GalleryDetailScene
-import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
+import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
 import com.hippo.ehviewer.ui.scene.ProgressFragment
 import com.hippo.ehviewer.ui.scene.TokenArgs
 import com.hippo.ehviewer.ui.scene.navAnimated
