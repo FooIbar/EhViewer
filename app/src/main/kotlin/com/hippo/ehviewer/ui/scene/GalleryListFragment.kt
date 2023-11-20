@@ -419,19 +419,17 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 if (isTopList) {
                     val page = urlBuilder.mJumpTo?.toIntOrNull() ?: 0
                     val hint = context.getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
-                    coroutineScope.launch {
-                        val text = dialogState.awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
-                            val text = oriText.trim()
-                            val goTo = runCatching {
-                                text.toInt() - 1
-                            }.onFailure {
-                                return@awaitInputText invalidNum
-                            }.getOrThrow()
-                            if (goTo !in 0..<TOPLIST_PAGES) outOfRange else null
-                        }.trim().toInt() - 1
-                        urlBuilder.setJumpTo(text)
-                        data.refresh()
-                    }
+                    val text = dialogState.awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
+                        val text = oriText.trim()
+                        val goTo = runCatching {
+                            text.toInt() - 1
+                        }.onFailure {
+                            return@awaitInputText invalidNum
+                        }.getOrThrow()
+                        if (goTo !in 0..<TOPLIST_PAGES) outOfRange else null
+                    }.trim().toInt() - 1
+                    urlBuilder.setJumpTo(text)
+                    data.refresh()
                 } else {
                     val local = LocalDateTime.of(2007, 3, 21, 0, 0)
                     val fromDate =
