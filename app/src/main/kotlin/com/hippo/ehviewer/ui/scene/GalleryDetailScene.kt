@@ -875,19 +875,19 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                         tag
                     }
                     val actions = buildAction {
-                        copy thenDo { activity.addTextToClipboard(tag) }
+                        onSelect(copy) { activity.addTextToClipboard(tag) }
                         if (temp != translated) {
-                            copyTrans thenDo { activity.addTextToClipboard(translated) }
+                            onSelect(copyTrans) { activity.addTextToClipboard(translated) }
                         }
-                        showDefine thenDo { context.openBrowser(EhUrl.getTagDefinitionUrl(temp)) }
-                        addFilter thenDo {
+                        onSelect(showDefine) { context.openBrowser(EhUrl.getTagDefinitionUrl(temp)) }
+                        onSelect(addFilter) {
                             dialogState.awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
                             Filter(FilterMode.TAG, tag).remember()
                             activity.showTip(filterAdded, BaseScene.LENGTH_SHORT)
                         }
                         if (galleryDetail.apiUid >= 0) {
-                            upTag thenDo { galleryDetail.voteTag(tag, 1) }
-                            downTag thenDo { galleryDetail.voteTag(tag, -1) }
+                            onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
+                            onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
                         }
                     }.toTypedArray()
                     coroutineScope.launchIO {
