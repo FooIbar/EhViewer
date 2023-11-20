@@ -183,7 +183,6 @@ fun FavouritesScreen(navigator: NavController) {
         }
     }
 
-    val refreshState = rememberPullToRefreshState()
     val searchFieldState = rememberTextFieldState()
     val data = rememberInVM(urlBuilder) {
         if (urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
@@ -228,6 +227,16 @@ fun FavouritesScreen(navigator: NavController) {
             }
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
+
+    val refreshState = rememberPullToRefreshState {
+        data.loadState.refresh is LoadState.NotLoading
+    }
+
+    if (refreshState.isRefreshing) {
+        LaunchedEffect(Unit) {
+            data.refresh()
+        }
+    }
 
     val searchBarConnection = remember {
         object : NestedScrollConnection {
@@ -275,6 +284,29 @@ fun FavouritesScreen(navigator: NavController) {
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
+            when (val state = data.loadState.refresh) {
+                is LoadState.Loading -> if (data.itemCount == 0) CircularProgressIndicator()
+                is LoadState.Error -> {
+                    Column(
+                        modifier = Modifier.widthIn(max = 228.dp).clickable { data.retry() },
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Image(
+                            imageVector = EhIcons.Big.Default.SadAndroid,
+                            contentDescription = null,
+                            modifier = Modifier.padding(16.dp),
+                        )
+                        Text(
+                            text = ExceptionUtils.getReadableString(state.error),
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+                is LoadState.NotLoading -> SideEffect {
+                    refreshState.endRefresh()
+                }
+            }
             if (listMode == 0) {
                 val height = (3 * Settings.listThumbSize * 3).pxToDp.dp
                 val showPages = Settings.showGalleryPages
@@ -363,27 +395,6 @@ fun FavouritesScreen(navigator: NavController) {
                         }
                     }
                 }
-            }
-            when (val state = data.loadState.refresh) {
-                is LoadState.Loading -> CircularProgressIndicator()
-                is LoadState.Error -> {
-                    Column(
-                        modifier = Modifier.widthIn(max = 228.dp).clickable { data.retry() },
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Image(
-                            imageVector = EhIcons.Big.Default.SadAndroid,
-                            contentDescription = null,
-                            modifier = Modifier.padding(16.dp),
-                        )
-                        Text(
-                            text = ExceptionUtils.getReadableString(state.error),
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                }
-                is LoadState.NotLoading -> Unit
             }
         }
     }
