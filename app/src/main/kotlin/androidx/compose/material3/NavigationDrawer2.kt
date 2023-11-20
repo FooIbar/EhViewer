@@ -17,7 +17,6 @@ import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
@@ -407,7 +406,7 @@ fun SideDrawer(
                 if (w != 0) {
                     minValue = it.size.width.toFloat()
                 }
-            }.align(Alignment.TopEnd).systemBarsPadding(),
+            }.align(Alignment.TopEnd),
         ) {
             drawerContent()
         }
