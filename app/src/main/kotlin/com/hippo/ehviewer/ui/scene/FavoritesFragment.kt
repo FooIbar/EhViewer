@@ -502,6 +502,8 @@ fun FavouritesScreen(navigator: NavController) {
 }
 
 class FavoritesFragment : BaseScene() {
+    override val enableDrawerGestures = true
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return ComposeWithMD3 {
             val navController = remember { findNavController() }
