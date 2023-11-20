@@ -36,6 +36,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
@@ -241,7 +242,7 @@ fun ModalNavigationDrawer(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    val minValue = -with(density) { ContainerWidth.toPx() }
+    var minValue by remember { mutableStateOf(-with(density) { ContainerWidth.toPx() }) }
     val maxValue = 0f
 
     SideEffect {
@@ -309,6 +310,11 @@ fun ModalNavigationDrawer(
         Box(
             modifier = Modifier.offset {
                 IntOffset(drawerState.requireOffset().roundToInt(), 0)
+            }.onGloballyPositioned {
+                val w = it.size.width
+                if (w != 0) {
+                    minValue = -it.size.width.toFloat()
+                }
             },
         ) {
             drawerContent()
@@ -327,7 +333,7 @@ fun SideDrawer(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    val minValue = with(density) { ContainerWidth.toPx() }
+    var minValue by remember { mutableStateOf(with(density) { ContainerWidth.toPx() }) }
     val maxValue = 0f
 
     SideEffect {
@@ -396,6 +402,11 @@ fun SideDrawer(
         Box(
             modifier = Modifier.offset {
                 IntOffset(drawerState.requireOffset().roundToInt(), 0)
+            }.onGloballyPositioned {
+                val w = it.size.width
+                if (w != 0) {
+                    minValue = it.size.width.toFloat()
+                }
             }.align(Alignment.TopEnd).systemBarsPadding(),
         ) {
             drawerContent()
