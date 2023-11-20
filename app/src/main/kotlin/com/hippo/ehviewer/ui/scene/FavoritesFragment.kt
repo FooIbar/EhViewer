@@ -412,7 +412,7 @@ fun FavouritesScreen(navigator: NavController) {
         autoCancel = !selectMode,
     ) {
         if (!select) {
-            EhIcons.Default.GoTo onClick {
+            onClick(EhIcons.Default.GoTo) {
                 val local = LocalDateTime.of(2007, 3, 21, 0, 0)
                 val fromDate = local.atZone(ZoneId.ofOffset("UTC", ZoneOffset.UTC)).toInstant().toEpochMilli()
                 val toDate = MaterialDatePicker.todayInUtcMilliseconds()
@@ -435,23 +435,23 @@ fun FavouritesScreen(navigator: NavController) {
                     urlBuilder = urlBuilder.copy(jumpTo = jumpTo)
                 }
             }
-            Icons.Default.Refresh onClick {
+            onClick(Icons.Default.Refresh) {
                 switchFav(urlBuilder.favCat)
             }
-            Icons.AutoMirrored.Default.LastPage onClick {
+            onClick(Icons.AutoMirrored.Default.LastPage) {
                 urlBuilder = urlBuilder.copy().apply { setIndex("1-0", false) }
             }
         } else {
-            Icons.Default.DoneAll onClick {
+            onClick(Icons.Default.DoneAll) {
                 val info = data.itemSnapshotList.filterNotNull().associateBy { it.gid }
                 checkedInfoMap.putAll(info)
                 throw CancellationException()
             }
-            Icons.Default.Download onClick {
+            onClick(Icons.Default.Download) {
                 val info = checkedInfoMap.run { values.also { clear() } }
                 dialogState.startDownload(context, false, *info.toTypedArray())
             }
-            Icons.Default.Delete onClick {
+            onClick(Icons.Default.Delete) {
                 val info = checkedInfoMap.run { values.also { clear() } }
                 dialogState.awaitPermissionOrCancel(title = R.string.delete_favorites_dialog_title) {
                     Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
@@ -465,7 +465,7 @@ fun FavouritesScreen(navigator: NavController) {
                 }
                 data.refresh()
             }
-            Icons.AutoMirrored.Default.DriveFileMove onClick {
+            onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 // First is local favorite, the other 10 is cloud favorite
                 val array = if (EhCookieStore.hasSignedIn()) {
                     arrayOf(localFavName, *Settings.favCat)

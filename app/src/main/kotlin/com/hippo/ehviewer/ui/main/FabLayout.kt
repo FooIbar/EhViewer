@@ -32,7 +32,7 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import moe.tarsin.coroutines.runSuspendCatching
 
 fun interface FabBuilder {
-    infix fun ImageVector.onClick(that: suspend () -> Unit)
+    fun onClick(icon: ImageVector, that: suspend () -> Unit)
 }
 
 @Composable
@@ -45,8 +45,8 @@ fun FabLayout(
 ) {
     val secondaryFab = remember(fabBuilder) {
         buildList {
-            fabBuilder { that ->
-                add(this to that)
+            fabBuilder { icon, action ->
+                add(icon to action)
             }
         }
     }
