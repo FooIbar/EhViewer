@@ -47,10 +47,6 @@
     <dimen name="search_layout_margin_h">4dp</dimen>
     <dimen name="search_layout_margin_v">4dp</dimen>
 
-    <!-- AddDeleteDrawable -->
-    <dimen name="add_size">20dp</dimen>
-    <dimen name="add_thickness">2dp</dimen>
-
     <!-- Search item -->
     <dimen name="search_category_padding_h">@dimen/keyline_margin</dimen>
     <dimen name="search_category_padding_v">@dimen/keyline_margin</dimen>
