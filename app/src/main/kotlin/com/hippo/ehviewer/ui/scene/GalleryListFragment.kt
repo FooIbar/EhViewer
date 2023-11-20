@@ -283,14 +283,14 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
     var expanded by remember { mutableStateOf(false) }
     var hidden by remember { mutableStateOf(false) }
 
-    var isNormalMode by rememberSaveable { mutableStateOf(true) }
-    var isAdvancedMode by rememberSaveable { mutableStateOf(false) }
-    var mCategory by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
-    var mSearchMode by rememberSaveable { mutableIntStateOf(1) }
-    var advancedState by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
-    var uss by rememberSaveable { mutableStateOf(false) }
-    var osc by rememberSaveable { mutableStateOf(false) }
-    var path by rememberSaveable { mutableStateOf("") }
+    var searchNormalMode by rememberSaveable { mutableStateOf(true) }
+    var searchAdvancedMode by rememberSaveable { mutableStateOf(false) }
+    var category by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
+    var searchMethod by rememberSaveable { mutableIntStateOf(1) }
+    var advancedSearchOption by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
+    var useSimilarityScan by rememberSaveable { mutableStateOf(false) }
+    var searchCoverOnly by rememberSaveable { mutableStateOf(false) }
+    var imagePath by rememberSaveable { mutableStateOf("") }
 
     val searchErr1 = stringResource(R.string.search_sp_err1)
     val searchErr2 = stringResource(R.string.search_sp_err2)
@@ -303,26 +303,26 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         onApplySearch = { query ->
             val builder = ListUrlBuilder()
             val oldMode = urlBuilder.mode
-            if (showSearchLayout) {
+            if (!showSearchLayout) {
                 // If it's MODE_SUBSCRIPTION, keep it
                 val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
                 builder.mode = newMode
                 builder.keyword = query
             } else {
-                if (isNormalMode) {
-                    when (mSearchMode) {
+                if (searchNormalMode) {
+                    when (searchMethod) {
                         1 -> builder.mode = MODE_NORMAL
                         2 -> builder.mode = MODE_SUBSCRIPTION
                         3 -> builder.mode = MODE_UPLOADER
                         4 -> builder.mode = MODE_TAG
                     }
                     builder.keyword = query
-                    builder.category = mCategory
-                    if (isAdvancedMode) {
-                        builder.advanceSearch = advancedState.advanceSearch
-                        builder.minRating = advancedState.minRating
-                        val pageFrom = advancedState.fromPage
-                        val pageTo = advancedState.toPage
+                    builder.category = category
+                    if (searchAdvancedMode) {
+                        builder.advanceSearch = advancedSearchOption.advanceSearch
+                        builder.minRating = advancedSearchOption.minRating
+                        val pageFrom = advancedSearchOption.fromPage
+                        val pageTo = advancedSearchOption.toPage
                         if (pageTo != -1 && pageTo < 10) {
                             activity.showTip(searchErr1, BaseScene.LENGTH_LONG)
                             return@SearchBarScreen
@@ -335,17 +335,17 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                     }
                 } else {
                     builder.mode = MODE_IMAGE_SEARCH
-                    if (path.isBlank()) {
+                    if (imagePath.isBlank()) {
                         activity.showTip(selectImageFirst, BaseScene.LENGTH_LONG)
                         return@SearchBarScreen
                     }
-                    val uri = Uri.parse(path)
+                    val uri = Uri.parse(imagePath)
                     val temp = AppConfig.createTempFile() ?: return@SearchBarScreen
                     val bitmap = context.decodeBitmap(uri) ?: return@SearchBarScreen
                     temp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
                     builder.imagePath = temp.path
-                    builder.isUseSimilarityScan = uss
-                    builder.isOnlySearchCovers = osc
+                    builder.isUseSimilarityScan = useSimilarityScan
+                    builder.isOnlySearchCovers = searchCoverOnly
                 }
             }
             when (oldMode) {
@@ -390,7 +390,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 .navigationBarsPadding().padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h))
                 .padding(horizontal = margin).scale(1 - animatedSearchLayout).alpha(1 - animatedSearchLayout),
         ) {
-            AnimatedVisibility(visible = isNormalMode) {
+            AnimatedVisibility(visible = searchNormalMode) {
                 ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                     Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {
                         Text(
@@ -400,15 +400,15 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                             style = MaterialTheme.typography.titleMedium,
                         )
                         NormalSearch(
-                            category = mCategory,
+                            category = category,
                             onCategoryChanged = {
                                 Settings.searchCategory = it
-                                mCategory = it
+                                category = it
                             },
-                            searchMode = mSearchMode,
-                            onSearchModeChanged = { mSearchMode = it },
-                            isAdvanced = isAdvancedMode,
-                            onAdvancedChanged = { isAdvancedMode = it },
+                            searchMode = searchMethod,
+                            onSearchModeChanged = { searchMethod = it },
+                            isAdvanced = searchAdvancedMode,
+                            onAdvancedChanged = { searchAdvancedMode = it },
                             showInfo = { BaseDialogBuilder(context).setMessage(R.string.search_tip).show() },
                             maxItemsInEachRow = when (windowSizeClass.widthSizeClass) {
                                 WindowWidthSizeClass.Compact -> 2
@@ -419,7 +419,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                     }
                 }
             }
-            AnimatedVisibility(visible = isNormalMode && isAdvancedMode) {
+            AnimatedVisibility(visible = searchNormalMode && searchAdvancedMode) {
                 ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                     Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {
                         Text(
@@ -429,13 +429,13 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                             style = MaterialTheme.typography.titleMedium,
                         )
                         SearchAdvanced(
-                            state = advancedState,
-                            onStateChanged = { advancedState = it },
+                            state = advancedSearchOption,
+                            onStateChanged = { advancedSearchOption = it },
                         )
                     }
                 }
             }
-            AnimatedVisibility(visible = !isNormalMode) {
+            AnimatedVisibility(visible = !searchNormalMode) {
                 ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                     Column(modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.search_category_padding_h), vertical = dimensionResource(id = R.dimen.search_category_padding_v))) {
                         Text(
@@ -445,33 +445,33 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                             style = MaterialTheme.typography.titleMedium,
                         )
                         ImageSearch(
-                            imagePath = path,
+                            imagePath = imagePath,
                             onSelectImage = {
                                 coroutineScope.launch {
                                     val image = context.pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                    if (image != null) path = image.toString()
+                                    if (image != null) imagePath = image.toString()
                                 }
                             },
-                            uss = uss,
-                            onUssChecked = { uss = it },
-                            osc = osc,
-                            onOscChecked = { osc = it },
+                            uss = useSimilarityScan,
+                            onUssChecked = { useSimilarityScan = it },
+                            osc = searchCoverOnly,
+                            onOscChecked = { searchCoverOnly = it },
                         )
                     }
                 }
             }
             SecondaryTabRow(
-                selectedTabIndex = if (isNormalMode) 0 else 1,
+                selectedTabIndex = if (searchNormalMode) 0 else 1,
                 divider = {},
             ) {
                 Tab(
-                    selected = isNormalMode,
-                    onClick = { isNormalMode = true },
+                    selected = searchNormalMode,
+                    onClick = { searchNormalMode = true },
                     text = { Text(text = stringResource(id = R.string.keyword_search)) },
                 )
                 Tab(
-                    selected = !isNormalMode,
-                    onClick = { isNormalMode = false },
+                    selected = !searchNormalMode,
+                    onClick = { searchNormalMode = false },
                     text = { Text(text = stringResource(id = R.string.search_image)) },
                 )
             }
