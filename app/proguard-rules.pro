@@ -13,3 +13,4 @@
 
 -allowaccessmodification
 -repackageclasses
+-dontobfuscate

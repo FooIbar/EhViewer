@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.scene
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.SparseArray
@@ -41,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
@@ -62,12 +64,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.WindowInfo
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
@@ -273,10 +277,15 @@ fun SearchBarScreen(
             content = content,
         )
         if (refreshState != null) {
+            @SuppressLint("PrivateResource")
+            val overlay = colorResource(com.google.android.material.R.color.m3_popupmenu_overlay_color)
+            val surface = MaterialTheme.colorScheme.surface
+            val background = overlay.compositeOver(surface)
             PullToRefreshContainer(
                 state = refreshState,
                 modifier = Modifier.align(Alignment.TopCenter).safeDrawingPadding()
                     .padding(top = 48.dp) then scrollAwayModifier,
+                containerColor = background,
             )
         }
         SearchBar(
