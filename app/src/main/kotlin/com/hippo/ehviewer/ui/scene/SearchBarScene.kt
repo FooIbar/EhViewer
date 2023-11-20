@@ -46,7 +46,6 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -127,7 +126,7 @@ fun SearchBarScreen(
     onApplySearch: (String) -> Unit,
     onSearchExpanded: () -> Unit,
     onSearchHidden: () -> Unit,
-    refreshState: PullToRefreshState = rememberPullToRefreshState(),
+    refreshState: PullToRefreshState? = null,
     suggestionProvider: SuggestionProvider? = null,
     searchBarOffsetY: Int,
     trailingIcon: @Composable () -> Unit,
@@ -273,11 +272,13 @@ fun SearchBarScreen(
             },
             content = content,
         )
-        PullToRefreshContainer(
-            state = refreshState,
-            modifier = Modifier.align(Alignment.TopCenter).safeDrawingPadding()
-                .padding(top = 48.dp) then scrollAwayModifier,
-        )
+        if (refreshState != null) {
+            PullToRefreshContainer(
+                state = refreshState,
+                modifier = Modifier.align(Alignment.TopCenter).safeDrawingPadding()
+                    .padding(top = 48.dp) then scrollAwayModifier,
+            )
+        }
         SearchBar(
             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier,
             state = searchFieldState,
