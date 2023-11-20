@@ -536,7 +536,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
     val invalidNum = stringResource(R.string.error_invalid_number)
     val outOfRange = stringResource(R.string.error_out_of_range)
     FabLayout(
-        hidden = hidden,
+        hidden = hidden || showSearchLayout,
         expanded = expanded,
         onExpandChanged = { expanded = it },
         autoCancel = true,
