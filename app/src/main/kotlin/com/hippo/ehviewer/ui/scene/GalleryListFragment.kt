@@ -55,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -65,6 +66,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.core.os.bundleOf
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -119,6 +121,7 @@ import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.findActivity
@@ -146,6 +149,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
     var searchBarOffsetY by remember { mutableStateOf(0) }
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
 
+    val animatedSearchLayout by animateFloatMergePredictiveBackAsState(showSearchLayout) { showSearchLayout = false }
     val context = LocalContext.current
     val activity = remember { context.findActivity<MainActivity>() }
     val windowSizeClass = calculateWindowSizeClass(activity)
@@ -300,7 +304,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         searchBarOffsetY = searchBarOffsetY,
         trailingIcon = {
             IconButton(onClick = { showSearchLayout = !showSearchLayout }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    modifier = Modifier.rotate(lerp(90f, 0f, animatedSearchLayout)),
+                )
             }
         },
     ) { paddingValues ->
