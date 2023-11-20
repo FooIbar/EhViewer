@@ -130,7 +130,7 @@ fun SearchBarScreen(
     searchFieldState: TextFieldState,
     searchFieldHint: String? = null,
     showSearchFab: Boolean = false,
-    onApplySearch: (String) -> Unit,
+    onApplySearch: suspend (String) -> Unit,
     onSearchExpanded: () -> Unit,
     onSearchHidden: () -> Unit,
     refreshState: PullToRefreshState? = null,
@@ -232,7 +232,9 @@ fun SearchBarScreen(
                 mSearchDatabase.insert(search)
             }
         }
-        onApplySearch(query)
+        scope.launchIO {
+            onApplySearch(query)
+        }
     }
 
     fun deleteKeyword(keyword: String) {

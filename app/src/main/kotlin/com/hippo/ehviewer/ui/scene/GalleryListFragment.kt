@@ -1,6 +1,8 @@
 package com.hippo.ehviewer.ui.scene
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -101,6 +103,7 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_NORMAL
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_SUBSCRIPTION
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TAG
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TOPLIST
+import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_UPLOADER
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_WHATS_HOT
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
@@ -108,6 +111,7 @@ import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.icons.filled.GoTo
+import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.WebViewActivity
 import com.hippo.ehviewer.ui.doGalleryInfoAction
@@ -125,6 +129,7 @@ import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
@@ -141,6 +146,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
@@ -276,20 +282,78 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
 
     var expanded by remember { mutableStateOf(false) }
     var hidden by remember { mutableStateOf(false) }
+
+    var isNormalMode by rememberSaveable { mutableStateOf(true) }
+    var isAdvancedMode by rememberSaveable { mutableStateOf(false) }
+    var mCategory by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
+    var mSearchMode by rememberSaveable { mutableIntStateOf(1) }
+    var advancedState by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
+    var uss by rememberSaveable { mutableStateOf(false) }
+    var osc by rememberSaveable { mutableStateOf(false) }
+    var path by rememberSaveable { mutableStateOf("") }
+
+    val searchErr1 = stringResource(R.string.search_sp_err1)
+    val searchErr2 = stringResource(R.string.search_sp_err2)
+    val selectImageFirst = stringResource(R.string.select_image_first)
     SearchBarScreen(
         title = title,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
         showSearchFab = showSearchLayout,
-        onApplySearch = {
+        onApplySearch = { query ->
             val builder = ListUrlBuilder()
             val oldMode = urlBuilder.mode
-            // If it's MODE_SUBSCRIPTION, keep it
-            val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
-            builder.mode = newMode
-            builder.keyword = it
+            if (showSearchLayout) {
+                // If it's MODE_SUBSCRIPTION, keep it
+                val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
+                builder.mode = newMode
+                builder.keyword = query
+            } else {
+                if (isNormalMode) {
+                    when (mSearchMode) {
+                        1 -> builder.mode = MODE_NORMAL
+                        2 -> builder.mode = MODE_SUBSCRIPTION
+                        3 -> builder.mode = MODE_UPLOADER
+                        4 -> builder.mode = MODE_TAG
+                    }
+                    builder.keyword = query
+                    builder.category = mCategory
+                    if (isAdvancedMode) {
+                        builder.advanceSearch = advancedState.advanceSearch
+                        builder.minRating = advancedState.minRating
+                        val pageFrom = advancedState.fromPage
+                        val pageTo = advancedState.toPage
+                        if (pageTo != -1 && pageTo < 10) {
+                            activity.showTip(searchErr1, BaseScene.LENGTH_LONG)
+                            return@SearchBarScreen
+                        } else if (pageFrom != -1 && pageTo != -1 && pageTo - pageFrom < 20) {
+                            activity.showTip(searchErr2, BaseScene.LENGTH_LONG)
+                            return@SearchBarScreen
+                        }
+                        builder.pageFrom = pageFrom
+                        builder.pageTo = pageTo
+                    }
+                } else {
+                    builder.mode = MODE_IMAGE_SEARCH
+                    if (path.isBlank()) {
+                        activity.showTip(selectImageFirst, BaseScene.LENGTH_LONG)
+                        return@SearchBarScreen
+                    }
+                    val uri = Uri.parse(path)
+                    val temp = AppConfig.createTempFile() ?: return@SearchBarScreen
+                    val bitmap = context.decodeBitmap(uri) ?: return@SearchBarScreen
+                    temp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+                    builder.imagePath = temp.path
+                    builder.isUseSimilarityScan = uss
+                    builder.isOnlySearchCovers = osc
+                }
+            }
             when (oldMode) {
-                MODE_TOPLIST, MODE_WHATS_HOT -> navigator.navAnimated(R.id.galleryListScene, builder.toStartArgs())
+                MODE_TOPLIST, MODE_WHATS_HOT -> {
+                    // Wait for search view to hide
+                    delay(300)
+                    withUIContext { navigator.navAnimated(R.id.galleryListScene, builder.toStartArgs()) }
+                }
                 else -> urlBuilder = builder
             }
             showSearchLayout = false
@@ -319,14 +383,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             top = paddingValues.calculateTopPadding() + 8.dp,
             bottom = paddingValues.calculateBottomPadding(),
         )
-        var isNormalMode by rememberSaveable { mutableStateOf(true) } // else ImageSearch mode
-        var isAdvancedMode by rememberSaveable { mutableStateOf(false) }
-        var mCategory by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
-        var mSearchMode by rememberSaveable { mutableIntStateOf(1) }
-        var advancedState by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
-        var uss by rememberSaveable { mutableStateOf(false) }
-        var osc by rememberSaveable { mutableStateOf(false) }
-        var path by rememberSaveable { mutableStateOf("") }
 
         val margin = dimensionResource(R.dimen.gallery_search_bar_margin_v)
         Column(
