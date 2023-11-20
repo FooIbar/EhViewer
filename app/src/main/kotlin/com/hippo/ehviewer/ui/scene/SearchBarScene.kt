@@ -275,7 +275,8 @@ fun SearchBarScreen(
         )
         PullToRefreshContainer(
             state = refreshState,
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = 96.dp) then scrollAwayModifier,
+            modifier = Modifier.align(Alignment.TopCenter).safeDrawingPadding()
+                .padding(top = 48.dp) then scrollAwayModifier,
         )
         SearchBar(
             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier,
