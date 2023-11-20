@@ -17,11 +17,9 @@ package com.hippo.ehviewer.util
 
 import android.view.animation.Interpolator
 import androidx.interpolator.view.animation.FastOutLinearInInterpolator
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.interpolator.view.animation.LinearOutSlowInInterpolator
 
 object AnimationUtils {
     val FAST_SLOW_INTERPOLATOR: Interpolator = LinearOutSlowInInterpolator()
     val SLOW_FAST_INTERPOLATOR: Interpolator = FastOutLinearInInterpolator()
-    val SLOW_FAST_SLOW_INTERPOLATOR: Interpolator = FastOutSlowInInterpolator()
 }
