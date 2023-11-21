@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
@@ -60,6 +62,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -285,23 +288,27 @@ fun FavouritesScreen(navigator: NavController) {
             }
         },
     ) {
+        val layoutDirection = LocalLayoutDirection.current
+        val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
+        val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
         val realPadding = PaddingValues(
-            top = it.calculateTopPadding() + 8.dp,
-            bottom = it.calculateBottomPadding(),
+            top = it.calculateTopPadding() + marginV,
+            bottom = it.calculateBottomPadding() + marginV,
+            start = it.calculateStartPadding(layoutDirection) + marginH,
+            end = it.calculateEndPadding(layoutDirection) + marginH,
         )
         val listMode by remember {
             Settings.listModeBackField.valueFlow()
         }.collectAsState(Settings.listMode)
-        val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
             when (val state = data.loadState.refresh) {
-                is LoadState.Loading -> if (data.itemCount == 0) CircularProgressIndicator()
+                is LoadState.Loading -> if (data.itemCount == 0) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
                 is LoadState.Error -> {
                     Column(
-                        modifier = Modifier.widthIn(max = 228.dp).clip(ShapeDefaults.Small).clickable { data.retry() },
+                        modifier = Modifier.align(Alignment.Center).widthIn(max = 228.dp)
+                            .clip(ShapeDefaults.Small).clickable { data.retry() },
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Icon(
@@ -325,7 +332,7 @@ fun FavouritesScreen(navigator: NavController) {
                 val height = (3 * Settings.listThumbSize * 3).pxToDp.dp
                 val showPages = Settings.showGalleryPages
                 FastScrollLazyColumn(
-                    modifier = Modifier.padding(horizontal = marginH) then combinedModifier,
+                    modifier = combinedModifier,
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
                 ) {
@@ -370,7 +377,7 @@ fun FavouritesScreen(navigator: NavController) {
                 val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Adaptive(Settings.thumbSizeDp.dp),
-                    modifier = Modifier.padding(horizontal = marginH) then combinedModifier,
+                    modifier = combinedModifier,
                     verticalItemSpacing = gridInterval,
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
                     contentPadding = realPadding,

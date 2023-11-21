@@ -294,71 +294,75 @@ fun SearchBarScreen(
                 containerColor = background,
             )
         }
-        SearchBar(
-            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier,
-            state = searchFieldState,
-            onSearch = {
-                hideSearchView()
-                onApplySearch()
-            },
-            active = active,
-            onActiveChange = {
-                if (it) {
-                    onSearchViewExpanded()
-                } else {
-                    onSearchViewHidden()
-                }
-                active = it
-            },
-            title = title?.let { { Text(it) } },
-            placeholder = searchFieldHint?.let { { Text(it) } },
-            leadingIcon = {
-                if (active) {
-                    IconButton(onClick = { hideSearchView() }) {
-                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
+        // Workaround for BTF2 cursor not showing
+        // https://issuetracker.google.com/issues/307323842
+        CompositionLocalProvider(LocalWindowInfo provides FocusedWindowInfo) {
+            SearchBar(
+                modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier,
+                state = searchFieldState,
+                onSearch = {
+                    hideSearchView()
+                    onApplySearch()
+                },
+                active = active,
+                onActiveChange = {
+                    if (it) {
+                        onSearchViewExpanded()
+                    } else {
+                        onSearchViewHidden()
                     }
-                } else {
-                    IconButton(onClick = { activity.openDrawer() }) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
-                    }
-                }
-            },
-            trailingIcon = {
-                if (active) {
-                    if (searchFieldState.text.isNotEmpty()) {
-                        IconButton(onClick = { searchFieldState.clearText() }) {
-                            Icon(Icons.Default.Close, contentDescription = null)
+                    active = it
+                },
+                title = title?.let { { Text(it) } },
+                placeholder = searchFieldHint?.let { { Text(it) } },
+                leadingIcon = {
+                    if (active) {
+                        IconButton(onClick = { hideSearchView() }) {
+                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
+                        }
+                    } else {
+                        IconButton(onClick = { activity.openDrawer() }) {
+                            Icon(Icons.Default.Menu, contentDescription = null)
                         }
                     }
-                } else {
-                    Row {
-                        trailingIcon()
+                },
+                trailingIcon = {
+                    if (active) {
+                        if (searchFieldState.text.isNotEmpty()) {
+                            IconButton(onClick = { searchFieldState.clearText() }) {
+                                Icon(Icons.Default.Close, contentDescription = null)
+                            }
+                        }
+                    } else {
+                        Row {
+                            trailingIcon()
+                        }
                     }
-                }
-            },
-        ) {
-            LazyColumn(contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues()) {
-                items(mSuggestionList) {
-                    ListItem(
-                        headlineContent = { Text(text = it.keyword) },
-                        supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
-                        leadingContent = it.canOpenDirectly.ifTrueThen {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Default.MenuBook,
-                                contentDescription = null,
-                            )
-                        },
-                        trailingContent = it.canDelete.ifTrueThen {
-                            IconButton(onClick = { deleteKeyword(it.keyword) }) {
+                },
+            ) {
+                LazyColumn(contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues()) {
+                    items(mSuggestionList) {
+                        ListItem(
+                            headlineContent = { Text(text = it.keyword) },
+                            supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
+                            leadingContent = it.canOpenDirectly.ifTrueThen {
                                 Icon(
-                                    imageVector = Icons.Default.Close,
+                                    imageVector = Icons.AutoMirrored.Default.MenuBook,
                                     contentDescription = null,
                                 )
-                            }
-                        },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        modifier = Modifier.clickable { it.onClick() },
-                    )
+                            },
+                            trailingContent = it.canDelete.ifTrueThen {
+                                IconButton(onClick = { deleteKeyword(it.keyword) }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = null,
+                                    )
+                                }
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            modifier = Modifier.clickable { it.onClick() },
+                        )
+                    }
                 }
             }
         }
@@ -394,52 +398,48 @@ abstract class SearchBarScene : BaseScene() {
             val compositionContext = rememberCompositionContext()
             val density = LocalDensity.current
             val margin = with(density) { 8.dp.roundToPx() }
-            // Workaround for BTF2 cursor not showing
-            // https://issuetracker.google.com/issues/307323842
-            CompositionLocalProvider(LocalWindowInfo provides FocusedWindowInfo) {
-                SearchBarScreen(
-                    title = searchBarTitle,
-                    searchFieldState = searchFieldState,
-                    searchFieldHint = searchFieldHint,
-                    showSearchFab = showSearchFab,
-                    onApplySearch = onApplySearch,
-                    onSearchExpanded = ::onSearchViewExpanded,
-                    onSearchHidden = ::onSearchViewHidden,
-                    suggestionProvider = mSuggestionProvider,
-                    searchBarOffsetY = ofs,
-                    trailingIcon = {
-                        TrailingIcon()
-                    },
-                ) { contentPadding ->
-                    val topPadding = with(density) { contentPadding.calculateTopPadding().roundToPx() }
-                    val bottomPadding = with(density) { contentPadding.calculateBottomPadding().roundToPx() }
-                    AndroidViewBinding(
-                        modifier = Modifier.fillMaxSize(),
-                        factory = { inflater, parent, _ ->
-                            onCreateViewWithToolbar(inflater, parent, savedInstanceState).also {
-                                recyclerView.addOnScrollListener(onScrollListener)
-                                createDrawerView(savedInstanceState)?.apply {
-                                    if (this is ComposeView) {
-                                        val owner = viewLifecycleOwner
-                                        setViewTreeLifecycleOwner(owner)
-                                        setViewTreeViewModelStoreOwner(owner as ViewModelStoreOwner)
-                                        setViewTreeSavedStateRegistryOwner(owner as SavedStateRegistryOwner)
-                                        setParentCompositionContext(compositionContext)
-                                    }
-                                    sideSheetDialog = SideSheetDialog(parent.context).also {
-                                        it.setContentView(this)
-                                    }
+            SearchBarScreen(
+                title = searchBarTitle,
+                searchFieldState = searchFieldState,
+                searchFieldHint = searchFieldHint,
+                showSearchFab = showSearchFab,
+                onApplySearch = onApplySearch,
+                onSearchExpanded = ::onSearchViewExpanded,
+                onSearchHidden = ::onSearchViewHidden,
+                suggestionProvider = mSuggestionProvider,
+                searchBarOffsetY = ofs,
+                trailingIcon = {
+                    TrailingIcon()
+                },
+            ) { contentPadding ->
+                val topPadding = with(density) { contentPadding.calculateTopPadding().roundToPx() }
+                val bottomPadding = with(density) { contentPadding.calculateBottomPadding().roundToPx() }
+                AndroidViewBinding(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { inflater, parent, _ ->
+                        onCreateViewWithToolbar(inflater, parent, savedInstanceState).also {
+                            recyclerView.addOnScrollListener(onScrollListener)
+                            createDrawerView(savedInstanceState)?.apply {
+                                if (this is ComposeView) {
+                                    val owner = viewLifecycleOwner
+                                    setViewTreeLifecycleOwner(owner)
+                                    setViewTreeViewModelStoreOwner(owner as ViewModelStoreOwner)
+                                    setViewTreeSavedStateRegistryOwner(owner as SavedStateRegistryOwner)
+                                    setParentCompositionContext(compositionContext)
+                                }
+                                sideSheetDialog = SideSheetDialog(parent.context).also {
+                                    it.setContentView(this)
                                 }
                             }
-                        },
-                        onRelease = {
-                            onRelease()
-                        },
-                    ) {
-                        fabLayout.updatePadding(bottom = bottomPadding)
-                        fastScroller.updatePadding(top = topPadding + margin, bottom = bottomPadding)
-                        recyclerView.updatePadding(top = topPadding + margin, bottom = bottomPadding)
-                    }
+                        }
+                    },
+                    onRelease = {
+                        onRelease()
+                    },
+                ) {
+                    fabLayout.updatePadding(bottom = bottomPadding)
+                    fastScroller.updatePadding(top = topPadding + margin, bottom = bottomPadding)
+                    recyclerView.updatePadding(top = topPadding + margin, bottom = bottomPadding)
                 }
             }
         }
