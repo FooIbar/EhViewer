@@ -9,11 +9,15 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.DraggableItem
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.dragContainer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,25 +27,38 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.rememberDragDropState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.foundation.text2.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Reorder
+import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DismissDirection
+import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.rememberDismissState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -51,6 +68,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -68,6 +86,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -92,6 +111,7 @@ import com.google.android.material.datepicker.CompositeDateValidator
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -110,6 +130,7 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_WHATS_HOT
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
+import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.icons.filled.GoTo
@@ -129,6 +150,7 @@ import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.AppConfig
@@ -137,6 +159,7 @@ import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.pickVisualMedia
 import com.ramcosta.composedestinations.annotation.Destination
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.pxToDp
@@ -249,6 +272,126 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             }
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
+
+    val quickSearchList = remember { mutableStateListOf<QuickSearch>() }
+    val toplists = (stringArrayResource(id = R.array.toplist_entries) zip stringArrayResource(id = R.array.toplist_values)).toMap()
+
+    LaunchedEffect(Unit) {
+        val list = withIOContext { EhDB.getAllQuickSearch() }
+        quickSearchList.addAll(list)
+    }
+
+    with(activity) {
+        if (isTopList) {
+            ProvideSideSheetContent { sheetState ->
+                TopAppBar(
+                    title = { Text(text = stringResource(id = R.string.toplist)) },
+                    windowInsets = WindowInsets(0),
+                )
+                toplists.forEach { (name, keyword) ->
+                    Text(
+                        text = name,
+                        modifier = Modifier.clickable {
+                            Settings.recentToplist = keyword
+                            urlBuilder = ListUrlBuilder(MODE_TOPLIST, mKeyword = keyword)
+                            showSearchLayout = false
+                            coroutineScope.launch { sheetState.close() }
+                        }.fillMaxWidth().minimumInteractiveComponentSize().padding(horizontal = 16.dp),
+                    )
+                }
+            }
+        } else {
+            ProvideSideSheetContent { sheetState ->
+                TopAppBar(
+                    title = { Text(text = stringResource(id = R.string.quick_search)) },
+                    actions = {
+                        IconButton(onClick = {
+                            coroutineScope.launch {
+                                dialogState.awaitPermissionOrCancel(
+                                    showCancelButton = false,
+                                    title = R.string.quick_search,
+                                ) {
+                                    Text(text = stringResource(id = R.string.add_quick_search_tip))
+                                }
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.Help,
+                                contentDescription = stringResource(id = R.string.readme),
+                            )
+                        }
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(id = R.string.add),
+                            )
+                        }
+                    },
+                    windowInsets = WindowInsets(0),
+                )
+                val listState = rememberLazyListState()
+                val dragDropState = rememberDragDropState(listState) { fromIndex, toIndex ->
+                    quickSearchList.apply {
+                        add(toIndex, removeAt(fromIndex))
+                    }
+                    coroutineScope.launchIO {
+                        val range = if (fromIndex < toIndex) fromIndex..toIndex else toIndex..fromIndex
+                        val list = quickSearchList.slice(range)
+                        list.zip(range).forEach { it.first.position = it.second }
+                        EhDB.updateQuickSearch(list)
+                    }
+                }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().dragContainer(dragDropState),
+                    state = listState,
+                ) {
+                    itemsIndexed(quickSearchList) { index, item ->
+                        val dismissState = rememberDismissState(
+                            confirmValueChange = {
+                                if (it == DismissValue.DismissedToStart) {
+                                    coroutineScope.launchIO {
+                                        EhDB.deleteQuickSearch(item)
+                                    }
+                                }
+                                true
+                            },
+                        )
+                        LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
+                            SwipeToDismissBox(
+                                state = dismissState,
+                                backgroundContent = {},
+                                directions = setOf(DismissDirection.EndToStart),
+                            ) {
+                                DraggableItem(dragDropState = dragDropState, index = index) {
+                                    Row(
+                                        modifier = Modifier.clickable {
+                                            if (urlBuilder.mode == MODE_WHATS_HOT) {
+                                                navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder(item).toStartArgs())
+                                            } else {
+                                                urlBuilder = ListUrlBuilder(item)
+                                            }
+                                            showSearchLayout = false
+                                            coroutineScope.launch { sheetState.close() }
+                                        }.fillMaxWidth().minimumInteractiveComponentSize().padding(horizontal = 16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Text(
+                                            text = item.name,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Default.Reorder,
+                                            contentDescription = null,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     val refreshState = rememberPullToRefreshState {
         data.loadState.refresh is LoadState.NotLoading
@@ -393,6 +536,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         },
         searchBarOffsetY = searchBarOffsetY,
         trailingIcon = {
+            IconButton(onClick = { activity.openSideSheet() }) {
+                Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
+            }
             IconButton(onClick = { showSearchLayout = !showSearchLayout }) {
                 Icon(
                     imageVector = Icons.Default.Add,

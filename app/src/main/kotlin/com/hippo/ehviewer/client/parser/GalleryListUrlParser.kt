@@ -42,9 +42,7 @@ object GalleryListUrlParser {
         }
         val path = url.path ?: return null
         return if (PATH_NORMAL == path || path.isEmpty()) {
-            val builder = ListUrlBuilder()
-            builder.setQuery(url.query)
-            builder
+            ListUrlBuilder(url.query)
         } else if (path.startsWith(PATH_UPLOADER)) {
             parseUploader(path)
         } else if (path.startsWith(PATH_TAG)) {
@@ -57,10 +55,7 @@ object GalleryListUrlParser {
             } catch (e: NumberFormatException) {
                 return null
             }
-            val builder = ListUrlBuilder()
-            builder.setQuery(url.query)
-            builder.category = category
-            builder
+            ListUrlBuilder(url.query).also { it.category = category }
         } else {
             null
         }
