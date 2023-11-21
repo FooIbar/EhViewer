@@ -351,7 +351,7 @@ class DownloadsScene : SearchBarScene() {
             fastScroller.setHandlerDrawable(handlerDrawable)
             with(fabLayout) {
                 autoCancel = false
-                hide()
+                hidePrimaryFab()
                 addOnExpandStateListener { if (!it && tracker.isInCustomChoice) tracker.clearSelection() }
                 secondaryFab = listOf(
                     Icons.Default.DoneAll to {

@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -72,15 +73,18 @@ fun FabLayout(
         contentAlignment = Alignment.BottomEnd,
     ) {
         Box(contentAlignment = Alignment.Center) {
-            val animatedProgress by animateFloatMergePredictiveBackAsState(expanded) { onExpandChanged(false) }
+            val animatedProgress by animateFloatMergePredictiveBackAsState(
+                enable = expanded,
+                animationSpec = tween(FAB_ANIMATE_TIME),
+            ) { onExpandChanged(false) }
             FloatingActionButton(
                 onClick = { onExpandChanged(!expanded) },
                 modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),
             ) {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    imageVector = Icons.Default.Close,
                     contentDescription = null,
-                    modifier = Modifier.rotate(lerp(135f, 0f, animatedProgress)),
+                    modifier = Modifier.rotate(lerp(0f, -135f, animatedProgress)),
                 )
             }
             secondaryFab.run {
@@ -100,7 +104,7 @@ fun FabLayout(
                                 val distance = lerp(150 * (size - index) + 50, 0, animatedProgress)
                                 placeable.placeRelative(0, -distance, -(size - index).toFloat())
                             }
-                        }.rotate(lerp(90f, 0f, appearState)).scale(appearState),
+                        }.alpha(1 - animatedProgress),
                     ) {
                         Icon(imageVector = imageVector, contentDescription = null)
                     }
