@@ -34,7 +34,7 @@ object AppUpdater {
                 val branch = ghRequest(API_URL).execute {
                     JSONObject(body.string()).getString("default_branch")
                 }
-                val workflowRunsUrl = "$API_URL/actions/workflows/ci.yml/runs?branch=$branch&status=success&per_page=1"
+                val workflowRunsUrl = "$API_URL/actions/workflows/ci.yml/runs?branch=$branch&event=push&status=success&per_page=1"
                 val workflowRun = ghRequest(workflowRunsUrl).executeAndParseAs<GithubWorkflowRuns>().workflowRuns[0]
                 val shortSha = workflowRun.headSha.take(7)
                 if (shortSha != curSha) {
