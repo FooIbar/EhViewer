@@ -274,7 +274,7 @@ fun SearchBarScreen(
             floatingActionButton = {
                 val hiddenState by animateFloatAsState(
                     targetValue = if (showSearchFab) 1f else 0f,
-                    animationSpec = tween(FAB_ANIMATE_TIME),
+                    animationSpec = tween(FAB_ANIMATE_TIME, if (showSearchFab) FAB_ANIMATE_TIME else 0),
                     label = "hiddenState",
                 )
                 FloatingActionButton(

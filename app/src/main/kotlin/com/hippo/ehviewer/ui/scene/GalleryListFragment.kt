@@ -9,6 +9,7 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.DraggableItem
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.dragContainer
@@ -147,6 +148,7 @@ import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.WebViewActivity
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
+import com.hippo.ehviewer.ui.legacy.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.AdvancedSearchOption
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
@@ -216,7 +218,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         }
     }
 
-    val animatedSearchLayout by animateFloatMergePredictiveBackAsState(showSearchLayout) { showSearchLayout = false }
+    val animatedSearchLayout by animateFloatMergePredictiveBackAsState(
+        enable = showSearchLayout,
+        animationSpec = tween(FAB_ANIMATE_TIME * 2),
+    ) { showSearchLayout = false }
     val context = LocalContext.current
     val activity = remember { context.findActivity<MainActivity>() }
     val windowSizeClass = calculateWindowSizeClass(activity)
