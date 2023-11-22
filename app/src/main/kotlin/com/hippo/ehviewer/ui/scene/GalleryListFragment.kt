@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -88,6 +90,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -630,9 +633,14 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             }
         },
     ) { paddingValues ->
+        val layoutDirection = LocalLayoutDirection.current
+        val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
+        val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
         val realPadding = PaddingValues(
-            top = paddingValues.calculateTopPadding() + 8.dp,
-            bottom = paddingValues.calculateBottomPadding(),
+            top = paddingValues.calculateTopPadding() + marginV,
+            bottom = paddingValues.calculateBottomPadding() + marginV,
+            start = paddingValues.calculateStartPadding(layoutDirection) + marginH,
+            end = paddingValues.calculateEndPadding(layoutDirection) + marginH,
         )
 
         val margin = dimensionResource(R.dimen.gallery_search_bar_margin_v)
@@ -728,13 +736,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             }
         }
 
-        val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
-        Box(
-            modifier = Modifier.fillMaxSize().scale(animatedSearchLayout).alpha(animatedSearchLayout),
-            contentAlignment = Alignment.Center,
-        ) {
+        Box(modifier = Modifier.fillMaxSize().scale(animatedSearchLayout).alpha(animatedSearchLayout)) {
             when (val loadState = data.loadState.refresh) {
-                is LoadState.Loading -> if (data.itemCount == 0) CircularProgressIndicator()
+                is LoadState.Loading -> if (data.itemCount == 0) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
                 is LoadState.Error -> {
                     LaunchedEffect(loadState) {
                         if (loadState.error.cause is CloudflareBypassException) {
@@ -745,7 +751,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                         }
                     }
                     Column(
-                        modifier = Modifier.widthIn(max = 228.dp).clip(ShapeDefaults.Small).clickable { data.retry() },
+                        modifier = Modifier.align(Alignment.Center).widthIn(max = 228.dp)
+                            .clip(ShapeDefaults.Small).clickable { data.retry() },
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Icon(
@@ -769,7 +776,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 val height = (3 * Settings.listThumbSize * 3).pxToDp.dp
                 val showPages = Settings.showGalleryPages
                 FastScrollLazyColumn(
-                    modifier = Modifier.padding(horizontal = marginH) then combinedModifier,
+                    modifier = combinedModifier,
                     state = listState,
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
@@ -805,7 +812,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Adaptive(Settings.thumbSizeDp.dp),
-                    modifier = Modifier.padding(horizontal = marginH) then combinedModifier,
+                    modifier = combinedModifier,
                     state = gridState,
                     verticalItemSpacing = gridInterval,
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
