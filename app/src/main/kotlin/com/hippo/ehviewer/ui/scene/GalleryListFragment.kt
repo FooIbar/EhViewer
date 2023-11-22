@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberDragDropState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
@@ -52,6 +53,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -91,6 +94,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
 import androidx.core.os.bundleOf
 import androidx.lifecycle.viewModelScope
@@ -147,11 +152,13 @@ import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.NormalSearch
 import com.hippo.ehviewer.ui.main.SearchAdvanced
 import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
+import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
+import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
@@ -212,13 +219,14 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
     val windowSizeClass = calculateWindowSizeClass(activity)
     val dialogState = LocalDialogState.current
     val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val listState = rememberLazyListState()
+    val gridState = rememberLazyStaggeredGridState()
     val isTopList = remember(urlBuilder) { urlBuilder.mode == MODE_TOPLIST }
     val ehHint = stringResource(R.string.gallery_list_search_bar_hint_e_hentai)
     val exHint = stringResource(R.string.gallery_list_search_bar_hint_exhentai)
     val searchBarHint = remember { if (EhUtils.isExHentai) exHint else ehHint }
-    val search = stringResource(R.string.search)
     val suitableTitle = getSuitableTitleForUrlBuilder(urlBuilder)
-    val title = suitableTitle ?: search
     val data = rememberInVM(urlBuilder) {
         Pager(PagingConfig(25)) {
             object : PagingSource<String, BaseGalleryInfo>() {
@@ -272,9 +280,21 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             }
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
+    val listMode by remember {
+        Settings.listModeBackField.valueFlow()
+    }.collectAsState(Settings.listMode)
 
     val quickSearchList = remember { mutableStateListOf<QuickSearch>() }
     val toplists = (stringArrayResource(id = R.array.toplist_entries) zip stringArrayResource(id = R.array.toplist_values)).toMap()
+    val quickSearchName = getSuitableTitleForUrlBuilder(urlBuilder, false)
+    var saveProgress by Settings::qSSaveProgress.observed
+
+    fun launchSnackbar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
+    fun getFirstVisibleItemIndex() = if (listMode == 0) {
+        listState.firstVisibleItemIndex
+    } else {
+        gridState.firstVisibleItemIndex
+    }
 
     LaunchedEffect(Unit) {
         val list = withIOContext { EhDB.getAllQuickSearch() }
@@ -320,7 +340,57 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                                 contentDescription = stringResource(id = R.string.readme),
                             )
                         }
-                        IconButton(onClick = { /*TODO*/ }) {
+                        IconButton(onClick = {
+                            if (data.itemCount == 0) return@IconButton
+
+                            if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
+                                launchSnackbar(context.getString(R.string.image_search_not_quick_search))
+                                return@IconButton
+                            }
+
+                            val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
+                            val next = firstItem.gid + 1
+                            quickSearchList.fastForEach { q ->
+                                if (urlBuilder.equalsQuickSearch(q)) {
+                                    val nextStr = q.name.substringAfterLast('@', "")
+                                    if (nextStr.toLongOrNull() == next) {
+                                        launchSnackbar(context.getString(R.string.duplicate_quick_search, q.name))
+                                        return@IconButton
+                                    }
+                                }
+                            }
+
+                            coroutineScope.launch {
+                                dialogState.awaitInputTextWithCheckBox(
+                                    initial = quickSearchName ?: urlBuilder.keyword.orEmpty(),
+                                    title = R.string.add_quick_search_dialog_title,
+                                    hint = R.string.quick_search,
+                                    checked = saveProgress,
+                                    checkBoxText = R.string.save_progress,
+                                ) { input, checked ->
+                                    var text = input.trim()
+                                    if (text.isEmpty()) {
+                                        return@awaitInputTextWithCheckBox context.getString(R.string.name_is_empty)
+                                    }
+
+                                    if (checked) {
+                                        text += "@$next"
+                                    }
+                                    if (quickSearchList.fastAny { it.name == text }) {
+                                        return@awaitInputTextWithCheckBox context.getString(R.string.duplicate_name)
+                                    }
+
+                                    val quickSearch = urlBuilder.toQuickSearch(text)
+                                    quickSearch.position = quickSearchList.size
+                                    quickSearchList.add(quickSearch)
+                                    launchIO {
+                                        EhDB.insertQuickSearch(quickSearch)
+                                    }
+                                    saveProgress = checked
+                                    return@awaitInputTextWithCheckBox null
+                                }
+                            }
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = stringResource(id = R.string.add),
@@ -329,63 +399,74 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                     },
                     windowInsets = WindowInsets(0),
                 )
-                val listState = rememberLazyListState()
-                val dragDropState = rememberDragDropState(listState) { fromIndex, toIndex ->
-                    quickSearchList.apply {
-                        add(toIndex, removeAt(fromIndex))
+                Box(modifier = Modifier.fillMaxSize()) {
+                    val quickSearchListState = rememberLazyListState()
+                    val dragDropState = rememberDragDropState(quickSearchListState) { fromIndex, toIndex ->
+                        quickSearchList.apply {
+                            add(toIndex, removeAt(fromIndex))
+                        }
+                        coroutineScope.launchIO {
+                            val range = if (fromIndex < toIndex) fromIndex..toIndex else toIndex..fromIndex
+                            val list = quickSearchList.slice(range)
+                            list.zip(range).forEach { it.first.position = it.second }
+                            EhDB.updateQuickSearch(list)
+                        }
                     }
-                    coroutineScope.launchIO {
-                        val range = if (fromIndex < toIndex) fromIndex..toIndex else toIndex..fromIndex
-                        val list = quickSearchList.slice(range)
-                        list.zip(range).forEach { it.first.position = it.second }
-                        EhDB.updateQuickSearch(list)
-                    }
-                }
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().dragContainer(dragDropState),
-                    state = listState,
-                ) {
-                    itemsIndexed(quickSearchList) { index, item ->
-                        val dismissState = rememberDismissState(
-                            confirmValueChange = {
-                                if (it == DismissValue.DismissedToStart) {
-                                    coroutineScope.launchIO {
-                                        EhDB.deleteQuickSearch(item)
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().dragContainer(dragDropState),
+                        state = quickSearchListState,
+                    ) {
+                        itemsIndexed(quickSearchList) { index, item ->
+                            val dismissState = rememberDismissState(
+                                confirmValueChange = {
+                                    if (it == DismissValue.DismissedToStart) {
+                                        quickSearchList.removeAt(index)
+                                        coroutineScope.launchIO {
+                                            EhDB.deleteQuickSearch(item)
+                                        }
                                     }
-                                }
-                                true
-                            },
-                        )
-                        LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
-                            SwipeToDismissBox(
-                                state = dismissState,
-                                backgroundContent = {},
-                                directions = setOf(DismissDirection.EndToStart),
-                            ) {
-                                DraggableItem(dragDropState = dragDropState, index = index) {
-                                    Row(
-                                        modifier = Modifier.clickable {
-                                            if (urlBuilder.mode == MODE_WHATS_HOT) {
-                                                navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder(item).toStartArgs())
-                                            } else {
-                                                urlBuilder = ListUrlBuilder(item)
-                                            }
-                                            showSearchLayout = false
-                                            coroutineScope.launch { sheetState.close() }
-                                        }.fillMaxWidth().minimumInteractiveComponentSize().padding(horizontal = 16.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        Text(
-                                            text = item.name,
-                                            modifier = Modifier.weight(1f),
-                                        )
-                                        Icon(
-                                            imageVector = Icons.Default.Reorder,
-                                            contentDescription = null,
-                                        )
+                                    true
+                                },
+                            )
+                            LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
+                                SwipeToDismissBox(
+                                    state = dismissState,
+                                    backgroundContent = {},
+                                    directions = setOf(DismissDirection.EndToStart),
+                                ) {
+                                    DraggableItem(dragDropState = dragDropState, index = index) {
+                                        Row(
+                                            modifier = Modifier.clickable {
+                                                if (urlBuilder.mode == MODE_WHATS_HOT) {
+                                                    navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder(item).toStartArgs())
+                                                } else {
+                                                    urlBuilder = ListUrlBuilder(item)
+                                                }
+                                                showSearchLayout = false
+                                                coroutineScope.launch { sheetState.close() }
+                                            }.fillMaxWidth().minimumInteractiveComponentSize().padding(horizontal = 16.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Text(
+                                                text = item.name,
+                                                modifier = Modifier.weight(1f),
+                                            )
+                                            Icon(
+                                                imageVector = Icons.Default.Reorder,
+                                                contentDescription = null,
+                                            )
+                                        }
                                     }
                                 }
                             }
+                        }
+                    }
+                    Deferred({ delay(200) }) {
+                        if (quickSearchList.isEmpty()) {
+                            Text(
+                                text = stringResource(id = R.string.quick_search_tip),
+                                modifier = Modifier.align(Alignment.Center),
+                            )
                         }
                     }
                 }
@@ -462,7 +543,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
     val searchErr2 = stringResource(R.string.search_sp_err2)
     val selectImageFirst = stringResource(R.string.select_image_first)
     SearchBarScreen(
-        title = title,
+        title = suitableTitle,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
         showSearchFab = showSearchLayout,
@@ -535,6 +616,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             }
         },
         searchBarOffsetY = searchBarOffsetY,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         trailingIcon = {
             IconButton(onClick = { activity.openSideSheet() }) {
                 Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
@@ -646,9 +728,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             }
         }
 
-        val listMode by remember {
-            Settings.listModeBackField.valueFlow()
-        }.collectAsState(Settings.listMode)
         val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
         Box(
             modifier = Modifier.fillMaxSize().scale(animatedSearchLayout).alpha(animatedSearchLayout),
@@ -691,6 +770,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 val showPages = Settings.showGalleryPages
                 FastScrollLazyColumn(
                     modifier = Modifier.padding(horizontal = marginH) then combinedModifier,
+                    state = listState,
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
                 ) {
@@ -726,6 +806,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Adaptive(Settings.thumbSizeDp.dp),
                     modifier = Modifier.padding(horizontal = marginH) then combinedModifier,
+                    state = gridState,
                     verticalItemSpacing = gridInterval,
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
                     contentPadding = realPadding,
@@ -862,7 +943,7 @@ private const val TOPLIST_PAGES = 200
 
 @Composable
 @Stable
-private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder): String? {
+private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder, appName: Boolean = true): String? {
     val context = LocalContext.current
     val keyword = urlBuilder.keyword
     val category = urlBuilder.category
@@ -888,8 +969,9 @@ private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder): String? {
         }
     } else if (category == EhUtils.NONE && urlBuilder.advanceSearch == -1) {
         val appNameStr = stringResource(R.string.app_name)
+        val homepageStr = stringResource(R.string.homepage)
         when (mode) {
-            MODE_NORMAL -> appNameStr
+            MODE_NORMAL -> if (appName) appNameStr else homepageStr
             MODE_SUBSCRIPTION -> stringResource(R.string.subscription)
             else -> null
         }

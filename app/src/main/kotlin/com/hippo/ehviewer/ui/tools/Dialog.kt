@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.tools
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -157,6 +158,75 @@ class DialogState {
                         isError = error != null,
                         keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
                     )
+                },
+            )
+        }
+    }
+
+    suspend fun awaitInputTextWithCheckBox(
+        initial: String = "",
+        @StringRes title: Int? = null,
+        @StringRes hint: Int? = null,
+        checked: Boolean,
+        @StringRes checkBoxText: Int,
+        isNumber: Boolean = false,
+        invalidator: (suspend (String, Boolean) -> String?)? = null,
+    ): Pair<String, Boolean> {
+        return dialog { cont ->
+            val coroutineScope = rememberCoroutineScope()
+            var state by remember(cont) { mutableStateOf(initial) }
+            var error by remember(cont) { mutableStateOf<String?>(null) }
+            var checkedState by remember { mutableStateOf(checked) }
+            AlertDialog(
+                onDismissRequest = { cont.cancel() },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (invalidator == null) {
+                            cont.resume(state to checkedState)
+                        } else {
+                            coroutineScope.launch {
+                                error = invalidator.invoke(state, checkedState)
+                                error ?: cont.resume(state to checkedState)
+                            }
+                        }
+                    }) {
+                        Text(text = stringResource(id = android.R.string.ok))
+                    }
+                },
+                title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+                text = {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        OutlinedTextField(
+                            value = state,
+                            onValueChange = { state = it },
+                            label = hint.ifNotNullThen {
+                                Text(text = stringResource(id = hint!!))
+                            },
+                            trailingIcon = error.ifNotNullThen {
+                                Icon(
+                                    imageVector = Icons.Filled.Info,
+                                    contentDescription = null,
+                                )
+                            },
+                            supportingText = error.ifNotNullThen {
+                                Text(text = error!!)
+                            },
+                            isError = error != null,
+                            keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
+                        )
+                        Row(
+                            modifier = Modifier.clickable { checkedState = !checkedState }.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(
+                                checked = checkedState,
+                                onCheckedChange = { checkedState = !checkedState },
+                            )
+                            Text(text = stringResource(checkBoxText))
+                        }
+                    }
                 },
             )
         }
