@@ -31,6 +31,7 @@ import kotlinx.coroutines.CancellationException
 fun animateFloatMergePredictiveBackAsState(
     enable: Boolean,
     animationSpec: AnimationSpec<Float> = spring(),
+    finishedListener: ((Float) -> Unit)? = null,
     onBack: () -> Unit,
 ): State<Float> {
     // Natural animator state correspond with principal value
@@ -38,6 +39,7 @@ fun animateFloatMergePredictiveBackAsState(
         targetValue = if (enable) 0f else 1f,
         animationSpec = animationSpec,
         label = "animationProgress",
+        finishedListener = finishedListener,
     )
     // User predictive back animation progress holder && value correspond with UI State
     val ret = remember { mutableFloatStateOf(1F) }

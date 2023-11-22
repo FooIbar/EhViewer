@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
@@ -22,6 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -50,6 +51,10 @@ class FabLayout @JvmOverloads constructor(
     var expanded by mutableStateOf(false)
     private val listeners = mutableListOf<OnExpandStateListener>()
 
+    private var mHidden by mutableStateOf(hidden)
+    private var mExpanded by mutableStateOf(expanded)
+    private var showPrimaryFab by mutableStateOf(true)
+
     fun addOnExpandStateListener(listener: OnExpandStateListener) {
         listeners.add(listener)
     }
@@ -61,6 +66,12 @@ class FabLayout @JvmOverloads constructor(
     fun hide() {
         expanded = false
         hidden = true
+    }
+
+    fun hidePrimaryFab() {
+        mHidden = true
+        showPrimaryFab = false
+        hide()
     }
 
     @Composable
@@ -86,23 +97,31 @@ class FabLayout @JvmOverloads constructor(
             val coroutineScope = rememberCoroutineScope()
             val appearState by animateFloatAsState(
                 targetValue = if (hidden) 0f else 1f,
-                animationSpec = tween(FAB_ANIMATE_TIME),
+                animationSpec = tween(FAB_ANIMATE_TIME, if (mExpanded) FAB_ANIMATE_TIME else 0),
                 label = "hiddenState",
-            )
+            ) { mHidden = hidden }
             Box(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
                 contentAlignment = Alignment.BottomEnd,
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    val animatedProgress by animateFloatMergePredictiveBackAsState(expanded) { expanded = false }
+                    val animatedProgress by animateFloatMergePredictiveBackAsState(
+                        enable = expanded,
+                        animationSpec = tween(FAB_ANIMATE_TIME, if (mHidden) FAB_ANIMATE_TIME else 0),
+                        finishedListener = { mExpanded = expanded },
+                    ) { expanded = false }
                     FloatingActionButton(
                         onClick = { expanded = !expanded },
                         modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
+                            imageVector = Icons.Default.Close,
                             contentDescription = null,
-                            modifier = Modifier.rotate(lerp(135f, 0f, animatedProgress)),
+                            modifier = if (showPrimaryFab) {
+                                Modifier.rotate(lerp(0f, -135f, animatedProgress))
+                            } else {
+                                Modifier
+                            },
                         )
                     }
                     secondaryFab?.run {
@@ -122,7 +141,7 @@ class FabLayout @JvmOverloads constructor(
                                         val distance = lerp(150 * (size - index) + 50, 0, animatedProgress)
                                         placeable.placeRelative(0, -distance, -(size - index).toFloat())
                                     }
-                                }.rotate(lerp(90f, 0f, appearState)).scale(appearState),
+                                }.alpha(1 - animatedProgress),
                             ) {
                                 Icon(imageVector = imageVector, contentDescription = null)
                             }
