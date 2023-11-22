@@ -19,17 +19,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -648,11 +650,16 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             end = paddingValues.calculateEndPadding(layoutDirection) + marginH,
         )
 
-        val margin = dimensionResource(R.dimen.gallery_search_bar_margin_v)
         Column(
-            modifier = Modifier.imePadding().statusBarsPadding().padding(top = 72.dp).verticalScroll(rememberScrollState())
-                .navigationBarsPadding().padding(horizontal = dimensionResource(id = R.dimen.search_layout_margin_h))
-                .padding(horizontal = margin).scale(1 - animatedSearchLayout).alpha(1 - animatedSearchLayout),
+            modifier = Modifier.imePadding().verticalScroll(rememberScrollState())
+                .padding(
+                    top = realPadding.calculateTopPadding(),
+                    start = realPadding.calculateStartPadding(layoutDirection),
+                    end = realPadding.calculateEndPadding(layoutDirection),
+                    bottom = 8.dp,
+                )
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
+                .scale(1 - animatedSearchLayout).alpha(1 - animatedSearchLayout),
         ) {
             AnimatedVisibility(visible = searchNormalMode) {
                 ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
