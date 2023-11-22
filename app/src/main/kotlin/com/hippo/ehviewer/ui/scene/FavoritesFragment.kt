@@ -126,6 +126,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 fun FavouritesScreen(navigator: NavController) {
     // Meta State
     var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
+    var refreshKey by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableStateOf(0) }
 
     // Derived State
@@ -149,12 +150,22 @@ fun FavouritesScreen(navigator: NavController) {
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
     val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
 
+    fun refresh(newUrlBuilder: FavListUrlBuilder) {
+        if (urlBuilder == newUrlBuilder) {
+            refreshKey = !refreshKey
+        } else {
+            urlBuilder = newUrlBuilder
+        }
+    }
+
     fun switchFav(newCat: Int, keyword: String? = null) {
-        urlBuilder = urlBuilder.copy(
-            keyword = keyword,
-            favCat = newCat,
-            jumpTo = null,
-        ).apply { setIndex(null, true) }
+        refresh(
+            urlBuilder.copy(
+                keyword = keyword,
+                favCat = newCat,
+                jumpTo = null,
+            ).apply { setIndex(null, true) },
+        )
         Settings.recentFavCat = urlBuilder.favCat
     }
 
@@ -200,7 +211,7 @@ fun FavouritesScreen(navigator: NavController) {
     }
 
     val searchFieldState = rememberTextFieldState()
-    val data = rememberInVM(urlBuilder) {
+    val data = rememberInVM(urlBuilder, refreshKey) {
         if (urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
             Pager(PagingConfig(20, jumpThreshold = 40)) {
                 if (keyword.isBlank()) {
@@ -453,14 +464,14 @@ fun FavouritesScreen(navigator: NavController) {
                 datePicker.addOnPositiveButtonClickListener { time: Long ->
                     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.US).withZone(ZoneOffset.UTC)
                     val jumpTo = formatter.format(Instant.ofEpochMilli(time))
-                    urlBuilder = urlBuilder.copy(jumpTo = jumpTo)
+                    refresh(urlBuilder.copy(jumpTo = jumpTo))
                 }
             }
             onClick(Icons.Default.Refresh) {
                 switchFav(urlBuilder.favCat)
             }
             onClick(Icons.AutoMirrored.Default.LastPage) {
-                urlBuilder = urlBuilder.copy().apply { setIndex("1-0", false) }
+                refresh(urlBuilder.copy().apply { setIndex("1-0", false) })
             }
         } else {
             onClick(Icons.Default.DoneAll) {
