@@ -14,6 +14,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -68,6 +69,34 @@ fun animateFloatMergePredictiveBackAsState(
             onBack()
         } catch (e: CancellationException) {
             channel.trySend(0f)
+        }
+    }
+    return animatable.asState()
+}
+
+@Composable
+fun animateFloatMergeOneWayPredictiveBackAsState(
+    enable: Boolean,
+    animationSpec: AnimationSpec<Float> = spring(),
+    predictiveBackInterpolator: Easing = EaseOut,
+    onBack: suspend () -> Unit,
+): State<Float> {
+    val animatable = remember { Animatable(0f, Float.VectorConverter) }
+    PredictiveBackHandler(enable) { progress ->
+        try {
+            progress.collect {
+                val transformed = predictiveBackInterpolator.transform(it.progress)
+                animatable.snapTo(transformed)
+            }
+        } catch (e: CancellationException) {
+            withNonCancellableContext {
+                animatable.animateTo(0f, animationSpec)
+            }
+            throw e
+        }
+        withNonCancellableContext {
+            onBack()
+            animatable.snapTo(0f)
         }
     }
     return animatable.asState()

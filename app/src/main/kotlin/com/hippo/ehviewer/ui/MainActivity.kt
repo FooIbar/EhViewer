@@ -26,7 +26,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -300,9 +299,6 @@ class MainActivity : EhActivity() {
                     recomposeScope.invalidate()
                 }
             }
-            BackHandler(drawerState.isOpen) {
-                closeDrawer()
-            }
             LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
                 ModalNavigationDrawer(
                     drawerContent = {
@@ -353,11 +349,6 @@ class MainActivity : EhActivity() {
                     LaunchedEffect(Unit) {
                         openSideSheetFlow.collectLatest {
                             sideDrawerState.open()
-                        }
-                    }
-                    BackHandler(sideDrawerState.isOpen) {
-                        scope.launch {
-                            sideDrawerState.close()
                         }
                     }
                     SideDrawer(
