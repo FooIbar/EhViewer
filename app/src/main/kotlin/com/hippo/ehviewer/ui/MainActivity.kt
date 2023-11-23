@@ -43,6 +43,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
@@ -69,6 +70,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -105,7 +107,7 @@ import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.scene.GalleryDetailScene
-import com.hippo.ehviewer.ui.scene.GalleryListScene.Companion.toStartArgs
+import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
 import com.hippo.ehviewer.ui.scene.ProgressFragment
 import com.hippo.ehviewer.ui.scene.TokenArgs
 import com.hippo.ehviewer.ui.scene.navAnimated
@@ -151,21 +153,13 @@ class MainActivity : EhActivity() {
     private lateinit var navController: NavController
     private val isInitializedFlow = MutableStateFlow(false)
 
-    private var sideSheet by mutableStateOf<(@Composable ColumnScope.(DrawerState2) -> Unit)?>(null)
+    private var sideSheet = mutableStateListOf<@Composable ColumnScope.(DrawerState2) -> Unit>()
 
     @Composable
     fun ProvideSideSheetContent(content: @Composable ColumnScope.(DrawerState2) -> Unit) {
         DisposableEffect(content) {
-            require(sideSheet == null) {
-                "Provide SideSheet content when previous content not released!!!"
-            }
-            sideSheet = content
-            onDispose {
-                require(sideSheet == content) {
-                    "Try to release SideSheetContent not belong to us"
-                }
-                sideSheet = null
-            }
+            sideSheet.add(0, content)
+            onDispose { sideSheet.remove(content) }
         }
     }
 
@@ -354,7 +348,7 @@ class MainActivity : EhActivity() {
                     drawerState = drawerState,
                     gesturesEnabled = !drawerLocked || drawerState.isOpen,
                 ) {
-                    val sheet = sideSheet
+                    val sheet = sideSheet.firstOrNull()
                     val sideDrawerState = rememberDrawerState(DrawerValue.Closed)
                     LaunchedEffect(Unit) {
                         openSideSheetFlow.collectLatest {
@@ -369,10 +363,10 @@ class MainActivity : EhActivity() {
                     SideDrawer(
                         drawerContent = {
                             if (sheet != null) {
+                                val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End)
                                 ModalDrawerSheet(
-                                    modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
+                                    modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp).windowInsetsPadding(insets),
                                     drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
-                                    windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
                                 ) {
                                     sheet(sideDrawerState)
                                 }

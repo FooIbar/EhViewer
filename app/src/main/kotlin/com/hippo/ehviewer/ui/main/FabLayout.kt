@@ -65,7 +65,7 @@ fun FabLayout(
     val coroutineScope = rememberCoroutineScope()
     val appearState by animateFloatAsState(
         targetValue = if (hidden) 0f else 1f,
-        animationSpec = tween(FAB_ANIMATE_TIME),
+        animationSpec = tween(FAB_ANIMATE_TIME, if (hidden) 0 else FAB_ANIMATE_TIME),
         label = "hiddenState",
     )
     Box(

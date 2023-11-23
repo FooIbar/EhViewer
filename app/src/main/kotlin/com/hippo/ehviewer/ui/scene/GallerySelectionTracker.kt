@@ -2,8 +2,6 @@ package com.hippo.ehviewer.ui.scene
 
 import android.os.Bundle
 import android.view.MotionEvent
-import androidx.core.util.component1
-import androidx.core.util.component2
 import androidx.recyclerview.selection.ItemDetailsLookup
 import androidx.recyclerview.selection.ItemKeyProvider
 import androidx.recyclerview.selection.SelectionTracker
@@ -24,15 +22,7 @@ class GallerySelectionTracker<T : GalleryInfo>(
         selectionId,
         recyclerView,
         object : ItemKeyProvider<Long>(SCOPE_MAPPED) {
-            override fun getKey(position: Int) =
-                if (adapter != null) {
-                    val (wrappedAdapter, localPosition) = adapter.getWrappedAdapterAndPosition(position)
-                    (wrappedAdapter as? GalleryAdapter)?.let {
-                        getItems()[localPosition].gid
-                    }
-                } else {
-                    getItems()[position].gid
-                }
+            override fun getKey(position: Int) = getItems()[position].gid
 
             override fun getPosition(key: Long) =
                 if (adapter != null) {
@@ -54,7 +44,6 @@ class GallerySelectionTracker<T : GalleryInfo>(
         },
         StorageStrategy.createLongStorage(),
     ).apply(builder).build()
-    val selectionSize get() = tracker.selection.size()
     var isInCustomChoice = false
         private set
 

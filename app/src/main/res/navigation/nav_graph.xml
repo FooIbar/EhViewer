@@ -5,11 +5,11 @@
 
     <fragment
         android:id="@+id/galleryListScene"
-        android:name="com.hippo.ehviewer.ui.scene.GalleryListScene"
+        android:name="com.hippo.ehviewer.ui.scene.GalleryListFragment"
         android:label="GalleryListScene" />
     <fragment
         android:id="@+id/nav_homepage"
-        android:name="com.hippo.ehviewer.ui.scene.GalleryListScene"
+        android:name="com.hippo.ehviewer.ui.scene.GalleryListFragment"
         android:label="GalleryListScene">
         <argument
             android:name="action"
@@ -18,7 +18,7 @@
     </fragment>
     <fragment
         android:id="@+id/nav_subscription"
-        android:name="com.hippo.ehviewer.ui.scene.GalleryListScene"
+        android:name="com.hippo.ehviewer.ui.scene.GalleryListFragment"
         android:label="GalleryListScene">
         <argument
             android:name="action"
@@ -27,7 +27,7 @@
     </fragment>
     <fragment
         android:id="@+id/nav_whats_hot"
-        android:name="com.hippo.ehviewer.ui.scene.GalleryListScene"
+        android:name="com.hippo.ehviewer.ui.scene.GalleryListFragment"
         android:label="GalleryListScene">
         <argument
             android:name="action"
@@ -36,7 +36,7 @@
     </fragment>
     <fragment
         android:id="@+id/nav_toplist"
-        android:name="com.hippo.ehviewer.ui.scene.GalleryListScene"
+        android:name="com.hippo.ehviewer.ui.scene.GalleryListFragment"
         android:label="GalleryListScene">
         <argument
             android:name="action"

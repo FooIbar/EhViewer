@@ -130,13 +130,14 @@ fun SearchBarScreen(
     searchFieldState: TextFieldState,
     searchFieldHint: String? = null,
     showSearchFab: Boolean = false,
-    onApplySearch: (String) -> Unit,
+    onApplySearch: suspend (String) -> Unit,
     onSearchExpanded: () -> Unit,
     onSearchHidden: () -> Unit,
     refreshState: PullToRefreshState? = null,
     suggestionProvider: SuggestionProvider? = null,
     searchBarOffsetY: Int,
     trailingIcon: @Composable () -> Unit,
+    snackbarHost: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     var mSuggestionList by remember { mutableStateOf(emptyList<Suggestion>()) }
@@ -232,7 +233,9 @@ fun SearchBarScreen(
                 mSearchDatabase.insert(search)
             }
         }
-        onApplySearch(query)
+        scope.launchIO {
+            onApplySearch(query)
+        }
     }
 
     fun deleteKeyword(keyword: String) {
@@ -267,10 +270,11 @@ fun SearchBarScreen(
                         .height(SearchBarDefaults.InputFieldHeight + 16.dp),
                 )
             },
+            snackbarHost = snackbarHost,
             floatingActionButton = {
                 val hiddenState by animateFloatAsState(
                     targetValue = if (showSearchFab) 1f else 0f,
-                    animationSpec = tween(FAB_ANIMATE_TIME),
+                    animationSpec = tween(FAB_ANIMATE_TIME, if (showSearchFab) FAB_ANIMATE_TIME else 0),
                     label = "hiddenState",
                 )
                 FloatingActionButton(

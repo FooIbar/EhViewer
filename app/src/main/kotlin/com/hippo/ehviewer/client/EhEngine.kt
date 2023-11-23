@@ -129,6 +129,7 @@ suspend fun <T> fetchCompat(
     reqBody: RequestBody? = null,
     parser: suspend (ByteBuffer) -> T,
 ): T {
+    Log.d(TAG, url)
     fun commonChecks(body: ByteBuffer) {
         // Check sad panda(without panda)
         if (!body.hasRemaining()) {
