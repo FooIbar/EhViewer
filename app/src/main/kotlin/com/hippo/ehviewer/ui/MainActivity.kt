@@ -69,6 +69,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -151,21 +152,13 @@ class MainActivity : EhActivity() {
     private lateinit var navController: NavController
     private val isInitializedFlow = MutableStateFlow(false)
 
-    private var sideSheet by mutableStateOf<(@Composable ColumnScope.(DrawerState2) -> Unit)?>(null)
+    private var sideSheet = mutableStateListOf<@Composable ColumnScope.(DrawerState2) -> Unit>()
 
     @Composable
     fun ProvideSideSheetContent(content: @Composable ColumnScope.(DrawerState2) -> Unit) {
         DisposableEffect(content) {
-            require(sideSheet == null) {
-                "Provide SideSheet content when previous content not released!!!"
-            }
-            sideSheet = content
-            onDispose {
-                require(sideSheet == content) {
-                    "Try to release SideSheetContent not belong to us"
-                }
-                sideSheet = null
-            }
+            sideSheet.add(0, content)
+            onDispose { sideSheet.remove(content) }
         }
     }
 
@@ -354,7 +347,7 @@ class MainActivity : EhActivity() {
                     drawerState = drawerState,
                     gesturesEnabled = !drawerLocked || drawerState.isOpen,
                 ) {
-                    val sheet = sideSheet
+                    val sheet = sideSheet.firstOrNull()
                     val sideDrawerState = rememberDrawerState(DrawerValue.Closed)
                     LaunchedEffect(Unit) {
                         openSideSheetFlow.collectLatest {
