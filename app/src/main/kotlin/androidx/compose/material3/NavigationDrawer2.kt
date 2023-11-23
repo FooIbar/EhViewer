@@ -54,7 +54,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.hippo.ehviewer.ui.tools.animateFloatMergeOneWayPredictiveBackAsState
-import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -349,7 +348,6 @@ fun ModalNavigationDrawer(
                 val w = it.size.width
                 if (w != 0) {
                     minValue = -it.size.width.toFloat()
-                    logcat { minValue.toString() }
                 }
             }
         }
