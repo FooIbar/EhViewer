@@ -389,6 +389,8 @@ fun FavouritesScreen(navigator: NavController) {
                     }
                 }
             }
+
+            var refreshing by remember { mutableStateOf(false) }
             when (val state = data.loadState.refresh) {
                 is LoadState.Loading -> if (!refreshState.isRefreshing) {
                     Surface {
@@ -399,6 +401,8 @@ fun FavouritesScreen(navigator: NavController) {
                             CircularProgressIndicator()
                         }
                     }
+                } else {
+                    refreshing = true
                 }
                 is LoadState.Error -> {
                     Surface {
@@ -425,9 +429,20 @@ fun FavouritesScreen(navigator: NavController) {
                             }
                         }
                     }
+                    SideEffect {
+                        if (refreshing) {
+                            refreshState.endRefresh()
+                            refreshing = false
+                        }
+                    }
                 }
                 is LoadState.NotLoading -> SideEffect {
-                    refreshState.endRefresh()
+                    // Don't use `refreshState.isRefreshing` here because recomposition may happen
+                    // before loading state changes
+                    if (refreshing) {
+                        refreshState.endRefresh()
+                        refreshing = false
+                    }
                 }
             }
         }
