@@ -274,7 +274,7 @@ fun SearchBarScreen(
                     label = "hiddenState",
                 )
                 FloatingActionButton(
-                    onClick = ::onApplySearch,
+                    onClick = { onApplySearch() },
                     modifier = Modifier.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
                 ) {
                     Icon(imageVector = Icons.Default.Search, contentDescription = null)
