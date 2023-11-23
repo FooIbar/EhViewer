@@ -30,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
@@ -42,6 +43,8 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
+import com.hippo.ehviewer.ui.tools.animateFloatMergeOneWayPredictiveBackAsState
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -306,6 +309,16 @@ fun ModalNavigationDrawer(
             },
             color = scrimColor,
         )
+        val predictiveState by animateFloatMergeOneWayPredictiveBackAsState(drawerState.isOpen) {
+            drawerState.close()
+        }
+        val predictiveModifier = if (drawerState.isOpen) {
+            Modifier.scale(lerp(1f, 0.9f, predictiveState)).offset {
+                IntOffset(lerp(0f, minValue * 0.05f, predictiveState).roundToInt(), 0)
+            }
+        } else {
+            Modifier
+        }
         Box(
             modifier = Modifier.offset {
                 IntOffset(drawerState.requireOffset().roundToInt(), 0)
@@ -314,7 +327,7 @@ fun ModalNavigationDrawer(
                 if (w != 0) {
                     minValue = -it.size.width.toFloat()
                 }
-            },
+            } then predictiveModifier,
         ) {
             drawerContent()
         }
@@ -398,6 +411,16 @@ fun SideDrawer(
             },
             color = scrimColor,
         )
+        val predictiveState by animateFloatMergeOneWayPredictiveBackAsState(drawerState.isOpen) {
+            drawerState.close()
+        }
+        val predictiveModifier = if (drawerState.isOpen) {
+            Modifier.scale(lerp(1f, 0.9f, predictiveState)).offset {
+                IntOffset(lerp(0f, minValue * 0.05f, predictiveState).roundToInt(), 0)
+            }
+        } else {
+            Modifier
+        }
         Box(
             modifier = Modifier.offset {
                 IntOffset(drawerState.requireOffset().roundToInt(), 0)
@@ -406,7 +429,7 @@ fun SideDrawer(
                 if (w != 0) {
                     minValue = it.size.width.toFloat()
                 }
-            }.align(Alignment.TopEnd),
+            }.align(Alignment.TopEnd) then predictiveModifier,
         ) {
             drawerContent()
         }
