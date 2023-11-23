@@ -99,7 +99,7 @@ fn parse_token_and_gid(str: &str) -> Option<(i64, String)> {
 }
 
 fn parse_uploader_and_pages(str: &str) -> (Option<String>, bool, i32) {
-    let uploader = regex!(r#"<div><a href="https://e[x-]hentai.org/uploader/.*?">(.*?)</a></div>"#)
+    let uploader = regex!(r#"<a href="https://e[x-]hentai.org/uploader/.*?">(.*?)</a>"#)
         .captures(str)
         .map(|grp| grp[1].to_string());
     let pages = match regex!(r"<div>(\d+) pages</div>").captures(str) {
