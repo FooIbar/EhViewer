@@ -3,6 +3,8 @@ package com.hippo.ehviewer.ui.tools
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
@@ -33,6 +35,7 @@ import kotlinx.coroutines.launch
 fun animateFloatMergePredictiveBackAsState(
     enable: Boolean,
     animationSpec: AnimationSpec<Float> = spring(),
+    predictiveBackInterpolator: Easing = EaseOut,
     finishedListener: ((Float) -> Unit)? = null,
     onBack: () -> Unit,
 ): State<Float> {
@@ -58,7 +61,10 @@ fun animateFloatMergePredictiveBackAsState(
 
     PredictiveBackHandler(enable) { progress ->
         try {
-            progress.collect { animatable.snapTo(it.progress) }
+            progress.collect {
+                val transformed = predictiveBackInterpolator.transform(it.progress)
+                animatable.snapTo(transformed)
+            }
             onBack()
         } catch (e: CancellationException) {
             channel.trySend(0f)
