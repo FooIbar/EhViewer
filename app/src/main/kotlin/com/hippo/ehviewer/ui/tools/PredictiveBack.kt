@@ -1,18 +1,20 @@
 package com.hippo.ehviewer.ui.tools
 
 import androidx.activity.compose.PredictiveBackHandler
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import com.hippo.ehviewer.util.isAtLeastU
-import kotlin.math.max
+import androidx.compose.runtime.rememberUpdatedState
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 
 /* enable               0               1
  * animationProgress    1F              0F
@@ -34,28 +36,33 @@ fun animateFloatMergePredictiveBackAsState(
     finishedListener: ((Float) -> Unit)? = null,
     onBack: () -> Unit,
 ): State<Float> {
-    // Natural animator state correspond with principal value
-    val coState by animateFloatAsState(
-        targetValue = if (enable) 0f else 1f,
-        animationSpec = animationSpec,
-        label = "animationProgress",
-        finishedListener = finishedListener,
-    )
-    // User predictive back animation progress holder && value correspond with UI State
-    val ret = remember { mutableFloatStateOf(1F) }
-    var animationProgress by ret
-    // Update UI animation state
-    animationProgress = if (enable || !isAtLeastU) coState else max(animationProgress, coState)
+    val targetValue = if (enable) 0f else 1f
+    val animatable = remember { Animatable(targetValue, Float.VectorConverter) }
+    val listener by rememberUpdatedState(finishedListener)
+
+    val channel = remember { Channel<Float>(Channel.CONFLATED) }
+    SideEffect {
+        channel.trySend(targetValue)
+    }
+    LaunchedEffect(channel) {
+        for (target in channel) {
+            val newTarget = channel.tryReceive().getOrNull() ?: target
+            launch {
+                if (newTarget != animatable.targetValue) {
+                    animatable.animateTo(newTarget, animationSpec)
+                    listener?.invoke(animatable.value)
+                }
+            }
+        }
+    }
 
     PredictiveBackHandler(enable) { progress ->
         try {
-            progress.collect {
-                animationProgress = it.progress
-            }
+            progress.collect { animatable.snapTo(it.progress) }
             onBack()
         } catch (e: CancellationException) {
-            animationProgress = 0F
+            channel.trySend(0f)
         }
     }
-    return ret
+    return animatable.asState()
 }
