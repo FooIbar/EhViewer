@@ -549,7 +549,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                 ) to {
                     navigator.navAnimated(
                         R.id.galleryDetailScene,
-                        bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(it)),
+                        bundleOf(GalleryDetailScene.KEY_ARGS to TokenArgs(it.gid, it.token!!)),
                     )
                 }
             }.toTypedArray()
