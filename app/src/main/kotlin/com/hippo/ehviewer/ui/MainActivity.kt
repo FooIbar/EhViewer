@@ -43,6 +43,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.verticalScroll
@@ -362,10 +363,10 @@ class MainActivity : EhActivity() {
                     SideDrawer(
                         drawerContent = {
                             if (sheet != null) {
+                                val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End)
                                 ModalDrawerSheet(
-                                    modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
+                                    modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp).windowInsetsPadding(insets),
                                     drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
-                                    windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
                                 ) {
                                     sheet(sideDrawerState)
                                 }
