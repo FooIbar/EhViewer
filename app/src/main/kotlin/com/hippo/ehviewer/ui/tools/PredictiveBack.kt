@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.tools
 
+import androidx.activity.BackEventCompat
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
@@ -14,6 +15,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
@@ -82,11 +85,13 @@ fun animateFloatMergeOneWayPredictiveBackAsState(
     onBack: suspend () -> Unit,
 ): State<Float> {
     val animatable = remember { Animatable(0f, Float.VectorConverter) }
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     PredictiveBackHandler(enable) { progress ->
         try {
             progress.collect {
+                val isEdgeStart = (it.swipeEdge == BackEventCompat.EDGE_LEFT).xor(isRtl)
                 val transformed = predictiveBackInterpolator.transform(it.progress)
-                animatable.snapTo(transformed)
+                animatable.snapTo(if (isEdgeStart) transformed else -transformed)
             }
         } catch (e: CancellationException) {
             withNonCancellableContext {

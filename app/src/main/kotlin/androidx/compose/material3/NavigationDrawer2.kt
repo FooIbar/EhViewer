@@ -6,6 +6,7 @@ import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animate
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -15,8 +16,14 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
@@ -36,15 +43,18 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.hippo.ehviewer.ui.tools.animateFloatMergeOneWayPredictiveBackAsState
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -312,22 +322,42 @@ fun ModalNavigationDrawer(
         val predictiveState by animateFloatMergeOneWayPredictiveBackAsState(drawerState.isOpen) {
             drawerState.close()
         }
+        val absoluteElevation = LocalAbsoluteTonalElevation.current + DrawerDefaults.ModalDrawerElevation
         val predictiveModifier = if (drawerState.isOpen) {
-            Modifier.scale(lerp(1f, 0.9f, predictiveState)).offset {
-                IntOffset(lerp(0f, minValue * 0.05f, predictiveState).roundToInt(), 0)
+            if (predictiveState > 0) {
+                Modifier.layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    val multiplierX = lerp(1f, 1.05f, predictiveState)
+                    val multiplierY = lerp(1f, 0.95f, predictiveState)
+                    val scaledWidth = (multiplierX * placeable.width).roundToInt()
+                    val scaledHeight = (multiplierY * placeable.height).roundToInt()
+                    val reMeasured = measurable.measure(Constraints.fixed(scaledWidth, scaledHeight))
+                    layout(scaledWidth, scaledHeight) {
+                        reMeasured.placeRelative(scaledWidth - placeable.width, 0)
+                    }
+                }.background(
+                    color = MaterialTheme.colorScheme.surfaceColorAtElevation(absoluteElevation),
+                    shape = DrawerDefaults.shape,
+                )
+            } else {
+                Modifier.scale(lerp(1f, 0.95f, -predictiveState)).offset {
+                    IntOffset(lerp(0f, minValue * 0.05f, -predictiveState).roundToInt(), 0)
+                }
             }
         } else {
-            Modifier
+            Modifier.onGloballyPositioned {
+                val w = it.size.width
+                if (w != 0) {
+                    minValue = -it.size.width.toFloat()
+                    logcat { minValue.toString() }
+                }
+            }
         }
         Box(
             modifier = Modifier.offset {
                 IntOffset(drawerState.requireOffset().roundToInt(), 0)
-            }.onGloballyPositioned {
-                val w = it.size.width
-                if (w != 0) {
-                    minValue = -it.size.width.toFloat()
-                }
-            } then predictiveModifier,
+            } then predictiveModifier.align(Alignment.CenterStart),
+            contentAlignment = Alignment.CenterEnd,
         ) {
             drawerContent()
         }
@@ -414,22 +444,42 @@ fun SideDrawer(
         val predictiveState by animateFloatMergeOneWayPredictiveBackAsState(drawerState.isOpen) {
             drawerState.close()
         }
+        val absoluteElevation = LocalAbsoluteTonalElevation.current + DrawerDefaults.ModalDrawerElevation
         val predictiveModifier = if (drawerState.isOpen) {
-            Modifier.scale(lerp(1f, 0.9f, predictiveState)).offset {
-                IntOffset(lerp(0f, minValue * 0.05f, predictiveState).roundToInt(), 0)
+            if (predictiveState < 0) {
+                Modifier.layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    val multiplierX = lerp(1f, 1.05f, -predictiveState)
+                    val multiplierY = lerp(1f, 0.95f, -predictiveState)
+                    val scaledWidth = (multiplierX * placeable.width).roundToInt()
+                    val scaledHeight = (multiplierY * placeable.height).roundToInt()
+                    val reMeasured = measurable.measure(Constraints.fixed(scaledWidth, scaledHeight))
+                    layout(scaledWidth, scaledHeight) {
+                        reMeasured.placeRelative(-(scaledWidth - placeable.width), 0)
+                    }
+                }.background(
+                    color = MaterialTheme.colorScheme.surfaceColorAtElevation(absoluteElevation),
+                    shape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
+                )
+            } else {
+                Modifier.scale(lerp(1f, 0.95f, predictiveState)).offset {
+                    IntOffset(lerp(0f, minValue * 0.05f, predictiveState).roundToInt(), 0)
+                }
             }
         } else {
-            Modifier
-        }
-        Box(
-            modifier = Modifier.offset {
-                IntOffset(drawerState.requireOffset().roundToInt(), 0)
-            }.onGloballyPositioned {
+            Modifier.onGloballyPositioned {
                 val w = it.size.width
                 if (w != 0) {
                     minValue = it.size.width.toFloat()
                 }
-            }.align(Alignment.TopEnd) then predictiveModifier,
+            }
+        }
+        val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End)
+        Box(
+            modifier = Modifier.offset {
+                IntOffset(drawerState.requireOffset().roundToInt(), 0)
+            }.windowInsetsPadding(insets).align(Alignment.CenterEnd) then predictiveModifier,
+            contentAlignment = Alignment.CenterStart,
         ) {
             drawerContent()
         }
