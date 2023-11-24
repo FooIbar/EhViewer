@@ -104,6 +104,7 @@ object Settings : DataStorePreferences(null) {
     val listMode = intPref("list_mode_2", 0)
     val detailSize = intPref("detail_size_2", 0)
     val thumbSizeDp = intPref("thumb_size_", 120)
+    val listThumbSize = intPref("list_tile_size", 40)
 
     val needSignInFlow: Flow<Boolean>
     var downloadScheme by stringOrNullPref("image_scheme", null)
@@ -150,7 +151,6 @@ object Settings : DataStorePreferences(null) {
     var defaultFavSlot by intPref("default_favorite_slot", -2)
     var securityDelay by intPref("require_unlock_delay", 0)
     var clipboardTextHashCode by intPref("clipboard_text_hash_code", 0)
-    var listThumbSize by intPref("list_tile_size", 40)
     var searchCategory by intPref("search_pref", EhUtils.ALL_CATEGORY)
     var requestNewsTimerHour by intPref("request_news_timer_hour", -1)
     var requestNewsTimerMinute by intPref("request_news_timer_minute", -1)

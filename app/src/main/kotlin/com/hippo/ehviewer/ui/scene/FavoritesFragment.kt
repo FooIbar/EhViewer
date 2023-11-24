@@ -112,7 +112,6 @@ import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.system.pxToDp
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -301,7 +300,7 @@ fun FavouritesScreen(navigator: NavController) {
         val listMode by Settings.listMode.collectAsState()
         Box(modifier = Modifier.fillMaxSize()) {
             if (listMode == 0) {
-                val height = (3 * Settings.listThumbSize * 3).pxToDp.dp
+                val height by collectListThumbSizeAsState()
                 val showPages = Settings.showGalleryPages
                 val columnWidth by collectDetailSizeAsState()
                 FastScrollLazyVerticalGrid(

@@ -41,6 +41,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -63,7 +64,6 @@ import androidx.paging.compose.itemKey
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.Settings.listThumbSize
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.History
 import com.hippo.ehviewer.ui.MainActivity
@@ -78,7 +78,6 @@ import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.findActivity
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.system.pxToDp
 import kotlinx.coroutines.delay
 
 @Destination
@@ -120,7 +119,7 @@ fun HistoryScreen(navigator: NavController) {
             )
         },
     ) { paddingValues ->
-        val cardHeight = remember { (3 * listThumbSize * 3).pxToDp.dp }
+        val cardHeight by collectListThumbSizeAsState()
         FastScrollLazyColumn(
             modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.gallery_list_margin_h)),
             contentPadding = paddingValues,

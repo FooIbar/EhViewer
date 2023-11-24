@@ -185,7 +185,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.system.pxToDp
 import java.io.File
 import java.time.Instant
 import java.time.LocalDateTime
@@ -842,7 +841,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 }
             }
             if (listMode == 0) {
-                val height = (3 * Settings.listThumbSize * 3).pxToDp.dp
+                val height by collectListThumbSizeAsState()
                 val showPages = Settings.showGalleryPages
                 val columnWidth by collectDetailSizeAsState()
                 FastScrollLazyVerticalGrid(

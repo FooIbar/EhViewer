@@ -83,7 +83,6 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.Settings.detailSize
-import com.hippo.ehviewer.Settings.listThumbSize
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.coil.read
@@ -119,7 +118,6 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.system.pxToDp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -719,6 +717,7 @@ class DownloadsScene : SearchBarScene() {
             binding.start.setOnClickListener(this)
             binding.stop.setOnClickListener(this)
             binding.thumb.setMD3Content {
+                val height by collectListThumbSizeAsState()
                 Spacer(modifier = Modifier.height(height).fillMaxWidth())
             }
             binding.handle.setOnTouchListener { _, event ->
@@ -765,11 +764,10 @@ class DownloadsScene : SearchBarScene() {
             }
         }
 
-        private val height = (3 * listThumbSize * 3).pxToDp.dp
-
         fun bind(info: DownloadInfo, isChecked: Boolean) {
             binding.root.isChecked = isChecked
             binding.thumb.setMD3Content {
+                val height by collectListThumbSizeAsState()
                 Card(onClick = ::onClick.partially1(binding.thumb)) {
                     CompanionAsyncThumb(
                         info = info,
