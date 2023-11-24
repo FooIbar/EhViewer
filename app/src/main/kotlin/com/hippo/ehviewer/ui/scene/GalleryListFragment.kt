@@ -74,7 +74,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -144,6 +143,7 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_WHATS_HOT
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
@@ -298,9 +298,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             }
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
-    val listMode by remember {
-        Settings.listModeBackField.valueFlow()
-    }.collectAsState(Settings.listMode)
+    val listMode by Settings.listMode.collectAsState()
 
     val quickSearchList = remember { mutableStateListOf<QuickSearch>() }
     val toplists = (stringArrayResource(id = R.array.toplist_entries) zip stringArrayResource(id = R.array.toplist_values)).toMap()

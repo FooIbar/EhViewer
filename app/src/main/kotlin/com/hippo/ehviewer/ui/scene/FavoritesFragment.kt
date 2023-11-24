@@ -94,6 +94,7 @@ import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.icons.filled.GoTo
@@ -297,9 +298,7 @@ fun FavouritesScreen(navigator: NavController) {
             start = it.calculateStartPadding(layoutDirection) + marginH,
             end = it.calculateEndPadding(layoutDirection) + marginH,
         )
-        val listMode by remember {
-            Settings.listModeBackField.valueFlow()
-        }.collectAsState(Settings.listMode)
+        val listMode by Settings.listMode.collectAsState()
         Box(modifier = Modifier.fillMaxSize()) {
             if (listMode == 0) {
                 val height = (3 * Settings.listThumbSize * 3).pxToDp.dp
