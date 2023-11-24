@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.text.parseAsHtml
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
@@ -236,7 +237,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_eh_list_mode),
                 entry = R.array.list_mode_entries,
                 entryValueRes = R.array.list_mode_entry_values,
-                value = Settings::listMode.observed,
+                value = Settings.listMode.asMutableState(),
             )
             IntSliderPreference(
                 maxValue = 60,
@@ -249,7 +250,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_eh_detail_size),
                 entry = R.array.detail_size_entries,
                 entryValueRes = R.array.detail_size_entry_values,
-                value = Settings::detailSize.observed,
+                value = Settings.detailSize.asMutableState(),
             )
             IntSliderPreference(
                 maxValue = 400,

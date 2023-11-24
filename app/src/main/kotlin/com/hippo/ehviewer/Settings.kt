@@ -2,6 +2,13 @@
 
 package com.hippo.ehviewer
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisallowComposableCalls
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
@@ -13,8 +20,77 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.map
+import splitties.preferences.BoolPref
 import splitties.preferences.DataStorePreferences
+import splitties.preferences.FloatPref
+import splitties.preferences.IntPref
+import splitties.preferences.LongPref
+import splitties.preferences.PrefDelegate
+import splitties.preferences.StringOrNullPref
+import splitties.preferences.StringPref
+import splitties.preferences.StringSetOrNullPref
+import splitties.preferences.StringSetPref
 import splitties.preferences.edit
+
+@Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
+fun <T> PrefDelegate<T>.getValue(): T = when (this) {
+    is BoolPref -> value
+    is IntPref -> value
+    is FloatPref -> value
+    is LongPref -> value
+    is StringPref -> value
+    is StringOrNullPref -> value
+    is StringSetPref -> value
+    is StringSetOrNullPref -> value
+} as T
+
+@Suppress("UNCHECKED_CAST")
+fun <T> PrefDelegate<T>.setValue(newValue: T) = when (this) {
+    is BoolPref -> value = newValue as Boolean
+    is IntPref -> value = newValue as Int
+    is FloatPref -> value = newValue as Float
+    is LongPref -> value = newValue as Long
+    is StringPref -> value = newValue as String
+    is StringOrNullPref -> value = newValue as? String
+    is StringSetPref -> value = newValue as Set<String?>
+    is StringSetOrNullPref -> value = newValue as? Set<String?>
+}
+
+@Stable
+@Composable
+inline fun <R, T> PrefDelegate<T>.collectAsState(crossinline transform: @DisallowComposableCalls (T) -> R): State<R> {
+    val flow = remember { valueFlow().map { transform(it) } }
+    val init = getValue()
+    return flow.collectAsState(transform(init))
+}
+
+@Stable
+@Composable
+fun <T> PrefDelegate<T>.collectAsState(): State<T> {
+    val flow = remember { valueFlow() }
+    val init = getValue()
+    return flow.collectAsState(init)
+}
+
+@Stable
+@Composable
+fun <T> PrefDelegate<T>.asMutableState(): MutableState<T> {
+    val flow = remember { valueFlow() }
+    val init = getValue()
+    val readOnly = flow.collectAsState(init)
+    return remember {
+        object : MutableState<T> {
+            override var value: T
+                get() = readOnly.value
+                set(value) {
+                    setValue(value)
+                }
+            override fun component1() = TODO()
+            override fun component2() = TODO()
+        }
+    }
+}
 
 object Settings : DataStorePreferences(null) {
     private const val KEY_SHOW_TAG_TRANSLATIONS = "show_tag_translations"
@@ -25,8 +101,8 @@ object Settings : DataStorePreferences(null) {
     var favCount by intArrayPref("fav_count", 10).emitTo(_favFlow)
     var favCloudCount by intPref("fav_cloud", 0).emitTo(_favFlow)
 
-    val listModeBackField = intPref("list_mode_2", 0)
-    var listMode by listModeBackField
+    val listMode = intPref("list_mode_2", 0)
+    val detailSize = intPref("detail_size_2", 0)
 
     val needSignInFlow: Flow<Boolean>
     var downloadScheme by stringOrNullPref("image_scheme", null)
@@ -41,7 +117,6 @@ object Settings : DataStorePreferences(null) {
     var preloadImage by intPref("preload_image_2", 5)
     var downloadTimeout by intPref("download_timeout", 60)
     var theme by intPref("theme_2", -1).observed { updateWhenThemeChanges() }
-    var detailSize by intPref("detail_size_2", 0)
     var thumbResolution by intPref("thumb_resolution_2", 0)
     var readCacheSize by intPref("read_cache_size_2", 640)
     var launchPage by intPref("launch_page_2", 0)
