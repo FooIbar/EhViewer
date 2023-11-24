@@ -103,7 +103,6 @@ import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CheckBoxDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
-import com.hippo.ehviewer.ui.legacy.STRATEGY_MIN_SIZE
 import com.hippo.ehviewer.ui.legacy.ViewTransition
 import com.hippo.ehviewer.ui.main.DEFAULT_ASPECT
 import com.hippo.ehviewer.ui.main.requestOf
@@ -296,8 +295,6 @@ class DownloadsScene : SearchBarScene() {
                     },
                 ),
             )
-            layoutManager.setStrategy(STRATEGY_MIN_SIZE)
-            layoutManager.supportsPredictiveItemAnimations = false
             recyclerView.layoutManager = layoutManager
             val interval = resources.getDimensionPixelOffset(R.dimen.gallery_list_interval)
             val decoration = object : RecyclerView.ItemDecoration() {

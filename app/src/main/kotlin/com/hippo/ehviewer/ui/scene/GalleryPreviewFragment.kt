@@ -54,9 +54,9 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.coil.justDownload
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.legacy.calculateSuitableSpanCount
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
@@ -74,7 +74,6 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
     val context = LocalContext.current
     fun onPreviewClick(index: Int) = context.navToReader(galleryDetail.galleryInfo, index)
     val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
-    val columnCount = calculateSuitableSpanCount()
     val state = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
     val pages = galleryDetail.pages
@@ -136,8 +135,9 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
             )
         },
     ) { paddingValues ->
+        val thumbWidth by Settings.thumbSizeDp.collectAsState()
         FastScrollLazyVerticalGrid(
-            columns = GridCells.Fixed(columnCount),
+            columns = GridCells.Adaptive(thumbWidth.dp),
             modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection).padding(horizontal = dimensionResource(id = R.dimen.gallery_list_margin_h)),
             state = state,
             contentPadding = paddingValues,

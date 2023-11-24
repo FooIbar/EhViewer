@@ -882,8 +882,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 }
             } else {
                 val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
+                val thumbWidth by Settings.thumbSizeDp.collectAsState()
                 FastScrollLazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(Settings.thumbSizeDp.dp),
+                    columns = StaggeredGridCells.Adaptive(thumbWidth.dp),
                     modifier = combinedModifier,
                     state = gridState,
                     verticalItemSpacing = gridInterval,
