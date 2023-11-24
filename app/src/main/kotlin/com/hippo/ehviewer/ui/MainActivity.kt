@@ -363,7 +363,7 @@ class MainActivity : EhActivity() {
                             }
                         },
                         drawerState = sideDrawerState,
-                        gesturesEnabled = sheet != null,
+                        gesturesEnabled = sheet != null && !drawerLocked,
                     ) {
                         val insets = buildWindowInsets {
                             set(
