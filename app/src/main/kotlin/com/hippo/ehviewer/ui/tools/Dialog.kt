@@ -61,6 +61,10 @@ import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
+fun interface ActionScope {
+    fun onSelect(action: String, that: suspend () -> Unit)
+}
+
 interface DialogScope<R> {
     var expectedValue: R
 }
@@ -340,6 +344,14 @@ class DialogState {
             }
         }
     }
+
+    suspend inline fun showSelectActions(
+        @StringRes title: Int? = null,
+        builder: ActionScope.() -> Unit,
+    ) = showSelectItem(
+        *buildList { builder(ActionScope { action, that -> add(action to that) }) }.toTypedArray(),
+        title = title,
+    ).invoke()
 
     suspend fun showSelectItemWithCheckBox(
         vararg items: String?,

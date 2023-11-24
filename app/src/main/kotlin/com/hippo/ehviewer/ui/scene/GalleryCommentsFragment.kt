@@ -351,30 +351,35 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                         }
                     }
 
-                    suspend fun Context.doCommentAction(comment: GalleryComment) {
-                        val actions = buildAction {
-                            onSelect(copyComment) { findActivity<MainActivity>().addTextToClipboard(comment.comment.parseAsHtml()) }
-                            if (!comment.uploader && !comment.editable) {
-                                onSelect(blockCommenter) { showFilterCommenter(comment) }
-                            }
-                            if (comment.editable) {
-                                onSelect(editComment) {
-                                    userComment = TextFieldValue(comment.comment.parseAsHtml().toAnnotatedString())
-                                    commentId = comment.id
-                                    commenting = true
-                                }
-                            }
-                            if (comment.voteUpAble) {
-                                onSelect(if (comment.voteUpEd) cancelVoteUp else voteUp) { voteComment(comment, true) }
-                            }
-                            if (comment.voteDownAble) {
-                                onSelect(if (comment.voteDownEd) cancelVoteDown else voteDown) { voteComment(comment, false) }
-                            }
-                            if (!comment.voteState.isNullOrEmpty()) {
-                                onSelect(checkVoteStatus) { showCommentVoteStatus(comment) }
+                    suspend fun Context.doCommentAction(comment: GalleryComment) = dialogState.showSelectActions {
+                        onSelect(copyComment) {
+                            findActivity<MainActivity>().addTextToClipboard(comment.comment.parseAsHtml())
+                        }
+                        if (!comment.uploader && !comment.editable) {
+                            onSelect(blockCommenter) { showFilterCommenter(comment) }
+                        }
+                        if (comment.editable) {
+                            onSelect(editComment) {
+                                userComment = TextFieldValue(comment.comment.parseAsHtml().toAnnotatedString())
+                                commentId = comment.id
+                                commenting = true
                             }
                         }
-                        dialogState.showSelectItem(*actions.toTypedArray()).invoke()
+                        if (comment.voteUpAble) {
+                            onSelect(if (comment.voteUpEd) cancelVoteUp else voteUp) {
+                                voteComment(comment, true)
+                            }
+                        }
+                        if (comment.voteDownAble) {
+                            onSelect(if (comment.voteDownEd) cancelVoteDown else voteDown) {
+                                voteComment(comment, false)
+                            }
+                        }
+                        if (!comment.voteState.isNullOrEmpty()) {
+                            onSelect(checkVoteStatus) {
+                                showCommentVoteStatus(comment)
+                            }
+                        }
                     }
 
                     GalleryCommentCard(

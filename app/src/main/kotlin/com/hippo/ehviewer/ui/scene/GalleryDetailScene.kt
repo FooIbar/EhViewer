@@ -874,25 +874,31 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                     } else {
                         tag
                     }
-                    val actions = buildAction {
-                        onSelect(copy) { activity.addTextToClipboard(tag) }
-                        if (temp != translated) {
-                            onSelect(copyTrans) { activity.addTextToClipboard(translated) }
-                        }
-                        onSelect(showDefine) { context.openBrowser(EhUrl.getTagDefinitionUrl(temp)) }
-                        onSelect(addFilter) {
-                            dialogState.awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
-                            Filter(FilterMode.TAG, tag).remember()
-                            activity.showTip(filterAdded, BaseScene.LENGTH_SHORT)
-                        }
-                        if (galleryDetail.apiUid >= 0) {
-                            onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
-                            onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
-                        }
-                    }.toTypedArray()
                     coroutineScope.launchIO {
-                        val action = dialogState.showSelectItem(*actions)
-                        action.invoke()
+                        dialogState.showSelectActions {
+                            with(activity) {
+                                onSelect(copy) {
+                                    addTextToClipboard(tag)
+                                }
+                                if (temp != translated) {
+                                    onSelect(copyTrans) {
+                                        addTextToClipboard(translated)
+                                    }
+                                }
+                                onSelect(showDefine) {
+                                    openBrowser(EhUrl.getTagDefinitionUrl(temp))
+                                }
+                                onSelect(addFilter) {
+                                    dialogState.awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
+                                    Filter(FilterMode.TAG, tag).remember()
+                                    showTip(filterAdded, BaseScene.LENGTH_SHORT)
+                                }
+                                if (galleryDetail.apiUid >= 0) {
+                                    onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
+                                    onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
+                                }
+                            }
+                        }
                     }
                 },
             )
