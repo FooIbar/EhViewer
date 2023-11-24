@@ -44,8 +44,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Reorder
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DismissDirection
@@ -53,13 +55,13 @@ import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SecondaryTabRow
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -780,19 +782,23 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                     }
                 }
             }
-            SecondaryTabRow(
+            PrimaryTabRow(
                 selectedTabIndex = if (searchNormalMode) 0 else 1,
                 divider = {},
             ) {
-                Tab(
+                LeadingIconTab(
                     selected = searchNormalMode,
                     onClick = { searchNormalMode = true },
                     text = { Text(text = stringResource(id = R.string.keyword_search)) },
+                    icon = { Icon(imageVector = Icons.Default.Translate, contentDescription = null) },
+                    unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                 )
-                Tab(
+                LeadingIconTab(
                     selected = !searchNormalMode,
                     onClick = { searchNormalMode = false },
                     text = { Text(text = stringResource(id = R.string.search_image)) },
+                    icon = { Icon(imageVector = Icons.Default.ImageSearch, contentDescription = null) },
+                    unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
