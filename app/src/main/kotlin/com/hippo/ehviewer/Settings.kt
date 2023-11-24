@@ -4,6 +4,7 @@ package com.hippo.ehviewer
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
@@ -55,23 +56,26 @@ private fun <T> PrefDelegate<T>.setValue(newValue: T) = when (this) {
     is StringSetOrNullPref -> value = newValue as? Set<String?>
 }
 
+@Stable
 @Composable
 fun <R, T> PrefDelegate<T>.collectAsState(transform: (T) -> R): State<R> {
-    val flow = valueFlow().map { transform(it) }
+    val flow = remember { valueFlow().map { transform(it) } }
     val init = getValue()
     return flow.collectAsState(transform(init))
 }
 
+@Stable
 @Composable
 fun <T> PrefDelegate<T>.collectAsState(): State<T> {
-    val flow = valueFlow()
+    val flow = remember { valueFlow() }
     val init = getValue()
     return flow.collectAsState(init)
 }
 
+@Stable
 @Composable
 fun <T> PrefDelegate<T>.asMutableState(): MutableState<T> {
-    val flow = valueFlow()
+    val flow = remember { valueFlow() }
     val init = getValue()
     val readOnly = flow.collectAsState(init)
     return remember {
