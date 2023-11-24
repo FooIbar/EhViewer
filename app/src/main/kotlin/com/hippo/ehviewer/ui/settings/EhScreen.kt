@@ -244,7 +244,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 minValue = 20,
                 step = 7,
                 title = stringResource(id = R.string.list_tile_thumb_size),
-                value = Settings::listThumbSize,
+                value = Settings.listThumbSize::value,
             )
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_eh_detail_size),

@@ -9,6 +9,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import com.hippo.ehviewer.R
@@ -39,6 +40,17 @@ fun collectDetailSizeAsState(): State<Dp> {
             0 -> long
             1 -> short
             else -> error("Unexpected value: $it")
+        }
+    }
+}
+
+@Composable
+@Stable
+fun collectListThumbSizeAsState(): State<Dp> {
+    val density = LocalDensity.current
+    return Settings.listThumbSize.collectAsState {
+        with(density) {
+            it.toDp() * 9
         }
     }
 }
