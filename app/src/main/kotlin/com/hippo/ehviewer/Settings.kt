@@ -103,6 +103,7 @@ object Settings : DataStorePreferences(null) {
 
     val listMode = intPref("list_mode_2", 0)
     val detailSize = intPref("detail_size_2", 0)
+    val thumbSizeDp = intPref("thumb_size_", 120)
 
     val needSignInFlow: Flow<Boolean>
     var downloadScheme by stringOrNullPref("image_scheme", null)
@@ -145,7 +146,6 @@ object Settings : DataStorePreferences(null) {
     var preloadThumbAggressively by boolPref("preload_thumb_aggressively", false)
     var downloadOriginImage by boolPref("download_origin_image", false)
     var enableCronet by boolPref("enable_cronet", true)
-    var thumbSizeDp by intPref("thumb_size_", 120)
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)
     var defaultFavSlot by intPref("default_favorite_slot", -2)
     var securityDelay by intPref("require_unlock_delay", 0)

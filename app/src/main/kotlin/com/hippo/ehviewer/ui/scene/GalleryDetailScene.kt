@@ -126,6 +126,7 @@ import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.client.parser.TorrentResult
 import com.hippo.ehviewer.client.parser.format
 import com.hippo.ehviewer.coil.justDownload
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
@@ -144,7 +145,6 @@ import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CheckBoxDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.legacy.GalleryRatingBar.OnUserRateListener
-import com.hippo.ehviewer.ui.legacy.calculateSuitableSpanCount
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
@@ -912,7 +912,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
     ) {
         val galleryDetail = galleryInfo.asGalleryDetail()
         val windowSizeClass = calculateWindowSizeClass(activity)
-        val columnCount = calculateSuitableSpanCount()
+        val thumbWidth by Settings.thumbSizeDp.collectAsState()
         val readText = stringResource(R.string.read)
         val downloadText = stringResource(R.string.download)
         var readButtonText by rememberSaveable { mutableStateOf(readText) }
@@ -1023,7 +1023,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
 
         when (windowSizeClass.widthSizeClass) {
             WindowWidthSizeClass.Medium, WindowWidthSizeClass.Compact -> LazyVerticalGrid(
-                columns = GridCells.Fixed(columnCount),
+                columns = GridCells.Adaptive(thumbWidth.dp),
                 contentPadding = contentPadding,
                 modifier = modifier.padding(horizontal = keylineMargin),
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
@@ -1074,7 +1074,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
             }
 
             WindowWidthSizeClass.Expanded -> LazyVerticalGrid(
-                columns = GridCells.Fixed(columnCount),
+                columns = GridCells.Adaptive(thumbWidth.dp),
                 contentPadding = contentPadding,
                 modifier = modifier.padding(horizontal = keylineMargin),
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
