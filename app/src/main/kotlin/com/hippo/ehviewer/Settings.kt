@@ -3,6 +3,7 @@
 package com.hippo.ehviewer
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -33,7 +34,7 @@ import splitties.preferences.StringSetPref
 import splitties.preferences.edit
 
 @Suppress("IMPLICIT_CAST_TO_ANY", "UNCHECKED_CAST")
-private fun <T> PrefDelegate<T>.getValue(): T = when (this) {
+fun <T> PrefDelegate<T>.getValue(): T = when (this) {
     is BoolPref -> value
     is IntPref -> value
     is FloatPref -> value
@@ -45,7 +46,7 @@ private fun <T> PrefDelegate<T>.getValue(): T = when (this) {
 } as T
 
 @Suppress("UNCHECKED_CAST")
-private fun <T> PrefDelegate<T>.setValue(newValue: T) = when (this) {
+fun <T> PrefDelegate<T>.setValue(newValue: T) = when (this) {
     is BoolPref -> value = newValue as Boolean
     is IntPref -> value = newValue as Int
     is FloatPref -> value = newValue as Float
@@ -58,7 +59,7 @@ private fun <T> PrefDelegate<T>.setValue(newValue: T) = when (this) {
 
 @Stable
 @Composable
-fun <R, T> PrefDelegate<T>.collectAsState(transform: (T) -> R): State<R> {
+inline fun <R, T> PrefDelegate<T>.collectAsState(crossinline transform: @DisallowComposableCalls (T) -> R): State<R> {
     val flow = remember { valueFlow().map { transform(it) } }
     val init = getValue()
     return flow.collectAsState(transform(init))
