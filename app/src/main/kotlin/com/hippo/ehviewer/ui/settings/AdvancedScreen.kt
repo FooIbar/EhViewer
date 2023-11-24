@@ -40,6 +40,7 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.util.AppConfig
+import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.ReadableTime
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -108,6 +109,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                                 }
                                 val logcatEntry = ZipEntry("logcat-" + ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".txt")
                                 zipOs.putNextEntry(logcatEntry)
+                                Crash.collectInfo(zipOs.writer())
                                 Runtime.getRuntime().exec("logcat -d").inputStream.use { it.copyTo(zipOs) }
                             }
                             launchSnackBar(getString(R.string.settings_advanced_dump_logcat_to, uri.toString()))
