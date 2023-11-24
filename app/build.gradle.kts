@@ -252,6 +252,8 @@ dependencies {
 
     implementation(libs.insetter) // Dead Dependency
 
+    implementation(libs.reorderable)
+
     implementation(platform(libs.arrow.stack))
     implementation(libs.arrow.fx.coroutines)
 
