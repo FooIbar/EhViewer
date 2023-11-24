@@ -104,7 +104,10 @@ class FabLayout @JvmOverloads constructor(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
                 contentAlignment = Alignment.BottomEnd,
             ) {
-                Box(contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),
+                    contentAlignment = Alignment.Center,
+                ) {
                     val animatedProgress by animateFloatMergePredictiveBackAsState(
                         enable = expanded,
                         animationSpec = tween(FAB_ANIMATE_TIME, if (mHidden) FAB_ANIMATE_TIME else 0),
@@ -112,7 +115,6 @@ class FabLayout @JvmOverloads constructor(
                     ) { expanded = false }
                     FloatingActionButton(
                         onClick = { expanded = !expanded },
-                        modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,

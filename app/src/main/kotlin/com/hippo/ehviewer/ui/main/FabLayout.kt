@@ -72,14 +72,16 @@ fun FabLayout(
         modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(16.dp),
         contentAlignment = Alignment.BottomEnd,
     ) {
-        Box(contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),
+            contentAlignment = Alignment.Center,
+        ) {
             val animatedProgress by animateFloatMergePredictiveBackAsState(
                 enable = expanded,
                 animationSpec = tween(FAB_ANIMATE_TIME),
             ) { onExpandChanged(false) }
             FloatingActionButton(
                 onClick = { onExpandChanged(!expanded) },
-                modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
