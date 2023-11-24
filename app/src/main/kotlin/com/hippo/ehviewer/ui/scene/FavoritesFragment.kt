@@ -304,13 +304,9 @@ fun FavouritesScreen(navigator: NavController) {
             if (listMode == 0) {
                 val height = (3 * Settings.listThumbSize * 3).pxToDp.dp
                 val showPages = Settings.showGalleryPages
-                val column = when (val detailSize = Settings.detailSize) {
-                    0 -> R.dimen.gallery_list_column_width_long
-                    1 -> R.dimen.gallery_list_column_width_short
-                    else -> error("Unexpected value: $detailSize")
-                }
+                val columnWidth by collectDetailSizeAsState()
                 FastScrollLazyVerticalGrid(
-                    columns = GridCells.Adaptive(dimensionResource(column)),
+                    columns = GridCells.Adaptive(columnWidth),
                     modifier = combinedModifier,
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
