@@ -147,27 +147,25 @@ fun HistoryScreen(navigator: NavController) {
                         SwipeToDismissBox(
                             state = dismissState,
                             backgroundContent = {},
-                            content = {
-                                // TODO: item delete & add animation
-                                // Bug tracker: https://issuetracker.google.com/issues/150812265
-                                GalleryInfoListItem(
-                                    onClick = {
-                                        navigator.navAnimated(
-                                            R.id.galleryDetailScene,
-                                            bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
-                                        )
-                                    },
-                                    onLongClick = {
-                                        coroutineScope.launchIO {
-                                            dialogState.doGalleryInfoAction(info, context)
-                                        }
-                                    },
-                                    info = info,
-                                    modifier = Modifier.height(cardHeight),
-                                )
-                            },
+                            modifier = Modifier.animateItemPlacement(),
                             directions = setOf(DismissDirection.EndToStart),
-                        )
+                        ) {
+                            GalleryInfoListItem(
+                                onClick = {
+                                    navigator.navAnimated(
+                                        R.id.galleryDetailScene,
+                                        bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
+                                    )
+                                },
+                                onLongClick = {
+                                    coroutineScope.launchIO {
+                                        dialogState.doGalleryInfoAction(info, context)
+                                    }
+                                },
+                                info = info,
+                                modifier = Modifier.height(cardHeight),
+                            )
+                        }
                     }
                 } else {
                     CrystalCard(modifier = Modifier.height(cardHeight).fillMaxWidth()) {}
