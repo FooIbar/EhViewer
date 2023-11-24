@@ -289,10 +289,10 @@ class DownloadsScene : SearchBarScene() {
             val layoutManager = AutoStaggeredGridLayoutManager(0, StaggeredGridLayoutManager.VERTICAL)
             layoutManager.setColumnSize(
                 resources.getDimensionPixelOffset(
-                    when (detailSize) {
+                    when (detailSize.value) {
                         0 -> R.dimen.gallery_list_column_width_long
                         1 -> R.dimen.gallery_list_column_width_short
-                        else -> throw IllegalStateException("Unexpected value: $detailSize")
+                        else -> throw IllegalStateException("Unexpected value: ${detailSize.value}")
                     },
                 ),
             )

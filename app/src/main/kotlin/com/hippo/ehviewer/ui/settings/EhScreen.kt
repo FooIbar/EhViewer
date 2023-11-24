@@ -250,7 +250,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_eh_detail_size),
                 entry = R.array.detail_size_entries,
                 entryValueRes = R.array.detail_size_entry_values,
-                value = Settings::detailSize.observed,
+                value = Settings.detailSize.asMutableState(),
             )
             IntSliderPreference(
                 maxValue = 400,

@@ -97,9 +97,7 @@ object Settings : DataStorePreferences(null) {
     var favCloudCount by intPref("fav_cloud", 0).emitTo(_favFlow)
 
     val listMode = intPref("list_mode_2", 0)
-
-    val detailSizeBackField = intPref("detail_size_2", 0)
-    var detailSize by detailSizeBackField
+    val detailSize = intPref("detail_size_2", 0)
 
     val needSignInFlow: Flow<Boolean>
     var downloadScheme by stringOrNullPref("image_scheme", null)
