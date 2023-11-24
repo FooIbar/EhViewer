@@ -22,6 +22,7 @@ import android.view.ViewGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -69,7 +70,6 @@ import com.hippo.ehviewer.icons.big.History
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
-import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.LocalDialogState
@@ -168,7 +168,7 @@ fun HistoryScreen(navigator: NavController) {
                         }
                     }
                 } else {
-                    CrystalCard(modifier = Modifier.height(cardHeight).fillMaxWidth()) {}
+                    Spacer(modifier = Modifier.height(cardHeight).fillMaxWidth())
                 }
             }
         }
