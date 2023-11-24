@@ -45,6 +45,7 @@ fun animateFloatMergePredictiveBackAsState(
 ): State<Float> {
     val targetValue = if (enable) 0f else 1f
     val animatable = remember { Animatable(targetValue, Float.VectorConverter) }
+    val animSpec by rememberUpdatedState(animationSpec)
     val listener by rememberUpdatedState(finishedListener)
 
     val channel = remember { Channel<Float>(Channel.CONFLATED) }
@@ -56,7 +57,7 @@ fun animateFloatMergePredictiveBackAsState(
             val newTarget = channel.tryReceive().getOrNull() ?: target
             launch {
                 if (newTarget != animatable.targetValue) {
-                    animatable.animateTo(newTarget, animationSpec)
+                    animatable.animateTo(newTarget, animSpec)
                     listener?.invoke(animatable.value)
                 }
             }
