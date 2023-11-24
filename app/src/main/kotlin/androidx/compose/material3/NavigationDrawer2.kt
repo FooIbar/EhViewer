@@ -16,13 +16,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -472,11 +467,10 @@ fun SideDrawer(
                 }
             }
         }
-        val insets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End)
         Box(
             modifier = Modifier.offset {
                 IntOffset(drawerState.requireOffset().roundToInt(), 0)
-            }.windowInsetsPadding(insets).align(Alignment.CenterEnd) then predictiveModifier,
+            }.align(Alignment.CenterEnd) then predictiveModifier,
             contentAlignment = Alignment.CenterStart,
         ) {
             drawerContent()
