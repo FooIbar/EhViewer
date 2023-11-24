@@ -125,6 +125,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                                 colorSpace = if (isAtLeastO) colorSpace else null,
                                 size = Size(targetWidth, targetHeight),
                                 scale = Scale.FILL,
+                                allowInexactSize = true,
                             )
                             val drawable = ImageSource(src.source.openInputStream().source().buffer(), appCtx).use {
                                 BitmapFactoryDecoder(it, options).decode().drawable
