@@ -5,6 +5,7 @@ import android.os.ext.SdkExtensions
 
 val isAtLeastN = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
 val isAtLeastO = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+val isAtLeastOMR1 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
 val isAtLeastP = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
 val isAtLeastQ = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
 val isAtLeastR = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
