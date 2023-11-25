@@ -18,6 +18,11 @@ package com.hippo.ehviewer.download
 import android.net.Uri
 import android.util.Log
 import android.util.SparseLongArray
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import com.google.android.material.math.MathUtils
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
@@ -47,6 +52,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import splitties.init.appCtx
@@ -261,6 +267,13 @@ object DownloadManager : OnSpiderListener {
             mDownloadInfoListener = null
         }
     }.shareIn(callbackFlowScope, SharingStarted.Eagerly)
+
+    @Stable
+    @Composable
+    fun collectDownloadState(gid: Long): State<Int> {
+        val flow = remember { stateFlow(gid).map { getDownloadState(it) } }
+        return flow.collectAsState(getDownloadState(gid))
+    }
 
     fun stateFlow(gid: Long) = _stateFlow.filter { it == gid }
 
