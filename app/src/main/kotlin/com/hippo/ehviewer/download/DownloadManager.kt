@@ -19,6 +19,7 @@ import android.net.Uri
 import android.util.Log
 import android.util.SparseLongArray
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -252,15 +253,12 @@ object DownloadManager : OnSpiderListener {
 
     private val callbackFlowScope = CoroutineScope(Dispatchers.IO)
 
-    private val _stateFlow = callbackFlow {
+    val _stateFlow = callbackFlow {
         val listener = object : DownloadInfoListener {
             override fun onUpdate(info: DownloadInfo) {
-                trySend(info.gid)
+                trySend(info)
             }
-
-            override fun onUpdateAll() {
-                trySend(0)
-            }
+            override fun onUpdateAll() {}
         }
         mDownloadInfoListener = listener
         awaitClose {
@@ -275,7 +273,14 @@ object DownloadManager : OnSpiderListener {
         return flow.collectAsState(getDownloadState(gid))
     }
 
-    fun stateFlow(gid: Long) = _stateFlow.filter { it == gid }
+    @Stable
+    @Composable
+    inline fun <T> updatedDownloadInfo(info: DownloadInfo, crossinline transform: @DisallowComposableCalls DownloadInfo.() -> T): State<T> {
+        val flow = remember { _stateFlow.filter { it.gid == info.gid }.map { transform(it) } }
+        return flow.collectAsState(transform(info))
+    }
+
+    fun stateFlow(gid: Long) = _stateFlow.map { it.gid }.filter { it == gid }
 
     fun stateFlow() = _stateFlow
 

@@ -202,7 +202,12 @@ fun DownloadCard(
                         )
                     }
                 } else {
-                    if (info.total <= 0 || info.finished < 0) {
+                    // TODO: use JvmInline Value Class
+                    val updated by DownloadManager.updatedDownloadInfo(info) {
+                        Triple(total, finished, speed)
+                    }
+                    val (total, finished, speed) = updated
+                    if (total <= 0 || finished < 0) {
                         LinearProgressIndicator(
                             modifier = Modifier.constrainAs(progressBarRef) {
                                 bottom.linkTo(actionsRef.top)
@@ -210,13 +215,13 @@ fun DownloadCard(
                         )
                     } else {
                         LinearProgressIndicator(
-                            progress = { info.total.toFloat() / info.finished },
+                            progress = { total.toFloat() / finished },
                             modifier = Modifier.constrainAs(progressBarRef) {
                                 bottom.linkTo(actionsRef.top)
                             },
                         )
                         Text(
-                            text = info.finished.toString() + "/" + info.total,
+                            text = "$finished/$total",
                             modifier = Modifier.constrainAs(progressTextRef) {
                                 bottom.linkTo(progressBarRef.top)
                                 end.linkTo(progressBarRef.end)
@@ -224,7 +229,7 @@ fun DownloadCard(
                         )
                     }
                     Text(
-                        text = FileUtils.humanReadableByteCount(info.speed.coerceAtLeast(0), false) + "/S",
+                        text = FileUtils.humanReadableByteCount(speed.coerceAtLeast(0), false) + "/S",
                         modifier = Modifier.constrainAs(speedRef) {
                             bottom.linkTo(progressBarRef.top)
                             start.linkTo(progressBarRef.start)
