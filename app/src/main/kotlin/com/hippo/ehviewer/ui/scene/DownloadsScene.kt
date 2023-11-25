@@ -16,24 +16,17 @@
 package com.hippo.ehviewer.ui.scene
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.app.AlertDialog
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.outlined.Label
@@ -42,29 +35,22 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
@@ -75,27 +61,17 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.viewbinding.ViewBinding
-import arrow.core.partially1
-import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
-import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.Settings.detailSize
-import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.databinding.DrawerListRvBinding
-import com.hippo.ehviewer.databinding.ItemDownloadBinding
 import com.hippo.ehviewer.databinding.ItemDrawerListBinding
 import com.hippo.ehviewer.databinding.SceneDownloadBinding
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.DownloadService.Companion.clear
-import com.hippo.ehviewer.download.downloadDir
-import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.legacy.AutoStaggeredGridLayoutManager
@@ -103,23 +79,17 @@ import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.ViewTransition
-import com.hippo.ehviewer.ui.main.DEFAULT_ASPECT
-import com.hippo.ehviewer.ui.main.requestOf
+import com.hippo.ehviewer.ui.main.DownloadCard
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.setMD3Content
-import com.hippo.ehviewer.ui.tools.CropDefaults
 import com.hippo.ehviewer.ui.tools.DialogState
-import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.mapToLongArray
-import com.hippo.ehviewer.util.sendTo
-import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import rikka.core.res.resolveColor
@@ -555,16 +525,6 @@ class DownloadsScene : SearchBarScene() {
         return drawerBinding.root
     }
 
-    fun onItemClick(position: Int): Boolean {
-        val context = context ?: return false
-        val list = mList ?: return false
-        if (position < 0 || position >= list.size) {
-            return false
-        }
-        context.navToReader(list[position].galleryInfo)
-        return true
-    }
-
     private class DownloadLabelHolder(val binding: ItemDrawerListBinding) :
         RecyclerView.ViewHolder(binding.root)
 
@@ -666,218 +626,58 @@ class DownloadsScene : SearchBarScene() {
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private inner class DownloadHolder(
-        private val binding: ItemDownloadBinding,
-    ) : RecyclerView.ViewHolder(binding.root), View.OnClickListener {
-
-        init {
-            // TODO cancel on click listener when select items
-            binding.start.setOnClickListener(this)
-            binding.stop.setOnClickListener(this)
-            binding.thumb.setMD3Content {
-                val height by collectListThumbSizeAsState()
-                Spacer(modifier = Modifier.height(height).fillMaxWidth())
-            }
-            binding.handle.setOnTouchListener { _, event ->
-                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                    mItemTouchHelper!!.startDrag(this)
-                }
-                false
-            }
-        }
-
-        override fun onClick(v: View) {
-            val context = context
-            val activity: Activity? = mainActivity
-            val recyclerView = this@DownloadsScene.binding.recyclerView
-            if (null == context || null == activity || tracker.isInCustomChoice) {
-                return
-            }
-            val list = mList ?: return
-            val size = list.size
-            val index = recyclerView.getChildAdapterPosition(itemView)
-            if (index < 0 || index >= size) {
-                return
-            }
-            when (v) {
-                binding.thumb -> {
-                    navAnimated(
-                        R.id.galleryDetailScene,
-                        bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(list[index].galleryInfo)),
-                    )
-                }
-
-                binding.start -> {
-                    val intent = Intent(activity, DownloadService::class.java)
-                    intent.action = DownloadService.ACTION_START
-                    intent.putExtra(DownloadService.KEY_GALLERY_INFO, list[index].galleryInfo)
-                    ContextCompat.startForegroundService(activity, intent)
-                }
-
-                binding.stop -> {
-                    lifecycleScope.launchIO {
-                        DownloadManager.stopDownload(list[index].gid)
-                    }
-                }
-            }
-        }
-
-        fun bind(info: DownloadInfo, isChecked: Boolean) {
-            binding.root.isChecked = isChecked
-            binding.thumb.setMD3Content {
-                val height by collectListThumbSizeAsState()
-                Card(onClick = ::onClick.partially1(binding.thumb)) {
-                    CompanionAsyncThumb(
-                        info = info,
-                        path = info.downloadDir?.subFile(".thumb"),
-                        modifier = Modifier.height(height).aspectRatio(DEFAULT_ASPECT),
-                    )
-                }
-            }
-            binding.title.text = EhUtils.getSuitableTitle(info)
-            binding.uploader.text = info.uploader
-            binding.rating.rating = info.rating
-            binding.category.setMD3Content {
-                val categoryColor = EhUtils.getCategoryColor(info.category)
-                val categoryText = EhUtils.getCategory(info.category).uppercase()
-                Text(
-                    text = categoryText,
-                    modifier = Modifier.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
-                    color = if (Settings.harmonizeCategoryColor) Color.Unspecified else EhUtils.categoryTextColor,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelLarge,
-                )
-            }
-            bindForState(info)
-        }
-
-        fun bindForState(info: DownloadInfo) {
-            val context = context ?: return
-            when (info.state) {
-                DownloadInfo.STATE_NONE -> bindState(
-                    info,
-                    context.getString(R.string.download_state_none),
-                )
-
-                DownloadInfo.STATE_WAIT -> bindState(
-                    info,
-                    context.getString(R.string.download_state_wait),
-                )
-
-                DownloadInfo.STATE_DOWNLOAD -> bindProgress(info)
-                DownloadInfo.STATE_FAILED -> {
-                    val text: String = if (info.legacy <= 0) {
-                        context.getString(R.string.download_state_failed)
-                    } else {
-                        context.getString(R.string.download_state_failed_2, info.legacy)
-                    }
-                    bindState(info, text)
-                }
-
-                DownloadInfo.STATE_FINISH -> bindState(
-                    info,
-                    context.getString(R.string.download_state_finish),
-                )
-            }
-        }
-
-        private fun bindState(info: DownloadInfo, newState: String) {
-            binding.run {
-                uploader.visibility = View.VISIBLE
-                rating.visibility = View.VISIBLE
-                category.visibility = View.VISIBLE
-                state.visibility = View.VISIBLE
-                progressBar.visibility = View.GONE
-                percent.visibility = View.GONE
-                speed.visibility = View.GONE
-                if (info.state == DownloadInfo.STATE_WAIT || info.state == DownloadInfo.STATE_DOWNLOAD) {
-                    start.visibility = View.GONE
-                    stop.visibility = View.VISIBLE
-                } else {
-                    start.visibility = View.VISIBLE
-                    stop.visibility = View.GONE
-                }
-                state.text = newState
-            }
-        }
-
-        @SuppressLint("SetTextI18n")
-        private fun bindProgress(info: DownloadInfo) {
-            binding.run {
-                uploader.visibility = View.GONE
-                rating.visibility = View.GONE
-                category.visibility = View.GONE
-                state.visibility = View.GONE
-                progressBar.visibility = View.VISIBLE
-                percent.visibility = View.VISIBLE
-                speed.visibility = View.VISIBLE
-                if (info.state == DownloadInfo.STATE_WAIT || info.state == DownloadInfo.STATE_DOWNLOAD) {
-                    start.visibility = View.GONE
-                    stop.visibility = View.VISIBLE
-                } else {
-                    start.visibility = View.VISIBLE
-                    stop.visibility = View.GONE
-                }
-                if (info.total <= 0 || info.finished < 0) {
-                    percent.text = null
-                    progressBar.isIndeterminate = true
-                } else {
-                    percent.text = info.finished.toString() + "/" + info.total
-                    progressBar.isIndeterminate = false
-                    progressBar.max = info.total
-                    progressBar.progress = info.finished
-                }
-                speed.text =
-                    FileUtils.humanReadableByteCount(info.speed.coerceAtLeast(0), false) + "/S"
-            }
-        }
-    }
+    class DownloadHolder(val view: ComposeView) : RecyclerView.ViewHolder(view)
 
     private val diffCallback = object : DiffUtil.ItemCallback<DownloadInfo>() {
         override fun areItemsTheSame(oldItem: DownloadInfo, newItem: DownloadInfo) = oldItem.gid == newItem.gid
-        override fun areContentsTheSame(oldItem: DownloadInfo, newItem: DownloadInfo) = oldItem == newItem
-        override fun getChangePayload(oldItem: DownloadInfo, newItem: DownloadInfo): Any? {
-            return if (oldItem.downloadInfo != newItem.downloadInfo) {
-                PAYLOAD_DOWNLOAD_INFO
-            } else {
-                super.getChangePayload(oldItem, newItem)
-            }
-        }
+        override fun areContentsTheSame(oldItem: DownloadInfo, newItem: DownloadInfo) = oldItem.gid == newItem.gid
     }
 
     private inner class DownloadAdapter : ListAdapter<DownloadInfo, DownloadHolder>(diffCallback) {
-        private val mInflater: LayoutInflater = layoutInflater
         var tracker: GallerySelectionTracker<DownloadInfo>? = null
 
         override fun getItemId(position: Int) = getItem(position).gid
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DownloadHolder {
-            val holder = DownloadHolder(ItemDownloadBinding.inflate(mInflater, parent, false))
-            holder.itemView.setOnClickListener { onItemClick(holder.bindingAdapterPosition) }
-            return holder
-        }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = DownloadHolder(ComposeView(parent.context))
 
         override fun onBindViewHolder(holder: DownloadHolder, position: Int) {
             val info = getItem(position)
-            holder.bind(info, tracker?.isSelected(info.gid) ?: false)
-        }
-
-        override fun onBindViewHolder(
-            holder: DownloadHolder,
-            position: Int,
-            payloads: MutableList<Any>,
-        ) {
-            payloads.forEach { payload ->
-                when (payload) {
-                    PAYLOAD_DOWNLOAD_INFO -> {
-                        val info = getItem(position)
-                        holder.bindForState(info)
-                        return
+            val checked = tracker?.isSelected(info.gid) ?: false
+            holder.view.setMD3Content {
+                val context = LocalContext.current
+                val height by collectListThumbSizeAsState()
+                key(info.gid) {
+                    CheckableItem(checked = checked) {
+                        DownloadCard(
+                            onClick = {
+                                context.navToReader(info.galleryInfo)
+                            },
+                            onThumbClick = {
+                                navAnimated(
+                                    R.id.galleryDetailScene,
+                                    bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info.galleryInfo)),
+                                )
+                            },
+                            onLongClick = {
+                            },
+                            onStart = {
+                                val intent = Intent(activity, DownloadService::class.java)
+                                intent.action = DownloadService.ACTION_START
+                                intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
+                                ContextCompat.startForegroundService(requireActivity(), intent)
+                            },
+                            onStop = {
+                                lifecycleScope.launchIO {
+                                    DownloadManager.stopDownload(info.gid)
+                                }
+                            },
+                            onDrag = { mItemTouchHelper?.startDrag(holder) },
+                            info = info,
+                            modifier = Modifier.height(height),
+                        )
                     }
                 }
             }
-            super.onBindViewHolder(holder, position, payloads)
         }
     }
 
@@ -1020,66 +820,4 @@ class DownloadsScene : SearchBarScene() {
         private const val LABEL_OFFSET = 2
         private const val PAYLOAD_DOWNLOAD_INFO = 0
     }
-}
-
-@Composable
-private fun CompanionAsyncThumb(
-    info: GalleryInfo,
-    path: UniFile?,
-    modifier: Modifier = Modifier,
-) {
-    var contentScale by remember(info.gid) { mutableStateOf(ContentScale.Fit) }
-    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    val context = LocalContext.current
-    var localReq by remember(info.gid) {
-        path?.takeIf { it.isFile }?.uri?.let {
-            context.imageRequest {
-                data(it.toString())
-                memoryCacheKey(info.thumbKey)
-            }
-        }.let { mutableStateOf(it) }
-    }
-    AsyncImage(
-        model = localReq ?: requestOf(info),
-        contentDescription = null,
-        modifier = modifier,
-        onState = { state ->
-            if (state is AsyncImagePainter.State.Success) {
-                state.result.drawable.run {
-                    if (CropDefaults.shouldCrop(intrinsicWidth, intrinsicHeight)) {
-                        contentScale = ContentScale.Crop
-                    }
-                }
-                path?.let {
-                    coroutineScope.launch {
-                        runCatching {
-                            if (!path.exists() && path.ensureFile()) {
-                                val key = info.thumbKey!!
-                                imageCache.read(key) {
-                                    UniFile.fromFile(data.toFile())!!.openFileDescriptor("r").use { src ->
-                                        path.openFileDescriptor("w").use { dst ->
-                                            src sendTo dst
-                                        }
-                                    }
-                                }
-                            }
-                        }.onFailure {
-                            it.printStackTrace()
-                        }
-                    }
-                }
-            }
-            if (state is AsyncImagePainter.State.Error) {
-                path?.let {
-                    coroutineScope.launch {
-                        if (path.exists()) {
-                            path.delete()
-                            localReq = null
-                        }
-                    }
-                }
-            }
-        },
-        contentScale = contentScale,
-    )
 }

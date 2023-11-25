@@ -27,7 +27,6 @@
 
     <!-- Text size -->
     <dimen name="text_little_small">16sp</dimen>
-    <dimen name="text_super_small">12sp</dimen>
 
     <!-- RatingView -->
     <dimen name="rating_size">16dp</dimen>
@@ -39,12 +38,9 @@
 
     <dimen name="gallery_grid_interval">4dp</dimen>
 
-    <dimen name="gallery_search_bar_margin_v">10dp</dimen>
-
     <dimen name="gallery_list_column_width_long">480dp</dimen>
     <dimen name="gallery_list_column_width_short">320dp</dimen>
 
-    <dimen name="search_layout_margin_h">4dp</dimen>
     <dimen name="search_layout_margin_v">4dp</dimen>
 
     <!-- Search item -->
