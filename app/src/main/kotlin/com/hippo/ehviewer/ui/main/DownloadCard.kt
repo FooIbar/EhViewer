@@ -1,7 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -232,11 +231,10 @@ fun DownloadCard(
                     )
                 }
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.constrainAs(actionsRef) {
                         end.linkTo(parent.end)
-                        bottom.linkTo(parent.top)
+                        bottom.linkTo(parent.bottom)
                     },
                 ) {
                     IconButton(onClick = onDrag) {
