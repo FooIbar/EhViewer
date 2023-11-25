@@ -11,5 +11,10 @@
     public static final ** CREATOR;
 }
 
+# https://issuetracker.google.com/issues/307323842
+-keepclassmembers class androidx.compose.ui.platform.WindowInfoImpl {
+    setWindowFocused(boolean);
+}
+
 -allowaccessmodification
 -repackageclasses
