@@ -217,6 +217,7 @@ dependencies {
     implementation(libs.androidx.fragment)
     // https://developer.android.com/jetpack/androidx/releases/lifecycle
     implementation(libs.androidx.lifecycle.process)
+    implementation(libs.androidx.lifecycle.compose)
 
     // https://developer.android.com/jetpack/androidx/releases/navigation
     implementation(libs.bundles.androidx.navigation)
@@ -281,6 +282,7 @@ configurations.all {
         // Workaround IME won't show again once hidden.
         // Google issue-tracker link?
         force("androidx.compose.ui:ui-text-android:1.6.0-alpha08")
+        exclude("androidx.navigation", "navigation-compose")
     }
 }
 
