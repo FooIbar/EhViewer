@@ -17,7 +17,7 @@
 package androidx.navigation.compose
 
 import android.annotation.SuppressLint
-import androidx.activity.compose.BackHandler
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
@@ -53,6 +53,7 @@ import androidx.navigation.Navigator
 import androidx.navigation.createGraph
 import androidx.navigation.get
 import kotlin.math.roundToLong
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 
@@ -278,24 +279,22 @@ public fun NavHost(
             }
         }
 
-        BackHandler(currentBackStack.size > 1) {
-            navController.popBackStack()
-        }
-
+        val duration = 500000000L
         val transitionState = remember { MutableTransitionState(backStackEntry) }
         val transition = updateTransition(transitionState = transitionState, label = "entry")
         val animatedFraction = remember { Animatable(0f).also { it.updateBounds(lowerBound = 0f, upperBound = 1f) } }
+
+        fun seekToFraction() {
+            val fraction = animatedFraction.value
+            val playTimeNanos = (fraction * duration).roundToLong()
+            transition.setPlaytimeAfterInitialAndTargetStateEstablished(
+                transitionState.currentState,
+                backStackEntry,
+                playTimeNanos,
+            )
+        }
+
         LaunchedEffect(backStackEntry) {
-            val duration = 500000000L
-            fun seekToFraction() {
-                val fraction = animatedFraction.value
-                val playTimeNanos = (fraction * duration).roundToLong()
-                transition.setPlaytimeAfterInitialAndTargetStateEstablished(
-                    transitionState.currentState,
-                    backStackEntry,
-                    playTimeNanos,
-                )
-            }
             try {
                 animatedFraction.animateTo(1f, animationSpec = tween(700, easing = LinearEasing)) {
                     seekToFraction()
@@ -311,6 +310,33 @@ public fun NavHost(
                 }
             }
         }
+
+        PredictiveBackHandler(currentBackStack.size > 1) { flow ->
+            // Prev can never be null, i.e. BackHandler should not enabled when prev is null
+            val prev = currentBackStack.last { it != backStackEntry }
+            transition.setPlaytimeAfterInitialAndTargetStateEstablished(
+                prev,
+                backStackEntry,
+                duration,
+            )
+            try {
+                flow.collect {
+                    animatedFraction.snapTo(1 - it.progress)
+                    seekToFraction()
+                }
+                navController.popBackStack()
+            } catch (e: CancellationException) {
+                withContext(NonCancellable) {
+                    animatedFraction.snapTo(0f)
+                    transition.setPlaytimeAfterInitialAndTargetStateEstablished(
+                        backStackEntry,
+                        backStackEntry,
+                        0,
+                    )
+                }
+            }
+        }
+
         transition.AnimatedContent(
             modifier,
             transitionSpec = {
@@ -334,19 +360,11 @@ public fun NavHost(
             contentAlignment,
             contentKey = { it.id },
         ) {
-            // In some specific cases, such as clearing your back stack by changing your
-            // start destination, AnimatedContent can contain an entry that is no longer
-            // part of visible entries since it was cleared from the back stack and is not
-            // animating. In these cases the currentEntry will be null, and in those cases,
-            // AnimatedContent will just skip attempting to transition the old entry.
-            // See https://issuetracker.google.com/238686802
-            val currentEntry = visibleEntries.lastOrNull { entry -> it == entry }
-
             // while in the scope of the composable, we provide the navBackStackEntry as the
             // ViewModelStoreOwner and LifecycleOwner
-            currentEntry?.LocalOwnersProvider(saveableStateHolder) {
-                (currentEntry.destination as ComposeNavigator.Destination)
-                    .content(this, currentEntry)
+            it.LocalOwnersProvider(saveableStateHolder) {
+                (it.destination as ComposeNavigator.Destination)
+                    .content(this, it)
             }
         }
         LaunchedEffect(transition.currentState, transition.targetState) {
