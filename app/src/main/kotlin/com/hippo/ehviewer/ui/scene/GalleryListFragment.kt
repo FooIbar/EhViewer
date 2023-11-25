@@ -840,6 +840,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 urlBuilder.setIndex(null)
                 data.refresh()
             },
+            onLoading = { searchBarOffsetY = 0 },
             navigator = navigator,
         )
     }

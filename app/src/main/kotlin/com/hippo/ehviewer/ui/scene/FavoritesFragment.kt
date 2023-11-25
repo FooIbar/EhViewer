@@ -320,6 +320,7 @@ fun FavouritesScreen(navigator: NavController) {
             },
             refreshState = refreshState,
             onRefresh = { refresh() },
+            onLoading = { searchBarOffsetY = 0 },
             navigator = navigator,
         )
     }
