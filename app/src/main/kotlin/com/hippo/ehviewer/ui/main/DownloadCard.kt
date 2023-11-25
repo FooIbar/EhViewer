@@ -207,34 +207,36 @@ fun DownloadCard(
                         Triple(total, finished, speed)
                     }
                     val (total, finished, speed) = updated
-                    if (total <= 0 || finished < 0) {
-                        LinearProgressIndicator(
-                            modifier = Modifier.constrainAs(progressBarRef) {
-                                bottom.linkTo(actionsRef.top)
-                            },
-                        )
-                    } else {
-                        LinearProgressIndicator(
-                            progress = { total.toFloat() / finished },
-                            modifier = Modifier.constrainAs(progressBarRef) {
-                                bottom.linkTo(actionsRef.top)
-                            },
-                        )
+                    ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                        if (total <= 0 || finished < 0) {
+                            LinearProgressIndicator(
+                                modifier = Modifier.constrainAs(progressBarRef) {
+                                    bottom.linkTo(actionsRef.top)
+                                },
+                            )
+                        } else {
+                            LinearProgressIndicator(
+                                progress = { total.toFloat() / finished },
+                                modifier = Modifier.constrainAs(progressBarRef) {
+                                    bottom.linkTo(actionsRef.top)
+                                },
+                            )
+                            Text(
+                                text = "$finished/$total",
+                                modifier = Modifier.constrainAs(progressTextRef) {
+                                    bottom.linkTo(progressBarRef.top)
+                                    start.linkTo(progressBarRef.start)
+                                },
+                            )
+                        }
                         Text(
-                            text = "$finished/$total",
-                            modifier = Modifier.constrainAs(progressTextRef) {
+                            text = FileUtils.humanReadableByteCount(speed.coerceAtLeast(0), false) + "/S",
+                            modifier = Modifier.constrainAs(speedRef) {
                                 bottom.linkTo(progressBarRef.top)
                                 end.linkTo(progressBarRef.end)
                             },
                         )
                     }
-                    Text(
-                        text = FileUtils.humanReadableByteCount(speed.coerceAtLeast(0), false) + "/S",
-                        modifier = Modifier.constrainAs(speedRef) {
-                            bottom.linkTo(progressBarRef.top)
-                            start.linkTo(progressBarRef.start)
-                        },
-                    )
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
