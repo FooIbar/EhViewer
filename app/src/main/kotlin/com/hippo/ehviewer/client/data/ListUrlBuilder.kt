@@ -35,6 +35,7 @@ data class ListUrlBuilder(
     var mode: Int = MODE_NORMAL,
     private var mPrev: String? = null,
     var mNext: String? = null,
+    // Reset to null after initial loading
     var mJumpTo: String? = null,
     var category: Int = EhUtils.NONE,
     private var mKeyword: String? = null,
@@ -47,6 +48,23 @@ data class ListUrlBuilder(
     var isUseSimilarityScan: Boolean = false,
     var isOnlySearchCovers: Boolean = false,
 ) : Parcelable {
+
+    fun reset() {
+        mode = MODE_NORMAL
+        mPrev = null
+        mNext = null
+        mJumpTo = null
+        this.category = EhUtils.NONE
+        mKeyword = null
+        advanceSearch = -1
+        minRating = -1
+        pageFrom = -1
+        pageTo = -1
+        imagePath = null
+        isUseSimilarityScan = false
+        isOnlySearchCovers = false
+        hash = null
+    }
 
     fun setIndex(index: String?, isNext: Boolean = true) {
         mNext = index?.takeIf { isNext }
@@ -63,7 +81,8 @@ data class ListUrlBuilder(
             mKeyword = keyword
         }
 
-    constructor(q: QuickSearch) : this() {
+    fun set(q: QuickSearch) {
+        reset()
         mode = q.mode
         this.category = q.category
         mKeyword = q.keyword
@@ -355,9 +374,7 @@ data class ListUrlBuilder(
                 buildString {
                     append(EhUrl.HOST_E)
                     append("toplist.php?tl=")
-                    mKeyword.orEmpty().let {
-                        append(encodeUTF8(it))
-                    }
+                    append(mKeyword!!)
                     mJumpTo?.let {
                         append("&p=").append(it)
                     }
