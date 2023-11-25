@@ -139,10 +139,10 @@ import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.MODE_READ
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.getFavoriteIcon
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
-import com.hippo.ehviewer.ui.legacy.CheckBoxDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.legacy.GalleryRatingBar.OnUserRateListener
 import com.hippo.ehviewer.ui.main.EhPreviewItem
@@ -178,6 +178,7 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.parcelize.Parcelize
@@ -995,35 +996,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
                     dialogState.startDownload(activity, false, galleryDetail.galleryInfo)
                 }
             } else {
-                class DeleteDialogHelper(
-                    private val mGalleryInfo: GalleryInfo,
-                    private val mBuilder: CheckBoxDialogBuilder,
-                ) : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface, which: Int) {
-                        if (which != DialogInterface.BUTTON_POSITIVE) return
-                        coroutineScope.launchIO {
-                            val checked = mBuilder.isChecked
-                            Settings.removeImageFiles = checked
-                            EhDownloadManager.deleteDownload(mGalleryInfo.gid, checked)
-                        }
-                    }
+                coroutineScope.launch {
+                    dialogState.confirmRemoveDownload(galleryDetail)
                 }
-                val builder = CheckBoxDialogBuilder(
-                    context,
-                    context.getString(
-                        R.string.download_remove_dialog_message,
-                        galleryDetail.title,
-                    ),
-                    context.getString(R.string.download_remove_dialog_check_text),
-                    Settings.removeImageFiles,
-                )
-                val helper = DeleteDialogHelper(
-                    galleryDetail,
-                    builder,
-                )
-                builder.setTitle(R.string.download_remove_dialog_title)
-                    .setPositiveButton(android.R.string.ok, helper)
-                    .show()
             }
         }
 

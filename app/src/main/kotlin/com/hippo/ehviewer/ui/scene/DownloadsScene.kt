@@ -97,9 +97,9 @@ import com.hippo.ehviewer.download.DownloadService.Companion.clear
 import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.confirmRemoveDownload
+import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.legacy.AutoStaggeredGridLayoutManager
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
-import com.hippo.ehviewer.ui.legacy.CheckBoxDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.legacy.HandlerDrawable
 import com.hippo.ehviewer.ui.legacy.ViewTransition
@@ -366,20 +366,7 @@ class DownloadsScene : SearchBarScene() {
                     },
                     Icons.Default.Delete to {
                         val downloadInfoList = tracker.getAndClearSelection()
-                        val builder = CheckBoxDialogBuilder(
-                            context,
-                            getString(R.string.download_remove_dialog_message_2, downloadInfoList.size),
-                            getString(R.string.download_remove_dialog_check_text),
-                            Settings.removeImageFiles,
-                        )
-                        val helper = DeleteRangeDialogHelper(
-                            downloadInfoList,
-                            downloadInfoList.mapToLongArray(DownloadInfo::gid),
-                            builder,
-                        )
-                        builder.setTitle(R.string.download_remove_dialog_title)
-                            .setPositiveButton(android.R.string.ok, helper)
-                            .apply { withUIContext { show() } }
+                        dialogState.confirmRemoveDownloadRange(downloadInfoList)
                     },
                     Icons.AutoMirrored.Default.DriveFileMove to {
                         val downloadInfoList = tracker.getAndClearSelection()
@@ -653,34 +640,6 @@ class DownloadsScene : SearchBarScene() {
 
         override fun getItemCount(): Int {
             return mLabels.size
-        }
-    }
-
-    private inner class DeleteRangeDialogHelper(
-        private val mDownloadInfoList: List<DownloadInfo>,
-        private val mGidList: LongArray,
-        private val mBuilder: CheckBoxDialogBuilder,
-    ) : DialogInterface.OnClickListener {
-        override fun onClick(dialog: DialogInterface, which: Int) {
-            if (which != DialogInterface.BUTTON_POSITIVE) {
-                return
-            }
-
-            lifecycleScope.launchIO {
-                // Delete
-                DownloadManager.deleteRangeDownload(mGidList)
-                // Delete image files
-                val checked = mBuilder.isChecked
-                Settings.removeImageFiles = checked
-                if (checked) {
-                    mDownloadInfoList.forEach { info ->
-                        // Delete file
-                        info.downloadDir?.delete()
-                        // Remove download path
-                        EhDB.removeDownloadDirname(info.gid)
-                    }
-                }
-            }
         }
     }
 
