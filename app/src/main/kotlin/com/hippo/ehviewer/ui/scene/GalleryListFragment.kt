@@ -312,7 +312,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                     ListItem(
                         modifier = Modifier.clickable {
                             Settings.recentToplist = keyword
-                            urlBuilder.keyword = keyword
+                            urlBuilder = ListUrlBuilder(MODE_TOPLIST, mKeyword = keyword)
                             data.refresh()
                             showSearchLayout = false
                             coroutineScope.launch { sheetState.close() }
@@ -467,9 +467,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                                         ListItem(
                                             modifier = Modifier.clickable {
                                                 if (urlBuilder.mode == MODE_WHATS_HOT) {
-                                                    navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder().apply { set(item) }.toStartArgs())
+                                                    navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder(item).toStartArgs())
                                                 } else {
-                                                    urlBuilder.set(item)
+                                                    urlBuilder = ListUrlBuilder(item)
                                                     data.refresh()
                                                 }
                                                 showSearchLayout = false
