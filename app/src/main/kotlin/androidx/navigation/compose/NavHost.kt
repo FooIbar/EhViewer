@@ -24,6 +24,7 @@ import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
@@ -312,7 +313,8 @@ public fun NavHost(
             val prev = currentBackStack.last { it != backStackEntry }
             try {
                 flow.collect {
-                    animatedFraction.snapTo(it.progress)
+                    val interpolated = EaseOut.transform(it.progress)
+                    animatedFraction.snapTo(interpolated)
                     seekToFraction(backStackEntry, prev)
                 }
                 navController.popBackStack()
