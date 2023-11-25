@@ -284,20 +284,16 @@ public fun NavHost(
         val transition = updateTransition(transitionState = transitionState, label = "entry")
         val animatedFraction = remember { Animatable(0f).also { it.updateBounds(lowerBound = 0f, upperBound = 1f) } }
 
-        fun seekToFraction() {
+        fun seekToFraction(lState: NavBackStackEntry, rState: NavBackStackEntry) {
             val fraction = animatedFraction.value
             val playTimeNanos = (fraction * duration).roundToLong()
-            transition.setPlaytimeAfterInitialAndTargetStateEstablished(
-                transitionState.currentState,
-                backStackEntry,
-                playTimeNanos,
-            )
+            transition.setPlaytimeAfterInitialAndTargetStateEstablished(lState, rState, playTimeNanos)
         }
 
         LaunchedEffect(backStackEntry) {
             try {
                 animatedFraction.animateTo(1f, animationSpec = tween(700, easing = LinearEasing)) {
-                    seekToFraction()
+                    seekToFraction(transitionState.currentState, backStackEntry)
                 }
             } finally {
                 withContext(NonCancellable) {
@@ -314,15 +310,10 @@ public fun NavHost(
         PredictiveBackHandler(currentBackStack.size > 1) { flow ->
             // Prev can never be null, i.e. BackHandler should not enabled when prev is null
             val prev = currentBackStack.last { it != backStackEntry }
-            transition.setPlaytimeAfterInitialAndTargetStateEstablished(
-                prev,
-                backStackEntry,
-                duration,
-            )
             try {
                 flow.collect {
                     animatedFraction.snapTo(1 - it.progress)
-                    seekToFraction()
+                    seekToFraction(prev, backStackEntry)
                 }
                 navController.popBackStack()
             } catch (e: CancellationException) {
