@@ -312,8 +312,8 @@ public fun NavHost(
             val prev = currentBackStack.last { it != backStackEntry }
             try {
                 flow.collect {
-                    animatedFraction.snapTo(1 - it.progress)
-                    seekToFraction(prev, backStackEntry)
+                    animatedFraction.snapTo(it.progress)
+                    seekToFraction(backStackEntry, prev)
                 }
                 navController.popBackStack()
             } catch (e: CancellationException) {
