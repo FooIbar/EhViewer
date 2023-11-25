@@ -52,7 +52,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -73,7 +72,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -147,6 +145,20 @@ fun SearchBarScreen(
     val context = LocalContext.current
     val activity = context.findActivity<MainActivity>()
     val dialogState = LocalDialogState.current
+
+    // Workaround for BTF2 cursor not showing
+    // We can't use an always focused WindowInfo because callbacks won't be called once
+    // the window regained focus after losing it (e.g. showing a dialog on top of it)
+    // https://issuetracker.google.com/issues/307323842
+    val windowInfo = LocalWindowInfo.current
+    remember {
+        val clazz = Class.forName("androidx.compose.ui.platform.WindowInfoImpl")
+        clazz.cast(windowInfo).let {
+            clazz.getDeclaredMethod("setWindowFocused", Boolean::class.javaPrimitiveType).apply {
+                invoke(it, true)
+            }
+        }
+    }
 
     class TagSuggestion(
         override val hint: String?,
@@ -298,75 +310,71 @@ fun SearchBarScreen(
                 containerColor = background,
             )
         }
-        // Workaround for BTF2 cursor not showing
-        // https://issuetracker.google.com/issues/307323842
-        CompositionLocalProvider(LocalWindowInfo provides FocusedWindowInfo) {
-            SearchBar(
-                modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier,
-                state = searchFieldState,
-                onSearch = {
-                    hideSearchView()
-                    onApplySearch()
-                },
-                active = active,
-                onActiveChange = {
-                    if (it) {
-                        onSearchViewExpanded()
-                    } else {
-                        onSearchViewHidden()
+        SearchBar(
+            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier,
+            state = searchFieldState,
+            onSearch = {
+                hideSearchView()
+                onApplySearch()
+            },
+            active = active,
+            onActiveChange = {
+                if (it) {
+                    onSearchViewExpanded()
+                } else {
+                    onSearchViewHidden()
+                }
+                active = it
+            },
+            title = title?.let { { Text(it) } },
+            placeholder = searchFieldHint?.let { { Text(it) } },
+            leadingIcon = {
+                if (active) {
+                    IconButton(onClick = { hideSearchView() }) {
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
-                    active = it
-                },
-                title = title?.let { { Text(it) } },
-                placeholder = searchFieldHint?.let { { Text(it) } },
-                leadingIcon = {
-                    if (active) {
-                        IconButton(onClick = { hideSearchView() }) {
-                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
-                        }
-                    } else {
-                        IconButton(onClick = { activity.openDrawer() }) {
-                            Icon(Icons.Default.Menu, contentDescription = null)
-                        }
+                } else {
+                    IconButton(onClick = { activity.openDrawer() }) {
+                        Icon(Icons.Default.Menu, contentDescription = null)
                     }
-                },
-                trailingIcon = {
-                    if (active) {
-                        if (searchFieldState.text.isNotEmpty()) {
-                            IconButton(onClick = { searchFieldState.clearText() }) {
-                                Icon(Icons.Default.Close, contentDescription = null)
-                            }
-                        }
-                    } else {
-                        Row {
-                            trailingIcon()
+                }
+            },
+            trailingIcon = {
+                if (active) {
+                    if (searchFieldState.text.isNotEmpty()) {
+                        IconButton(onClick = { searchFieldState.clearText() }) {
+                            Icon(Icons.Default.Close, contentDescription = null)
                         }
                     }
-                },
-            ) {
-                LazyColumn(contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues()) {
-                    items(mSuggestionList) {
-                        ListItem(
-                            headlineContent = { Text(text = it.keyword) },
-                            supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
-                            leadingContent = it.canOpenDirectly.ifTrueThen {
+                } else {
+                    Row {
+                        trailingIcon()
+                    }
+                }
+            },
+        ) {
+            LazyColumn(contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues()) {
+                items(mSuggestionList) {
+                    ListItem(
+                        headlineContent = { Text(text = it.keyword) },
+                        supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
+                        leadingContent = it.canOpenDirectly.ifTrueThen {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.MenuBook,
+                                contentDescription = null,
+                            )
+                        },
+                        trailingContent = it.canDelete.ifTrueThen {
+                            IconButton(onClick = { deleteKeyword(it.keyword) }) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Default.MenuBook,
+                                    imageVector = Icons.Default.Close,
                                     contentDescription = null,
                                 )
-                            },
-                            trailingContent = it.canDelete.ifTrueThen {
-                                IconButton(onClick = { deleteKeyword(it.keyword) }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = null,
-                                    )
-                                }
-                            },
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            modifier = Modifier.clickable { it.onClick() },
-                        )
-                    }
+                            }
+                        },
+                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                        modifier = Modifier.clickable { it.onClick() },
+                    )
                 }
             }
         }
@@ -547,11 +555,6 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String {
             "$keyword$"
         }
     }
-}
-
-private val FocusedWindowInfo = object : WindowInfo {
-    override val isWindowFocused: Boolean
-        get() = true
 }
 
 const val SEARCH_VIEW_ANIMATE_TIME = 300L
