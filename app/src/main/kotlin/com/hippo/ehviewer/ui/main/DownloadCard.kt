@@ -266,9 +266,10 @@ fun DownloadCard(
                     Text(
                         text = stateText,
                         modifier = Modifier.constrainAs(stateTextRef) {
-                            end.linkTo(parent.end)
+                            end.linkTo(parent.end, 16.dp)
                             bottom.linkTo(actionsRef.top)
                         },
+                        style = MaterialTheme.typography.titleSmall
                     )
                 }
             }

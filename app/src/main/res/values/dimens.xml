@@ -27,7 +27,6 @@
 
     <!-- Text size -->
     <dimen name="text_little_small">16sp</dimen>
-    <dimen name="text_super_small">12sp</dimen>
 
     <!-- RatingView -->
     <dimen name="rating_size">16dp</dimen>
