@@ -23,6 +23,4 @@
 
     <dimen name="gallery_list_margin_h">20dp</dimen>
 
-    <dimen name="search_layout_margin_h">20dp</dimen>
-
 </resources>
