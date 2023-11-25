@@ -49,23 +49,6 @@ data class ListUrlBuilder(
     var isOnlySearchCovers: Boolean = false,
 ) : Parcelable {
 
-    fun reset() {
-        mode = MODE_NORMAL
-        mPrev = null
-        mNext = null
-        mJumpTo = null
-        this.category = EhUtils.NONE
-        mKeyword = null
-        advanceSearch = -1
-        minRating = -1
-        pageFrom = -1
-        pageTo = -1
-        imagePath = null
-        isUseSimilarityScan = false
-        isOnlySearchCovers = false
-        hash = null
-    }
-
     fun setIndex(index: String?, isNext: Boolean = true) {
         mNext = index?.takeIf { isNext }
         mPrev = index?.takeUnless { isNext }
@@ -81,8 +64,7 @@ data class ListUrlBuilder(
             mKeyword = keyword
         }
 
-    fun set(q: QuickSearch) {
-        reset()
+    constructor(q: QuickSearch) : this() {
         mode = q.mode
         this.category = q.category
         mKeyword = q.keyword
