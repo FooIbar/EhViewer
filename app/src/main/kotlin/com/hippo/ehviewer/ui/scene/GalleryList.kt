@@ -76,6 +76,7 @@ fun GalleryList(
     thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit) = {},
     refreshState: PullToRefreshState? = null,
     onRefresh: suspend CoroutineScope.() -> Unit = {},
+    onLoading: suspend CoroutineScope.() -> Unit = {},
     navigator: NavController? = null,
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -149,6 +150,9 @@ fun GalleryList(
             var refreshing by remember { mutableStateOf(false) }
             when (val state = data.loadState.refresh) {
                 is LoadState.Loading -> if (!refreshState.isRefreshing) {
+                    LaunchedEffect(Unit) {
+                        onLoading()
+                    }
                     LaunchedEffect(Unit) {
                         if (listMode == 0) {
                             detailListState.scrollToItem(0)
