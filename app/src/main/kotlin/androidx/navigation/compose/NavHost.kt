@@ -23,6 +23,9 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
@@ -49,6 +52,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.Navigator
 import androidx.navigation.createGraph
 import androidx.navigation.get
+import kotlin.math.roundToLong
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 /**
  * Provides in place in the Compose hierarchy for self contained navigation to occur.
@@ -212,10 +218,6 @@ public fun NavHost(
 
     val currentBackStack by composeNavigator.backStack.collectAsState()
 
-    BackHandler(currentBackStack.size > 1) {
-        navController.popBackStack()
-    }
-
     DisposableEffect(lifecycleOwner) {
         // Setup the navController with proper owners
         navController.setLifecycleOwner(lifecycleOwner)
@@ -276,7 +278,39 @@ public fun NavHost(
             }
         }
 
-        val transition = updateTransition(backStackEntry, label = "entry")
+        BackHandler(currentBackStack.size > 1) {
+            navController.popBackStack()
+        }
+
+        val transitionState = remember { MutableTransitionState(backStackEntry) }
+        val transition = updateTransition(transitionState = transitionState, label = "entry")
+        val animatedFraction = remember { Animatable(0f).also { it.updateBounds(lowerBound = 0f, upperBound = 1f) } }
+        LaunchedEffect(backStackEntry) {
+            val duration = 500000000L
+            fun seekToFraction() {
+                val fraction = animatedFraction.value
+                val playTimeNanos = (fraction * duration).roundToLong()
+                transition.setPlaytimeAfterInitialAndTargetStateEstablished(
+                    transitionState.currentState,
+                    backStackEntry,
+                    playTimeNanos,
+                )
+            }
+            try {
+                animatedFraction.animateTo(1f, animationSpec = tween(700, easing = LinearEasing)) {
+                    seekToFraction()
+                }
+            } finally {
+                withContext(NonCancellable) {
+                    animatedFraction.snapTo(0f)
+                    transition.setPlaytimeAfterInitialAndTargetStateEstablished(
+                        backStackEntry,
+                        backStackEntry,
+                        0,
+                    )
+                }
+            }
+        }
         transition.AnimatedContent(
             modifier,
             transitionSpec = {
