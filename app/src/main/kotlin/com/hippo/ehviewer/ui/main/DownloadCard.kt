@@ -210,14 +210,14 @@ fun DownloadCard(
                             LinearProgressIndicator(
                                 modifier = Modifier.constrainAs(progressBarRef) {
                                     bottom.linkTo(actionsRef.top)
-                                },
+                                }.fillMaxWidth(),
                             )
                         } else {
                             LinearProgressIndicator(
                                 progress = { finished.toFloat() / total.toFloat() },
                                 modifier = Modifier.constrainAs(progressBarRef) {
                                     bottom.linkTo(actionsRef.top)
-                                },
+                                }.fillMaxWidth(),
                             )
                             Text(
                                 text = "$finished/$total",
