@@ -18,8 +18,12 @@ package com.hippo.ehviewer.ui
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -29,12 +33,16 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.HeartBroken
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
@@ -321,8 +329,18 @@ suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo, onDismiss: () -
         onDismiss = onDismiss,
         text = {
             Column {
-                Text(text = stringResource(id = R.string.download_remove_dialog_message, info.title.orEmpty()))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(id = R.string.download_remove_dialog_message, info.title.orEmpty()),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                    ) { checked = !checked },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Checkbox(checked = checked, onCheckedChange = { checked = it })
                     Text(text = stringResource(id = R.string.download_remove_dialog_check_text))
                 }
@@ -341,8 +359,18 @@ suspend fun DialogState.confirmRemoveDownloadRange(list: List<DownloadInfo>) {
         title = R.string.download_remove_dialog_title,
         text = {
             Column {
-                Text(text = stringResource(id = R.string.download_remove_dialog_message_2, list.size))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(id = R.string.download_remove_dialog_message_2, list.size),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                    ) { checked = !checked },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Checkbox(checked = checked, onCheckedChange = { checked = it })
                     Text(text = stringResource(id = R.string.download_remove_dialog_check_text))
                 }
