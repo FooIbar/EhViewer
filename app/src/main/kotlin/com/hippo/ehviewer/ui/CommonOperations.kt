@@ -50,6 +50,7 @@ import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadService
+import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.tools.DialogState
@@ -331,6 +332,36 @@ suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo, onDismiss: () -
     Settings.removeImageFiles = checked
     withIOContext {
         DownloadManager.deleteDownload(info.gid, checked)
+    }
+}
+
+suspend fun DialogState.confirmRemoveDownloadRange(list: List<DownloadInfo>) {
+    var checked by mutableStateOf(Settings.removeImageFiles)
+    awaitPermissionOrCancel(
+        title = R.string.download_remove_dialog_title,
+        text = {
+            Column {
+                Text(text = stringResource(id = R.string.download_remove_dialog_message_2, list.size))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = checked, onCheckedChange = { checked = it })
+                    Text(text = stringResource(id = R.string.download_remove_dialog_check_text))
+                }
+            }
+        },
+    )
+    Settings.removeImageFiles = checked
+    withIOContext {
+        // Delete
+        DownloadManager.deleteRangeDownload(list.mapToLongArray(DownloadInfo::gid))
+        // Delete image files
+        if (checked) {
+            list.forEach { info ->
+                // Delete file
+                info.downloadDir?.delete()
+                // Remove download path
+                EhDB.removeDownloadDirname(info.gid)
+            }
+        }
     }
 }
 
