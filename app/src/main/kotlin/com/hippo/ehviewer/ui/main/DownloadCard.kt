@@ -202,11 +202,9 @@ fun DownloadCard(
                         )
                     }
                 } else {
-                    // TODO: use JvmInline Value Class
-                    val updated by DownloadManager.updatedDownloadInfo(info) {
+                    val (total, finished, speed) = DownloadManager.updatedDownloadInfo(info) {
                         Triple(total, finished, speed)
                     }
-                    val (total, finished, speed) = updated
                     ProvideTextStyle(MaterialTheme.typography.labelMedium) {
                         if (total <= 0 || finished < 0) {
                             LinearProgressIndicator(
@@ -216,7 +214,7 @@ fun DownloadCard(
                             )
                         } else {
                             LinearProgressIndicator(
-                                progress = { total.toFloat() / finished },
+                                progress = { finished.toFloat() / total.toFloat() },
                                 modifier = Modifier.constrainAs(progressBarRef) {
                                     bottom.linkTo(actionsRef.top)
                                 },
