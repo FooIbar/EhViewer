@@ -10,13 +10,13 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -56,9 +56,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LeadingIconTab
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.ShapeDefaults
@@ -67,7 +69,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -327,14 +328,16 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                     windowInsets = WindowInsets(0),
                 )
                 toplists.forEach { (name, keyword) ->
-                    Text(
-                        text = name,
+                    ListItem(
                         modifier = Modifier.clickable {
                             Settings.recentToplist = keyword
                             urlBuilder = ListUrlBuilder(MODE_TOPLIST, mKeyword = keyword)
                             showSearchLayout = false
                             coroutineScope.launch { sheetState.close() }
-                        }.fillMaxWidth().minimumInteractiveComponentSize().padding(horizontal = 16.dp),
+                        },
+                        headlineContent = {
+                            Text(text = name)
+                        },
                     )
                 }
             }
@@ -422,8 +425,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     val quickSearchListState = rememberLazyListState()
                     val reorderableLazyListState = rememberReorderableLazyColumnState(quickSearchListState) { from, to ->
-                        val fromIndex = from.index
-                        val toIndex = to.index
+                        val fromIndex = from.index - 1
+                        val toIndex = to.index - 1
                         quickSearchList.apply {
                             add(toIndex, removeAt(fromIndex))
                         }
@@ -447,8 +450,12 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                         state = quickSearchListState,
                         contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
                     ) {
+                        // Fix the first item's reorder animation
+                        stickyHeader {
+                            HorizontalDivider()
+                        }
                         items(quickSearchList, key = { it.id!! }) { item ->
-                            ReorderableItem(reorderableLazyListState, key = item.id!!) {
+                            ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
                                 val dismissState = rememberDismissState(
                                     confirmValueChange = {
                                         if (it == DismissValue.DismissedToStart) {
@@ -467,7 +474,15 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                                         backgroundContent = {},
                                         directions = setOf(DismissDirection.EndToStart),
                                     ) {
-                                        Row(
+                                        val elevation by animateDpAsState(
+                                            if (isDragging) {
+                                                8.dp // md.sys.elevation.level4
+                                            } else {
+                                                1.dp // md.sys.elevation.level1
+                                            },
+                                            label = "elevation",
+                                        )
+                                        ListItem(
                                             modifier = Modifier.clickable {
                                                 if (urlBuilder.mode == MODE_WHATS_HOT) {
                                                     navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder(item).toStartArgs())
@@ -476,48 +491,49 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                                                 }
                                                 showSearchLayout = false
                                                 coroutineScope.launch { sheetState.close() }
-                                            }.fillMaxWidth().padding(horizontal = 16.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                        ) {
-                                            Text(
-                                                text = item.name,
-                                                modifier = Modifier.weight(1f),
-                                            )
-                                            CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
-                                                IconButton(
-                                                    onClick = {},
-                                                    modifier = Modifier.draggableHandle(
-                                                        onDragStarted = {
-                                                            val feedbackConstant = if (isAtLeastU) {
-                                                                HapticFeedbackConstants.DRAG_START
-                                                            } else if (isAtLeastR) {
-                                                                HapticFeedbackConstants.GESTURE_START
-                                                            } else if (isAtLeastOMR1) {
-                                                                HapticFeedbackConstants.KEYBOARD_PRESS
-                                                            } else {
-                                                                HapticFeedbackConstants.VIRTUAL_KEY
-                                                            }
-                                                            view.performHapticFeedback(feedbackConstant)
-                                                        },
-                                                        onDragStopped = {
-                                                            val feedbackConstant = if (isAtLeastR) {
-                                                                HapticFeedbackConstants.GESTURE_END
-                                                            } else if (isAtLeastOMR1) {
-                                                                HapticFeedbackConstants.KEYBOARD_RELEASE
-                                                            } else {
-                                                                HapticFeedbackConstants.VIRTUAL_KEY_RELEASE
-                                                            }
-                                                            view.performHapticFeedback(feedbackConstant)
-                                                        },
-                                                    ),
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.Reorder,
-                                                        contentDescription = null,
-                                                    )
+                                            },
+                                            tonalElevation = 1.dp,
+                                            shadowElevation = elevation,
+                                            headlineContent = {
+                                                Text(text = item.name)
+                                            },
+                                            trailingContent = {
+                                                CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
+                                                    IconButton(
+                                                        onClick = {},
+                                                        modifier = Modifier.draggableHandle(
+                                                            onDragStarted = {
+                                                                val feedbackConstant = if (isAtLeastU) {
+                                                                    HapticFeedbackConstants.DRAG_START
+                                                                } else if (isAtLeastR) {
+                                                                    HapticFeedbackConstants.GESTURE_START
+                                                                } else if (isAtLeastOMR1) {
+                                                                    HapticFeedbackConstants.KEYBOARD_PRESS
+                                                                } else {
+                                                                    HapticFeedbackConstants.VIRTUAL_KEY
+                                                                }
+                                                                view.performHapticFeedback(feedbackConstant)
+                                                            },
+                                                            onDragStopped = {
+                                                                val feedbackConstant = if (isAtLeastR) {
+                                                                    HapticFeedbackConstants.GESTURE_END
+                                                                } else if (isAtLeastOMR1) {
+                                                                    HapticFeedbackConstants.KEYBOARD_RELEASE
+                                                                } else {
+                                                                    HapticFeedbackConstants.VIRTUAL_KEY_RELEASE
+                                                                }
+                                                                view.performHapticFeedback(feedbackConstant)
+                                                            },
+                                                        ),
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Reorder,
+                                                            contentDescription = null,
+                                                        )
+                                                    }
                                                 }
-                                            }
-                                        }
+                                            },
+                                        )
                                     }
                                 }
                             }
