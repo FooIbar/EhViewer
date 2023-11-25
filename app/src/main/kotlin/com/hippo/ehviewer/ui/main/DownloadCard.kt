@@ -269,7 +269,7 @@ fun DownloadCard(
                             end.linkTo(parent.end, 16.dp)
                             bottom.linkTo(actionsRef.top)
                         },
-                        style = MaterialTheme.typography.titleSmall
+                        style = MaterialTheme.typography.titleSmall,
                     )
                 }
             }
