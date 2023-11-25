@@ -5,24 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
@@ -34,13 +23,10 @@ import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.FolderSpecial
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -56,19 +42,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.core.os.bundleOf
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -80,8 +60,6 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.CompositeDateValidator
 import com.google.android.material.datepicker.DateValidatorPointBackward
@@ -96,18 +74,14 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.startDownload
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
@@ -248,12 +222,6 @@ fun FavouritesScreen(navigator: NavController) {
         data.loadState.refresh is LoadState.NotLoading
     }
 
-    if (refreshState.isRefreshing) {
-        LaunchedEffect(Unit) {
-            refresh()
-        }
-    }
-
     val searchBarConnection = remember {
         object : NestedScrollConnection {
             override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
@@ -262,7 +230,6 @@ fun FavouritesScreen(navigator: NavController) {
             }
         }
     }
-    val combinedModifier = Modifier.nestedScroll(searchBarConnection).nestedScroll(refreshState.nestedScrollConnection)
 
     var expanded by remember { mutableStateOf(false) }
     var hidden by remember { mutableStateOf(false) }
@@ -288,167 +255,73 @@ fun FavouritesScreen(navigator: NavController) {
             }
         },
     ) {
-        val layoutDirection = LocalLayoutDirection.current
-        val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
-        val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
-        val realPadding = PaddingValues(
-            top = it.calculateTopPadding() + marginV,
-            bottom = it.calculateBottomPadding() + marginV,
-            start = it.calculateStartPadding(layoutDirection) + marginH,
-            end = it.calculateEndPadding(layoutDirection) + marginH,
-        )
         val listMode by Settings.listMode.collectAsState()
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (listMode == 0) {
-                val height by collectListThumbSizeAsState()
-                val showPages = Settings.showGalleryPages
-                val columnWidth by collectDetailSizeAsState()
-                FastScrollLazyVerticalGrid(
-                    columns = GridCells.Adaptive(columnWidth),
-                    modifier = combinedModifier,
-                    contentPadding = realPadding,
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-                    horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-                ) {
-                    items(
-                        count = data.itemCount,
-                        key = data.itemKey(key = { item -> item.gid }),
-                        contentType = data.itemContentType(),
-                    ) { index ->
-                        val info = data[index]
-                        if (info != null) {
-                            val checked = info.gid in checkedInfoMap
-                            CheckableItem(checked = checked) {
-                                GalleryInfoListItem(
-                                    onClick = {
-                                        if (selectMode) {
-                                            if (checked) {
-                                                checkedInfoMap.remove(info.gid)
-                                            } else {
-                                                checkedInfoMap[info.gid] = info
-                                            }
-                                        } else {
-                                            navigator.navAnimated(
-                                                R.id.galleryDetailScene,
-                                                bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
-                                            )
-                                        }
-                                    },
-                                    onLongClick = {
-                                        selectMode = true
-                                        checkedInfoMap[info.gid] = info
-                                    },
-                                    info = info,
-                                    isInFavScene = true,
-                                    showPages = showPages,
-                                    modifier = Modifier.height(height),
+        val height by collectListThumbSizeAsState()
+        val showPages = Settings.showGalleryPages
+        GalleryList(
+            data = data,
+            contentModifier = Modifier.nestedScroll(searchBarConnection),
+            contentPadding = it,
+            listMode = listMode,
+            detailItemContent = { info ->
+                val checked = info.gid in checkedInfoMap
+                CheckableItem(checked = checked) {
+                    GalleryInfoListItem(
+                        onClick = {
+                            if (selectMode) {
+                                if (checked) {
+                                    checkedInfoMap.remove(info.gid)
+                                } else {
+                                    checkedInfoMap[info.gid] = info
+                                }
+                            } else {
+                                navigator.navAnimated(
+                                    R.id.galleryDetailScene,
+                                    bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
                                 )
                             }
-                        }
-                    }
+                        },
+                        onLongClick = {
+                            selectMode = true
+                            checkedInfoMap[info.gid] = info
+                        },
+                        info = info,
+                        isInFavScene = true,
+                        showPages = showPages,
+                        modifier = Modifier.height(height),
+                    )
                 }
-            } else {
-                val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
-                val thumbWidth by Settings.thumbSizeDp.collectAsState()
-                FastScrollLazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(thumbWidth.dp),
-                    modifier = combinedModifier,
-                    verticalItemSpacing = gridInterval,
-                    horizontalArrangement = Arrangement.spacedBy(gridInterval),
-                    contentPadding = realPadding,
-                ) {
-                    items(
-                        count = data.itemCount,
-                        key = data.itemKey(key = { item -> item.gid }),
-                        contentType = data.itemContentType(),
-                    ) { index ->
-                        val info = data[index]
-                        if (info != null) {
-                            val checked = info.gid in checkedInfoMap
-                            CheckableItem(checked = checked) {
-                                GalleryInfoGridItem(
-                                    onClick = {
-                                        if (selectMode) {
-                                            if (checked) {
-                                                checkedInfoMap.remove(info.gid)
-                                            } else {
-                                                checkedInfoMap[info.gid] = info
-                                            }
-                                        } else {
-                                            navigator.navAnimated(
-                                                R.id.galleryDetailScene,
-                                                bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
-                                            )
-                                        }
-                                    },
-                                    onLongClick = {
-                                        selectMode = true
-                                        checkedInfoMap[info.gid] = info
-                                    },
-                                    info = info,
+            },
+            thumbItemContent = { info ->
+                val checked = info.gid in checkedInfoMap
+                CheckableItem(checked = checked) {
+                    GalleryInfoGridItem(
+                        onClick = {
+                            if (selectMode) {
+                                if (checked) {
+                                    checkedInfoMap.remove(info.gid)
+                                } else {
+                                    checkedInfoMap[info.gid] = info
+                                }
+                            } else {
+                                navigator.navAnimated(
+                                    R.id.galleryDetailScene,
+                                    bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
                                 )
                             }
-                        }
-                    }
+                        },
+                        onLongClick = {
+                            selectMode = true
+                            checkedInfoMap[info.gid] = info
+                        },
+                        info = info,
+                    )
                 }
-            }
-
-            var refreshing by remember { mutableStateOf(false) }
-            when (val state = data.loadState.refresh) {
-                is LoadState.Loading -> if (!refreshState.isRefreshing) {
-                    Surface {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                } else {
-                    refreshing = true
-                }
-                is LoadState.Error -> {
-                    Surface {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Column(
-                                modifier = Modifier.widthIn(max = 228.dp)
-                                    .clip(ShapeDefaults.Small).clickable { data.retry() },
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Icon(
-                                    imageVector = EhIcons.Big.Default.SadAndroid,
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(16.dp).size(120.dp),
-                                    tint = MaterialTheme.colorScheme.tertiary,
-                                )
-                                Text(
-                                    text = ExceptionUtils.getReadableString(state.error),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    textAlign = TextAlign.Center,
-                                )
-                            }
-                        }
-                    }
-                    SideEffect {
-                        if (refreshing) {
-                            refreshState.endRefresh()
-                            refreshing = false
-                        }
-                    }
-                }
-                is LoadState.NotLoading -> SideEffect {
-                    // Don't use `refreshState.isRefreshing` here because recomposition may happen
-                    // before loading state changes
-                    if (refreshing) {
-                        refreshState.endRefresh()
-                        refreshing = false
-                    }
-                }
-            }
-        }
+            },
+            refreshState = refreshState,
+            onRefresh = { refresh() },
+            navigator = navigator,
+        )
     }
 
     // Explicitly reallocate fabBuilder lambda to recompose secondary fab

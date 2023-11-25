@@ -13,10 +13,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -28,16 +26,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
@@ -52,7 +46,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.Bookmarks
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ElevatedCard
@@ -63,7 +56,6 @@ import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismissBox
@@ -76,7 +68,6 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -89,7 +80,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -104,7 +94,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
@@ -120,8 +109,6 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.CalendarConstraints.DateValidator
 import com.google.android.material.datepicker.CompositeDateValidator
@@ -133,7 +120,6 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
-import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.ListUrlBuilder
@@ -144,17 +130,14 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TAG
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TOPLIST
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_UPLOADER
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_WHATS_HOT
-import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.WebViewActivity
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.FAB_ANIMATE_TIME
@@ -167,15 +150,12 @@ import com.hippo.ehviewer.ui.main.NormalSearch
 import com.hippo.ehviewer.ui.main.SearchAdvanced
 import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.Deferred
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.AppConfig
-import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.isAtLeastOMR1
@@ -248,7 +228,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
     val exHint = stringResource(R.string.gallery_list_search_bar_hint_exhentai)
     val searchBarHint = remember { if (EhUtils.isExHentai) exHint else ehHint }
     val suitableTitle = getSuitableTitleForUrlBuilder(urlBuilder)
-    val data = rememberInVM(urlBuilder) {
+    val data = rememberInVM {
         Pager(PagingConfig(25)) {
             object : PagingSource<String, BaseGalleryInfo>() {
                 override fun getRefreshKey(state: PagingState<String, BaseGalleryInfo>): String? = null
@@ -264,6 +244,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                         }.onFailure {
                             return@withIOContext LoadResult.Error(it)
                         }.onSuccess {
+                            urlBuilder.mJumpTo = null
                             return@withIOContext LoadResult.Page(it.galleryInfoList, prev?.toString(), next?.toString())
                         }
                     }
@@ -331,7 +312,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                     ListItem(
                         modifier = Modifier.clickable {
                             Settings.recentToplist = keyword
-                            urlBuilder = ListUrlBuilder(MODE_TOPLIST, mKeyword = keyword)
+                            urlBuilder.keyword = keyword
+                            data.refresh()
                             showSearchLayout = false
                             coroutineScope.launch { sheetState.close() }
                         },
@@ -485,9 +467,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                                         ListItem(
                                             modifier = Modifier.clickable {
                                                 if (urlBuilder.mode == MODE_WHATS_HOT) {
-                                                    navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder(item).toStartArgs())
+                                                    navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder().apply { set(item) }.toStartArgs())
                                                 } else {
-                                                    urlBuilder = ListUrlBuilder(item)
+                                                    urlBuilder.set(item)
+                                                    data.refresh()
                                                 }
                                                 showSearchLayout = false
                                                 coroutineScope.launch { sheetState.close() }
@@ -556,14 +539,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         data.loadState.refresh is LoadState.NotLoading
     }
 
-    if (refreshState.isRefreshing) {
-        LaunchedEffect(Unit) {
-            urlBuilder.setIndex(null, true)
-            urlBuilder.mJumpTo = null
-            data.refresh()
-        }
-    }
-
     var hidden by remember { mutableStateOf(false) }
     val searchBarConnection = remember {
         val slop = ViewConfiguration.get(context).scaledTouchSlop
@@ -580,7 +555,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             }
         }
     }
-    val combinedModifier = Modifier.nestedScroll(searchBarConnection).nestedScroll(refreshState.nestedScrollConnection)
 
     val openGalleryKeyword = stringResource(R.string.gallery_list_search_bar_open_gallery)
     abstract class UrlSuggestion : Suggestion() {
@@ -679,7 +653,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                     delay(300)
                     withUIContext { navigator.navAnimated(R.id.galleryListScene, builder.toStartArgs()) }
                 }
-                else -> urlBuilder = builder
+                else -> {
+                    urlBuilder = builder
+                    data.refresh()
+                }
             }
             showSearchLayout = false
         },
@@ -711,19 +688,12 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         val layoutDirection = LocalLayoutDirection.current
         val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
         val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
-        val realPadding = PaddingValues(
-            top = paddingValues.calculateTopPadding() + marginV,
-            bottom = paddingValues.calculateBottomPadding() + marginV,
-            start = paddingValues.calculateStartPadding(layoutDirection) + marginH,
-            end = paddingValues.calculateEndPadding(layoutDirection) + marginH,
-        )
-
         Column(
             modifier = Modifier.imePadding().verticalScroll(rememberScrollState())
                 .padding(
-                    top = realPadding.calculateTopPadding(),
-                    start = realPadding.calculateStartPadding(layoutDirection),
-                    end = realPadding.calculateEndPadding(layoutDirection),
+                    top = paddingValues.calculateTopPadding() + marginV,
+                    start = paddingValues.calculateStartPadding(layoutDirection) + marginH,
+                    end = paddingValues.calculateEndPadding(layoutDirection) + marginH,
                     bottom = 8.dp,
                 )
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
@@ -820,118 +790,58 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             }
         }
 
-        Box(modifier = Modifier.fillMaxSize().scale(animatedSearchLayout).alpha(animatedSearchLayout)) {
-            when (val loadState = data.loadState.refresh) {
-                is LoadState.Loading -> if (data.itemCount == 0) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-                is LoadState.Error -> {
-                    LaunchedEffect(loadState) {
-                        if (loadState.error.cause is CloudflareBypassException) {
-                            dialogState.awaitPermissionOrCancel(title = R.string.cloudflare_bypass_failed) {
-                                Text(text = stringResource(id = R.string.open_in_webview))
-                            }
-                            withUIContext { navigator.navAnimated(R.id.webView, bundleOf(WebViewActivity.KEY_URL to EhUrl.host)) }
-                        }
-                    }
-                    Column(
-                        modifier = Modifier.align(Alignment.Center).widthIn(max = 228.dp)
-                            .clip(ShapeDefaults.Small).clickable { data.retry() },
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Icon(
-                            imageVector = EhIcons.Big.Default.SadAndroid,
-                            contentDescription = null,
-                            modifier = Modifier.padding(16.dp).size(120.dp),
-                            tint = MaterialTheme.colorScheme.tertiary,
+        val height by collectListThumbSizeAsState()
+        val showPages = Settings.showGalleryPages
+        GalleryList(
+            modifier = Modifier.scale(animatedSearchLayout).alpha(animatedSearchLayout),
+            data = data,
+            contentModifier = Modifier.nestedScroll(searchBarConnection),
+            contentPadding = paddingValues,
+            listMode = listMode,
+            detailListState = listState,
+            detailItemContent = { info ->
+                GalleryInfoListItem(
+                    onClick = {
+                        navigator.navAnimated(
+                            R.id.galleryDetailScene,
+                            bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
                         )
-                        Text(
-                            text = ExceptionUtils.getReadableString(loadState.error),
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
+                    },
+                    onLongClick = {
+                        coroutineScope.launch {
+                            dialogState.doGalleryInfoAction(info, context)
+                        }
+                    },
+                    info = info,
+                    isInFavScene = false,
+                    showPages = showPages,
+                    modifier = Modifier.height(height),
+                )
+            },
+            thumbListState = gridState,
+            thumbItemContent = { info ->
+                GalleryInfoGridItem(
+                    onClick = {
+                        navigator.navAnimated(
+                            R.id.galleryDetailScene,
+                            bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
                         )
-                    }
-                }
-                is LoadState.NotLoading -> SideEffect {
-                    refreshState.endRefresh()
-                }
-            }
-            if (listMode == 0) {
-                val height by collectListThumbSizeAsState()
-                val showPages = Settings.showGalleryPages
-                val columnWidth by collectDetailSizeAsState()
-                FastScrollLazyVerticalGrid(
-                    columns = GridCells.Adaptive(columnWidth),
-                    modifier = combinedModifier,
-                    state = listState,
-                    contentPadding = realPadding,
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-                    horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-                ) {
-                    items(
-                        count = data.itemCount,
-                        key = data.itemKey(key = { item -> item.gid }),
-                        contentType = data.itemContentType(),
-                    ) { index ->
-                        val info = data[index]
-                        if (info != null) {
-                            GalleryInfoListItem(
-                                onClick = {
-                                    navigator.navAnimated(
-                                        R.id.galleryDetailScene,
-                                        bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
-                                    )
-                                },
-                                onLongClick = {
-                                    coroutineScope.launch {
-                                        dialogState.doGalleryInfoAction(info, context)
-                                    }
-                                },
-                                info = info,
-                                isInFavScene = false,
-                                showPages = showPages,
-                                modifier = Modifier.height(height),
-                            )
+                    },
+                    onLongClick = {
+                        coroutineScope.launch {
+                            dialogState.doGalleryInfoAction(info, context)
                         }
-                    }
-                }
-            } else {
-                val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
-                val thumbWidth by Settings.thumbSizeDp.collectAsState()
-                FastScrollLazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(thumbWidth.dp),
-                    modifier = combinedModifier,
-                    state = gridState,
-                    verticalItemSpacing = gridInterval,
-                    horizontalArrangement = Arrangement.spacedBy(gridInterval),
-                    contentPadding = realPadding,
-                ) {
-                    items(
-                        count = data.itemCount,
-                        key = data.itemKey(key = { item -> item.gid }),
-                        contentType = data.itemContentType(),
-                    ) { index ->
-                        val info = data[index]
-                        if (info != null) {
-                            GalleryInfoGridItem(
-                                onClick = {
-                                    navigator.navAnimated(
-                                        R.id.galleryDetailScene,
-                                        bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
-                                    )
-                                },
-                                onLongClick = {
-                                    coroutineScope.launch {
-                                        dialogState.doGalleryInfoAction(info, context)
-                                    }
-                                },
-                                info = info,
-                            )
-                        }
-                    }
-                }
-            }
-        }
+                    },
+                    info = info,
+                )
+            },
+            refreshState = refreshState,
+            onRefresh = {
+                urlBuilder.setIndex(null)
+                data.refresh()
+            },
+            navigator = navigator,
+        )
     }
 
     val gotoTitle = stringResource(R.string.go_to)
@@ -944,8 +854,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         autoCancel = true,
     ) {
         onClick(Icons.Default.Refresh) {
-            urlBuilder.setIndex(null, true)
-            urlBuilder.mJumpTo = null
+            urlBuilder.setIndex(null)
             data.refresh()
         }
         if (urlBuilder.mode != MODE_WHATS_HOT) {
