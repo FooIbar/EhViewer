@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -237,8 +238,14 @@ fun DownloadCard(
                         bottom.linkTo(parent.bottom)
                     },
                 ) {
-                    IconButton(onClick = onDrag) {
-                        Icon(imageVector = Icons.Default.DragHandle, contentDescription = null)
+                    IconButton(onClick = { }) {
+                        Icon(
+                            imageVector = Icons.Default.DragHandle,
+                            contentDescription = null,
+                            modifier = Modifier.pointerInput(info.gid) {
+                                awaitPointerEventScope { onDrag() }
+                            },
+                        )
                     }
                     if (downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD) {
                         IconButton(onClick = onStop) {
