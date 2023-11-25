@@ -72,7 +72,7 @@ fun GalleryList(
     listMode: Int = 0,
     detailListState: LazyGridState = rememberLazyGridState(),
     detailItemContent: @Composable (LazyGridItemScope.(BaseGalleryInfo) -> Unit),
-    thumbListState: LazyStaggeredGridState? = null,
+    thumbListState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit) = {},
     refreshState: PullToRefreshState? = null,
     onRefresh: suspend CoroutineScope.() -> Unit = {},
@@ -120,7 +120,7 @@ fun GalleryList(
             FastScrollLazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Adaptive(thumbWidth.dp),
                 modifier = combinedModifier,
-                state = thumbListState ?: rememberLazyStaggeredGridState(),
+                state = thumbListState,
                 verticalItemSpacing = gridInterval,
                 horizontalArrangement = Arrangement.spacedBy(gridInterval),
                 contentPadding = realPadding,
@@ -149,6 +149,13 @@ fun GalleryList(
             var refreshing by remember { mutableStateOf(false) }
             when (val state = data.loadState.refresh) {
                 is LoadState.Loading -> if (!refreshState.isRefreshing) {
+                    LaunchedEffect(Unit) {
+                        if (listMode == 0) {
+                            detailListState.scrollToItem(0)
+                        } else {
+                            thumbListState.scrollToItem(0)
+                        }
+                    }
                     Surface {
                         Box(
                             modifier = Modifier.fillMaxSize(),
