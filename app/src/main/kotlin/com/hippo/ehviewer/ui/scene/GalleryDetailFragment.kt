@@ -48,6 +48,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -231,7 +232,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         val gi = galleryInfo
         if (page != 0 && gi != null) {
             Snackbar.make(
-                activity.findViewById(R.id.fragment_container),
+                activity.findViewById(R.id.content),
                 context.getString(R.string.read_from, page),
                 Snackbar.LENGTH_LONG,
             ).setAction(R.string.read) { context.navToReader(gi.findBaseInfo(), page) }.show()
@@ -942,10 +943,19 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             lub.keyword = uploader
             navigator.navigate(GalleryListScreenDestination(lub))
         }
-        fun onGalleryInfoCardClick() {
-            galleryDetail ?: return
-            GalleryInfoBottomSheet(galleryDetail).show(activity.supportFragmentManager, "GalleryInfoBottomSheet")
+
+        var showBottomSheet by remember { mutableStateOf(false) }
+
+        if (showBottomSheet && galleryDetail != null) {
+            ModalBottomSheet(onDismissRequest = { showBottomSheet = false }) {
+                GalleryInfoBottomSheet(galleryDetail, navigator)
+            }
         }
+
+        fun onGalleryInfoCardClick() {
+            showBottomSheet = true
+        }
+
         fun showFilterUploaderDialog() {
             val uploader = galleryInfo.uploader
             val disowned = uploader == "(Disowned)"
