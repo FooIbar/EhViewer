@@ -919,7 +919,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
     ) {
         val galleryDetail = galleryInfo.asGalleryDetail()
         val windowSizeClass = calculateWindowSizeClass(activity)
-        val thumbWidth by Settings.thumbSizeDp.collectAsState()
+        val thumbColumns by Settings.thumbColumns.collectAsState()
         val readText = stringResource(R.string.read)
         val downloadText = stringResource(R.string.download)
         var readButtonText by rememberSaveable { mutableStateOf(readText) }
@@ -1004,7 +1004,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
 
         when (windowSizeClass.widthSizeClass) {
             WindowWidthSizeClass.Medium, WindowWidthSizeClass.Compact -> LazyVerticalGrid(
-                columns = GridCells.Adaptive(thumbWidth.dp),
+                columns = GridCells.Fixed(thumbColumns),
                 contentPadding = contentPadding,
                 modifier = modifier.padding(horizontal = keylineMargin),
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
@@ -1055,7 +1055,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: NavController)
             }
 
             WindowWidthSizeClass.Expanded -> LazyVerticalGrid(
-                columns = GridCells.Adaptive(thumbWidth.dp),
+                columns = GridCells.Fixed(thumbColumns),
                 contentPadding = contentPadding,
                 modifier = modifier.padding(horizontal = keylineMargin),
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),

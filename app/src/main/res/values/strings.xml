@@ -362,7 +362,7 @@
     <string name="settings_eh_detail_size">Detail width</string>
     <string name="settings_eh_detail_size_long">Long</string>
     <string name="settings_eh_detail_size_short">Short</string>
-    <string name="settings_eh_thumb_size">Thumb size</string>
+    <string name="settings_eh_thumb_columns">Thumb columns</string>
     <string name="settings_eh_thumb_resolution">Thumb resolution</string>
     <string name="settings_eh_thumb_resolution_summary">Currently %s. Certain resolutions might cause getting thumb failed</string>
     <string name="settings_eh_thumb_resolution_auto">Auto</string>
