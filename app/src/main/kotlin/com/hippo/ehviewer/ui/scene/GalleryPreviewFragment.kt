@@ -1,9 +1,5 @@
 package com.hippo.ehviewer.ui.scene
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -20,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -30,10 +25,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
@@ -56,13 +49,10 @@ import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ktbuilder.imageRequest
-import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.util.findActivity
-import com.hippo.ehviewer.util.getParcelableCompat
 import com.ramcosta.composedestinations.annotation.Destination
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -157,22 +147,3 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
         }
     }
 }
-
-class GalleryPreviewFragment : Fragment() {
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        return ComposeWithMD3 {
-            val galleryDetail = remember { requireArguments().getParcelableCompat<GalleryDetail>(KEY_GALLERY_DETAIL)!! }
-            val toNextPage = remember { requireArguments().getBoolean(KEY_NEXT_PAGE) }
-            val navController = remember { findNavController() }
-            GalleryPreviewScreen(galleryDetail, toNextPage, navController)
-        }
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        requireContext().findActivity<MainActivity>().recompose()
-    }
-}
-
-const val KEY_GALLERY_DETAIL = "gallery_detail"
-const val KEY_NEXT_PAGE = "next_page"
