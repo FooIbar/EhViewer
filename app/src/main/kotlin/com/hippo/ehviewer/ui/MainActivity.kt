@@ -118,11 +118,11 @@ import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
-import com.hippo.ehviewer.util.set
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.rememberNavHostEngine
+import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -262,7 +262,6 @@ class MainActivity : EhActivity() {
             val drawerState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
             val navController = rememberNavController()
-            fun isSelected(id: Int) = ::navController.isInitialized && id == navController.currentDestination?.id
             fun closeDrawer(callback: () -> Unit = {}) = scope.launch {
                 drawerState.close()
                 callback()
@@ -290,6 +289,7 @@ class MainActivity : EhActivity() {
                     snackbarState.showSnackbar(it)
                 }
             }
+            val currentDestination by navController.currentDestinationAsState()
             Scaffold(snackbarHost = { SnackbarHost(snackbarState) }) {
                 LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
                     ModalNavigationDrawer(
@@ -313,7 +313,7 @@ class MainActivity : EhActivity() {
                                             label = {
                                                 Text(text = stringResource(id = stringId))
                                             },
-                                            selected = false,
+                                            selected = currentDestination === direction,
                                             onClick = {
                                                 navController.navigate(direction.route)
                                                 closeDrawer()
