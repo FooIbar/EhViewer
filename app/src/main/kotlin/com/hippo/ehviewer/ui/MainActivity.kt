@@ -85,14 +85,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
-import com.google.android.material.snackbar.Snackbar
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.icons.EhIcons
@@ -123,18 +122,16 @@ import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
+import com.hippo.ehviewer.util.isAtLeastQ
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.clipboardManager
@@ -196,7 +193,6 @@ class MainActivity : EhActivity() {
     var drawerLocked by mutableStateOf(false)
     private var tipFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private var intentFlow = MutableSharedFlow<Intent>(extraBufferCapacity = 4)
-    private val isInitializedFlow = MutableStateFlow(false)
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -271,6 +267,24 @@ class MainActivity : EhActivity() {
             LaunchedEffect(Unit) {
                 tipFlow.collectLatest {
                     snackbarState.showSnackbar(it)
+                }
+            }
+            val warning = stringResource(R.string.metered_network_warning)
+            val settings = stringResource(R.string.settings)
+            val checkMeteredNetwork by Settings.meteredNetworkWarning.collectAsState()
+            if (checkMeteredNetwork) {
+                LaunchedEffect(Unit) {
+                    if (connectivityManager.isActiveNetworkMetered) {
+                        if (isAtLeastQ) {
+                            val ret = snackbarState.showSnackbar(warning, settings)
+                            if (ret == SnackbarResult.ActionPerformed) {
+                                val panelIntent = Intent(android.provider.Settings.Panel.ACTION_INTERNET_CONNECTIVITY)
+                                startActivity(panelIntent)
+                            }
+                        } else {
+                            snackbarState.showSnackbar(warning)
+                        }
+                    }
                 }
             }
             val snackMessage = stringResource(R.string.clipboard_gallery_url_snack_message)
@@ -391,12 +405,6 @@ class MainActivity : EhActivity() {
                 onNewIntent(intent)
             }
             checkDownloadLocation()
-            if (Settings.meteredNetworkWarning) {
-                lifecycleScope.launchUI {
-                    isInitializedFlow.first { it }
-                    checkMeteredNetwork()
-                }
-            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (!Settings.appLinkVerifyTip) {
                     try {
@@ -451,26 +459,6 @@ class MainActivity : EhActivity() {
             .setMessage(R.string.invalid_download_location)
             .setPositiveButton(R.string.get_it, null)
             .show()
-    }
-
-    private fun checkMeteredNetwork() {
-        if (connectivityManager.isActiveNetworkMetered) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                Snackbar.make(
-                    findViewById(R.id.content),
-                    R.string.metered_network_warning,
-                    Snackbar.LENGTH_LONG,
-                )
-                    .setAction(R.string.settings) {
-                        val panelIntent =
-                            Intent(android.provider.Settings.Panel.ACTION_INTERNET_CONNECTIVITY)
-                        startActivity(panelIntent)
-                    }
-                    .show()
-            } else {
-                showTip(R.string.metered_network_warning, BaseScene.LENGTH_LONG)
-            }
-        }
     }
 
     override fun onResume() {
