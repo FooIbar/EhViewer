@@ -81,7 +81,7 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.big.History
+import com.hippo.ehviewer.icons.big.Download
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.main.DownloadCard
@@ -472,7 +472,7 @@ fun DownloadsScreen(navigator: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Image(
-                        imageVector = EhIcons.Big.Default.History,
+                        imageVector = EhIcons.Big.Default.Download,
                         contentDescription = null,
                         modifier = Modifier.padding(16.dp),
                     )
