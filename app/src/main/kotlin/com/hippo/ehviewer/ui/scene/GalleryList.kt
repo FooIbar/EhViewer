@@ -42,25 +42,22 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
-import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
-import com.hippo.ehviewer.ui.WebViewActivity
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.ExceptionUtils
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -77,7 +74,7 @@ fun GalleryList(
     refreshState: PullToRefreshState? = null,
     onRefresh: suspend CoroutineScope.() -> Unit = {},
     onLoading: suspend CoroutineScope.() -> Unit = {},
-    navigator: NavController? = null,
+    navigator: DestinationsNavigator? = null,
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
@@ -179,7 +176,7 @@ fun GalleryList(
                                 dialogState.awaitPermissionOrCancel(title = R.string.cloudflare_bypass_failed) {
                                     Text(text = stringResource(id = R.string.open_in_webview))
                                 }
-                                navigator?.navAnimated(R.id.webView, bundleOf(WebViewActivity.KEY_URL to EhUrl.host))
+                                // navigator?.navAnimated(R.id.webView, bundleOf(WebViewActivity.KEY_URL to EhUrl.host))
                             }
                         }
                         Box(

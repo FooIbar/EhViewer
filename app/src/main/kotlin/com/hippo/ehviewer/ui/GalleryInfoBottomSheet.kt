@@ -31,7 +31,6 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.LOCAL_FAVORITED
 import com.hippo.ehviewer.client.thumbUrl
 import com.hippo.ehviewer.databinding.InfoSheetBinding
-import com.hippo.ehviewer.ui.scene.navWithUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 
 private const val INDEX_URL = 2
@@ -80,7 +79,7 @@ class GalleryInfoBottomSheet(private val detail: GalleryDetail) : BottomSheetDia
                                 modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)).clickable {
                                     if (index == INDEX_PARENT) {
                                         if (content != null) {
-                                            navController.navWithUrl(content)
+                                            // navController.navWithUrl(content)
                                         }
                                     } else {
                                         context.addTextToClipboard(content, true)

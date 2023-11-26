@@ -1,10 +1,6 @@
 package com.hippo.ehviewer.ui.scene
 
 import android.content.Intent
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -72,9 +68,6 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
-import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -85,6 +78,7 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.History
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
+import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.main.DownloadCard
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.navToReader
@@ -97,6 +91,7 @@ import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import kotlin.math.roundToInt
@@ -108,7 +103,7 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
 @Destination
 @Composable
-fun DownloadsScreen(navigator: NavController) {
+fun DownloadsScreen(navigator: DestinationsNavigator) {
     var label by rememberSaveable { mutableStateOf<String?>(null) }
     var keyword by rememberSaveable { mutableStateOf<String?>(null) }
     var filterType by rememberSaveable { mutableStateOf(-1) }
@@ -439,10 +434,7 @@ fun DownloadsScreen(navigator: NavController) {
                                 }
                             },
                             onThumbClick = {
-                                navigator.navAnimated(
-                                    R.id.galleryDetailScene,
-                                    bundleOf(GalleryDetailFragment.KEY_ARGS to GalleryInfoArgs(info.galleryInfo)),
-                                )
+                                navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info.galleryInfo)))
                             },
                             onLongClick = {
                                 checkedInfoMap[info.gid] = info
@@ -524,16 +516,7 @@ fun DownloadsScreen(navigator: NavController) {
     }
 }
 
-class DownloadsFragment : BaseScene() {
-    override val enableDrawerGestures = true
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val navController = findNavController()
-        return ComposeWithMD3 {
-            DownloadsScreen(navController)
-        }
-    }
-
+class DownloadsFragment {
     companion object {
         const val KEY_GID = "gid"
         const val KEY_ACTION = "action"
