@@ -2,7 +2,6 @@ package com.hippo.ehviewer.ui.scene
 
 import android.graphics.Bitmap
 import android.net.Uri
-import android.view.HapticFeedbackConstants
 import android.view.ViewConfiguration
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -39,7 +38,6 @@ import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.DismissDirection
@@ -143,16 +141,15 @@ import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.NormalSearch
 import com.hippo.ehviewer.ui.main.SearchAdvanced
 import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
+import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.findActivity
-import com.hippo.ehviewer.util.isAtLeastOMR1
-import com.hippo.ehviewer.util.isAtLeastR
-import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.ehviewer.util.pickVisualMedia
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -432,14 +429,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                             list.zip(range).forEach { it.first.position = it.second }
                             EhDB.updateQuickSearch(list)
                         }
-                        val feedbackConstant = if (isAtLeastU) {
-                            HapticFeedbackConstants.SEGMENT_FREQUENT_TICK
-                        } else if (isAtLeastOMR1) {
-                            HapticFeedbackConstants.TEXT_HANDLE_MOVE
-                        } else {
-                            HapticFeedbackConstants.CLOCK_TICK
-                        }
-                        view.performHapticFeedback(feedbackConstant)
+                        view.performHapticFeedback(draggingHapticFeedback)
                     }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -493,38 +483,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                             Text(text = item.name)
                                         },
                                         trailingContent = {
-                                            IconButton(
-                                                onClick = {},
-                                                modifier = Modifier.draggableHandle(
-                                                    onDragStarted = {
-                                                        val feedbackConstant = if (isAtLeastU) {
-                                                            HapticFeedbackConstants.DRAG_START
-                                                        } else if (isAtLeastR) {
-                                                            HapticFeedbackConstants.GESTURE_START
-                                                        } else if (isAtLeastOMR1) {
-                                                            HapticFeedbackConstants.KEYBOARD_PRESS
-                                                        } else {
-                                                            HapticFeedbackConstants.VIRTUAL_KEY
-                                                        }
-                                                        view.performHapticFeedback(feedbackConstant)
-                                                    },
-                                                    onDragStopped = {
-                                                        val feedbackConstant = if (isAtLeastR) {
-                                                            HapticFeedbackConstants.GESTURE_END
-                                                        } else if (isAtLeastOMR1) {
-                                                            HapticFeedbackConstants.KEYBOARD_RELEASE
-                                                        } else {
-                                                            HapticFeedbackConstants.VIRTUAL_KEY_RELEASE
-                                                        }
-                                                        view.performHapticFeedback(feedbackConstant)
-                                                    },
-                                                ),
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Reorder,
-                                                    contentDescription = null,
-                                                )
-                                            }
+                                            DragHandle()
                                         },
                                     )
                                 }

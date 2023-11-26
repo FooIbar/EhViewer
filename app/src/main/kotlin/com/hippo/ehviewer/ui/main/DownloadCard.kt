@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +48,7 @@ import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.tools.CropDefaults
 import com.hippo.ehviewer.ui.tools.CrystalCard
+import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
@@ -242,15 +242,7 @@ fun ReorderableItemScope.DownloadCard(
                         bottom.linkTo(parent.bottom)
                     },
                 ) {
-                    IconButton(
-                        onClick = { },
-                        modifier = Modifier.draggableHandle(),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Reorder,
-                            contentDescription = null,
-                        )
-                    }
+                    DragHandle()
                     if (downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD) {
                         IconButton(onClick = onStop) {
                             Icon(imageVector = Icons.Default.Pause, contentDescription = null)
