@@ -293,7 +293,7 @@ public fun NavHost(
 
         LaunchedEffect(backStackEntry) {
             try {
-                animatedFraction.animateTo(1f, animationSpec = tween(700, easing = LinearEasing)) {
+                animatedFraction.animateTo(1f, animationSpec = tween(500, easing = LinearEasing)) {
                     seekToFraction(transitionState.currentState, backStackEntry)
                 }
             } finally {

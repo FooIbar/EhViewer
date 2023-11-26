@@ -123,7 +123,6 @@ import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import eu.kanade.tachiyomi.util.lang.launchUI
@@ -369,7 +368,7 @@ class MainActivity : EhActivity() {
                                 DestinationsNavHost(
                                     navGraph = NavGraphs.root,
                                     startRoute = navItems[Settings.launchPage].first,
-                                    engine = rememberNavHostEngine(rootDefaultAnimations = RootNavGraphDefaultAnimations.ACCOMPANIST_FADING),
+                                    engine = rememberNavHostEngine(rootDefaultAnimations = ehNavAnim),
                                     navController = navController,
                                 )
                             }
