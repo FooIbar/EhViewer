@@ -135,9 +135,9 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
             )
         },
     ) { paddingValues ->
-        val thumbWidth by Settings.thumbSizeDp.collectAsState()
+        val thumbColumns by Settings.thumbColumns.collectAsState()
         FastScrollLazyVerticalGrid(
-            columns = GridCells.Adaptive(thumbWidth.dp),
+            columns = GridCells.Fixed(thumbColumns),
             modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection).padding(horizontal = dimensionResource(id = R.dimen.gallery_list_margin_h)),
             state = state,
             contentPadding = paddingValues,

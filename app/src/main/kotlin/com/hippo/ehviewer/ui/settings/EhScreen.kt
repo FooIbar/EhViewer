@@ -253,11 +253,10 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 value = Settings.detailSize.asMutableState(),
             )
             IntSliderPreference(
-                maxValue = 400,
-                minValue = 80,
-                step = 7,
-                title = stringResource(id = R.string.settings_eh_thumb_size),
-                value = Settings.thumbSizeDp::value,
+                maxValue = 10,
+                minValue = 1,
+                title = stringResource(id = R.string.settings_eh_thumb_columns),
+                value = Settings.thumbColumns::value,
             )
             val thumbResolution = Settings::thumbResolution.observed
             val summary2 = stringResource(id = R.string.settings_eh_thumb_resolution_summary, stringArrayResource(id = R.array.thumb_resolution_entries)[thumbResolution.value])
