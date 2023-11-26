@@ -97,7 +97,7 @@ import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.Subscriptions
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
-import com.hippo.ehviewer.ui.destinations.DownloadScreenDestination
+import com.hippo.ehviewer.ui.destinations.DownloadsScreenDestination
 import com.hippo.ehviewer.ui.destinations.FavouritesScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
@@ -148,7 +148,7 @@ private val navItems = arrayOf(
     Triple(ToplistScreenDestination, R.string.toplist, Icons.Default.FormatListNumbered),
     Triple(FavouritesScreenDestination, R.string.favourite, Icons.Default.Favorite),
     Triple(HistoryScreenDestination, R.string.history, Icons.Default.History),
-    Triple(DownloadScreenDestination, R.string.downloads, Icons.Default.Download),
+    Triple(DownloadsScreenDestination, R.string.downloads, Icons.Default.Download),
 )
 
 class MainActivity : EhActivity() {
@@ -241,7 +241,7 @@ class MainActivity : EhActivity() {
 
             DownloadService.ACTION_START_DOWNLOADSCENE -> {
                 val args = intent.getBundleExtra(DownloadService.ACTION_START_DOWNLOADSCENE_ARGS)
-                navigator?.navigate(DownloadScreenDestination)
+                navigator?.navigate(DownloadsScreenDestination)
             }
         }
 
