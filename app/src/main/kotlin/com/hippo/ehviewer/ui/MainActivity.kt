@@ -188,67 +188,14 @@ class MainActivity : EhActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        lifecycleScope.launchUI {
-            isInitializedFlow.first { it }
-            if (!handleIntent(intent)) {
-                if (intent != null && Intent.ACTION_VIEW == intent.action) {
-                    if (intent.data != null) {
-                        val url = intent.data.toString()
-                        EditTextDialogBuilder(this@MainActivity, url, "")
-                            .setTitle(R.string.error_cannot_parse_the_url)
-                            .setPositiveButton(android.R.string.copy) { _, _ ->
-                                this@MainActivity.addTextToClipboard(url)
-                            }
-                            .show()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun handleIntent(intent: Intent?): Boolean {
-        when (intent?.action) {
-            Intent.ACTION_VIEW -> {
-                val uri = intent.data ?: return false
-                return navigator?.navWithUrl(uri.toString()) ?: false
-            }
-
-            Intent.ACTION_SEND -> {
-                val type = intent.type
-                if ("text/plain" == type) {
-                    val builder = ListUrlBuilder()
-                    builder.keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
-                    navigator?.navigate(GalleryListScreenDestination(builder))
-                    return true
-                } else if (type != null && type.startsWith("image/")) {
-                    val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
-                    if (null != uri) {
-                        val temp = saveImageToTempFile(uri)
-                        if (null != temp) {
-                            val builder = ListUrlBuilder()
-                            builder.mode = ListUrlBuilder.MODE_IMAGE_SEARCH
-                            builder.imagePath = temp.path
-                            builder.isUseSimilarityScan = true
-                            navigator?.navigate(GalleryListScreenDestination(builder))
-                            return true
-                        }
-                    }
-                }
-            }
-
-            DownloadService.ACTION_START_DOWNLOADSCENE -> {
-                val args = intent.getBundleExtra(DownloadService.ACTION_START_DOWNLOADSCENE_ARGS)
-                navigator?.navigate(DownloadsScreenDestination)
-            }
-        }
-
-        return false
+        intentFlow.tryEmit(intent)
     }
 
     var drawerLocked by mutableStateOf(false)
     private var tipFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    private var intentFlow = MutableSharedFlow<Intent>(extraBufferCapacity = 4)
     private var navigator: NavController? = null
     private val isInitializedFlow = MutableStateFlow(false)
 
@@ -272,6 +219,48 @@ class MainActivity : EhActivity() {
             fun closeDrawer(callback: () -> Unit = {}) = scope.launch {
                 navDrawerState.close()
                 callback()
+            }
+
+            LaunchedEffect(Unit) {
+                intentFlow.collect {
+                    when (intent?.action) {
+                        Intent.ACTION_VIEW -> {
+                            val url = intent.data?.toString()
+                            if (url != null && !navController.navWithUrl(url)) {
+                                EditTextDialogBuilder(this@MainActivity, url, "")
+                                    .setTitle(R.string.error_cannot_parse_the_url)
+                                    .setPositiveButton(android.R.string.copy) { _, _ ->
+                                        this@MainActivity.addTextToClipboard(url)
+                                    }
+                                    .show()
+                            }
+                        }
+                        Intent.ACTION_SEND -> {
+                            val type = intent.type
+                            if ("text/plain" == type) {
+                                val keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
+                                navController.navigate(GalleryListScreenDestination(ListUrlBuilder(mKeyword = keyword)))
+                            } else if (type != null && type.startsWith("image/")) {
+                                val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
+                                if (null != uri) {
+                                    val temp = saveImageToTempFile(uri)
+                                    if (null != temp) {
+                                        val builder = ListUrlBuilder(
+                                            mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
+                                            imagePath = temp.path,
+                                            isUseSimilarityScan = true,
+                                        )
+                                        navController.navigate(GalleryListScreenDestination(builder))
+                                    }
+                                }
+                            }
+                        }
+                        DownloadService.ACTION_START_DOWNLOADSCENE -> {
+                            val args = intent.getBundleExtra(DownloadService.ACTION_START_DOWNLOADSCENE_ARGS)
+                            navController.navigate(DownloadsScreenDestination)
+                        }
+                    }
+                }
             }
 
             LaunchedEffect(Unit) {
