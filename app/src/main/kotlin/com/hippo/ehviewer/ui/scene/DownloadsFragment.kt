@@ -416,6 +416,8 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             contentPadding = realPadding,
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
         ) {
+            // Fix the first item's reorder animation
+            item {}
             items(list, key = { it.gid }) { info ->
                 ReorderableItem(reorderableState, key = info.gid) {
                     val checked = info.gid in checkedInfoMap
