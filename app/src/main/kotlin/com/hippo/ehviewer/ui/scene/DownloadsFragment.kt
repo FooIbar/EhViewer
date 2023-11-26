@@ -424,10 +424,19 @@ fun DownloadsScreen(navigator: NavController) {
         ) {
             items(list, key = { it.gid }) { info ->
                 ReorderableItem(reorderableState, key = info.gid) {
-                    CheckableItem(checked = false) {
+                    val checked = info.gid in checkedInfoMap
+                    CheckableItem(checked = checked) {
                         DownloadCard(
                             onClick = {
-                                context.navToReader(info.galleryInfo)
+                                if (selectMode) {
+                                    if (checked) {
+                                        checkedInfoMap.remove(info.gid)
+                                    } else {
+                                        checkedInfoMap[info.gid] = info
+                                    }
+                                } else {
+                                    context.navToReader(info.galleryInfo)
+                                }
                             },
                             onThumbClick = {
                                 navigator.navAnimated(
@@ -436,6 +445,8 @@ fun DownloadsScreen(navigator: NavController) {
                                 )
                             },
                             onLongClick = {
+                                checkedInfoMap[info.gid] = info
+                                selectMode = true
                             },
                             onStart = {
                                 val intent = Intent(activity, DownloadService::class.java)
