@@ -75,6 +75,7 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.Download
+import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
@@ -320,7 +321,8 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         searchBarOffsetY = searchBarOffsetY,
         trailingIcon = {
             var expanded by remember { mutableStateOf(false) }
-            IconButton(onClick = { activity.openSideSheet() }) {
+            val sideSheetState = LocalSideSheetState.current
+            IconButton(onClick = { coroutineScope.launch { sideSheetState.open() } }) {
                 Icon(imageVector = Icons.AutoMirrored.Outlined.Label, contentDescription = stringResource(id = R.string.download_labels))
             }
             IconButton(onClick = { expanded = !expanded }) {

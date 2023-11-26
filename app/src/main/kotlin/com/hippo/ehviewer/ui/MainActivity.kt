@@ -65,8 +65,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -247,8 +249,6 @@ class MainActivity : EhActivity() {
     }
 
     var drawerLocked by mutableStateOf(false)
-    private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    private var openSideSheetFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private var tipFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private var navigator: NavController? = null
     private val isInitializedFlow = MutableStateFlow(false)
@@ -260,7 +260,8 @@ class MainActivity : EhActivity() {
         setMD3Content {
             val configuration = LocalConfiguration.current
             val dialogState = LocalDialogState.current
-            val drawerState = rememberDrawerState(DrawerValue.Closed)
+            val navDrawerState = rememberDrawerState(DrawerValue.Closed)
+            val sideSheetState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
             val navController = rememberNavController()
             DisposableEffect(navController) {
@@ -270,7 +271,7 @@ class MainActivity : EhActivity() {
                 }
             }
             fun closeDrawer(callback: () -> Unit = {}) = scope.launch {
-                drawerState.close()
+                navDrawerState.close()
                 callback()
             }
 
@@ -285,11 +286,6 @@ class MainActivity : EhActivity() {
                     showTip(getString(R.string.update_failed, ExceptionUtils.getReadableString(it)), BaseScene.LENGTH_LONG)
                 }
             }
-            LaunchedEffect(Unit) {
-                openDrawerFlow.collectLatest {
-                    drawerState.open()
-                }
-            }
             val snackbarState = remember { SnackbarHostState() }
             LaunchedEffect(Unit) {
                 tipFlow.collectLatest {
@@ -297,87 +293,86 @@ class MainActivity : EhActivity() {
                 }
             }
             val currentDestination by navController.currentDestinationAsState()
-            Scaffold(snackbarHost = { SnackbarHost(snackbarState) }) {
-                LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
-                    ModalNavigationDrawer(
-                        drawerContent = {
-                            ModalDrawerSheet(
-                                modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp),
-                                windowInsets = WindowInsets(0, 0, 0, 0),
-                            ) {
-                                val scrollState = rememberScrollState()
-                                Column(
-                                    modifier = Modifier.verticalScroll(scrollState).navigationBarsPadding(),
+            CompositionLocalProvider(
+                LocalNavDrawerState provides navDrawerState,
+                LocalSideSheetState provides sideSheetState,
+            ) {
+                Scaffold(snackbarHost = { SnackbarHost(snackbarState) }) {
+                    LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
+                        ModalNavigationDrawer(
+                            drawerContent = {
+                                ModalDrawerSheet(
+                                    modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp),
+                                    windowInsets = WindowInsets(0, 0, 0, 0),
                                 ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.sadpanda_low_poly),
-                                        contentDescription = null,
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                        contentScale = ContentScale.FillWidth,
-                                    )
-                                    navItems.forEach { (direction, stringId, icon) ->
+                                    val scrollState = rememberScrollState()
+                                    Column(
+                                        modifier = Modifier.verticalScroll(scrollState).navigationBarsPadding(),
+                                    ) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.sadpanda_low_poly),
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                            contentScale = ContentScale.FillWidth,
+                                        )
+                                        navItems.forEach { (direction, stringId, icon) ->
+                                            NavigationDrawerItem(
+                                                label = {
+                                                    Text(text = stringResource(id = stringId))
+                                                },
+                                                selected = currentDestination === direction,
+                                                onClick = {
+                                                    navController.navigate(direction.route)
+                                                    closeDrawer()
+                                                },
+                                                modifier = Modifier.padding(horizontal = 12.dp),
+                                                icon = {
+                                                    Icon(imageVector = icon, contentDescription = null)
+                                                },
+                                            )
+                                        }
                                         NavigationDrawerItem(
                                             label = {
-                                                Text(text = stringResource(id = stringId))
+                                                Text(text = stringResource(id = R.string.settings))
                                             },
-                                            selected = currentDestination === direction,
+                                            selected = false,
                                             onClick = {
-                                                navController.navigate(direction.route)
-                                                closeDrawer()
+                                                closeDrawer { startActivity(Intent(applicationContext, ConfigureActivity::class.java)) }
                                             },
                                             modifier = Modifier.padding(horizontal = 12.dp),
                                             icon = {
-                                                Icon(imageVector = icon, contentDescription = null)
+                                                Icon(imageVector = Icons.Default.Settings, contentDescription = null)
                                             },
                                         )
                                     }
-                                    NavigationDrawerItem(
-                                        label = {
-                                            Text(text = stringResource(id = R.string.settings))
-                                        },
-                                        selected = false,
-                                        onClick = {
-                                            closeDrawer { startActivity(Intent(applicationContext, ConfigureActivity::class.java)) }
-                                        },
-                                        modifier = Modifier.padding(horizontal = 12.dp),
-                                        icon = {
-                                            Icon(imageVector = Icons.Default.Settings, contentDescription = null)
-                                        },
-                                    )
-                                }
-                            }
-                        },
-                        drawerState = drawerState,
-                        gesturesEnabled = !drawerLocked || drawerState.isOpen,
-                    ) {
-                        val sheet = sideSheet.firstOrNull()
-                        val sideDrawerState = rememberDrawerState(DrawerValue.Closed)
-                        LaunchedEffect(Unit) {
-                            openSideSheetFlow.collectLatest {
-                                sideDrawerState.open()
-                            }
-                        }
-                        SideDrawer(
-                            drawerContent = {
-                                if (sheet != null) {
-                                    ModalDrawerSheet(
-                                        modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
-                                        drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
-                                        windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
-                                    ) {
-                                        sheet(sideDrawerState)
-                                    }
                                 }
                             },
-                            drawerState = sideDrawerState,
-                            gesturesEnabled = sheet != null && !drawerLocked,
+                            drawerState = navDrawerState,
+                            gesturesEnabled = !drawerLocked || navDrawerState.isOpen,
                         ) {
-                            DestinationsNavHost(
-                                navGraph = NavGraphs.root,
-                                startRoute = navItems[Settings.launchPage].first,
-                                engine = rememberNavHostEngine(rootDefaultAnimations = RootNavGraphDefaultAnimations.ACCOMPANIST_FADING),
-                                navController = navController,
-                            )
+                            val sheet = sideSheet.firstOrNull()
+                            SideDrawer(
+                                drawerContent = {
+                                    if (sheet != null) {
+                                        ModalDrawerSheet(
+                                            modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
+                                            drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
+                                            windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
+                                        ) {
+                                            sheet(sideSheetState)
+                                        }
+                                    }
+                                },
+                                drawerState = sideSheetState,
+                                gesturesEnabled = sheet != null && !drawerLocked,
+                            ) {
+                                DestinationsNavHost(
+                                    navGraph = NavGraphs.root,
+                                    startRoute = navItems[Settings.launchPage].first,
+                                    engine = rememberNavHostEngine(rootDefaultAnimations = RootNavGraphDefaultAnimations.ACCOMPANIST_FADING),
+                                    navController = navController,
+                                )
+                            }
                         }
                     }
                 }
@@ -513,14 +508,6 @@ class MainActivity : EhActivity() {
         Settings.clipboardTextHashCode = hashCode
     }
 
-    fun openDrawer() {
-        openDrawerFlow.tryEmit(Unit)
-    }
-
-    fun openSideSheet() {
-        openSideSheetFlow.tryEmit(Unit)
-    }
-
     fun showTip(@StringRes id: Int, length: Int, useToast: Boolean = false) {
         showTip(getString(id), length, useToast)
     }
@@ -536,3 +523,6 @@ class MainActivity : EhActivity() {
         shareUrl?.let { outContent?.webUri = Uri.parse(shareUrl) }
     }
 }
+
+val LocalNavDrawerState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalNavDrawerState not present!") }
+val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }

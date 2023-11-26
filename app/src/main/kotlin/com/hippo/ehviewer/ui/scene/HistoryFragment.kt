@@ -42,7 +42,7 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.History
-import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
@@ -51,11 +51,11 @@ import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.util.findActivity
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Destination
 @Composable
@@ -75,7 +75,8 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.history)) },
                 navigationIcon = {
-                    IconButton(onClick = { context.findActivity<MainActivity>().openDrawer() }) {
+                    val drawerState = LocalNavDrawerState.current
+                    IconButton(onClick = { coroutineScope.launch { drawerState.open() } }) {
                         Icon(imageVector = Icons.Default.Menu, contentDescription = null)
                     }
                 },

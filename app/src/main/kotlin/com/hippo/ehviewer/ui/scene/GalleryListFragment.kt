@@ -125,6 +125,7 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
+import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
@@ -634,7 +635,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         searchBarOffsetY = searchBarOffsetY,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         trailingIcon = {
-            IconButton(onClick = { activity.openSideSheet() }) {
+            val sheetState = LocalSideSheetState.current
+            IconButton(onClick = { coroutineScope.launch { sheetState.open() } }) {
                 Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
             }
             IconButton(onClick = { showSearchLayout = !showSearchLayout }) {

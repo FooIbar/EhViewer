@@ -72,6 +72,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
+import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.LocalDialogState
@@ -79,6 +80,7 @@ import com.hippo.ehviewer.util.findActivity
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -312,7 +314,8 @@ fun SearchBarScreen(
                         Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 } else {
-                    IconButton(onClick = { activity.openDrawer() }) {
+                    val drawerState = LocalNavDrawerState.current
+                    IconButton(onClick = { scope.launchUI { drawerState.open() } }) {
                         Icon(Icons.Default.Menu, contentDescription = null)
                     }
                 }
