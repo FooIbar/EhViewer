@@ -45,7 +45,7 @@
     </fragment>
     <fragment
         android:id="@+id/galleryDetailScene"
-        android:name="com.hippo.ehviewer.ui.scene.GalleryDetailScene"
+        android:name="com.hippo.ehviewer.ui.scene.GalleryDetailFragment"
         android:label="GalleryDetailScene" />
     <fragment
         android:id="@+id/galleryCommentsScene"
@@ -65,7 +65,7 @@
         android:label="HistoryScene" />
     <fragment
         android:id="@+id/nav_downloads"
-        android:name="com.hippo.ehviewer.ui.scene.DownloadsScene"
+        android:name="com.hippo.ehviewer.ui.scene.DownloadsFragment"
         android:label="DownloadsScene" />
     <activity
         android:id="@+id/nav_settings"

@@ -573,7 +573,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         token: String,
     ) : UrlSuggestion() {
         override val destination = R.id.galleryDetailScene
-        override val args = bundleOf(GalleryDetailScene.KEY_ARGS to TokenArgs(gid, token))
+        override val args = bundleOf(GalleryDetailFragment.KEY_ARGS to TokenArgs(gid, token))
     }
 
     class GalleryPageUrlSuggestion(
@@ -804,7 +804,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                     onClick = {
                         navigator.navAnimated(
                             R.id.galleryDetailScene,
-                            bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
+                            bundleOf(GalleryDetailFragment.KEY_ARGS to GalleryInfoArgs(info)),
                         )
                     },
                     onLongClick = {
@@ -824,7 +824,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                     onClick = {
                         navigator.navAnimated(
                             R.id.galleryDetailScene,
-                            bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
+                            bundleOf(GalleryDetailFragment.KEY_ARGS to GalleryInfoArgs(info)),
                         )
                     },
                     onLongClick = {

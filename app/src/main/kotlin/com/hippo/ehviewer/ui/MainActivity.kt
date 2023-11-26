@@ -104,7 +104,7 @@ import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.scene.BaseScene
-import com.hippo.ehviewer.ui.scene.GalleryDetailScene
+import com.hippo.ehviewer.ui.scene.GalleryDetailFragment
 import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
 import com.hippo.ehviewer.ui.scene.ProgressFragment
 import com.hippo.ehviewer.ui.scene.TokenArgs
@@ -507,7 +507,7 @@ class MainActivity : EhActivity() {
                 launch = {
                     navController.navAnimated(
                         R.id.galleryDetailScene,
-                        bundleOf(GalleryDetailScene.KEY_ARGS to TokenArgs(result1.gid, result1.token)),
+                        bundleOf(GalleryDetailFragment.KEY_ARGS to TokenArgs(result1.gid, result1.token)),
                     )
                 }
             }

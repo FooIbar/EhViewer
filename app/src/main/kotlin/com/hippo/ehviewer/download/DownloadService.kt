@@ -35,7 +35,7 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.scene.DownloadsScene
+import com.hippo.ehviewer.ui.scene.DownloadsFragment
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.SimpleHandler
@@ -187,7 +187,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         clearIntent.action = ACTION_CLEAR
         val piClear = PendingIntent.getService(this, 0, clearIntent, PendingIntent.FLAG_IMMUTABLE)
         val bundle = Bundle()
-        bundle.putString(DownloadsScene.KEY_ACTION, DownloadsScene.ACTION_CLEAR_DOWNLOAD_SERVICE)
+        bundle.putString(DownloadsFragment.KEY_ACTION, DownloadsFragment.ACTION_CLEAR_DOWNLOAD_SERVICE)
         val activityIntent = Intent(this, MainActivity::class.java)
         activityIntent.action = ACTION_START_DOWNLOADSCENE
         activityIntent.putExtra(ACTION_START_DOWNLOADSCENE_ARGS, bundle)
@@ -243,7 +243,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         }
         ensureDownloadingBuilder()
         val bundle = Bundle()
-        bundle.putLong(DownloadsScene.KEY_GID, info.gid)
+        bundle.putLong(DownloadsFragment.KEY_GID, info.gid)
         val activityIntent = Intent(this, MainActivity::class.java)
         activityIntent.action = ACTION_START_DOWNLOADSCENE
         activityIntent.putExtra(ACTION_START_DOWNLOADSCENE_ARGS, bundle)

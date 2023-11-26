@@ -277,7 +277,7 @@ fun FavouritesScreen(navigator: NavController) {
                             } else {
                                 navigator.navAnimated(
                                     R.id.galleryDetailScene,
-                                    bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
+                                    bundleOf(GalleryDetailFragment.KEY_ARGS to GalleryInfoArgs(info)),
                                 )
                             }
                         },
@@ -306,7 +306,7 @@ fun FavouritesScreen(navigator: NavController) {
                             } else {
                                 navigator.navAnimated(
                                     R.id.galleryDetailScene,
-                                    bundleOf(GalleryDetailScene.KEY_ARGS to GalleryInfoArgs(info)),
+                                    bundleOf(GalleryDetailFragment.KEY_ARGS to GalleryInfoArgs(info)),
                                 )
                             }
                         },

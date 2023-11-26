@@ -53,7 +53,7 @@ fun ProgressScreen(gid: Long, token: String, page: Int, navigator: NavController
                         navigator.popBackStack()
                         navigator.navAnimated(
                             R.id.galleryDetailScene,
-                            bundleOf(GalleryDetailScene.KEY_ARGS to TokenArgs(gid, it, page)),
+                            bundleOf(GalleryDetailFragment.KEY_ARGS to TokenArgs(gid, it, page)),
                         )
                     }
                 }.onFailure {
