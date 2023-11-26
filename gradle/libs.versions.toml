@@ -84,6 +84,7 @@ coil-gif = { module = "io.coil-kt:coil-gif" }
 compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "compose-bom" }
 # For renovate
 compose-compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose-compiler" }
+compose-foundation = { module = "androidx.compose.foundation:foundation-android", version = "1.7.0-SNAPSHOT" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
@@ -138,7 +139,7 @@ androidx-navigation = ["androidx-navigation-compose", "androidx-navigation-ui"]
 androidx-paging = ["androidx-paging-compose", "androidx-paging-runtime"]
 androidx-recyclerview = ["androidx-recyclerview", "androidx-recyclerview-selection"]
 coil = ["coil-compose", "coil-gif"]
-compose = ["compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util", "compose-ui-viewbinding"]
+compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util", "compose-ui-viewbinding"]
 cronet = ["cronet-api", "cronet-gms"]
 kotlinx-serialization = ["kotlinx-serialization-cbor", "kotlinx-serialization-json", "kotlinx-serialization-json-okio"]
 ktor = ["ktor-io-jvm", "ktor-utils-jvm"]
