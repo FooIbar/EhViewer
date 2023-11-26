@@ -323,9 +323,9 @@ class DialogState {
         @StringRes title: Int? = null,
     ): R = showNoButton {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            title.ifNotNullThen {
+            if (title != null) {
                 Text(
-                    text = stringResource(id = title!!),
+                    text = stringResource(id = title),
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.headlineSmall,
                 )

@@ -23,6 +23,7 @@ import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import com.google.android.material.math.MathUtils
 import com.hippo.ehviewer.EhDB
@@ -44,6 +45,7 @@ import com.hippo.ehviewer.util.mapNotNull
 import com.hippo.ehviewer.util.runAssertingNotMainThread
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.util.LinkedList
 import kotlinx.coroutines.CoroutineScope
@@ -70,7 +72,9 @@ object DownloadManager : OnSpiderListener {
     private val map: MutableMap<String?, LinkedList<DownloadInfo>>
 
     // All labels without default label
-    val labelList = runAssertingNotMainThread { EhDB.getAllDownloadLabelList() } as MutableList<DownloadLabel>
+    val labelList = mutableStateListOf<DownloadLabel>().apply {
+        addAll(runAssertingNotMainThread { EhDB.getAllDownloadLabelList() })
+    }
 
     // Store download info with default label
     val defaultInfoList: LinkedList<DownloadInfo>
@@ -595,7 +599,7 @@ object DownloadManager : OnSpiderListener {
     /**
      * @param label Not allow new label
      */
-    suspend fun changeLabel(list: List<DownloadInfo>, label: String?) {
+    suspend fun changeLabel(list: Collection<DownloadInfo>, label: String?) {
         if (null != label && !containLabel(label)) {
             Log.e(TAG, "Not exits label: $label")
             return
@@ -636,35 +640,24 @@ object DownloadManager : OnSpiderListener {
     suspend fun moveLabel(fromPosition: Int, toPosition: Int) {
         val item = labelList.removeAt(fromPosition)
         labelList.add(toPosition, item)
-        val range = if (fromPosition < toPosition) fromPosition..toPosition else toPosition..fromPosition
-        val list = labelList.slice(range)
-        list.zip(range).forEach { it.first.position = it.second }
-        EhDB.updateDownloadLabel(list)
+        withIOContext {
+            val range = if (fromPosition < toPosition) fromPosition..toPosition else toPosition..fromPosition
+            val list = labelList.slice(range)
+            list.zip(range).forEach { it.first.position = it.second }
+            EhDB.updateDownloadLabel(list)
+        }
     }
 
     suspend fun renameLabel(from: String, to: String) {
-        // Find in label list
-        var found = false
-        for (raw in labelList) {
-            if (from == raw.label) {
-                found = true
-                raw.label = to
-                // Update in DB
-                EhDB.updateDownloadLabel(raw)
-                break
-            }
+        val index = labelList.indexOfFirst { it.label == from }
+        if (index != -1) {
+            val exist = labelList.removeAt(index)
+            val new = exist.copy(label = to)
+            labelList.add(index, new)
+            EhDB.updateDownloadLabel(new)
+            val list = map.remove(from)?.onEach { it.label = to }
+            if (list != null) map[to] = list
         }
-        if (!found) {
-            return
-        }
-        val list = map.remove(from) ?: return
-
-        // Update info label
-        for (info in list) {
-            info.label = to
-        }
-        // Put list back with new label
-        map[to] = list
     }
 
     suspend fun deleteLabel(label: String) {

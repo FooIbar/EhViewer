@@ -7,9 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -56,6 +55,7 @@ import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import sh.calvin.reorderable.ReorderableItemScope
 
 @Composable
 private fun AsyncThumb(
@@ -120,13 +120,12 @@ private fun AsyncThumb(
 }
 
 @Composable
-fun DownloadCard(
+fun ReorderableItemScope.DownloadCard(
     onClick: () -> Unit,
     onThumbClick: () -> Unit,
     onLongClick: () -> Unit,
     onStart: () -> Unit,
     onStop: () -> Unit,
-    onDrag: () -> Unit,
     info: DownloadInfo,
     modifier: Modifier = Modifier,
 ) {
@@ -243,13 +242,13 @@ fun DownloadCard(
                         bottom.linkTo(parent.bottom)
                     },
                 ) {
-                    IconButton(onClick = { }) {
+                    IconButton(
+                        onClick = { },
+                        modifier = Modifier.draggableHandle(),
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.DragHandle,
+                            imageVector = Icons.Default.Reorder,
                             contentDescription = null,
-                            modifier = Modifier.pointerInput(info.gid) {
-                                awaitPointerEventScope { onDrag() }
-                            },
                         )
                     }
                     if (downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD) {
