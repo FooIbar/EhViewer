@@ -276,7 +276,7 @@ fun DownloadsScreen(navigator: NavController) {
                                             IconButton(
                                                 onClick = {
                                                     coroutineScope.launch {
-                                                        val newLabel = dialogState.awaitInputText(title = newLabel, hint = labelsStr) { text ->
+                                                        val new = dialogState.awaitInputText(title = newLabel, hint = labelsStr) { text ->
                                                             when {
                                                                 text.isBlank() -> labelEmpty
                                                                 text == defaultName -> defaultInvalid
@@ -284,7 +284,7 @@ fun DownloadsScreen(navigator: NavController) {
                                                                 else -> null
                                                             }
                                                         }
-                                                        DownloadManager.renameLabel(item, newLabel)
+                                                        DownloadManager.renameLabel(item, new)
                                                     }
                                                 },
                                             ) {
