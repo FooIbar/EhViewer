@@ -218,6 +218,7 @@ fun DownloadsScreen(navigator: NavController) {
                 stickyHeader {
                     val all = DownloadManager.allInfoList
                     ListItem(
+                        modifier = Modifier.clickable { label = null },
                         tonalElevation = 1.dp,
                         shadowElevation = 1.dp,
                         headlineContent = {
@@ -228,6 +229,7 @@ fun DownloadsScreen(navigator: NavController) {
                 stickyHeader {
                     val default = DownloadManager.defaultInfoList
                     ListItem(
+                        modifier = Modifier.clickable { label = defaultName },
                         tonalElevation = 1.dp,
                         shadowElevation = 1.dp,
                         headlineContent = {
@@ -264,8 +266,7 @@ fun DownloadsScreen(navigator: NavController) {
                                 val thatList = DownloadManager.getLabelDownloadInfoList(item)
                                 val text = if (thatList != null) "$item [${thatList.size}]" else item
                                 ListItem(
-                                    modifier = Modifier.clickable {
-                                    },
+                                    modifier = Modifier.clickable { label = item },
                                     tonalElevation = 1.dp,
                                     shadowElevation = elevation,
                                     headlineContent = {
