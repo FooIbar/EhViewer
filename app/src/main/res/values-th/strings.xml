@@ -300,7 +300,6 @@
     <string name="settings_eh_detail_size">ขนาดของรายละเอียด</string>
     <string name="settings_eh_detail_size_long">อย่างยาว</string>
     <string name="settings_eh_detail_size_short">อย่างสั้น</string>
-    <string name="settings_eh_thumb_size">ขนาดภาพตัวอย่าง</string>
     <string name="settings_eh_thumb_resolution">ความละเอียดภาพตัวอย่าง</string>
     <string name="settings_eh_thumb_resolution_summary">ค่าตอนนี้เป็น %s. การตั้งความละเอียดที่แน่นอนอาจจะส่งผลต่อการโหลดตัวอย่างที่อาจจะไม่สำเร็จด้วย</string>
     <string name="settings_eh_thumb_resolution_auto">อัตโนมัติ</string>

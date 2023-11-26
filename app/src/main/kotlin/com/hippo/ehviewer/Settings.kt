@@ -103,7 +103,7 @@ object Settings : DataStorePreferences(null) {
 
     val listMode = intPref("list_mode_2", 0)
     val detailSize = intPref("detail_size_2", 0)
-    val thumbSizeDp = intPref("thumb_size_", 120)
+    val thumbColumns = intPref("thumb_columns", 3)
     val listThumbSize = intPref("list_tile_size", 40)
 
     val needSignInFlow: Flow<Boolean>
