@@ -23,6 +23,7 @@ import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import com.google.android.material.math.MathUtils
 import com.hippo.ehviewer.EhDB
@@ -70,7 +71,9 @@ object DownloadManager : OnSpiderListener {
     private val map: MutableMap<String?, LinkedList<DownloadInfo>>
 
     // All labels without default label
-    val labelList = runAssertingNotMainThread { EhDB.getAllDownloadLabelList() } as MutableList<DownloadLabel>
+    val labelList = mutableStateListOf<DownloadLabel>().apply {
+        addAll(runAssertingNotMainThread { EhDB.getAllDownloadLabelList() })
+    }
 
     // Store download info with default label
     val defaultInfoList: LinkedList<DownloadInfo>

@@ -132,7 +132,7 @@ fun DownloadsScreen(navigator: NavController) {
             (filterType == -1 || info.state == filterType) && keyword?.let { info.title.containsIgnoreCase(it) || info.titleJpn.containsIgnoreCase(it) || info.uploader.containsIgnoreCase(it) } ?: true
         }.map { it.copy(downloadInfo = it.downloadInfo.copy()) }
     }
-    val labelsList = remember { DownloadManager.labelList.map { it.label } }
+    val labelsList = DownloadManager.labelList
 
     val searchBarConnection = remember {
         object : NestedScrollConnection {
@@ -227,7 +227,7 @@ fun DownloadsScreen(navigator: NavController) {
                         },
                     )
                 }
-                items(labelsList, key = { it }) { item ->
+                items(labelsList, key = { it.label }) { (item) ->
                     ReorderableItem(reorderableLabelState, key = item) { isDragging ->
                         val elevation by animateDpAsState(
                             if (isDragging) {
