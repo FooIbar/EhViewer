@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
@@ -60,6 +60,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
@@ -73,7 +74,7 @@ import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.showMoveDownloadLabelList
 import com.hippo.ehviewer.ui.tools.Deferred
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
+import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.findActivity
@@ -85,6 +86,8 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
 @Destination
 @Composable
@@ -242,7 +245,6 @@ fun DownloadsScreen(navigator: NavController) {
             }
         },
     ) { contentPadding ->
-        val columnWidth by collectDetailSizeAsState()
         val height by collectListThumbSizeAsState()
         val layoutDirection = LocalLayoutDirection.current
         val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
@@ -253,42 +255,53 @@ fun DownloadsScreen(navigator: NavController) {
             start = contentPadding.calculateStartPadding(layoutDirection) + marginH,
             end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
         )
-        FastScrollLazyVerticalGrid(
-            columns = GridCells.Adaptive(columnWidth),
+        val listState = rememberLazyListState()
+        val reorderableState = rememberReorderableLazyColumnState(listState) { from, to ->
+            val fromIndex = from.index - 1
+            val toIndex = to.index - 1
+            val fromItem = list[fromIndex]
+            val toItem = list[toIndex]
+            val newList = DownloadManager.moveDownload(fromItem, toItem)
+            coroutineScope.launchIO {
+                EhDB.updateDownloadInfo(newList)
+            }
+        }
+        FastScrollLazyColumn(
             modifier = Modifier.nestedScroll(searchBarConnection),
+            state = listState,
             contentPadding = realPadding,
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-            horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
         ) {
-            items(list) { info ->
-                CheckableItem(checked = false) {
-                    DownloadCard(
-                        onClick = {
-                            context.navToReader(info.galleryInfo)
-                        },
-                        onThumbClick = {
-                            navigator.navAnimated(
-                                R.id.galleryDetailScene,
-                                bundleOf(GalleryDetailFragment.KEY_ARGS to GalleryInfoArgs(info.galleryInfo)),
-                            )
-                        },
-                        onLongClick = {
-                        },
-                        onStart = {
-                            val intent = Intent(activity, DownloadService::class.java)
-                            intent.action = DownloadService.ACTION_START
-                            intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                            ContextCompat.startForegroundService(activity, intent)
-                        },
-                        onStop = {
-                            coroutineScope.launchIO {
-                                DownloadManager.stopDownload(info.gid)
-                            }
-                        },
-                        onDrag = { },
-                        info = info,
-                        modifier = Modifier.height(height),
-                    )
+            items(list, key = { it.gid }) { info ->
+                ReorderableItem(reorderableState, key = info.gid) {
+                    CheckableItem(checked = false) {
+                        DownloadCard(
+                            onClick = {
+                                context.navToReader(info.galleryInfo)
+                            },
+                            onThumbClick = {
+                                navigator.navAnimated(
+                                    R.id.galleryDetailScene,
+                                    bundleOf(GalleryDetailFragment.KEY_ARGS to GalleryInfoArgs(info.galleryInfo)),
+                                )
+                            },
+                            onLongClick = {
+                            },
+                            onStart = {
+                                val intent = Intent(activity, DownloadService::class.java)
+                                intent.action = DownloadService.ACTION_START
+                                intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
+                                ContextCompat.startForegroundService(activity, intent)
+                            },
+                            onStop = {
+                                coroutineScope.launchIO {
+                                    DownloadManager.stopDownload(info.gid)
+                                }
+                            },
+                            info = info,
+                            modifier = Modifier.height(height),
+                        )
+                    }
                 }
             }
         }
