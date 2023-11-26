@@ -58,7 +58,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -66,7 +65,6 @@ import androidx.compose.material3.rememberDismissState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -89,7 +87,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -152,7 +149,7 @@ import com.hippo.ehviewer.ui.main.SearchAdvanced
 import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.LocalDialogState
-import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
+import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
@@ -450,75 +447,70 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                                         true
                                     },
                                 )
-                                val viewConfiguration = LocalViewConfiguration.current
-                                LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
-                                    SwipeToDismissBox(
-                                        state = dismissState,
-                                        backgroundContent = {},
-                                        directions = setOf(DismissDirection.EndToStart),
-                                    ) {
-                                        val elevation by animateDpAsState(
-                                            if (isDragging) {
-                                                8.dp // md.sys.elevation.level4
+                                SwipeToDismissBox2(
+                                    state = dismissState,
+                                    backgroundContent = {},
+                                    directions = setOf(DismissDirection.EndToStart),
+                                ) {
+                                    val elevation by animateDpAsState(
+                                        if (isDragging) {
+                                            8.dp // md.sys.elevation.level4
+                                        } else {
+                                            1.dp // md.sys.elevation.level1
+                                        },
+                                        label = "elevation",
+                                    )
+                                    ListItem(
+                                        modifier = Modifier.clickable {
+                                            if (urlBuilder.mode == MODE_WHATS_HOT) {
+                                                navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder(item).toStartArgs())
                                             } else {
-                                                1.dp // md.sys.elevation.level1
-                                            },
-                                            label = "elevation",
-                                        )
-                                        ListItem(
-                                            modifier = Modifier.clickable {
-                                                if (urlBuilder.mode == MODE_WHATS_HOT) {
-                                                    navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder(item).toStartArgs())
-                                                } else {
-                                                    urlBuilder = ListUrlBuilder(item)
-                                                    data.refresh()
-                                                }
-                                                showSearchLayout = false
-                                                coroutineScope.launch { sheetState.close() }
-                                            },
-                                            tonalElevation = 1.dp,
-                                            shadowElevation = elevation,
-                                            headlineContent = {
-                                                Text(text = item.name)
-                                            },
-                                            trailingContent = {
-                                                CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
-                                                    IconButton(
-                                                        onClick = {},
-                                                        modifier = Modifier.draggableHandle(
-                                                            onDragStarted = {
-                                                                val feedbackConstant = if (isAtLeastU) {
-                                                                    HapticFeedbackConstants.DRAG_START
-                                                                } else if (isAtLeastR) {
-                                                                    HapticFeedbackConstants.GESTURE_START
-                                                                } else if (isAtLeastOMR1) {
-                                                                    HapticFeedbackConstants.KEYBOARD_PRESS
-                                                                } else {
-                                                                    HapticFeedbackConstants.VIRTUAL_KEY
-                                                                }
-                                                                view.performHapticFeedback(feedbackConstant)
-                                                            },
-                                                            onDragStopped = {
-                                                                val feedbackConstant = if (isAtLeastR) {
-                                                                    HapticFeedbackConstants.GESTURE_END
-                                                                } else if (isAtLeastOMR1) {
-                                                                    HapticFeedbackConstants.KEYBOARD_RELEASE
-                                                                } else {
-                                                                    HapticFeedbackConstants.VIRTUAL_KEY_RELEASE
-                                                                }
-                                                                view.performHapticFeedback(feedbackConstant)
-                                                            },
-                                                        ),
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.Reorder,
-                                                            contentDescription = null,
-                                                        )
-                                                    }
-                                                }
-                                            },
-                                        )
-                                    }
+                                                urlBuilder = ListUrlBuilder(item)
+                                                data.refresh()
+                                            }
+                                            showSearchLayout = false
+                                            coroutineScope.launch { sheetState.close() }
+                                        },
+                                        tonalElevation = 1.dp,
+                                        shadowElevation = elevation,
+                                        headlineContent = {
+                                            Text(text = item.name)
+                                        },
+                                        trailingContent = {
+                                            IconButton(
+                                                onClick = {},
+                                                modifier = Modifier.draggableHandle(
+                                                    onDragStarted = {
+                                                        val feedbackConstant = if (isAtLeastU) {
+                                                            HapticFeedbackConstants.DRAG_START
+                                                        } else if (isAtLeastR) {
+                                                            HapticFeedbackConstants.GESTURE_START
+                                                        } else if (isAtLeastOMR1) {
+                                                            HapticFeedbackConstants.KEYBOARD_PRESS
+                                                        } else {
+                                                            HapticFeedbackConstants.VIRTUAL_KEY
+                                                        }
+                                                        view.performHapticFeedback(feedbackConstant)
+                                                    },
+                                                    onDragStopped = {
+                                                        val feedbackConstant = if (isAtLeastR) {
+                                                            HapticFeedbackConstants.GESTURE_END
+                                                        } else if (isAtLeastOMR1) {
+                                                            HapticFeedbackConstants.KEYBOARD_RELEASE
+                                                        } else {
+                                                            HapticFeedbackConstants.VIRTUAL_KEY_RELEASE
+                                                        }
+                                                        view.performHapticFeedback(feedbackConstant)
+                                                    },
+                                                ),
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Reorder,
+                                                    contentDescription = null,
+                                                )
+                                            }
+                                        },
+                                    )
                                 }
                             }
                         }
