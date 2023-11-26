@@ -17,7 +17,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,7 +40,6 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.History
 import com.hippo.ehviewer.ui.MainActivity
@@ -51,7 +49,7 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.LocalDialogState
-import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
+import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.findActivity
 import com.ramcosta.composedestinations.annotation.Destination
@@ -121,26 +119,24 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
                             true
                         },
                     )
-                    LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
-                        SwipeToDismissBox(
-                            state = dismissState,
-                            backgroundContent = {},
-                            modifier = Modifier.animateItemPlacement(),
-                            directions = setOf(DismissDirection.EndToStart),
-                        ) {
-                            GalleryInfoListItem(
-                                onClick = {
-                                    navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info)))
-                                },
-                                onLongClick = {
-                                    coroutineScope.launchIO {
-                                        dialogState.doGalleryInfoAction(info, context)
-                                    }
-                                },
-                                info = info,
-                                modifier = Modifier.height(cardHeight),
-                            )
-                        }
+                    SwipeToDismissBox2(
+                        state = dismissState,
+                        backgroundContent = {},
+                        modifier = Modifier.animateItemPlacement(),
+                        directions = setOf(DismissDirection.EndToStart),
+                    ) {
+                        GalleryInfoListItem(
+                            onClick = {
+                                navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info)))
+                            },
+                            onLongClick = {
+                                coroutineScope.launchIO {
+                                    dialogState.doGalleryInfoAction(info, context)
+                                }
+                            },
+                            info = info,
+                            modifier = Modifier.height(cardHeight),
+                        )
                     }
                 } else {
                     Spacer(modifier = Modifier.height(cardHeight).fillMaxWidth())

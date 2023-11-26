@@ -42,7 +42,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDismissState
@@ -86,7 +85,7 @@ import com.hippo.ehviewer.ui.showMoveDownloadLabelList
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.LocalDialogState
-import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
+import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
@@ -251,61 +250,59 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                         },
                     )
                     ReorderableItem(reorderableLabelState, key = item) { isDragging ->
-                        LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
-                            SwipeToDismissBox(
-                                state = dismissState,
-                                backgroundContent = {},
-                                directions = setOf(DismissDirection.EndToStart),
-                            ) {
-                                val elevation by animateDpAsState(
-                                    if (isDragging) {
-                                        8.dp // md.sys.elevation.level4
-                                    } else {
-                                        1.dp // md.sys.elevation.level1
-                                    },
-                                    label = "elevation",
-                                )
-                                val thatList = DownloadManager.getLabelDownloadInfoList(item)
-                                val text = if (thatList != null) "$item [${thatList.size}]" else item
-                                ListItem(
-                                    modifier = Modifier.clickable {
-                                        label = item
-                                        closeSheet()
-                                    },
-                                    tonalElevation = 1.dp,
-                                    shadowElevation = elevation,
-                                    headlineContent = {
-                                        Text(text)
-                                    },
-                                    trailingContent = {
-                                        Row {
-                                            IconButton(
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        val new = dialogState.awaitInputText(title = newLabel, hint = labelsStr) { text ->
-                                                            when {
-                                                                text.isBlank() -> labelEmpty
-                                                                text == defaultName -> defaultInvalid
-                                                                DownloadManager.containLabel(text) -> labelExists
-                                                                else -> null
-                                                            }
+                        SwipeToDismissBox2(
+                            state = dismissState,
+                            backgroundContent = {},
+                            directions = setOf(DismissDirection.EndToStart),
+                        ) {
+                            val elevation by animateDpAsState(
+                                if (isDragging) {
+                                    8.dp // md.sys.elevation.level4
+                                } else {
+                                    1.dp // md.sys.elevation.level1
+                                },
+                                label = "elevation",
+                            )
+                            val thatList = DownloadManager.getLabelDownloadInfoList(item)
+                            val text = if (thatList != null) "$item [${thatList.size}]" else item
+                            ListItem(
+                                modifier = Modifier.clickable {
+                                    label = item
+                                    closeSheet()
+                                },
+                                tonalElevation = 1.dp,
+                                shadowElevation = elevation,
+                                headlineContent = {
+                                    Text(text)
+                                },
+                                trailingContent = {
+                                    Row {
+                                        IconButton(
+                                            onClick = {
+                                                coroutineScope.launch {
+                                                    val new = dialogState.awaitInputText(title = newLabel, hint = labelsStr) { text ->
+                                                        when {
+                                                            text.isBlank() -> labelEmpty
+                                                            text == defaultName -> defaultInvalid
+                                                            DownloadManager.containLabel(text) -> labelExists
+                                                            else -> null
                                                         }
-                                                        DownloadManager.renameLabel(item, new)
                                                     }
-                                                },
-                                            ) {
-                                                Icon(imageVector = Icons.Default.Edit, contentDescription = null)
-                                            }
-                                            IconButton(
-                                                onClick = {},
-                                                modifier = Modifier.draggableHandle(),
-                                            ) {
-                                                Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
-                                            }
+                                                    DownloadManager.renameLabel(item, new)
+                                                }
+                                            },
+                                        ) {
+                                            Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                         }
-                                    },
-                                )
-                            }
+                                        IconButton(
+                                            onClick = {},
+                                            modifier = Modifier.draggableHandle(),
+                                        ) {
+                                            Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
+                                        }
+                                    }
+                                },
+                            )
                         }
                     }
                 }
