@@ -323,6 +323,19 @@ class MainActivity : EhActivity() {
                                         },
                                     )
                                 }
+                                NavigationDrawerItem(
+                                    label = {
+                                        Text(text = stringResource(id = R.string.settings))
+                                    },
+                                    selected = false,
+                                    onClick = {
+                                        closeDrawer { startActivity(Intent(applicationContext, ConfigureActivity::class.java)) }
+                                    },
+                                    modifier = Modifier.padding(horizontal = 12.dp),
+                                    icon = {
+                                        Icon(imageVector = Icons.Default.Settings, contentDescription = null)
+                                    },
+                                )
                             }
                         }
                     },
