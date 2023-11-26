@@ -86,7 +86,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.material.snackbar.Snackbar
 import com.hippo.ehviewer.R
@@ -197,7 +196,6 @@ class MainActivity : EhActivity() {
     var drawerLocked by mutableStateOf(false)
     private var tipFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private var intentFlow = MutableSharedFlow<Intent>(extraBufferCapacity = 4)
-    private var navigator: NavController? = null
     private val isInitializedFlow = MutableStateFlow(false)
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -211,12 +209,6 @@ class MainActivity : EhActivity() {
             val sideSheetState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
             val navController = rememberNavController()
-            DisposableEffect(navController) {
-                navigator = navController
-                onDispose {
-                    navigator = null
-                }
-            }
             fun closeDrawer(callback: () -> Unit = {}) = scope.launch {
                 navDrawerState.close()
                 callback()
@@ -292,11 +284,11 @@ class MainActivity : EhActivity() {
                         val result1 = GalleryDetailUrlParser.parse(text, false)
                         var launch: (() -> Unit)? = null
                         if (result1 != null) {
-                            launch = { navigator?.navigate(GalleryDetailScreenDestination(TokenArgs(result1.gid, result1.token))) }
+                            launch = { navController.navigate(GalleryDetailScreenDestination(TokenArgs(result1.gid, result1.token))) }
                         }
                         val result2 = GalleryPageUrlParser.parse(text, false)
                         if (result2 != null) {
-                            launch = { navigator?.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
+                            launch = { navController.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
                         }
                         launch?.let {
                             val ret = snackbarState.showSnackbar(snackMessage, snackAction)
