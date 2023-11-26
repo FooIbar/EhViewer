@@ -37,7 +37,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.DropdownMenu
@@ -66,6 +65,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -89,9 +89,11 @@ import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.showMoveDownloadLabelList
 import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
+import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
@@ -123,6 +125,7 @@ fun DownloadsScreen(navigator: NavController) {
     val activity = remember(context) { context.findActivity<MainActivity>() }
     val coroutineScope = rememberCoroutineScope()
     val dialogState = LocalDialogState.current
+    val view = LocalView.current
     val title = stringResource(R.string.scene_download_title, label ?: stringResource(R.string.download_all))
     val hint = stringResource(R.string.search_bar_hint, title)
     val defaultName = stringResource(R.string.default_download_label_name)
@@ -208,6 +211,7 @@ fun DownloadsScreen(navigator: NavController) {
                 coroutineScope.launch {
                     DownloadManager.moveLabel(from.index - 2, to.index - 2)
                 }
+                view.performHapticFeedback(draggingHapticFeedback)
             }
 
             LazyColumn(
@@ -299,12 +303,7 @@ fun DownloadsScreen(navigator: NavController) {
                                         ) {
                                             Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                         }
-                                        IconButton(
-                                            onClick = {},
-                                            modifier = Modifier.draggableHandle(),
-                                        ) {
-                                            Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
-                                        }
+                                        DragHandle()
                                     }
                                 },
                             )
@@ -412,6 +411,7 @@ fun DownloadsScreen(navigator: NavController) {
             coroutineScope.launchIO {
                 EhDB.updateDownloadInfo(newList)
             }
+            view.performHapticFeedback(draggingHapticFeedback)
         }
         FastScrollLazyColumn(
             modifier = Modifier.nestedScroll(searchBarConnection),
