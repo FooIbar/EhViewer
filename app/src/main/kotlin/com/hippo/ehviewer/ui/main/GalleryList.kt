@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.ui.scene
+package com.hippo.ehviewer.ui.main
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridItemScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -28,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,11 +54,11 @@ import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
+import com.hippo.ehviewer.ui.scene.collectDetailSizeAsState
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.ExceptionUtils
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
@@ -66,15 +67,14 @@ fun GalleryList(
     data: LazyPagingItems<BaseGalleryInfo>,
     contentModifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    listMode: Int = 0,
+    listMode: Int,
     detailListState: LazyGridState = rememberLazyGridState(),
     detailItemContent: @Composable (LazyGridItemScope.(BaseGalleryInfo) -> Unit),
     thumbListState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
-    thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit) = {},
-    refreshState: PullToRefreshState? = null,
-    onRefresh: suspend CoroutineScope.() -> Unit = {},
-    onLoading: suspend CoroutineScope.() -> Unit = {},
-    navigator: DestinationsNavigator? = null,
+    thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit),
+    refreshState: PullToRefreshState,
+    onRefresh: suspend CoroutineScope.() -> Unit,
+    onLoading: suspend CoroutineScope.() -> Unit,
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
@@ -85,11 +85,7 @@ fun GalleryList(
         start = contentPadding.calculateStartPadding(layoutDirection) + marginH,
         end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
     )
-    val combinedModifier = if (refreshState != null) {
-        contentModifier.nestedScroll(refreshState.nestedScrollConnection)
-    } else {
-        contentModifier
-    }
+    val combinedModifier = contentModifier.nestedScroll(refreshState.nestedScrollConnection)
     Box(modifier = modifier.fillMaxSize()) {
         if (listMode == 0) {
             val columnWidth by collectDetailSizeAsState()
@@ -109,6 +105,13 @@ fun GalleryList(
                     val info = data[index]
                     if (info != null) {
                         detailItemContent(info)
+                    }
+                }
+                if (data.loadState.append !is LoadState.NotLoading) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        LoadStateIndicator(state = data.loadState.append) {
+                            data.retry()
+                        }
                     }
                 }
             }
@@ -133,92 +136,98 @@ fun GalleryList(
                         thumbItemContent(info)
                     }
                 }
+                if (data.loadState.append !is LoadState.NotLoading) {
+                    item(span = StaggeredGridItemSpan.FullLine) {
+                        LoadStateIndicator(state = data.loadState.append) {
+                            data.retry()
+                        }
+                    }
+                }
             }
         }
 
-        if (refreshState != null) {
-            if (refreshState.isRefreshing) {
-                LaunchedEffect(Unit) {
+        var isLoading by remember { mutableStateOf(false) }
+        if (refreshState.isRefreshing) {
+            LaunchedEffect(Unit) {
+                if (data.loadState.prepend.endOfPaginationReached) {
                     onRefresh()
-                }
-            }
-
-            val dialogState = LocalDialogState.current
-            var refreshing by remember { mutableStateOf(false) }
-            when (val state = data.loadState.refresh) {
-                is LoadState.Loading -> if (!refreshState.isRefreshing) {
-                    LaunchedEffect(Unit) {
-                        onLoading()
-                    }
-                    LaunchedEffect(Unit) {
-                        if (listMode == 0) {
-                            detailListState.scrollToItem(0)
-                        } else {
-                            thumbListState.scrollToItem(0)
-                        }
-                    }
-                    Surface {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
                 } else {
-                    refreshing = true
+                    data.retry()
                 }
-
-                is LoadState.Error -> {
-                    Surface {
-                        LaunchedEffect(state) {
-                            if (state.error.cause is CloudflareBypassException) {
-                                dialogState.awaitPermissionOrCancel(title = R.string.cloudflare_bypass_failed) {
-                                    Text(text = stringResource(id = R.string.open_in_webview))
-                                }
-                                // navigator?.navAnimated(R.id.webView, bundleOf(WebViewActivity.KEY_URL to EhUrl.host))
-                            }
-                        }
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Column(
-                                modifier = Modifier.widthIn(max = 228.dp)
-                                    .clip(ShapeDefaults.Small).clickable { data.retry() },
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Icon(
-                                    imageVector = EhIcons.Big.Default.SadAndroid,
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(16.dp).size(120.dp),
-                                    tint = MaterialTheme.colorScheme.tertiary,
-                                )
-                                Text(
-                                    text = ExceptionUtils.getReadableString(state.error),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    textAlign = TextAlign.Center,
-                                )
-                            }
-                        }
-                    }
-                    SideEffect {
-                        if (refreshing) {
-                            refreshState.endRefresh()
-                            refreshing = false
-                        }
-                    }
-                }
-
-                is LoadState.NotLoading -> SideEffect {
-                    // Don't use `refreshState.isRefreshing` here because recomposition may happen
-                    // before loading state changes
-                    if (refreshing) {
+            }
+            LaunchedEffect(data.loadState) {
+                if (data.loadState.prepend is LoadState.Loading ||
+                    data.loadState.refresh is LoadState.Loading
+                ) {
+                    isLoading = true
+                } else {
+                    if (isLoading) {
                         refreshState.endRefresh()
-                        refreshing = false
+                        isLoading = false
                     }
                 }
             }
+        }
+
+        val dialogState = LocalDialogState.current
+        when (val state = data.loadState.refresh) {
+            is LoadState.Loading -> if (!refreshState.isRefreshing) {
+                LaunchedEffect(Unit) {
+                    onLoading()
+                }
+                LaunchedEffect(Unit) {
+                    if (listMode == 0) {
+                        detailListState.scrollToItem(0)
+                    } else {
+                        thumbListState.scrollToItem(0)
+                    }
+                }
+                Surface {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+
+            is LoadState.Error -> {
+                Surface {
+                    LaunchedEffect(state) {
+                        if (state.error.cause is CloudflareBypassException) {
+                            dialogState.awaitPermissionOrCancel(title = R.string.cloudflare_bypass_failed) {
+                                Text(text = stringResource(id = R.string.open_in_webview))
+                            }
+                            // navigator.navAnimated(R.id.webView, bundleOf(WebViewActivity.KEY_URL to EhUrl.host))
+                        }
+                    }
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(
+                            modifier = Modifier.widthIn(max = 228.dp)
+                                .clip(ShapeDefaults.Small).clickable { data.retry() },
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Icon(
+                                imageVector = EhIcons.Big.Default.SadAndroid,
+                                contentDescription = null,
+                                modifier = Modifier.padding(16.dp).size(120.dp),
+                                tint = MaterialTheme.colorScheme.tertiary,
+                            )
+                            Text(
+                                text = ExceptionUtils.getReadableString(state.error),
+                                style = MaterialTheme.typography.bodyLarge,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    }
+                }
+            }
+
+            is LoadState.NotLoading -> Unit
         }
     }
 }

@@ -94,7 +94,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
-import androidx.core.os.bundleOf
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
 import androidx.paging.Pager
@@ -142,6 +141,7 @@ import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
+import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.NormalSearch
 import com.hippo.ehviewer.ui.main.SearchAdvanced
@@ -833,7 +833,6 @@ fun GalleryListScreen(lub: ListUrlBuilder = defaultStartArg(), navigator: Destin
                 data.refresh()
             },
             onLoading = { searchBarOffsetY = 0 },
-            navigator = navigator,
         )
     }
 
@@ -902,22 +901,6 @@ fun GalleryListScreen(lub: ListUrlBuilder = defaultStartArg(), navigator: Destin
                 }
             }
         }
-    }
-}
-
-class GalleryListFragment {
-    companion object {
-        const val KEY_ACTION = "action"
-        const val ACTION_HOMEPAGE = "action_homepage"
-        const val ACTION_SUBSCRIPTION = "action_subscription"
-        const val ACTION_WHATS_HOT = "action_whats_hot"
-        const val ACTION_TOP_LIST = "action_top_list"
-        const val ACTION_LIST_URL_BUILDER = "action_list_url_builder"
-        const val KEY_LIST_URL_BUILDER = "list_url_builder"
-        fun ListUrlBuilder.toStartArgs() = bundleOf(
-            KEY_ACTION to ACTION_LIST_URL_BUILDER,
-            KEY_LIST_URL_BUILDER to this,
-        )
     }
 }
 

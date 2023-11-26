@@ -73,6 +73,7 @@ import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
+import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberInVM
@@ -310,7 +311,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
             refreshState = refreshState,
             onRefresh = { refresh() },
             onLoading = { searchBarOffsetY = 0 },
-            navigator = navigator,
         )
     }
 
