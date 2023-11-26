@@ -177,17 +177,29 @@ import moe.tarsin.coroutines.runSuspendCatching
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
-fun defaultStartArg() = when (Settings.launchPage) {
-    0 -> ListUrlBuilder()
-    1 -> ListUrlBuilder()
-    2 -> ListUrlBuilder()
-    3 -> ListUrlBuilder()
-    else -> error("")
-}
+@Destination
+@Composable
+fun HomePageScreen(navigator: DestinationsNavigator) =
+    GalleryListScreen(ListUrlBuilder(), navigator)
 
 @Destination
 @Composable
-fun GalleryListScreen(lub: ListUrlBuilder = defaultStartArg(), navigator: DestinationsNavigator) {
+fun SubscriptionScreen(navigator: DestinationsNavigator) =
+    GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator)
+
+@Destination
+@Composable
+fun WhatshotScreen(navigator: DestinationsNavigator) =
+    GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator)
+
+@Destination
+@Composable
+fun ToplistScreen(navigator: DestinationsNavigator) =
+    GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator)
+
+@Destination
+@Composable
+fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val searchFieldState = rememberTextFieldState()
     var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
     var searchBarOffsetY by remember { mutableStateOf(0) }

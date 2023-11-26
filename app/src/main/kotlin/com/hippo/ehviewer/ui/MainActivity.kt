@@ -83,9 +83,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.ListUrlBuilder
-import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_SUBSCRIPTION
-import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TOPLIST
-import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_WHATS_HOT
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.download.DownloadService
@@ -98,7 +95,11 @@ import com.hippo.ehviewer.ui.destinations.FavouritesScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.destinations.HistoryScreenDestination
+import com.hippo.ehviewer.ui.destinations.HomePageScreenDestination
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
+import com.hippo.ehviewer.ui.destinations.SubscriptionScreenDestination
+import com.hippo.ehviewer.ui.destinations.ToplistScreenDestination
+import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.scene.BaseScene
@@ -134,10 +135,10 @@ import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
 private val navItems = arrayOf(
-    Triple(GalleryListScreenDestination(ListUrlBuilder()), R.string.homepage, Icons.Default.Home),
-    Triple(GalleryListScreenDestination(ListUrlBuilder(MODE_SUBSCRIPTION)), R.string.subscription, EhIcons.Default.Subscriptions),
-    Triple(GalleryListScreenDestination(ListUrlBuilder(MODE_WHATS_HOT)), R.string.whats_hot, Icons.Default.Whatshot),
-    Triple(GalleryListScreenDestination(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist)), R.string.toplist, Icons.Default.FormatListNumbered),
+    Triple(HomePageScreenDestination, R.string.homepage, Icons.Default.Home),
+    Triple(SubscriptionScreenDestination, R.string.subscription, EhIcons.Default.Subscriptions),
+    Triple(WhatshotScreenDestination, R.string.whats_hot, Icons.Default.Whatshot),
+    Triple(ToplistScreenDestination, R.string.toplist, Icons.Default.FormatListNumbered),
     Triple(FavouritesScreenDestination, R.string.favourite, Icons.Default.Favorite),
     Triple(HistoryScreenDestination, R.string.history, Icons.Default.History),
     Triple(DownloadScreenDestination, R.string.downloads, Icons.Default.Download),
@@ -352,7 +353,7 @@ class MainActivity : EhActivity() {
                     ) {
                         DestinationsNavHost(
                             navGraph = NavGraphs.root,
-                            startRoute = GalleryListScreenDestination,
+                            startRoute = navItems[Settings.launchPage].first,
                             engine = rememberNavHostEngine(rootDefaultAnimations = RootNavGraphDefaultAnimations.ACCOMPANIST_FADING),
                             navController = navController,
                         )
