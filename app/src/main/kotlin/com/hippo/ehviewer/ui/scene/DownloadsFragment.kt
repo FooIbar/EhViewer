@@ -38,14 +38,18 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Reorder
+import androidx.compose.material3.DismissDirection
+import androidx.compose.material3.DismissValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -88,6 +92,7 @@ import com.hippo.ehviewer.ui.showMoveDownloadLabelList
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
@@ -231,39 +236,57 @@ fun DownloadsScreen(navigator: NavController) {
                     )
                 }
                 items(labelsList, key = { it.label }) { (item) ->
-                    ReorderableItem(reorderableLabelState, key = item) { isDragging ->
-                        val elevation by animateDpAsState(
-                            if (isDragging) {
-                                8.dp // md.sys.elevation.level4
-                            } else {
-                                1.dp // md.sys.elevation.level1
-                            },
-                            label = "elevation",
-                        )
-                        val thatList = DownloadManager.getLabelDownloadInfoList(item)
-                        val text = if (thatList != null) "$item [${thatList.size}]" else item
-                        ListItem(
-                            modifier = Modifier.clickable {
-                            },
-                            tonalElevation = 1.dp,
-                            shadowElevation = elevation,
-                            headlineContent = {
-                                Text(text)
-                            },
-                            trailingContent = {
-                                Row {
-                                    IconButton(onClick = {}) {
-                                        Icon(imageVector = Icons.Default.Edit, contentDescription = null)
-                                    }
-                                    IconButton(
-                                        onClick = {},
-                                        modifier = Modifier.draggableHandle(),
-                                    ) {
-                                        Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
-                                    }
+                    val dismissState = rememberDismissState(
+                        confirmValueChange = {
+                            if (it == DismissValue.DismissedToStart) {
+                                coroutineScope.launch {
+                                    DownloadManager.deleteLabel(item)
                                 }
-                            },
-                        )
+                            }
+                            true
+                        },
+                    )
+                    ReorderableItem(reorderableLabelState, key = item) { isDragging ->
+                        LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
+                            SwipeToDismissBox(
+                                state = dismissState,
+                                backgroundContent = {},
+                                directions = setOf(DismissDirection.EndToStart),
+                            ) {
+                                val elevation by animateDpAsState(
+                                    if (isDragging) {
+                                        8.dp // md.sys.elevation.level4
+                                    } else {
+                                        1.dp // md.sys.elevation.level1
+                                    },
+                                    label = "elevation",
+                                )
+                                val thatList = DownloadManager.getLabelDownloadInfoList(item)
+                                val text = if (thatList != null) "$item [${thatList.size}]" else item
+                                ListItem(
+                                    modifier = Modifier.clickable {
+                                    },
+                                    tonalElevation = 1.dp,
+                                    shadowElevation = elevation,
+                                    headlineContent = {
+                                        Text(text)
+                                    },
+                                    trailingContent = {
+                                        Row {
+                                            IconButton(onClick = {}) {
+                                                Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                                            }
+                                            IconButton(
+                                                onClick = {},
+                                                modifier = Modifier.draggableHandle(),
+                                            ) {
+                                                Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
+                                            }
+                                        }
+                                    },
+                                )
+                            }
+                        }
                     }
                 }
             }
