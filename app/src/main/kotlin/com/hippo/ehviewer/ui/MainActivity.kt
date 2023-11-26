@@ -431,7 +431,7 @@ class MainActivity : EhActivity() {
         if (connectivityManager.isActiveNetworkMetered) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 Snackbar.make(
-                    findViewById(R.id.fragment_container),
+                    findViewById(R.id.content),
                     R.string.metered_network_warning,
                     Snackbar.LENGTH_LONG,
                 )
@@ -475,7 +475,7 @@ class MainActivity : EhActivity() {
             launch?.let {
                 withUIContext {
                     val snackbar = Snackbar.make(
-                        findViewById(R.id.fragment_container),
+                        findViewById(R.id.content),
                         R.string.clipboard_gallery_url_snack_message,
                         Snackbar.LENGTH_SHORT,
                     )
@@ -507,7 +507,7 @@ class MainActivity : EhActivity() {
     fun showTip(message: CharSequence, length: Int, useToast: Boolean = false) {
         if (!useToast) {
             Snackbar.make(
-                findViewById(R.id.fragment_container),
+                findViewById(R.id.content),
                 message,
                 if (length == BaseScene.LENGTH_LONG) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT,
             ).show()

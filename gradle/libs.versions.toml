@@ -56,7 +56,6 @@ androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", 
 androidx-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
-androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "androidx-navigation" }
 androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "androidx-navigation" }
 
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "androidx-paging" }
@@ -134,7 +133,7 @@ splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemse
 
 [bundles]
 accompanist = ["accompanist-themeadapter-material3", "accompanist-webview"]
-androidx-navigation = ["androidx-navigation-compose", "androidx-navigation-fragment", "androidx-navigation-ui"]
+androidx-navigation = ["androidx-navigation-compose", "androidx-navigation-ui"]
 androidx-paging = ["androidx-paging-compose", "androidx-paging-runtime"]
 androidx-recyclerview = ["androidx-recyclerview", "androidx-recyclerview-selection"]
 coil = ["coil-compose", "coil-gif"]
