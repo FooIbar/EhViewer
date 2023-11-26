@@ -310,7 +310,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
             ) { navigator.navigate(FilterScreenDestination) }
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_metered_network_warning),
-                value = Settings::meteredNetworkWarning,
+                value = Settings.meteredNetworkWarning::value,
             )
             if (signin) {
                 SwitchPreference(
