@@ -73,6 +73,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadService
@@ -170,8 +171,26 @@ fun DownloadsScreen(navigator: NavController) {
                     ) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = null)
                     }
+                    val letMeSelect = stringResource(R.string.let_me_select)
                     IconButton(
                         onClick = {
+                            coroutineScope.launch {
+                                dialogState.showSelectActions(R.string.default_download_label) {
+                                    onSelect(letMeSelect) {
+                                        Settings.hasDefaultDownloadLabel = false
+                                    }
+                                    onSelect(defaultName) {
+                                        Settings.hasDefaultDownloadLabel = true
+                                        Settings.defaultDownloadLabel = defaultName
+                                    }
+                                    DownloadManager.labelList.forEach { (label) ->
+                                        onSelect(label) {
+                                            Settings.hasDefaultDownloadLabel = true
+                                            Settings.defaultDownloadLabel = label
+                                        }
+                                    }
+                                }
+                            }
                         },
                     ) {
                         Icon(imageVector = Icons.Default.Archive, contentDescription = null)
