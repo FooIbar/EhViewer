@@ -3,14 +3,10 @@ package com.hippo.ehviewer.ui.scene
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Typeface
-import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -79,8 +75,6 @@ import androidx.compose.ui.unit.max
 import androidx.compose.ui.util.lerp
 import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
-import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
@@ -91,11 +85,11 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.openBrowser
-import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.normalizeSpan
@@ -108,8 +102,8 @@ import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.findActivity
-import com.hippo.ehviewer.util.getParcelableCompat
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -157,7 +151,7 @@ private val MinimumContentPaddingEditText = 88.dp
 
 @Destination
 @Composable
-fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController) {
+fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val dialogState = LocalDialogState.current
     val coroutineScope = rememberCoroutineScope()
@@ -374,7 +368,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                                 mode = ListUrlBuilder.MODE_UPLOADER,
                                 mKeyword = item.user,
                             )
-                            navigator.navAnimated(R.id.galleryListScene, lub.toStartArgs(), true)
+                            navigator.navigate(GalleryListScreenDestination(lub))
                         },
                         onCardClick = {
                             coroutineScope.launch {
@@ -478,23 +472,5 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: NavController
                 }
             }
         }
-    }
-}
-
-class GalleryCommentsFragment : BaseScene() {
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        return ComposeWithMD3 {
-            val galleryDetail = remember { requireArguments().getParcelableCompat<GalleryDetail>(KEY_GALLERY_DETAIL)!! }
-            val navController = remember { findNavController() }
-            GalleryCommentsScreen(galleryDetail = galleryDetail, navigator = navController)
-        }
-    }
-
-    companion object {
-        const val KEY_GALLERY_DETAIL = "gallery_detail"
     }
 }

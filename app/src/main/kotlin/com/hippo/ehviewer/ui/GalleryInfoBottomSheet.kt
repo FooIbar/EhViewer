@@ -1,8 +1,5 @@
 package com.hippo.ehviewer.ui
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.ViewGroup
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +11,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,8 +19,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.fragment.findNavController
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUrl
@@ -30,9 +26,9 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.LOCAL_FAVORITED
 import com.hippo.ehviewer.client.thumbUrl
-import com.hippo.ehviewer.databinding.InfoSheetBinding
 import com.hippo.ehviewer.ui.scene.navWithUrl
 import com.hippo.ehviewer.util.addTextToClipboard
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 private const val INDEX_URL = 2
 private const val INDEX_PARENT = 9
@@ -61,43 +57,39 @@ private fun GalleryDetail.generateContent() = arrayOf(
     R.string.favorite_name to favoriteName,
 )
 
-class GalleryInfoBottomSheet(private val detail: GalleryDetail) : BottomSheetDialogFragment() {
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = InfoSheetBinding.inflate(layoutInflater, container, false).apply {
-        content.setMD3Content {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                val context = LocalContext.current
-                val navController = remember { findNavController() }
-                Text(
-                    text = stringResource(id = R.string.gallery_info),
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                val data = remember(detail) { detail.generateContent() }
-                ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                    LazyColumn {
-                        itemsIndexed(data) { index, (key, content) ->
-                            Row(
-                                modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)).clickable {
-                                    if (index == INDEX_PARENT) {
-                                        if (content != null) {
-                                            navController.navWithUrl(content)
-                                        }
-                                    } else {
-                                        context.addTextToClipboard(content, true)
-                                        if (index == INDEX_URL) {
-                                            // Save it to avoid detect the gallery
-                                            Settings.clipboardTextHashCode = data[index].hashCode()
-                                        }
-                                    }
-                                }.fillMaxWidth(),
-                            ) {
-                                Text(stringResource(id = key), modifier = Modifier.width(90.dp).padding(8.dp))
-                                Text(content.orEmpty(), modifier = Modifier.padding(8.dp))
+@Composable
+fun GalleryInfoBottomSheet(detail: GalleryDetail, navigator: DestinationsNavigator) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        val context = LocalContext.current
+        Text(
+            text = stringResource(id = R.string.gallery_info),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            style = MaterialTheme.typography.titleLarge,
+        )
+        val data = remember(detail) { detail.generateContent() }
+        ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+            LazyColumn {
+                itemsIndexed(data) { index, (key, content) ->
+                    Row(
+                        modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)).clickable {
+                            if (index == INDEX_PARENT) {
+                                if (content != null) {
+                                    navigator.navWithUrl(content)
+                                }
+                            } else {
+                                context.addTextToClipboard(content, true)
+                                if (index == INDEX_URL) {
+                                    // Save it to avoid detect the gallery
+                                    Settings.clipboardTextHashCode = data[index].hashCode()
+                                }
                             }
-                        }
+                        }.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(id = key), modifier = Modifier.width(90.dp).padding(8.dp))
+                        Text(content.orEmpty(), modifier = Modifier.padding(8.dp))
                     }
                 }
             }
         }
-    }.root
+    }
 }

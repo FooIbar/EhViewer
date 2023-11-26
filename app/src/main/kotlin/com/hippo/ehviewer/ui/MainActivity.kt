@@ -15,6 +15,7 @@
  */
 package com.hippo.ehviewer.ui
 
+import android.annotation.SuppressLint
 import android.app.assist.AssistContent
 import android.content.DialogInterface
 import android.content.Intent
@@ -34,12 +35,9 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -59,17 +57,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.SideDrawer
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -79,37 +80,37 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidViewBinding
-import androidx.core.os.bundleOf
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.onNavDestinationSelected2
+import androidx.navigation.compose.rememberNavController
 import com.google.android.material.snackbar.Snackbar
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.Settings.launchPage
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
-import com.hippo.ehviewer.databinding.ActivityMainBinding
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.Subscriptions
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
+import com.hippo.ehviewer.ui.destinations.DownloadScreenDestination
+import com.hippo.ehviewer.ui.destinations.FavouritesScreenDestination
+import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
+import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
+import com.hippo.ehviewer.ui.destinations.HistoryScreenDestination
+import com.hippo.ehviewer.ui.destinations.HomePageScreenDestination
+import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
+import com.hippo.ehviewer.ui.destinations.SubscriptionScreenDestination
+import com.hippo.ehviewer.ui.destinations.ToplistScreenDestination
+import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.scene.BaseScene
-import com.hippo.ehviewer.ui.scene.GalleryDetailFragment
-import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
-import com.hippo.ehviewer.ui.scene.ProgressFragment
 import com.hippo.ehviewer.ui.scene.TokenArgs
-import com.hippo.ehviewer.ui.scene.navAnimated
 import com.hippo.ehviewer.ui.scene.navWithUrl
+import com.hippo.ehviewer.ui.scene.navigate
 import com.hippo.ehviewer.ui.settings.showNewVersion
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
@@ -117,10 +118,12 @@ import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.addTextToClipboard
-import com.hippo.ehviewer.util.buildWindowInsets
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
-import com.hippo.ehviewer.util.set
+import com.ramcosta.composedestinations.DestinationsNavHost
+import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
+import com.ramcosta.composedestinations.rememberNavHostEngine
+import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -137,20 +140,16 @@ import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
 private val navItems = arrayOf(
-    Triple(R.id.nav_homepage, R.string.homepage, Icons.Default.Home),
-    Triple(R.id.nav_subscription, R.string.subscription, EhIcons.Default.Subscriptions),
-    Triple(R.id.nav_whats_hot, R.string.whats_hot, Icons.Default.Whatshot),
-    Triple(R.id.nav_toplist, R.string.toplist, Icons.Default.FormatListNumbered),
-    Triple(R.id.nav_favourite, R.string.favourite, Icons.Default.Favorite),
-    Triple(R.id.nav_history, R.string.history, Icons.Default.History),
-    Triple(R.id.nav_downloads, R.string.downloads, Icons.Default.Download),
-    Triple(R.id.nav_settings, R.string.settings, Icons.Default.Settings),
+    Triple(HomePageScreenDestination, R.string.homepage, Icons.Default.Home),
+    Triple(SubscriptionScreenDestination, R.string.subscription, EhIcons.Default.Subscriptions),
+    Triple(WhatshotScreenDestination, R.string.whats_hot, Icons.Default.Whatshot),
+    Triple(ToplistScreenDestination, R.string.toplist, Icons.Default.FormatListNumbered),
+    Triple(FavouritesScreenDestination, R.string.favourite, Icons.Default.Favorite),
+    Triple(HistoryScreenDestination, R.string.history, Icons.Default.History),
+    Triple(DownloadScreenDestination, R.string.downloads, Icons.Default.Download),
 )
 
 class MainActivity : EhActivity() {
-    private lateinit var navController: NavController
-    private val isInitializedFlow = MutableStateFlow(false)
-
     private var sideSheet = mutableStateListOf<@Composable ColumnScope.(DrawerState2) -> Unit>()
 
     @Composable
@@ -212,7 +211,7 @@ class MainActivity : EhActivity() {
         when (intent?.action) {
             Intent.ACTION_VIEW -> {
                 val uri = intent.data ?: return false
-                return navController.navWithUrl(uri.toString())
+                return navigator?.navWithUrl(uri.toString()) ?: false
             }
 
             Intent.ACTION_SEND -> {
@@ -220,10 +219,7 @@ class MainActivity : EhActivity() {
                 if ("text/plain" == type) {
                     val builder = ListUrlBuilder()
                     builder.keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
-                    navController.navAnimated(
-                        R.id.galleryListScene,
-                        builder.toStartArgs(),
-                    )
+                    navigator?.navigate(GalleryListScreenDestination(builder))
                     return true
                 } else if (type != null && type.startsWith("image/")) {
                     val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
@@ -234,10 +230,7 @@ class MainActivity : EhActivity() {
                             builder.mode = ListUrlBuilder.MODE_IMAGE_SEARCH
                             builder.imagePath = temp.path
                             builder.isUseSimilarityScan = true
-                            navController.navAnimated(
-                                R.id.galleryListScene,
-                                builder.toStartArgs(),
-                            )
+                            navigator?.navigate(GalleryListScreenDestination(builder))
                             return true
                         }
                     }
@@ -246,7 +239,7 @@ class MainActivity : EhActivity() {
 
             DownloadService.ACTION_START_DOWNLOADSCENE -> {
                 val args = intent.getBundleExtra(DownloadService.ACTION_START_DOWNLOADSCENE_ARGS)
-                navController.navAnimated(R.id.nav_downloads, args)
+                navigator?.navigate(DownloadScreenDestination)
             }
         }
 
@@ -256,12 +249,11 @@ class MainActivity : EhActivity() {
     var drawerLocked by mutableStateOf(false)
     private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private var openSideSheetFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    private var recomposeFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private var tipFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    private var navigator: NavController? = null
+    private val isInitializedFlow = MutableStateFlow(false)
 
-    fun recompose() {
-        recomposeFlow.tryEmit(Unit)
-    }
-
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -270,8 +262,13 @@ class MainActivity : EhActivity() {
             val dialogState = LocalDialogState.current
             val drawerState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
-            val recomposeScope = currentRecomposeScope
-            fun isSelected(id: Int) = ::navController.isInitialized && id == navController.currentDestination?.id
+            val navController = rememberNavController()
+            DisposableEffect(navController) {
+                navigator = navController
+                onDispose {
+                    navigator = null
+                }
+            }
             fun closeDrawer(callback: () -> Unit = {}) = scope.launch {
                 drawerState.close()
                 callback()
@@ -293,105 +290,94 @@ class MainActivity : EhActivity() {
                     drawerState.open()
                 }
             }
+            val snackbarState = remember { SnackbarHostState() }
             LaunchedEffect(Unit) {
-                recomposeFlow.collect {
-                    recomposeScope.invalidate()
+                tipFlow.collectLatest {
+                    snackbarState.showSnackbar(it)
                 }
             }
-            LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
-                ModalNavigationDrawer(
-                    drawerContent = {
-                        ModalDrawerSheet(
-                            modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp),
-                            windowInsets = WindowInsets(0, 0, 0, 0),
-                        ) {
-                            val scrollState = rememberScrollState()
-                            Column(
-                                modifier = Modifier.verticalScroll(scrollState).navigationBarsPadding(),
+            val currentDestination by navController.currentDestinationAsState()
+            Scaffold(snackbarHost = { SnackbarHost(snackbarState) }) {
+                LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
+                    ModalNavigationDrawer(
+                        drawerContent = {
+                            ModalDrawerSheet(
+                                modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp),
+                                windowInsets = WindowInsets(0, 0, 0, 0),
                             ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.sadpanda_low_poly),
-                                    contentDescription = null,
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                    contentScale = ContentScale.FillWidth,
-                                )
-                                navItems.forEach { (id, stringId, icon) ->
+                                val scrollState = rememberScrollState()
+                                Column(
+                                    modifier = Modifier.verticalScroll(scrollState).navigationBarsPadding(),
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.sadpanda_low_poly),
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                        contentScale = ContentScale.FillWidth,
+                                    )
+                                    navItems.forEach { (direction, stringId, icon) ->
+                                        NavigationDrawerItem(
+                                            label = {
+                                                Text(text = stringResource(id = stringId))
+                                            },
+                                            selected = currentDestination === direction,
+                                            onClick = {
+                                                navController.navigate(direction.route)
+                                                closeDrawer()
+                                            },
+                                            modifier = Modifier.padding(horizontal = 12.dp),
+                                            icon = {
+                                                Icon(imageVector = icon, contentDescription = null)
+                                            },
+                                        )
+                                    }
                                     NavigationDrawerItem(
                                         label = {
-                                            Text(text = stringResource(id = stringId))
+                                            Text(text = stringResource(id = R.string.settings))
                                         },
-                                        selected = isSelected(id),
+                                        selected = false,
                                         onClick = {
-                                            if (id == R.id.nav_settings) {
-                                                closeDrawer {
-                                                    onNavDestinationSelected2(id, navController)
-                                                }
-                                            } else {
-                                                closeDrawer()
-                                                onNavDestinationSelected2(id, navController)
-                                            }
+                                            closeDrawer { startActivity(Intent(applicationContext, ConfigureActivity::class.java)) }
                                         },
                                         modifier = Modifier.padding(horizontal = 12.dp),
                                         icon = {
-                                            Icon(imageVector = icon, contentDescription = null)
+                                            Icon(imageVector = Icons.Default.Settings, contentDescription = null)
                                         },
                                     )
                                 }
                             }
-                        }
-                    },
-                    drawerState = drawerState,
-                    gesturesEnabled = !drawerLocked || drawerState.isOpen,
-                ) {
-                    val sheet = sideSheet.firstOrNull()
-                    val sideDrawerState = rememberDrawerState(DrawerValue.Closed)
-                    LaunchedEffect(Unit) {
-                        openSideSheetFlow.collectLatest {
-                            sideDrawerState.open()
-                        }
-                    }
-                    SideDrawer(
-                        drawerContent = {
-                            if (sheet != null) {
-                                ModalDrawerSheet(
-                                    modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
-                                    drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
-                                    windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
-                                ) {
-                                    sheet(sideDrawerState)
-                                }
-                            }
                         },
-                        drawerState = sideDrawerState,
-                        gesturesEnabled = sheet != null && !drawerLocked,
+                        drawerState = drawerState,
+                        gesturesEnabled = !drawerLocked || drawerState.isOpen,
                     ) {
-                        val insets = buildWindowInsets {
-                            set(
-                                WindowInsetsCompat.Type.statusBars(),
-                                WindowInsets.statusBars,
-                            )
-                            set(
-                                WindowInsetsCompat.Type.navigationBars(),
-                                WindowInsets.navigationBars,
-                            )
-                            set(
-                                WindowInsetsCompat.Type.ime(),
-                                WindowInsets.ime,
-                            )
+                        val sheet = sideSheet.firstOrNull()
+                        val sideDrawerState = rememberDrawerState(DrawerValue.Closed)
+                        LaunchedEffect(Unit) {
+                            openSideSheetFlow.collectLatest {
+                                sideDrawerState.open()
+                            }
                         }
-                        AndroidViewBinding(factory = { inflater, parent, attachToParent ->
-                            ActivityMainBinding.inflate(inflater, parent, attachToParent).apply {
-                                val navHostFragment = fragmentContainer.getFragment<NavHostFragment>()
-                                navController = navHostFragment.navController.apply {
-                                    graph = navInflater.inflate(R.navigation.nav_graph).apply {
-                                        check(launchPage in 0..3)
-                                        setStartDestination(navItems[launchPage].first)
+                        SideDrawer(
+                            drawerContent = {
+                                if (sheet != null) {
+                                    ModalDrawerSheet(
+                                        modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
+                                        drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
+                                        windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
+                                    ) {
+                                        sheet(sideDrawerState)
                                     }
                                 }
-                                isInitializedFlow.value = true
-                            }
-                        }) {
-                            ViewCompat.dispatchApplyWindowInsets(root, insets)
+                            },
+                            drawerState = sideDrawerState,
+                            gesturesEnabled = sheet != null && !drawerLocked,
+                        ) {
+                            DestinationsNavHost(
+                                navGraph = NavGraphs.root,
+                                startRoute = navItems[Settings.launchPage].first,
+                                engine = rememberNavHostEngine(rootDefaultAnimations = RootNavGraphDefaultAnimations.ACCOMPANIST_FADING),
+                                navController = navController,
+                            )
                         }
                     }
                 }
@@ -469,7 +455,7 @@ class MainActivity : EhActivity() {
         if (connectivityManager.isActiveNetworkMetered) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 Snackbar.make(
-                    findViewById(R.id.fragment_container),
+                    findViewById(R.id.content),
                     R.string.metered_network_warning,
                     Snackbar.LENGTH_LONG,
                 )
@@ -504,25 +490,16 @@ class MainActivity : EhActivity() {
             val result1 = GalleryDetailUrlParser.parse(text, false)
             var launch: (() -> Unit)? = null
             if (result1 != null) {
-                launch = {
-                    navController.navAnimated(
-                        R.id.galleryDetailScene,
-                        bundleOf(GalleryDetailFragment.KEY_ARGS to TokenArgs(result1.gid, result1.token)),
-                    )
-                }
+                launch = { navigator?.navigate(GalleryDetailScreenDestination(TokenArgs(result1.gid, result1.token))) }
             }
             val result2 = GalleryPageUrlParser.parse(text, false)
             if (result2 != null) {
-                val args = Bundle()
-                args.putLong(ProgressFragment.KEY_GID, result2.gid)
-                args.putString(ProgressFragment.KEY_PTOKEN, result2.pToken)
-                args.putInt(ProgressFragment.KEY_PAGE, result2.page)
-                launch = { navController.navAnimated(R.id.progressScene, args) }
+                launch = { navigator?.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
             }
             launch?.let {
                 withUIContext {
                     val snackbar = Snackbar.make(
-                        findViewById(R.id.fragment_container),
+                        findViewById(R.id.content),
                         R.string.clipboard_gallery_url_snack_message,
                         Snackbar.LENGTH_SHORT,
                     )
@@ -548,22 +525,9 @@ class MainActivity : EhActivity() {
         showTip(getString(id), length, useToast)
     }
 
-    /**
-     * If activity is running, show snack bar, otherwise show toast
-     */
     fun showTip(message: CharSequence, length: Int, useToast: Boolean = false) {
-        if (!useToast) {
-            Snackbar.make(
-                findViewById(R.id.fragment_container),
-                message,
-                if (length == BaseScene.LENGTH_LONG) Snackbar.LENGTH_LONG else Snackbar.LENGTH_SHORT,
-            ).show()
-        } else {
-            Toast.makeText(
-                this,
-                message,
-                if (length == BaseScene.LENGTH_LONG) Toast.LENGTH_LONG else Toast.LENGTH_SHORT,
-            ).show()
+        if (useToast || tipFlow.tryEmit(message.toString())) {
+            Toast.makeText(this, message, if (length == BaseScene.LENGTH_LONG) Toast.LENGTH_LONG else Toast.LENGTH_SHORT).show()
         }
     }
 

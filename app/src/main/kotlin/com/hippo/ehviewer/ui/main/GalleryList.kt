@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,13 +39,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.os.bundleOf
-import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
@@ -59,7 +59,6 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.ui.WebViewActivity
 import com.hippo.ehviewer.ui.scene.collectDetailSizeAsState
-import com.hippo.ehviewer.ui.scene.navAnimated
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
@@ -80,8 +79,8 @@ fun GalleryList(
     refreshState: PullToRefreshState,
     onRefresh: suspend CoroutineScope.() -> Unit,
     onLoading: suspend CoroutineScope.() -> Unit,
-    navigator: NavController,
 ) {
+    val context = LocalContext.current
     val layoutDirection = LocalLayoutDirection.current
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
     val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
@@ -205,7 +204,11 @@ fun GalleryList(
                             dialogState.awaitPermissionOrCancel(title = R.string.cloudflare_bypass_failed) {
                                 Text(text = stringResource(id = R.string.open_in_webview))
                             }
-                            navigator.navAnimated(R.id.webView, bundleOf(WebViewActivity.KEY_URL to EhUrl.host))
+                            context.startActivity(
+                                Intent(context, WebViewActivity::class.java).apply {
+                                    putExtra(WebViewActivity.KEY_URL, EhUrl.host)
+                                },
+                            )
                         }
                     }
                     Box(

@@ -2,11 +2,7 @@ package com.hippo.ehviewer.ui.scene
 
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewConfiguration
-import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
@@ -93,10 +89,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
-import androidx.core.os.bundleOf
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -133,6 +126,9 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
+import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
+import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.main.AdvancedSearchOption
@@ -144,7 +140,6 @@ import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.NormalSearch
 import com.hippo.ehviewer.ui.main.SearchAdvanced
-import com.hippo.ehviewer.ui.scene.GalleryListFragment.Companion.toStartArgs
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.LocalDialogState
@@ -155,9 +150,10 @@ import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.findActivity
-import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.pickVisualMedia
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.spec.Direction
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -177,7 +173,27 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
 @Destination
 @Composable
-fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
+fun HomePageScreen(navigator: DestinationsNavigator) =
+    GalleryListScreen(ListUrlBuilder(), navigator)
+
+@Destination
+@Composable
+fun SubscriptionScreen(navigator: DestinationsNavigator) =
+    GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator)
+
+@Destination
+@Composable
+fun WhatshotScreen(navigator: DestinationsNavigator) =
+    GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator)
+
+@Destination
+@Composable
+fun ToplistScreen(navigator: DestinationsNavigator) =
+    GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator)
+
+@Destination
+@Composable
+fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val searchFieldState = rememberTextFieldState()
     var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
     var searchBarOffsetY by remember { mutableStateOf(0) }
@@ -453,7 +469,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                                     ListItem(
                                         modifier = Modifier.clickable {
                                             if (urlBuilder.mode == MODE_WHATS_HOT) {
-                                                navigator.navAnimated(R.id.galleryListScene, ListUrlBuilder(item).toStartArgs())
+                                                navigator.navigate(GalleryListScreenDestination(ListUrlBuilder(item)))
                                             } else {
                                                 urlBuilder = ListUrlBuilder(item)
                                                 data.refresh()
@@ -513,19 +529,17 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         override val keyword = openGalleryKeyword
         override val canOpenDirectly = true
         override fun onClick() {
-            navigator.navAnimated(destination, args)
+            navigator.navigate(destination)
             showSearchLayout = false
         }
-        abstract val destination: Int
-        abstract val args: Bundle
+        abstract val destination: Direction
     }
 
     class GalleryDetailUrlSuggestion(
         gid: Long,
         token: String,
     ) : UrlSuggestion() {
-        override val destination = R.id.galleryDetailScene
-        override val args = bundleOf(GalleryDetailFragment.KEY_ARGS to TokenArgs(gid, token))
+        override val destination = GalleryDetailScreenDestination(TokenArgs(gid, token))
     }
 
     class GalleryPageUrlSuggestion(
@@ -533,12 +547,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
         pToken: String,
         page: Int,
     ) : UrlSuggestion() {
-        override val destination = R.id.progressScene
-        override val args = bundleOf(
-            ProgressFragment.KEY_GID to gid,
-            ProgressFragment.KEY_PTOKEN to pToken,
-            ProgressFragment.KEY_PAGE to page,
-        )
+        override val destination = ProgressScreenDestination(gid, pToken, page)
     }
 
     var expanded by remember { mutableStateOf(false) }
@@ -603,7 +612,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 MODE_TOPLIST, MODE_WHATS_HOT -> {
                     // Wait for search view to hide
                     delay(300)
-                    withUIContext { navigator.navAnimated(R.id.galleryListScene, builder.toStartArgs()) }
+                    withUIContext { navigator.navigate(GalleryListScreenDestination(builder)) }
                 }
                 else -> {
                     urlBuilder = builder
@@ -754,10 +763,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             detailItemContent = { info ->
                 GalleryInfoListItem(
                     onClick = {
-                        navigator.navAnimated(
-                            R.id.galleryDetailScene,
-                            bundleOf(GalleryDetailFragment.KEY_ARGS to GalleryInfoArgs(info)),
-                        )
+                        navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info)))
                     },
                     onLongClick = {
                         coroutineScope.launch {
@@ -774,10 +780,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
             thumbItemContent = { info ->
                 GalleryInfoGridItem(
                     onClick = {
-                        navigator.navAnimated(
-                            R.id.galleryDetailScene,
-                            bundleOf(GalleryDetailFragment.KEY_ARGS to GalleryInfoArgs(info)),
-                        )
+                        navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info)))
                     },
                     onLongClick = {
                         coroutineScope.launch {
@@ -793,7 +796,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 data.refresh()
             },
             onLoading = { searchBarOffsetY = 0 },
-            navigator = navigator,
         )
     }
 
@@ -862,37 +864,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: NavController) {
                 }
             }
         }
-    }
-}
-
-class GalleryListFragment : BaseScene() {
-    override val enableDrawerGestures = true
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val navController = findNavController()
-        val args = when (arguments?.getString(KEY_ACTION) ?: ACTION_HOMEPAGE) {
-            ACTION_HOMEPAGE -> ListUrlBuilder()
-            ACTION_SUBSCRIPTION -> ListUrlBuilder(MODE_SUBSCRIPTION)
-            ACTION_WHATS_HOT -> ListUrlBuilder(MODE_WHATS_HOT)
-            ACTION_TOP_LIST -> ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist)
-            ACTION_LIST_URL_BUILDER -> arguments?.getParcelableCompat<ListUrlBuilder>(KEY_LIST_URL_BUILDER)?.copy() ?: ListUrlBuilder()
-            else -> error("Wrong KEY_ACTION:${arguments?.getString(KEY_ACTION)} when handle args!")
-        }
-        return ComposeWithMD3 { GalleryListScreen(args, navController) }
-    }
-
-    companion object {
-        const val KEY_ACTION = "action"
-        const val ACTION_HOMEPAGE = "action_homepage"
-        const val ACTION_SUBSCRIPTION = "action_subscription"
-        const val ACTION_WHATS_HOT = "action_whats_hot"
-        const val ACTION_TOP_LIST = "action_top_list"
-        const val ACTION_LIST_URL_BUILDER = "action_list_url_builder"
-        const val KEY_LIST_URL_BUILDER = "list_url_builder"
-        fun ListUrlBuilder.toStartArgs() = bundleOf(
-            KEY_ACTION to ACTION_LIST_URL_BUILDER,
-            KEY_LIST_URL_BUILDER to this,
-        )
     }
 }
 
