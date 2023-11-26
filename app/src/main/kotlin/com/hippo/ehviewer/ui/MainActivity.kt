@@ -314,6 +314,7 @@ class MainActivity : EhActivity() {
                                         selected = false,
                                         onClick = {
                                             navController.navigate(direction.route)
+                                            closeDrawer()
                                         },
                                         modifier = Modifier.padding(horizontal = 12.dp),
                                         icon = {
