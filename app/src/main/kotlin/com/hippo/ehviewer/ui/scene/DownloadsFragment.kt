@@ -148,12 +148,12 @@ fun DownloadsScreen(navigator: NavController) {
         }
     }
 
+    val newLabel = stringResource(R.string.new_label_title)
+    val labelsStr = stringResource(R.string.download_labels)
+    val labelEmpty = stringResource(R.string.label_text_is_empty)
+    val defaultInvalid = stringResource(R.string.label_text_is_invalid)
+    val labelExists = stringResource(R.string.label_text_exist)
     with(activity) {
-        val newLabel = stringResource(R.string.new_label_title)
-        val labelsStr = stringResource(R.string.download_labels)
-        val labelEmpty = stringResource(R.string.label_text_is_empty)
-        val defaultInvalid = stringResource(R.string.label_text_is_invalid)
-        val labelExists = stringResource(R.string.label_text_exist)
         ProvideSideSheetContent { drawerState ->
             TopAppBar(
                 title = { Text(text = labelsStr) },
@@ -273,7 +273,21 @@ fun DownloadsScreen(navigator: NavController) {
                                     },
                                     trailingContent = {
                                         Row {
-                                            IconButton(onClick = {}) {
+                                            IconButton(
+                                                onClick = {
+                                                    coroutineScope.launch {
+                                                        val newLabel = dialogState.awaitInputText(title = newLabel, hint = labelsStr) { text ->
+                                                            when {
+                                                                text.isBlank() -> labelEmpty
+                                                                text == defaultName -> defaultInvalid
+                                                                DownloadManager.containLabel(text) -> labelExists
+                                                                else -> null
+                                                            }
+                                                        }
+                                                        DownloadManager.renameLabel(item, newLabel)
+                                                    }
+                                                },
+                                            ) {
                                                 Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                             }
                                             IconButton(
