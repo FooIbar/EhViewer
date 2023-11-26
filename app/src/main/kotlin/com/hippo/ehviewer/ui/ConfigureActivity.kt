@@ -17,7 +17,6 @@ import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.util.findActivity
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.rememberNavHostEngine
 
@@ -35,7 +34,7 @@ class ConfigureActivity : EhActivity() {
                     } else {
                         BaseScreenDestination
                     },
-                    engine = rememberNavHostEngine(rootDefaultAnimations = RootNavGraphDefaultAnimations.ACCOMPANIST_FADING),
+                    engine = rememberNavHostEngine(rootDefaultAnimations = ehNavAnim),
                 )
             }
         }
