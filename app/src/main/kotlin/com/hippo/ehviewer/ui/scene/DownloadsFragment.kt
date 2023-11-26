@@ -155,6 +155,7 @@ fun DownloadsScreen(navigator: NavController) {
     val labelExists = stringResource(R.string.label_text_exist)
     with(activity) {
         ProvideSideSheetContent { drawerState ->
+            fun closeSheet() = coroutineScope.launch { drawerState.close() }
             TopAppBar(
                 title = { Text(text = labelsStr) },
                 windowInsets = WindowInsets(0, 0, 0, 0),
@@ -218,7 +219,10 @@ fun DownloadsScreen(navigator: NavController) {
                 stickyHeader {
                     val all = DownloadManager.allInfoList
                     ListItem(
-                        modifier = Modifier.clickable { label = null },
+                        modifier = Modifier.clickable {
+                            label = null
+                            closeSheet()
+                        },
                         tonalElevation = 1.dp,
                         shadowElevation = 1.dp,
                         headlineContent = {
@@ -229,7 +233,10 @@ fun DownloadsScreen(navigator: NavController) {
                 stickyHeader {
                     val default = DownloadManager.defaultInfoList
                     ListItem(
-                        modifier = Modifier.clickable { label = defaultName },
+                        modifier = Modifier.clickable {
+                            label = defaultName
+                            closeSheet()
+                        },
                         tonalElevation = 1.dp,
                         shadowElevation = 1.dp,
                         headlineContent = {
@@ -266,7 +273,10 @@ fun DownloadsScreen(navigator: NavController) {
                                 val thatList = DownloadManager.getLabelDownloadInfoList(item)
                                 val text = if (thatList != null) "$item [${thatList.size}]" else item
                                 ListItem(
-                                    modifier = Modifier.clickable { label = item },
+                                    modifier = Modifier.clickable {
+                                        label = item
+                                        closeSheet()
+                                    },
                                     tonalElevation = 1.dp,
                                     shadowElevation = elevation,
                                     headlineContent = {
