@@ -29,14 +29,14 @@ import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.outlined.Label
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.NewLabel
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.DropdownMenu
@@ -81,7 +81,7 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.icons.EhIcons
-import com.hippo.ehviewer.icons.big.History
+import com.hippo.ehviewer.icons.big.Download
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.main.DownloadCard
@@ -177,7 +177,7 @@ fun DownloadsScreen(navigator: NavController) {
                             }
                         },
                     ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = null)
+                        Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
                     }
                     val letMeSelect = stringResource(R.string.let_me_select)
                     IconButton(
@@ -201,7 +201,7 @@ fun DownloadsScreen(navigator: NavController) {
                             }
                         },
                     ) {
-                        Icon(imageVector = Icons.Default.Archive, contentDescription = null)
+                        Icon(imageVector = Icons.Default.Settings, contentDescription = null)
                     }
                 },
             )
@@ -472,7 +472,7 @@ fun DownloadsScreen(navigator: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Image(
-                        imageVector = EhIcons.Big.Default.History,
+                        imageVector = EhIcons.Big.Default.Download,
                         contentDescription = null,
                         modifier = Modifier.padding(16.dp),
                     )
