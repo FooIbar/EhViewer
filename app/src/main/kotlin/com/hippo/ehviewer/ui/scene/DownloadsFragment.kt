@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -40,7 +39,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -132,13 +130,7 @@ fun DownloadsScreen(navigator: NavController) {
             (filterType == -1 || info.state == filterType) && keyword?.let { info.title.containsIgnoreCase(it) || info.titleJpn.containsIgnoreCase(it) || info.uploader.containsIgnoreCase(it) } ?: true
         }.map { it.copy(downloadInfo = it.downloadInfo.copy()) }
     }
-    val labelsList = remember {
-        buildList {
-            add(allName)
-            add(defaultName)
-            addAll(DownloadManager.labelList.map { it.label })
-        }
-    }
+    val labelsList = remember { DownloadManager.labelList.map { it.label } }
 
     val searchBarConnection = remember {
         object : NestedScrollConnection {
@@ -195,11 +187,27 @@ fun DownloadsScreen(navigator: NavController) {
                 state = labelsListState,
                 contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
             ) {
-                // Fix the first item's reorder animation
                 stickyHeader {
-                    HorizontalDivider()
+                    val all = DownloadManager.allInfoList
+                    ListItem(
+                        tonalElevation = 1.dp,
+                        shadowElevation = 1.dp,
+                        headlineContent = {
+                            Text("$allName [${all.size}]")
+                        },
+                    )
                 }
-                itemsIndexed(labelsList, key = { _, item -> item }) { index, item ->
+                stickyHeader {
+                    val default = DownloadManager.defaultInfoList
+                    ListItem(
+                        tonalElevation = 1.dp,
+                        shadowElevation = 1.dp,
+                        headlineContent = {
+                            Text("$defaultName [${default.size}]")
+                        },
+                    )
+                }
+                items(labelsList, key = { it }) { item ->
                     ReorderableItem(reorderableLabelState, key = item) { isDragging ->
                         val elevation by animateDpAsState(
                             if (isDragging) {
@@ -209,11 +217,7 @@ fun DownloadsScreen(navigator: NavController) {
                             },
                             label = "elevation",
                         )
-                        val thatList: List<DownloadInfo>? = when (index) {
-                            0 -> DownloadManager.allInfoList
-                            1 -> DownloadManager.defaultInfoList
-                            else -> DownloadManager.getLabelDownloadInfoList(item)
-                        }
+                        val thatList = DownloadManager.getLabelDownloadInfoList(item)
                         val text = if (thatList != null) "$item [${thatList.size}]" else item
                         ListItem(
                             modifier = Modifier.clickable {
@@ -224,16 +228,14 @@ fun DownloadsScreen(navigator: NavController) {
                                 Text(text)
                             },
                             trailingContent = {
-                                if (index > 1) {
-                                    IconButton(onClick = {}) {
-                                        Icon(imageVector = Icons.Default.Edit, contentDescription = null)
-                                    }
-                                    IconButton(
-                                        onClick = {},
-                                        modifier = Modifier.draggableHandle(),
-                                    ) {
-                                        Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
-                                    }
+                                IconButton(onClick = {}) {
+                                    Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                                }
+                                IconButton(
+                                    onClick = {},
+                                    modifier = Modifier.draggableHandle(),
+                                ) {
+                                    Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
                                 }
                             },
                         )
