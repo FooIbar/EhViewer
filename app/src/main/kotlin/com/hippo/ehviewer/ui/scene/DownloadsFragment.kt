@@ -5,17 +5,25 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -25,13 +33,17 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -110,6 +122,7 @@ fun DownloadsScreen(navigator: NavController) {
     val title = stringResource(R.string.scene_download_title, label ?: stringResource(R.string.download_all))
     val hint = stringResource(R.string.search_bar_hint, title)
     val defaultName = stringResource(R.string.default_download_label_name)
+    val allName = stringResource(R.string.download_all)
     val list = remember(label) {
         when (label) {
             null -> DownloadManager.allInfoList
@@ -118,6 +131,13 @@ fun DownloadsScreen(navigator: NavController) {
         }.filter { info ->
             (filterType == -1 || info.state == filterType) && keyword?.let { info.title.containsIgnoreCase(it) || info.titleJpn.containsIgnoreCase(it) || info.uploader.containsIgnoreCase(it) } ?: true
         }.map { it.copy(downloadInfo = it.downloadInfo.copy()) }
+    }
+    val labelsList = remember {
+        buildList {
+            add(allName)
+            add(defaultName)
+            addAll(DownloadManager.labelList.map { it.label })
+        }
     }
 
     val searchBarConnection = remember {
@@ -165,6 +185,61 @@ fun DownloadsScreen(navigator: NavController) {
                     }
                 },
             )
+
+            val labelsListState = rememberLazyListState()
+            val reorderableLabelState = rememberReorderableLazyColumnState(labelsListState) { from, to ->
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = labelsListState,
+                contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
+            ) {
+                // Fix the first item's reorder animation
+                stickyHeader {
+                    HorizontalDivider()
+                }
+                itemsIndexed(labelsList, key = { _, item -> item }) { index, item ->
+                    ReorderableItem(reorderableLabelState, key = item) { isDragging ->
+                        val elevation by animateDpAsState(
+                            if (isDragging) {
+                                8.dp // md.sys.elevation.level4
+                            } else {
+                                1.dp // md.sys.elevation.level1
+                            },
+                            label = "elevation",
+                        )
+                        val thatList: List<DownloadInfo>? = when (index) {
+                            0 -> DownloadManager.allInfoList
+                            1 -> DownloadManager.defaultInfoList
+                            else -> DownloadManager.getLabelDownloadInfoList(item)
+                        }
+                        val text = if (thatList != null) "$item [${thatList.size}]" else item
+                        ListItem(
+                            modifier = Modifier.clickable {
+                            },
+                            tonalElevation = 1.dp,
+                            shadowElevation = elevation,
+                            headlineContent = {
+                                Text(text)
+                            },
+                            trailingContent = {
+                                if (index > 1) {
+                                    IconButton(onClick = {}) {
+                                        Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                                    }
+                                    IconButton(
+                                        onClick = {},
+                                        modifier = Modifier.draggableHandle(),
+                                    ) {
+                                        Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
+                                    }
+                                }
+                            },
+                        )
+                    }
+                }
+            }
         }
     }
 
