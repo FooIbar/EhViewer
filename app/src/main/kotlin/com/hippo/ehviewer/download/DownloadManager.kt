@@ -649,28 +649,15 @@ object DownloadManager : OnSpiderListener {
     }
 
     suspend fun renameLabel(from: String, to: String) {
-        // Find in label list
-        var found = false
-        for (raw in labelList) {
-            if (from == raw.label) {
-                found = true
-                raw.label = to
-                // Update in DB
-                EhDB.updateDownloadLabel(raw)
-                break
-            }
+        val index = labelList.indexOfFirst { it.label == from }
+        if (index != -1) {
+            val exist = labelList.removeAt(index)
+            val new = exist.copy(label = to)
+            labelList.add(index, new)
+            EhDB.updateDownloadLabel(new)
+            val list = map.remove(from)?.onEach { it.label = to }
+            if (list != null) map[to] = list
         }
-        if (!found) {
-            return
-        }
-        val list = map.remove(from) ?: return
-
-        // Update info label
-        for (info in list) {
-            info.label = to
-        }
-        // Put list back with new label
-        map[to] = list
     }
 
     suspend fun deleteLabel(label: String) {
