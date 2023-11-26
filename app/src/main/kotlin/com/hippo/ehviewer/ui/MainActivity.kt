@@ -62,6 +62,7 @@ import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.SideDrawer
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -83,6 +84,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -127,7 +129,6 @@ import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.delay
@@ -279,6 +280,32 @@ class MainActivity : EhActivity() {
                 tipFlow.collectLatest {
                     snackbarState.showSnackbar(it)
                 }
+            }
+            val snackMessage = stringResource(R.string.clipboard_gallery_url_snack_message)
+            val snackAction = stringResource(R.string.clipboard_gallery_url_snack_action)
+            LifecycleResumeEffect {
+                scope.launch {
+                    delay(300)
+                    val text = clipboardManager.getUrlFromClipboard(applicationContext)
+                    val hashCode = text?.hashCode() ?: 0
+                    if (text != null && hashCode != 0 && Settings.clipboardTextHashCode != hashCode) {
+                        val result1 = GalleryDetailUrlParser.parse(text, false)
+                        var launch: (() -> Unit)? = null
+                        if (result1 != null) {
+                            launch = { navigator?.navigate(GalleryDetailScreenDestination(TokenArgs(result1.gid, result1.token))) }
+                        }
+                        val result2 = GalleryPageUrlParser.parse(text, false)
+                        if (result2 != null) {
+                            launch = { navigator?.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
+                        }
+                        launch?.let {
+                            val ret = snackbarState.showSnackbar(snackMessage, snackAction)
+                            if (ret == SnackbarResult.ActionPerformed) it()
+                        }
+                    }
+                    Settings.clipboardTextHashCode = hashCode
+                }
+                onPauseOrDispose { }
             }
             val currentDestination by navController.currentDestinationAsState()
             CompositionLocalProvider(
@@ -459,41 +486,6 @@ class MainActivity : EhActivity() {
             startActivity(Intent(this, ConfigureActivity::class.java))
         }
         super.onResume()
-        lifecycleScope.launch {
-            delay(300)
-            checkClipboardUrl()
-        }
-    }
-
-    private suspend fun checkClipboardUrl() {
-        isInitializedFlow.first { it }
-        val text = clipboardManager.getUrlFromClipboard(this)
-        val hashCode = text?.hashCode() ?: 0
-        if (text != null && hashCode != 0 && Settings.clipboardTextHashCode != hashCode) {
-            val result1 = GalleryDetailUrlParser.parse(text, false)
-            var launch: (() -> Unit)? = null
-            if (result1 != null) {
-                launch = { navigator?.navigate(GalleryDetailScreenDestination(TokenArgs(result1.gid, result1.token))) }
-            }
-            val result2 = GalleryPageUrlParser.parse(text, false)
-            if (result2 != null) {
-                launch = { navigator?.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
-            }
-            launch?.let {
-                withUIContext {
-                    val snackbar = Snackbar.make(
-                        findViewById(R.id.content),
-                        R.string.clipboard_gallery_url_snack_message,
-                        Snackbar.LENGTH_SHORT,
-                    )
-                    snackbar.setAction(R.string.clipboard_gallery_url_snack_action) {
-                        it()
-                    }
-                    snackbar.show()
-                }
-            }
-        }
-        Settings.clipboardTextHashCode = hashCode
     }
 
     fun showTip(@StringRes id: Int, length: Int, useToast: Boolean = false) {
