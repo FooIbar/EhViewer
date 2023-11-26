@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -947,7 +948,10 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         var showBottomSheet by remember { mutableStateOf(false) }
 
         if (showBottomSheet && galleryDetail != null) {
-            ModalBottomSheet(onDismissRequest = { showBottomSheet = false }) {
+            ModalBottomSheet(
+                onDismissRequest = { showBottomSheet = false },
+                windowInsets = WindowInsets(0, 0, 0, 0),
+            ) {
                 GalleryInfoBottomSheet(galleryDetail, navigator)
             }
         }
