@@ -45,6 +45,7 @@ import com.hippo.ehviewer.util.mapNotNull
 import com.hippo.ehviewer.util.runAssertingNotMainThread
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.util.LinkedList
 import kotlinx.coroutines.CoroutineScope
@@ -639,10 +640,12 @@ object DownloadManager : OnSpiderListener {
     suspend fun moveLabel(fromPosition: Int, toPosition: Int) {
         val item = labelList.removeAt(fromPosition)
         labelList.add(toPosition, item)
-        val range = if (fromPosition < toPosition) fromPosition..toPosition else toPosition..fromPosition
-        val list = labelList.slice(range)
-        list.zip(range).forEach { it.first.position = it.second }
-        EhDB.updateDownloadLabel(list)
+        withIOContext {
+            val range = if (fromPosition < toPosition) fromPosition..toPosition else toPosition..fromPosition
+            val list = labelList.slice(range)
+            list.zip(range).forEach { it.first.position = it.second }
+            EhDB.updateDownloadLabel(list)
+        }
     }
 
     suspend fun renameLabel(from: String, to: String) {

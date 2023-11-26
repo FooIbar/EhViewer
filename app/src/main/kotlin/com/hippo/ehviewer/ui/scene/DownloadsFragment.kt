@@ -200,6 +200,9 @@ fun DownloadsScreen(navigator: NavController) {
 
             val labelsListState = rememberLazyListState()
             val reorderableLabelState = rememberReorderableLazyColumnState(labelsListState) { from, to ->
+                coroutineScope.launch {
+                    DownloadManager.moveLabel(from.index - 2, to.index - 2)
+                }
             }
 
             LazyColumn(
