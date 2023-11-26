@@ -82,6 +82,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.google.android.material.snackbar.Snackbar
 import com.hippo.ehviewer.R
@@ -109,6 +110,7 @@ import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
 import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.scene.TokenArgs
 import com.hippo.ehviewer.ui.scene.navWithUrl
+import com.hippo.ehviewer.ui.scene.navigate
 import com.hippo.ehviewer.ui.settings.showNewVersion
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
@@ -120,7 +122,6 @@ import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import eu.kanade.tachiyomi.util.lang.launchUI
@@ -210,7 +211,7 @@ class MainActivity : EhActivity() {
         when (intent?.action) {
             Intent.ACTION_VIEW -> {
                 val uri = intent.data ?: return false
-                return navController.navWithUrl(uri.toString())
+                return navigator?.navWithUrl(uri.toString()) ?: false
             }
 
             Intent.ACTION_SEND -> {
@@ -218,7 +219,7 @@ class MainActivity : EhActivity() {
                 if ("text/plain" == type) {
                     val builder = ListUrlBuilder()
                     builder.keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
-                    navController.navigate(GalleryListScreenDestination(builder))
+                    navigator?.navigate(GalleryListScreenDestination(builder))
                     return true
                 } else if (type != null && type.startsWith("image/")) {
                     val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
@@ -229,7 +230,7 @@ class MainActivity : EhActivity() {
                             builder.mode = ListUrlBuilder.MODE_IMAGE_SEARCH
                             builder.imagePath = temp.path
                             builder.isUseSimilarityScan = true
-                            navController.navigate(GalleryListScreenDestination(builder))
+                            navigator?.navigate(GalleryListScreenDestination(builder))
                             return true
                         }
                     }
@@ -238,7 +239,7 @@ class MainActivity : EhActivity() {
 
             DownloadService.ACTION_START_DOWNLOADSCENE -> {
                 val args = intent.getBundleExtra(DownloadService.ACTION_START_DOWNLOADSCENE_ARGS)
-                navController.navigate(DownloadScreenDestination)
+                navigator?.navigate(DownloadScreenDestination)
             }
         }
 
@@ -249,7 +250,7 @@ class MainActivity : EhActivity() {
     private var openDrawerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private var openSideSheetFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private var tipFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
-    private lateinit var navController: DestinationsNavigator
+    private var navigator: NavController? = null
     private val isInitializedFlow = MutableStateFlow(false)
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -262,6 +263,12 @@ class MainActivity : EhActivity() {
             val drawerState = rememberDrawerState(DrawerValue.Closed)
             val scope = rememberCoroutineScope()
             val navController = rememberNavController()
+            DisposableEffect(navController) {
+                navigator = navController
+                onDispose {
+                    navigator = null
+                }
+            }
             fun closeDrawer(callback: () -> Unit = {}) = scope.launch {
                 drawerState.close()
                 callback()
@@ -483,11 +490,11 @@ class MainActivity : EhActivity() {
             val result1 = GalleryDetailUrlParser.parse(text, false)
             var launch: (() -> Unit)? = null
             if (result1 != null) {
-                launch = { navController.navigate(GalleryDetailScreenDestination(TokenArgs(result1.gid, result1.token))) }
+                launch = { navigator?.navigate(GalleryDetailScreenDestination(TokenArgs(result1.gid, result1.token))) }
             }
             val result2 = GalleryPageUrlParser.parse(text, false)
             if (result2 != null) {
-                launch = { navController.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
+                launch = { navigator?.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
             }
             launch?.let {
                 withUIContext {
