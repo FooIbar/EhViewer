@@ -68,6 +68,7 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
+import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.main.FabLayout
@@ -246,7 +247,8 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         refreshState = refreshState,
         searchBarOffsetY = searchBarOffsetY,
         trailingIcon = {
-            IconButton(onClick = { activity.openSideSheet() }) {
+            val sheetState = LocalSideSheetState.current
+            IconButton(onClick = { coroutineScope.launch { sheetState.open() } }) {
                 Icon(imageVector = Icons.Outlined.FolderSpecial, contentDescription = null)
             }
         },
