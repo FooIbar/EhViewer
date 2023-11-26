@@ -140,8 +140,8 @@ import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
-import com.hippo.ehviewer.ui.legacy.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.AdvancedSearchOption
+import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem

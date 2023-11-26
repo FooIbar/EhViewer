@@ -595,7 +595,7 @@ object DownloadManager : OnSpiderListener {
     /**
      * @param label Not allow new label
      */
-    suspend fun changeLabel(list: List<DownloadInfo>, label: String?) {
+    suspend fun changeLabel(list: Collection<DownloadInfo>, label: String?) {
         if (null != label && !containLabel(label)) {
             Log.e(TAG, "Not exits label: $label")
             return

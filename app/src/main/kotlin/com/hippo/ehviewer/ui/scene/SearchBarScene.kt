@@ -1,13 +1,6 @@
 package com.hippo.ehviewer.ui.scene
 
 import android.annotation.SuppressLint
-import android.os.Bundle
-import android.os.Parcelable
-import android.util.SparseArray
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.annotation.CallSuper
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -54,10 +47,8 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -68,26 +59,13 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-import androidx.compose.ui.viewinterop.AndroidViewBinding
-import androidx.core.view.updatePadding
-import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.lifecycle.setViewTreeViewModelStoreOwner
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.OnScrollListener
-import androidx.savedstate.SavedStateRegistryOwner
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
-import androidx.viewbinding.ViewBinding
-import com.google.android.material.sidesheet.SideSheetDialog
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -95,10 +73,9 @@ import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.legacy.FAB_ANIMATE_TIME
+import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.findActivity
-import com.hippo.ehviewer.util.getSparseParcelableArrayCompat
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -382,163 +359,6 @@ fun SearchBarScreen(
     }
 }
 
-abstract class SearchBarScene : BaseScene() {
-    private var drawerView: View? = null
-    private var drawerViewState: SparseArray<Parcelable>? = null
-    private var sideSheetDialog: SideSheetDialog? = null
-
-    private val searchFieldState = TextFieldState()
-    private var mSuggestionProvider: SuggestionProvider? = null
-    private var onApplySearch: (String) -> Unit = {}
-    private var searchFieldHint by mutableStateOf<String?>(null)
-    private var searchBarTitle by mutableStateOf<String?>(null)
-    var showSearchFab by mutableStateOf(false)
-
-    protected abstract val fabLayout: View
-    protected abstract val fastScroller: View
-    protected abstract val recyclerView: RecyclerView
-
-    override val enableDrawerGestures = true
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        var ofs by mutableIntStateOf(0)
-        val onScrollListener = object : OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                ofs = (ofs - dy).coerceIn(-300, 0)
-            }
-        }
-        return ComposeWithMD3 {
-            val compositionContext = rememberCompositionContext()
-            val density = LocalDensity.current
-            val margin = with(density) { 8.dp.roundToPx() }
-            SearchBarScreen(
-                title = searchBarTitle,
-                searchFieldState = searchFieldState,
-                searchFieldHint = searchFieldHint,
-                showSearchFab = showSearchFab,
-                onApplySearch = onApplySearch,
-                onSearchExpanded = ::onSearchViewExpanded,
-                onSearchHidden = ::onSearchViewHidden,
-                suggestionProvider = mSuggestionProvider,
-                searchBarOffsetY = ofs,
-                trailingIcon = {
-                    TrailingIcon()
-                },
-            ) { contentPadding ->
-                val topPadding = with(density) { contentPadding.calculateTopPadding().roundToPx() }
-                val bottomPadding = with(density) { contentPadding.calculateBottomPadding().roundToPx() }
-                AndroidViewBinding(
-                    modifier = Modifier.fillMaxSize(),
-                    factory = { inflater, parent, _ ->
-                        onCreateViewWithToolbar(inflater, parent, savedInstanceState).also {
-                            recyclerView.addOnScrollListener(onScrollListener)
-                            createDrawerView(savedInstanceState)?.apply {
-                                if (this is ComposeView) {
-                                    val owner = viewLifecycleOwner
-                                    setViewTreeLifecycleOwner(owner)
-                                    setViewTreeViewModelStoreOwner(owner as ViewModelStoreOwner)
-                                    setViewTreeSavedStateRegistryOwner(owner as SavedStateRegistryOwner)
-                                    setParentCompositionContext(compositionContext)
-                                }
-                                sideSheetDialog = SideSheetDialog(parent.context).also {
-                                    it.setContentView(this)
-                                }
-                            }
-                        }
-                    },
-                    onRelease = {
-                        onRelease()
-                    },
-                ) {
-                    fabLayout.updatePadding(bottom = bottomPadding)
-                    fastScroller.updatePadding(top = topPadding + margin, bottom = bottomPadding)
-                    recyclerView.updatePadding(top = topPadding + margin, bottom = bottomPadding)
-                }
-            }
-        }
-    }
-
-    abstract fun onCreateViewWithToolbar(
-        inflater: LayoutInflater,
-        container: ViewGroup,
-        savedInstanceState: Bundle?,
-    ): ViewBinding
-
-    fun openSideSheet() = sideSheetDialog!!.show()
-    fun closeSideSheet() = sideSheetDialog!!.dismiss()
-
-    private fun createDrawerView(savedInstanceState: Bundle?): View? {
-        drawerView = onCreateDrawerView(layoutInflater)?.apply {
-            val saved = drawerViewState ?: savedInstanceState?.getSparseParcelableArrayCompat(KEY_DRAWER_VIEW_STATE)
-            saved?.let {
-                restoreHierarchyState(it)
-            }
-        }
-        return drawerView
-    }
-
-    open fun onCreateDrawerView(inflater: LayoutInflater): View? = null
-
-    private fun destroyDrawerView() {
-        drawerView?.let {
-            drawerViewState = SparseArray()
-            it.saveHierarchyState(drawerViewState)
-        }
-        onDestroyDrawerView()
-        drawerView = null
-    }
-
-    open fun onDestroyDrawerView() {
-        sideSheetDialog?.dismiss()
-        sideSheetDialog = null
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        drawerView?.let {
-            drawerViewState = SparseArray()
-            it.saveHierarchyState(drawerViewState)
-            outState.putSparseParcelableArray(KEY_DRAWER_VIEW_STATE, drawerViewState)
-        }
-    }
-
-    @CallSuper
-    open fun onRelease() {
-        destroyDrawerView()
-    }
-
-    @Composable
-    abstract fun TrailingIcon()
-
-    open fun onSearchViewExpanded() {}
-
-    open fun onSearchViewHidden() {}
-
-    fun setTitle(title: String?) {
-        searchBarTitle = title
-    }
-
-    fun setSearchBarText(text: String?) {
-        if (text != null) {
-            searchFieldState.setTextAndPlaceCursorAtEnd(text)
-        } else {
-            searchFieldState.clearText()
-        }
-    }
-
-    fun setSearchBarHint(hint: String?) {
-        searchFieldHint = hint
-    }
-
-    fun setOnApplySearch(lambda: (String) -> Unit) {
-        onApplySearch = lambda
-    }
-
-    fun setSuggestionProvider(suggestionProvider: SuggestionProvider) {
-        mSuggestionProvider = suggestionProvider
-    }
-}
-
 fun wrapTagKeyword(keyword: String, translate: Boolean = false): String {
     return if (keyword.endsWith(':')) {
         keyword
@@ -557,5 +377,3 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String {
         }
     }
 }
-
-const val SEARCH_VIEW_ANIMATE_TIME = 300L

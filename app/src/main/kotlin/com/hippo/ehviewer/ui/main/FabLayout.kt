@@ -27,7 +27,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-import com.hippo.ehviewer.ui.legacy.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import eu.kanade.tachiyomi.util.lang.launchIO
 import moe.tarsin.coroutines.runSuspendCatching
@@ -115,3 +114,5 @@ fun FabLayout(
         }
     }
 }
+
+const val FAB_ANIMATE_TIME = 300

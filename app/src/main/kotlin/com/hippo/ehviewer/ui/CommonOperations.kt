@@ -353,7 +353,7 @@ suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo, onDismiss: () -
     }
 }
 
-suspend fun DialogState.confirmRemoveDownloadRange(list: List<DownloadInfo>) {
+suspend fun DialogState.confirmRemoveDownloadRange(list: Collection<DownloadInfo>) {
     var checked by mutableStateOf(Settings.removeImageFiles)
     awaitPermissionOrCancel(
         title = R.string.download_remove_dialog_title,
@@ -400,4 +400,12 @@ suspend fun DialogState.showMoveDownloadLabel(info: GalleryInfo) {
     val downloadInfo = DownloadManager.getDownloadInfo(info.gid) ?: return
     val label = if (selected == 0) null else labels[selected - 1]
     withUIContext { DownloadManager.changeLabel(listOf(downloadInfo), label) }
+}
+
+suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>) {
+    val defaultLabel = appCtx.getString(R.string.default_download_label_name)
+    val labels = DownloadManager.labelList.map { it.label }.toTypedArray()
+    val selected = showSelectItem(defaultLabel, *labels, title = R.string.download_move_dialog_title)
+    val label = if (selected == 0) null else labels[selected - 1]
+    withUIContext { DownloadManager.changeLabel(list, label) }
 }
