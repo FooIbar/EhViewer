@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
@@ -228,14 +229,16 @@ fun DownloadsScreen(navigator: NavController) {
                                 Text(text)
                             },
                             trailingContent = {
-                                IconButton(onClick = {}) {
-                                    Icon(imageVector = Icons.Default.Edit, contentDescription = null)
-                                }
-                                IconButton(
-                                    onClick = {},
-                                    modifier = Modifier.draggableHandle(),
-                                ) {
-                                    Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
+                                Row {
+                                    IconButton(onClick = {}) {
+                                        Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                                    }
+                                    IconButton(
+                                        onClick = {},
+                                        modifier = Modifier.draggableHandle(),
+                                    ) {
+                                        Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
+                                    }
                                 }
                             },
                         )
