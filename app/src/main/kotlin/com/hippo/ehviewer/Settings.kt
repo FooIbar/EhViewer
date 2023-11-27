@@ -106,6 +106,7 @@ object Settings : DataStorePreferences(null) {
     val thumbColumns = intPref("thumb_columns", 3)
     val listThumbSize = intPref("list_tile_size", 40)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
+    val predictiveNavAnim = boolPref("predictive_nav_anim", true)
 
     val needSignInFlow: Flow<Boolean>
     var downloadScheme by stringOrNullPref("image_scheme", null)
