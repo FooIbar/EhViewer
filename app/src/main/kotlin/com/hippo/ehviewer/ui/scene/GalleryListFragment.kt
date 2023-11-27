@@ -79,6 +79,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
@@ -230,6 +231,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val context = LocalContext.current
     val activity = remember { context.findActivity<MainActivity>() }
     val windowSizeClass = calculateWindowSizeClass(activity)
+    val density = LocalDensity.current
     val dialogState = LocalDialogState.current
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -509,21 +511,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     }
 
     var hidden by remember { mutableStateOf(false) }
-    val searchBarConnection = remember {
-        val slop = ViewConfiguration.get(context).scaledTouchSlop
-        object : NestedScrollConnection {
-            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                val dy = -consumed.y
-                if (dy >= slop) {
-                    hidden = true
-                } else if (dy <= -slop / 2) {
-                    hidden = false
-                }
-                searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-300, 0)
-                return Offset.Zero // We never consume it
-            }
-        }
-    }
 
     val openGalleryKeyword = stringResource(R.string.gallery_list_search_bar_open_gallery)
     abstract class UrlSuggestion : Suggestion() {
@@ -647,16 +634,16 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 )
             }
         },
-    ) { paddingValues ->
+    ) { contentPadding ->
         val layoutDirection = LocalLayoutDirection.current
         val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
         val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
         Column(
             modifier = Modifier.imePadding().verticalScroll(rememberScrollState())
                 .padding(
-                    top = paddingValues.calculateTopPadding() + marginV,
-                    start = paddingValues.calculateStartPadding(layoutDirection) + marginH,
-                    end = paddingValues.calculateEndPadding(layoutDirection) + marginH,
+                    top = contentPadding.calculateTopPadding() + marginV,
+                    start = contentPadding.calculateStartPadding(layoutDirection) + marginH,
+                    end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
                     bottom = 8.dp,
                 )
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
@@ -755,11 +742,27 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
 
         val height by collectListThumbSizeAsState()
         val showPages = Settings.showGalleryPages
+        val searchBarConnection = remember {
+            val slop = ViewConfiguration.get(context).scaledTouchSlop
+            val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
+            object : NestedScrollConnection {
+                override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                    val dy = -consumed.y
+                    if (dy >= slop) {
+                        hidden = true
+                    } else if (dy <= -slop / 2) {
+                        hidden = false
+                    }
+                    searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
+                    return Offset.Zero // We never consume it
+                }
+            }
+        }
         GalleryList(
             modifier = Modifier.scale(animatedSearchLayout).alpha(animatedSearchLayout),
             data = data,
             contentModifier = Modifier.nestedScroll(searchBarConnection),
-            contentPadding = paddingValues,
+            contentPadding = contentPadding,
             listMode = listMode,
             detailListState = listState,
             detailItemContent = { info ->
