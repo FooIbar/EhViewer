@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
@@ -22,6 +23,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -29,12 +34,14 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -270,6 +277,50 @@ class DialogState {
         }
     }
 
+    suspend fun showDatePicker(
+        @StringRes title: Int,
+        initialSelectedDateMillis: Long? = null,
+        initialDisplayedMonthMillis: Long? = initialSelectedDateMillis,
+        yearRange: IntRange = DatePickerDefaults.YearRange,
+        initialDisplayMode: DisplayMode = DisplayMode.Picker,
+        selectableDates: SelectableDates = DatePickerDefaults.AllDates,
+        showModeToggle: Boolean = true,
+    ): Long? {
+        return dialog { cont ->
+            val state = rememberDatePickerState(
+                initialSelectedDateMillis,
+                initialDisplayedMonthMillis,
+                yearRange,
+                initialDisplayMode,
+                selectableDates,
+            )
+            DatePickerDialog(
+                onDismissRequest = { cont.cancel() },
+                confirmButton = {
+                    TextButton(onClick = { cont.resume(state.selectedDateMillis) }) {
+                        Text(text = stringResource(id = android.R.string.ok))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { cont.cancel() }) {
+                        Text(text = stringResource(id = android.R.string.cancel))
+                    }
+                },
+            ) {
+                DatePicker(
+                    state = state,
+                    title = {
+                        Text(
+                            text = stringResource(id = title),
+                            modifier = Modifier.padding(DatePickerTitlePadding),
+                        )
+                    },
+                    showModeToggle = showModeToggle,
+                )
+            }
+        }
+    }
+
     suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable DismissDialogScope<R>.() -> Unit): R {
         return dialog { cont ->
             val impl = remember(cont) {
@@ -483,5 +534,6 @@ class DialogState {
 }
 
 private val IconWithTextCorner = RoundedCornerShape(8.dp)
+private val DatePickerTitlePadding = PaddingValues(start = 24.dp, end = 12.dp, top = 16.dp)
 
 val LocalDialogState = compositionLocalOf<DialogState> { error("CompositionLocal LocalDialogState not present!") }

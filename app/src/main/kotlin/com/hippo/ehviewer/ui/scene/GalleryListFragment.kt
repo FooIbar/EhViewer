@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -50,6 +51,7 @@ import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -97,12 +99,6 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.android.material.datepicker.CalendarConstraints
-import com.google.android.material.datepicker.CalendarConstraints.DateValidator
-import com.google.android.material.datepicker.CompositeDateValidator
-import com.google.android.material.datepicker.DateValidatorPointBackward
-import com.google.android.material.datepicker.DateValidatorPointForward
-import com.google.android.material.datepicker.MaterialDatePicker
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -159,15 +155,18 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.minus
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
 import moe.tarsin.coroutines.runSuspendCatching
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyColumnState
@@ -837,27 +836,28 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     urlBuilder.setJumpTo(text)
                     data.refresh()
                 } else {
-                    val local = LocalDateTime.of(2007, 3, 21, 0, 0)
-                    val fromDate =
-                        local.atZone(ZoneId.ofOffset("UTC", ZoneOffset.UTC)).toInstant().toEpochMilli()
-                    val toDate = MaterialDatePicker.todayInUtcMilliseconds()
-                    val listValidators = ArrayList<DateValidator>()
-                    listValidators.add(DateValidatorPointForward.from(fromDate))
-                    listValidators.add(DateValidatorPointBackward.before(toDate))
-                    val constraintsBuilder = CalendarConstraints.Builder()
-                        .setStart(fromDate)
-                        .setEnd(toDate)
-                        .setValidator(CompositeDateValidator.allOf(listValidators))
-                    val datePicker = MaterialDatePicker.Builder.datePicker()
-                        .setCalendarConstraints(constraintsBuilder.build())
-                        .setTitleText(R.string.go_to)
-                        .setSelection(toDate)
-                        .build()
-                    datePicker.show(activity.supportFragmentManager, "date-picker")
-                    datePicker.addOnPositiveButtonClickListener { time ->
-                        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.US).withZone(ZoneOffset.UTC)
-                        val jumpTo = formatter.format(Instant.ofEpochMilli(time))
-                        urlBuilder.mJumpTo = jumpTo
+                    val initial = LocalDate(2007, 3, 21)
+                    val yesterday = Clock.System.todayIn(TimeZone.UTC).minus(1, DateTimeUnit.DAY)
+                    val initialMillis = initial.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+                    val yesterdayMillis = yesterday.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
+                    val dateRange = initialMillis..yesterdayMillis
+                    coroutineScope.launch {
+                        // TODO: Enable picker mode
+                        // https://issuetracker.google.com/issues/306193893
+                        val dateMillis = dialogState.showDatePicker(
+                            title = R.string.go_to,
+                            yearRange = initial.year..yesterday.year,
+                            initialDisplayMode = DisplayMode.Input,
+                            selectableDates = object : SelectableDates {
+                                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                                    return utcTimeMillis in dateRange
+                                }
+                            },
+                            showModeToggle = false,
+                        )
+                        urlBuilder.mJumpTo = dateMillis?.let {
+                            Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date.toString()
+                        }
                         data.refresh()
                     }
                 }
