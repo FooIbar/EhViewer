@@ -3,8 +3,13 @@ package com.hippo.ehviewer.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -68,7 +73,7 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, navigator: DestinationsNavigat
         )
         val data = remember(detail) { detail.generateContent() }
         ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-            LazyColumn {
+            LazyColumn(contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues()) {
                 itemsIndexed(data) { index, (key, content) ->
                     Row(
                         modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)).clickable {
