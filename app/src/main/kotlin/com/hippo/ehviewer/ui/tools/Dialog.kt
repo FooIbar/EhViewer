@@ -1,14 +1,18 @@
 package com.hippo.ehviewer.ui.tools
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,7 +45,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -60,6 +66,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
@@ -341,6 +348,48 @@ class DialogState {
                     )
                 },
             )
+        }
+    }
+
+    suspend fun showTimePicker(
+        title: String,
+        initialHour: Int,
+        initialMinute: Int,
+    ) = dialog { cont ->
+        val state = rememberTimePickerState(initialHour, initialMinute)
+        Dialog(
+            onDismissRequest = { cont.cancel() },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
+            Surface(
+                shape = MaterialTheme.shapes.extraLarge,
+                tonalElevation = 6.dp,
+                modifier = Modifier.width(IntrinsicSize.Min).height(IntrinsicSize.Min).background(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface,
+                ),
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                        text = title,
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                    TimePicker(state = state)
+                    Row(modifier = Modifier.height(40.dp).fillMaxWidth()) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        TextButton(onClick = { cont.cancel() }) {
+                            Text(stringResource(id = android.R.string.cancel))
+                        }
+                        TextButton(onClick = { cont.resume(state.hour to state.minute) }) {
+                            Text(stringResource(id = android.R.string.ok))
+                        }
+                    }
+                }
+            }
         }
     }
 
