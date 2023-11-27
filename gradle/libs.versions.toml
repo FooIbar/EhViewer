@@ -102,7 +102,7 @@ desugar = "com.android.tools:desugar_jdk_libs_nio:2.0.4"
 directionalviewpager = "com.github.tachiyomiorg:DirectionalViewPager:1.0.0"
 diff = "io.github.petertrr:kotlin-multiplatform-diff:0.5.0"
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
-jsoup = "org.jsoup:jsoup:1.16.2"
+jsoup = "org.jsoup:jsoup:1.17.1"
 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
