@@ -44,6 +44,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
@@ -116,6 +117,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
     val favTitleWithKeyword = stringResource(R.string.favorites_title_2, favCatName, keyword)
     val title = remember(urlBuilder) { if (keyword.isBlank()) favTitle else favTitleWithKeyword }
     val context = LocalContext.current
+    val density = LocalDensity.current
     val dialogState = LocalDialogState.current
     val activity = remember(context) { context.findActivity<MainActivity>() }
     val coroutineScope = rememberCoroutineScope()
@@ -219,15 +221,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         data.loadState.refresh is LoadState.NotLoading
     }
 
-    val searchBarConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                searchBarOffsetY = (searchBarOffsetY + consumed.y).roundToInt().coerceIn(-300, 0)
-                return Offset.Zero // We never consume it
-            }
-        }
-    }
-
     var expanded by remember { mutableStateOf(false) }
     var hidden by remember { mutableStateOf(false) }
     var selectMode by remember { mutableStateOf(false) }
@@ -252,14 +245,23 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                 Icon(imageVector = Icons.Outlined.FolderSpecial, contentDescription = null)
             }
         },
-    ) {
+    ) { contentPadding ->
         val listMode by Settings.listMode.collectAsState()
         val height by collectListThumbSizeAsState()
         val showPages = Settings.showGalleryPages
+        val searchBarConnection = remember {
+            val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
+            object : NestedScrollConnection {
+                override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                    searchBarOffsetY = (searchBarOffsetY + consumed.y).roundToInt().coerceIn(-topPaddingPx, 0)
+                    return Offset.Zero // We never consume it
+                }
+            }
+        }
         GalleryList(
             data = data,
             contentModifier = Modifier.nestedScroll(searchBarConnection),
-            contentPadding = it,
+            contentPadding = contentPadding,
             listMode = listMode,
             detailItemContent = { info ->
                 val checked = info.gid in checkedInfoMap

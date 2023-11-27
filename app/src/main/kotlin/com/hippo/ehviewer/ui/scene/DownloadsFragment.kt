@@ -60,6 +60,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
@@ -120,6 +121,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity<MainActivity>() }
     val coroutineScope = rememberCoroutineScope()
+    val density = LocalDensity.current
     val dialogState = LocalDialogState.current
     val view = LocalView.current
     val title = stringResource(R.string.scene_download_title, label ?: stringResource(R.string.download_all))
@@ -136,15 +138,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         }.map { it.copy(downloadInfo = it.downloadInfo.copy()) }
     }
     val labelsList = DownloadManager.labelList
-
-    val searchBarConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                searchBarOffsetY = (searchBarOffsetY + consumed.y).roundToInt().coerceIn(-300, 0)
-                return Offset.Zero // We never consume it
-            }
-        }
-    }
 
     val newLabel = stringResource(R.string.new_label_title)
     val labelsStr = stringResource(R.string.download_labels)
@@ -409,6 +402,15 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 EhDB.updateDownloadInfo(newList)
             }
             view.performHapticFeedback(draggingHapticFeedback)
+        }
+        val searchBarConnection = remember {
+            val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
+            object : NestedScrollConnection {
+                override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                    searchBarOffsetY = (searchBarOffsetY + consumed.y).roundToInt().coerceIn(-topPaddingPx, 0)
+                    return Offset.Zero // We never consume it
+                }
+            }
         }
         FastScrollLazyColumn(
             modifier = Modifier.nestedScroll(searchBarConnection),
