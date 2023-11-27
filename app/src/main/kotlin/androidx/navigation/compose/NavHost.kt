@@ -17,6 +17,7 @@
 package androidx.navigation.compose
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -53,6 +54,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.Navigator
 import androidx.navigation.createGraph
 import androidx.navigation.get
+import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.collectAsState
 import kotlin.math.roundToLong
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
@@ -280,54 +283,63 @@ public fun NavHost(
             }
         }
 
-        val duration = 500000000L
-        val transitionState = remember { MutableTransitionState(backStackEntry) }
-        val transition = updateTransition(transitionState = transitionState, label = "entry")
-        val animatedFraction = remember { Animatable(0f).also { it.updateBounds(lowerBound = 0f, upperBound = 1f) } }
+        val enablePredictiveBack by Settings.predictiveNavAnim.collectAsState()
+        val transition = if (enablePredictiveBack) {
+            val duration = 500000000L
+            val transitionState = remember { MutableTransitionState(backStackEntry) }
+            val transition = updateTransition(transitionState = transitionState, label = "entry")
+            val animatedFraction = remember { Animatable(0f).also { it.updateBounds(lowerBound = 0f, upperBound = 1f) } }
 
-        fun seekToFraction(lState: NavBackStackEntry, rState: NavBackStackEntry) {
-            val fraction = animatedFraction.value
-            val playTimeNanos = (fraction * duration).roundToLong()
-            transition.setPlaytimeAfterInitialAndTargetStateEstablished(lState, rState, playTimeNanos)
-        }
+            fun seekToFraction(lState: NavBackStackEntry, rState: NavBackStackEntry) {
+                val fraction = animatedFraction.value
+                val playTimeNanos = (fraction * duration).roundToLong()
+                transition.setPlaytimeAfterInitialAndTargetStateEstablished(lState, rState, playTimeNanos)
+            }
 
-        LaunchedEffect(backStackEntry) {
-            try {
-                animatedFraction.animateTo(1f, animationSpec = tween(500, easing = LinearEasing)) {
-                    seekToFraction(transitionState.currentState, backStackEntry)
-                }
-            } finally {
-                withContext(NonCancellable) {
-                    animatedFraction.snapTo(0f)
-                    transition.setPlaytimeAfterInitialAndTargetStateEstablished(
-                        backStackEntry,
-                        backStackEntry,
-                        0,
-                    )
+            LaunchedEffect(backStackEntry) {
+                try {
+                    animatedFraction.animateTo(1f, animationSpec = tween(500, easing = LinearEasing)) {
+                        seekToFraction(transitionState.currentState, backStackEntry)
+                    }
+                } finally {
+                    withContext(NonCancellable) {
+                        animatedFraction.snapTo(0f)
+                        transition.setPlaytimeAfterInitialAndTargetStateEstablished(
+                            backStackEntry,
+                            backStackEntry,
+                            0,
+                        )
+                    }
                 }
             }
-        }
 
-        PredictiveBackHandler(currentBackStack.size > 1) { flow ->
-            // Prev can never be null, i.e. BackHandler should not enabled when prev is null
-            val prev = currentBackStack.last { it != backStackEntry }
-            try {
-                flow.collect {
-                    val interpolated = EaseOut.transform(it.progress)
-                    animatedFraction.snapTo(interpolated)
-                    seekToFraction(backStackEntry, prev)
+            PredictiveBackHandler(currentBackStack.size > 1) { flow ->
+                // Prev can never be null, i.e. BackHandler should not enabled when prev is null
+                val prev = currentBackStack.last { it != backStackEntry }
+                try {
+                    flow.collect {
+                        val interpolated = EaseOut.transform(it.progress)
+                        animatedFraction.snapTo(interpolated)
+                        seekToFraction(backStackEntry, prev)
+                    }
+                    navController.popBackStack()
+                } catch (e: CancellationException) {
+                    withContext(NonCancellable) {
+                        animatedFraction.snapTo(0f)
+                        transition.setPlaytimeAfterInitialAndTargetStateEstablished(
+                            backStackEntry,
+                            backStackEntry,
+                            0,
+                        )
+                    }
                 }
+            }
+            transition
+        } else {
+            BackHandler(currentBackStack.size > 1) {
                 navController.popBackStack()
-            } catch (e: CancellationException) {
-                withContext(NonCancellable) {
-                    animatedFraction.snapTo(0f)
-                    transition.setPlaytimeAfterInitialAndTargetStateEstablished(
-                        backStackEntry,
-                        backStackEntry,
-                        0,
-                    )
-                }
             }
+            updateTransition(backStackEntry, label = "entry")
         }
 
         transition.AnimatedContent(

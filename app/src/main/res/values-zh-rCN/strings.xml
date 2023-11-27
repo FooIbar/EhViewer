@@ -524,6 +524,7 @@
     <string name="list_tile_thumb_size">详情模式下缩略图大小</string>
     <string name="account_name">账户</string>
     <string name="preload_thumb_aggressively">激进地预载缩略图</string>
+    <string name="predictive_nav_anim">启用预见式返回导航动画</string>
     <string name="auto_updates">自动检查更新</string>
     <string name="update_frequency_never">从不</string>
     <string name="update_frequency_daily">每天</string>
