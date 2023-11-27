@@ -29,6 +29,7 @@ google-accompanist = "0.32.0"
 google-android-material = "1.12.0-alpha01"
 kotlin = "2.0.0-Beta1"
 kotlinx-coroutines = "1.7.3"
+kotlinx-datetime = "0.4.1"
 kotlinx-serialization = "1.6.1"
 ksp = "2.0.0-Beta1-1.0.14"
 ktlint = "1.0.1"
@@ -105,6 +106,7 @@ insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
 jsoup = "org.jsoup:jsoup:1.17.1"
 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinx-serialization" }
