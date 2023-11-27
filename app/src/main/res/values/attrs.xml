@@ -22,11 +22,6 @@
         <attr name="progress" format="float" />
     </declare-styleable>
 
-    <declare-styleable name="FastScroller">
-        <attr name="handler" format="reference" />
-        <attr name="draggable" format="boolean" />
-    </declare-styleable>
-
     <declare-styleable name="MaterialSpinnerView">
         <attr name="title" format="reference|string" />
         <attr name="android:entries" />
