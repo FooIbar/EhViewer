@@ -369,11 +369,11 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                 throw CancellationException()
             }
             onClick(Icons.Default.Download) {
-                val info = checkedInfoMap.run { values.also { clear() } }
+                val info = checkedInfoMap.run { toMap().values.also { clear() } }
                 dialogState.startDownload(context, false, *info.toTypedArray())
             }
             onClick(Icons.Default.Delete) {
-                val info = checkedInfoMap.run { values.also { clear() } }
+                val info = checkedInfoMap.run { toMap().values.also { clear() } }
                 dialogState.awaitPermissionOrCancel(title = R.string.delete_favorites_dialog_title) {
                     Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
                 }
@@ -396,7 +396,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                 val index = dialogState.showSelectItem(*array, title = R.string.move_favorites_dialog_title)
                 val srcCat = urlBuilder.favCat
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
-                val info = checkedInfoMap.run { values.also { clear() } }
+                val info = checkedInfoMap.run { toMap().values.also { clear() } }
                 if (srcCat != dstCat) {
                     if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
                         // Move from local to cloud
