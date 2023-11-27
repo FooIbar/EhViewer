@@ -60,7 +60,6 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
-import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.findActivity
@@ -118,7 +117,7 @@ suspend fun DialogState.startDownload(
     }
     if (toAdd.isEmpty()) {
         return with(findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list, BaseScene.LENGTH_SHORT)
+            showTip(R.string.added_to_download_list)
         }
     }
     var justStart = forceDefault
@@ -144,7 +143,7 @@ suspend fun DialogState.startDownload(
         }
         // Notify
         with(findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list, BaseScene.LENGTH_SHORT)
+            showTip(R.string.added_to_download_list)
         }
     } else {
         // Let use chose label
@@ -175,7 +174,7 @@ suspend fun DialogState.startDownload(
             Settings.hasDefaultDownloadLabel = false
         }
         with(context.findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list, BaseScene.LENGTH_SHORT)
+            showTip(R.string.added_to_download_list)
         }
     }
 }
@@ -301,16 +300,16 @@ suspend fun DialogState.doGalleryInfoAction(info: BaseGalleryInfo, context: Cont
             2 -> if (favourite) {
                 runSuspendCatching {
                     removeFromFavorites(info)
-                    showTip(R.string.remove_from_favorite_success, BaseScene.LENGTH_SHORT)
+                    showTip(R.string.remove_from_favorite_success)
                 }.onFailure {
-                    showTip(R.string.remove_from_favorite_failure, BaseScene.LENGTH_LONG)
+                    showTip(R.string.remove_from_favorite_failure)
                 }
             } else {
                 runSuspendCatching {
                     modifyFavorites(info)
-                    showTip(R.string.add_to_favorite_success, BaseScene.LENGTH_SHORT)
+                    showTip(R.string.add_to_favorite_success)
                 }.onFailure {
-                    showTip(R.string.add_to_favorite_failure, BaseScene.LENGTH_LONG)
+                    showTip(R.string.add_to_favorite_failure)
                 }
             }
 

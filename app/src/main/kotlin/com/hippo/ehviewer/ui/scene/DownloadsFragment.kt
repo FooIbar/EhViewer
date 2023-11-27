@@ -309,8 +309,8 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         searchFieldHint = hint,
         showSearchFab = selectMode,
         onApplySearch = { keyword = it.takeUnless { it.isBlank() } },
-        onSearchHidden = { },
         onSearchExpanded = { selectMode = false },
+        onSearchHidden = {},
         searchBarOffsetY = searchBarOffsetY,
         trailingIcon = {
             var expanded by remember { mutableStateOf(false) }

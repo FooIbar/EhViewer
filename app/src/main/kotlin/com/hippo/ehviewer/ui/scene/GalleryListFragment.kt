@@ -50,8 +50,6 @@ import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -234,7 +232,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val density = LocalDensity.current
     val dialogState = LocalDialogState.current
     val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyGridState()
     val gridState = rememberLazyStaggeredGridState()
     val isTopList = remember(urlBuilder) { urlBuilder.mode == MODE_TOPLIST }
@@ -303,7 +300,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val quickSearchName = getSuitableTitleForUrlBuilder(urlBuilder, false)
     var saveProgress by Settings::qSSaveProgress.observed
 
-    fun launchSnackbar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
     fun getFirstVisibleItemIndex() = if (listMode == 0) {
         listState.firstVisibleItemIndex
     } else {
@@ -361,7 +357,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                             if (data.itemCount == 0) return@IconButton
 
                             if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
-                                launchSnackbar(context.getString(R.string.image_search_not_quick_search))
+                                activity.showTip(R.string.image_search_not_quick_search, true)
                                 return@IconButton
                             }
 
@@ -371,7 +367,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                 if (urlBuilder.equalsQuickSearch(q)) {
                                     val nextStr = q.name.substringAfterLast('@', "")
                                     if (nextStr.toLongOrNull() == next) {
-                                        launchSnackbar(context.getString(R.string.duplicate_quick_search, q.name))
+                                        activity.showTip(context.getString(R.string.duplicate_quick_search, q.name), true)
                                         return@IconButton
                                     }
                                 }
@@ -572,10 +568,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         val pageFrom = advancedSearchOption.fromPage
                         val pageTo = advancedSearchOption.toPage
                         if (pageTo != -1 && pageTo < 10) {
-                            activity.showTip(searchErr1, BaseScene.LENGTH_LONG)
+                            activity.showTip(searchErr1)
                             return@SearchBarScreen
                         } else if (pageFrom != -1 && pageTo != -1 && pageTo - pageFrom < 20) {
-                            activity.showTip(searchErr2, BaseScene.LENGTH_LONG)
+                            activity.showTip(searchErr2)
                             return@SearchBarScreen
                         }
                         builder.pageFrom = pageFrom
@@ -584,7 +580,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 } else {
                     builder.mode = MODE_IMAGE_SEARCH
                     if (imagePath.isBlank()) {
-                        activity.showTip(selectImageFirst, BaseScene.LENGTH_LONG)
+                        activity.showTip(selectImageFirst)
                         return@SearchBarScreen
                     }
                     val uri = Uri.parse(imagePath)
@@ -620,7 +616,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             }
         },
         searchBarOffsetY = searchBarOffsetY,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
             IconButton(onClick = { coroutineScope.launch { sheetState.open() } }) {

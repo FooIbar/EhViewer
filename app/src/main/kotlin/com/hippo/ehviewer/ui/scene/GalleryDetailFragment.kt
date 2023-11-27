@@ -279,12 +279,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
         }.onSuccess { result ->
             if (result != null) {
-                activity.showTip(result, BaseScene.LENGTH_SHORT)
+                activity.showTip(result)
             } else {
-                activity.showTip(voteSuccess, BaseScene.LENGTH_SHORT)
+                activity.showTip(voteSuccess)
             }
         }.onFailure {
-            activity.showTip(voteFailed, BaseScene.LENGTH_LONG)
+            activity.showTip(voteFailed)
         }
     }
 
@@ -298,7 +298,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
     fun showArchiveDialog() {
         val galleryDetail = galleryInfo as? GalleryDetail ?: return
         if (galleryDetail.apiUid < 0) {
-            activity.showTip(R.string.sign_in_first, BaseScene.LENGTH_LONG)
+            activity.showTip(R.string.sign_in_first)
             return
         }
         class ArchiveListDialogHelper : DialogInterface.OnDismissListener {
@@ -332,12 +332,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                         it.printStackTrace()
                                     }
                                 }
-                                activity.showTip(R.string.download_archive_started, BaseScene.LENGTH_SHORT)
+                                activity.showTip(R.string.download_archive_started)
                             }.onFailure {
                                 when (it) {
-                                    is NoHAtHClientException -> activity.showTip(R.string.download_archive_failure_no_hath, BaseScene.LENGTH_LONG)
-                                    is EhException -> activity.showTip(ExceptionUtils.getReadableString(it), BaseScene.LENGTH_LONG)
-                                    else -> activity.showTip(R.string.download_archive_failure, BaseScene.LENGTH_LONG)
+                                    is NoHAtHClientException -> activity.showTip(R.string.download_archive_failure_no_hath)
+                                    is EhException -> activity.showTip(ExceptionUtils.getReadableString(it))
+                                    else -> activity.showTip(R.string.download_archive_failure)
                                 }
                             }
                         }
@@ -566,16 +566,16 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                 runCatching {
                                     remove = !dialogState.modifyFavorites(galleryDetail.galleryInfo)
                                     if (remove) {
-                                        activity.showTip(R.string.remove_from_favorite_success, BaseScene.LENGTH_SHORT)
+                                        activity.showTip(R.string.remove_from_favorite_success)
                                     } else {
-                                        activity.showTip(R.string.add_to_favorite_success, BaseScene.LENGTH_SHORT)
+                                        activity.showTip(R.string.add_to_favorite_success)
                                     }
                                 }.onFailure {
                                     if (it !is CancellationException) {
                                         if (remove) {
-                                            activity.showTip(R.string.remove_from_favorite_failure, BaseScene.LENGTH_LONG)
+                                            activity.showTip(R.string.remove_from_favorite_failure)
                                         } else {
-                                            activity.showTip(R.string.add_to_favorite_failure, BaseScene.LENGTH_LONG)
+                                            activity.showTip(R.string.add_to_favorite_failure)
                                         }
                                     }
                                 }
@@ -672,11 +672,11 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                             r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(itemUrl.toHttpUrl()))
                                             try {
                                                 downloadManager.enqueue(r)
-                                                activity.showTip(R.string.download_torrent_started, BaseScene.LENGTH_SHORT)
+                                                activity.showTip(R.string.download_torrent_started)
                                             } catch (e: Throwable) {
                                                 e.printStackTrace()
                                                 ExceptionUtils.throwIfFatal(e)
-                                                activity.showTip(R.string.download_torrent_failure, BaseScene.LENGTH_SHORT)
+                                                activity.showTip(R.string.download_torrent_failure)
                                             }
                                         }
                                         mDialog?.dismiss()
@@ -743,7 +743,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                 helper.setDialog(dialog, binding, galleryDetail.torrentUrl)
                             }
                         } else {
-                            activity.showTip(permissionDenied, BaseScene.LENGTH_SHORT)
+                            activity.showTip(permissionDenied)
                         }
                     }
                 },
@@ -763,7 +763,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         }
         fun showRateDialog() {
             if (galleryDetail.apiUid < 0) {
-                activity.showTip(R.string.sign_in_first, BaseScene.LENGTH_LONG)
+                activity.showTip(R.string.sign_in_first)
                 return
             }
             val binding = DialogRateBinding.inflate(context.layoutInflater)
@@ -785,7 +785,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         galleryDetail.runSuspendCatching {
                             EhEngine.rateGallery(apiUid, apiKey, gid, token, r)
                         }.onSuccess { result ->
-                            activity.showTip(R.string.rate_successfully, BaseScene.LENGTH_SHORT)
+                            activity.showTip(R.string.rate_successfully)
                             galleryInfo = galleryDetail.apply {
                                 rating = result.rating
                                 ratingCount = result.ratingCount
@@ -793,7 +793,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             ratingText = getAllRatingText(result.rating, result.ratingCount)
                         }.onFailure {
                             it.printStackTrace()
-                            activity.showTip(R.string.rate_failed, BaseScene.LENGTH_LONG)
+                            activity.showTip(R.string.rate_failed)
                         }
                     }
                 }
@@ -865,7 +865,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                 onSelect(addFilter) {
                                     dialogState.awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
                                     Filter(FilterMode.TAG, tag).remember()
-                                    showTip(filterAdded, BaseScene.LENGTH_SHORT)
+                                    showTip(filterAdded)
                                 }
                                 if (galleryDetail.apiUid >= 0) {
                                     onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
@@ -971,7 +971,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     Text(text = stringResource(R.string.filter_the_uploader, uploader))
                 }
                 Filter(FilterMode.UPLOADER, uploader).remember()
-                activity.showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
+                activity.showTip(R.string.filter_added)
             }
         }
         val onDownloadButtonClick = rememberLambda(galleryInfo) {
@@ -1154,7 +1154,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                 dropdown = false
                                 val detail = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
                                 if (detail.apiUid < 0) {
-                                    activity.showTip(R.string.sign_in_first, BaseScene.LENGTH_LONG)
+                                    activity.showTip(R.string.sign_in_first)
                                 } else {
                                     coroutineScope.launchIO {
                                         val text = dialogState.awaitInputText(
@@ -1195,7 +1195,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                         val key = getImageKey(gd.gid, it)
                                         imageCache.remove(key)
                                     }
-                                    activity.showTip(imageCacheClear, BaseScene.LENGTH_SHORT)
+                                    activity.showTip(imageCacheClear)
                                 }
                             },
                         )

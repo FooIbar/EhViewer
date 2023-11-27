@@ -169,6 +169,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
     var refreshing by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val density = LocalDensity.current
+    val activity = remember { context.findActivity<MainActivity>() }
 
     suspend fun refreshComment(showAll: Boolean) {
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
@@ -200,28 +201,22 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
             logcat { bbcode }
             EhEngine.commentGallery(url, bbcode, commentId)
         }.onSuccess {
-            findActivity<MainActivity>().showTip(
-                if (commentId != -1L) editCommentSuccess else commentSuccess,
-                BaseScene.LENGTH_SHORT,
-            )
+            activity.showTip(if (commentId != -1L) editCommentSuccess else commentSuccess)
             userComment = TextFieldValue()
             commentId = -1L
             comments = it
         }.onFailure {
             val text = if (commentId != -1L) editCommentFail else commentFail
-            findActivity<MainActivity>().showTip(
-                text + "\n" + ExceptionUtils.getReadableString(it),
-                BaseScene.LENGTH_LONG,
-            )
+            activity.showTip(text + "\n" + ExceptionUtils.getReadableString(it))
         }
     }
 
-    suspend fun Context.showFilterCommenter(comment: GalleryComment) {
+    suspend fun showFilterCommenter(comment: GalleryComment) {
         val commenter = comment.user ?: return
         dialogState.awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_commenter, commenter)) }
         Filter(FilterMode.COMMENTER, commenter).remember()
         comments = comments.copy(comments = comments.comments.filterNot { it.user == commenter })
-        findActivity<MainActivity>().showTip(R.string.filter_added, BaseScene.LENGTH_SHORT)
+        activity.showTip(R.string.filter_added)
     }
 
     suspend fun showCommentVoteStatus(comment: GalleryComment) {
@@ -310,13 +305,16 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
                 ),
             ) {
                 items(comments.comments) { item ->
-                    suspend fun Context.voteComment(comment: GalleryComment, isUp: Boolean) {
+                    suspend fun voteComment(comment: GalleryComment, isUp: Boolean) {
                         galleryDetail.runSuspendCatching {
                             EhEngine.voteComment(apiUid, apiKey, gid, token, comment.id, if (isUp) 1 else -1)
                         }.onSuccess { result ->
-                            findActivity<MainActivity>().showTip(
-                                if (isUp) (if (0 != result.vote) R.string.vote_up_successfully else R.string.cancel_vote_up_successfully) else if (0 != result.vote) R.string.vote_down_successfully else R.string.cancel_vote_down_successfully,
-                                BaseScene.LENGTH_SHORT,
+                            activity.showTip(
+                                if (isUp) {
+                                    if (0 != result.vote) R.string.vote_up_successfully else R.string.cancel_vote_up_successfully
+                                } else {
+                                    if (0 != result.vote) R.string.vote_down_successfully else R.string.cancel_vote_down_successfully
+                                },
                             )
                             val newComment = comment.copy(
                                 score = result.score,
@@ -326,13 +324,13 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
                             val list = comments.comments.replace(comment, newComment)
                             comments = comments.copy(comments = list)
                         }.onFailure {
-                            findActivity<MainActivity>().showTip(R.string.vote_failed, BaseScene.LENGTH_LONG)
+                            activity.showTip(R.string.vote_failed)
                         }
                     }
 
-                    suspend fun Context.doCommentAction(comment: GalleryComment) = dialogState.showSelectActions {
+                    suspend fun doCommentAction(comment: GalleryComment) = dialogState.showSelectActions {
                         onSelect(copyComment) {
-                            findActivity<MainActivity>().addTextToClipboard(comment.comment.parseAsHtml())
+                            activity.addTextToClipboard(comment.comment.parseAsHtml())
                         }
                         if (!comment.uploader && !comment.editable) {
                             onSelect(blockCommenter) { showFilterCommenter(comment) }
@@ -372,11 +370,10 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
                         },
                         onCardClick = {
                             coroutineScope.launch {
-                                context.doCommentAction(item)
+                                doCommentAction(item)
                             }
                         },
                         onUrlClick = {
-                            val activity = context.findActivity<MainActivity>()
                             if (!activity.jumpToReaderByPage(it, galleryDetail)) {
                                 if (!navigator.navWithUrl(it)) {
                                     activity.openBrowser(it)
