@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.scene
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -151,10 +150,11 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Image(
+                    Icon(
                         imageVector = EhIcons.Big.Default.History,
                         contentDescription = null,
                         modifier = Modifier.padding(16.dp),
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                     Text(
                         text = stringResource(id = R.string.no_history),
