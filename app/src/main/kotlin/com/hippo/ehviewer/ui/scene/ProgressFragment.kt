@@ -23,6 +23,7 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
+import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.ramcosta.composedestinations.annotation.Destination
@@ -33,6 +34,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 @Destination
 @Composable
 fun ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsNavigator) {
+    LockDrawer(true)
     val wrong = stringResource(id = R.string.error_something_wrong_happened)
     var error by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(error) {

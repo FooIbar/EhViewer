@@ -119,6 +119,7 @@ import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.MODE_READ
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
+import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.destinations.GalleryCommentsScreenDestination
@@ -215,6 +216,7 @@ private fun List<GalleryTagGroup>.getArtist(): String? {
 @Destination
 @Composable
 fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) {
+    LockDrawer(true)
     var galleryInfo by rememberSaveable {
         val casted = args as? GalleryInfoArgs
         mutableStateOf<GalleryInfo?>(casted?.galleryInfo)

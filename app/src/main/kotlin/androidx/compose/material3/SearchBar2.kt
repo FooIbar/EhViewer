@@ -325,24 +325,26 @@ fun SearchBar(
         )
     }
     val mutatorMutex = remember { MutatorMutex() }
-    PredictiveBackHandler(enabled = active) { progress ->
-        mutatorMutex.mutate {
-            var canceled = false
-            try {
-                progress.collect { backEvent ->
-                    if (firstBackEvent == null) {
-                        firstBackEvent = backEvent
+    if (active) {
+        PredictiveBackHandler(true) { progress ->
+            mutatorMutex.mutate {
+                var canceled = false
+                try {
+                    progress.collect { backEvent ->
+                        if (firstBackEvent == null) {
+                            firstBackEvent = backEvent
+                        }
+                        currentBackEvent = backEvent
+                        val interpolatedProgress = EaseOut.transform(backEvent.progress)
+                        animationProgress.snapTo(targetValue = 1 - interpolatedProgress)
                     }
-                    currentBackEvent = backEvent
-                    val interpolatedProgress = EaseOut.transform(backEvent.progress)
-                    animationProgress.snapTo(targetValue = 1 - interpolatedProgress)
+                } catch (e: CancellationException) {
+                    canceled = true
+                } finally {
+                    firstBackEvent = null
+                    currentBackEvent = null
+                    onActiveChange(canceled)
                 }
-            } catch (e: CancellationException) {
-                canceled = true
-            } finally {
-                firstBackEvent = null
-                currentBackEvent = null
-                onActiveChange(canceled)
             }
         }
     }

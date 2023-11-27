@@ -77,6 +77,7 @@ import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.Download
 import com.hippo.ehviewer.ui.LocalSideSheetState
+import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
@@ -113,6 +114,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     var searchBarOffsetY by remember { mutableStateOf(0) }
     val searchFieldState = rememberTextFieldState()
     var selectMode by remember { mutableStateOf(false) }
+    LockDrawer(selectMode)
     val checkedInfoMap = remember { mutableStateMapOf<Long, DownloadInfo>() }
     SideEffect {
         if (checkedInfoMap.isEmpty()) selectMode = false
