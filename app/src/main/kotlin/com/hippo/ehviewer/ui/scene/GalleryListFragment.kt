@@ -42,7 +42,6 @@ import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
-import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -51,7 +50,6 @@ import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -137,6 +135,7 @@ import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.NormalSearch
 import com.hippo.ehviewer.ui.main.SearchAdvanced
+import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.LocalDialogState
@@ -158,15 +157,6 @@ import java.io.File
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
-import kotlinx.datetime.minus
-import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.todayIn
 import moe.tarsin.coroutines.runSuspendCatching
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyColumnState
@@ -836,28 +826,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     urlBuilder.setJumpTo(text)
                     data.refresh()
                 } else {
-                    val initial = LocalDate(2007, 3, 21)
-                    val yesterday = Clock.System.todayIn(TimeZone.UTC).minus(1, DateTimeUnit.DAY)
-                    val initialMillis = initial.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
-                    val yesterdayMillis = yesterday.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
-                    val dateRange = initialMillis..yesterdayMillis
                     coroutineScope.launch {
-                        // TODO: Enable picker mode
-                        // https://issuetracker.google.com/issues/306193893
-                        val dateMillis = dialogState.showDatePicker(
-                            title = R.string.go_to,
-                            yearRange = initial.year..yesterday.year,
-                            initialDisplayMode = DisplayMode.Input,
-                            selectableDates = object : SelectableDates {
-                                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                                    return utcTimeMillis in dateRange
-                                }
-                            },
-                            showModeToggle = false,
-                        )
-                        urlBuilder.mJumpTo = dateMillis?.let {
-                            Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date.toString()
-                        }
+                        val date = dialogState.showDatePicker()
+                        urlBuilder.mJumpTo = date
                         data.refresh()
                     }
                 }
