@@ -29,15 +29,6 @@
         <item name="android:minHeight">48dp</item>
     </style>
 
-    <style name="Snackbar" parent="Widget.Material3.Snackbar">
-        <item name="materialThemeOverlay">@style/SnackbarTheme</item>
-        <item name="actionTextColorAlpha">1</item>
-    </style>
-
-    <style name="SnackbarButton" parent="Widget.Material3.Button.TextButton.Snackbar">
-        <item name="android:textColor">?attr/colorOnSurfaceInverse</item>
-    </style>
-
     <!-- Tachiyomi -->
     <style name="TextAppearance.Tachiyomi.SectionHeader" parent="TextAppearance.Material3.LabelLarge">
         <item name="android:textColor">?android:attr/textColorSecondary</item>
