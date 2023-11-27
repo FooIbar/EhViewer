@@ -474,7 +474,7 @@ class MainActivity : EhActivity() {
     }
 
     fun showTip(message: CharSequence, useToast: Boolean = false) {
-        if (useToast || tipFlow.tryEmit(message.toString())) {
+        if (useToast || !tipFlow.tryEmit(message.toString())) {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
     }
