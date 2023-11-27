@@ -73,6 +73,7 @@ import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
+import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.LocalDialogState
@@ -185,21 +186,16 @@ fun SearchBarScreen(
         mSuggestionList = mergedSuggestionFlow().toList()
     }
 
-    var drawerLocked by remember { mutableStateOf(false) }
+    var shouldLockDrawer by remember { mutableStateOf(false) }
+    LockDrawer(shouldLockDrawer)
 
     fun onSearchViewExpanded() {
         onSearchExpanded()
-        if (!activity.drawerLocked) {
-            drawerLocked = true
-            activity.drawerLocked = true
-        }
+        shouldLockDrawer = true
     }
 
     fun onSearchViewHidden() {
-        if (drawerLocked) {
-            activity.drawerLocked = false
-            drawerLocked = false
-        }
+        shouldLockDrawer = false
         onSearchHidden()
     }
 

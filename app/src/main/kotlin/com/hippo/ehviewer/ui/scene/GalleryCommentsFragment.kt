@@ -84,6 +84,7 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
+import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.jumpToReaderByPage
@@ -152,6 +153,7 @@ private val MinimumContentPaddingEditText = 88.dp
 @Destination
 @Composable
 fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsNavigator) {
+    LockDrawer(true)
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val dialogState = LocalDialogState.current
     val coroutineScope = rememberCoroutineScope()

@@ -70,13 +70,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -190,7 +190,6 @@ class MainActivity : EhActivity() {
         intentFlow.tryEmit(intent)
     }
 
-    var drawerLocked by mutableStateOf(false)
     private var tipFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
     private var intentFlow = MutableSharedFlow<Intent>(extraBufferCapacity = 4)
 
@@ -314,9 +313,12 @@ class MainActivity : EhActivity() {
                 onPauseOrDispose { }
             }
             val currentDestination by navController.currentDestinationAsState()
+            val lockDrawerHandle = remember { mutableStateListOf<Int>() }
+            val drawerLocked = lockDrawerHandle.isNotEmpty()
             CompositionLocalProvider(
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
+                LocalDrawerLockHandle provides lockDrawerHandle,
             ) {
                 Scaffold(snackbarHost = { SnackbarHost(snackbarState) }) {
                     LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
@@ -486,3 +488,19 @@ class MainActivity : EhActivity() {
 
 val LocalNavDrawerState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalNavDrawerState not present!") }
 val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }
+val LocalDrawerLockHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalSideSheetState not present!") }
+
+@Composable
+fun LockDrawer(value: Boolean) {
+    val updated by rememberUpdatedState(value)
+    if (updated) {
+        val current = currentCompositeKeyHash
+        val handle = LocalDrawerLockHandle.current
+        DisposableEffect(current) {
+            handle.add(current)
+            onDispose {
+                handle.remove(current)
+            }
+        }
+    }
+}
