@@ -129,14 +129,14 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     val hint = stringResource(R.string.search_bar_hint, title)
     val defaultName = stringResource(R.string.default_download_label_name)
     val allName = stringResource(R.string.download_all)
-    val list = remember(label) {
+    val list = remember(label, filterType, keyword) {
         when (label) {
             null -> DownloadManager.allInfoList
             defaultName -> DownloadManager.defaultInfoList
             else -> DownloadManager.getLabelDownloadInfoList(label) ?: DownloadManager.allInfoList.also { label = null }
         }.filter { info ->
             (filterType == -1 || info.state == filterType) && keyword?.let { info.title.containsIgnoreCase(it) || info.titleJpn.containsIgnoreCase(it) || info.uploader.containsIgnoreCase(it) } ?: true
-        }.map { it.copy(downloadInfo = it.downloadInfo.copy()) }
+        }
     }
     val labelsList = DownloadManager.labelList
 
@@ -329,7 +329,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                     onClick = {
                         expanded = false
                         coroutineScope.launch {
-                            filterType = dialogState.showSingleChoice(states, filterType)
+                            filterType = dialogState.showSingleChoice(states, filterType + 1) - 1
                         }
                     },
                 )
