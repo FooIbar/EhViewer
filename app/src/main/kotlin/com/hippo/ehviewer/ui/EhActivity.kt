@@ -33,7 +33,7 @@ abstract class EhActivity : AppCompatActivity() {
     }
 
     override fun onApplyThemeResource(theme: Theme, resid: Int, first: Boolean) {
-        theme.applyStyle(resid, true)
+        super.onApplyThemeResource(theme, resid, first)
         theme.applyStyle(getThemeStyleRes(), true)
     }
 
