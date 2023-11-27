@@ -21,7 +21,11 @@ private fun collectClassStaticInfo(clazz: Class<*>): String {
 object Crash {
     fun collectInfo(writer: OutputStreamWriter) {
         writer.write("======== PackageInfo ========\n")
-        writer.write("${collectClassStaticInfo(BuildConfig::class.java)}\n")
+        writer.write("PackageName=${BuildConfig.APPLICATION_ID}\n")
+        writer.write("VersionName=${BuildConfig.VERSION_NAME}\n")
+        writer.write("VersionCode=${BuildConfig.VERSION_CODE}\n")
+        writer.write("CommitSha=${BuildConfig.COMMIT_SHA}\n")
+        writer.write("BuildTime=${BuildConfig.BUILD_TIME}\n")
         writer.write("\n")
 
         // Device info
