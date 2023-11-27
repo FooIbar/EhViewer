@@ -33,7 +33,9 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.HeartBroken
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -66,12 +68,20 @@ import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastT
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.requestPermission
+import com.hippo.ehviewer.util.toEpochMillis
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
 
@@ -407,4 +417,29 @@ suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>
     val selected = showSelectItem(defaultLabel, *labels, title = R.string.download_move_dialog_title)
     val label = if (selected == 0) null else labels[selected - 1]
     withUIContext { DownloadManager.changeLabel(list, label) }
+}
+
+suspend fun DialogState.showDatePicker(): String? {
+    val initial = LocalDate(2007, 3, 21)
+    val yesterday = Clock.System.todayIn(TimeZone.UTC).minus(1, DateTimeUnit.DAY)
+    val initialMillis = initial.toEpochMillis()
+    val yesterdayMillis = yesterday.toEpochMillis()
+    val dateRange = initialMillis..yesterdayMillis
+    // TODO: Enable picker mode
+    // https://issuetracker.google.com/issues/306193893
+    val dateMillis = showDatePicker(
+        title = R.string.go_to,
+        yearRange = initial.year..yesterday.year,
+        initialDisplayMode = DisplayMode.Input,
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis in dateRange
+            }
+        },
+        showModeToggle = false,
+    )
+    val date = dateMillis?.let {
+        kotlinx.datetime.Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date.toString()
+    }
+    return date
 }
