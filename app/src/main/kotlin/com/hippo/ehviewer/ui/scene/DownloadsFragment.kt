@@ -500,22 +500,22 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             throw CancellationException()
         }
         onClick(Icons.Default.PlayArrow) {
-            val gidList = checkedInfoMap.run { values.also { clear() } }.mapToLongArray(DownloadInfo::gid)
+            val gidList = checkedInfoMap.run { toMap().values.also { clear() } }.mapToLongArray(DownloadInfo::gid)
             val intent = Intent(activity, DownloadService::class.java)
             intent.action = DownloadService.ACTION_START_RANGE
             intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
             ContextCompat.startForegroundService(context, intent)
         }
         onClick(Icons.Default.Pause) {
-            val gidList = checkedInfoMap.run { values.also { clear() } }.mapToLongArray(DownloadInfo::gid)
+            val gidList = checkedInfoMap.run { toMap().values.also { clear() } }.mapToLongArray(DownloadInfo::gid)
             DownloadManager.stopRangeDownload(gidList)
         }
         onClick(Icons.Default.Delete) {
-            val infoList = checkedInfoMap.run { values.also { clear() } }
+            val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
             dialogState.confirmRemoveDownloadRange(infoList)
         }
         onClick(Icons.AutoMirrored.Default.DriveFileMove) {
-            val infoList = checkedInfoMap.run { values.also { clear() } }
+            val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
             dialogState.showMoveDownloadLabelList(infoList)
         }
     }
