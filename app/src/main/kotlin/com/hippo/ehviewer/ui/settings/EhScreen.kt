@@ -15,10 +15,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,7 +48,6 @@ import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.destinations.UConfigScreenDestination
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.tools.LocalDialogState
-import com.hippo.ehviewer.ui.tools.TimePickerDialog
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.copyTextToClipboard
@@ -325,24 +322,13 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 )
                 AnimatedVisibility(visible = reqNews.value) {
                     val pickerTitle = stringResource(id = R.string.settings_eh_request_news_timepicker)
-                    var showPicker by rememberSaveable { mutableStateOf(false) }
-                    val state = rememberTimePickerState(schedHour, schedMinute)
-                    if (showPicker) {
-                        TimePickerDialog(
-                            title = pickerTitle,
-                            onCancel = { showPicker = false },
-                            onConfirm = {
-                                showPicker = false
-                                Settings.requestNewsTimerHour = state.hour
-                                Settings.requestNewsTimerMinute = state.minute
-                                updateDailyCheckWork(context)
-                            },
-                        ) {
-                            TimePicker(state = state)
-                        }
-                    }
                     Preference(title = pickerTitle) {
-                        showPicker = true
+                        coroutineScope.launch {
+                            val (hour, minute) = dialogState.showTimePicker(pickerTitle, schedHour, schedMinute)
+                            Settings.requestNewsTimerHour = hour
+                            Settings.requestNewsTimerMinute = minute
+                            updateDailyCheckWork(context)
+                        }
                     }
                 }
                 AnimatedVisibility(visible = reqNews.value) {
