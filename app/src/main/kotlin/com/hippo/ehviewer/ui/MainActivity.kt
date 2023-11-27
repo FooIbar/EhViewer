@@ -109,7 +109,6 @@ import com.hippo.ehviewer.ui.destinations.ToplistScreenDestination
 import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.EditTextDialogBuilder
-import com.hippo.ehviewer.ui.scene.BaseScene
 import com.hippo.ehviewer.ui.scene.TokenArgs
 import com.hippo.ehviewer.ui.scene.navWithUrl
 import com.hippo.ehviewer.ui.scene.navigate
@@ -260,7 +259,7 @@ class MainActivity : EhActivity() {
                         }
                     }
                 }.onFailure {
-                    showTip(getString(R.string.update_failed, ExceptionUtils.getReadableString(it)), BaseScene.LENGTH_LONG)
+                    showTip(getString(R.string.update_failed, ExceptionUtils.getReadableString(it)))
                 }
             }
             val snackbarState = remember { SnackbarHostState() }
@@ -468,13 +467,13 @@ class MainActivity : EhActivity() {
         super.onResume()
     }
 
-    fun showTip(@StringRes id: Int, length: Int, useToast: Boolean = false) {
-        showTip(getString(id), length, useToast)
+    fun showTip(@StringRes id: Int, useToast: Boolean = false) {
+        showTip(getString(id), useToast)
     }
 
-    fun showTip(message: CharSequence, length: Int, useToast: Boolean = false) {
+    fun showTip(message: CharSequence, useToast: Boolean = false) {
         if (useToast || tipFlow.tryEmit(message.toString())) {
-            Toast.makeText(this, message, if (length == BaseScene.LENGTH_LONG) Toast.LENGTH_LONG else Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
     }
 

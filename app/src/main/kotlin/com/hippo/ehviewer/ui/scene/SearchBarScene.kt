@@ -115,7 +115,6 @@ fun SearchBarScreen(
     suggestionProvider: SuggestionProvider? = null,
     searchBarOffsetY: Int,
     trailingIcon: @Composable () -> Unit,
-    snackbarHost: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     var mSuggestionList by remember { mutableStateOf(emptyList<Suggestion>()) }
@@ -262,7 +261,6 @@ fun SearchBarScreen(
                         .height(SearchBarDefaults.InputFieldHeight + 16.dp),
                 )
             },
-            snackbarHost = snackbarHost,
             floatingActionButton = {
                 val hiddenState by animateFloatAsState(
                     targetValue = if (showSearchFab) 1f else 0f,
