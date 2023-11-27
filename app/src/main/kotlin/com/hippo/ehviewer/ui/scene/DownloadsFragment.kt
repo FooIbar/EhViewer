@@ -2,7 +2,6 @@ package com.hippo.ehviewer.ui.scene
 
 import android.content.Intent
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -471,10 +470,11 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Image(
+                    Icon(
                         imageVector = EhIcons.Big.Default.Download,
                         contentDescription = null,
                         modifier = Modifier.padding(16.dp),
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                     Text(
                         text = stringResource(id = R.string.no_download_info),
