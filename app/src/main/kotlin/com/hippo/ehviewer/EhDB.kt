@@ -292,7 +292,7 @@ object EhDB {
             }
             runCatching {
                 val downloadInfoList = oldDB.downloadsDao().joinList().asReversed()
-                DownloadManager.addDownload(downloadInfoList, false)
+                DownloadManager.addDownload(downloadInfoList)
             }
             runCatching {
                 val historyInfoList = oldDB.historyDao().list()
