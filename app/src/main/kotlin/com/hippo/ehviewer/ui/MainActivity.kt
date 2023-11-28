@@ -112,9 +112,9 @@ import com.hippo.ehviewer.ui.screen.TokenArgs
 import com.hippo.ehviewer.ui.screen.navWithUrl
 import com.hippo.ehviewer.ui.screen.navigate
 import com.hippo.ehviewer.ui.settings.showNewVersion
+import com.hippo.ehviewer.ui.tools.IconFix
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
-import com.hippo.ehviewer.ui.tools.rememberNeverRecomposeVectorPainter
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
@@ -346,7 +346,7 @@ class MainActivity : EhActivity() {
                                                 },
                                                 modifier = Modifier.padding(horizontal = 12.dp),
                                                 icon = {
-                                                    Icon(painter = rememberNeverRecomposeVectorPainter(icon), contentDescription = null)
+                                                    IconFix(imageVector = icon, contentDescription = null)
                                                 },
                                             )
                                         }
