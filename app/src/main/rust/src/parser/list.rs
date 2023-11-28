@@ -209,7 +209,7 @@ pub fn parseGalleryInfoList(
         if str.contains("<p>You do not have any watched tags") {
             panic!("No watched tags!")
         }
-        if str.contains("No hits found</p>") {
+        if str.contains("No hits found</p>") || str.contains("No unfiltered results found") {
             panic!("No hits found!")
         }
         let itg = get_vdom_first_element_by_class_name(dom, "itg")?;
@@ -236,7 +236,7 @@ pub fn parseGalleryInfoList(
                     .to_string(),
             )
         });
-        Some(GalleryListResult {
+        (!info.is_empty()).then_some(GalleryListResult {
             prev,
             next,
             galleryInfoList: info,
