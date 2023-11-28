@@ -35,7 +35,7 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.scene.DownloadsFragment
+import com.hippo.ehviewer.ui.screen.DownloadsFragment
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.SimpleHandler

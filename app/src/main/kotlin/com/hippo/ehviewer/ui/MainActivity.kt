@@ -108,9 +108,9 @@ import com.hippo.ehviewer.ui.destinations.SubscriptionScreenDestination
 import com.hippo.ehviewer.ui.destinations.ToplistScreenDestination
 import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
-import com.hippo.ehviewer.ui.scene.TokenArgs
-import com.hippo.ehviewer.ui.scene.navWithUrl
-import com.hippo.ehviewer.ui.scene.navigate
+import com.hippo.ehviewer.ui.screen.TokenArgs
+import com.hippo.ehviewer.ui.screen.navWithUrl
+import com.hippo.ehviewer.ui.screen.navigate
 import com.hippo.ehviewer.ui.settings.showNewVersion
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
