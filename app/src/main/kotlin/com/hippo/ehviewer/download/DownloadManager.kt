@@ -264,8 +264,6 @@ object DownloadManager : OnSpiderListener {
         notifyFlow.transform { if (it.gid == info.gid) emit(transform(it)) }
     }.collectAsState(transform(info)).value
 
-    fun stateFlow(gid: Long) = notifyFlow.map { it.gid }.filter { it == gid }
-
     suspend fun startAllDownload() {
         val updateList = allInfoList.filter {
             when (it.state) {
