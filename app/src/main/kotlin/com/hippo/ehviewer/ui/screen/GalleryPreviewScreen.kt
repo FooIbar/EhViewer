@@ -70,6 +70,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
     val pages = galleryDetail.pages
     val pgSize = galleryDetail.previewList.size
+    val thumbColumns by Settings.thumbColumns.collectAsState()
     var toNextPage by rememberSaveable { mutableStateOf(toNextPageArg) }
 
     LaunchedEffect(Unit) {
@@ -90,7 +91,14 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
 
     val data = rememberInVM {
         val previewPagesMap = galleryDetail.previewList.associateBy { it.position } as MutableMap
-        Pager(PagingConfig(pageSize = pgSize, initialLoadSize = pgSize, jumpThreshold = 2 * pgSize)) {
+        Pager(
+            PagingConfig(
+                pageSize = pgSize,
+                prefetchDistance = thumbColumns,
+                initialLoadSize = pgSize,
+                jumpThreshold = 2 * pgSize,
+            ),
+        ) {
             object : PagingSource<Int, GalleryPreview>() {
                 override fun getRefreshKey(state: PagingState<Int, GalleryPreview>) = state.getClippedRefreshKey()
                 override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GalleryPreview> {
@@ -127,7 +135,6 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
             )
         },
     ) { paddingValues ->
-        val thumbColumns by Settings.thumbColumns.collectAsState()
         FastScrollLazyVerticalGrid(
             columns = GridCells.Fixed(thumbColumns),
             modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection).padding(horizontal = dimensionResource(id = R.dimen.gallery_list_margin_h)),
