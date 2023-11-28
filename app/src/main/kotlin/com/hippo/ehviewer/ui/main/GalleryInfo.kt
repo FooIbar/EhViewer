@@ -69,9 +69,6 @@ fun GalleryInfoListItem(
                     modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
                 )
             }
-            val showFav by FavouriteStatusRouter.collectAsState(info) {
-                it != NOT_FAVORITED && !isInFavScene
-            }
             ConstraintLayout(modifier = Modifier.padding(8.dp, 4.dp).fillMaxSize()) {
                 val (titleRef, uploaderRef, ratingRef, categoryRef, postedRef, favRef, iconsRef) = createRefs()
                 Text(
@@ -150,14 +147,16 @@ fun GalleryInfoListItem(
                                 text = info.favoriteNote.orEmpty(),
                                 fontStyle = FontStyle.Italic,
                             )
-                        }
-                        if (showFav) {
-                            Icon(
-                                Icons.Default.Favorite,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp),
-                            )
-                            Text(text = info.favoriteName.orEmpty())
+                        } else {
+                            val showFav by FavouriteStatusRouter.collectAsState(info) { it != NOT_FAVORITED }
+                            if (showFav) {
+                                Icon(
+                                    Icons.Default.Favorite,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                                Text(text = info.favoriteName.orEmpty())
+                            }
                         }
                     }
                     Text(
