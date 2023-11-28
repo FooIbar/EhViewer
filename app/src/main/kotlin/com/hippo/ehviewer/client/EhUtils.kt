@@ -129,8 +129,12 @@ object EhUtils {
             MISC -> BG_COLOR_MISC
             else -> BG_COLOR_UNKNOWN
         }.toInt()
-        val primaryContainer = MaterialTheme.colorScheme.primaryContainer.toArgb()
-        val color = if (Settings.harmonizeCategoryColor) harmonizeWithRole(primaryContainer, primary) else primary
+        val color = if (Settings.harmonizeCategoryColor) {
+            val primaryContainer = MaterialTheme.colorScheme.primaryContainer.toArgb()
+            harmonizeWithRole(primaryContainer, primary)
+        } else {
+            primary
+        }
         return Color(color)
     }
 
