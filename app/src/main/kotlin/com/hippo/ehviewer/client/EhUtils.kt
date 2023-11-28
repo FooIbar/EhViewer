@@ -16,12 +16,13 @@
 package com.hippo.ehviewer.client
 
 import android.annotation.SuppressLint
-import android.content.Context
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import com.google.android.material.R
-import com.google.android.material.color.MaterialColors
+import androidx.compose.ui.graphics.toArgb
+import arrow.core.memoize
 import com.google.android.material.color.utilities.Hct
 import com.google.android.material.color.utilities.MathUtils
 import com.hippo.ehviewer.Settings
@@ -102,17 +103,19 @@ object EhUtils {
     }
 
     @SuppressLint("RestrictedApi")
-    fun harmonizeWithRole(context: Context, src: Int): Int {
-        val primary = MaterialColors.getColor(context, R.attr.colorPrimaryContainer, "EhUtils")
+    val harmonizeWithRole = { primaryContainer: Int, src: Int ->
         val fromHct = Hct.fromInt(src)
-        val toHct = Hct.fromInt(primary)
+        val toHct = Hct.fromInt(primaryContainer)
         val differenceDegrees = MathUtils.differenceDegrees(fromHct.hue, toHct.hue)
         val rotationDegrees = minOf(differenceDegrees * 0.5, 15.0)
         val outputHue = MathUtils.sanitizeDegreesDouble(fromHct.hue + rotationDegrees * MathUtils.rotationDirection(fromHct.hue, toHct.hue))
-        return Hct.from(outputHue, toHct.chroma, toHct.tone).toInt()
-    }
+        Hct.from(outputHue, toHct.chroma, toHct.tone).toInt()
+    }.memoize()
 
-    private fun getCategoryColor(context: Context, category: Int): Int {
+    @Stable
+    @ReadOnlyComposable
+    @Composable
+    fun getCategoryColor(category: Int): Color {
         val primary = when (category) {
             DOUJINSHI -> BG_COLOR_DOUJINSHI
             MANGA -> BG_COLOR_MANGA
@@ -126,15 +129,14 @@ object EhUtils {
             MISC -> BG_COLOR_MISC
             else -> BG_COLOR_UNKNOWN
         }.toInt()
-        return if (Settings.harmonizeCategoryColor) {
-            harmonizeWithRole(context, primary)
+        val color = if (Settings.harmonizeCategoryColor) {
+            val primaryContainer = MaterialTheme.colorScheme.primaryContainer.toArgb()
+            harmonizeWithRole(primaryContainer, primary)
         } else {
             primary
         }
+        return Color(color)
     }
-
-    @Composable
-    fun getCategoryColor(category: Int) = Color(getCategoryColor(LocalContext.current, category))
 
     val categoryTextColor = Color(0xffe6e0e9)
 
