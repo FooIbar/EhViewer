@@ -11,6 +11,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -35,6 +36,7 @@ import kotlinx.coroutines.launch
  *         SDK >= 34 by userGesture progress
  *         else by animationSpec when finished
  */
+@Stable
 @Composable
 fun animateFloatMergePredictiveBackAsState(
     enable: Boolean,
