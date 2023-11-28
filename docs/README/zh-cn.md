@@ -1,11 +1,11 @@
 <p align="right">
-  <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/README.md">
+  <a href="/README.md">
   English
   </a>
   <span> | </span>
   <strong>简体中文</strong>
   <span> | </span>
-  <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/docs/README/zh-tw.md">
+  <a href="/docs/README/zh-tw.md">
   正體中文
   </a>
 </p>
@@ -19,7 +19,7 @@
   <a href="https://github.com/FooIbar/EhViewer/actions/workflows/ci.yml">
     <img src="https://github.com/FooIbar/EhViewer/actions/workflows/ci.yml/badge.svg" alt="Github Actions">
   </a>
-  <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/LICENSE">
+  <a href="/LICENSE">
     <img src="https://img.shields.io/github/license/FooIbar/EhViewer" alt="LICENSE">
   </a>
   <a href="https://www.codefactor.io/repository/github/FooIbar/EhViewer">
@@ -35,23 +35,23 @@
 
 <div align="center">
   <h3>
-    <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/docs/README/zh-cn.md#描述">
+    <a href="#描述">
     描述
     </a>
     <span> | </span>
-    <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/docs/README/zh-cn.md#下载">
+    <a href="#下载">
     下载
     </a>
     <span> | </span>
-    <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/docs/README/zh-cn.md#截图">
+    <a href="#截图">
     截图
     </a>
     <span> | </span>
-    <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/docs/README/zh-cn.md#感谢">
+    <a href="#感谢">
     感谢
     </a>
     <span> | </span>
-    <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/docs/README/zh-cn.md#许可证">
+    <a href="#许可证">
     许可证
     </a>
   </h3>

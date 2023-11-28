@@ -1,11 +1,6 @@
 {
-  "baseBranches": [
-    "1.8.x.x"
-  ],
-
   "automerge": true,
   "automergeType": "branch",
-
   "extends": [
     "config:base"
   ]
