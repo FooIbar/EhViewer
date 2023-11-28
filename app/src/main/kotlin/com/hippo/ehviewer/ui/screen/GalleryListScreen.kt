@@ -136,6 +136,7 @@ import com.hippo.ehviewer.ui.main.SearchAdvanced
 import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
+import com.hippo.ehviewer.ui.tools.IconFix
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
@@ -723,14 +724,14 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     selected = searchNormalMode,
                     onClick = { searchNormalMode = true },
                     text = { Text(text = stringResource(id = R.string.keyword_search)) },
-                    icon = { Icon(imageVector = Icons.Default.Translate, contentDescription = null) },
+                    icon = { IconFix(imageVector = Icons.Default.Translate, contentDescription = null) },
                     unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                 )
                 LeadingIconTab(
                     selected = !searchNormalMode,
                     onClick = { searchNormalMode = false },
                     text = { Text(text = stringResource(id = R.string.search_image)) },
-                    icon = { Icon(imageVector = Icons.Default.ImageSearch, contentDescription = null) },
+                    icon = { IconFix(imageVector = Icons.Default.ImageSearch, contentDescription = null) },
                     unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                 )
             }
