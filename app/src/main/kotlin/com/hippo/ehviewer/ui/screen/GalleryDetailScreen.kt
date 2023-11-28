@@ -144,6 +144,7 @@ import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
+import com.hippo.ehviewer.ui.tools.IconFix
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberLambda
 import com.hippo.ehviewer.util.AppHelper
@@ -585,7 +586,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         }
                     },
                 ) {
-                    Icon(
+                    IconFix(
                         imageVector = getFavoriteIcon(favSlot != NOT_FAVORITED),
                         contentDescription = null,
                     )

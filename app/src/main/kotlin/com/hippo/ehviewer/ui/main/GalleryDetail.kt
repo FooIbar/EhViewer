@@ -17,7 +17,6 @@ import androidx.compose.material.icons.filled.NoAccounts
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
@@ -36,6 +35,7 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
+import com.hippo.ehviewer.ui.tools.IconFix
 
 @Composable
 fun GalleryDetailHeaderInfoCard(
@@ -131,7 +131,7 @@ fun GalleryDetailHeaderCard(
                 label = { Text(text = categoryText, maxLines = 1) },
                 modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
                 leadingIcon = {
-                    Icon(
+                    IconFix(
                         imageVector = Icons.AutoMirrored.Default.Label,
                         contentDescription = null,
                     )
@@ -143,7 +143,7 @@ fun GalleryDetailHeaderCard(
                 label = { Text(text = uploaderText, maxLines = 1) },
                 modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)),
                 leadingIcon = {
-                    Icon(
+                    IconFix(
                         imageVector = Icons.Default.NoAccounts,
                         contentDescription = null,
                         modifier = Modifier.clickable(onClick = onBlockUploaderIconClick),
@@ -160,7 +160,7 @@ fun GalleryDetailErrorTip(error: String, onClick: () -> Unit) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center,
 ) {
-    Icon(
+    IconFix(
         imageVector = EhIcons.Big.Default.SadAndroid,
         contentDescription = null,
         modifier = Modifier.clickable(onClick = onClick),
