@@ -910,21 +910,15 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 }
             }
         }
-        var downloadButtonText by rememberSaveable { mutableStateOf(downloadText) }
-        LaunchedEffect(Unit) {
-            EhDownloadManager.stateFlow(gid).collect {
-                context.run {
-                    downloadButtonText = when (EhDownloadManager.getDownloadState(gid)) {
-                        DownloadInfo.STATE_INVALID -> getString(R.string.download)
-                        DownloadInfo.STATE_NONE -> getString(R.string.download_state_none)
-                        DownloadInfo.STATE_WAIT -> getString(R.string.download_state_wait)
-                        DownloadInfo.STATE_DOWNLOAD -> getString(R.string.download_state_downloading)
-                        DownloadInfo.STATE_FINISH -> getString(R.string.download_state_downloaded)
-                        DownloadInfo.STATE_FAILED -> getString(R.string.download_state_failed)
-                        else -> error("Invalid DownloadState!!!")
-                    }
-                }
-            }
+        val downloadState by EhDownloadManager.collectDownloadState(gid)
+        val downloadButtonText = when (downloadState) {
+            DownloadInfo.STATE_INVALID -> stringResource(R.string.download)
+            DownloadInfo.STATE_NONE -> stringResource(R.string.download_state_none)
+            DownloadInfo.STATE_WAIT -> stringResource(R.string.download_state_wait)
+            DownloadInfo.STATE_DOWNLOAD -> stringResource(R.string.download_state_downloading)
+            DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_downloaded)
+            DownloadInfo.STATE_FAILED -> stringResource(R.string.download_state_failed)
+            else -> error("Invalid DownloadState!!!")
         }
         fun onReadButtonClick() = context.navToReader(galleryInfo.findBaseInfo())
         fun onCategoryChipClick() {
