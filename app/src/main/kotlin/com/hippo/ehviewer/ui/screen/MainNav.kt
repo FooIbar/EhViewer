@@ -33,7 +33,7 @@ fun DestinationsNavigator.navWithUrl(url: String): Boolean {
 fun NavController.navWithUrl(url: String): Boolean {
     val dest = urlToDestination(url) ?: return false
     navigate(dest)
-    return false
+    return true
 }
 
 @MainThread
