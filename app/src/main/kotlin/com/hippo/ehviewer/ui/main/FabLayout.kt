@@ -19,9 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
@@ -72,20 +70,25 @@ fun FabLayout(
         contentAlignment = Alignment.BottomEnd,
     ) {
         Box(
-            modifier = Modifier.rotate(lerp(-90f, 0f, appearState)).scale(appearState),
+            modifier = Modifier.graphicsLayer {
+                rotationZ = lerp(-90f, 0f, appearState)
+                scaleX = appearState
+                scaleY = appearState
+            },
             contentAlignment = Alignment.Center,
         ) {
-            val animatedProgress by animateFloatMergePredictiveBackAsState(
-                enable = expanded,
-                animationSpec = tween(FAB_ANIMATE_TIME),
-            ) { onExpandChanged(false) }
+            val animatedProgress by animateFloatMergePredictiveBackAsState(expanded, tween(FAB_ANIMATE_TIME)) {
+                onExpandChanged(false)
+            }
             FloatingActionButton(
                 onClick = { onExpandChanged(!expanded) },
             ) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = null,
-                    modifier = Modifier.rotate(lerp(0f, -135f, animatedProgress)),
+                    modifier = Modifier.graphicsLayer {
+                        rotationZ = lerp(0f, -135f, animatedProgress)
+                    },
                 )
             }
             secondaryFab.run {
@@ -105,7 +108,9 @@ fun FabLayout(
                                 val distance = lerp(150 * (size - index) + 50, 0, animatedProgress)
                                 placeable.placeRelative(0, -distance, -(size - index).toFloat())
                             }
-                        }.alpha(1 - animatedProgress),
+                        }.graphicsLayer {
+                            alpha = 1 - animatedProgress
+                        },
                     ) {
                         Icon(imageVector = imageVector, contentDescription = null)
                     }
