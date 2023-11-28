@@ -46,6 +46,7 @@ fun ChapterNavigator(
     // https://m3.material.io/components/sliders/specs
     // Tick width is 2 dp
     val maxTickCount = configuration.screenWidthDp / 6
+    val showTicks = totalPages < maxTickCount
 
     // We explicitly handle direction based on the reader viewer rather than the system direction
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -64,10 +65,12 @@ fun ChapterNavigator(
                         Text(text = currentPage.toString())
 
                         val interactionSource = remember { MutableInteractionSource() }
-                        val sliderDragged by interactionSource.collectIsDraggedAsState()
-                        LaunchedEffect(currentPage) {
-                            if (sliderDragged) {
-                                view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                        if (showTicks) {
+                            val sliderDragged by interactionSource.collectIsDraggedAsState()
+                            LaunchedEffect(currentPage) {
+                                if (sliderDragged) {
+                                    view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                }
                             }
                         }
                         Slider(
@@ -79,7 +82,7 @@ fun ChapterNavigator(
                                 onSliderValueChange(it.roundToInt() - 1)
                             },
                             interactionSource = interactionSource,
-                            colors = if (totalPages < maxTickCount) {
+                            colors = if (showTicks) {
                                 SliderDefaults.colors()
                             } else {
                                 SliderDefaults.colors(
