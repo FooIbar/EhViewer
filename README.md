@@ -1,11 +1,11 @@
 <p align="right">
   <strong>English</strong>
   <span> | </span>
-  <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/docs/README/zh-cn.md">
+  <a href="/docs/README/zh-cn.md">
   简体中文
   </a>
   <span> | </span>
-  <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/docs/README/zh-tw.md">
+  <a href="/docs/README/zh-tw.md">
   正體中文
   </a>
 </p>
@@ -19,7 +19,7 @@
   <a href="https://github.com/FooIbar/EhViewer/actions/workflows/ci.yml">
     <img src="https://github.com/FooIbar/EhViewer/actions/workflows/ci.yml/badge.svg" alt="Github Actions">
   </a>
-  <a href="https://github.com/FooIbar/EhViewer/blob/1.8.x.x/LICENSE">
+  <a href="/LICENSE">
     <img src="https://img.shields.io/github/license/FooIbar/EhViewer" alt="LICENSE">
   </a>
   <a href="https://www.codefactor.io/repository/github/FooIbar/EhViewer">
@@ -35,23 +35,23 @@
 
 <div align="center">
   <h3>
-    <a href="https://github.com/FooIbar/EhViewer#description">
+    <a href="#description">
     Description
     </a>
     <span> | </span>
-    <a href="https://github.com/FooIbar/EhViewer#download">
+    <a href="#download">
     Download
     </a>
     <span> | </span>
-    <a href="https://github.com/FooIbar/EhViewer#screenshot">
+    <a href="#screenshot">
     Screenshot
     </a>
     <span> | </span>
-    <a href="https://github.com/FooIbar/EhViewer#thanks">
+    <a href="#thanks">
     Thanks
     </a>
     <span> | </span>
-    <a href="https://github.com/FooIbar/EhViewer#license">
+    <a href="#license">
     License
     </a>
   </h3>
