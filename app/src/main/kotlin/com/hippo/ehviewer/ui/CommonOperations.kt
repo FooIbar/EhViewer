@@ -267,7 +267,10 @@ private suspend fun doModifyFavorites(
     return add
 }
 
-suspend fun removeFromFavorites(galleryInfo: BaseGalleryInfo) = doModifyFavorites(galleryInfo)
+suspend fun removeFromFavorites(galleryInfo: BaseGalleryInfo) = doModifyFavorites(
+    galleryInfo = galleryInfo,
+    localFavorited = EhDB.containLocalFavorites(galleryInfo.gid),
+)
 
 fun Context.navToReader(info: BaseGalleryInfo, page: Int = -1) {
     val intent = Intent(this, ReaderActivity::class.java)
