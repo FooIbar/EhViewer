@@ -260,10 +260,9 @@ object DownloadManager : OnSpiderListener {
 
     @Stable
     @Composable
-    inline fun <T> updatedDownloadInfo(info: DownloadInfo, crossinline transform: @DisallowComposableCalls DownloadInfo.() -> T): T {
-        val flow = remember { notifyFlow.filter { it.gid == info.gid }.map { transform(it) } }
-        return flow.collectAsState(transform(info)).value
-    }
+    inline fun <T> updatedDownloadInfo(info: DownloadInfo, crossinline transform: @DisallowComposableCalls DownloadInfo.() -> T): T = remember {
+        notifyFlow.transform { if (it.gid == info.gid) emit(transform(it)) }
+    }.collectAsState(transform(info)).value
 
     fun stateFlow(gid: Long) = notifyFlow.map { it.gid }.filter { it == gid }
 
