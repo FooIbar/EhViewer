@@ -46,6 +46,7 @@ import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -134,8 +135,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             null -> DownloadManager.allInfoList
             defaultName -> DownloadManager.defaultInfoList
             else -> DownloadManager.getLabelDownloadInfoList(label) ?: DownloadManager.allInfoList.also { label = null }
-        }.filter { info ->
-            (filterType == -1 || info.state == filterType) && keyword?.let { info.title.containsIgnoreCase(it) || info.titleJpn.containsIgnoreCase(it) || info.uploader.containsIgnoreCase(it) } ?: true
+        }.filterTo(mutableStateListOf()) { info ->
+            (filterType == -1 || info.state == filterType) && keyword?.let {
+                info.title.containsIgnoreCase(it) || info.titleJpn.containsIgnoreCase(it) || info.uploader.containsIgnoreCase(it)
+            } ?: true
         }
     }
     val labelsList = DownloadManager.labelList
@@ -402,6 +405,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             coroutineScope.launchIO {
                 EhDB.updateDownloadInfo(newList)
             }
+            list.add(toIndex, list.removeAt(fromIndex))
             view.performHapticFeedback(draggingHapticFeedback)
         }
         val searchBarConnection = remember {
@@ -513,10 +517,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         onClick(Icons.Default.Delete) {
             val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
             dialogState.confirmRemoveDownloadRange(infoList)
+            list.removeAll(infoList)
         }
         onClick(Icons.AutoMirrored.Default.DriveFileMove) {
             val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
             dialogState.showMoveDownloadLabelList(infoList)
+            list.removeAll(infoList)
         }
     }
 }
