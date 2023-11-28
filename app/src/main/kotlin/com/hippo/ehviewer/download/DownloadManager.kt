@@ -248,10 +248,9 @@ object DownloadManager : OnSpiderListener {
 
     @Stable
     @Composable
-    fun collectDownloadState(gid: Long): State<Int> {
-        val flow = remember { stateFlow(gid).map { getDownloadState(it) } }
-        return flow.collectAsState(getDownloadState(gid))
-    }
+    fun collectDownloadState(gid: Long): State<Int> = remember {
+        notifyFlow.transform { if (it.gid == gid) emit(getDownloadState(gid)) }
+    }.collectAsState(getDownloadState(gid))
 
     @Stable
     @Composable
