@@ -69,10 +69,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -622,7 +620,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
-                    modifier = Modifier.rotate(lerp(90f, 0f, animatedSearchLayout)),
+                    modifier = Modifier.graphicsLayer {
+                        rotationZ = lerp(90f, 0f, animatedSearchLayout)
+                    },
                 )
             }
         },
@@ -639,7 +639,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     bottom = 8.dp,
                 )
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
-                .scale(1 - animatedSearchLayout).alpha(1 - animatedSearchLayout),
+                .graphicsLayer {
+                    scaleX = 1 - animatedSearchLayout
+                    scaleY = 1 - animatedSearchLayout
+                    alpha = 1 - animatedSearchLayout
+                },
         ) {
             AnimatedVisibility(visible = searchNormalMode) {
                 ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
@@ -751,7 +755,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             }
         }
         GalleryList(
-            modifier = Modifier.scale(animatedSearchLayout).alpha(animatedSearchLayout),
+            modifier = Modifier.graphicsLayer {
+                scaleX = animatedSearchLayout
+                scaleY = animatedSearchLayout
+                alpha = animatedSearchLayout
+            },
             data = data,
             contentModifier = Modifier.nestedScroll(searchBarConnection),
             contentPadding = contentPadding,
