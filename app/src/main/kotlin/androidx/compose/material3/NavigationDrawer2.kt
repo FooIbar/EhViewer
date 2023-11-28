@@ -32,9 +32,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
@@ -300,9 +302,16 @@ fun ModalNavigationDrawer(
         Modifier
     }
     Box(modifier.fillMaxSize().then(dragModifier)) {
-        val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
-        val radius = lerp(0.dp, 10.dp, step)
-        Box(modifier = Modifier.blur(radius)) {
+        val blurModifier = Modifier.graphicsLayer {
+            val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
+            val radius = lerp(0.dp, 10.dp, step)
+            if (radius != 0.dp) {
+                renderEffect = BlurEffect(radius.toPx(), radius.toPx(), TileMode.Clamp)
+                shape = RectangleShape
+                clip = true
+            }
+        }
+        Box(modifier = blurModifier) {
             content()
         }
         Scrim(
@@ -338,7 +347,11 @@ fun ModalNavigationDrawer(
                     shape = DrawerDefaults.shape,
                 )
             } else {
-                Modifier.scale(lerp(1f, 0.95f, -predictiveState)).offset {
+                Modifier.graphicsLayer {
+                    val scale = lerp(1f, 0.95f, -predictiveState)
+                    scaleX = scale
+                    scaleY = scale
+                }.offset {
                     IntOffset(lerp(0f, minValue * 0.05f, -predictiveState).roundToInt(), 0)
                 }
             }
@@ -423,9 +436,16 @@ fun SideDrawer(
         Modifier
     }
     Box(modifier.fillMaxSize().then(dragModifier)) {
-        val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
-        val radius = lerp(0.dp, 10.dp, step)
-        Box(modifier = Modifier.blur(radius)) {
+        val blurModifier = Modifier.graphicsLayer {
+            val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
+            val radius = lerp(0.dp, 10.dp, step)
+            if (radius != 0.dp) {
+                renderEffect = BlurEffect(radius.toPx(), radius.toPx(), TileMode.Clamp)
+                shape = RectangleShape
+                clip = true
+            }
+        }
+        Box(modifier = blurModifier) {
             content()
         }
         Scrim(
@@ -461,7 +481,11 @@ fun SideDrawer(
                     shape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
                 )
             } else {
-                Modifier.scale(lerp(1f, 0.95f, predictiveState)).offset {
+                Modifier.graphicsLayer {
+                    val scale = lerp(1f, 0.95f, predictiveState)
+                    scaleX = scale
+                    scaleY = scale
+                }.offset {
                     IntOffset(lerp(0f, minValue * 0.05f, predictiveState).roundToInt(), 0)
                 }
             }
