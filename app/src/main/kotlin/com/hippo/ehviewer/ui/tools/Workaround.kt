@@ -22,8 +22,8 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 @Composable
 private fun rememberNeverRecomposeVectorPainter(image: ImageVector): VectorPainter {
     val context = rememberCompositionContext()
-    var b by remember { mutableStateOf<VectorPainter?>(null) }
-    val composition = remember {
+    var b by remember(image) { mutableStateOf<VectorPainter?>(null) }
+    val composition = remember(image) {
         val composition = ReusableComposition(
             object : Applier<Unit> {
                 override val current = Unit
@@ -44,7 +44,7 @@ private fun rememberNeverRecomposeVectorPainter(image: ImageVector): VectorPaint
             }
         }
     }
-    DisposableEffect(Unit) {
+    DisposableEffect(composition) {
         onDispose {
             composition.dispose()
         }
