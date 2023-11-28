@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.ui.scene
+package com.hippo.ehviewer.ui.screen
 
 import android.annotation.SuppressLint
 import android.content.Context

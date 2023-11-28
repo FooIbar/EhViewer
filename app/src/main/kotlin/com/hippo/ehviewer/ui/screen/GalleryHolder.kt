@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.ui.scene
+package com.hippo.ehviewer.ui.screen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons

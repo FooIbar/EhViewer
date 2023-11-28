@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.ui.scene
+package com.hippo.ehviewer.ui.screen
 
 import android.content.Intent
 import androidx.compose.animation.core.animateDpAsState
@@ -521,10 +521,8 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     }
 }
 
-class DownloadsFragment {
-    companion object {
-        const val KEY_GID = "gid"
-        const val KEY_ACTION = "action"
-        const val ACTION_CLEAR_DOWNLOAD_SERVICE = "clear_download_service"
-    }
+object DownloadsFragment {
+    const val KEY_GID = "gid"
+    const val KEY_ACTION = "action"
+    const val ACTION_CLEAR_DOWNLOAD_SERVICE = "clear_download_service"
 }
