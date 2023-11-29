@@ -25,6 +25,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import com.google.android.material.math.MathUtils
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
@@ -46,12 +48,9 @@ import com.hippo.ehviewer.util.runAssertingNotMainThread
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import java.util.LinkedList
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import splitties.init.appCtx
@@ -59,24 +58,22 @@ import splitties.preferences.edit
 
 object DownloadManager : OnSpiderListener {
     // All download info list
-    val allInfoList: LinkedList<DownloadInfo> = runAssertingNotMainThread { LinkedList(EhDB.getAllDownloadInfo()) }
+    val allInfoList = runAssertingNotMainThread { EhDB.getAllDownloadInfo() }.toMutableStateList()
 
     // All download info map
     private val mAllInfoMap = allInfoList.associateBy { it.gid } as MutableMap<Long, DownloadInfo>
 
     // label and info list map, without default label info list
-    private val map: MutableMap<String?, LinkedList<DownloadInfo>>
+    private val map: MutableMap<String?, SnapshotStateList<DownloadInfo>>
 
     // All labels without default label
-    val labelList = mutableStateListOf<DownloadLabel>().apply {
-        addAll(runAssertingNotMainThread { EhDB.getAllDownloadLabelList() })
-    }
+    val labelList = runAssertingNotMainThread { EhDB.getAllDownloadLabelList() }.toMutableStateList()
 
     // Store download info with default label
-    val defaultInfoList: LinkedList<DownloadInfo>
+    private val defaultInfoList: SnapshotStateList<DownloadInfo>
 
     // Store download info wait to start
-    private val mWaitList = LinkedList<DownloadInfo>()
+    private val mWaitList = ArrayDeque<DownloadInfo>()
     private val mSpeedReminder = SpeedReminder()
     private val mNotifyTaskPool = ConcurrentPool<NotifyTask?>(5)
     private var mDownloadListener: DownloadListener? = null
@@ -96,16 +93,16 @@ object DownloadManager : OnSpiderListener {
                         labelList.add(EhDB.addDownloadLabel(DownloadLabel(label, labelList.size)))
                     }
                 }
-                it.key to LinkedList(it.value)
+                it.key to it.value.toMutableStateList()
             }
-        } as MutableMap<String?, LinkedList<DownloadInfo>>
-        defaultInfoList = map.remove(null) ?: LinkedList()
+        } as MutableMap<String?, SnapshotStateList<DownloadInfo>>
+        defaultInfoList = map.remove(null) ?: mutableStateListOf()
         labelList.forEach { (label) ->
-            map[label] ?: LinkedList<DownloadInfo>().also { map[label] = it }
+            map[label] ?: mutableStateListOf<DownloadInfo>().also { map[label] = it }
         }
     }
 
-    private fun getInfoListForLabel(label: String?) = if (label == null) {
+    fun getInfoListForLabel(label: String?) = if (label == null) {
         defaultInfoList
     } else {
         map[label]
@@ -124,8 +121,6 @@ object DownloadManager : OnSpiderListener {
     }
 
     fun containDownloadInfo(gid: Long) = mAllInfoMap.containsKey(gid)
-
-    fun getLabelDownloadInfoList(label: String?) = map[label]
 
     fun getDownloadInfo(gid: Long) = mAllInfoMap[gid]
 
@@ -205,10 +200,10 @@ object DownloadManager : OnSpiderListener {
                 Log.e(TAG, "Can't find download info list with label: $label")
                 return
             }
-            list.addFirst(info)
+            list.add(0, info)
 
             // Add to all download list and map
-            allInfoList.addFirst(info)
+            allInfoList.add(0, info)
             mAllInfoMap[galleryInfo.gid] = info
 
             // Add to wait list
@@ -311,7 +306,7 @@ object DownloadManager : OnSpiderListener {
     suspend fun addDownloadLabel(downloadLabelList: List<DownloadLabel>) {
         val offset = downloadLabelList.size
         downloadLabelList.filterNot { containLabel(it.label) }.forEachIndexed { index, label ->
-            map[label.label] = LinkedList()
+            map[label.label] = mutableStateListOf()
             label.position = index + offset
             labelList.add(EhDB.addDownloadLabel(label))
         }
@@ -324,10 +319,10 @@ object DownloadManager : OnSpiderListener {
 
         // Add to default label download list
         val list = defaultInfoList
-        list.addFirst(info)
+        list.add(0, info)
 
         // Add to all download list and map
-        allInfoList.addFirst(info)
+        allInfoList.add(0, info)
         mAllInfoMap[galleryInfo.gid] = info
 
         // Save to
@@ -568,7 +563,7 @@ object DownloadManager : OnSpiderListener {
             Log.e(TAG, "Not exits label: $label")
             return
         }
-        val dstList: MutableList<DownloadInfo>? = getInfoListForLabel(label)
+        val dstList = getInfoListForLabel(label)
         if (dstList == null) {
             Log.e(TAG, "Can't find label with label: $label")
             return
@@ -577,7 +572,7 @@ object DownloadManager : OnSpiderListener {
             if (info.label == label) {
                 continue
             }
-            val srcList: MutableList<DownloadInfo>? = getInfoListForLabel(info.label)
+            val srcList = getInfoListForLabel(info.label)
             if (srcList == null) {
                 Log.e(TAG, "Can't find label with label: " + info.label)
                 continue
@@ -597,7 +592,7 @@ object DownloadManager : OnSpiderListener {
             return
         }
         labelList.add(EhDB.addDownloadLabel(DownloadLabel(label, labelList.size)))
-        map[label] = LinkedList()
+        map[label] = mutableStateListOf()
     }
 
     suspend fun moveLabel(fromPosition: Int, toPosition: Int) {
