@@ -28,7 +28,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
@@ -36,6 +35,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -214,20 +214,19 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
 
     var expanded by remember { mutableStateOf(false) }
     var hidden by remember { mutableStateOf(false) }
-    var selectMode by remember { mutableStateOf(false) }
-    LockDrawer(selectMode)
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
-    SideEffect {
-        if (checkedInfoMap.isEmpty()) selectMode = false
-        if (selectMode) expanded = true
-    }
+    val selectMode by rememberUpdatedState(checkedInfoMap.isNotEmpty())
+    LockDrawer(selectMode)
 
     SearchBarScreen(
         title = title,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
         onApplySearch = { refresh(FavListUrlBuilder(urlBuilder.favCat, it)) },
-        onSearchExpanded = { hidden = true },
+        onSearchExpanded = {
+            checkedInfoMap.clear()
+            hidden = true
+        },
         onSearchHidden = { hidden = false },
         refreshState = refreshState,
         searchBarOffsetY = { searchBarOffsetY },
@@ -271,7 +270,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                             }
                         },
                         onLongClick = {
-                            selectMode = true
                             checkedInfoMap[info.gid] = info
                         },
                         info = info,
@@ -297,7 +295,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                             }
                         },
                         onLongClick = {
-                            selectMode = true
                             checkedInfoMap[info.gid] = info
                         },
                         info = info,
@@ -314,11 +311,10 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
     val select = selectMode
     FabLayout(
         hidden = hidden,
-        expanded = expanded,
+        expanded = expanded || selectMode,
         onExpandChanged = {
             expanded = it
             checkedInfoMap.clear()
-            selectMode = false
         },
         autoCancel = !selectMode,
     ) {
