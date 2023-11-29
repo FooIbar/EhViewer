@@ -10,7 +10,6 @@ androidx-constraintlayout-compose = "1.1.0-alpha13"
 androidx-coordinatorlayout = "1.2.0"
 androidx-core = "1.12.0"
 androidx-core-splashscreen = "1.1.0-alpha02"
-androidx-fragment = "1.7.0-alpha06"
 androidx-lifecycle = "2.7.0-rc01"
 androidx-navigation = "2.7.5"
 androidx-paging = "3.2.1"
@@ -50,7 +49,6 @@ androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constr
 androidx-coordinatorlayout = { module = "androidx.coordinatorlayout:coordinatorlayout", version.ref = "androidx-coordinatorlayout" }
 androidx-core = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-core-splashscreen" }
-androidx-fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "androidx-fragment" }
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
