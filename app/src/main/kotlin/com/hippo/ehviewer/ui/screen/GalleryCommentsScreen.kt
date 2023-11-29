@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.screen
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
@@ -57,7 +56,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -65,7 +63,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalTextToolbar
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -414,15 +411,9 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
                     }
                 }
             }
-
-            @SuppressLint("PrivateResource")
-            val overlay = colorResource(com.google.android.material.R.color.m3_popupmenu_overlay_color)
-            val surface = MaterialTheme.colorScheme.surface
-            val background = overlay.compositeOver(surface)
             PullToRefreshContainer(
                 state = refreshState,
                 modifier = Modifier.align(Alignment.TopCenter).padding(top = paddingValues.calculateTopPadding()),
-                containerColor = background,
             )
             Surface(
                 modifier = Modifier.align(Alignment.BottomCenter).layout { measurable, constraints ->
