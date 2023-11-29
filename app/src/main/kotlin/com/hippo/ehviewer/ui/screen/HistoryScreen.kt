@@ -96,9 +96,10 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
             )
         },
     ) { paddingValues ->
+        val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
         val cardHeight by collectListThumbSizeAsState()
         FastScrollLazyColumn(
-            modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.gallery_list_margin_h)),
+            modifier = Modifier.padding(horizontal = marginH),
             contentPadding = paddingValues,
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
         ) {
@@ -146,7 +147,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
         Deferred({ delay(200) }) {
             if (historyData.itemCount == 0) {
                 Column(
-                    modifier = Modifier.padding(paddingValues).fillMaxSize(),
+                    modifier = Modifier.padding(paddingValues).padding(horizontal = marginH).fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
