@@ -91,6 +91,7 @@ import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
+import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.util.containsIgnoreCase
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
@@ -108,7 +109,7 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 @Destination
 @Composable
 fun DownloadsScreen(navigator: DestinationsNavigator) {
-    var label by rememberSaveable { mutableStateOf<String?>(null) }
+    var label by Settings::recentDownloadLabel.observed
     var keyword by rememberSaveable { mutableStateOf<String?>(null) }
     var filterType by rememberSaveable { mutableStateOf(-1) }
     var searchBarOffsetY by remember { mutableStateOf(0) }
@@ -246,6 +247,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                             if (it == DismissValue.DismissedToStart) {
                                 coroutineScope.launch {
                                     DownloadManager.deleteLabel(item)
+                                    label = null
                                 }
                             }
                             true
@@ -291,6 +293,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                                         }
                                                     }
                                                     DownloadManager.renameLabel(item, new)
+                                                    label = new
                                                 }
                                             },
                                         ) {

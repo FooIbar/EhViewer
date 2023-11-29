@@ -565,7 +565,7 @@ object DownloadManager : OnSpiderListener {
             Log.e(TAG, "Not exits label: $label")
             return
         }
-        val dstList: MutableList<DownloadInfo>? = getInfoListForLabel(label)
+        val dstList = getInfoListForLabel(label)
         if (dstList == null) {
             Log.e(TAG, "Can't find label with label: $label")
             return
@@ -574,7 +574,7 @@ object DownloadManager : OnSpiderListener {
             if (info.label == label) {
                 continue
             }
-            val srcList: MutableList<DownloadInfo>? = getInfoListForLabel(info.label)
+            val srcList = getInfoListForLabel(info.label)
             if (srcList == null) {
                 Log.e(TAG, "Can't find label with label: " + info.label)
                 continue
