@@ -414,12 +414,13 @@ suspend fun DialogState.showMoveDownloadLabel(info: GalleryInfo) {
     withUIContext { DownloadManager.changeLabel(listOf(downloadInfo), label) }
 }
 
-suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>) {
+suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>): String? {
     val defaultLabel = appCtx.getString(R.string.default_download_label_name)
     val labels = DownloadManager.labelList.map { it.label }.toTypedArray()
     val selected = showSelectItem(defaultLabel, *labels, title = R.string.download_move_dialog_title)
     val label = if (selected == 0) null else labels[selected - 1]
     withUIContext { DownloadManager.changeLabel(list, label) }
+    return label
 }
 
 suspend fun DialogState.showDatePicker(): String? {

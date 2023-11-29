@@ -70,7 +70,7 @@ object DownloadManager : OnSpiderListener {
     val labelList = runAssertingNotMainThread { EhDB.getAllDownloadLabelList() }.toMutableStateList()
 
     // Store download info with default label
-    val defaultInfoList: SnapshotStateList<DownloadInfo>
+    private val defaultInfoList: SnapshotStateList<DownloadInfo>
 
     // Store download info wait to start
     private val mWaitList = ArrayDeque<DownloadInfo>()
@@ -102,7 +102,7 @@ object DownloadManager : OnSpiderListener {
         }
     }
 
-    private fun getInfoListForLabel(label: String?) = if (label == null) {
+    fun getInfoListForLabel(label: String?) = if (label == null) {
         defaultInfoList
     } else {
         map[label]
@@ -121,8 +121,6 @@ object DownloadManager : OnSpiderListener {
     }
 
     fun containDownloadInfo(gid: Long) = mAllInfoMap.containsKey(gid)
-
-    fun getLabelDownloadInfoList(label: String?) = map[label]
 
     fun getDownloadInfo(gid: Long) = mAllInfoMap[gid]
 
