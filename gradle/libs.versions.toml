@@ -84,7 +84,6 @@ compose-material-icons-extended = { module = "androidx.compose.material:material
 compose-material3 = { module = "androidx.compose.material3:material3", version = "1.2.0-SNAPSHOT" }
 compose-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
 compose-ui-util = { module = "androidx.compose.ui:ui-util" }
-compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding" }
 
 compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "compose-destinations" }
 compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "compose-destinations" }
@@ -134,7 +133,7 @@ accompanist = ["accompanist-themeadapter-material3", "accompanist-webview"]
 androidx-navigation = ["androidx-navigation-compose", "androidx-navigation-ui"]
 androidx-paging = ["androidx-paging-compose", "androidx-paging-runtime"]
 coil = ["coil-compose", "coil-gif"]
-compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util", "compose-ui-viewbinding"]
+compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
 cronet = ["cronet-api", "cronet-gms"]
 kotlinx-serialization = ["kotlinx-serialization-cbor", "kotlinx-serialization-json", "kotlinx-serialization-json-okio"]
 ktor = ["ktor-io-jvm", "ktor-utils-jvm"]
