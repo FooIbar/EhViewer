@@ -312,7 +312,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         onApplySearch = { keyword = it.takeUnless { it.isBlank() } },
         onSearchExpanded = { selectMode = false },
         onSearchHidden = {},
-        searchBarOffsetY = searchBarOffsetY,
+        searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             var expanded by remember { mutableStateOf(false) }
             val sideSheetState = LocalSideSheetState.current
