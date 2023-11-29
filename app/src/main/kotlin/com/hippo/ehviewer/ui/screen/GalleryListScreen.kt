@@ -813,6 +813,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         expanded = expanded,
         onExpandChanged = { expanded = it },
         autoCancel = true,
+        delayOnShow = true,
     ) {
         onClick(Icons.Default.Refresh) {
             urlBuilder.setIndex(null)

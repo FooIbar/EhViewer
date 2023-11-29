@@ -321,6 +321,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
             selectMode = false
         },
         autoCancel = !selectMode,
+        delayOnShow = true,
     ) {
         if (!select) {
             onClick(EhIcons.Default.GoTo) {

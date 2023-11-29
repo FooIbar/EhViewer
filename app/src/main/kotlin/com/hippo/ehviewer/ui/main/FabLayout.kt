@@ -15,8 +15,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -39,8 +41,12 @@ fun FabLayout(
     expanded: Boolean,
     onExpandChanged: (Boolean) -> Unit,
     autoCancel: Boolean,
+    showAddButton: Boolean = true,
+    delayOnShow: Boolean = false,
     fabBuilder: FabBuilder.() -> Unit,
 ) {
+    var delayOnExpand by remember { mutableStateOf(hidden) }
+    var delayOnHide by remember { mutableStateOf(expanded) }
     val secondaryFab = remember(fabBuilder) {
         buildList {
             fabBuilder { icon, action ->
@@ -62,9 +68,9 @@ fun FabLayout(
     val coroutineScope = rememberCoroutineScope()
     val appearState by animateFloatAsState(
         targetValue = if (hidden) 0f else 1f,
-        animationSpec = tween(FAB_ANIMATE_TIME, if (hidden) 0 else FAB_ANIMATE_TIME),
+        animationSpec = tween(FAB_ANIMATE_TIME, if (delayOnHide || !hidden && delayOnShow) FAB_ANIMATE_TIME else 0),
         label = "hiddenState",
-    )
+    ) { delayOnExpand = hidden }
     Box(
         modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(16.dp),
         contentAlignment = Alignment.BottomEnd,
@@ -77,7 +83,11 @@ fun FabLayout(
             },
             contentAlignment = Alignment.Center,
         ) {
-            val animatedProgress by animateFloatMergePredictiveBackAsState(expanded, tween(FAB_ANIMATE_TIME)) {
+            val animatedProgress by animateFloatMergePredictiveBackAsState(
+                expanded,
+                tween(FAB_ANIMATE_TIME, if (delayOnExpand) FAB_ANIMATE_TIME else 0),
+                finishedListener = { delayOnHide = expanded },
+            ) {
                 onExpandChanged(false)
             }
             FloatingActionButton(
@@ -86,8 +96,12 @@ fun FabLayout(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = null,
-                    modifier = Modifier.graphicsLayer {
-                        rotationZ = lerp(0f, -135f, animatedProgress)
+                    modifier = if (showAddButton) {
+                        Modifier.graphicsLayer {
+                            rotationZ = lerp(0f, -135f, animatedProgress)
+                        }
+                    } else {
+                        Modifier
                     },
                 )
             }

@@ -497,6 +497,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             selectMode = false
         },
         autoCancel = false,
+        showAddButton = false,
     ) {
         onClick(Icons.Default.DoneAll) {
             val info = list.associateBy { it.gid }
