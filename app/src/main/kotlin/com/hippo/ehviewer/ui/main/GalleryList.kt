@@ -211,32 +211,43 @@ fun GalleryList(
                             )
                         }
                     }
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(
-                            modifier = Modifier.widthIn(max = 228.dp)
-                                .clip(ShapeDefaults.Small).clickable { data.retry() },
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Icon(
-                                imageVector = EhIcons.Big.Default.SadAndroid,
-                                contentDescription = null,
-                                modifier = Modifier.padding(16.dp).size(120.dp),
-                                tint = MaterialTheme.colorScheme.tertiary,
-                            )
-                            Text(
-                                text = ExceptionUtils.getReadableString(state.error),
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                    }
+                    ErrorTip(
+                        modifier = Modifier.widthIn(max = 228.dp)
+                            .clip(ShapeDefaults.Small).clickable { data.retry() },
+                        text = ExceptionUtils.getReadableString(state.error),
+                    )
                 }
             }
 
-            is LoadState.NotLoading -> Unit
+            is LoadState.NotLoading -> if (data.itemCount == 0) {
+                // Only for local favorites as empty gallery lists from network are treated as error
+                ErrorTip(modifier = Modifier.widthIn(max = 228.dp), text = stringResource(id = R.string.gallery_list_empty_hit))
+            }
+        }
+    }
+}
+
+@Composable
+fun ErrorTip(modifier: Modifier = Modifier, text: String) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = modifier,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                imageVector = EhIcons.Big.Default.SadAndroid,
+                contentDescription = null,
+                modifier = Modifier.padding(16.dp).size(120.dp),
+                tint = MaterialTheme.colorScheme.tertiary,
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
