@@ -611,7 +611,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 GalleryPageUrlSuggestion(gid, pToken, page)
             }
         },
-        searchBarOffsetY = searchBarOffsetY,
+        searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
             IconButton(onClick = { coroutineScope.launch { sheetState.open() } }) {

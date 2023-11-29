@@ -230,7 +230,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         onSearchExpanded = { hidden = true },
         onSearchHidden = { hidden = false },
         refreshState = refreshState,
-        searchBarOffsetY = searchBarOffsetY,
+        searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
             IconButton(onClick = { coroutineScope.launch { sheetState.open() } }) {

@@ -50,7 +50,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,10 +73,8 @@ import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.LockDrawer
-import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.LocalDialogState
-import com.hippo.ehviewer.util.findActivity
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -114,7 +111,7 @@ fun SearchBarScreen(
     onSearchHidden: () -> Unit,
     refreshState: PullToRefreshState? = null,
     suggestionProvider: SuggestionProvider? = null,
-    searchBarOffsetY: Int,
+    searchBarOffsetY: () -> Int,
     trailingIcon: @Composable () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
@@ -123,7 +120,6 @@ fun SearchBarScreen(
     var active by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
-    val activity = context.findActivity<MainActivity>()
     val dialogState = LocalDialogState.current
 
     // Workaround for BTF2 cursor not showing
@@ -237,12 +233,11 @@ fun SearchBarScreen(
         }
     }
 
-    val searchbarOfs by rememberUpdatedState(searchBarOffsetY)
     val scrollAwayModifier = if (!active) {
         Modifier.layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
             layout(placeable.width, placeable.height) {
-                placeable.placeRelative(0, searchbarOfs)
+                placeable.placeRelative(0, searchBarOffsetY())
             }
         }
     } else {
