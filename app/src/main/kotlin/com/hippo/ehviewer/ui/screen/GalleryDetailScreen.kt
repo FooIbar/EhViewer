@@ -77,6 +77,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.text.parseAsHtml
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import arrow.core.partially1
 import coil.imageLoader
 import com.google.android.material.snackbar.Snackbar
@@ -897,19 +898,21 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         val windowSizeClass = calculateWindowSizeClass(activity)
         val thumbColumns by Settings.thumbColumns.collectAsState()
         val readText = stringResource(R.string.read)
-        val downloadText = stringResource(R.string.download)
         var readButtonText by rememberSaveable { mutableStateOf(readText) }
-        LaunchedEffect(Unit) {
-            runSuspendCatching {
-                val queen = SpiderQueen.obtainSpiderQueen(galleryInfo, MODE_READ)
-                val startPage = queen.awaitStartPage()
-                SpiderQueen.releaseSpiderQueen(queen, MODE_READ)
-                readButtonText = if (startPage == 0) {
-                    readText
-                } else {
-                    context.getString(R.string.read_from, startPage + 1)
+        LifecycleResumeEffect(Unit) {
+            coroutineScope.launchIO {
+                runSuspendCatching {
+                    val queen = SpiderQueen.obtainSpiderQueen(galleryInfo, MODE_READ)
+                    val startPage = queen.awaitStartPage()
+                    SpiderQueen.releaseSpiderQueen(queen, MODE_READ)
+                    readButtonText = if (startPage == 0) {
+                        readText
+                    } else {
+                        context.getString(R.string.read_from, startPage + 1)
+                    }
                 }
             }
+            onPauseOrDispose { }
         }
         val downloadState by EhDownloadManager.collectDownloadState(gid)
         val downloadButtonText = when (downloadState) {

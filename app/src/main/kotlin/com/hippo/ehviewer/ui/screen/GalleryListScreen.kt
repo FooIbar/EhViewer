@@ -58,6 +58,7 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -66,6 +67,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -154,6 +156,8 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import sh.calvin.reorderable.ReorderableItem
@@ -806,12 +810,20 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val gotoTitle = stringResource(R.string.go_to)
     val invalidNum = stringResource(R.string.error_invalid_number)
     val outOfRange = stringResource(R.string.error_out_of_range)
+
+    val hideFab by remember {
+        snapshotFlow {
+            hidden || showSearchLayout
+        }.onEach {
+            if (!it) delay(FAB_ANIMATE_TIME.toLong())
+        }.mapLatest { it }
+    }.collectAsState(hidden || showSearchLayout)
+
     FabLayout(
-        hidden = hidden || showSearchLayout,
+        hidden = hideFab,
         expanded = expanded,
         onExpandChanged = { expanded = it },
         autoCancel = true,
-        delayOnShow = true,
     ) {
         onClick(Icons.Default.Refresh) {
             urlBuilder.setIndex(null)
