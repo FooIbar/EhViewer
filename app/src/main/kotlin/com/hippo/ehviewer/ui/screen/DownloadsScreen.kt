@@ -32,17 +32,16 @@ import androidx.compose.material.icons.filled.NewLabel
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.DismissDirection
-import androidx.compose.material3.DismissValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.rememberSwipeToDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -236,9 +235,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                     )
                 }
                 items(labelsList, key = { it.label }) { (item) ->
-                    val dismissState = rememberDismissState(
+                    val dismissState = rememberSwipeToDismissState(
                         confirmValueChange = {
-                            if (it == DismissValue.DismissedToStart) {
+                            if (it == SwipeToDismissValue.EndToStart) {
                                 coroutineScope.launch {
                                     DownloadManager.deleteLabel(item)
                                     label = ""
@@ -251,7 +250,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                         SwipeToDismissBox2(
                             state = dismissState,
                             backgroundContent = {},
-                            directions = setOf(DismissDirection.EndToStart),
                         ) {
                             val elevation by animateDpAsState(
                                 if (isDragging) {

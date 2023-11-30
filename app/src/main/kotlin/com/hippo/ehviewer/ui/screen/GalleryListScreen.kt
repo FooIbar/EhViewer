@@ -40,8 +40,6 @@ import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.Bookmarks
-import androidx.compose.material3.DismissDirection
-import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -50,10 +48,11 @@ import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.SwipeToDismissValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.rememberSwipeToDismissState
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -437,9 +436,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         }
                         items(quickSearchList, key = { it.id!! }) { item ->
                             ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
-                                val dismissState = rememberDismissState(
+                                val dismissState = rememberSwipeToDismissState(
                                     confirmValueChange = {
-                                        if (it == DismissValue.DismissedToStart) {
+                                        if (it == SwipeToDismissValue.EndToStart) {
                                             quickSearchList.remove(item)
                                             coroutineScope.launchIO {
                                                 EhDB.deleteQuickSearch(item)
@@ -451,7 +450,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                 SwipeToDismissBox2(
                                     state = dismissState,
                                     backgroundContent = {},
-                                    directions = setOf(DismissDirection.EndToStart),
                                 ) {
                                     val elevation by animateDpAsState(
                                         if (isDragging) {
