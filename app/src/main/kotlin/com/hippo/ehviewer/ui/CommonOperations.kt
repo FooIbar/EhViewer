@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.HeartBroken
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
@@ -429,18 +428,14 @@ suspend fun DialogState.showDatePicker(): String? {
     val initialMillis = initial.toEpochMillis()
     val yesterdayMillis = yesterday.toEpochMillis()
     val dateRange = initialMillis..yesterdayMillis
-    // TODO: Enable picker mode
-    // https://issuetracker.google.com/issues/306193893
     val dateMillis = showDatePicker(
         title = R.string.go_to,
         yearRange = initial.year..yesterday.year,
-        initialDisplayMode = DisplayMode.Input,
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 return utcTimeMillis in dateRange
             }
         },
-        showModeToggle = false,
     )
     val date = dateMillis?.let {
         kotlinx.datetime.Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date.toString()
