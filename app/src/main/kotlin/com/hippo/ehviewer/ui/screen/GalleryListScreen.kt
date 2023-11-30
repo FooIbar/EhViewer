@@ -624,7 +624,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
                     modifier = Modifier.graphicsLayer {
-                        rotationZ = lerp(45f, 0f, animatedSearchLayout)
+                        rotationZ = lerp(135f, 0f, animatedSearchLayout)
                     },
                 )
             }
