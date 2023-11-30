@@ -35,6 +35,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:targetApi="tiramisu">
+        <profileable android:shell="true" />
+
         <activity
             android:name=".ui.ConfigureActivity"
             android:exported="false"
