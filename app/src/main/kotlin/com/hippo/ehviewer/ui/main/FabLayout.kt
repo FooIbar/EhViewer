@@ -38,6 +38,7 @@ import androidx.compose.ui.util.lerp
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
 enum class FabLayoutValue {
@@ -164,7 +165,9 @@ fun FabLayout(
                     }
                     onExpandChanged(false)
                 } catch (e: CancellationException) {
-                    state.expand()
+                    coroutineScope.launch {
+                        state.expand()
+                    }
                 }
             }
             FloatingActionButton(onClick = { onExpandChanged(!updatedExpanded) }) {
