@@ -36,13 +36,11 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import eu.kanade.tachiyomi.util.lang.launchIO
-import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import moe.tarsin.coroutines.runSuspendCatching
 
 enum class FabLayoutValue {
@@ -87,14 +85,9 @@ class FabLayoutState(
         }
     }
 
-    suspend fun waitCollapse() = coroutineScope {
+    suspend fun waitCollapse() {
         if (expandProgress.value != 0f) {
-            suspendCancellableCoroutine {
-                launch {
-                    snapshotFlow { expandProgress.value }.first { it == 0f }
-                    it.resume(Unit)
-                }
-            }
+            snapshotFlow { expandProgress.value }.first { it == 0f }
         }
     }
     suspend fun show(priority: MutatePriority = MutatePriority.Default) = upTo(FabLayoutValue.Primary, priority)
