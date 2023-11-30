@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.main
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.MutatorMutex
@@ -157,7 +158,8 @@ fun FabLayout(
                 try {
                     state.mutatorMutex.mutate(MutatePriority.UserInput) {
                         flow.collect {
-                            state.expandProgress.snapTo(1 - it.progress)
+                            val eased = EaseOut.transform(it.progress)
+                            state.expandProgress.snapTo(1 - eased)
                         }
                     }
                     onExpandChanged(false)
