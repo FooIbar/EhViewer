@@ -10,16 +10,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.DismissDirection
-import androidx.compose.material3.DismissValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SwipeToDismissValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDismissState
+import androidx.compose.material3.rememberSwipeToDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -110,9 +109,9 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
             ) { index ->
                 val info = historyData[index]
                 if (info != null) {
-                    val dismissState = rememberDismissState(
+                    val dismissState = rememberSwipeToDismissState(
                         confirmValueChange = {
-                            if (it == DismissValue.DismissedToStart) {
+                            if (it == SwipeToDismissValue.EndToStart) {
                                 coroutineScope.launchIO {
                                     EhDB.deleteHistoryInfo(info)
                                 }
@@ -124,7 +123,6 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
                         state = dismissState,
                         backgroundContent = {},
                         modifier = Modifier.animateItemPlacement(),
-                        directions = setOf(DismissDirection.EndToStart),
                     ) {
                         GalleryInfoListItem(
                             onClick = {
