@@ -38,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -68,6 +69,7 @@ import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
+import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
@@ -83,6 +85,9 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
@@ -307,17 +312,24 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         )
     }
 
+    val hideFab by remember {
+        snapshotFlow {
+            hidden
+        }.onEach {
+            if (!it) delay(FAB_ANIMATE_TIME.toLong())
+        }.mapLatest { it }
+    }.collectAsState(hidden)
+
     // Explicitly reallocate fabBuilder lambda to recompose secondary fab
     val select = selectMode
     FabLayout(
-        hidden = hidden,
+        hidden = hideFab,
         expanded = expanded || selectMode,
         onExpandChanged = {
             expanded = it
             checkedInfoMap.clear()
         },
         autoCancel = !selectMode,
-        delayOnShow = true,
     ) {
         if (!select) {
             onClick(EhIcons.Default.GoTo) {

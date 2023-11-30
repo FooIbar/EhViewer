@@ -488,7 +488,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         expanded = selectMode,
         onExpandChanged = { checkedInfoMap.clear() },
         autoCancel = false,
-        showAddButton = false,
     ) {
         onClick(Icons.Default.DoneAll) {
             val info = list.associateBy { it.gid }
