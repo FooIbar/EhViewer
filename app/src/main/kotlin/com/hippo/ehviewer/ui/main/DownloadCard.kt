@@ -151,7 +151,7 @@ fun ReorderableItemScope.DownloadCard(
                 DownloadInfo.STATE_DOWNLOAD -> null
                 DownloadInfo.STATE_FAILED -> if (info.legacy <= 0) stateFailed else stateFailed2
                 DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_finish)
-                else -> error("Illegal State $downloadState!!!")
+                else -> null // Chill, will be removed soon
             }
             ConstraintLayout(modifier = Modifier.padding(8.dp, 4.dp).fillMaxSize()) {
                 val (
