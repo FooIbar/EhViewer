@@ -17,9 +17,15 @@ package com.hippo.ehviewer.client
 
 import android.util.Log
 import com.hippo.ehviewer.EhApplication.Companion.baseOkHttpClient
+import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.EhApplication.Companion.noRedirectOkHttpClient
 import com.hippo.ehviewer.EhApplication.Companion.okHttpClient
 import com.hippo.ehviewer.Settings
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.header
+import io.ktor.client.request.prepareGet
+import io.ktor.http.HttpHeaders
+import io.ktor.http.userAgent
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 import kotlin.coroutines.resume
@@ -128,3 +134,17 @@ val json = Json { ignoreUnknownKeys = true }
 const val CHROME_USER_AGENT = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Mobile Safari/537.36"
 const val CHROME_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
 const val CHROME_ACCEPT_LANGUAGE = "en-US,en;q=0.5"
+
+suspend inline fun statement(
+    url: String,
+    referer: String? = null,
+    origin: String? = null,
+    builder: HttpRequestBuilder.() -> Unit = {},
+) = ktorClient.prepareGet(url) {
+    header("Referer", referer)
+    header("Origin", origin)
+    userAgent(Settings.userAgent)
+    header(HttpHeaders.Accept, CHROME_ACCEPT)
+    header(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
+    apply(builder)
+}

@@ -55,6 +55,8 @@ import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.logcat
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
 import okhttp3.AsyncDns
@@ -174,6 +176,14 @@ class EhApplication : Application(), ImageLoaderFactory {
     }
 
     companion object {
+        val ktorClient by lazy {
+            HttpClient(OkHttp) {
+                engine {
+                    preconfigured = baseOkHttpClient
+                }
+            }
+        }
+
         val baseOkHttpClient by lazy {
             httpClient {
                 cookieJar(EhCookieStore)

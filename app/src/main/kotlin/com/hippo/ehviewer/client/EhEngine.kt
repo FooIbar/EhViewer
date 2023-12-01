@@ -54,6 +54,10 @@ import com.hippo.ehviewer.dailycheck.today
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.StatusCodeException
 import com.hippo.ehviewer.util.isCronetSupported
+import eu.kanade.tachiyomi.util.system.logcat
+import io.ktor.client.statement.HttpStatement
+import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.request
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import java.io.File
@@ -76,12 +80,12 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import org.jsoup.Jsoup
 import splitties.init.appCtx
 
-private const val TAG = "EhEngine"
+const val TAG = "EhEngine"
 private const val MAX_REQUEST_SIZE = 25
 private const val U_CONFIG_TEXT = "Selected Profile"
 private val MEDIA_TYPE_JPEG: MediaType = "image/jpeg".toMediaType()
 
-private fun rethrowExactly(code: Int, body: String, e: Throwable): Nothing {
+fun rethrowExactly(code: Int, body: String, e: Throwable): Nothing {
     // Don't translate coroutine cancellation
     if (e is CancellationException) throw e
 
@@ -185,6 +189,16 @@ private suspend inline fun <T> Request.executeAndParsingWith(block: suspend Stri
     }
 }
 
+suspend inline fun <T> HttpStatement.executeParseWith(crossinline block: suspend (String) -> T) = execute { response ->
+    logcat(tag = TAG) { response.request.url.toString() }
+    val body = response.bodyAsText()
+    runSuspendCatching {
+        block(body)
+    }.onFailure {
+        rethrowExactly(response.status.value, body, it)
+    }.getOrThrow()
+}
+
 object EhEngine {
     suspend fun getOriginalImageUrl(url: String, referer: String?): String {
         Log.d(TAG, url)
@@ -247,12 +261,13 @@ object EhEngine {
         .apply { fillGalleryList(galleryInfoList, url, true) }
         .takeUnless { it.galleryInfoList.isEmpty() } ?: GalleryListParser.emptyResult
 
-    suspend fun getGalleryDetail(url: String) = ehRequest(url, EhUrl.referer).executeAndParsingWith {
-        EventPaneParser.parse(this)?.let {
+    suspend fun getGalleryDetail(url: String) = statement(url, EhUrl.referer).executeParseWith {
+        val eventPane = EventPaneParser.parse(it)
+        if (eventPane != null) {
             Settings.lastDawnDay = today
-            showEventNotification(it)
+            showEventNotification(eventPane)
         }
-        GalleryDetailParser.parse(this)
+        GalleryDetailParser.parse(it)
     }
 
     suspend fun getPreviewList(url: String) = ehRequest(url, EhUrl.referer).executeAndParsingWith {
