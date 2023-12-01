@@ -80,6 +80,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -311,6 +312,7 @@ class MainActivity : EhActivity() {
             val currentDestination by navController.currentDestinationAsState()
             val lockDrawerHandle = remember { mutableStateListOf<Int>() }
             val drawerLocked = lockDrawerHandle.isNotEmpty()
+            val viewConfiguration = LocalViewConfiguration.current
             CompositionLocalProvider(
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
@@ -379,19 +381,23 @@ class MainActivity : EhActivity() {
                                             drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
                                             windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
                                         ) {
-                                            sheet(sideSheetState)
+                                            CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
+                                                sheet(sideSheetState)
+                                            }
                                         }
                                     }
                                 },
                                 drawerState = sideSheetState,
                                 gesturesEnabled = sheet != null && !drawerLocked,
                             ) {
-                                DestinationsNavHost(
-                                    navGraph = NavGraphs.root,
-                                    startRoute = navItems[Settings.launchPage].first,
-                                    engine = rememberNavHostEngine(rootDefaultAnimations = ehNavAnim),
-                                    navController = navController,
-                                )
+                                CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
+                                    DestinationsNavHost(
+                                        navGraph = NavGraphs.root,
+                                        startRoute = navItems[Settings.launchPage].first,
+                                        engine = rememberNavHostEngine(rootDefaultAnimations = ehNavAnim),
+                                        navController = navController,
+                                    )
+                                }
                             }
                         }
                     }
