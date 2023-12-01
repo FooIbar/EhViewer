@@ -281,16 +281,16 @@ object EhEngine {
         val referer = "https://forums.e-hentai.org/index.php?act=Login&CODE=00"
         val url = EhUrl.API_SIGN_IN
         val origin = "https://forums.e-hentai.org"
-        return ehRequest(url, referer, origin) {
+        return statement(url, referer, origin) {
             formBody {
-                add("referer", referer)
-                add("b", "")
-                add("bt", "")
-                add("UserName", username)
-                add("PassWord", password)
-                add("CookieDate", "1")
+                append("referer", referer)
+                append("b", "")
+                append("bt", "")
+                append("UserName", username)
+                append("PassWord", password)
+                append("CookieDate", "1")
             }
-        }.executeAndParsingWith(SignInParser::parse)
+        }.executeParseWith(SignInParser::parse)
     }
 
     suspend fun commentGallery(url: String, comment: String, id: Long = -1) = ehRequest(url, url, EhUrl.origin) {

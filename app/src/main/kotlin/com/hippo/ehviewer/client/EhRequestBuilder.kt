@@ -22,9 +22,13 @@ import com.hippo.ehviewer.EhApplication.Companion.noRedirectOkHttpClient
 import com.hippo.ehviewer.EhApplication.Companion.okHttpClient
 import com.hippo.ehviewer.Settings
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.header
-import io.ktor.client.request.prepareGet
+import io.ktor.client.request.prepareRequest
+import io.ktor.client.request.setBody
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.ParametersBuilder
 import io.ktor.http.userAgent
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -140,11 +144,18 @@ suspend inline fun statement(
     referer: String? = null,
     origin: String? = null,
     builder: HttpRequestBuilder.() -> Unit = {},
-) = ktorClient.prepareGet(url) {
+) = ktorClient.prepareRequest(url) {
+    method = HttpMethod.Get
     header("Referer", referer)
     header("Origin", origin)
     userAgent(Settings.userAgent)
     header(HttpHeaders.Accept, CHROME_ACCEPT)
     header(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
     apply(builder)
+}
+
+fun HttpRequestBuilder.formBody(builder: ParametersBuilder.() -> Unit) {
+    method = HttpMethod.Post
+    val parameters = ParametersBuilder().apply(builder).build()
+    setBody(FormDataContent(parameters))
 }
