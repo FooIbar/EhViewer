@@ -35,7 +35,6 @@ import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ktbuilder.cache
-import com.hippo.ehviewer.ktbuilder.chunker
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.httpClient
 import com.hippo.ehviewer.ktbuilder.imageLoader
@@ -181,7 +180,6 @@ class EhApplication : Application(), ImageLoaderFactory {
                 if (isAtLeastQ) {
                     dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
                 }
-                chunker { alwaysReadResponseBody(false) }
                 addInterceptor(UncaughtExceptionInterceptor())
                 addInterceptor(CloudflareInterceptor(appCtx))
             }
