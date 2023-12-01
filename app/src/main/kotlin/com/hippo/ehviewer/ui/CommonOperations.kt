@@ -18,11 +18,9 @@ package com.hippo.ehviewer.ui
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
@@ -32,15 +30,12 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.HeartBroken
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -62,6 +57,7 @@ import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.ui.tools.DialogState
+import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastT
@@ -345,16 +341,13 @@ suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo, onDismiss: () -
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                    ) { checked = !checked },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Checkbox(checked = checked, onCheckedChange = { checked = it })
-                    Text(text = stringResource(id = R.string.download_remove_dialog_check_text))
-                }
+                LabeledCheckbox(
+                    modifier = Modifier.fillMaxWidth(),
+                    checked = checked,
+                    onCheckedChange = { checked = it },
+                    label = stringResource(id = R.string.download_remove_dialog_check_text),
+                    indication = null,
+                )
             }
         },
     )
@@ -375,16 +368,13 @@ suspend fun DialogState.confirmRemoveDownloadRange(list: Collection<DownloadInfo
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                    ) { checked = !checked },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Checkbox(checked = checked, onCheckedChange = { checked = it })
-                    Text(text = stringResource(id = R.string.download_remove_dialog_check_text))
-                }
+                LabeledCheckbox(
+                    modifier = Modifier.fillMaxWidth(),
+                    checked = checked,
+                    onCheckedChange = { checked = it },
+                    label = stringResource(id = R.string.download_remove_dialog_check_text),
+                    indication = null,
+                )
             }
         },
     )
