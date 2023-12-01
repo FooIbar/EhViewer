@@ -293,17 +293,17 @@ object EhEngine {
         }.executeParseWith(SignInParser::parse)
     }
 
-    suspend fun commentGallery(url: String, comment: String, id: Long = -1) = ehRequest(url, url, EhUrl.origin) {
+    suspend fun commentGallery(url: String, comment: String, id: Long = -1) = statement(url, url, EhUrl.origin) {
         formBody {
             if (id == -1L) {
-                add("commenttext_new", comment)
+                append("commenttext_new", comment)
             } else {
-                add("commenttext_edit", comment)
-                add("edit_comment", id.toString())
+                append("commenttext_edit", comment)
+                append("edit_comment", id.toString())
             }
         }
-    }.executeAndParsingWith {
-        val document = Jsoup.parse(this)
+    }.executeParseWith {
+        val document = Jsoup.parse(it)
         val elements = document.select("#chd + p")
         if (elements.size > 0) {
             throw EhException(elements[0].text())
@@ -343,26 +343,26 @@ object EhEngine {
         }
         val url = EhUrl.getDownloadArchive(gid, token, or)
         val referer = EhUrl.getGalleryDetailUrl(gid, token)
-        val request = ehRequest(url, referer, EhUrl.origin) {
+        val request = statement(url, referer, EhUrl.origin) {
             formBody {
                 if (isHAtH) {
-                    add("hathdl_xres", res)
+                    append("hathdl_xres", res)
                 } else {
-                    add("dltype", res)
+                    append("dltype", res)
                     if (res == "org") {
-                        add("dlcheck", "Download Original Archive")
+                        append("dlcheck", "Download Original Archive")
                     } else {
-                        add("dlcheck", "Download Resample Archive")
+                        append("dlcheck", "Download Resample Archive")
                     }
                 }
             }
         }
-        var result = request.executeAndParsingWith(ArchiveParser::parseArchiveUrl)
+        var result = request.executeParseWith(ArchiveParser::parseArchiveUrl)
         if (!isHAtH) {
             if (result == null) {
                 // Wait for the server to prepare archives
                 delay(1000)
-                result = request.executeAndParsingWith(ArchiveParser::parseArchiveUrl)
+                result = request.executeParseWith(ArchiveParser::parseArchiveUrl)
                 if (result == null) {
                     throw EhException("Archive unavailable")
                 }
@@ -372,11 +372,11 @@ object EhEngine {
         return null
     }
 
-    suspend fun resetImageLimits() = ehRequest(EhUrl.URL_HOME) {
+    suspend fun resetImageLimits() = statement(EhUrl.URL_HOME) {
         formBody {
-            add("reset_imagelimit", "Reset Limit")
+            append("reset_imagelimit", "Reset Limit")
         }
-    }.executeAndParsingWith(HomeParser::parseResetLimits)
+    }.executeParseWith(HomeParser::parseResetLimits)
 
     suspend fun modifyFavorites(gidArray: LongArray, srcCat: Int, dstCat: Int): FavoritesParser.Result {
         val url = ehUrl {
