@@ -74,7 +74,6 @@ import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
-import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import org.jsoup.Jsoup
@@ -176,20 +175,7 @@ suspend fun <T> fetchCompat(
     }
 }
 
-@Suppress("REDUNDANT_INLINE_SUSPEND_FUNCTION_TYPE")
-private suspend inline fun <T> Request.executeAndParsingWith(block: suspend String.() -> T): T {
-    Log.d(TAG, url.toString())
-    return execute {
-        val body = body.string()
-        try {
-            block(body)
-        } catch (e: Exception) {
-            rethrowExactly(code, body, e)
-        }
-    }
-}
-
-suspend inline fun <T> HttpStatement.executeParseWith(crossinline block: suspend (String) -> T) = execute { response ->
+suspend inline fun <T> HttpStatement.executeParseWith(crossinline block: suspend String.() -> T) = execute { response ->
     logcat(tag = TAG) { response.request.url.toString() }
     val body = response.bodyAsText()
     runSuspendCatching {
@@ -227,7 +213,7 @@ object EhEngine {
     )
 
     suspend fun getNews(parse: Boolean) = statement(EhUrl.URL_NEWS, EhUrl.REFERER_E)
-        .executeParseWith { if (parse) EventPaneParser.parse(it) else null }
+        .executeParseWith { if (parse) EventPaneParser.parse(this) else null }
 
     suspend fun getProfile(): ProfileParser.Result {
         val url = statement(EhUrl.URL_FORUMS).executeParseWith(ForumsParser::parse)
@@ -236,12 +222,12 @@ object EhEngine {
 
     suspend fun getUConfig(url: String = EhUrl.uConfigUrl) {
         runSuspendCatching {
-            statement(url).executeParseWith { check(U_CONFIG_TEXT in it) { "Unable to load config from $url!" } }
+            statement(url).executeParseWith { check(U_CONFIG_TEXT in this) { "Unable to load config from $url!" } }
         }.onFailure { throwable ->
             // It may get redirected when accessing ex for the first time
             if (url == EhUrl.URL_UCONFIG_EX) {
                 throwable.printStackTrace()
-                statement(url).executeParseWith { check(U_CONFIG_TEXT in it) { "Unable to load config from $url!" } }
+                statement(url).executeParseWith { check(U_CONFIG_TEXT in this) { "Unable to load config from $url!" } }
             } else {
                 throw throwable
             }
@@ -262,16 +248,16 @@ object EhEngine {
         .takeUnless { it.galleryInfoList.isEmpty() } ?: GalleryListParser.emptyResult
 
     suspend fun getGalleryDetail(url: String) = statement(url, EhUrl.referer).executeParseWith {
-        val eventPane = EventPaneParser.parse(it)
+        val eventPane = EventPaneParser.parse(this)
         if (eventPane != null) {
             Settings.lastDawnDay = today
             showEventNotification(eventPane)
         }
-        GalleryDetailParser.parse(it)
+        GalleryDetailParser.parse(this)
     }
 
     suspend fun getPreviewList(url: String) = statement(url, EhUrl.referer).executeParseWith {
-        GalleryDetailParser.parsePreviewList(it) to GalleryDetailParser.parsePreviewPages(it)
+        GalleryDetailParser.parsePreviewList(this) to GalleryDetailParser.parsePreviewPages(this)
     }
 
     suspend fun getFavorites(url: String) = fetchCompat(url, EhUrl.referer, parser = FavoritesParser::parse)
@@ -303,7 +289,7 @@ object EhEngine {
             }
         }
     }.executeParseWith {
-        val document = Jsoup.parse(it)
+        val document = Jsoup.parse(this)
         val elements = document.select("#chd + p")
         if (elements.size > 0) {
             throw EhException(elements[0].text())
@@ -406,7 +392,7 @@ object EhEngine {
         previousPToken: String?,
     ): GalleryPageParser.Result {
         val referer = if (index > 0 && previousPToken != null) EhUrl.getPageUrl(gid, index - 1, previousPToken) else null
-        return ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
+        return statement(EhUrl.apiUrl, referer, EhUrl.origin) {
             jsonBody {
                 put("method", "showpage")
                 put("gid", gid)
@@ -414,7 +400,7 @@ object EhEngine {
                 put("imgkey", pToken)
                 put("showkey", showKey)
             }
-        }.executeAndParsingWith { GalleryPageParser.parse(filterNot { it == '\\' }) }
+        }.executeParseWith { GalleryPageParser.parse(filterNot { it == '\\' }) }
     }
 
     suspend fun rateGallery(
@@ -423,7 +409,7 @@ object EhEngine {
         gid: Long,
         token: String?,
         rating: Float,
-    ): RateGalleryResult = ehRequest(EhUrl.apiUrl, EhUrl.getGalleryDetailUrl(gid, token), EhUrl.origin) {
+    ): RateGalleryResult = statement(EhUrl.apiUrl, EhUrl.getGalleryDetailUrl(gid, token), EhUrl.origin) {
         jsonBody {
             put("method", "rategallery")
             put("apiuid", apiUid)
@@ -432,11 +418,11 @@ object EhEngine {
             put("token", token)
             put("rating", ceil((rating * 2).toDouble()).toInt())
         }
-    }.executeAndParsingWith(String::parseAs)
+    }.executeParseWith(String::parseAs)
 
     suspend fun fillGalleryListByApi(galleryInfoList: List<GalleryInfo>, referer: String) =
         galleryInfoList.chunked(MAX_REQUEST_SIZE).parMap(concurrency = Settings.multiThreadDownload) {
-            ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
+            statement(EhUrl.apiUrl, referer, EhUrl.origin) {
                 jsonBody {
                     put("method", "gdata")
                     array("gidlist") {
@@ -449,7 +435,7 @@ object EhEngine {
                     }
                     put("namespace", 1)
                 }
-            }.executeAndParsingWith { GalleryApiParser.parse(this, it) }
+            }.executeParseWith { GalleryApiParser.parse(this, it) }
         }
 
     suspend fun voteComment(
@@ -459,7 +445,7 @@ object EhEngine {
         token: String?,
         commentId: Long,
         commentVote: Int,
-    ): VoteCommentResult = ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
+    ): VoteCommentResult = statement(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
         jsonBody {
             put("method", "votecomment")
             put("apiuid", apiUid)
@@ -469,7 +455,7 @@ object EhEngine {
             put("comment_id", commentId)
             put("comment_vote", commentVote)
         }
-    }.executeAndParsingWith(String::parseAs)
+    }.executeParseWith(String::parseAs)
 
     suspend fun voteTag(
         apiUid: Long,
@@ -478,7 +464,7 @@ object EhEngine {
         token: String?,
         tags: String?,
         vote: Int,
-    ) = ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
+    ) = statement(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
         jsonBody {
             put("method", "taggallery")
             put("apiuid", apiUid)
@@ -488,9 +474,9 @@ object EhEngine {
             put("tags", tags)
             put("vote", vote)
         }
-    }.executeAndParsingWith(VoteTagParser::parse)
+    }.executeParseWith(VoteTagParser::parse)
 
-    suspend fun getGalleryToken(gid: Long, gtoken: String?, page: Int) = ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
+    suspend fun getGalleryToken(gid: Long, gtoken: String?, page: Int) = statement(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
         jsonBody {
             put("method", "gtoken")
             array("pagelist") {
@@ -501,7 +487,7 @@ object EhEngine {
                 }
             }
         }
-    }.executeAndParsingWith(GalleryTokenApiParser::parse)
+    }.executeParseWith(GalleryTokenApiParser::parse)
 
     /**
      * @param image Must be jpeg

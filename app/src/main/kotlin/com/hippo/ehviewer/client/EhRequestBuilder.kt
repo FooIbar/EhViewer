@@ -26,9 +26,11 @@ import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.ParametersBuilder
+import io.ktor.http.content.TextContent
 import io.ktor.http.userAgent
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -45,11 +47,8 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.okio.decodeFromBufferedSource
 import okhttp3.Call
 import okhttp3.FormBody
-import okhttp3.MediaType
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.executeAsync
 import okio.BufferedSource
@@ -63,15 +62,10 @@ inline fun ehRequest(url: String, referer: String? = null, origin: String? = nul
 }.apply(builder).build()
 
 inline fun formBody(builder: FormBody.Builder.() -> Unit) = FormBody.Builder().apply(builder).build()
-inline fun Request.Builder.formBody(builder: FormBody.Builder.() -> Unit) = post(FormBody.Builder().apply(builder).build())
 
 inline fun multipartBody(builder: MultipartBody.Builder.() -> Unit) = MultipartBody.Builder().apply(builder).build()
 
-val MEDIA_TYPE_JSON: MediaType = "application/json; charset=utf-8".toMediaType()
-
 inline fun JsonObjectBuilder.array(name: String, builder: JsonArrayBuilder.() -> Unit) = put(name, buildJsonArray(builder))
-
-inline fun Request.Builder.jsonBody(builder: JsonObjectBuilder.() -> Unit) = post(buildJsonObject(builder).toString().toRequestBody(MEDIA_TYPE_JSON))
 
 const val TAG_CALL = "CancellableCallReadingScope"
 
@@ -158,4 +152,10 @@ fun HttpRequestBuilder.formBody(builder: ParametersBuilder.() -> Unit) {
     method = HttpMethod.Post
     val parameters = ParametersBuilder().apply(builder).build()
     setBody(FormDataContent(parameters))
+}
+
+fun HttpRequestBuilder.jsonBody(builder: JsonObjectBuilder.() -> Unit) {
+    method = HttpMethod.Post
+    val json = buildJsonObject(builder).toString()
+    setBody(TextContent(text = json, contentType = ContentType.Application.Json))
 }
