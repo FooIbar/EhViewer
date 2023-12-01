@@ -12,7 +12,6 @@ import android.view.ViewTreeObserver
 import android.view.WindowManager
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.OnBackPressedDispatcherOwner
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.TweenSpec
@@ -59,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -80,6 +80,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.compose.ui.window.SecureFlagPolicy
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
@@ -87,9 +88,12 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.hippo.ehviewer.ui.tools.animateFloatMergeOneWayPredictiveBackAsState
 import com.hippo.ehviewer.util.isAtLeastT
 import java.util.UUID
+import kotlin.math.absoluteValue
 import kotlin.math.max
+import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
@@ -470,8 +474,21 @@ fun ModalBottomSheetFix(
         onDismissRequest = popupOnDismissRequest,
         windowInsets = windowInsets,
     ) {
-        BackHandler {
-            popupOnDismissRequest()
+        val configuration = LocalConfiguration.current
+        val widthDp = configuration.screenWidthDp.dp
+        val height = configuration.screenHeightDp.dp
+        val predictiveState by animateFloatMergeOneWayPredictiveBackAsState(true) {
+            sheetState.hide()
+            onDismissRequest()
+        }
+        val predictiveModifier = Modifier.graphicsLayer {
+            val scale = lerp(1f, 0.90f, predictiveState.absoluteValue)
+            scaleX = scale
+            scaleY = scale
+        }.offset {
+            val ofsY = lerp(0f, height.toPx() * 0.0625f, predictiveState.absoluteValue).roundToInt()
+            val ofsX = lerp(0f, widthDp.toPx() * 0.025f, predictiveState).roundToInt()
+            IntOffset(ofsX, ofsY)
         }
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val fullHeight = constraints.maxHeight
@@ -492,7 +509,7 @@ fun ModalBottomSheetFix(
                                 .requireOffset()
                                 .toInt(),
                         )
-                    }
+                    } then predictiveModifier
                     .nestedScroll(
                         remember(sheetState) {
                             ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
