@@ -98,7 +98,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
         val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
         val cardHeight by collectListThumbSizeAsState()
         FastScrollLazyColumn(
-            modifier = Modifier.padding(horizontal = marginH),
+            modifier = Modifier.padding(horizontal = marginH).fillMaxSize(),
             contentPadding = paddingValues,
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
         ) {

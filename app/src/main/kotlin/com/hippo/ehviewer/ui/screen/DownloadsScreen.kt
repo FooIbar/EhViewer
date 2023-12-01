@@ -413,7 +413,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             }
         }
         FastScrollLazyColumn(
-            modifier = Modifier.nestedScroll(searchBarConnection),
+            modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
             state = listState,
             contentPadding = realPadding,
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
