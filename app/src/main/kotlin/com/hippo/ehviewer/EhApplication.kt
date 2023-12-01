@@ -55,6 +55,7 @@ import com.hippo.ehviewer.util.isCronetSupported
 import eu.kanade.tachiyomi.network.interceptor.CloudflareInterceptor
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
@@ -73,7 +74,9 @@ class EhApplication : Application(), ImageLoaderFactory {
         lifecycleScope.launchIO {
             val mode = Settings.theme
             if (!isAtLeastS) {
-                AppCompatDelegate.setDefaultNightMode(mode)
+                withUIContext {
+                    AppCompatDelegate.setDefaultNightMode(mode)
+                }
             }
         }
         lifecycle.addObserver(lockObserver)
