@@ -332,14 +332,15 @@ object EhEngine {
             else -> throw EhException("Invalid dstCat: $dstCat")
         }
         val url = EhUrl.getAddFavorites(gid, token)
-        val body = formBody {
-            add("favcat", catStr)
-            add("favnote", note)
-            // apply=Add+to+Favorites is not necessary, just use apply=Apply+Changes all the time
-            add("apply", "Apply Changes")
-            add("update", "1")
-        }
-        fetchCompat(url, url, EhUrl.origin, body) { }
+        statement(url, url, EhUrl.origin) {
+            formBody {
+                append("favcat", catStr)
+                append("favnote", note)
+                // apply=Add+to+Favorites is not necessary, just use apply=Apply+Changes all the time
+                append("apply", "Apply Changes")
+                append("update", "1")
+            }
+        }.execute { }
     }
 
     suspend fun downloadArchive(
@@ -404,12 +405,12 @@ object EhEngine {
             in 0..9 -> "fav$dstCat"
             else -> throw EhException("Invalid dstCat: $dstCat")
         }
-        val body = formBody {
-            add("ddact", catStr)
-            gidArray.forEach { add("modifygids[]", it.toString()) }
-        }
-        return fetchCompat(url, url, EhUrl.origin, body, FavoritesParser::parse)
-            .apply { fillGalleryList(galleryInfoList, url) }
+        return statement(url, url, EhUrl.origin) {
+            formBody {
+                append("ddact", catStr)
+                gidArray.forEach { append("modifygids[]", it.toString()) }
+            }
+        }.parseByteBuffer(FavoritesParser::parse).apply { fillGalleryList(galleryInfoList, url) }
     }
 
     suspend fun getGalleryPageApi(
@@ -535,7 +536,6 @@ object EhEngine {
     ).apply { fillGalleryList(galleryInfoList, EhUrl.imageSearchUrl) }
 
     private suspend fun fillGalleryList(list: MutableList<BaseGalleryInfo>, url: String, filter: Boolean = false) {
-        // Filter title and uploader
         if (filter) list.removeAllSuspend { EhFilter.filterTitle(it) || EhFilter.filterUploader(it) }
 
         var hasTags = false
@@ -555,11 +555,16 @@ object EhEngine {
         val needApi = filter && EhFilter.needTags() && !hasTags || Settings.showGalleryPages && !hasPages || hasRated
         if (needApi) fillGalleryListByApi(list, url)
 
-        // Filter tag, thumbnail mode need filter uploader again
-        if (filter) list.removeAllSuspend { EhFilter.filterUploader(it) || EhFilter.filterTag(it) || EhFilter.filterTagNamespace(it) }
+        if (filter) {
+            list.removeAllSuspend {
+                EhFilter.filterUploader(it) || EhFilter.filterTag(it) || EhFilter.filterTagNamespace(it)
+            }
+        }
     }
 
     suspend fun addFavorites(galleryList: List<Pair<Long, String>>, dstCat: Int) {
-        galleryList.parMap(concurrency = Settings.multiThreadDownload) { (gid, token) -> modifyFavorites(gid, token, dstCat) }
+        galleryList.parMap(concurrency = Settings.multiThreadDownload) { (gid, token) ->
+            modifyFavorites(gid, token, dstCat)
+        }
     }
 }
