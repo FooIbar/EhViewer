@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
@@ -82,7 +83,7 @@ fun NormalSearch(
         FlowRow {
             modeTable.forEach {
                 Row(
-                    modifier = Modifier.weight(1F).width(112.dp),
+                    modifier = Modifier.weight(1F).width(112.dp).clickable { onSearchModeChanged(it.first) },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     RadioButton(
@@ -101,7 +102,7 @@ fun NormalSearch(
                     Icon(imageVector = Icons.AutoMirrored.Default.Help, contentDescription = null)
                 }
             }
-            Row(modifier = Modifier.weight(1f)) {
+            Row(modifier = Modifier.weight(1f).clickable { onAdvancedChanged(!isAdvanced) }) {
                 Checkbox(checked = isAdvanced, onCheckedChange = onAdvancedChanged)
                 Text(text = stringResource(id = R.string.search_enable_advance), modifier = Modifier.align(Alignment.CenterVertically))
             }

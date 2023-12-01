@@ -6,9 +6,9 @@ import kotlinx.parcelize.Parcelize
 object AdvanceTable {
     const val SH = 0x1
     const val STO = 0x2
-    const val SFL = 0x100
-    const val SFU = 0x200
-    const val SFT = 0x400
+    const val SFL = 0x4
+    const val SFU = 0x8
+    const val SFT = 0x10
 }
 
 @Parcelize

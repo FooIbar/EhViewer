@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -48,11 +49,11 @@ fun ImageSearch(
     }
     ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
         Row {
-            Row(modifier = Modifier.weight(1f)) {
+            Row(modifier = Modifier.weight(1f).clickable { onUssChecked(!uss) }) {
                 Checkbox(checked = uss, onCheckedChange = onUssChecked)
                 Text(text = stringResource(id = R.string.search_uss), modifier = Modifier.align(Alignment.CenterVertically))
             }
-            Row(modifier = Modifier.weight(1f)) {
+            Row(modifier = Modifier.weight(1f).clickable { onOscChecked(!osc) }) {
                 Checkbox(checked = osc, onCheckedChange = onOscChecked)
                 Text(text = stringResource(id = R.string.search_osc), modifier = Modifier.align(Alignment.CenterVertically))
             }

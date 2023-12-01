@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -38,14 +39,14 @@ fun SearchAdvanced(
     ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
         val adv = state.advanceSearch
         fun checked(bit: Int) = adv and bit != 0
-        fun AdvancedSearchOption.inv(checked: Boolean, bit: Int) = onStateChanged(copy(advanceSearch = if (!checked) advanceSearch xor bit else advanceSearch or bit))
+        fun AdvancedSearchOption.inv(bit: Int) = onStateChanged(copy(advanceSearch = advanceSearch xor bit))
         Row {
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = checked(AdvanceTable.SH), onCheckedChange = { state.inv(it, AdvanceTable.SH) })
+            Row(modifier = Modifier.weight(1f).clickable { state.inv(AdvanceTable.SH) }) {
+                Checkbox(checked = checked(AdvanceTable.SH), onCheckedChange = { state.inv(AdvanceTable.SH) })
                 Text(text = stringResource(id = R.string.search_sh), modifier = Modifier.align(Alignment.CenterVertically))
             }
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = checked(AdvanceTable.STO), onCheckedChange = { state.inv(it, AdvanceTable.STO) })
+            Row(modifier = Modifier.weight(1f).clickable { state.inv(AdvanceTable.STO) }) {
+                Checkbox(checked = checked(AdvanceTable.STO), onCheckedChange = { state.inv(AdvanceTable.STO) })
                 Text(text = stringResource(id = R.string.search_sto), modifier = Modifier.align(Alignment.CenterVertically))
             }
         }
@@ -87,8 +88,10 @@ fun SearchAdvanced(
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             var enabled by rememberSaveable { mutableStateOf(false) }
-            Checkbox(checked = enabled, onCheckedChange = { enabled = it })
-            Text(text = stringResource(id = R.string.search_sp), modifier = Modifier.align(Alignment.CenterVertically))
+            Row(modifier = Modifier.clickable { enabled = !enabled }) {
+                Checkbox(checked = enabled, onCheckedChange = { enabled = it })
+                Text(text = stringResource(id = R.string.search_sp), modifier = Modifier.align(Alignment.CenterVertically))
+            }
             OutlinedTextField(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 value = if (enabled && state.fromPage != -1) state.fromPage.toString() else "",
@@ -110,16 +113,16 @@ fun SearchAdvanced(
         }
         Text(text = stringResource(id = R.string.search_sf))
         Row {
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = checked(AdvanceTable.SFL), onCheckedChange = { state.inv(it, AdvanceTable.SFL) })
+            Row(modifier = Modifier.weight(1f).clickable { state.inv(AdvanceTable.SFL) }) {
+                Checkbox(checked = checked(AdvanceTable.SFL), onCheckedChange = { state.inv(AdvanceTable.SFL) })
                 Text(text = stringResource(id = R.string.search_sfl), modifier = Modifier.align(Alignment.CenterVertically))
             }
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = checked(AdvanceTable.SFU), onCheckedChange = { state.inv(it, AdvanceTable.SFU) })
+            Row(modifier = Modifier.weight(1f).clickable { state.inv(AdvanceTable.SFU) }) {
+                Checkbox(checked = checked(AdvanceTable.SFU), onCheckedChange = { state.inv(AdvanceTable.SFU) })
                 Text(text = stringResource(id = R.string.search_sfu), modifier = Modifier.align(Alignment.CenterVertically))
             }
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = checked(AdvanceTable.SFT), onCheckedChange = { state.inv(it, AdvanceTable.SFT) })
+            Row(modifier = Modifier.weight(1f).clickable { state.inv(AdvanceTable.SFT) }) {
+                Checkbox(checked = checked(AdvanceTable.SFT), onCheckedChange = { state.inv(AdvanceTable.SFT) })
                 Text(text = stringResource(id = R.string.search_sft), modifier = Modifier.align(Alignment.CenterVertically))
             }
         }
