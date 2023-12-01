@@ -100,7 +100,7 @@ import kotlinx.coroutines.launch
 
 @Stable
 @ExperimentalMaterial3Api
-internal object AnchoredDraggableDefaults {
+internal object AnchoredDraggableDefaults2 {
     /**
      * The default animation used by [AnchoredDraggableState].
      */
@@ -329,7 +329,7 @@ constructor(
 
     internal var anchoredDraggableState = AnchoredDraggableState(
         initialValue = initialValue,
-        animationSpec = AnchoredDraggableDefaults.AnimationSpec,
+        animationSpec = AnchoredDraggableDefaults2.AnimationSpec,
         confirmValueChange = confirmValueChange,
         positionalThreshold = { with(requireDensity()) { 56.dp.toPx() } },
         velocityThreshold = { with(requireDensity()) { 125.dp.toPx() } },
