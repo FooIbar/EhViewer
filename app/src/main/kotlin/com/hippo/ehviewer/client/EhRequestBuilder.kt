@@ -15,8 +15,6 @@
  */
 package com.hippo.ehviewer.client
 
-import android.util.Log
-import com.hippo.ehviewer.EhApplication.Companion.baseOkHttpClient
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.EhApplication.Companion.noRedirectOkHttpClient
 import com.hippo.ehviewer.EhApplication.Companion.okHttpClient
@@ -34,19 +32,12 @@ import io.ktor.http.content.TextContent
 import io.ktor.http.userAgent
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.okio.decodeFromBufferedSource
-import okhttp3.Call
-import okhttp3.FormBody
 import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.Response
@@ -61,56 +52,9 @@ inline fun ehRequest(url: String, referer: String? = null, origin: String? = nul
     origin?.let { addHeader("Origin", it) }
 }.apply(builder).build()
 
-inline fun formBody(builder: FormBody.Builder.() -> Unit) = FormBody.Builder().apply(builder).build()
-
 inline fun multipartBody(builder: MultipartBody.Builder.() -> Unit) = MultipartBody.Builder().apply(builder).build()
 
 inline fun JsonObjectBuilder.array(name: String, builder: JsonArrayBuilder.() -> Unit) = put(name, buildJsonArray(builder))
-
-const val TAG_CALL = "CancellableCallReadingScope"
-
-// This scoped response reading scope suspend function aimed at cancelling the call immediately once coroutine is cancelled.
-// i.e., bind a call with a suspended coroutine, and launch another coroutine to execute reading
-// Once origin coroutine is cancelled, then call cancelled, socket is closed, the reading coroutine will encounter [IOException]
-// Since Okio is not suspendable/cancellable, also okhttp, [executeAsync] only make [Request -> Response] cancellable, reading a Response is still not cancellable
-// Considering interrupting is not safe and performant, See https://github.com/Kotlin/kotlinx.coroutines/issues/3551#issuecomment-1353245978, we have such [usingCancellable]
-// TODO: Remove logging after this function stable
-suspend inline fun <R> Call.usingCancellable(crossinline block: suspend Response.() -> R): R = executeAsync().use {
-    val call = this
-    Log.d(TAG_CALL, "Got response of call$call")
-    coroutineScope {
-        suspendCancellableCoroutine<R> { cont ->
-            launch {
-                val r = runCatching {
-                    Log.d(TAG_CALL, "Reading response of call$call")
-                    block(it)
-                }
-                if (!isCanceled() && cont.isActive) {
-                    r.exceptionOrNull()?.let {
-                        Log.e(TAG_CALL, "Reading response of call$call failed!")
-                        cont.resumeWithException(it)
-                    }
-                    r.getOrNull()?.let {
-                        Log.d(TAG_CALL, "Reading response of call$call succeed!")
-                        cont.resume(it)
-                    }
-                } else if (isCanceled() && cont.isActive) {
-                    Log.e(TAG_CALL, "call$call cancelled but coroutine is Active!")
-                } else if (!isCanceled() && !cont.isActive) {
-                    Log.e(TAG_CALL, "call$call not cancelled but coroutine is Dead!")
-                } else {
-                    Log.d(TAG_CALL, "Reading response of call$call cancelled")
-                }
-            }
-            cont.invokeOnCancellation {
-                Log.d(TAG_CALL, "Cancelling call$call")
-                cancel()
-            }
-        }
-    }.apply {
-        Log.d(TAG_CALL, "Reading response of call$call finished!")
-    }
-}
 
 suspend inline fun <R> Request.execute(block: Response.() -> R): R {
     contract {
@@ -118,7 +62,7 @@ suspend inline fun <R> Request.execute(block: Response.() -> R): R {
     }
     return okHttpClient.newCall(this).executeAsync().use(block)
 }
-suspend inline fun <R> Request.executeNonCache(crossinline block: suspend Response.() -> R) = baseOkHttpClient.newCall(this).usingCancellable(block)
+
 suspend inline fun <R> Request.executeNoRedirect(block: Response.() -> R) = noRedirectOkHttpClient.newCall(this).executeAsync().use(block)
 
 suspend inline fun <reified T> Request.executeAndParseAs() = execute { parseAs<T>() }
