@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -235,16 +234,12 @@ class DialogState {
                             isError = error != null,
                             keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
                         )
-                        Row(
-                            modifier = Modifier.clickable { checkedState = !checkedState }.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Checkbox(
-                                checked = checkedState,
-                                onCheckedChange = { checkedState = !checkedState },
-                            )
-                            Text(text = stringResource(checkBoxText))
-                        }
+                        LabeledCheckbox(
+                            modifier = Modifier.fillMaxWidth(),
+                            checked = checkedState,
+                            onCheckedChange = { checkedState = !checkedState },
+                            label = stringResource(checkBoxText),
+                        )
                     }
                 },
             )
@@ -488,16 +483,12 @@ class DialogState {
                     }
                 }
             }
-            Row(
-                modifier = Modifier.clickable { checked = !checked }.fillMaxWidth().padding(horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Checkbox(
-                    checked = checked,
-                    onCheckedChange = { checked = !checked },
-                )
-                Text(text = stringResource(checkBoxText))
-            }
+            LabeledCheckbox(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                checked = checked,
+                onCheckedChange = { checked = !checked },
+                label = stringResource(checkBoxText),
+            )
         }
     }
 

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -20,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 
 @Composable
 fun ImageSearch(
@@ -29,7 +29,10 @@ fun ImageSearch(
     onUssChecked: (Boolean) -> Unit,
     osc: Boolean,
     onOscChecked: (Boolean) -> Unit,
-) = Column(modifier = Modifier.fillMaxWidth()) {
+) = Column(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+) {
     AnimatedVisibility(visible = imagePath.isNotBlank(), modifier = Modifier.align(Alignment.CenterHorizontally)) {
         Card {
             val maxSize = dimensionResource(id = R.dimen.image_search_max_size)
@@ -48,14 +51,16 @@ fun ImageSearch(
     }
     ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
         Row {
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = uss, onCheckedChange = onUssChecked)
-                Text(text = stringResource(id = R.string.search_uss), modifier = Modifier.align(Alignment.CenterVertically))
-            }
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = osc, onCheckedChange = onOscChecked)
-                Text(text = stringResource(id = R.string.search_osc), modifier = Modifier.align(Alignment.CenterVertically))
-            }
+            LabeledCheckbox(
+                checked = uss,
+                onCheckedChange = onUssChecked,
+                label = stringResource(id = R.string.search_uss),
+            )
+            LabeledCheckbox(
+                checked = osc,
+                onCheckedChange = onOscChecked,
+                label = stringResource(id = R.string.search_osc),
+            )
         }
     }
 }

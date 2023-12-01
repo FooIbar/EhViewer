@@ -1,11 +1,11 @@
 package com.hippo.ehviewer.ui.main
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -28,32 +28,35 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.util.toIntOrDefault
 
 @Composable
 fun SearchAdvanced(
+    modifier: Modifier = Modifier,
     state: AdvancedSearchOption,
     onStateChanged: (AdvancedSearchOption) -> Unit,
-) = Column {
+) = FlowRow(modifier = modifier, horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 2) {
     ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
         val adv = state.advanceSearch
         fun checked(bit: Int) = adv and bit != 0
-        fun AdvancedSearchOption.inv(checked: Boolean, bit: Int) = onStateChanged(copy(advanceSearch = if (!checked) advanceSearch xor bit else advanceSearch or bit))
-        Row {
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = checked(AdvanceTable.SH), onCheckedChange = { state.inv(it, AdvanceTable.SH) })
-                Text(text = stringResource(id = R.string.search_sh), modifier = Modifier.align(Alignment.CenterVertically))
-            }
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = checked(AdvanceTable.STO), onCheckedChange = { state.inv(it, AdvanceTable.STO) })
-                Text(text = stringResource(id = R.string.search_sto), modifier = Modifier.align(Alignment.CenterVertically))
-            }
-        }
+        fun AdvancedSearchOption.inv(bit: Int) = onStateChanged(copy(advanceSearch = advanceSearch xor bit))
+        LabeledCheckbox(
+            checked = checked(AdvanceTable.SH),
+            onCheckedChange = { state.inv(AdvanceTable.SH) },
+            label = stringResource(id = R.string.search_sh),
+        )
+        LabeledCheckbox(
+            checked = checked(AdvanceTable.STO),
+            onCheckedChange = { state.inv(AdvanceTable.STO) },
+            label = stringResource(id = R.string.search_sto),
+        )
         val minRatingItems = stringArrayResource(id = R.array.search_min_rating)
         var expanded by remember { mutableStateOf(false) }
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = !expanded },
+            modifier = Modifier.align(Alignment.CenterVertically).padding(12.dp),
         ) {
             val softwareKeyboardController = LocalSoftwareKeyboardController.current
             OutlinedTextField(
@@ -87,8 +90,11 @@ fun SearchAdvanced(
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             var enabled by rememberSaveable { mutableStateOf(false) }
-            Checkbox(checked = enabled, onCheckedChange = { enabled = it })
-            Text(text = stringResource(id = R.string.search_sp), modifier = Modifier.align(Alignment.CenterVertically))
+            LabeledCheckbox(
+                checked = enabled,
+                onCheckedChange = { enabled = it },
+                label = stringResource(id = R.string.search_sp),
+            )
             OutlinedTextField(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 value = if (enabled && state.fromPage != -1) state.fromPage.toString() else "",
@@ -97,7 +103,7 @@ fun SearchAdvanced(
                 singleLine = true,
                 enabled = enabled,
             )
-            Text(text = stringResource(id = R.string.search_sp_to), modifier = Modifier.align(Alignment.CenterVertically))
+            Text(text = stringResource(id = R.string.search_sp_to))
             OutlinedTextField(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                 value = if (enabled && state.toPage != -1) state.toPage.toString() else "",
@@ -106,22 +112,25 @@ fun SearchAdvanced(
                 singleLine = true,
                 enabled = enabled,
             )
-            Text(text = stringResource(id = R.string.search_sp_suffix), modifier = Modifier.align(Alignment.CenterVertically))
+            Text(text = stringResource(id = R.string.search_sp_suffix))
         }
-        Text(text = stringResource(id = R.string.search_sf))
-        Row {
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = checked(AdvanceTable.SFL), onCheckedChange = { state.inv(it, AdvanceTable.SFL) })
-                Text(text = stringResource(id = R.string.search_sfl), modifier = Modifier.align(Alignment.CenterVertically))
-            }
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = checked(AdvanceTable.SFU), onCheckedChange = { state.inv(it, AdvanceTable.SFU) })
-                Text(text = stringResource(id = R.string.search_sfu), modifier = Modifier.align(Alignment.CenterVertically))
-            }
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = checked(AdvanceTable.SFT), onCheckedChange = { state.inv(it, AdvanceTable.SFT) })
-                Text(text = stringResource(id = R.string.search_sft), modifier = Modifier.align(Alignment.CenterVertically))
-            }
+        Text(text = stringResource(id = R.string.search_sf), modifier = Modifier.align(Alignment.CenterVertically))
+        FlowRow {
+            LabeledCheckbox(
+                checked = checked(AdvanceTable.SFL),
+                onCheckedChange = { state.inv(AdvanceTable.SFL) },
+                label = stringResource(id = R.string.search_sfl),
+            )
+            LabeledCheckbox(
+                checked = checked(AdvanceTable.SFU),
+                onCheckedChange = { state.inv(AdvanceTable.SFU) },
+                label = stringResource(id = R.string.search_sfu),
+            )
+            LabeledCheckbox(
+                checked = checked(AdvanceTable.SFT),
+                onCheckedChange = { state.inv(AdvanceTable.SFT) },
+                label = stringResource(id = R.string.search_sft),
+            )
         }
     }
 }
