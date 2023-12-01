@@ -216,34 +216,34 @@ object EhEngine {
         return fetchCompat(url, referer, parser = TorrentParser::parse)
     }
 
-    suspend fun getArchiveList(url: String, gid: Long, token: String?) = ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
-        .executeAndParsingWith(ArchiveParser::parse)
-        .apply { funds = funds ?: ehRequest(EhUrl.URL_FUNDS).executeAndParsingWith(HomeParser::parseFunds) }
+    suspend fun getArchiveList(url: String, gid: Long, token: String?) = statement(url, EhUrl.getGalleryDetailUrl(gid, token))
+        .executeParseWith(ArchiveParser::parse)
+        .apply { funds = funds ?: statement(EhUrl.URL_FUNDS).executeParseWith(HomeParser::parseFunds) }
 
     suspend fun getImageLimits() = parZip(
         { fetchCompat(EhUrl.URL_HOME, parser = HomeParser::parse) },
-        { ehRequest(EhUrl.URL_FUNDS).executeAndParsingWith(HomeParser::parseFunds) },
+        { statement(EhUrl.URL_FUNDS).executeParseWith(HomeParser::parseFunds) },
         { limits, funds -> HomeParser.Result(limits, funds) },
     )
 
-    suspend fun getNews(parse: Boolean) = ehRequest(EhUrl.URL_NEWS, EhUrl.REFERER_E)
-        .executeAndParsingWith { if (parse) EventPaneParser.parse(this) else null }
+    suspend fun getNews(parse: Boolean) = statement(EhUrl.URL_NEWS, EhUrl.REFERER_E)
+        .executeParseWith { if (parse) EventPaneParser.parse(it) else null }
 
     suspend fun getProfile(): ProfileParser.Result {
-        val url = ehRequest(EhUrl.URL_FORUMS).executeAndParsingWith(ForumsParser::parse)
-        return ehRequest(url, EhUrl.URL_FORUMS).executeAndParsingWith(ProfileParser::parse)
+        val url = statement(EhUrl.URL_FORUMS).executeParseWith(ForumsParser::parse)
+        return statement(url, EhUrl.URL_FORUMS).executeParseWith(ProfileParser::parse)
     }
 
     suspend fun getUConfig(url: String = EhUrl.uConfigUrl) {
         runSuspendCatching {
-            ehRequest(url).executeAndParsingWith { check(contains(U_CONFIG_TEXT)) { "Unable to load config from $url!" } }
-        }.onFailure {
+            statement(url).executeParseWith { check(U_CONFIG_TEXT in it) { "Unable to load config from $url!" } }
+        }.onFailure { throwable ->
             // It may get redirected when accessing ex for the first time
             if (url == EhUrl.URL_UCONFIG_EX) {
-                it.printStackTrace()
-                ehRequest(url).executeAndParsingWith { check(contains(U_CONFIG_TEXT)) { "Unable to load config from $url!" } }
+                throwable.printStackTrace()
+                statement(url).executeParseWith { check(U_CONFIG_TEXT in it) { "Unable to load config from $url!" } }
             } else {
-                throw it
+                throw throwable
             }
         }
     }
@@ -254,7 +254,7 @@ object EhEngine {
         token: String?,
     ): GalleryPageParser.Result {
         val referer = EhUrl.getGalleryDetailUrl(gid, token)
-        return ehRequest(url, referer).executeAndParsingWith(GalleryPageParser::parse)
+        return statement(url, referer).executeParseWith(GalleryPageParser::parse)
     }
 
     suspend fun getGalleryList(url: String) = fetchCompat(url, EhUrl.referer, parser = GalleryListParser::parse)
@@ -270,8 +270,8 @@ object EhEngine {
         GalleryDetailParser.parse(it)
     }
 
-    suspend fun getPreviewList(url: String) = ehRequest(url, EhUrl.referer).executeAndParsingWith {
-        GalleryDetailParser.parsePreviewList(this) to GalleryDetailParser.parsePreviewPages(this)
+    suspend fun getPreviewList(url: String) = statement(url, EhUrl.referer).executeParseWith {
+        GalleryDetailParser.parsePreviewList(it) to GalleryDetailParser.parsePreviewPages(it)
     }
 
     suspend fun getFavorites(url: String) = fetchCompat(url, EhUrl.referer, parser = FavoritesParser::parse)

@@ -16,5 +16,8 @@
     setWindowFocused(boolean);
 }
 
+# Ktor logger
+-dontwarn org.slf4j.impl.StaticLoggerBinder
+
 -allowaccessmodification
 -repackageclasses
