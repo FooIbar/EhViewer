@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.settings
 import android.content.DialogInterface
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -143,11 +144,11 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                             )
                         }
                         items(filters) { filter ->
+                            val filterCheckBoxRecomposeScope = currentRecomposeScope
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().clickable { filter.trigger { filterCheckBoxRecomposeScope.invalidate() } },
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                val filterCheckBoxRecomposeScope = currentRecomposeScope
                                 Checkbox(
                                     checked = filter.enable,
                                     onCheckedChange = { filter.trigger { filterCheckBoxRecomposeScope.invalidate() } },

@@ -124,8 +124,8 @@
     <string name="search_specify_tag">Specify tag</string>
     <string name="search_enable_advance">Enable advance options</string>
     <string name="search_tip">Normal search: Simply search.\n\nSubscription search: Search in subscriptions.\n\nSpecify uploader: Search for galleries uploaded by the specified uploader. All other options will be ignored.\n\nSpecify tag: Search for galleries that contain the specified tag. Only one tag accepted. Other options will be ignored.</string>
-    <string name="search_sh">Only Show Expunged Galleries</string>
-    <string name="search_sto">Only Show Galleries With Torrents</string>
+    <string name="search_sh">Expunged Galleries only</string>
+    <string name="search_sto">Require Gallery Torrent</string>
     <string name="search_sr">Minimum Rating:</string>
     <string name="search_sp">Pages:</string>
     <string name="search_sp_to">to</string>

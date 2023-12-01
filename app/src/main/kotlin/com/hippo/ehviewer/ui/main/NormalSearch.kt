@@ -1,18 +1,16 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,10 +21,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUtils
+import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 
 private val categoryTable = arrayOf(
     EhUtils.DOUJINSHI to R.string.doujinshi,
@@ -50,6 +50,7 @@ private val modeTable = arrayOf(
 
 @Composable
 fun NormalSearch(
+    modifier: Modifier = Modifier,
     category: Int,
     onCategoryChanged: (Int) -> Unit,
     searchMode: Int,
@@ -60,7 +61,7 @@ fun NormalSearch(
     maxItemsInEachRow: Int,
 ) {
     FlowRow(
-        modifier = Modifier.wrapContentHeight(align = Alignment.Top),
+        modifier = modifier.wrapContentHeight(align = Alignment.Top),
         maxItemsInEachRow = maxItemsInEachRow,
     ) {
         categoryTable.forEach {
@@ -74,37 +75,37 @@ fun NormalSearch(
                         Icon(imageVector = Icons.Default.Check, contentDescription = null)
                     }
                 },
-                modifier = Modifier.padding(horizontal = 4.dp).align(alignment = Alignment.CenterVertically).widthIn(min = 142.dp),
+                modifier = Modifier.padding(horizontal = 4.dp).widthIn(min = 142.dp)
+                    .align(alignment = Alignment.CenterVertically).weight(1f),
             )
         }
     }
     ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-        FlowRow {
+        FlowRow(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            maxItemsInEachRow = maxItemsInEachRow,
+        ) {
             modeTable.forEach {
                 Row(
-                    modifier = Modifier.weight(1F).width(112.dp),
+                    modifier = Modifier.clip(MaterialTheme.shapes.small)
+                        .clickable { onSearchModeChanged(it.first) }.padding(end = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     RadioButton(
                         selected = it.first == searchMode,
                         onClick = { onSearchModeChanged(it.first) },
                     )
-                    Text(
-                        text = stringResource(id = it.second),
-                    )
+                    Text(text = stringResource(id = it.second))
                 }
             }
-        }
-        Row(horizontalArrangement = Arrangement.Start) {
-            Box(modifier = Modifier.weight(1f)) {
-                IconButton(onClick = showInfo) {
-                    Icon(imageVector = Icons.AutoMirrored.Default.Help, contentDescription = null)
-                }
+            IconButton(onClick = showInfo) {
+                Icon(imageVector = Icons.AutoMirrored.Default.Help, contentDescription = null)
             }
-            Row(modifier = Modifier.weight(1f)) {
-                Checkbox(checked = isAdvanced, onCheckedChange = onAdvancedChanged)
-                Text(text = stringResource(id = R.string.search_enable_advance), modifier = Modifier.align(Alignment.CenterVertically))
-            }
+            LabeledCheckbox(
+                checked = isAdvanced,
+                onCheckedChange = onAdvancedChanged,
+                label = stringResource(id = R.string.search_enable_advance),
+            )
         }
     }
 }
