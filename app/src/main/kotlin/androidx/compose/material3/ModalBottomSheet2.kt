@@ -412,7 +412,7 @@ constructor(
  * @param dragHandle Optional visual marker to swipe the bottom sheet.
  * @param windowInsets window insets to be passed to the bottom sheet window via [PaddingValues]
  * params.
- * @param properties [ModalBottomSheetProperties] for further customization of this
+ * @param properties [ModalBottomSheetProperties2] for further customization of this
  * modal bottom sheet's behavior.
  * @param content The content to be displayed inside the bottom sheet.
  */
@@ -430,7 +430,7 @@ fun ModalBottomSheetFix(
     scrimColor: Color = BottomSheetDefaults.ScrimColor,
     dragHandle: @Composable (() -> Unit)? = { BottomSheetDefaults.DragHandle() },
     windowInsets: WindowInsets = BottomSheetDefaults.windowInsets,
-    properties: ModalBottomSheetProperties = ModalBottomSheetDefaults.properties(),
+    properties: ModalBottomSheetProperties2 = ModalBottomSheetDefaults2.properties(),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     // b/291735717 Remove this once deprecated methods without density are removed
@@ -623,14 +623,14 @@ internal fun ConsumeSwipeWithinBottomSheetBoundsNestedScrollConnection(
  * the back button - if the modal bottom sheet is not focusable then this property does nothing.
  */
 @ExperimentalMaterial3Api
-class ModalBottomSheetProperties(
+class ModalBottomSheetProperties2(
     val securePolicy: SecureFlagPolicy,
     val isFocusable: Boolean,
     val shouldDismissOnBackPress: Boolean,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is ModalBottomSheetProperties) return false
+        if (other !is ModalBottomSheetProperties2) return false
 
         if (securePolicy != other.securePolicy) return false
         if (isFocusable != other.isFocusable) return false
@@ -652,7 +652,7 @@ class ModalBottomSheetProperties(
  */
 @Immutable
 @ExperimentalMaterial3Api
-object ModalBottomSheetDefaults {
+object ModalBottomSheetDefaults2 {
     /**
      * Properties used to customize the behavior of a [ModalBottomSheetFix].
      *
@@ -670,7 +670,7 @@ object ModalBottomSheetDefaults {
         securePolicy: SecureFlagPolicy = SecureFlagPolicy.Inherit,
         isFocusable: Boolean = true,
         shouldDismissOnBackPress: Boolean = true,
-    ) = ModalBottomSheetProperties(securePolicy, isFocusable, shouldDismissOnBackPress)
+    ) = ModalBottomSheetProperties2(securePolicy, isFocusable, shouldDismissOnBackPress)
 }
 
 /**
@@ -785,7 +785,7 @@ private fun Modifier.modalBottomSheetAnchors(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ModalBottomSheetPopup(
-    properties: ModalBottomSheetProperties,
+    properties: ModalBottomSheetProperties2,
     onDismissRequest: () -> Unit,
     windowInsets: WindowInsets,
     content: @Composable () -> Unit,
@@ -840,7 +840,7 @@ internal fun ModalBottomSheetPopup(
 @SuppressLint("ViewConstructor")
 @OptIn(ExperimentalMaterial3Api::class)
 private class ModalBottomSheetWindow(
-    private val properties: ModalBottomSheetProperties,
+    private val properties: ModalBottomSheetProperties2,
     private var onDismissRequest: () -> Unit,
     private val composeView: View,
     saveId: UUID,
