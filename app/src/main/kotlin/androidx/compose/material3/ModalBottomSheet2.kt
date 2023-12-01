@@ -797,7 +797,7 @@ internal fun ModalBottomSheetPopup(
     val layoutDirection = LocalLayoutDirection.current
     val configuration = LocalConfiguration.current
     val modalBottomSheetWindow = remember(configuration) {
-        ModalBottomSheetWindow(
+        ModalBottomSheetWindow2(
             properties = properties,
             onDismissRequest = onDismissRequest,
             composeView = view,
@@ -839,7 +839,7 @@ internal fun ModalBottomSheetPopup(
 /** Custom compose view for [ModalBottomSheetFix] */
 @SuppressLint("ViewConstructor")
 @OptIn(ExperimentalMaterial3Api::class)
-private class ModalBottomSheetWindow(
+private class ModalBottomSheetWindow2(
     private val properties: ModalBottomSheetProperties2,
     private var onDismissRequest: () -> Unit,
     private val composeView: View,
