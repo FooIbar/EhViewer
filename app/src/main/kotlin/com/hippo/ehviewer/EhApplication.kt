@@ -37,6 +37,7 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.httpClient
 import com.hippo.ehviewer.ktbuilder.imageLoader
+import com.hippo.ehviewer.ktor.CronetEngine
 import com.hippo.ehviewer.legacy.cleanObsoleteCache
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
@@ -177,12 +178,20 @@ class EhApplication : Application(), ImageLoaderFactory {
 
     companion object {
         val ktorClient by lazy {
-            HttpClient(OkHttp) {
-                engine {
-                    preconfigured = baseOkHttpClient
+            if (isCronetSupported) {
+                HttpClient(CronetEngine) {
+                    install(HttpCookies) {
+                        storage = EhCookieStore
+                    }
                 }
-                install(HttpCookies) {
-                    storage = EhCookieStore
+            } else {
+                HttpClient(OkHttp) {
+                    engine {
+                        preconfigured = baseOkHttpClient
+                    }
+                    install(HttpCookies) {
+                        storage = EhCookieStore
+                    }
                 }
             }
         }

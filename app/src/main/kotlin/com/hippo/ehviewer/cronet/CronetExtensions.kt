@@ -31,19 +31,6 @@ suspend inline fun CronetRequest.awaitBodyFully(crossinline callback: (ByteBuffe
     }
 }
 
-@Suppress("NewApi")
-suspend inline fun CronetRequest.awaitBodyFully(buffer: ByteBuffer) {
-    return suspendCancellableCoroutine { cont ->
-        consumer = {
-            request.read(buffer)
-            check(buffer.hasRemaining())
-        }
-        onError = { readerCont.resumeWithException(it) }
-        readerCont = cont
-        request.read(buffer)
-    }
-}
-
 suspend inline fun CronetRequest.copyToChannel(chan: FileChannel, crossinline listener: ((Int) -> Unit) = {}) = awaitBodyFully {
     val bytes = chan.write(it)
     listener(bytes)
