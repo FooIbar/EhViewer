@@ -86,13 +86,13 @@ suspend inline fun noRedirectStatement(
     apply(builder)
 }
 
-fun HttpRequestBuilder.formBody(builder: ParametersBuilder.() -> Unit) {
+inline fun HttpRequestBuilder.formBody(builder: ParametersBuilder.() -> Unit) {
     method = HttpMethod.Post
     val parameters = ParametersBuilder().apply(builder).build()
     setBody(FormDataContent(parameters))
 }
 
-fun HttpRequestBuilder.jsonBody(builder: JsonObjectBuilder.() -> Unit) {
+inline fun HttpRequestBuilder.jsonBody(builder: JsonObjectBuilder.() -> Unit) {
     method = HttpMethod.Post
     val json = buildJsonObject(builder).toString()
     setBody(TextContent(text = json, contentType = ContentType.Application.Json))
