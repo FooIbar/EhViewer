@@ -17,7 +17,6 @@ androidx-recyclerview = "1.3.2"
 androidx-room = "2.6.1"
 androidx-work = "2.9.0"
 arrow = "1.2.1"
-chucker = "4.0.0"
 coil = "2.5.0"
 compose-bom = "2023.12.00-alpha03"
 compose-compiler = "1.5.5-dev-k2.0.0-Beta1-06b8ae672a4"
@@ -30,7 +29,7 @@ kotlinx-datetime = "0.5.0"
 kotlinx-serialization = "1.6.2"
 ksp = "2.0.0-Beta1-1.0.15"
 ktlint = "1.0.1"
-ktor = "2.3.6"
+ktor = "3.0.0-beta-1"
 okhttp3 = "5.0.0-alpha.11"
 okio = "3.6.0"
 splitties = "3.0.0"
@@ -69,9 +68,6 @@ androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref
 arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines" }
 arrow-stack = { module = "io.arrow-kt:arrow-stack", version.ref = "arrow" }
 
-chucker = { module = "com.github.chuckerteam.chucker:library", version.ref = "chucker" }
-chucker-nop = { module = "com.github.chuckerteam.chucker:library-no-op", version.ref = "chucker" }
-
 coil-bom = { module = "io.coil-kt:coil-bom", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt:coil-compose" }
 coil-gif = { module = "io.coil-kt:coil-gif" }
@@ -107,8 +103,7 @@ kotlinx-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-seri
 # For renovate
 ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
 
-ktor-io-jvm = { module = "io.ktor:ktor-io-jvm", version.ref = "ktor" }
-ktor-utils-jvm = { module = "io.ktor:ktor-utils-jvm", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
 material = { module = "com.google.android.material:material", version.ref = "google-android-material" }
 
@@ -136,7 +131,7 @@ coil = ["coil-compose", "coil-gif"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
 cronet = ["cronet-api", "cronet-gms"]
 kotlinx-serialization = ["kotlinx-serialization-cbor", "kotlinx-serialization-json", "kotlinx-serialization-json-okio"]
-ktor = ["ktor-io-jvm", "ktor-utils-jvm"]
+ktor = ["ktor-client-okhttp"]
 okhttp = ["okhttp-android", "okhttp-coroutines"]
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
 

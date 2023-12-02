@@ -35,7 +35,6 @@ import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ktbuilder.cache
-import com.hippo.ehviewer.ktbuilder.chunker
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.httpClient
 import com.hippo.ehviewer.ktbuilder.imageLoader
@@ -57,6 +56,8 @@ import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
 import okhttp3.AsyncDns
@@ -178,13 +179,20 @@ class EhApplication : Application(), ImageLoaderFactory {
     }
 
     companion object {
+        val ktorClient by lazy {
+            HttpClient(OkHttp) {
+                engine {
+                    preconfigured = baseOkHttpClient
+                }
+            }
+        }
+
         val baseOkHttpClient by lazy {
             httpClient {
                 cookieJar(EhCookieStore)
                 if (isAtLeastQ) {
                     dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
                 }
-                chunker { alwaysReadResponseBody(false) }
                 addInterceptor(UncaughtExceptionInterceptor())
                 addInterceptor(CloudflareInterceptor(appCtx))
             }

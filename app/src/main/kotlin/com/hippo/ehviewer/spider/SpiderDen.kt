@@ -21,9 +21,8 @@ import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
 import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.ehRequest
-import com.hippo.ehviewer.client.executeNonCache
 import com.hippo.ehviewer.client.getImageKey
+import com.hippo.ehviewer.client.statement
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.coil.suspendEdit
 import com.hippo.ehviewer.cronet.copyToChannel
@@ -39,13 +38,15 @@ import com.hippo.ehviewer.util.isCronetSupported
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openOutputStream
+import io.ktor.client.plugins.onDownload
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import io.ktor.utils.io.jvm.nio.copyTo
 import java.util.Locale
 import kotlin.io.path.readText
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.Response
-import okio.Buffer
-import okio.ForwardingSink
-import okio.sink
 
 class SpiderDen(mGalleryInfo: GalleryInfo) {
     private val mGid = mGalleryInfo.gid
@@ -141,7 +142,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
                 val headers = info.getHeadersMap()
                 val type = headers["Content-Type"]?.first()?.toMediaType()?.subtype ?: "jpg"
                 val length = headers["Content-Length"]!!.first().toLong()
-                saveResponseMeta(index, type, length) { file ->
+                saveResponseMeta(index, type) { file ->
                     file.openOutputStream().use { os ->
                         val chan = os.channel
                         chan.truncate(0)
@@ -152,17 +153,23 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
                 }
             }
         } else {
-            ehRequest(url, referer).executeNonCache {
-                if (code >= 400) {
-                    false
+            statement(url, referer) {
+                var prev = 0L
+                onDownload { done, total ->
+                    notifyProgress(total!!, done, (done - prev).toInt())
+                    prev = done
+                }
+            }.execute {
+                if (it.status.isSuccess()) {
+                    saveFromHttpResponse(index, it)
                 } else {
-                    saveFromHttpResponse(index, this, notifyProgress)
+                    false
                 }
             }
         }
     }
 
-    private suspend fun saveResponseMeta(index: Int, ext: String, length: Long, fops: suspend (UniFile) -> Unit): Boolean {
+    private suspend fun saveResponseMeta(index: Int, ext: String, fops: suspend (UniFile) -> Unit): Boolean {
         findDownloadFileForIndex(index, ext)?.run {
             fops(this)
             return true
@@ -179,19 +186,14 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
         return false
     }
 
-    private suspend fun saveFromHttpResponse(index: Int, response: Response, notifyProgress: (Long, Long, Int) -> Unit): Boolean {
-        val contentType = response.body.contentType()
-        val extension = contentType?.subtype ?: "jpg"
-        val length = response.body.contentLength()
-        return saveResponseMeta(index, extension, length) { outFile ->
-            object : ForwardingSink(outFile.openOutputStream().also { it.channel.truncate(0) }.sink()) {
-                var totalBytesRead = 0L
-                override fun write(source: Buffer, byteCount: Long) {
-                    super.write(source, byteCount)
-                    totalBytesRead += byteCount
-                    notifyProgress(length, totalBytesRead, byteCount.toInt())
-                }
-            }.use { sink -> response.body.source().use { source -> source.readAll(sink) } }
+    private suspend fun saveFromHttpResponse(index: Int, response: HttpResponse): Boolean {
+        val contentType = response.contentType()
+        val extension = contentType?.contentSubtype ?: "jpg"
+        return saveResponseMeta(index, extension) { outFile ->
+            outFile.openOutputStream().use {
+                val chan = it.channel.apply { truncate(0) }
+                response.bodyAsChannel().copyTo(chan)
+            }
         }
     }
 

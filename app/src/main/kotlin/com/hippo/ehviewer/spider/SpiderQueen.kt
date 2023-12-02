@@ -29,14 +29,14 @@ import com.hippo.ehviewer.client.EhUrl.getGalleryDetailUrl
 import com.hippo.ehviewer.client.EhUrl.getGalleryMultiPageViewerUrl
 import com.hippo.ehviewer.client.EhUrl.referer
 import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.client.exception.QuotaExceededException
-import com.hippo.ehviewer.client.execute
+import com.hippo.ehviewer.client.parseString
 import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePages
 import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewList
 import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewPages
 import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
+import com.hippo.ehviewer.client.statement
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.unifile.UniFile
@@ -363,15 +363,14 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     private suspend fun readSpiderInfoFromInternet(): SpiderInfo? {
         return runSuspendCatching {
-            ehRequest(
+            statement(
                 getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
                 referer,
-            ).execute {
-                val bodyStr = body.string()
-                val pages = parsePages(bodyStr)
+            ).parseString {
+                val pages = parsePages(this)
                 val spiderInfo = SpiderInfo(galleryInfo.gid, pages)
                 spiderInfo.token = galleryInfo.token
-                readPreviews(bodyStr, 0, spiderInfo)
+                readPreviews(this, 0, spiderInfo)
                 spiderInfo
             }
         }.onFailure {
@@ -386,9 +385,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             galleryInfo.token!!,
         )
         return try {
-            ehRequest(url, referer).execute {
-                val bodyStr = body.string()
-                GalleryMultiPageViewerPTokenParser.parse(bodyStr).forEachIndexed { index, s ->
+            statement(url, referer).parseString {
+                GalleryMultiPageViewerPTokenParser.parse(this).forEachIndexed { index, s ->
                     spiderInfo.pTokenMap[index] = s
                 }
                 spiderInfo.pTokenMap[index]
@@ -419,8 +417,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             false,
         )
         return try {
-            ehRequest(url, referer).execute {
-                readPreviews(body.string(), previewIndex, spiderInfo)
+            statement(url, referer).parseString {
+                readPreviews(this, previewIndex, spiderInfo)
                 spiderInfo.pTokenMap[index]
             }
         } catch (e: Throwable) {
