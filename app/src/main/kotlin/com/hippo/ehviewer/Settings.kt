@@ -155,7 +155,7 @@ object Settings : DataStorePreferences(null) {
     var searchCategory by intPref("search_pref", EhUtils.ALL_CATEGORY)
     var requestNewsTimerHour by intPref("request_news_timer_hour", -1)
     var requestNewsTimerMinute by intPref("request_news_timer_minute", -1)
-    var updateIntervalDays by intPref("update_interval_days", 0)
+    var updateIntervalDays by intPref("update_interval_days", 7)
     var recentToplist by stringPref("recent_toplist", "11")
     var userAgent by stringPref("user_agent", CHROME_USER_AGENT)
     var recentDownloadLabel by stringOrNullPref("recent_download_label", null)
@@ -163,8 +163,8 @@ object Settings : DataStorePreferences(null) {
     var displayName by stringOrNullPref("display_name", null)
     var avatar by stringOrNullPref("avatar", null)
     var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
-    var lastDawnDay by longPref("last_dawn_day", 0)
-    var lastUpdateDay by longPref("last_update_day", 0)
+    var lastDawnTime by longPref("last_dawn_time", 0)
+    var lastUpdateTime by longPref("last_update_time", 0)
     var favDialogTheta by floatPref("fav_select_dialog_delta", 0F)
 
     // TODO: Remove this after swipe gestures are correctly handled in compose

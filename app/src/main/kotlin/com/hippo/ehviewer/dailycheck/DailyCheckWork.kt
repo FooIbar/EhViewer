@@ -25,14 +25,16 @@ import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import java.time.Duration
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.days
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import splitties.init.appCtx
-
-private val signedIn
-    get() = EhCookieStore.hasSignedIn()
 
 private const val CHANNEL_ID = "DailyCheckNotification"
 
@@ -52,22 +54,20 @@ val schedHour
 val schedMinute
     get() = Settings.requestNewsTimerMinute.takeUnless { it == -1 } ?: 0
 
-private val whenToWork
-    get() = LocalDateTime.now()
-        .run { withHour(schedHour) }
-        .run { withMinute(schedMinute) }
-
-private val initialDelay
-    get() = Duration.between(LocalDateTime.now(), whenToWork)
-        .run { if (isNegative) plusDays(1) else this }
-
 private fun getDailyCheckWorkRequest(): PeriodicWorkRequest {
+    val now = Clock.System.now()
+    val timeZone = TimeZone.currentSystemDefault()
+    val whenToWork = LocalDateTime(
+        now.toLocalDateTime(timeZone).date,
+        LocalTime(schedHour, schedMinute),
+    ).toInstant(timeZone)
+    val initialDelay = (whenToWork - now).run { if (isNegative()) plus(1.days) else this }
     val constraints = Constraints.Builder()
         .setRequiredNetworkType(NetworkType.CONNECTED)
         .build()
     return PeriodicWorkRequestBuilder<DailyCheckWork>(Duration.ofDays(1))
         .setConstraints(constraints)
-        .setInitialDelay(initialDelay.seconds, TimeUnit.SECONDS)
+        .setInitialDelay(initialDelay.inWholeSeconds, TimeUnit.SECONDS)
         .build()
 }
 
@@ -85,13 +85,12 @@ fun updateDailyCheckWork(context: Context) {
     }
 }
 
-val today
-    get() = Instant.now().truncatedTo(ChronoUnit.DAYS).epochSecond
-
 suspend fun checkDawn() = runCatching {
-    if (signedIn && Settings.lastDawnDay != today) {
+    val now = Clock.System.now()
+    val last = Instant.fromEpochSeconds(Settings.lastDawnTime)
+    if (EhCookieStore.hasSignedIn() && now > last + 1.days) {
         EhEngine.getNews(true)?.let {
-            Settings.lastDawnDay = today
+            Settings.lastDawnTime = now.epochSeconds
             showEventNotification(it)
         }
     }
