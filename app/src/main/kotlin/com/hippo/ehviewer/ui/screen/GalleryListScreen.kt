@@ -103,6 +103,7 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_NORMAL
@@ -200,17 +201,22 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     var searchCoverOnly by rememberSaveable { mutableStateOf(false) }
     var imagePath by rememberSaveable { mutableStateOf("") }
 
+    var updateSearchField by remember { mutableStateOf(true) }
     LaunchedEffect(urlBuilder) {
         if (urlBuilder.mode == MODE_SUBSCRIPTION) searchMethod = 2
         if (urlBuilder.category != EhUtils.NONE) category = urlBuilder.category
-        if (urlBuilder.mode != MODE_TOPLIST) {
-            var keyword = urlBuilder.keyword.orEmpty()
-            if (urlBuilder.mode == MODE_TAG) {
-                keyword = wrapTagKeyword(keyword)
+        if (updateSearchField) {
+            if (urlBuilder.mode != MODE_TOPLIST) {
+                var keyword = urlBuilder.keyword.orEmpty()
+                if (urlBuilder.mode == MODE_TAG) {
+                    keyword = wrapTagKeyword(keyword)
+                }
+                if (keyword.isNotBlank()) {
+                    searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
+                }
             }
-            if (keyword.isNotBlank()) {
-                searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
-            }
+        } else {
+            updateSearchField = true
         }
     }
 
@@ -537,28 +543,46 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val searchErr1 = stringResource(R.string.search_sp_err1)
     val searchErr2 = stringResource(R.string.search_sp_err2)
     val selectImageFirst = stringResource(R.string.select_image_first)
+    val languageFilter by Settings.languageFilter.collectAsState()
+    val languageTag = remember(languageFilter) {
+        if (languageFilter != -1) {
+            " ${GalleryInfo.S_LANG_TAGS[languageFilter].replace("language", "l")}"
+        } else {
+            null
+        }
+    }
     SearchBarScreen(
         title = suitableTitle,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
+        showLanguageFilter = true,
         showSearchFab = showSearchLayout,
         onApplySearch = { query ->
+            updateSearchField = false
             val builder = ListUrlBuilder()
             val oldMode = urlBuilder.mode
             if (!showSearchLayout) {
                 // If it's MODE_SUBSCRIPTION, keep it
                 val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
                 builder.mode = newMode
-                builder.keyword = query
+                builder.keyword = if (languageTag != null) {
+                    query + languageTag
+                } else {
+                    query
+                }
             } else {
                 if (searchNormalMode) {
-                    when (searchMethod) {
-                        1 -> builder.mode = MODE_NORMAL
-                        2 -> builder.mode = MODE_SUBSCRIPTION
-                        3 -> builder.mode = MODE_UPLOADER
-                        4 -> builder.mode = MODE_TAG
+                    builder.mode = when (searchMethod) {
+                        2 -> MODE_SUBSCRIPTION
+                        3 -> MODE_UPLOADER
+                        4 -> MODE_TAG
+                        else -> MODE_NORMAL
                     }
-                    builder.keyword = query
+                    builder.keyword = if (languageTag != null) {
+                        query + languageTag
+                    } else {
+                        query
+                    }
                     builder.category = category
                     if (searchAdvancedMode) {
                         builder.advanceSearch = advancedSearchOption.advanceSearch

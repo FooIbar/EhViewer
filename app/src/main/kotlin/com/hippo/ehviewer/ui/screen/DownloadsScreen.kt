@@ -327,7 +327,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                     onClick = {
                         expanded = false
                         coroutineScope.launch {
-                            filterType = dialogState.showSingleChoice(states, filterType + 1) - 1
+                            filterType = dialogState.showSingleChoice(*states, selected = filterType + 1) - 1
                         }
                     },
                 )
