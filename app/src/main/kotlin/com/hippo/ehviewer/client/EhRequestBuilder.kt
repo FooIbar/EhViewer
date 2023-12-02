@@ -17,10 +17,12 @@ package com.hippo.ehviewer.client
 
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.EhApplication.Companion.noRedirectKtorClient
-import com.hippo.ehviewer.EhApplication.Companion.okHttpClient
 import com.hippo.ehviewer.Settings
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.forms.FormBuilder
 import io.ktor.client.request.forms.FormDataContent
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
@@ -33,38 +35,15 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.ParametersBuilder
 import io.ktor.http.content.TextContent
 import io.ktor.http.userAgent
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.okio.decodeFromBufferedSource
-import okhttp3.MultipartBody
-import okhttp3.Request
-import okhttp3.Response
-import okhttp3.executeAsync
 import okio.BufferedSource
 
-inline fun ehRequest(url: String, referer: String? = null, origin: String? = null, builder: Request.Builder.() -> Unit = {}) = Request.Builder().url(url).apply {
-    addHeader("User-Agent", Settings.userAgent)
-    addHeader("Accept", CHROME_ACCEPT)
-    addHeader("Accept-Language", CHROME_ACCEPT_LANGUAGE)
-    referer?.let { addHeader("Referer", it) }
-    origin?.let { addHeader("Origin", it) }
-}.apply(builder).build()
-
-inline fun multipartBody(builder: MultipartBody.Builder.() -> Unit) = MultipartBody.Builder().apply(builder).build()
-
 inline fun JsonObjectBuilder.array(name: String, builder: JsonArrayBuilder.() -> Unit) = put(name, buildJsonArray(builder))
-
-suspend inline fun <R> Request.execute(block: Response.() -> R): R {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
-    return okHttpClient.newCall(this).executeAsync().use(block)
-}
 
 suspend inline fun <reified T> HttpStatement.executeAndParseAs() = execute { it.parseAs<T>() }
 
@@ -117,4 +96,9 @@ fun HttpRequestBuilder.jsonBody(builder: JsonObjectBuilder.() -> Unit) {
     method = HttpMethod.Post
     val json = buildJsonObject(builder).toString()
     setBody(TextContent(text = json, contentType = ContentType.Application.Json))
+}
+
+fun HttpRequestBuilder.multipartBody(builder: FormBuilder.() -> Unit) {
+    method = HttpMethod.Post
+    setBody(MultiPartFormDataContent(formData(builder)))
 }

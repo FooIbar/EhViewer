@@ -34,7 +34,6 @@ import com.hippo.ehviewer.coil.installCronetHttpUriFetcher
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.ktbuilder.cache
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.httpClient
 import com.hippo.ehviewer.ktbuilder.imageLoader
@@ -201,16 +200,6 @@ class EhApplication : Application(), ImageLoaderFactory {
                 }
                 addInterceptor(UncaughtExceptionInterceptor())
                 addInterceptor(CloudflareInterceptor(appCtx))
-            }
-        }
-
-        // Never use this okhttp client to download large blobs!!!
-        val okHttpClient by lazy {
-            httpClient(baseOkHttpClient) {
-                cache(
-                    appCtx.cacheDir.toOkioPath() / "http_cache",
-                    20L * 1024L * 1024L,
-                )
             }
         }
 

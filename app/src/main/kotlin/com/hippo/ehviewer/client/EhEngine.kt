@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.client
 
-import android.util.Log
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
@@ -48,20 +47,19 @@ import com.hippo.ehviewer.client.parser.TorrentParser
 import com.hippo.ehviewer.client.parser.TorrentResult
 import com.hippo.ehviewer.client.parser.VoteCommentResult
 import com.hippo.ehviewer.client.parser.VoteTagParser
-import com.hippo.ehviewer.cronet.awaitBodyFully
-import com.hippo.ehviewer.cronet.cronetRequest
-import com.hippo.ehviewer.cronet.execute
-import com.hippo.ehviewer.cronet.withRequestBody
 import com.hippo.ehviewer.dailycheck.showEventNotification
 import com.hippo.ehviewer.dailycheck.today
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.StatusCodeException
-import com.hippo.ehviewer.util.isCronetSupported
 import eu.kanade.tachiyomi.util.system.logcat
+import io.ktor.client.request.forms.ChannelProvider
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.request
+import io.ktor.http.HttpHeaders
+import io.ktor.http.headers
+import io.ktor.util.cio.readChannel
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import java.io.File
@@ -75,18 +73,12 @@ import kotlinx.serialization.json.addJsonArray
 import kotlinx.serialization.json.put
 import moe.tarsin.coroutines.removeAllSuspend
 import moe.tarsin.coroutines.runSuspendCatching
-import okhttp3.MediaType
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import org.jsoup.Jsoup
 import splitties.init.appCtx
 
 const val TAG = "EhEngine"
 private const val MAX_REQUEST_SIZE = 25
 private const val U_CONFIG_TEXT = "Selected Profile"
-private val MEDIA_TYPE_JPEG: MediaType = "image/jpeg".toMediaType()
 
 fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): Nothing {
     // Don't translate coroutine cancellation
@@ -139,56 +131,6 @@ fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): N
 }
 
 val httpContentPool = DirectByteBufferPool(8, 0x80000)
-
-suspend fun <T> fetchCompat(
-    url: String,
-    referer: String? = null,
-    origin: String? = null,
-    reqBody: RequestBody? = null,
-    parser: suspend (ByteBuffer) -> T,
-): T {
-    Log.d(TAG, url)
-    fun commonChecks(body: ByteBuffer) {
-        // Check sad panda(without panda)
-        if (!body.hasRemaining()) {
-            if (EhUtils.isExHentai) {
-                throw EhException("Sad Panda\n(without panda)")
-            } else {
-                throw EhException("IP banned")
-            }
-        }
-    }
-    return if (isCronetSupported) {
-        cronetRequest(url, referer, origin) {
-            reqBody?.let { withRequestBody(it) }
-        }.execute {
-            @Suppress("NewApi")
-            val code = it.httpStatusCode
-            if (code >= 400) {
-                throw StatusCodeException(code)
-            }
-            httpContentPool.useInstance { buffer ->
-                awaitBodyFully(buffer)
-                buffer.flip()
-                commonChecks(buffer)
-                parser(buffer)
-            }
-        }
-    } else {
-        ehRequest(url, referer, origin) {
-            reqBody?.let { post(it) }
-        }.execute {
-            httpContentPool.useInstance { buffer ->
-                while (true) {
-                    if (body.source().read(buffer) == -1) break
-                }
-                buffer.flip()
-                commonChecks(buffer)
-                parser(buffer)
-            }
-        }
-    }
-}
 
 suspend inline fun <T> HttpStatement.parseString(crossinline block: suspend String.() -> T) = execute { response ->
     logcat(tag = TAG) { response.request.url.toString() }
@@ -518,19 +460,21 @@ object EhEngine {
     /**
      * @param image Must be jpeg
      */
-    suspend fun imageSearch(image: File, uss: Boolean, osc: Boolean) = fetchCompat(
-        EhUrl.imageSearchUrl,
-        EhUrl.referer,
-        EhUrl.origin,
+    suspend fun imageSearch(image: File, uss: Boolean, osc: Boolean) = statement(EhUrl.imageSearchUrl, EhUrl.referer, EhUrl.origin) {
         multipartBody {
-            setType(MultipartBody.FORM)
-            addFormDataPart("sfile", "a.jpg", image.asRequestBody(MEDIA_TYPE_JPEG))
-            if (uss) addFormDataPart("fs_similar", "on")
-            if (osc) addFormDataPart("fs_covers", "on")
-            addFormDataPart("f_sfile", "File Search")
-        },
-        parser = GalleryListParser::parse,
-    ).apply { fillGalleryList(galleryInfoList, EhUrl.imageSearchUrl) }
+            append(
+                "sfile",
+                ChannelProvider { image.readChannel() },
+                headers {
+                    append(HttpHeaders.ContentType, "image/jpeg")
+                    append(HttpHeaders.ContentDisposition, "filename=a.jpg")
+                },
+            )
+            if (uss) append("fs_similar", "on")
+            if (osc) append("fs_covers", "on")
+            append("f_sfile", "File Search")
+        }
+    }.parseByteBuffer(GalleryListParser::parse).apply { fillGalleryList(galleryInfoList, EhUrl.imageSearchUrl) }
 
     private suspend fun fillGalleryList(list: MutableList<BaseGalleryInfo>, url: String, filter: Boolean = false) {
         if (filter) list.removeAllSuspend { EhFilter.filterTitle(it) || EhFilter.filterUploader(it) }
