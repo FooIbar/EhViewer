@@ -314,8 +314,11 @@ fun SearchBarScreen(
                 }
             },
         ) {
-            LazyColumn(contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues()) {
-                items(mSuggestionList) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues(),
+            ) {
+                items(mSuggestionList, key = { it.keyword }) {
                     ListItem(
                         headlineContent = { Text(text = it.keyword) },
                         supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
@@ -334,7 +337,7 @@ fun SearchBarScreen(
                             }
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        modifier = Modifier.clickable { it.onClick() },
+                        modifier = Modifier.clickable { it.onClick() }.animateItemPlacement(),
                     )
                 }
             }
