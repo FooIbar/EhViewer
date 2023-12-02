@@ -8,8 +8,8 @@ import android.webkit.WebViewClient
 import androidx.core.content.ContextCompat
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.exception.CloudflareBypassException
+import io.ktor.http.Url
 import java.util.concurrent.CountDownLatch
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
@@ -52,8 +52,7 @@ class CloudflareInterceptor(context: Context) : WebViewInterceptor(context) {
             webview?.webViewClient = object : WebViewClient() {
                 override fun onPageFinished(view: WebView, url: String) {
                     fun isCloudFlareBypassed(): Boolean {
-                        return EhCookieStore.get(origRequestUrl.toHttpUrl())
-                            .any { it.name == COOKIE_NAME }
+                        return EhCookieStore.load(Url(origRequestUrl)).any { it.name == COOKIE_NAME }
                     }
 
                     if (isCloudFlareBypassed()) {

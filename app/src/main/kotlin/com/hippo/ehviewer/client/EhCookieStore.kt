@@ -1,54 +1,24 @@
-/*
- * Copyright 2016 Hippo Seven
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.hippo.ehviewer.client
 
 import android.webkit.CookieManager
 import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastJoinToString
-import androidx.compose.ui.util.fastMapNotNull
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Url
 import io.ktor.http.parseClientCookiesHeader
 import io.ktor.http.renderSetCookieHeader
-import okhttp3.Cookie
 import okhttp3.HttpUrl
-import okhttp3.HttpUrl.Companion.toHttpUrl
 
 typealias KtorCookie = io.ktor.http.Cookie
 
 object EhCookieStore : CookiesStorage {
     private val manager = CookieManager.getInstance()
     fun signOut() = manager.removeAllCookies(null)
-    fun contains(url: HttpUrl, name: String) = get(url).fastAny { it.name == name }
-
-    fun get(url: HttpUrl): List<Cookie> {
-        val cookies = manager.getCookie(url.toString())
-
-        return if (!cookies.isNullOrEmpty()) {
-            cookies.split(";").fastMapNotNull { setCookie ->
-                Cookie.parse(url, setCookie)?.takeUnless { it.name == KEY_UTMP_NAME }
-            }
-        } else {
-            emptyList()
-        }
-    }
+    fun contains(url: String, name: String) = load(Url(url)).fastAny { it.name == name }
 
     fun hasSignedIn(): Boolean {
-        val url = EhUrl.HOST_E.toHttpUrl()
+        val url = EhUrl.HOST_E
         return contains(url, KEY_IPB_MEMBER_ID) && contains(url, KEY_IPB_PASS_HASH)
     }
 
@@ -65,7 +35,7 @@ object EhCookieStore : CookiesStorage {
     )
 
     fun copyNecessaryCookies() {
-        val cookies = get(EhUrl.HOST_E.toHttpUrl())
+        val cookies = load(Url(EhUrl.HOST_E))
         cookies.fastForEach {
             if (it.name == KEY_STAR || it.name == KEY_IPB_MEMBER_ID || it.name == KEY_IPB_PASS_HASH) {
                 manager.setCookie(EhUrl.HOST_EX, it.toString())
