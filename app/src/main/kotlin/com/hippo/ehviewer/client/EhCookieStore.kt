@@ -9,6 +9,7 @@ import io.ktor.http.Cookie
 import io.ktor.http.Url
 import io.ktor.http.parseClientCookiesHeader
 import io.ktor.http.renderSetCookieHeader
+import io.ktor.util.date.GMTDate
 import okhttp3.HttpUrl
 
 object EhCookieStore : CookiesStorage {
@@ -47,7 +48,7 @@ object EhCookieStore : CookiesStorage {
     }
 
     fun addCookie(k: String, v: String, domain: String) {
-        val cookie = Cookie(name = k, value = v, domain = domain)
+        val cookie = Cookie(name = k, value = v, domain = domain, expires = GMTDate(Long.MAX_VALUE))
         val url = if (EhUrl.DOMAIN_E == cookie.domain) EhUrl.HOST_E else EhUrl.HOST_EX
         manager.setCookie(url, renderSetCookieHeader(cookie))
     }
