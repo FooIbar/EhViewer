@@ -433,6 +433,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                         checkedInfoMap[info.gid] = info
                                     }
                                 } else {
+                                    coroutineScope.launchIO {
+                                        EhDB.putHistoryInfo(info.galleryInfo)
+                                    }
                                     context.navToReader(info.galleryInfo)
                                 }
                             },
