@@ -41,9 +41,10 @@ import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
-import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -368,8 +369,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 referer,
             ).parseString {
                 val pages = parsePages(this)
-                val spiderInfo = SpiderInfo(galleryInfo.gid, pages)
-                spiderInfo.token = galleryInfo.token
+                val spiderInfo = SpiderInfo(galleryInfo.gid, pages, token = galleryInfo.token)
                 readPreviews(this, 0, spiderInfo)
                 spiderInfo
             }
@@ -519,10 +519,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         private val pTokenLock = Mutex()
         private var showKey: String? = null
         private val showKeyLock = Mutex()
-        private val mDownloadDelay = Settings.downloadDelay.toLong()
+        private val mDownloadDelay = Settings.downloadDelay.milliseconds
         private val downloadTimeout = Settings.downloadTimeout.seconds
         private val delayLock = Mutex()
-        private var delayedTime = 0L
+        private var delayedTime = TimeSource.Monotonic.markNow()
         private var isDownloadMode = false
 
         fun cancelDecode(index: Int) {
@@ -608,9 +608,14 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             }
 
             delayLock.withLock {
-                val curTime = Instant.now().toEpochMilli()
-                delayedTime = (delayedTime + mDownloadDelay).coerceAtLeast(curTime)
-                delay(delayedTime - curTime)
+                val new = delayedTime + mDownloadDelay
+                val duration = new.elapsedNow()
+                if (duration.isNegative()) {
+                    delayedTime = new
+                    delay(-duration)
+                } else {
+                    delayedTime = TimeSource.Monotonic.markNow()
+                }
             }
 
             var skipHathKey: String? = null

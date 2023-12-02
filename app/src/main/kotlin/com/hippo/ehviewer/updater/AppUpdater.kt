@@ -13,11 +13,12 @@ import io.ktor.utils.io.close
 import io.ktor.utils.io.copyTo
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import java.io.File
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.zip.ZipInputStream
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.time.Duration.Companion.days
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import moe.tarsin.coroutines.runSuspendCatching
 import org.json.JSONObject
 import tachiyomi.data.release.GithubArtifacts
@@ -30,11 +31,11 @@ private const val LATEST_RELEASE_URL = "$API_URL/releases/latest"
 
 object AppUpdater {
     suspend fun checkForUpdate(forceCheck: Boolean = false): Release? {
-        val now = Instant.now()
-        val lastChecked = Instant.ofEpochSecond(Settings.lastUpdateDay)
+        val now = Clock.System.now()
+        val last = Instant.fromEpochSeconds(Settings.lastUpdateTime)
         val interval = Settings.updateIntervalDays
-        if (forceCheck || interval != 0 && now.isAfter(lastChecked.plus(interval.toLong(), ChronoUnit.DAYS))) {
-            Settings.lastUpdateDay = now.epochSecond
+        if (forceCheck || interval != 0 && now > last + interval.days) {
+            Settings.lastUpdateTime = now.epochSeconds
             if (Settings.useCIUpdateChannel) {
                 val curSha = BuildConfig.COMMIT_SHA
                 val branch = ghStatement(API_URL).execute { JSONObject(it.bodyAsText()).getString("default_branch") }

@@ -10,7 +10,7 @@ import androidx.room.Relation
 import com.hippo.ehviewer.client.data.AbstractDownloadInfo
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
-import java.time.Instant
+import kotlinx.datetime.Clock
 
 @Entity(
     tableName = "DOWNLOADS",
@@ -37,7 +37,7 @@ data class DownloadEntity(
     override var legacy: Int = 0,
 
     @ColumnInfo(name = "TIME")
-    override var time: Long = Instant.now().toEpochMilli(),
+    override var time: Long = Clock.System.now().toEpochMilliseconds(),
 
     @ColumnInfo(name = "LABEL", index = true)
     override var label: String? = null,
