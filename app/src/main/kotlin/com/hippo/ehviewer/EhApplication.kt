@@ -193,7 +193,8 @@ class EhApplication : Application(), ImageLoaderFactory {
             }
         }
 
-        val baseOkHttpClient by lazy {
+        // Fallback to CIO when cronet unavailable after coil 3.0 release
+        private val baseOkHttpClient by lazy {
             httpClient {
                 if (isAtLeastQ) {
                     dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
@@ -204,7 +205,7 @@ class EhApplication : Application(), ImageLoaderFactory {
         }
 
         // Use KtorClient directly when coil 3.0 released
-        val coilClient by lazy {
+        private val coilClient by lazy {
             httpClient(baseOkHttpClient) {
                 addInterceptor {
                     val req = it.request()
