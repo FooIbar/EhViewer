@@ -77,8 +77,10 @@ object EhCookieStore : CookiesStorage {
         manager.setCookie(url.toString(), "$name=;Max-Age=0")
     }
 
-    fun addCookie(cookie: Cookie) {
-        manager.setCookie(if (EhUrl.DOMAIN_E == cookie.domain) EhUrl.HOST_E else EhUrl.HOST_EX, cookie.toString())
+    fun addCookie(k: String, v: String, domain: String) {
+        val cookie = KtorCookie(name = k, value = v, domain = domain)
+        val url = if (EhUrl.DOMAIN_E == cookie.domain) EhUrl.HOST_E else EhUrl.HOST_EX
+        manager.setCookie(url, renderSetCookieHeader(cookie))
     }
 
     fun flush() = manager.flush()
