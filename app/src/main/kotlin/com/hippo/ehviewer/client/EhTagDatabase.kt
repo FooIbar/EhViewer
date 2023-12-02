@@ -19,11 +19,18 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.hippo.ehviewer.EhApplication.Companion.baseOkHttpClient
+import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.ehviewer.util.copyToFile
+import com.hippo.ehviewer.util.StatusCodeException
+import io.ktor.client.HttpClient
+import io.ktor.client.request.prepareGet
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.isSuccess
+import io.ktor.util.cio.writeChannel
+import io.ktor.utils.io.close
+import io.ktor.utils.io.copyTo
 import java.io.File
 import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.CoroutineScope
@@ -35,9 +42,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import moe.tarsin.coroutines.runSuspendCatching
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.executeAsync
 import okio.BufferedSource
 import okio.HashingSink.Companion.sha1
 import okio.blackholeSink
@@ -175,24 +179,23 @@ object EhTagDatabase : CoroutineScope {
         return sha1 != null && sha1 == getFileSha1(data)
     }
 
-    private suspend fun save(client: OkHttpClient, url: String, file: File): Boolean {
-        val request: Request = Request.Builder().url(url).build()
-        val call = client.newCall(request)
+    private suspend fun save(client: HttpClient, url: String, file: File) {
         runCatching {
-            call.executeAsync().use { response ->
-                if (!response.isSuccessful) {
-                    return false
+            client.prepareGet(url).execute {
+                if (it.status.isSuccess()) {
+                    val channel = file.writeChannel()
+                    try {
+                        it.bodyAsChannel().copyTo(channel)
+                    } finally {
+                        channel.close()
+                    }
+                } else {
+                    throw StatusCodeException(it.status.value)
                 }
-                response.body.use {
-                    it.copyToFile(file)
-                }
-                return true
             }
         }.onFailure {
             file.delete()
-            it.printStackTrace()
-        }
-        return false
+        }.getOrThrow()
     }
 
     suspend fun update() {
@@ -246,7 +249,7 @@ object EhTagDatabase : CoroutineScope {
 
                 // Save new sha1
                 val tempSha1File = File(dir, "$sha1Name.tmp")
-                check(save(baseOkHttpClient, sha1Url, tempSha1File))
+                save(ktorClient, sha1Url, tempSha1File)
                 val tempSha1 = getFileContent(tempSha1File)
 
                 // Check new sha1 and current sha1
@@ -258,7 +261,7 @@ object EhTagDatabase : CoroutineScope {
 
                 // Save new data
                 val tempDataFile = File(dir, "$dataName.tmp")
-                check(save(baseOkHttpClient, dataUrl, tempDataFile))
+                save(ktorClient, dataUrl, tempDataFile)
 
                 // Check new sha1 and new data
                 if (!checkData(tempSha1, tempDataFile)) {
