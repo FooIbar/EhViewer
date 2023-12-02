@@ -170,7 +170,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import splitties.systemservices.downloadManager
 import splitties.systemservices.layoutInflater
 
@@ -673,7 +672,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                                 FileUtils.sanitizeFilename("$name.torrent"),
                                             )
                                             r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                                            r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(itemUrl.toHttpUrl()))
+                                            r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(itemUrl))
                                             try {
                                                 downloadManager.enqueue(r)
                                                 activity.showTip(R.string.download_torrent_started)

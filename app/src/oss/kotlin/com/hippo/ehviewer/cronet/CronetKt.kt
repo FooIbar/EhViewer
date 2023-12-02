@@ -21,7 +21,6 @@ import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.RequestBody
 import okio.Buffer
 import okio.Path.Companion.toOkioPath
@@ -70,7 +69,7 @@ class CronetRequest {
 
 inline fun cronetRequest(url: String, referer: String? = null, origin: String? = null, conf: UrlRequest.Builder.() -> Unit = {}) = CronetRequest().apply {
     request = cronetHttpClient.newUrlRequestBuilder(url, cronetHttpClientExecutor, callback).apply {
-        addHeader("Cookie", EhCookieStore.getCookieHeader(url.toHttpUrl()))
+        addHeader("Cookie", EhCookieStore.getCookieHeader(url))
         addHeader("Accept", CHROME_ACCEPT)
         addHeader("Accept-Language", CHROME_ACCEPT_LANGUAGE)
         referer?.let { addHeader("Referer", it) }

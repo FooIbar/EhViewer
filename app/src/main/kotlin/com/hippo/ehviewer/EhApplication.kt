@@ -57,6 +57,8 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
 import okhttp3.AsyncDns
@@ -163,7 +165,7 @@ class EhApplication : Application(), ImageLoaderFactory {
                 callFactory { unreachable() }
                 installCronetHttpUriFetcher()
             } else {
-                callFactory(baseOkHttpClient)
+                callFactory(coilClient)
             }
             if (isAtLeastP) {
                 add { result, options, _ -> ImageDecoderDecoder(result.source, options, false) }
@@ -183,6 +185,9 @@ class EhApplication : Application(), ImageLoaderFactory {
                 engine {
                     preconfigured = baseOkHttpClient
                 }
+                install(HttpCookies) {
+                    storage = EhCookieStore
+                }
             }
         }
 
@@ -194,12 +199,24 @@ class EhApplication : Application(), ImageLoaderFactory {
 
         val baseOkHttpClient by lazy {
             httpClient {
-                cookieJar(EhCookieStore)
                 if (isAtLeastQ) {
                     dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
                 }
                 addInterceptor(UncaughtExceptionInterceptor())
                 addInterceptor(CloudflareInterceptor(appCtx))
+            }
+        }
+
+        // Use KtorClient directly when coil 3.0 released
+        val coilClient by lazy {
+            httpClient(baseOkHttpClient) {
+                addInterceptor {
+                    val req = it.request()
+                    val newReq = req.newBuilder().apply {
+                        addHeader(HttpHeaders.Cookie, EhCookieStore.getCookieHeader(req.url.toString()))
+                    }.build()
+                    it.proceed(newReq)
+                }
             }
         }
 

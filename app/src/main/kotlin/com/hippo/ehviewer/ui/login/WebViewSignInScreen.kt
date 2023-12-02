@@ -22,7 +22,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import okhttp3.HttpUrl.Companion.toHttpUrl
+import io.ktor.http.Url
 
 @Destination
 @Composable
@@ -39,7 +39,7 @@ fun WebViewSignInScreen(navigator: DestinationsNavigator) {
                 }
                 var getId = false
                 var getHash = false
-                EhCookieStore.loadForRequest(EhUrl.HOST_E.toHttpUrl()).forEach {
+                EhCookieStore.load(Url(EhUrl.HOST_E)).forEach {
                     if (EhCookieStore.KEY_IPB_MEMBER_ID == it.name) {
                         getId = true
                     } else if (EhCookieStore.KEY_IPB_PASS_HASH == it.name) {
