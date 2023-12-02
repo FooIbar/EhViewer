@@ -24,6 +24,9 @@ import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.HttpStatement
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -63,9 +66,9 @@ suspend inline fun <R> Request.execute(block: Response.() -> R): R {
     return okHttpClient.newCall(this).executeAsync().use(block)
 }
 
-suspend inline fun <reified T> Request.executeAndParseAs() = execute { parseAs<T>() }
+suspend inline fun <reified T> HttpStatement.executeAndParseAs() = execute { it.parseAs<T>() }
 
-inline fun <reified T> Response.parseAs(): T = body.source().parseAs()
+suspend inline fun <reified T> HttpResponse.parseAs(): T = bodyAsText().parseAs()
 inline fun <reified T> BufferedSource.parseAs(): T = json.decodeFromBufferedSource(this)
 inline fun <reified T> String.parseAs(): T = json.decodeFromString(this)
 
