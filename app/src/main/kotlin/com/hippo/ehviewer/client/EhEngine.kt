@@ -215,12 +215,9 @@ suspend inline fun <T> HttpStatement.parseByteBuffer(crossinline block: suspend 
 
 object EhEngine {
     suspend fun getOriginalImageUrl(url: String, referer: String?): String {
-        Log.d(TAG, url)
-        return ehRequest(url, referer).executeNoRedirect {
-            header("Location")?.apply {
-                if (contains("bounce_login")) {
-                    throw NotLoggedInException()
-                }
+        return noRedirectStatement(url, referer).execute {
+            it.headers["Location"]?.apply {
+                if (contains("bounce_login")) throw NotLoggedInException()
             } ?: throw InsufficientFundsException()
         }
     }

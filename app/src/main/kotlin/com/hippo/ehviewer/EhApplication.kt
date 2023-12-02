@@ -187,6 +187,12 @@ class EhApplication : Application(), ImageLoaderFactory {
             }
         }
 
+        val noRedirectKtorClient by lazy {
+            HttpClient(ktorClient.engine) {
+                followRedirects = false
+            }
+        }
+
         val baseOkHttpClient by lazy {
             httpClient {
                 cookieJar(EhCookieStore)
@@ -195,12 +201,6 @@ class EhApplication : Application(), ImageLoaderFactory {
                 }
                 addInterceptor(UncaughtExceptionInterceptor())
                 addInterceptor(CloudflareInterceptor(appCtx))
-            }
-        }
-
-        val noRedirectOkHttpClient by lazy {
-            httpClient(baseOkHttpClient) {
-                followRedirects(false)
             }
         }
 

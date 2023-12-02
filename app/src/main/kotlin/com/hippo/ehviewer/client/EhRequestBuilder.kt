@@ -16,7 +16,7 @@
 package com.hippo.ehviewer.client
 
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
-import com.hippo.ehviewer.EhApplication.Companion.noRedirectOkHttpClient
+import com.hippo.ehviewer.EhApplication.Companion.noRedirectKtorClient
 import com.hippo.ehviewer.EhApplication.Companion.okHttpClient
 import com.hippo.ehviewer.Settings
 import io.ktor.client.request.HttpRequestBuilder
@@ -63,8 +63,6 @@ suspend inline fun <R> Request.execute(block: Response.() -> R): R {
     return okHttpClient.newCall(this).executeAsync().use(block)
 }
 
-suspend inline fun <R> Request.executeNoRedirect(block: Response.() -> R) = noRedirectOkHttpClient.newCall(this).executeAsync().use(block)
-
 suspend inline fun <reified T> Request.executeAndParseAs() = execute { parseAs<T>() }
 
 inline fun <reified T> Response.parseAs(): T = body.source().parseAs()
@@ -77,18 +75,32 @@ const val CHROME_USER_AGENT = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/53
 const val CHROME_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
 const val CHROME_ACCEPT_LANGUAGE = "en-US,en;q=0.5"
 
-suspend inline fun statement(
-    url: String,
-    referer: String? = null,
-    origin: String? = null,
-    builder: HttpRequestBuilder.() -> Unit = {},
-) = ktorClient.prepareRequest(url) {
+fun HttpRequestBuilder.applyEhConfig(referer: String?, origin: String?) {
     method = HttpMethod.Get
     header("Referer", referer)
     header("Origin", origin)
     userAgent(Settings.userAgent)
     header(HttpHeaders.Accept, CHROME_ACCEPT)
     header(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
+}
+
+suspend inline fun statement(
+    url: String,
+    referer: String? = null,
+    origin: String? = null,
+    builder: HttpRequestBuilder.() -> Unit = {},
+) = ktorClient.prepareRequest(url) {
+    applyEhConfig(referer, origin)
+    apply(builder)
+}
+
+suspend inline fun noRedirectStatement(
+    url: String,
+    referer: String? = null,
+    origin: String? = null,
+    builder: HttpRequestBuilder.() -> Unit = {},
+) = noRedirectKtorClient.prepareRequest(url) {
+    applyEhConfig(referer, origin)
     apply(builder)
 }
 
