@@ -3,6 +3,8 @@
 package com.hippo.ehviewer.ktor
 
 import android.net.http.HttpException
+import android.net.http.UploadDataProvider
+import android.net.http.UploadDataSink
 import android.net.http.UrlRequest
 import android.net.http.UrlResponseInfo
 import com.hippo.ehviewer.cronet.cronetHttpClient
@@ -16,6 +18,7 @@ import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpProtocolVersion
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.content.OutgoingContent
 import io.ktor.http.headers
 import io.ktor.util.date.GMTDate
 import io.ktor.util.flattenForEach
@@ -110,7 +113,9 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
         val request = cronetHttpClient.newUrlRequestBuilder(data.url.toString(), cronetHttpClientExecutor, callback).apply {
             setHttpMethod(data.method.value)
             data.headers.flattenForEach { key, value -> addHeader(key, value) }
-            data.body.contentType?.let { addHeader(HttpHeaders.ContentType, it.contentType) }
+            data.body.contentType?.let { addHeader(HttpHeaders.ContentType, it.toString()) }
+            data.body.contentLength?.let { addHeader(HttpHeaders.ContentLength, it.toString()) }
+            data.body.toUploadDataProvider()?.let { setUploadDataProvider(it, cronetHttpClientExecutor) }
         }.build()
         request.start()
         callContext[Job]!!.invokeOnCompletion { request.cancel() }
@@ -140,4 +145,21 @@ private fun UrlResponseInfo.toHttpResponseData(
         body = responseBody,
         callContext = callContext,
     )
+}
+
+private fun OutgoingContent.toUploadDataProvider(): UploadDataProvider? = when (this) {
+    is OutgoingContent.NoContent -> null
+    is OutgoingContent.ByteArrayContent -> object : UploadDataProvider() {
+        val buffer = ByteBuffer.wrap(bytes()).slice()
+        override fun getLength() = buffer.limit().toLong()
+        override fun read(uploadDataSink: UploadDataSink, byteBuffer: ByteBuffer) {
+            byteBuffer.put(buffer)
+            uploadDataSink.onReadSucceeded(false)
+        }
+        override fun rewind(uploadDataSink: UploadDataSink) {
+            buffer.position(0)
+            uploadDataSink.onRewindSucceeded()
+        }
+    }
+    else -> error("UnsupportedContentType $this")
 }
