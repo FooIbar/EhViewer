@@ -38,7 +38,6 @@ import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.httpClient
 import com.hippo.ehviewer.ktbuilder.imageLoader
 import com.hippo.ehviewer.legacy.cleanObsoleteCache
-import com.hippo.ehviewer.legacy.migrateCookies
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
 import com.hippo.ehviewer.util.AppConfig
@@ -99,9 +98,6 @@ class EhApplication : Application(), ImageLoaderFactory {
         System.loadLibrary("ehviewer_rust")
         ReadableTime.initialize(this)
         lifecycleScope.launchIO {
-            launchIO {
-                migrateCookies()
-            }
             launchIO {
                 EhTagDatabase
             }
