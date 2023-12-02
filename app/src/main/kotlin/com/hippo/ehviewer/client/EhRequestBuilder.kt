@@ -98,7 +98,7 @@ inline fun HttpRequestBuilder.jsonBody(builder: JsonObjectBuilder.() -> Unit) {
     setBody(TextContent(text = json, contentType = ContentType.Application.Json))
 }
 
-fun HttpRequestBuilder.multipartBody(builder: FormBuilder.() -> Unit) {
+inline fun HttpRequestBuilder.multipartBody(builder: FormBuilder.() -> Unit) {
     method = HttpMethod.Post
     setBody(MultiPartFormDataContent(formData(builder)))
 }
