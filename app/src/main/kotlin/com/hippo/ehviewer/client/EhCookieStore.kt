@@ -9,7 +9,6 @@ import io.ktor.http.Cookie
 import io.ktor.http.Url
 import io.ktor.http.parseClientCookiesHeader
 import io.ktor.http.renderSetCookieHeader
-import io.ktor.util.date.GMTDate
 import okhttp3.HttpUrl
 
 object EhCookieStore : CookiesStorage {
@@ -48,7 +47,7 @@ object EhCookieStore : CookiesStorage {
     }
 
     fun addCookie(k: String, v: String, domain: String) {
-        val cookie = Cookie(name = k, value = v, domain = domain, expires = GMTDate(Long.MAX_VALUE))
+        val cookie = Cookie(name = k, value = v, domain = domain, maxAge = Int.MAX_VALUE)
         val url = if (EhUrl.DOMAIN_E == cookie.domain) EhUrl.HOST_E else EhUrl.HOST_EX
         manager.setCookie(url, renderSetCookieHeader(cookie))
     }
@@ -74,7 +73,7 @@ object EhCookieStore : CookiesStorage {
         val cookies = manager.getCookie(url.toString()) ?: return emptyList()
         val checkTips = EhUrl.DOMAIN_E in url.host
         return parseClientCookiesHeader(cookies)
-            .map { Cookie(it.key, it.value) }
+            .map { Cookie(it.key, it.value, maxAge = Int.MAX_VALUE) }
             .filterTo(mutableListOf()) { it.name != KEY_UTMP_NAME }.apply {
                 if (checkTips) {
                     removeAll { it.name == KEY_CONTENT_WARNING }
