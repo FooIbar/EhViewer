@@ -52,14 +52,13 @@ import com.hippo.ehviewer.dailycheck.today
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.StatusCodeException
 import eu.kanade.tachiyomi.util.system.logcat
-import io.ktor.client.request.forms.ChannelProvider
+import io.ktor.client.request.forms.append
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.request
-import io.ktor.http.HttpHeaders
-import io.ktor.http.headers
-import io.ktor.util.cio.readChannel
+import io.ktor.http.ContentType
+import io.ktor.utils.io.core.writeFully
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import java.io.File
@@ -462,14 +461,9 @@ object EhEngine {
      */
     suspend fun imageSearch(image: File, uss: Boolean, osc: Boolean) = statement(EhUrl.imageSearchUrl, EhUrl.referer, EhUrl.origin) {
         multipartBody {
-            append(
-                "sfile",
-                ChannelProvider { image.readChannel() },
-                headers {
-                    append(HttpHeaders.ContentType, "image/jpeg")
-                    append(HttpHeaders.ContentDisposition, "filename=a.jpg")
-                },
-            )
+            append("sfile", "a.jpg", ContentType.Image.JPEG, image.length()) {
+                writeFully(image.readBytes())
+            }
             if (uss) append("fs_similar", "on")
             if (osc) append("fs_covers", "on")
             append("f_sfile", "File Search")
