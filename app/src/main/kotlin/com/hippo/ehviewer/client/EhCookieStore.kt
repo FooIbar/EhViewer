@@ -5,12 +5,11 @@ import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastJoinToString
 import io.ktor.client.plugins.cookies.CookiesStorage
+import io.ktor.http.Cookie
 import io.ktor.http.Url
 import io.ktor.http.parseClientCookiesHeader
 import io.ktor.http.renderSetCookieHeader
 import okhttp3.HttpUrl
-
-typealias KtorCookie = io.ktor.http.Cookie
 
 object EhCookieStore : CookiesStorage {
     private val manager = CookieManager.getInstance()
@@ -29,7 +28,7 @@ object EhCookieStore : CookiesStorage {
     private const val KEY_CONTENT_WARNING = "nw"
     private const val CONTENT_WARNING_NOT_SHOW = "1"
     private const val KEY_UTMP_NAME = "__utmp"
-    private val sTipsCookie = KtorCookie(
+    private val sTipsCookie = Cookie(
         name = KEY_CONTENT_WARNING,
         value = CONTENT_WARNING_NOT_SHOW,
     )
@@ -48,7 +47,7 @@ object EhCookieStore : CookiesStorage {
     }
 
     fun addCookie(k: String, v: String, domain: String) {
-        val cookie = KtorCookie(name = k, value = v, domain = domain)
+        val cookie = Cookie(name = k, value = v, domain = domain)
         val url = if (EhUrl.DOMAIN_E == cookie.domain) EhUrl.HOST_E else EhUrl.HOST_EX
         manager.setCookie(url, renderSetCookieHeader(cookie))
     }
@@ -62,7 +61,7 @@ object EhCookieStore : CookiesStorage {
     }
 
     // See https://github.com/Ehviewer-Overhauled/Ehviewer/issues/873
-    override suspend fun addCookie(requestUrl: Url, cookie: KtorCookie) {
+    override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {
         if (cookie.name != KEY_UTMP_NAME) {
             manager.setCookie(requestUrl.toString(), renderSetCookieHeader(cookie))
         }
@@ -70,11 +69,11 @@ object EhCookieStore : CookiesStorage {
 
     override fun close() = Unit
 
-    fun load(url: Url): List<KtorCookie> {
+    fun load(url: Url): List<Cookie> {
         val cookies = manager.getCookie(url.toString()) ?: return emptyList()
         val checkTips = EhUrl.DOMAIN_E in url.host
         return parseClientCookiesHeader(cookies)
-            .map { KtorCookie(it.key, it.value) }
+            .map { Cookie(it.key, it.value) }
             .filterTo(mutableListOf()) { it.name != KEY_UTMP_NAME }.apply {
                 if (checkTips) {
                     removeAll { it.name == KEY_CONTENT_WARNING }
