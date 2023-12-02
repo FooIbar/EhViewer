@@ -1,16 +1,17 @@
 package com.hippo.ehviewer.cronet
 
-import com.hippo.ehviewer.EhApplication
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import kotlin.coroutines.resumeWithException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 val pool = DirectByteBufferPool(32)
 
-val cronetHttpClientExecutor = EhApplication.baseOkHttpClient.dispatcher.executorService
+val cronetHttpClientExecutor = Dispatchers.IO.asExecutor()
 
 @Suppress("NewApi")
 suspend inline fun CronetRequest.awaitBodyFully(crossinline callback: (ByteBuffer) -> Unit) {
