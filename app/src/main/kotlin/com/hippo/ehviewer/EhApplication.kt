@@ -34,12 +34,10 @@ import com.hippo.ehviewer.coil.installCronetHttpUriFetcher
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.ktbuilder.cache
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.httpClient
 import com.hippo.ehviewer.ktbuilder.imageLoader
 import com.hippo.ehviewer.legacy.cleanObsoleteCache
-import com.hippo.ehviewer.legacy.migrateCookies
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
 import com.hippo.ehviewer.util.AppConfig
@@ -58,6 +56,8 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
 import okhttp3.AsyncDns
@@ -98,9 +98,6 @@ class EhApplication : Application(), ImageLoaderFactory {
         System.loadLibrary("ehviewer_rust")
         ReadableTime.initialize(this)
         lifecycleScope.launchIO {
-            launchIO {
-                migrateCookies()
-            }
             launchIO {
                 EhTagDatabase
             }
@@ -164,7 +161,7 @@ class EhApplication : Application(), ImageLoaderFactory {
                 callFactory { unreachable() }
                 installCronetHttpUriFetcher()
             } else {
-                callFactory(baseOkHttpClient)
+                callFactory(coilClient)
             }
             if (isAtLeastP) {
                 add { result, options, _ -> ImageDecoderDecoder(result.source, options, false) }
@@ -184,12 +181,21 @@ class EhApplication : Application(), ImageLoaderFactory {
                 engine {
                     preconfigured = baseOkHttpClient
                 }
+                install(HttpCookies) {
+                    storage = EhCookieStore
+                }
             }
         }
 
-        val baseOkHttpClient by lazy {
+        val noRedirectKtorClient by lazy {
+            HttpClient(ktorClient.engine) {
+                followRedirects = false
+            }
+        }
+
+        // Fallback to CIO when cronet unavailable after coil 3.0 release
+        private val baseOkHttpClient by lazy {
             httpClient {
-                cookieJar(EhCookieStore)
                 if (isAtLeastQ) {
                     dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
                 }
@@ -198,19 +204,16 @@ class EhApplication : Application(), ImageLoaderFactory {
             }
         }
 
-        val noRedirectOkHttpClient by lazy {
+        // Use KtorClient directly when coil 3.0 released
+        private val coilClient by lazy {
             httpClient(baseOkHttpClient) {
-                followRedirects(false)
-            }
-        }
-
-        // Never use this okhttp client to download large blobs!!!
-        val okHttpClient by lazy {
-            httpClient(baseOkHttpClient) {
-                cache(
-                    appCtx.cacheDir.toOkioPath() / "http_cache",
-                    20L * 1024L * 1024L,
-                )
+                addInterceptor {
+                    val req = it.request()
+                    val newReq = req.newBuilder().apply {
+                        addHeader(HttpHeaders.Cookie, EhCookieStore.getCookieHeader(req.url.toString()))
+                    }.build()
+                    it.proceed(newReq)
+                }
             }
         }
 

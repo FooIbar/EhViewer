@@ -68,7 +68,6 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.util.Locale
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import okhttp3.Cookie
 
 @Destination
 @Composable
@@ -93,15 +92,13 @@ fun CookieSignInScene(navigator: DestinationsNavigator) {
 
     val noCookies = stringResource(R.string.from_clipboard_error)
 
-    fun newCookie(name: String, value: String, domain: String) = Cookie.Builder().name(name).value(value).domain(domain).expiresAt(Long.MAX_VALUE).build()
-
     fun storeCookie(id: String, hash: String, igneous: String) {
         EhUtils.signOut()
-        EhCookieStore.addCookie(newCookie(EhCookieStore.KEY_IPB_MEMBER_ID, id, EhUrl.DOMAIN_E))
-        EhCookieStore.addCookie(newCookie(EhCookieStore.KEY_IPB_MEMBER_ID, id, EhUrl.DOMAIN_EX))
-        EhCookieStore.addCookie(newCookie(EhCookieStore.KEY_IPB_PASS_HASH, hash, EhUrl.DOMAIN_E))
-        EhCookieStore.addCookie(newCookie(EhCookieStore.KEY_IPB_PASS_HASH, hash, EhUrl.DOMAIN_EX))
-        if (igneous.isNotBlank()) EhCookieStore.addCookie(newCookie(EhCookieStore.KEY_IGNEOUS, igneous, EhUrl.DOMAIN_EX))
+        EhCookieStore.addCookie(EhCookieStore.KEY_IPB_MEMBER_ID, id, EhUrl.DOMAIN_E)
+        EhCookieStore.addCookie(EhCookieStore.KEY_IPB_MEMBER_ID, id, EhUrl.DOMAIN_EX)
+        EhCookieStore.addCookie(EhCookieStore.KEY_IPB_PASS_HASH, hash, EhUrl.DOMAIN_E)
+        EhCookieStore.addCookie(EhCookieStore.KEY_IPB_PASS_HASH, hash, EhUrl.DOMAIN_EX)
+        if (igneous.isNotBlank()) EhCookieStore.addCookie(EhCookieStore.KEY_IGNEOUS, igneous, EhUrl.DOMAIN_EX)
     }
 
     fun login() {

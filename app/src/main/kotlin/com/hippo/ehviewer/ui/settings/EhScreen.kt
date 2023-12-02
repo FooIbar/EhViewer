@@ -54,11 +54,11 @@ import com.hippo.ehviewer.util.copyTextToClipboard
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import io.ktor.http.Url
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
-import okhttp3.HttpUrl.Companion.toHttpUrl
 
 @Destination
 @Composable
@@ -91,8 +91,8 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.account_name),
                 summary = Settings.displayName ?: touristMode,
             ) {
-                val eCookies = EhCookieStore.loadForRequest(EhUrl.HOST_E.toHttpUrl())
-                val exCookies = EhCookieStore.loadForRequest(EhUrl.HOST_EX.toHttpUrl())
+                val eCookies = EhCookieStore.load(Url(EhUrl.HOST_E))
+                val exCookies = EhCookieStore.load(Url(EhUrl.HOST_EX))
                 var ipbMemberId: String? = null
                 var ipbPassHash: String? = null
                 var igneous: String? = null

@@ -181,21 +181,6 @@ abstract class EhDatabase : RoomDatabase() {
     abstract fun quickSearchDao(): QuickSearchDao
 }
 
-// 1 -> 2 some nullability changes
-@Database(
-    entities = [Cookie::class],
-    version = 2,
-    autoMigrations = [
-        AutoMigration(
-            from = 1,
-            to = 2,
-        ),
-    ],
-)
-abstract class CookiesDatabase : RoomDatabase() {
-    abstract fun cookiesDao(): CookiesDao
-}
-
 @Database(
     entities = [Search::class],
     version = 2,

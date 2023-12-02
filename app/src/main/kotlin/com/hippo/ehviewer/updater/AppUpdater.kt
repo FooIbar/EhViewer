@@ -1,9 +1,17 @@
 package com.hippo.ehviewer.updater
 
 import com.hippo.ehviewer.BuildConfig
+import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.execute
 import com.hippo.ehviewer.client.executeAndParseAs
+import io.ktor.client.request.header
+import io.ktor.client.request.prepareGet
+import io.ktor.client.statement.bodyAsChannel
+import io.ktor.client.statement.bodyAsText
+import io.ktor.util.cio.writeChannel
+import io.ktor.utils.io.close
+import io.ktor.utils.io.copyTo
+import io.ktor.utils.io.jvm.javaio.toInputStream
 import java.io.File
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -11,8 +19,6 @@ import java.util.zip.ZipInputStream
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import moe.tarsin.coroutines.runSuspendCatching
-import okhttp3.Request
-import okio.sink
 import org.json.JSONObject
 import tachiyomi.data.release.GithubArtifacts
 import tachiyomi.data.release.GithubCommitComparison
@@ -31,18 +37,16 @@ object AppUpdater {
             Settings.lastUpdateDay = now.epochSecond
             if (Settings.useCIUpdateChannel) {
                 val curSha = BuildConfig.COMMIT_SHA
-                val branch = ghRequest(API_URL).execute {
-                    JSONObject(body.string()).getString("default_branch")
-                }
+                val branch = ghStatement(API_URL).execute { JSONObject(it.bodyAsText()).getString("default_branch") }
                 val workflowRunsUrl = "$API_URL/actions/workflows/ci.yml/runs?branch=$branch&event=push&status=success&per_page=1"
-                val workflowRun = ghRequest(workflowRunsUrl).executeAndParseAs<GithubWorkflowRuns>().workflowRuns[0]
+                val workflowRun = ghStatement(workflowRunsUrl).executeAndParseAs<GithubWorkflowRuns>().workflowRuns[0]
                 val shortSha = workflowRun.headSha.take(7)
                 if (shortSha != curSha) {
-                    val artifacts = ghRequest(workflowRun.artifactsUrl).executeAndParseAs<GithubArtifacts>()
+                    val artifacts = ghStatement(workflowRun.artifactsUrl).executeAndParseAs<GithubArtifacts>()
                     val archiveUrl = artifacts.getDownloadLink()
                     val changelog = runSuspendCatching {
                         val commitComparisonUrl = "$API_URL/compare/$curSha...$shortSha"
-                        val result = ghRequest(commitComparisonUrl).executeAndParseAs<GithubCommitComparison>()
+                        val result = ghStatement(commitComparisonUrl).executeAndParseAs<GithubCommitComparison>()
                         // TODO: Prettier format, Markdown?
                         result.commits.joinToString("\n") { commit ->
                             "${commit.commit.message.takeWhile { it != '\n' }} (@${commit.author.name})"
@@ -52,7 +56,7 @@ object AppUpdater {
                 }
             } else {
                 val curVersion = BuildConfig.VERSION_NAME.substringBefore('-')
-                val release = ghRequest(LATEST_RELEASE_URL).executeAndParseAs<GithubRelease>()
+                val release = ghStatement(LATEST_RELEASE_URL).executeAndParseAs<GithubRelease>()
                 val latestVersion = release.version
                 val description = release.info
                 val downloadUrl = release.getDownloadLink()
@@ -65,29 +69,34 @@ object AppUpdater {
     }
 
     suspend fun downloadUpdate(url: String, file: File) =
-        ghRequest(url).execute {
+        ghStatement(url).execute { response ->
             if (url.endsWith("zip")) {
-                ZipInputStream(body.byteStream()).use { zip ->
-                    zip.nextEntry
-                    file.outputStream().use {
-                        zip.copyTo(it)
+                response.bodyAsChannel().toInputStream().use { stream ->
+                    ZipInputStream(stream).use { zip ->
+                        zip.nextEntry
+                        file.outputStream().use {
+                            zip.copyTo(it)
+                        }
                     }
                 }
             } else {
-                file.sink().use {
-                    body.source().readAll(it)
+                val channel = file.writeChannel()
+                try {
+                    response.bodyAsChannel().copyTo(channel)
+                } finally {
+                    channel.close()
                 }
             }
         }
 }
 
 @OptIn(ExperimentalEncodingApi::class)
-private inline fun ghRequest(url: String, builder: Request.Builder.() -> Unit = {}) = Request.Builder().url(url).apply {
+private suspend inline fun ghStatement(url: String) = ktorClient.prepareGet(url) {
     val token = "github_" + "pat_11AXZS" + "T4A0k3TArCGakP3t_7DzUE5S" + "mr1zw8rmmzVtCeRq62" + "A4qkuDMw6YQm5ZUtHSLZ2MLI3J4VSifLXZ"
     val user = "nullArrayList"
     val base64 = Base64.encode("$user:$token".toByteArray())
-    addHeader("Authorization", "Basic $base64")
-}.apply(builder).build()
+    header("Authorization", "Basic $base64")
+}
 
 data class Release(
     val version: String,
