@@ -111,7 +111,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     var label by Settings::recentDownloadLabel.observed
     var keyword by rememberSaveable { mutableStateOf<String?>(null) }
     var filterType by rememberSaveable { mutableStateOf(-1) }
-    var searchBarOffsetY by remember { mutableStateOf(0) }
+    var searchBarOffsetY by remember(label) { mutableStateOf(0) }
     val searchFieldState = rememberTextFieldState()
     val checkedInfoMap = remember { mutableStateMapOf<Long, DownloadInfo>() }
     val selectMode by rememberUpdatedState(checkedInfoMap.isNotEmpty())
