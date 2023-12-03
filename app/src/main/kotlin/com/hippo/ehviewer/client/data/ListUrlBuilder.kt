@@ -256,7 +256,7 @@ data class ListUrlBuilder(
         return when (mode) {
             MODE_NORMAL, MODE_SUBSCRIPTION -> ehUrl {
                 if (mode == MODE_SUBSCRIPTION) addPathSegment(EhUrl.WATCHED_PATH)
-                if (category != EhUtils.NONE) {
+                if (category > 0) {
                     addEncodedQueryParameter("f_cats", (category.inv() and EhUtils.ALL_CATEGORY).toString())
                 }
                 val query = mKeyword?.let {
