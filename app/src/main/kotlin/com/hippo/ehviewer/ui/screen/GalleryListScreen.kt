@@ -541,6 +541,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         title = suitableTitle,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
+        showLanguageFilter = true,
         showSearchFab = showSearchLayout,
         onApplySearch = { query ->
             val builder = ListUrlBuilder()
@@ -552,11 +553,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 builder.keyword = query
             } else {
                 if (searchNormalMode) {
-                    when (searchMethod) {
-                        1 -> builder.mode = MODE_NORMAL
-                        2 -> builder.mode = MODE_SUBSCRIPTION
-                        3 -> builder.mode = MODE_UPLOADER
-                        4 -> builder.mode = MODE_TAG
+                    builder.mode = when (searchMethod) {
+                        2 -> MODE_SUBSCRIPTION
+                        3 -> MODE_UPLOADER
+                        4 -> MODE_TAG
+                        else -> MODE_NORMAL
                     }
                     builder.keyword = query
                     builder.category = category

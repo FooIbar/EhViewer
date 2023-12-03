@@ -105,6 +105,7 @@ object Settings : DataStorePreferences(null) {
     val detailSize = intPref("detail_size_2", 0)
     val thumbColumns = intPref("thumb_columns", 3)
     val listThumbSize = intPref("list_tile_size", 40)
+    val languageFilter = intPref("language_filter", -1)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
     val predictiveNavAnim = boolPref("predictive_nav_anim", true)
 

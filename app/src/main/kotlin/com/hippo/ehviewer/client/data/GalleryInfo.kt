@@ -93,7 +93,7 @@ interface GalleryInfo {
             Pattern.compile("[(\\[]hun(?:garian)?[)\\]]|ハンガリー翻訳", Pattern.CASE_INSENSITIVE),
             Pattern.compile("[(\\[]dutch[)\\]]|オランダ翻訳", Pattern.CASE_INSENSITIVE),
         )
-        private val S_LANG_TAGS = arrayOf(
+        val S_LANG_TAGS = arrayOf(
             "language:english",
             "language:chinese",
             "language:spanish",

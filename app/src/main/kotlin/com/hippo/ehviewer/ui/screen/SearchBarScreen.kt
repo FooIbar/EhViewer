@@ -29,8 +29,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.FilterAlt
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -64,12 +67,15 @@ import androidx.compose.ui.util.lerp
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhTagDatabase
+import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
+import com.hippo.ehviewer.ui.tools.IconFix
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
@@ -101,6 +107,7 @@ fun SearchBarScreen(
     title: String? = null,
     searchFieldState: TextFieldState,
     searchFieldHint: String? = null,
+    showLanguageFilter: Boolean = false,
     showSearchFab: Boolean = false,
     onApplySearch: suspend (String) -> Unit,
     onSearchExpanded: () -> Unit,
@@ -314,6 +321,42 @@ fun SearchBarScreen(
                 }
             },
         ) {
+            if (showLanguageFilter) {
+                var languageFilter by Settings.languageFilter.asMutableState()
+                val languages = remember {
+                    GalleryInfo.S_LANG_TAGS.map { tag ->
+                        tag.substringAfter(':').let {
+                            if (EhTagDatabase.initialized && EhTagDatabase.isTranslatable(context)) {
+                                EhTagDatabase.getTranslation("l", it) ?: it
+                            } else {
+                                it
+                            }
+                        }
+                    }.toTypedArray()
+                }
+                Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    val any = stringResource(id = R.string.any)
+                    val languageStr = stringResource(id = R.string.key_language)
+                    FilterChip(
+                        selected = languageFilter != -1,
+                        onClick = {
+                            scope.launch {
+                                languageFilter =
+                                    dialogState.showSingleChoice(any, *languages, selected = languageFilter + 1) - 1
+                            }
+                        },
+                        label = {
+                            Text(text = if (languageFilter == -1) languageStr else languages[languageFilter])
+                        },
+                        trailingIcon = {
+                            IconFix(
+                                imageVector = if (languageFilter == -1) Icons.Outlined.FilterAlt else Icons.Default.FilterAlt,
+                                contentDescription = null,
+                            )
+                        },
+                    )
+                }
+            }
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime).asPaddingValues(),

@@ -158,7 +158,7 @@
     <string name="delete_quick_search">Delete quick search \"%s\"?</string>
     <string name="go_to_hint">Page %1$d, total %2$d pages</string>
     <!-- search_min_rating -->
-    <string name="unlimited">Unlimited</string>
+    <string name="any">Any</string>
     <string name="star_2">2 stars</string>
     <string name="star_3">3 stars</string>
     <string name="star_4">4 stars</string>
