@@ -29,7 +29,7 @@ val cronetHttpClient: HttpEngine = HttpEngine.Builder(appCtx).apply {
     // Cache Quic hint only since the real cache mechanism should on Ktor layer
     val cache = (appCtx.cacheDir.toOkioPath() / "http_cache").toFile().apply { mkdirs() }
     setStoragePath(cache.absolutePath)
-    setEnableHttpCache(HttpEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1024)
+    setEnableHttpCache(HttpEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 4096)
 }.build()
 
 class CronetRequest {
