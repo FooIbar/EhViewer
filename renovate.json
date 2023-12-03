@@ -2,10 +2,10 @@
   "automerge": true,
   "extends": [
     "config:base"
-  ]
+  ],
   "packageRules": [
     {
-      "description": "Disable updates for SNAPSHOTS",
+      "description": "Disable updates for SNAPSHOTs",
       "matchPackagePrefixes": ["androidx"],
       "allowedVersions": "!/SNAPSHOT$/"
     }
