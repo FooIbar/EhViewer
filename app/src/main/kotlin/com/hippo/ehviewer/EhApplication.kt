@@ -202,6 +202,9 @@ class EhApplication : Application(), ImageLoaderFactory {
         val noRedirectKtorClient by lazy {
             HttpClient(ktorClient.engine) {
                 followRedirects = false
+                install(HttpCookies) {
+                    storage = EhCookieStore
+                }
             }
         }
 
