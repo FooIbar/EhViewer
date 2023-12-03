@@ -95,7 +95,7 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
                 chunkChan.close()
             }
 
-            override fun onFailed(request: UrlRequest, info: UrlResponseInfo, error: CronetException) {
+            override fun onFailed(request: UrlRequest, info: UrlResponseInfo?, error: CronetException) {
                 if (::chunkChan.isInitialized) {
                     chunkChan.close(error)
                 } else {
