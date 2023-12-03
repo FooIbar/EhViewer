@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.view.ViewConfiguration
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
@@ -36,25 +35,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LeadingIconTab
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.SwipeToDismissValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberSwipeToDismissState
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -109,7 +102,6 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_NORMAL
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_SUBSCRIPTION
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TAG
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TOPLIST
-import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_UPLOADER
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_WHATS_HOT
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
@@ -124,7 +116,6 @@ import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
-import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.main.AdvancedSearchOption
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
@@ -132,11 +123,10 @@ import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.ImageSearch
-import com.hippo.ehviewer.ui.main.NormalSearch
+import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
-import com.hippo.ehviewer.ui.tools.IconFix
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
@@ -190,7 +180,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     var searchBarOffsetY by remember { mutableStateOf(0) }
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
 
-    var searchNormalMode by rememberSaveable { mutableStateOf(true) }
     var category by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
     var searchMethod by rememberSaveable { mutableIntStateOf(1) }
     var advancedSearchOption by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
@@ -225,7 +214,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     ) { showSearchLayout = false }
     val context = LocalContext.current
     val activity = remember { context.findActivity<MainActivity>() }
-    val windowSizeClass = calculateWindowSizeClass(activity)
     val density = LocalDensity.current
     val dialogState = LocalDialogState.current
     val coroutineScope = rememberCoroutineScope()
@@ -537,8 +525,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         title = suitableTitle,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
-        advancedOption = advancedSearchOption,
-        onAdvancedOptionChanged = { advancedSearchOption = it },
         showSearchFab = showSearchLayout,
         onApplySearch = { query ->
             val builder = ListUrlBuilder()
@@ -548,38 +534,24 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
                 builder.mode = newMode
                 builder.keyword = query
+                builder.category = category
                 builder.advanceSearch = advancedSearchOption.advanceSearch
                 builder.minRating = advancedSearchOption.minRating
                 builder.pageFrom = advancedSearchOption.fromPage
                 builder.pageTo = advancedSearchOption.toPage
             } else {
-                if (searchNormalMode) {
-                    builder.mode = when (searchMethod) {
-                        2 -> MODE_SUBSCRIPTION
-                        3 -> MODE_UPLOADER
-                        4 -> MODE_TAG
-                        else -> MODE_NORMAL
-                    }
-                    builder.keyword = query
-                    builder.category = category
-                    builder.advanceSearch = advancedSearchOption.advanceSearch
-                    builder.minRating = advancedSearchOption.minRating
-                    builder.pageFrom = advancedSearchOption.fromPage
-                    builder.pageTo = advancedSearchOption.toPage
-                } else {
-                    builder.mode = MODE_IMAGE_SEARCH
-                    if (imagePath.isBlank()) {
-                        activity.showTip(selectImageFirst)
-                        return@SearchBarScreen
-                    }
-                    val uri = Uri.parse(imagePath)
-                    val temp = AppConfig.createTempFile() ?: return@SearchBarScreen
-                    val bitmap = context.decodeBitmap(uri) ?: return@SearchBarScreen
-                    temp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
-                    builder.imagePath = temp.path
-                    builder.isUseSimilarityScan = useSimilarityScan
-                    builder.isOnlySearchCovers = searchCoverOnly
+                builder.mode = MODE_IMAGE_SEARCH
+                if (imagePath.isBlank()) {
+                    activity.showTip(selectImageFirst)
+                    return@SearchBarScreen
                 }
+                val uri = Uri.parse(imagePath)
+                val temp = AppConfig.createTempFile() ?: return@SearchBarScreen
+                val bitmap = context.decodeBitmap(uri) ?: return@SearchBarScreen
+                temp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
+                builder.imagePath = temp.path
+                builder.isUseSimilarityScan = useSimilarityScan
+                builder.isOnlySearchCovers = searchCoverOnly
             }
             when (oldMode) {
                 MODE_TOPLIST, MODE_WHATS_HOT -> {
@@ -620,6 +592,17 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 )
             }
         },
+        filter = {
+            SearchFilter(
+                category = category,
+                onCategoryChanged = {
+                    Settings.searchCategory = it
+                    category = it
+                },
+                advancedOption = advancedSearchOption,
+                onAdvancedOptionChanged = { advancedSearchOption = it },
+            )
+        },
     ) { contentPadding ->
         val layoutDirection = LocalLayoutDirection.current
         val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
@@ -639,88 +622,34 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     alpha = 1 - animatedSearchLayout
                 },
         ) {
-            AnimatedVisibility(visible = searchNormalMode) {
-                ElevatedCard(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
-                    Column(
-                        modifier = Modifier.padding(
-                            horizontal = dimensionResource(id = R.dimen.search_category_padding_h),
-                            vertical = dimensionResource(id = R.dimen.search_category_padding_v),
-                        ).fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.search_normal),
-                            modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        NormalSearch(
-                            category = category,
-                            onCategoryChanged = {
-                                Settings.searchCategory = it
-                                category = it
-                            },
-                            searchMode = searchMethod,
-                            onSearchModeChanged = { searchMethod = it },
-                            showInfo = { BaseDialogBuilder(context).setMessage(R.string.search_tip).show() },
-                            maxItemsInEachRow = when (windowSizeClass.widthSizeClass) {
-                                WindowWidthSizeClass.Compact -> 2
-                                WindowWidthSizeClass.Medium -> 3
-                                else -> 5
-                            },
-                        )
-                    }
+            ElevatedCard(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
+                Column(
+                    modifier = Modifier.padding(
+                        horizontal = dimensionResource(id = R.dimen.search_category_padding_h),
+                        vertical = dimensionResource(id = R.dimen.search_category_padding_v),
+                    ).fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.search_image),
+                        modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    ImageSearch(
+                        imagePath = imagePath,
+                        onSelectImage = {
+                            coroutineScope.launch {
+                                val image = context.pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                if (image != null) imagePath = image.toString()
+                            }
+                        },
+                        uss = useSimilarityScan,
+                        onUssChecked = { useSimilarityScan = it },
+                        osc = searchCoverOnly,
+                        onOscChecked = { searchCoverOnly = it },
+                    )
                 }
-            }
-            AnimatedVisibility(visible = !searchNormalMode) {
-                ElevatedCard(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
-                    Column(
-                        modifier = Modifier.padding(
-                            horizontal = dimensionResource(id = R.dimen.search_category_padding_h),
-                            vertical = dimensionResource(id = R.dimen.search_category_padding_v),
-                        ).fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.search_image),
-                            modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        ImageSearch(
-                            imagePath = imagePath,
-                            onSelectImage = {
-                                coroutineScope.launch {
-                                    val image = context.pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                    if (image != null) imagePath = image.toString()
-                                }
-                            },
-                            uss = useSimilarityScan,
-                            onUssChecked = { useSimilarityScan = it },
-                            osc = searchCoverOnly,
-                            onOscChecked = { searchCoverOnly = it },
-                        )
-                    }
-                }
-            }
-            PrimaryTabRow(
-                selectedTabIndex = if (searchNormalMode) 0 else 1,
-                divider = {},
-            ) {
-                LeadingIconTab(
-                    selected = searchNormalMode,
-                    onClick = { searchNormalMode = true },
-                    text = { Text(text = stringResource(id = R.string.keyword_search)) },
-                    icon = { IconFix(imageVector = Icons.Default.Translate, contentDescription = null) },
-                    unselectedContentColor = MaterialTheme.colorScheme.onSurface,
-                )
-                LeadingIconTab(
-                    selected = !searchNormalMode,
-                    onClick = { searchNormalMode = false },
-                    text = { Text(text = stringResource(id = R.string.search_image)) },
-                    icon = { IconFix(imageVector = Icons.Default.ImageSearch, contentDescription = null) },
-                    unselectedContentColor = MaterialTheme.colorScheme.onSurface,
-                )
             }
         }
 
