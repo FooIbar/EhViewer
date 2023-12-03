@@ -17,6 +17,7 @@ package com.hippo.ehviewer.client.data
 
 import android.os.Parcelable
 import androidx.annotation.IntDef
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.addQueryParameterIfNotBlank
@@ -258,24 +259,17 @@ data class ListUrlBuilder(
                 if (category != EhUtils.NONE) {
                     addEncodedQueryParameter("f_cats", (category.inv() and EhUtils.ALL_CATEGORY).toString())
                 }
+                val query = mKeyword?.let {
+                    val index = Settings.languageFilter.value
+                    GalleryInfo.S_LANG_TAGS.getOrNull(index)?.let { lang ->
+                        "$it $lang"
+                    } ?: it
+                }
+                addQueryParameterIfNotBlank("f_search", query)
                 addQueryParameterIfNotBlank("f_shash", hash)
                 addQueryParameterIfNotBlank("prev", mPrev)
                 addQueryParameterIfNotBlank("next", mNext)
                 addQueryParameterIfNotBlank("seek", mJumpTo)
-                // Search key
-                // the settings of ub:UrlBuilder may be overwritten by following Advance search
-                mKeyword?.split('|')?.forEachIndexed { idx, kwd ->
-                    val keyword = kwd.trim { it <= ' ' }
-                    when (idx) {
-                        0 -> addQueryParameterIfNotBlank("f_search", keyword)
-
-                        else -> keyword.indexOf(':').takeIf { it >= 0 }?.run {
-                            val key = keyword.substring(0, this).trim { it <= ' ' }
-                            val value = keyword.substring(this + 1).trim { it <= ' ' }
-                            addQueryParameterIfNotBlank(key, value)
-                        }
-                    }
-                }
                 // Advance search
                 if (advanceSearch != -1) {
                     addQueryParameter("advsearch", "1")
