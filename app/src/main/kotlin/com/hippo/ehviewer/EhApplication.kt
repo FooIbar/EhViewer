@@ -18,6 +18,7 @@ package com.hippo.ehviewer
 
 import android.app.Application
 import android.content.ComponentCallbacks2
+import android.os.StrictMode
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.collection.LruCache
@@ -120,6 +121,7 @@ class EhApplication : Application(), ImageLoaderFactory {
         }
         cleanObsoleteCache(this)
         if (BuildConfig.DEBUG) {
+            StrictMode.enableDefaults()
             Snapshot.registerApplyObserver { anies, _ ->
                 logcat(Log.VERBOSE) { anies.toString() }
             }
