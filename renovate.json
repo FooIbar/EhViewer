@@ -3,4 +3,11 @@
   "extends": [
     "config:base"
   ]
+  "packageRules": [
+    {
+      "description": "Disable updates for SNAPSHOTS",
+      "matchPackagePrefixes": ["androidx"],
+      "allowedVersions": "!/SNAPSHOT$/"
+    }
+  ]
 }
