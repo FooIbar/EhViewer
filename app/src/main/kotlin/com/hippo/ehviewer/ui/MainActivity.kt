@@ -321,6 +321,7 @@ class MainActivity : EhActivity() {
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
                 LocalDrawerLockHandle provides lockDrawerHandle,
+                LocalSnackbarHostState provides snackbarState,
             ) {
                 Scaffold(snackbarHost = { SnackbarHost(snackbarState) }) {
                     LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
@@ -496,6 +497,7 @@ class MainActivity : EhActivity() {
 val LocalNavDrawerState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalNavDrawerState not present!") }
 val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }
 val LocalDrawerLockHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalSideSheetState not present!") }
+val LocalSnackbarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackbarHostState not present!") }
 
 @Composable
 fun LockDrawer(value: Boolean) {

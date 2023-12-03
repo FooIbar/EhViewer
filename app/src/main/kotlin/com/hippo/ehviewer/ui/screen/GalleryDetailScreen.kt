@@ -51,6 +51,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ModalBottomSheetFix
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -80,7 +81,6 @@ import androidx.core.text.parseAsHtml
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import arrow.core.partially1
 import coil.imageLoader
-import com.google.android.material.snackbar.Snackbar
 import com.hippo.ehviewer.EhApplication.Companion.galleryDetailCache
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
@@ -120,6 +120,7 @@ import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.MODE_READ
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
+import com.hippo.ehviewer.ui.LocalSnackbarHostState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownload
@@ -231,15 +232,23 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
     val galleryDetailUrl = remember { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity<MainActivity>() }
+    val snackbarState = LocalSnackbarHostState.current
+    var showReadAction by rememberSaveable { mutableStateOf(true) }
     LaunchedEffect(args, galleryInfo) {
-        val page = (args as? TokenArgs)?.page ?: 0
-        val gi = galleryInfo
-        if (page != 0 && gi != null) {
-            Snackbar.make(
-                activity.findViewById(R.id.content),
-                context.getString(R.string.read_from, page),
-                Snackbar.LENGTH_LONG,
-            ).setAction(R.string.read) { context.navToReader(gi.findBaseInfo(), page) }.show()
+        if (showReadAction) {
+            val page = (args as? TokenArgs)?.page ?: 0
+            val gi = galleryInfo
+            if (page != 0 && gi != null) {
+                showReadAction = false
+                val result = snackbarState.showSnackbar(
+                    context.getString(R.string.read_from, page),
+                    context.getString(R.string.read),
+                    true,
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    context.navToReader(gi.findBaseInfo(), page)
+                }
+            }
         }
     }
     with(activity) {
