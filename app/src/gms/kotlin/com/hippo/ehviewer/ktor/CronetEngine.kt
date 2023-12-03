@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ktor
 
+import com.hippo.ehviewer.cronet.cronetDispatcher
 import com.hippo.ehviewer.cronet.cronetHttpClient
 import com.hippo.ehviewer.cronet.cronetHttpClientExecutor
 import com.hippo.ehviewer.cronet.pool
@@ -37,6 +38,7 @@ import org.chromium.net.UrlResponseInfo
 
 object CronetEngine : HttpClientEngineBase("Cronet") {
     override val config = HttpClientEngineConfig()
+    override val dispatcher = cronetDispatcher
 
     @InternalAPI
     override suspend fun execute(data: HttpRequestData): HttpResponseData {

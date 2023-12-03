@@ -7,6 +7,7 @@ import android.net.http.UploadDataProvider
 import android.net.http.UploadDataSink
 import android.net.http.UrlRequest
 import android.net.http.UrlResponseInfo
+import com.hippo.ehviewer.cronet.cronetDispatcher
 import com.hippo.ehviewer.cronet.cronetHttpClient
 import com.hippo.ehviewer.cronet.cronetHttpClientExecutor
 import com.hippo.ehviewer.cronet.pool
@@ -39,6 +40,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 
 object CronetEngine : HttpClientEngineBase("Cronet") {
     override val config = HttpClientEngineConfig()
+    override val dispatcher = cronetDispatcher
 
     @InternalAPI
     override suspend fun execute(data: HttpRequestData): HttpResponseData {
