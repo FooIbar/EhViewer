@@ -19,11 +19,17 @@ import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import okio.Path.Companion.toOkioPath
 import splitties.init.appCtx
 
 val cronetHttpClient: HttpEngine = HttpEngine.Builder(appCtx).apply {
     setEnableBrotli(true)
     setUserAgent(CHROME_USER_AGENT)
+
+    // Cache Quic hint only since the real cache mechanism should on Ktor layer
+    val cache = (appCtx.cacheDir.toOkioPath() / "http_cache").toFile().apply { mkdirs() }
+    setStoragePath(cache.absolutePath)
+    setEnableHttpCache(HttpEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1024)
 }.build()
 
 class CronetRequest {
