@@ -133,7 +133,6 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.NormalSearch
-import com.hippo.ehviewer.ui.main.SearchAdvanced
 import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
@@ -192,7 +191,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
 
     var searchNormalMode by rememberSaveable { mutableStateOf(true) }
-    var searchAdvancedMode by rememberSaveable { mutableStateOf(false) }
     var category by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
     var searchMethod by rememberSaveable { mutableIntStateOf(1) }
     var advancedSearchOption by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
@@ -534,14 +532,13 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
 
     var expanded by remember { mutableStateOf(false) }
 
-    val searchErr1 = stringResource(R.string.search_sp_err1)
-    val searchErr2 = stringResource(R.string.search_sp_err2)
     val selectImageFirst = stringResource(R.string.select_image_first)
     SearchBarScreen(
         title = suitableTitle,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
-        showLanguageFilter = true,
+        advancedOption = advancedSearchOption,
+        onAdvancedOptionChanged = { advancedSearchOption = it },
         showSearchFab = showSearchLayout,
         onApplySearch = { query ->
             val builder = ListUrlBuilder()
@@ -551,6 +548,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
                 builder.mode = newMode
                 builder.keyword = query
+                builder.advanceSearch = advancedSearchOption.advanceSearch
+                builder.minRating = advancedSearchOption.minRating
+                builder.pageFrom = advancedSearchOption.fromPage
+                builder.pageTo = advancedSearchOption.toPage
             } else {
                 if (searchNormalMode) {
                     builder.mode = when (searchMethod) {
@@ -561,21 +562,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     }
                     builder.keyword = query
                     builder.category = category
-                    if (searchAdvancedMode) {
-                        builder.advanceSearch = advancedSearchOption.advanceSearch
-                        builder.minRating = advancedSearchOption.minRating
-                        val pageFrom = advancedSearchOption.fromPage
-                        val pageTo = advancedSearchOption.toPage
-                        if (pageTo != -1 && pageTo < 10) {
-                            activity.showTip(searchErr1)
-                            return@SearchBarScreen
-                        } else if (pageFrom != -1 && pageTo != -1 && pageTo - pageFrom < 20) {
-                            activity.showTip(searchErr2)
-                            return@SearchBarScreen
-                        }
-                        builder.pageFrom = pageFrom
-                        builder.pageTo = pageTo
-                    }
+                    builder.advanceSearch = advancedSearchOption.advanceSearch
+                    builder.minRating = advancedSearchOption.minRating
+                    builder.pageFrom = advancedSearchOption.fromPage
+                    builder.pageTo = advancedSearchOption.toPage
                 } else {
                     builder.mode = MODE_IMAGE_SEARCH
                     if (imagePath.isBlank()) {
@@ -672,36 +662,12 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                             },
                             searchMode = searchMethod,
                             onSearchModeChanged = { searchMethod = it },
-                            isAdvanced = searchAdvancedMode,
-                            onAdvancedChanged = { searchAdvancedMode = it },
                             showInfo = { BaseDialogBuilder(context).setMessage(R.string.search_tip).show() },
                             maxItemsInEachRow = when (windowSizeClass.widthSizeClass) {
                                 WindowWidthSizeClass.Compact -> 2
                                 WindowWidthSizeClass.Medium -> 3
                                 else -> 5
                             },
-                        )
-                    }
-                }
-            }
-            AnimatedVisibility(visible = searchNormalMode && searchAdvancedMode) {
-                ElevatedCard(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
-                    Column(
-                        modifier = Modifier.padding(
-                            horizontal = dimensionResource(id = R.dimen.search_category_padding_h),
-                            vertical = dimensionResource(id = R.dimen.search_category_padding_v),
-                        ).fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.search_advance),
-                            modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                        SearchAdvanced(
-                            state = advancedSearchOption,
-                            onStateChanged = { advancedSearchOption = it },
                         )
                     }
                 }

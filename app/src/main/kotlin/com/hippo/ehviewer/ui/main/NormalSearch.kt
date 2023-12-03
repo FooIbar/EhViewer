@@ -26,7 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 
 private val categoryTable = arrayOf(
     EhUtils.DOUJINSHI to R.string.doujinshi,
@@ -55,8 +54,6 @@ fun NormalSearch(
     onCategoryChanged: (Int) -> Unit,
     searchMode: Int,
     onSearchModeChanged: (Int) -> Unit,
-    isAdvanced: Boolean,
-    onAdvancedChanged: (Boolean) -> Unit,
     showInfo: () -> Unit,
     maxItemsInEachRow: Int,
 ) {
@@ -101,11 +98,6 @@ fun NormalSearch(
             IconButton(onClick = showInfo) {
                 Icon(imageVector = Icons.AutoMirrored.Default.Help, contentDescription = null)
             }
-            LabeledCheckbox(
-                checked = isAdvanced,
-                onCheckedChange = onAdvancedChanged,
-                label = stringResource(id = R.string.search_enable_advance),
-            )
         }
     }
 }

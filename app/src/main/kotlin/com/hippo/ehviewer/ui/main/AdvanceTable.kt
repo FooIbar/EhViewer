@@ -14,7 +14,7 @@ object AdvanceTable {
 @Parcelize
 data class AdvancedSearchOption(
     val advanceSearch: Int = 0,
-    val minRating: Int = -1,
-    val fromPage: Int = -1,
-    val toPage: Int = -1,
+    val minRating: Int = 0,
+    val fromPage: Int = 0,
+    val toPage: Int = 0,
 ) : Parcelable

@@ -101,8 +101,8 @@
 
     <string name="search_tip">一般搜索：就是搜索。\n\n訂閲搜素：在訂閲中搜索。\n\n指定上傳者：列出該上傳者上傳的畫廊。其他選項會被忽略。\n\n指定標籤：列出含有該標籤的畫廊。其他選項會被忽略。</string>
 
-    <string name="search_sh">僅顯示被刪除的畫廊</string>
-    <string name="search_sto">僅顯示有種子的畫廊</string>
+    <string name="search_sh">已刪除</string>
+    <string name="search_sto">有種子</string>
     <string name="search_sr">最低評分：</string>
     <string name="search_sp">頁數：</string>
     <string name="search_sp_to">到</string>
