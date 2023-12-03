@@ -341,29 +341,16 @@ fun SearchBarScreen(
                         selected = languageFilter != -1,
                         onClick = {
                             scope.launch {
-                                languageFilter = dialogState.showSingleChoice(
-                                    any,
-                                    *languages,
-                                    selected = languageFilter + 1,
-                                ) - 1
+                                languageFilter =
+                                    dialogState.showSingleChoice(any, *languages, selected = languageFilter + 1) - 1
                             }
                         },
                         label = {
-                            Text(
-                                text = if (languageFilter == -1) {
-                                    languageStr
-                                } else {
-                                    languages[languageFilter]
-                                },
-                            )
+                            Text(text = if (languageFilter == -1) languageStr else languages[languageFilter])
                         },
                         trailingIcon = {
                             IconFix(
-                                imageVector = if (languageFilter == -1) {
-                                    Icons.Outlined.FilterAlt
-                                } else {
-                                    Icons.Default.FilterAlt
-                                },
+                                imageVector = if (languageFilter == -1) Icons.Outlined.FilterAlt else Icons.Default.FilterAlt,
                                 contentDescription = null,
                             )
                         },
