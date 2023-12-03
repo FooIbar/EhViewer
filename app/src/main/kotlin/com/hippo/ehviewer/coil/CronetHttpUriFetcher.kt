@@ -15,7 +15,6 @@ import coil.request.Options
 import com.hippo.ehviewer.cronet.copyToChannel
 import com.hippo.ehviewer.cronet.cronetRequest
 import com.hippo.ehviewer.cronet.execute
-import com.hippo.ehviewer.cronet.noCache
 import java.io.RandomAccessFile
 
 /**
@@ -27,9 +26,7 @@ class CronetHttpUriFetcher(private val data: String, private val options: Option
         val diskCacheKey = options.diskCacheKey ?: data
         val diskCache = requireNotNull(imageLoader.diskCache)
         val snapshot = diskCache.openSnapshot(diskCacheKey) ?: run {
-            val success = cronetRequest(data) {
-                noCache()
-            }.execute {
+            val success = cronetRequest(data).execute {
                 diskCache.suspendEdit(diskCacheKey) {
                     RandomAccessFile(data.toFile(), "rw").use {
                         copyToChannel(it.channel)
