@@ -20,14 +20,14 @@ import io.ktor.utils.io.InternalAPI
 import io.ktor.utils.io.pool.useInstance
 import io.ktor.utils.io.writer
 import java.nio.ByteBuffer
-import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.chromium.net.CronetException
 import org.chromium.net.UploadDataProvider
@@ -53,7 +53,7 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
         val requestTime = GMTDate()
 
         val callback = object : UrlRequest.Callback() {
-            lateinit var readerCont: Continuation<Boolean>
+            lateinit var chunkChan: Channel<ByteBuffer>
             override fun onRedirectReceived(request: UrlRequest, info: UrlResponseInfo, newLocationUrl: String) {
                 continuation.resume(
                     info.toHttpResponseData(
@@ -65,16 +65,14 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
 
             override fun onResponseStarted(request: UrlRequest, info: UrlResponseInfo) {
                 val channel = GlobalScope.writer(callContext) {
-                    pool.useInstance { buffer ->
-                        while (callContext.isActive) {
-                            val done = suspendCancellableCoroutine {
-                                readerCont = it
-                                request.read(buffer)
-                            }
+                    pool.useInstance {
+                        chunkChan = Channel(1)
+                        request.read(it)
+                        chunkChan.consumeEach { buffer ->
                             buffer.flip()
                             channel.writeFully(buffer)
                             buffer.clear()
-                            if (done) break
+                            request.read(buffer)
                         }
                     }
                 }.channel
@@ -88,16 +86,16 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
             }
 
             override fun onReadCompleted(request: UrlRequest, info: UrlResponseInfo, byteBuffer: ByteBuffer) {
-                readerCont.resume(false)
+                chunkChan.trySend(byteBuffer).getOrThrow()
             }
 
             override fun onSucceeded(request: UrlRequest, info: UrlResponseInfo) {
-                readerCont.resume(true)
+                chunkChan.close()
             }
 
             override fun onFailed(request: UrlRequest, info: UrlResponseInfo, error: CronetException) {
-                if (::readerCont.isInitialized) {
-                    readerCont.resumeWithException(error)
+                if (::chunkChan.isInitialized) {
+                    chunkChan.close(error)
                 } else {
                     continuation.resumeWithException(error)
                 }
