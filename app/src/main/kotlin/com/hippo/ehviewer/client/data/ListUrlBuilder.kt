@@ -271,7 +271,7 @@ data class ListUrlBuilder(
                 addQueryParameterIfNotBlank("next", mNext)
                 addQueryParameterIfNotBlank("seek", mJumpTo)
                 // Advance search
-                if (advanceSearch != -1) {
+                if (advanceSearch > 0 || minRating > 0 || pageFrom > 0 || pageTo > 0) {
                     addQueryParameter("advsearch", "1")
                     if (advanceSearch and AdvanceTable.SH != 0) {
                         addQueryParameter("f_sh", "on")
@@ -289,20 +289,20 @@ data class ListUrlBuilder(
                         addQueryParameter("f_sft", "on")
                     }
                     // Set min star
-                    if (minRating != -1) {
+                    if (minRating > 0) {
                         addQueryParameter("f_sr", "on")
                         addQueryParameter("f_srdd", "$minRating")
                     }
                     // Pages
-                    if (pageFrom != -1 || pageTo != -1) {
+                    if (pageFrom > 0 || pageTo > 0) {
                         addQueryParameter("f_sp", "on")
                         addQueryParameterIfNotBlank(
                             "f_spf",
-                            pageFrom.takeUnless { it == -1 }?.toString(),
+                            pageFrom.takeIf { it > 0 }?.toString(),
                         )
                         addQueryParameterIfNotBlank(
                             "f_spt",
-                            pageTo.takeUnless { it == -1 }?.toString(),
+                            pageTo.takeIf { it > 0 }?.toString(),
                         )
                     }
                 }

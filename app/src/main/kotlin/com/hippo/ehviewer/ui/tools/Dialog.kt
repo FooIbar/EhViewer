@@ -109,9 +109,16 @@ class DialogState {
         content = { block(realContinuation) }
     }
 
-    suspend fun <R> awaitResult(initial: R, @StringRes title: Int? = null, block: @Composable DialogScope<R>.() -> Unit): R {
+    suspend fun <R> awaitResult(
+        initial: R,
+        @StringRes title: Int? = null,
+        invalidator: (suspend (R) -> String?)? = null,
+        block: @Composable DialogScope<R>.(String?) -> Unit,
+    ): R {
         return dialog { cont ->
+            val coroutineScope = rememberCoroutineScope()
             val state = remember(cont) { mutableStateOf(initial) }
+            var error by remember(cont) { mutableStateOf<String?>(null) }
             val impl = remember(cont) {
                 object : DialogScope<R> {
                     override var expectedValue by state
@@ -120,12 +127,21 @@ class DialogState {
             AlertDialog(
                 onDismissRequest = { cont.cancel() },
                 confirmButton = {
-                    TextButton(onClick = { cont.resume(state.value) }) {
+                    TextButton(onClick = {
+                        if (invalidator == null) {
+                            cont.resume(state.value)
+                        } else {
+                            coroutineScope.launch {
+                                error = invalidator.invoke(state.value)
+                                error ?: cont.resume(state.value)
+                            }
+                        }
+                    }) {
                         Text(text = stringResource(id = android.R.string.ok))
                     }
                 },
                 title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
-                text = { block(impl) },
+                text = { block(impl, error) },
             )
         }
     }
