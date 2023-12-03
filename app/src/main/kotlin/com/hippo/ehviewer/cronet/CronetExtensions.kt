@@ -11,7 +11,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 
 val pool = DirectByteBufferPool(32)
 
-val cronetHttpClientExecutor = Dispatchers.IO.asExecutor()
+// Limit thread to 1 since we are async & non-blocking
+val cronetDispatcher = Dispatchers.IO.limitedParallelism(1)
+val cronetHttpClientExecutor = cronetDispatcher.asExecutor()
 
 @Suppress("NewApi")
 suspend inline fun CronetRequest.awaitBodyFully(crossinline callback: (ByteBuffer) -> Unit) {
