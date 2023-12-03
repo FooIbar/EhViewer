@@ -25,16 +25,10 @@ import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.client.statement
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.coil.suspendEdit
-import com.hippo.ehviewer.cronet.copyToChannel
-import com.hippo.ehviewer.cronet.cronetRequest
-import com.hippo.ehviewer.cronet.execute
-import com.hippo.ehviewer.cronet.getHeadersMap
-import com.hippo.ehviewer.cronet.noCache
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.gallery.SUPPORT_IMAGE_EXTENSIONS
 import com.hippo.ehviewer.image.Image.UniFileSource
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.ehviewer.util.isCronetSupported
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openOutputStream
@@ -46,7 +40,6 @@ import io.ktor.http.isSuccess
 import io.ktor.utils.io.jvm.nio.copyTo
 import java.util.Locale
 import kotlin.io.path.readText
-import okhttp3.MediaType.Companion.toMediaType
 
 class SpiderDen(mGalleryInfo: GalleryInfo) {
     private val mGid = mGalleryInfo.gid
@@ -128,48 +121,30 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
         return dir.createFile(perFilename(index, ext))
     }
 
-    @Suppress("NewApi")
     suspend fun makeHttpCallAndSaveImage(
         index: Int,
         url: String,
         referer: String?,
         notifyProgress: (Long, Long, Int) -> Unit,
-    ): Boolean {
-        return if (isCronetSupported) {
-            cronetRequest(url, referer) {
-                noCache()
-            }.execute { info ->
-                val headers = info.getHeadersMap()
-                val type = headers["Content-Type"]?.first()?.toMediaType()?.subtype ?: "jpg"
-                val length = headers["Content-Length"]!!.first().toLong()
-                saveResponseMeta(index, type) { file ->
-                    file.openOutputStream().use { os ->
-                        val chan = os.channel
-                        chan.truncate(0)
-                        copyToChannel(chan) {
-                            notifyProgress(length, info.receivedByteCount, it)
-                        }
-                    }
-                }
-            }
+    ) = statement(url, referer) {
+        var prev = 0L
+        onDownload { done, total ->
+            notifyProgress(total!!, done, (done - prev).toInt())
+            prev = done
+        }
+    }.execute {
+        if (it.status.isSuccess()) {
+            saveFromHttpResponse(index, it)
         } else {
-            statement(url, referer) {
-                var prev = 0L
-                onDownload { done, total ->
-                    notifyProgress(total!!, done, (done - prev).toInt())
-                    prev = done
-                }
-            }.execute {
-                if (it.status.isSuccess()) {
-                    saveFromHttpResponse(index, it)
-                } else {
-                    false
-                }
-            }
+            false
         }
     }
 
-    private suspend fun saveResponseMeta(index: Int, ext: String, fops: suspend (UniFile) -> Unit): Boolean {
+    private suspend inline fun saveResponseMeta(
+        index: Int,
+        ext: String,
+        crossinline fops: suspend (UniFile) -> Unit,
+    ): Boolean {
         findDownloadFileForIndex(index, ext)?.run {
             fops(this)
             return true

@@ -19,14 +19,10 @@ import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import okio.Path.Companion.toOkioPath
 import splitties.init.appCtx
 
 val cronetHttpClient: HttpEngine = HttpEngine.Builder(appCtx).apply {
     setEnableBrotli(true)
-    val cache = (appCtx.cacheDir.toOkioPath() / "http_cache").toFile().apply { mkdirs() }
-    setStoragePath(cache.absolutePath)
-    setEnableHttpCache(HttpEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 100 * 1024)
     setUserAgent(CHROME_USER_AGENT)
 }.build()
 
@@ -86,6 +82,3 @@ suspend inline fun <R> CronetRequest.execute(crossinline callback: suspend Crone
         }
     }
 }
-
-fun UrlRequest.Builder.noCache(): UrlRequest.Builder = setCacheDisabled(true)
-fun UrlResponseInfo.getHeadersMap(): Map<String, List<String>> = headers.asMap
