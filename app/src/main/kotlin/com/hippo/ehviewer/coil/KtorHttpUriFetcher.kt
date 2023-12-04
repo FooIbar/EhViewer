@@ -12,25 +12,22 @@ import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.fetch.SourceResult
 import coil.request.Options
-import com.hippo.ehviewer.cronet.copyToChannel
-import com.hippo.ehviewer.cronet.cronetRequest
-import com.hippo.ehviewer.cronet.execute
-import java.io.RandomAccessFile
+import com.hippo.ehviewer.client.statement
+import com.hippo.ehviewer.util.copyTo
+import io.ktor.client.statement.bodyAsChannel
 
 /**
- * A HttpUriFetcher impl use Cronet for jvmheapless IO
+ * A HttpUriFetcher impl use Ktor (Will do jvmheapless IO when backing engine is Cronet)
  * cacheHeader is never respected | recorded since thumb is immutable
  */
-class CronetHttpUriFetcher(private val data: String, private val options: Options, private val imageLoader: ImageLoader) : Fetcher {
+class KtorHttpUriFetcher(private val data: String, private val options: Options, private val imageLoader: ImageLoader) : Fetcher {
     override suspend fun fetch(): FetchResult {
         val diskCacheKey = options.diskCacheKey ?: data
         val diskCache = requireNotNull(imageLoader.diskCache)
         val snapshot = diskCache.openSnapshot(diskCacheKey) ?: run {
-            val success = cronetRequest(data).execute {
+            val success = statement(data).execute {
                 diskCache.suspendEdit(diskCacheKey) {
-                    RandomAccessFile(data.toFile(), "rw").use {
-                        copyToChannel(it.channel)
-                    }
+                    it.bodyAsChannel().copyTo(data.toFile())
                 }
             }
             check(success)
@@ -45,9 +42,9 @@ class CronetHttpUriFetcher(private val data: String, private val options: Option
     }
 }
 
-fun ComponentRegistry.Builder.installCronetHttpUriFetcher() = add { data: Uri, options, loader ->
+fun ComponentRegistry.Builder.installKtorHttpUriFetcher() = add { data: Uri, options, loader ->
     if (data.scheme != "http" && data.scheme != "https") return@add null
-    CronetHttpUriFetcher(data.toString(), options, loader)
+    KtorHttpUriFetcher(data.toString(), options, loader)
 }
 
 private fun getMimeType(url: String) = MimeTypeMap.getSingleton().getMimeTypeFromUrl(url)

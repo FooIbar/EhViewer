@@ -32,7 +32,7 @@ import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.coil.MergeInterceptor
-import com.hippo.ehviewer.coil.installCronetHttpUriFetcher
+import com.hippo.ehviewer.coil.installKtorHttpUriFetcher
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
@@ -60,7 +60,6 @@ import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.cookies.HttpCookies
-import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
 import okhttp3.AsyncDns
@@ -161,12 +160,8 @@ class EhApplication : Application(), ImageLoaderFactory {
 
     override fun newImageLoader() = imageLoader {
         components {
-            if (isCronetSupported) {
-                callFactory { unreachable() }
-                installCronetHttpUriFetcher()
-            } else {
-                callFactory(coilClient)
-            }
+            callFactory { unreachable() }
+            installKtorHttpUriFetcher()
             if (isAtLeastP) {
                 add { result, options, _ -> ImageDecoderDecoder(result.source, options, false) }
             }
@@ -216,19 +211,6 @@ class EhApplication : Application(), ImageLoaderFactory {
                 }
                 addInterceptor(UncaughtExceptionInterceptor())
                 addInterceptor(CloudflareInterceptor(appCtx))
-            }
-        }
-
-        // Use KtorClient directly when coil 3.0 released
-        private val coilClient by lazy {
-            httpClient(baseOkHttpClient) {
-                addInterceptor {
-                    val req = it.request()
-                    val newReq = req.newBuilder().apply {
-                        addHeader(HttpHeaders.Cookie, EhCookieStore.getCookieHeader(req.url.toString()))
-                    }.build()
-                    it.proceed(newReq)
-                }
             }
         }
 
