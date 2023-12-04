@@ -15,7 +15,10 @@
  */
 package com.hippo.ehviewer.util
 
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.jvm.nio.copyTo
 import java.io.File
+import java.io.RandomAccessFile
 import java.util.Locale
 import kotlin.math.ln
 import kotlin.math.pow
@@ -151,5 +154,11 @@ object FileUtils {
 
         // Unbelievable
         return null
+    }
+}
+
+suspend fun ByteReadChannel.copyTo(file: File) {
+    RandomAccessFile(file, "rw").use {
+        copyTo(it.channel)
     }
 }
