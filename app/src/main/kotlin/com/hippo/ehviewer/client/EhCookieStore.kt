@@ -9,7 +9,6 @@ import io.ktor.http.Cookie
 import io.ktor.http.Url
 import io.ktor.http.parseClientCookiesHeader
 import io.ktor.http.renderSetCookieHeader
-import okhttp3.HttpUrl
 
 object EhCookieStore : CookiesStorage {
     private val manager = CookieManager.getInstance()
@@ -40,10 +39,6 @@ object EhCookieStore : CookiesStorage {
                 manager.setCookie(EhUrl.HOST_EX, it.toString())
             }
         }
-    }
-
-    fun deleteCookie(url: HttpUrl, name: String) {
-        manager.setCookie(url.toString(), "$name=;Max-Age=0")
     }
 
     fun addCookie(k: String, v: String, domain: String) {
