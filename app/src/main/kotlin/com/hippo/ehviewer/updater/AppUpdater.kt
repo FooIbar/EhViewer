@@ -4,13 +4,11 @@ import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.executeAndParseAs
+import com.hippo.ehviewer.util.copyTo
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
-import io.ktor.util.cio.writeChannel
-import io.ktor.utils.io.close
-import io.ktor.utils.io.copyTo
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import java.io.File
 import java.util.zip.ZipInputStream
@@ -81,12 +79,7 @@ object AppUpdater {
                     }
                 }
             } else {
-                val channel = file.writeChannel()
-                try {
-                    response.bodyAsChannel().copyTo(channel)
-                } finally {
-                    channel.close()
-                }
+                response.bodyAsChannel().copyTo(file)
             }
         }
 }

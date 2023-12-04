@@ -24,13 +24,11 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.StatusCodeException
+import com.hippo.ehviewer.util.copyTo
 import io.ktor.client.HttpClient
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.isSuccess
-import io.ktor.util.cio.writeChannel
-import io.ktor.utils.io.close
-import io.ktor.utils.io.copyTo
 import java.io.File
 import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.CoroutineScope
@@ -183,12 +181,7 @@ object EhTagDatabase : CoroutineScope {
         runCatching {
             client.prepareGet(url).execute {
                 if (it.status.isSuccess()) {
-                    val channel = file.writeChannel()
-                    try {
-                        it.bodyAsChannel().copyTo(channel)
-                    } finally {
-                        channel.close()
-                    }
+                    it.bodyAsChannel().copyTo(file)
                 } else {
                     throw StatusCodeException(it.status.value)
                 }
