@@ -16,6 +16,10 @@
 package com.hippo.ehviewer.client
 
 import com.hippo.ehviewer.Settings
+import io.ktor.http.Parameters
+import io.ktor.http.ParametersBuilder
+import io.ktor.http.URLBuilder
+import io.ktor.http.URLProtocol
 import okhttp3.HttpUrl
 
 object EhUrl {
@@ -146,6 +150,19 @@ object EhUrl {
         return "https://ehwiki.org/wiki/" + tag.replace(' ', '_')
     }
 }
+
+inline fun ehUrl(path: String, builder: ParametersBuilder.() -> Unit) = URLBuilder(
+    protocol = URLProtocol.HTTPS,
+    host = EhUrl.domain,
+    pathSegments = listOf(path),
+    parameters = Parameters.build(builder),
+)
+
+fun ParametersBuilder.addQueryParameterIfNotBlank(name: String, value: String?) = apply {
+    if (!value.isNullOrBlank()) append(name, value)
+}
+
+fun ParametersBuilder.addQueryParameter(name: String, value: String) = append(name, value)
 
 inline fun httpsUrl(builder: HttpUrl.Builder.() -> Unit) = HttpUrl.Builder().apply(builder).scheme("https").build()
 inline fun ehUrl(builder: HttpUrl.Builder.() -> Unit) = httpsUrl { apply(builder).host(EhUrl.domain) }
