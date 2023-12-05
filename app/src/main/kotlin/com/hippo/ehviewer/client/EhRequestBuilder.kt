@@ -26,7 +26,6 @@ import io.ktor.client.request.forms.formData
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
-import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
@@ -45,9 +44,7 @@ import okio.BufferedSource
 
 inline fun JsonObjectBuilder.array(name: String, builder: JsonArrayBuilder.() -> Unit) = put(name, buildJsonArray(builder))
 
-suspend inline fun <reified T> HttpStatement.executeAndParseAs() = execute { it.parseAs<T>() }
-
-suspend inline fun <reified T> HttpResponse.parseAs(): T = bodyAsText().parseAs()
+suspend inline fun <reified T> HttpStatement.executeAndParseAs() = execute { it.bodyAsText().parseAs<T>() }
 inline fun <reified T> BufferedSource.parseAs(): T = json.decodeFromBufferedSource(this)
 inline fun <reified T> String.parseAs(): T = json.decodeFromString(this)
 
@@ -66,7 +63,7 @@ fun HttpRequestBuilder.applyEhConfig(referer: String?, origin: String?) {
     header(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
 }
 
-suspend inline fun statement(
+suspend inline fun ehRequest(
     url: String,
     referer: String? = null,
     origin: String? = null,
@@ -76,7 +73,7 @@ suspend inline fun statement(
     apply(builder)
 }
 
-suspend inline fun noRedirectStatement(
+suspend inline fun noRedirectEhRequest(
     url: String,
     referer: String? = null,
     origin: String? = null,

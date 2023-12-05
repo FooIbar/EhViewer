@@ -12,7 +12,7 @@ import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.fetch.SourceResult
 import coil.request.Options
-import com.hippo.ehviewer.client.statement
+import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.util.copyTo
 import io.ktor.client.statement.bodyAsChannel
 
@@ -25,7 +25,7 @@ class KtorHttpUriFetcher(private val data: String, private val options: Options,
         val diskCacheKey = options.diskCacheKey ?: data
         val diskCache = requireNotNull(imageLoader.diskCache)
         val snapshot = diskCache.openSnapshot(diskCacheKey) ?: run {
-            val success = statement(data).execute {
+            val success = ehRequest(data).execute {
                 diskCache.suspendEdit(diskCacheKey) {
                     it.bodyAsChannel().copyTo(data.toFile())
                 }

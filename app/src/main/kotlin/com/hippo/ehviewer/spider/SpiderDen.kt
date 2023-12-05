@@ -21,8 +21,8 @@ import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.client.getImageKey
-import com.hippo.ehviewer.client.statement
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.coil.suspendEdit
 import com.hippo.ehviewer.download.downloadLocation
@@ -126,7 +126,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
         url: String,
         referer: String?,
         notifyProgress: (Long, Long, Int) -> Unit,
-    ) = statement(url, referer) {
+    ) = ehRequest(url, referer) {
         var prev = 0L
         onDownload { done, total ->
             notifyProgress(total!!, done, (done - prev).toInt())
