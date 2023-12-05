@@ -17,6 +17,7 @@ package com.hippo.ehviewer.client.data
 
 import android.os.Parcelable
 import com.hippo.ehviewer.client.EhUrl
+import com.hippo.ehviewer.client.addQueryParameter
 import com.hippo.ehviewer.client.addQueryParameterIfNotBlank
 import com.hippo.ehviewer.client.ehUrl
 import kotlinx.parcelize.Parcelize
@@ -34,24 +35,20 @@ data class FavListUrlBuilder(
         prev = index.takeUnless { isNext }
     }
 
-    fun build() = ehUrl {
-        addPathSegment(EhUrl.FAV_PATH)
-        if (isValidFavCat(favCat)) {
-            addQueryParameter("favcat", "$favCat")
-        } else if (favCat == FAV_CAT_ALL) {
-            addQueryParameter("favcat", "all")
+    fun build() = ehUrl(EhUrl.FAV_PATH) {
+        when {
+            isValidFavCat(favCat) -> addQueryParameter("favcat", "$favCat")
+            favCat == FAV_CAT_ALL -> addQueryParameter("favcat", "all")
         }
         addQueryParameterIfNotBlank("f_search", keyword)
         addQueryParameterIfNotBlank("prev", prev)
         addQueryParameterIfNotBlank("next", next)
         addQueryParameterIfNotBlank("seek", jumpTo)
-    }.toString()
+    }.buildString()
 
     companion object {
         const val FAV_CAT_ALL = -1
         const val FAV_CAT_LOCAL = -2
-        fun isValidFavCat(favCat: Int): Boolean {
-            return favCat in 0..9
-        }
+        fun isValidFavCat(favCat: Int) = favCat in 0..9
     }
 }
