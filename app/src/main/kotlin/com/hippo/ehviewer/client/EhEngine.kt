@@ -88,7 +88,7 @@ fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
         with(randomAccessFile) {
             writeUTF(e.message + "\n")
             onLeft { writeUTF(it) }
-            onRight { channel.write(it, Long.MAX_VALUE) }
+            onRight { channel.write(it) }
         }
     }
 }
