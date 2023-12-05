@@ -332,12 +332,11 @@ object EhEngine {
     }.parseString(HomeParser::parseResetLimits)
 
     suspend fun modifyFavorites(gidArray: LongArray, srcCat: Int, dstCat: Int): FavoritesParser.Result {
-        val url = ehUrl {
-            addPathSegments(EhUrl.FAV_PATH)
+        val url = ehUrl(EhUrl.FAV_PATH) {
             if (FavListUrlBuilder.isValidFavCat(srcCat)) {
                 addQueryParameter("favcat", srcCat.toString())
             }
-        }.toString()
+        }.buildString()
         val catStr: String = when (dstCat) {
             -1 -> "delete"
             in 0..9 -> "fav$dstCat"

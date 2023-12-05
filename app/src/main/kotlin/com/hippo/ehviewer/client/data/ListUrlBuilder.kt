@@ -20,6 +20,7 @@ import androidx.annotation.IntDef
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
+import com.hippo.ehviewer.client.addQueryParameter
 import com.hippo.ehviewer.client.addQueryParameterIfNotBlank
 import com.hippo.ehviewer.client.ehUrl
 import com.hippo.ehviewer.dao.QuickSearch
@@ -254,10 +255,9 @@ data class ListUrlBuilder(
 
     fun build(): String {
         return when (mode) {
-            MODE_NORMAL, MODE_SUBSCRIPTION -> ehUrl {
-                if (mode == MODE_SUBSCRIPTION) addPathSegment(EhUrl.WATCHED_PATH)
+            MODE_NORMAL, MODE_SUBSCRIPTION -> ehUrl(EhUrl.WATCHED_PATH.takeIf { mode == MODE_SUBSCRIPTION }) {
                 if (category > 0) {
-                    addEncodedQueryParameter("f_cats", (category.inv() and EhUtils.ALL_CATEGORY).toString())
+                    addQueryParameter("f_cats", (category.inv() and EhUtils.ALL_CATEGORY).toString())
                 }
                 val query = mKeyword?.let {
                     val index = Settings.languageFilter.value
