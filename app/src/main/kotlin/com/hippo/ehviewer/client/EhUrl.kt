@@ -20,7 +20,6 @@ import io.ktor.http.Parameters
 import io.ktor.http.ParametersBuilder
 import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol
-import okhttp3.HttpUrl
 
 object EhUrl {
     const val SITE_E = 0
@@ -124,38 +123,37 @@ object EhUrl {
         return getGalleryDetailUrl(gid, token, 0, false)
     }
 
-    fun getGalleryDetailUrl(gid: Long, token: String?, index: Int, allComment: Boolean) = ehUrl {
-        addPathSegments("g/$gid/$token/")
+    fun getGalleryDetailUrl(gid: Long, token: String?, index: Int, allComment: Boolean) = ehUrl(listOf("g", gid.toString(), token.orEmpty())) {
         if (index != 0) addQueryParameter("p", "$index")
         if (allComment) addQueryParameter("hc", "1")
-    }.toString()
+    }.buildString()
 
-    fun getGalleryMultiPageViewerUrl(gid: Long, token: String) = ehUrl {
-        addPathSegments("mpv/$gid/$token/")
-    }.toString()
+    fun getGalleryMultiPageViewerUrl(gid: Long, token: String) = ehUrl(listOf("mpv", gid.toString(), token)).buildString()
 
-    fun getPageUrl(gid: Long, index: Int, pToken: String): String {
-        return host + "s/" + pToken + '/' + gid + '-' + (index + 1)
-    }
+    fun getPageUrl(gid: Long, index: Int, pToken: String) = host + "s/" + pToken + '/' + gid + '-' + (index + 1)
 
-    fun getAddFavorites(gid: Long, token: String?): String {
-        return host + "gallerypopups.php?gid=" + gid + "&t=" + token + "&act=addfav"
-    }
+    fun getAddFavorites(gid: Long, token: String?) = host + "gallerypopups.php?gid=" + gid + "&t=" + token + "&act=addfav"
 
-    fun getDownloadArchive(gid: Long, token: String?, or: String): String {
-        return host + "archiver.php?gid=" + gid + "&token=" + token + "&or=" + or
-    }
+    fun getDownloadArchive(gid: Long, token: String?, or: String) = host + "archiver.php?gid=" + gid + "&token=" + token + "&or=" + or
 
-    fun getTagDefinitionUrl(tag: String): String {
-        return "https://ehwiki.org/wiki/" + tag.replace(' ', '_')
-    }
+    fun getTagDefinitionUrl(tag: String) = "https://ehwiki.org/wiki/" + tag.replace(' ', '_')
 }
 
-inline fun ehUrl(path: String, builder: ParametersBuilder.() -> Unit) = URLBuilder(
+inline fun ehUrl(path: String?, builder: ParametersBuilder.() -> Unit) = ehUrl(
+    path = if (path.isNullOrBlank()) emptyList() else listOf(path),
+    parameters = Parameters.build(builder),
+)
+
+inline fun ehUrl(path: List<String>, builder: ParametersBuilder.() -> Unit) = ehUrl(
+    path = path,
+    parameters = Parameters.build(builder),
+)
+
+fun ehUrl(path: List<String>, parameters: Parameters = Parameters.Empty) = URLBuilder(
     protocol = URLProtocol.HTTPS,
     host = EhUrl.domain,
-    pathSegments = listOf(path),
-    parameters = Parameters.build(builder),
+    pathSegments = path,
+    parameters = parameters,
 )
 
 fun ParametersBuilder.addQueryParameterIfNotBlank(name: String, value: String?) = apply {
@@ -163,9 +161,3 @@ fun ParametersBuilder.addQueryParameterIfNotBlank(name: String, value: String?) 
 }
 
 fun ParametersBuilder.addQueryParameter(name: String, value: String) = append(name, value)
-
-inline fun httpsUrl(builder: HttpUrl.Builder.() -> Unit) = HttpUrl.Builder().apply(builder).scheme("https").build()
-inline fun ehUrl(builder: HttpUrl.Builder.() -> Unit) = httpsUrl { apply(builder).host(EhUrl.domain) }
-fun HttpUrl.Builder.addQueryParameterIfNotBlank(name: String, value: String?) = apply {
-    if (!value.isNullOrBlank()) addQueryParameter(name, value)
-}
