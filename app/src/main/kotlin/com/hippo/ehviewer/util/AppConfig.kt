@@ -59,14 +59,5 @@ object AppConfig {
         return FileUtils.createTempFile(tempDir, null)
     }
 
-    fun saveParseErrorBody(e: Throwable, body: String) {
-        val dir = externalParseErrorDir ?: return
-        File(dir, ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".txt").writer().use {
-            it.write(e.message)
-            it.appendLine()
-            it.append(body)
-        }
-    }
-
     fun getFilesDir(name: String) = File(appCtx.filesDir, name).takeIf { it.ensureDirectory() }
 }
