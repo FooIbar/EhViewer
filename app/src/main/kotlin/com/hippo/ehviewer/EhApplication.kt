@@ -46,7 +46,6 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.ehviewer.util.NoopX509TrustManager
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastS
@@ -55,7 +54,7 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.apache5.Apache5
 import io.ktor.client.plugins.cookies.HttpCookies
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
@@ -178,12 +177,7 @@ class EhApplication : Application(), ImageLoaderFactory {
                     }
                 }
             } else {
-                HttpClient(CIO) {
-                    engine {
-                        https {
-                            trustManager = NoopX509TrustManager
-                        }
-                    }
+                HttpClient(Apache5) {
                     install(HttpCookies) {
                         storage = EhCookieStore
                     }

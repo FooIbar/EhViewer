@@ -102,7 +102,7 @@ kotlinx-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-seri
 # For renovate
 ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
 
-ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-apache5 = { module = "io.ktor:ktor-client-apache5", version.ref = "ktor" }
 
 material = { module = "com.google.android.material:material", version.ref = "google-android-material" }
 
@@ -127,7 +127,7 @@ coil = ["coil-compose", "coil-gif"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
 cronet = ["cronet-api", "cronet-gms"]
 kotlinx-serialization = ["kotlinx-serialization-cbor", "kotlinx-serialization-json", "kotlinx-serialization-json-okio"]
-ktor = ["ktor-client-cio"]
+ktor = ["ktor-client-apache5"]
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
 
 [plugins]
