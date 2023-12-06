@@ -111,6 +111,7 @@ class WebtoonPageHolder(
     override fun recycle() {
         statusJob?.cancel()
         cancelProgressJob()
+        progressIndicator.hide()
 
         removeErrorLayout()
         frame.recycle()
@@ -211,6 +212,7 @@ class WebtoonPageHolder(
      * Called when the page has an error.
      */
     private fun setError() {
+        progressIndicator.hide()
         progressContainer.isVisible = false
         initErrorLayout()
     }

@@ -559,8 +559,17 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             if (force) currentJob?.cancel()
             if (currentJob?.isActive != true) {
                 mFetcherJobMap[index] = launch {
-                    mSemaphore.withPermit {
-                        doInJob(index, force, orgImg)
+                    runCatching {
+                        mSemaphore.withPermit {
+                            doInJob(index, force, orgImg)
+                        }
+                    }.onFailure {
+                        if (it is CancellationException) {
+                            Log.d(WORKER_DEBUG_TAG, "Download image $index cancelled")
+                            updatePageState(index, STATE_FAILED, "Cancelled")
+                            throw it
+                        }
+                        updatePageState(index, STATE_FAILED, ExceptionUtils.getReadableString(it))
                     }
                 }
             }
@@ -623,7 +632,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             var error: String? = null
             var forceHtml = false
             val original = Settings.downloadOriginImage || orgImg
-            runCatching {
+            runSuspendCatching {
                 repeat(2) { retries ->
                     var imageUrl: String? = null
                     var localShowKey: String?
@@ -716,14 +725,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 }
             }.onFailure {
                 when (it) {
-                    is CancellationException -> {
-                        Log.d(WORKER_DEBUG_TAG, "Download image $index cancelled")
-                        error = "Cancelled"
-                        updatePageState(index, STATE_FAILED, error)
-                        throw it
-                    }
-
                     is QuotaExceededException -> notifyGet509(index)
+                    // TODO: Check IP ban
                 }
                 error = ExceptionUtils.getReadableString(it)
             }
@@ -753,18 +756,22 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
             private suspend fun doInJob(index: Int) {
                 mFetcherJobMap[index]?.takeIf { it.isActive }?.join()
-                val src = mSpiderDen.getImageSource(index) ?: return
-                val image = mSemaphore.withPermit { Image.decode(src) }
                 runCatching {
-                    currentCoroutineContext().ensureActive()
-                }.onFailure {
-                    image?.recycle()
-                    throw it
-                }
-                if (image == null) {
-                    notifyGetImageFailure(index, DECODE_ERROR)
-                } else {
+                    val src = mSpiderDen.getImageSource(index) ?: return
+                    val image = mSemaphore.withPermit { Image.decode(src) }
+                    checkNotNull(image)
+                    runCatching {
+                        currentCoroutineContext().ensureActive()
+                    }.onFailure {
+                        image.recycle()
+                        throw it
+                    }
                     notifyGetImageSuccess(index, image)
+                }.onFailure {
+                    notifyGetImageFailure(index, DECODE_ERROR)
+                    if (it is CancellationException) {
+                        throw it
+                    }
                 }
             }
         }

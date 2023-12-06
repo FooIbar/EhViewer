@@ -73,6 +73,7 @@ class PagerPageHolder(
         super.onDetachedFromWindow()
         cancelProgressJob()
         unsubscribeStatus()
+        progressIndicator.hide()
     }
 
     private fun launchProgressJob() {
