@@ -49,7 +49,7 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastS
-import com.hippo.ehviewer.util.isCronetSupported
+import com.hippo.ehviewer.util.isCronetAvailable
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
@@ -170,7 +170,7 @@ class EhApplication : Application(), ImageLoaderFactory {
 
     companion object {
         val ktorClient by lazy {
-            if (isCronetSupported) {
+            if (Settings.enableCronet && isCronetAvailable) {
                 HttpClient(CronetEngine) {
                     install(HttpCookies) {
                         storage = EhCookieStore
