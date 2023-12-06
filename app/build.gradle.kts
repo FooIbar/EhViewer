@@ -240,10 +240,6 @@ dependencies {
 
     implementation(libs.bundles.splitties)
 
-    // https://square.github.io/okhttp/changelogs/changelog/
-    implementation(platform(libs.okhttp.bom))
-    implementation(libs.bundles.okhttp)
-
     implementation(libs.okio.jvm)
 
     implementation(libs.diff)

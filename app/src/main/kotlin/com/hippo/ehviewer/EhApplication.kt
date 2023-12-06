@@ -37,7 +37,6 @@ import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ktbuilder.diskCache
-import com.hippo.ehviewer.ktbuilder.httpClient
 import com.hippo.ehviewer.ktbuilder.imageLoader
 import com.hippo.ehviewer.ktor.CronetEngine
 import com.hippo.ehviewer.legacy.cleanObsoleteCache
@@ -49,20 +48,16 @@ import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.isAtLeastP
-import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
-import com.hippo.ehviewer.util.isCronetSupported
-import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
+import com.hippo.ehviewer.util.isCronetAvailable
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.engine.apache5.Apache5
 import io.ktor.client.plugins.cookies.HttpCookies
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
-import okhttp3.AsyncDns
-import okhttp3.android.AndroidAsyncDns
 import okio.Path.Companion.toOkioPath
 import splitties.arch.room.roomDb
 import splitties.init.appCtx
@@ -175,17 +170,14 @@ class EhApplication : Application(), ImageLoaderFactory {
 
     companion object {
         val ktorClient by lazy {
-            if (isCronetSupported) {
+            if (Settings.enableCronet && isCronetAvailable) {
                 HttpClient(CronetEngine) {
                     install(HttpCookies) {
                         storage = EhCookieStore
                     }
                 }
             } else {
-                HttpClient(OkHttp) {
-                    engine {
-                        preconfigured = baseOkHttpClient
-                    }
+                HttpClient(Apache5) {
                     install(HttpCookies) {
                         storage = EhCookieStore
                     }
@@ -199,16 +191,6 @@ class EhApplication : Application(), ImageLoaderFactory {
                 install(HttpCookies) {
                     storage = EhCookieStore
                 }
-            }
-        }
-
-        // Fallback to CIO when cronet unavailable after coil 3.0 release
-        private val baseOkHttpClient by lazy {
-            httpClient {
-                if (isAtLeastQ) {
-                    dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
-                }
-                addInterceptor(UncaughtExceptionInterceptor())
             }
         }
 

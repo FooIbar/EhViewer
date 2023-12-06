@@ -421,8 +421,7 @@
     <string name="settings_advanced_dump_logcat_to">Logcat dumped to %s</string>
     <string name="settings_advanced_read_cache_size">Read cache size</string>
     <string name="settings_advanced_app_language_title">App language</string>
-    <string name="settings_advanced_cronet_integration">[Experimental] Cronet integration</string>
-    <string name="settings_advanced_cronet_integration_summary">Use Cronet for image download (better performance)</string>
+    <string name="settings_advanced_http_engine">Http Engine (Restart required)</string>
     <string name="settings_advanced_touch_slop">[Experimental] Touch slop factor</string>
     <string name="settings_advanced_touch_slop_summary">Increasing this will reduce swipe gesture sensitivity</string>
     <string name="settings_advanced_export_data">Export data</string>
