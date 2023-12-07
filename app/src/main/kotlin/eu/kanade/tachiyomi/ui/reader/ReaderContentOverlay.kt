@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import kotlin.math.abs
 
 @Composable
@@ -16,12 +15,9 @@ fun ReaderContentOverlay(
     colorBlendMode: BlendMode = BlendMode.SrcOver,
 ) {
     if (brightness != null) {
-        Canvas(
-            modifier = Modifier.fillMaxSize().graphicsLayer {
-                alpha = abs(brightness()) / 100f
-            },
-        ) {
-            drawRect(Color.Black)
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val alpha = abs(brightness()) / 100f
+            drawRect(Color.Black, alpha = alpha)
         }
     }
 
