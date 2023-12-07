@@ -45,6 +45,10 @@ import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.activity.viewModels
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -670,6 +674,18 @@ class ReaderActivity : EhActivity() {
             }
         }
 
+        binding.pageNumber.setMD3Content {
+            CompositionLocalProvider(
+                LocalTextStyle provides MaterialTheme.typography.bodySmall,
+                LocalContentColor provides MaterialTheme.colorScheme.onBackground,
+            ) {
+                PageIndicatorText(
+                    currentPage = currentPage,
+                    totalPages = totalPage,
+                )
+            }
+        }
+
         // Init listeners on bottom menu
         binding.readerNav.setMD3Content {
             ChapterNavigator(
@@ -791,7 +807,6 @@ class ReaderActivity : EhActivity() {
     fun onPageSelected(page: ReaderPage) {
         // Set bottom page number
         currentPage = page.number
-        binding.pageNumber.text = "$currentPage/$totalPage"
 
         mCurrentIndex = page.index
         mGalleryProvider?.putStartPage(mCurrentIndex)
