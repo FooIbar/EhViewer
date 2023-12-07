@@ -52,7 +52,6 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.ModalBottomSheetFix
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -1219,23 +1218,21 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             )
         },
     ) {
-        Surface {
-            val gi = galleryInfo
-            if (gi != null) {
-                GalleryDetailContent(
-                    galleryInfo = gi,
-                    contentPadding = it,
-                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                )
-            } else if (getDetailError.isNotBlank()) {
-                GalleryDetailErrorTip(error = getDetailError, onClick = { getDetailError = "" })
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
-                }
+        val gi = galleryInfo
+        if (gi != null) {
+            GalleryDetailContent(
+                galleryInfo = gi,
+                contentPadding = it,
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            )
+        } else if (getDetailError.isNotBlank()) {
+            GalleryDetailErrorTip(error = getDetailError, onClick = { getDetailError = "" })
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
             }
         }
     }
