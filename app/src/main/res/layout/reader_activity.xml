@@ -5,11 +5,6 @@
     android:layout_height="match_parent"
     android:gravity="center">
 
-    <androidx.compose.ui.platform.ComposeView
-        android:id="@+id/dialog_stub"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
     <FrameLayout
         android:id="@+id/reader_container"
         android:layout_width="match_parent"
@@ -33,12 +28,6 @@
 
     </FrameLayout>
 
-    <eu.kanade.tachiyomi.ui.reader.ReaderColorFilterView
-        android:id="@+id/color_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
-
     <eu.kanade.tachiyomi.ui.reader.ReaderNavigationOverlayView
         android:id="@+id/navigation_overlay"
         android:layout_width="match_parent"
@@ -46,6 +35,11 @@
         android:clickable="false"
         android:focusable="false"
         android:visibility="gone" />
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/dialog_stub"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <FrameLayout
         android:id="@+id/reader_menu"
@@ -90,21 +84,6 @@
                     app:srcCompat="@drawable/ic_reader_default_24dp"
                     app:tint="?attr/colorOnSurface" />
 
-                <!--
-                <ImageButton
-                    android:id="@+id/action_crop_borders"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/pref_crop_borders"
-                    android:padding="@dimen/screen_edge_margin"
-                    app:layout_constraintEnd_toStartOf="@id/action_rotation"
-                    app:layout_constraintStart_toEndOf="@+id/action_reading_mode"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/ic_crop_24dp"
-                    app:tint="?attr/colorOnSurface" />
-                    -->
-
                 <ImageButton
                     android:id="@+id/action_rotation"
                     android:layout_width="wrap_content"
@@ -136,11 +115,5 @@
         </LinearLayout>
 
     </FrameLayout>
-
-    <View
-        android:id="@+id/brightness_overlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
