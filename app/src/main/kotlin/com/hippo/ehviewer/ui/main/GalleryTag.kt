@@ -3,8 +3,10 @@ package com.hippo.ehviewer.ui.main
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -84,7 +86,7 @@ private fun BaseRoundText(
     ) {
         Text(
             text = text,
-            modifier = modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            modifier = modifier.padding(horizontal = 12.dp, vertical = 4.dp).width(IntrinsicSize.Max),
             color = MaterialTheme.colorScheme.onSurface.let { if (weak) it.copy(0.5F) else it },
             style = MaterialTheme.typography.labelLarge.includeFontPadding,
         )
