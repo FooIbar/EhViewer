@@ -18,7 +18,7 @@ tl = "0.7"
 log = "0.4"
 android_logger = { default-features = false, version = "0.13" }
 apply = "0.3"
-once_cell = { default-features = false, version = "1.18" }
+once_cell = { default-features = false, version = "1.19" }
 
 [profile.release]
 strip = true
