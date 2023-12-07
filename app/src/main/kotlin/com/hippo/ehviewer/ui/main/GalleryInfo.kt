@@ -30,11 +30,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintSet
+import arrow.core.Tuple7
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
@@ -44,6 +47,41 @@ import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.ElevatedCard
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
 import com.hippo.ehviewer.util.FavouriteStatusRouter
+
+private val ids = Tuple7(1, 2, 3, 4, 5, 6, 7)
+
+private val constraintSet = ConstraintSet {
+    val (titleRef, uploaderRef, ratingRef, categoryRef, postedRef, favRef, iconsRef) =
+        createRefsFor(1, 2, 3, 4, 5, 6, 7)
+    constrain(titleRef) {
+        top.linkTo(parent.top)
+        start.linkTo(parent.start)
+    }
+    constrain(uploaderRef) {
+        start.linkTo(parent.start)
+        bottom.linkTo(ratingRef.top)
+    }
+    constrain(ratingRef) {
+        start.linkTo(parent.start)
+        bottom.linkTo(categoryRef.top)
+    }
+    constrain(categoryRef) {
+        start.linkTo(parent.start)
+        bottom.linkTo(parent.bottom)
+    }
+    constrain(iconsRef) {
+        end.linkTo(parent.end)
+        bottom.linkTo(postedRef.top)
+    }
+    constrain(favRef) {
+        end.linkTo(parent.end)
+        bottom.linkTo(iconsRef.top)
+    }
+    constrain(postedRef) {
+        end.linkTo(parent.end)
+        bottom.linkTo(parent.bottom)
+    }
+}
 
 @Composable
 fun GalleryInfoListItem(
@@ -66,15 +104,12 @@ fun GalleryInfoListItem(
                     modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
                 )
             }
-            ConstraintLayout(modifier = Modifier.padding(8.dp, 4.dp).fillMaxSize()) {
-                val (titleRef, uploaderRef, ratingRef, categoryRef, postedRef, favRef, iconsRef) = createRefs()
+            ConstraintLayout(modifier = Modifier.padding(8.dp, 4.dp).fillMaxSize(), constraintSet = constraintSet) {
+                val (titleRef, uploaderRef, ratingRef, categoryRef, postedRef, favRef, iconsRef) = ids
                 Text(
                     text = EhUtils.getSuitableTitle(info),
                     maxLines = 2,
-                    modifier = Modifier.constrainAs(titleRef) {
-                        top.linkTo(parent.top)
-                        start.linkTo(parent.start)
-                    }.fillMaxWidth(),
+                    modifier = Modifier.layoutId(titleRef).fillMaxWidth(),
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleSmall,
                 )
@@ -82,39 +117,27 @@ fun GalleryInfoListItem(
                     info.uploader?.let {
                         Text(
                             text = it,
-                            modifier = Modifier.constrainAs(uploaderRef) {
-                                start.linkTo(parent.start)
-                                bottom.linkTo(ratingRef.top)
-                            }.alpha(if (info.disowned) 0.5f else 1f),
+                            modifier = Modifier.layoutId(uploaderRef).alpha(if (info.disowned) 0.5f else 1f),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
                     GalleryListCardRating(
                         rating = info.rating,
-                        modifier = Modifier.constrainAs(ratingRef) {
-                            start.linkTo(parent.start)
-                            bottom.linkTo(categoryRef.top)
-                        },
+                        modifier = Modifier.layoutId(ratingRef),
                     )
                     val categoryColor = EhUtils.getCategoryColor(info.category)
                     val categoryText = EhUtils.getCategory(info.category).uppercase()
                     Text(
                         text = categoryText,
-                        modifier = Modifier.constrainAs(categoryRef) {
-                            start.linkTo(parent.start)
-                            bottom.linkTo(parent.bottom)
-                        }.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
+                        modifier = Modifier.layoutId(categoryRef).clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
                         color = if (Settings.harmonizeCategoryColor) Color.Unspecified else EhUtils.categoryTextColor,
                         textAlign = TextAlign.Center,
                     )
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.constrainAs(iconsRef) {
-                            end.linkTo(parent.end)
-                            bottom.linkTo(postedRef.top)
-                        },
+                        modifier = Modifier.layoutId(iconsRef),
                     ) {
                         val download by DownloadManager.collectContainDownloadInfo(info.gid)
                         if (download) {
@@ -132,10 +155,7 @@ fun GalleryInfoListItem(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.constrainAs(favRef) {
-                            end.linkTo(parent.end)
-                            bottom.linkTo(iconsRef.top)
-                        },
+                        modifier = Modifier.layoutId(favRef),
                     ) {
                         if (isInFavScene) {
                             Text(
@@ -156,10 +176,7 @@ fun GalleryInfoListItem(
                     }
                     Text(
                         text = info.posted.orEmpty(),
-                        modifier = Modifier.constrainAs(postedRef) {
-                            end.linkTo(parent.end)
-                            bottom.linkTo(parent.bottom)
-                        },
+                        modifier = Modifier.layoutId(postedRef),
                     )
                 }
             }
