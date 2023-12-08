@@ -37,14 +37,16 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View.LAYER_TYPE_HARDWARE
 import android.view.WindowManager
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.activity.viewModels
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.LocalContentColor
@@ -106,10 +108,8 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.system.applySystemAnimatorScale
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.view.popupMenu
-import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.FlowPreview
@@ -144,8 +144,7 @@ class ReaderActivity : EhActivity() {
     /**
      * Whether the menu is currently visible.
      */
-    var menuVisible = false
-        private set
+    var menuVisible by mutableStateOf(false)
 
     private var saveImageToLauncher = registerForActivityResult(
         CreateDocument("todo/todo"),
@@ -618,17 +617,11 @@ class ReaderActivity : EhActivity() {
      * Sets the visibility of the menu according to [visible] and with an optional parameter to
      * [animate] the views.
      */
-    fun setMenuVisibility(visible: Boolean, animate: Boolean = true) {
+    fun setMenuVisibility(visible: Boolean) {
         menuVisible = visible
         if (visible) {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
             binding.readerMenu.isVisible = true
-
-            if (animate) {
-                val bottomAnimation = AnimationUtils.loadAnimation(this, R.anim.enter_from_bottom)
-                bottomAnimation.applySystemAnimatorScale(this)
-                binding.readerMenuBottom.startAnimation(bottomAnimation)
-            }
 
             if (ReaderPreferences.showPageNumber().get()) {
                 config?.setPageNumberVisibility(false)
@@ -638,19 +631,6 @@ class ReaderActivity : EhActivity() {
                 windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
                 windowInsetsController.systemBarsBehavior =
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-
-            if (animate) {
-                val bottomAnimation = AnimationUtils.loadAnimation(this, R.anim.exit_to_bottom)
-                bottomAnimation.applySystemAnimatorScale(this)
-                bottomAnimation.setAnimationListener(
-                    object : SimpleAnimationListener() {
-                        override fun onAnimationEnd(animation: Animation) {
-                            binding.readerMenu.isVisible = false
-                        }
-                    },
-                )
-                binding.readerMenuBottom.startAnimation(bottomAnimation)
             }
 
             if (ReaderPreferences.showPageNumber().get()) {
@@ -691,43 +671,49 @@ class ReaderActivity : EhActivity() {
         binding.readerMenuBottom.setMD3Content {
             val view = LocalView.current
             val showSeekbar by Settings.showReaderSeekbar.collectAsState()
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (showSeekbar) {
-                    ChapterNavigator(
-                        isRtl = isRtl,
-                        currentPage = currentPage,
-                        totalPages = totalPage,
-                        onSliderValueChange = {
-                            isScrollingThroughPages = true
-                            moveToPageIndex(it)
+            AnimatedVisibility(
+                visible = menuVisible,
+                enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(200)),
+                exit = slideOutVertically(targetOffsetY = { it }, animationSpec = tween(200)),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (showSeekbar) {
+                        ChapterNavigator(
+                            isRtl = isRtl,
+                            currentPage = currentPage,
+                            totalPages = totalPage,
+                            onSliderValueChange = {
+                                isScrollingThroughPages = true
+                                moveToPageIndex(it)
+                            },
+                        )
+                    }
+                    val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
+                    val orientationMode by Settings.orientationMode.collectAsState { OrientationType.fromPreference(it) }
+                    BottomReaderBar(
+                        readingMode = readingMode,
+                        onClickReadingMode = {
+                            view.popupMenu(
+                                items = ReadingModeType.entries.map { it.flagValue to it.stringRes },
+                                selectedItemId = ReaderPreferences.defaultReadingMode().get(),
+                            ) {
+                                val newReadingMode = ReadingModeType.fromPreference(itemId)
+                                ReaderPreferences.defaultReadingMode().set(newReadingMode.flagValue)
+                            }
                         },
+                        orientationMode = orientationMode,
+                        onClickOrientationMode = {
+                            view.popupMenu(
+                                items = OrientationType.entries.map { it.flagValue to it.stringRes },
+                                selectedItemId = ReaderPreferences.defaultOrientationType().get(),
+                            ) {
+                                val newOrientation = OrientationType.fromPreference(itemId)
+                                ReaderPreferences.defaultOrientationType().set(newOrientation.flagValue)
+                            }
+                        },
+                        onClickSettings = { readerSettingSheetDialog?.show() },
                     )
                 }
-                val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
-                val orientationMode by Settings.orientationMode.collectAsState { OrientationType.fromPreference(it) }
-                BottomReaderBar(
-                    readingMode = readingMode,
-                    onClickReadingMode = {
-                        view.popupMenu(
-                            items = ReadingModeType.entries.map { it.flagValue to it.stringRes },
-                            selectedItemId = ReaderPreferences.defaultReadingMode().get(),
-                        ) {
-                            val newReadingMode = ReadingModeType.fromPreference(itemId)
-                            ReaderPreferences.defaultReadingMode().set(newReadingMode.flagValue)
-                        }
-                    },
-                    orientationMode = orientationMode,
-                    onClickOrientationMode = {
-                        view.popupMenu(
-                            items = OrientationType.entries.map { it.flagValue to it.stringRes },
-                            selectedItemId = ReaderPreferences.defaultOrientationType().get(),
-                        ) {
-                            val newOrientation = OrientationType.fromPreference(itemId)
-                            ReaderPreferences.defaultOrientationType().set(newOrientation.flagValue)
-                        }
-                    },
-                    onClickSettings = { readerSettingSheetDialog?.show() },
-                )
             }
         }
 
