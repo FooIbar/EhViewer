@@ -12,8 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
-import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 
 private val animationSpec = tween<IntOffset>(200)
 
@@ -25,10 +23,6 @@ fun ReaderAppBars(
     currentPage: Int,
     totalPages: Int,
     onSliderValueChange: (Int) -> Unit,
-    readingMode: ReadingModeType,
-    onClickReadingMode: () -> Unit,
-    orientationMode: OrientationType,
-    onClickOrientationMode: () -> Unit,
     onClickSettings: () -> Unit,
 ) = Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
     Spacer(modifier = Modifier.weight(1f))
@@ -47,13 +41,7 @@ fun ReaderAppBars(
                     onSliderValueChange = onSliderValueChange,
                 )
             }
-            BottomReaderBar(
-                readingMode = readingMode,
-                onClickReadingMode = onClickReadingMode,
-                orientationMode = orientationMode,
-                onClickOrientationMode = onClickOrientationMode,
-                onClickSettings = onClickSettings,
-            )
+            BottomReaderBar(onClickSettings = onClickSettings)
         }
     }
 }

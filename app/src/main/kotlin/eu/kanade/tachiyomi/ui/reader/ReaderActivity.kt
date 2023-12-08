@@ -101,7 +101,6 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.isNightMode
-import eu.kanade.tachiyomi.util.view.popupMenu
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.FlowPreview
@@ -315,11 +314,7 @@ class ReaderActivity : EhActivity() {
             }
             dialogState.Intercept()
 
-            val view = binding.pageNumber
             val showSeekbar by Settings.showReaderSeekbar.collectAsState()
-
-            val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
-            val orientationMode by Settings.orientationMode.collectAsState { OrientationType.fromPreference(it) }
             ReaderAppBars(
                 visible = menuVisible,
                 isRtl = isRtl,
@@ -329,26 +324,6 @@ class ReaderActivity : EhActivity() {
                 onSliderValueChange = {
                     isScrollingThroughPages = true
                     moveToPageIndex(it)
-                },
-                readingMode = readingMode,
-                onClickReadingMode = {
-                    view.popupMenu(
-                        items = ReadingModeType.entries.map { it.flagValue to it.stringRes },
-                        selectedItemId = ReaderPreferences.defaultReadingMode().get(),
-                    ) {
-                        val newReadingMode = ReadingModeType.fromPreference(itemId)
-                        ReaderPreferences.defaultReadingMode().set(newReadingMode.flagValue)
-                    }
-                },
-                orientationMode = orientationMode,
-                onClickOrientationMode = {
-                    view.popupMenu(
-                        items = OrientationType.entries.map { it.flagValue to it.stringRes },
-                        selectedItemId = ReaderPreferences.defaultOrientationType().get(),
-                    ) {
-                        val newOrientation = OrientationType.fromPreference(itemId)
-                        ReaderPreferences.defaultOrientationType().set(newOrientation.flagValue)
-                    }
                 },
                 onClickSettings = { readerSettingSheetDialog?.show() },
             )
