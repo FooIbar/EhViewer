@@ -8,11 +8,8 @@ import android.content.res.Resources
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.view.Gravity
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import androidx.annotation.MenuRes
-import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.menu.MenuBuilder
 import androidx.appcompat.widget.PopupMenu
@@ -25,46 +22,10 @@ import eu.kanade.tachiyomi.util.system.getResourceColor
 /**
  * Adds a tooltip shown on long press.
  *
- * @param stringRes String resource for tooltip.
- */
-inline fun View.setTooltip(@StringRes stringRes: Int) {
-    setTooltip(context.getString(stringRes))
-}
-
-/**
- * Adds a tooltip shown on long press.
- *
  * @param text Text for tooltip.
  */
 inline fun View.setTooltip(text: String) {
     TooltipCompat.setTooltipText(this, text)
-}
-
-/**
- * Shows a popup menu on top of this view.
- *
- * @param menuRes menu items to inflate the menu with.
- * @param initMenu function to execute when the menu after is inflated.
- * @param onMenuItemClick function to execute when a menu item is clicked.
- */
-inline fun View.popupMenu(
-    @MenuRes menuRes: Int,
-    noinline initMenu: (Menu.() -> Unit)? = null,
-    noinline onMenuItemClick: MenuItem.() -> Unit,
-): PopupMenu {
-    val popup = PopupMenu(context, this, Gravity.NO_GRAVITY, androidx.appcompat.R.attr.actionOverflowMenuStyle, 0)
-    popup.menuInflater.inflate(menuRes, popup.menu)
-
-    if (initMenu != null) {
-        popup.menu.initMenu()
-    }
-    popup.setOnMenuItemClickListener {
-        it.onMenuItemClick()
-        true
-    }
-
-    popup.show()
-    return popup
 }
 
 /**
