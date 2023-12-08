@@ -302,9 +302,9 @@ fun ModalNavigationDrawer(
         Modifier
     }
     Box(modifier.fillMaxSize().then(dragModifier)) {
+        val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
+        val radius = lerp(0, 10, step).dp
         val blurModifier = Modifier.graphicsLayer {
-            val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
-            val radius = lerp(0.dp, 10.dp, step)
             if (radius != 0.dp) {
                 renderEffect = BlurEffect(radius.toPx(), radius.toPx(), TileMode.Clamp)
                 shape = RectangleShape
@@ -436,9 +436,9 @@ fun SideDrawer(
         Modifier
     }
     Box(modifier.fillMaxSize().then(dragModifier)) {
+        val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
+        val radius = lerp(0, 10, step).dp
         val blurModifier = Modifier.graphicsLayer {
-            val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
-            val radius = lerp(0.dp, 10.dp, step)
             if (radius != 0.dp) {
                 renderEffect = BlurEffect(radius.toPx(), radius.toPx(), TileMode.Clamp)
                 shape = RectangleShape
