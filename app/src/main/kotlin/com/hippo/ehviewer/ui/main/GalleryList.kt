@@ -77,6 +77,7 @@ fun GalleryList(
     thumbListState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit),
     refreshState: PullToRefreshState,
+    scrollToTopOnRefresh: Boolean = true,
     onRefresh: suspend CoroutineScope.() -> Unit,
     onLoading: suspend CoroutineScope.() -> Unit,
 ) {
@@ -176,7 +177,7 @@ fun GalleryList(
 
         val dialogState = LocalDialogState.current
         when (val state = data.loadState.refresh) {
-            is LoadState.Loading -> if (!refreshState.isRefreshing) {
+            is LoadState.Loading -> if (!refreshState.isRefreshing && scrollToTopOnRefresh) {
                 LaunchedEffect(Unit) {
                     onLoading()
                 }
