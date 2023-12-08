@@ -8,7 +8,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,7 +27,7 @@ fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier
     val outlineStar = 5 - fullStar - halfStar
     Row(modifier = modifier) {
         repeat(fullStar) {
-            Icon(
+            IconFix(
                 imageVector = Icons.Default.Star,
                 contentDescription = null,
                 modifier = Modifier.size(ratingSize),
@@ -37,7 +36,7 @@ fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier
             Spacer(modifier = Modifier.width(ratingInterval))
         }
         repeat(halfStar) {
-            Icon(
+            IconFix(
                 imageVector = Icons.AutoMirrored.Default.StarHalf,
                 contentDescription = null,
                 modifier = Modifier.size(ratingSize),
@@ -46,7 +45,7 @@ fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier
             Spacer(modifier = Modifier.width(ratingInterval))
         }
         repeat(outlineStar) {
-            Icon(
+            IconFix(
                 imageVector = Icons.Default.StarOutline,
                 contentDescription = null,
                 modifier = Modifier.size(ratingSize),
