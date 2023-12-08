@@ -222,7 +222,7 @@ dependencies {
     implementation(libs.bundles.androidx.navigation)
 
     // https://developer.android.com/jetpack/androidx/releases/paging
-    implementation(libs.bundles.androidx.paging)
+    implementation(libs.androidx.paging.compose)
 
     implementation(libs.androidx.recyclerview)
 

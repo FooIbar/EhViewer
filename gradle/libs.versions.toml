@@ -53,7 +53,6 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "androidx-navigation" }
 
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "androidx-paging" }
-androidx-paging-runtime = { module = "androidx.paging:paging-runtime-ktx", version.ref = "androidx-paging" }
 
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerview" }
 
@@ -120,7 +119,6 @@ splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemse
 [bundles]
 accompanist = ["accompanist-themeadapter-material3", "accompanist-webview"]
 androidx-navigation = ["androidx-navigation-compose", "androidx-navigation-ui"]
-androidx-paging = ["androidx-paging-compose", "androidx-paging-runtime"]
 coil = ["coil-compose", "coil-gif"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
 cronet = ["cronet-api", "cronet-gms"]
