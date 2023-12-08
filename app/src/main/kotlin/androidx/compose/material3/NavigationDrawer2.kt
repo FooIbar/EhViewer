@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +31,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlurEffect
@@ -302,8 +304,12 @@ fun ModalNavigationDrawer(
         Modifier
     }
     Box(modifier.fillMaxSize().then(dragModifier)) {
-        val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
-        val radius = lerp(0, 10, step).dp
+        val radius by remember {
+            snapshotFlow {
+                val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
+                lerp(0, 10, step).dp
+            }
+        }.collectAsState(0.dp)
         val blurModifier = Modifier.graphicsLayer {
             if (radius != 0.dp) {
                 renderEffect = BlurEffect(radius.toPx(), radius.toPx(), TileMode.Clamp)
@@ -436,8 +442,12 @@ fun SideDrawer(
         Modifier
     }
     Box(modifier.fillMaxSize().then(dragModifier)) {
-        val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
-        val radius = lerp(0, 10, step).dp
+        val radius by remember {
+            snapshotFlow {
+                val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
+                lerp(0, 10, step).dp
+            }
+        }.collectAsState(0.dp)
         val blurModifier = Modifier.graphicsLayer {
             if (radius != 0.dp) {
                 renderEffect = BlurEffect(radius.toPx(), radius.toPx(), TileMode.Clamp)
