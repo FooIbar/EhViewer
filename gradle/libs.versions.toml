@@ -7,7 +7,6 @@ androidx-appcompat = "1.6.1"
 androidx-biometric = "1.2.0-alpha05"
 androidx-browser = "1.7.0"
 androidx-constraintlayout-compose = "1.1.0-alpha13"
-androidx-coordinatorlayout = "1.2.0"
 androidx-core = "1.12.0"
 androidx-core-splashscreen = "1.1.0-alpha02"
 androidx-lifecycle = "2.7.0-rc01"
@@ -44,7 +43,6 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "a
 androidx-biometric = { module = "androidx.biometric:biometric-ktx", version.ref = "androidx-biometric" }
 androidx-browser = { module = "androidx.browser:browser", version.ref = "androidx-browser" }
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "androidx-constraintlayout-compose" }
-androidx-coordinatorlayout = { module = "androidx.coordinatorlayout:coordinatorlayout", version.ref = "androidx-coordinatorlayout" }
 androidx-core = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-core-splashscreen" }
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidx-lifecycle" }
