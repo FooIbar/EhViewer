@@ -18,7 +18,6 @@ package com.hippo.ehviewer.client
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -446,7 +445,10 @@ object EhEngine {
     }
 
     suspend fun addFavorites(galleryList: List<Pair<Long, String>>, dstCat: Int) {
-        galleryList.parMap(concurrency = Settings.multiThreadDownload) { (gid, token) ->
+        galleryList.forEachIndexed { index, (gid, token) ->
+            if (index != 0) {
+                delay(Settings.downloadDelay.toLong())
+            }
             modifyFavorites(gid, token, dstCat)
         }
     }
