@@ -65,6 +65,7 @@ import java.io.File
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import kotlin.math.ceil
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
@@ -360,12 +361,16 @@ object EhEngine {
     }.fetchUsingAsText(String::parseAs)
 
     suspend fun fillGalleryListByApi(galleryInfoList: List<GalleryInfo>, referer: String) =
-        galleryInfoList.chunked(MAX_REQUEST_SIZE).parMap(concurrency = Settings.multiThreadDownload) {
+        galleryInfoList.chunked(MAX_REQUEST_SIZE).forEachIndexed { index, items ->
+            // https://ehwiki.org/wiki/API#Basics
+            if (index != 0 && index % 5 == 0) {
+                delay(5.seconds)
+            }
             ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
                 jsonBody {
                     put("method", "gdata")
                     array("gidlist") {
-                        it.forEach {
+                        items.forEach {
                             addJsonArray {
                                 add(it.gid)
                                 add(it.token)
@@ -374,7 +379,7 @@ object EhEngine {
                     }
                     put("namespace", 1)
                 }
-            }.fetchUsingAsText { GalleryApiParser.parse(this, it) }
+            }.fetchUsingAsText { GalleryApiParser.parse(this, items) }
         }
 
     suspend fun voteComment(apiUid: Long, apiKey: String?, gid: Long, token: String?, commentId: Long, commentVote: Int): VoteCommentResult =
