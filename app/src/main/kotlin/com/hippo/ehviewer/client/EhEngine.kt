@@ -78,7 +78,12 @@ import org.jsoup.Jsoup
 import splitties.init.appCtx
 
 const val TAG = "EhEngine"
+
+// https://ehwiki.org/wiki/API#Basics
 private const val MAX_REQUEST_SIZE = 25
+private const val MAX_SEQUENTIAL_REQUESTS = 5
+private const val REQUEST_INTERVAL = 5000L
+
 private const val U_CONFIG_TEXT = "Selected Profile"
 
 fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
@@ -360,21 +365,26 @@ object EhEngine {
     }.fetchUsingAsText(String::parseAs)
 
     suspend fun fillGalleryListByApi(galleryInfoList: List<GalleryInfo>, referer: String) =
-        galleryInfoList.chunked(MAX_REQUEST_SIZE).parMap(concurrency = Settings.multiThreadDownload) {
-            ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
-                jsonBody {
-                    put("method", "gdata")
-                    array("gidlist") {
-                        it.forEach {
-                            addJsonArray {
-                                add(it.gid)
-                                add(it.token)
+        galleryInfoList.chunked(MAX_REQUEST_SIZE).chunked(MAX_SEQUENTIAL_REQUESTS).forEachIndexed { index, chunk ->
+            if (index != 0) {
+                delay(REQUEST_INTERVAL)
+            }
+            chunk.parMap {
+                ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
+                    jsonBody {
+                        put("method", "gdata")
+                        array("gidlist") {
+                            it.forEach {
+                                addJsonArray {
+                                    add(it.gid)
+                                    add(it.token)
+                                }
                             }
                         }
+                        put("namespace", 1)
                     }
-                    put("namespace", 1)
-                }
-            }.fetchUsingAsText { GalleryApiParser.parse(this, it) }
+                }.fetchUsingAsText { GalleryApiParser.parse(this, it) }
+            }
         }
 
     suspend fun voteComment(apiUid: Long, apiKey: String?, gid: Long, token: String?, commentId: Long, commentVote: Int): VoteCommentResult =
@@ -441,8 +451,13 @@ object EhEngine {
     }
 
     suspend fun addFavorites(galleryList: List<Pair<Long, String>>, dstCat: Int) {
-        galleryList.parMap(concurrency = Settings.multiThreadDownload) { (gid, token) ->
-            modifyFavorites(gid, token, dstCat)
+        galleryList.chunked(MAX_SEQUENTIAL_REQUESTS).forEachIndexed { index, chunk ->
+            if (index != 0) {
+                delay(REQUEST_INTERVAL)
+            }
+            chunk.parMap { (gid, token) ->
+                modifyFavorites(gid, token, dstCat)
+            }
         }
     }
 }
