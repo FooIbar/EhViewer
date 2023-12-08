@@ -43,12 +43,6 @@ import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.activity.viewModels
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -58,8 +52,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
@@ -322,6 +314,45 @@ class ReaderActivity : EhActivity() {
                 }
             }
             dialogState.Intercept()
+
+            val view = binding.pageNumber
+            val showSeekbar by Settings.showReaderSeekbar.collectAsState()
+
+            val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
+            val orientationMode by Settings.orientationMode.collectAsState { OrientationType.fromPreference(it) }
+            ReaderAppBars(
+                visible = menuVisible,
+                isRtl = isRtl,
+                showSeekBar = showSeekbar,
+                currentPage = currentPage,
+                totalPages = totalPage,
+                onSliderValueChange = {
+                    isScrollingThroughPages = true
+                    moveToPageIndex(it)
+                },
+                readingMode = readingMode,
+                onClickReadingMode = {
+                    view.popupMenu(
+                        items = ReadingModeType.entries.map { it.flagValue to it.stringRes },
+                        selectedItemId = ReaderPreferences.defaultReadingMode().get(),
+                    ) {
+                        val newReadingMode = ReadingModeType.fromPreference(itemId)
+                        ReaderPreferences.defaultReadingMode().set(newReadingMode.flagValue)
+                    }
+                },
+                orientationMode = orientationMode,
+                onClickOrientationMode = {
+                    view.popupMenu(
+                        items = OrientationType.entries.map { it.flagValue to it.stringRes },
+                        selectedItemId = ReaderPreferences.defaultOrientationType().get(),
+                    ) {
+                        val newOrientation = OrientationType.fromPreference(itemId)
+                        ReaderPreferences.defaultOrientationType().set(newOrientation.flagValue)
+                    }
+                },
+                onClickSettings = { readerSettingSheetDialog?.show() },
+            )
+
             ReaderContentOverlay(
                 brightness = { brightnessValue }.takeIf { brightness && brightnessValue < 0 },
                 color = { colorOverlay }.takeIf { colorOverlayEnabled },
@@ -621,7 +652,6 @@ class ReaderActivity : EhActivity() {
         menuVisible = visible
         if (visible) {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
-            binding.readerMenu.isVisible = true
 
             if (ReaderPreferences.showPageNumber().get()) {
                 config?.setPageNumberVisibility(false)
@@ -648,9 +678,9 @@ class ReaderActivity : EhActivity() {
      */
     @SuppressLint("PrivateResource")
     private fun initializeMenu() {
-        binding.readerMenuBottom.applyInsetter {
+        binding.dialogStub.applyInsetter {
             type(navigationBars = true) {
-                margin(bottom = true, horizontal = true)
+                margin(vertical = true, horizontal = true)
             }
         }
 
@@ -667,55 +697,6 @@ class ReaderActivity : EhActivity() {
         }
 
         readerSettingSheetDialog = ReaderSettingsSheet(this@ReaderActivity)
-
-        binding.readerMenuBottom.setMD3Content {
-            val view = LocalView.current
-            val showSeekbar by Settings.showReaderSeekbar.collectAsState()
-            AnimatedVisibility(
-                visible = menuVisible,
-                enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(200)),
-                exit = slideOutVertically(targetOffsetY = { it }, animationSpec = tween(200)),
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (showSeekbar) {
-                        ChapterNavigator(
-                            isRtl = isRtl,
-                            currentPage = currentPage,
-                            totalPages = totalPage,
-                            onSliderValueChange = {
-                                isScrollingThroughPages = true
-                                moveToPageIndex(it)
-                            },
-                        )
-                    }
-                    val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
-                    val orientationMode by Settings.orientationMode.collectAsState { OrientationType.fromPreference(it) }
-                    BottomReaderBar(
-                        readingMode = readingMode,
-                        onClickReadingMode = {
-                            view.popupMenu(
-                                items = ReadingModeType.entries.map { it.flagValue to it.stringRes },
-                                selectedItemId = ReaderPreferences.defaultReadingMode().get(),
-                            ) {
-                                val newReadingMode = ReadingModeType.fromPreference(itemId)
-                                ReaderPreferences.defaultReadingMode().set(newReadingMode.flagValue)
-                            }
-                        },
-                        orientationMode = orientationMode,
-                        onClickOrientationMode = {
-                            view.popupMenu(
-                                items = OrientationType.entries.map { it.flagValue to it.stringRes },
-                                selectedItemId = ReaderPreferences.defaultOrientationType().get(),
-                            ) {
-                                val newOrientation = OrientationType.fromPreference(itemId)
-                                ReaderPreferences.defaultOrientationType().set(newOrientation.flagValue)
-                            }
-                        },
-                        onClickSettings = { readerSettingSheetDialog?.show() },
-                    )
-                }
-            }
-        }
 
         val toolbarBackground = MaterialShapeDrawable.createWithElevationOverlay(this).apply {
             elevation = resources.getDimension(com.google.android.material.R.dimen.m3_sys_elevation_level2)

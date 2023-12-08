@@ -1,5 +1,4 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -35,21 +34,5 @@
         android:id="@+id/dialog_stub"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
-    <FrameLayout
-        android:id="@+id/reader_menu"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:theme="?attr/actionBarTheme"
-        android:visibility="invisible"
-        tools:visibility="visible">
-
-        <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/reader_menu_bottom"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom" />
-
-    </FrameLayout>
 
 </FrameLayout>
