@@ -12,6 +12,8 @@ import androidx.compose.runtime.remember
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import java.util.Locale
 import kotlin.reflect.KProperty
 import kotlinx.coroutines.flow.Flow
@@ -177,6 +179,9 @@ object Settings : DataStorePreferences(null) {
     val colorFilterMode = intPref("color_filter_mode", 0)
     val customBrightness = boolPref("pref_custom_brightness_key", false)
     val customBrightnessValue = intPref("custom_brightness_value", 0)
+    val readingMode = intPref("pref_default_reading_mode_key", ReadingModeType.LEFT_TO_RIGHT.flagValue)
+    val orientationMode = intPref("pref_default_orientation_type_key", OrientationType.FREE.flagValue)
+    val showReaderSeekbar = boolPref("pref_show_reader_seekbar", true)
 
     init {
         if ("CN" == Locale.getDefault().country) {

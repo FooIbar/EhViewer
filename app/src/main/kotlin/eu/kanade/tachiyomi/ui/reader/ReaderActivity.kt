@@ -37,8 +37,6 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View.LAYER_TYPE_HARDWARE
 import android.view.WindowManager
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
@@ -102,12 +100,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import eu.kanade.tachiyomi.util.system.applySystemAnimatorScale
 import eu.kanade.tachiyomi.util.system.isNightMode
-import eu.kanade.tachiyomi.util.view.copy
-import eu.kanade.tachiyomi.util.view.popupMenu
-import eu.kanade.tachiyomi.util.view.setTooltip
-import eu.kanade.tachiyomi.widget.listener.SimpleAnimationListener
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.FlowPreview
@@ -142,8 +135,7 @@ class ReaderActivity : EhActivity() {
     /**
      * Whether the menu is currently visible.
      */
-    var menuVisible = false
-        private set
+    var menuVisible by mutableStateOf(false)
 
     private var saveImageToLauncher = registerForActivityResult(
         CreateDocument("todo/todo"),
@@ -321,6 +313,21 @@ class ReaderActivity : EhActivity() {
                 }
             }
             dialogState.Intercept()
+
+            val showSeekbar by Settings.showReaderSeekbar.collectAsState()
+            ReaderAppBars(
+                visible = menuVisible,
+                isRtl = isRtl,
+                showSeekBar = showSeekbar,
+                currentPage = currentPage,
+                totalPages = totalPage,
+                onSliderValueChange = {
+                    isScrollingThroughPages = true
+                    moveToPageIndex(it)
+                },
+                onClickSettings = { readerSettingSheetDialog?.show() },
+            )
+
             ReaderContentOverlay(
                 brightness = { brightnessValue }.takeIf { brightness && brightnessValue < 0 },
                 color = { colorOverlay }.takeIf { colorOverlayEnabled },
@@ -351,8 +358,6 @@ class ReaderActivity : EhActivity() {
             mCurrentIndex = if (mPage >= 0) mPage else mGalleryProvider!!.startPage
         }
         totalPage = mGalleryProvider!!.size
-        val viewerMode = ReadingModeType.fromPreference(ReaderPreferences.defaultReadingMode().get())
-        binding.actionReadingMode.setImageResource(viewerMode.iconRes)
         viewer?.destroy()
         viewer = ReadingModeType.toViewer(ReaderPreferences.defaultReadingMode().get(), this)
         isRtl = viewer is R2LPagerViewer
@@ -618,17 +623,10 @@ class ReaderActivity : EhActivity() {
      * Sets the visibility of the menu according to [visible] and with an optional parameter to
      * [animate] the views.
      */
-    fun setMenuVisibility(visible: Boolean, animate: Boolean = true) {
+    fun setMenuVisibility(visible: Boolean) {
         menuVisible = visible
         if (visible) {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
-            binding.readerMenu.isVisible = true
-
-            if (animate) {
-                val bottomAnimation = AnimationUtils.loadAnimation(this, R.anim.enter_from_bottom)
-                bottomAnimation.applySystemAnimatorScale(this)
-                binding.readerMenuBottom.startAnimation(bottomAnimation)
-            }
 
             if (ReaderPreferences.showPageNumber().get()) {
                 config?.setPageNumberVisibility(false)
@@ -638,19 +636,6 @@ class ReaderActivity : EhActivity() {
                 windowInsetsController.hide(WindowInsetsCompat.Type.systemBars())
                 windowInsetsController.systemBarsBehavior =
                     WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            }
-
-            if (animate) {
-                val bottomAnimation = AnimationUtils.loadAnimation(this, R.anim.exit_to_bottom)
-                bottomAnimation.applySystemAnimatorScale(this)
-                bottomAnimation.setAnimationListener(
-                    object : SimpleAnimationListener() {
-                        override fun onAnimationEnd(animation: Animation) {
-                            binding.readerMenu.isVisible = false
-                        }
-                    },
-                )
-                binding.readerMenuBottom.startAnimation(bottomAnimation)
             }
 
             if (ReaderPreferences.showPageNumber().get()) {
@@ -668,9 +653,9 @@ class ReaderActivity : EhActivity() {
      */
     @SuppressLint("PrivateResource")
     private fun initializeMenu() {
-        binding.readerMenuBottom.applyInsetter {
+        binding.dialogStub.applyInsetter {
             type(navigationBars = true) {
-                margin(bottom = true, horizontal = true)
+                margin(vertical = true, horizontal = true)
             }
         }
 
@@ -686,26 +671,12 @@ class ReaderActivity : EhActivity() {
             }
         }
 
-        // Init listeners on bottom menu
-        binding.readerNav.setMD3Content {
-            ChapterNavigator(
-                isRtl = isRtl,
-                currentPage = currentPage,
-                totalPages = totalPage,
-                onSliderValueChange = {
-                    isScrollingThroughPages = true
-                    moveToPageIndex(it)
-                },
-            )
-        }
-
-        initBottomShortcuts()
+        readerSettingSheetDialog = ReaderSettingsSheet(this@ReaderActivity)
 
         val toolbarBackground = MaterialShapeDrawable.createWithElevationOverlay(this).apply {
             elevation = resources.getDimension(com.google.android.material.R.dimen.m3_sys_elevation_level2)
             alpha = if (isNightMode()) 230 else 242 // 90% dark 95% light
         }
-        binding.toolbarBottom.background = toolbarBackground.copy(this@ReaderActivity)
 
         val toolbarColor = ColorUtils.setAlphaComponent(
             toolbarBackground.resolvedTintColor,
@@ -717,59 +688,6 @@ class ReaderActivity : EhActivity() {
 
         // Set initial visibility
         setMenuVisibility(menuVisible)
-    }
-
-    private fun initBottomShortcuts() {
-        // Reading mode
-        with(binding.actionReadingMode) {
-            setTooltip(R.string.viewer)
-
-            setOnClickListener {
-                popupMenu(
-                    items = ReadingModeType.entries.map { it.flagValue to it.stringRes },
-                    selectedItemId = ReaderPreferences.defaultReadingMode().get(),
-                ) {
-                    val newReadingMode = ReadingModeType.fromPreference(itemId)
-                    ReaderPreferences.defaultReadingMode().set(newReadingMode.flagValue)
-                }
-            }
-        }
-
-        // Rotation
-        with(binding.actionRotation) {
-            setTooltip(R.string.rotation_type)
-
-            setOnClickListener {
-                popupMenu(
-                    items = OrientationType.entries.map { it.flagValue to it.stringRes },
-                    selectedItemId = ReaderPreferences.defaultOrientationType().get(),
-                ) {
-                    val newOrientation = OrientationType.fromPreference(itemId)
-                    ReaderPreferences.defaultOrientationType().set(newOrientation.flagValue)
-                }
-            }
-        }
-
-        // Settings sheet
-        with(binding.actionSettings) {
-            setTooltip(R.string.action_settings)
-            readerSettingSheetDialog = ReaderSettingsSheet(this@ReaderActivity)
-            setOnClickListener {
-                if (!readerSettingSheetDialog!!.isShowing) {
-                    readerSettingSheetDialog!!.show()
-                }
-            }
-
-            setOnLongClickListener {
-                ReaderSettingsSheet(this@ReaderActivity, showColorFilterSettings = true).show()
-                true
-            }
-        }
-    }
-
-    private fun updateOrientationShortcut(preference: Int) {
-        val orientation = OrientationType.fromPreference(preference)
-        binding.actionRotation.setImageResource(orientation.iconRes)
     }
 
     /**
@@ -829,15 +747,6 @@ class ReaderActivity : EhActivity() {
     }
 
     /**
-     * Called from the viewer to show the menu.
-     */
-    fun showMenu() {
-        if (!menuVisible) {
-            setMenuVisibility(true)
-        }
-    }
-
-    /**
      * Called from the viewer to hide the menu.
      */
     fun hideMenu() {
@@ -854,7 +763,6 @@ class ReaderActivity : EhActivity() {
         if (newOrientation.flag != requestedOrientation) {
             requestedOrientation = newOrientation.flag
         }
-        updateOrientationShortcut(ReaderPreferences.defaultOrientationType().get())
     }
 
     /**
@@ -930,14 +838,6 @@ class ReaderActivity : EhActivity() {
                 .onEach { setPageNumberVisibility(it) }
                 .launchIn(lifecycleScope)
 
-            ReaderPreferences.showReaderSeekbar().changes()
-                .onEach { setReaderSeekbarVisibility(it) }
-                .launchIn(lifecycleScope)
-
-            ReaderPreferences.trueColor().changes()
-                .onEach { setTrueColor(it) }
-                .launchIn(lifecycleScope)
-
             if (hasCutout) {
                 setCutoutShort(ReaderPreferences.cutoutShort().get())
                 ReaderPreferences.cutoutShort().changes()
@@ -994,17 +894,6 @@ class ReaderActivity : EhActivity() {
          */
         fun setPageNumberVisibility(visible: Boolean) {
             binding.pageNumber.isVisible = visible
-        }
-
-        fun setReaderSeekbarVisibility(visible: Boolean) {
-            binding.readerNav.isVisible = visible
-        }
-
-        /**
-         * Sets the 32-bit color mode according to [enabled].
-         */
-        private fun setTrueColor(enabled: Boolean) {
-            // TODO()
         }
 
         @RequiresApi(Build.VERSION_CODES.P)

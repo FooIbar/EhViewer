@@ -48,14 +48,15 @@ fun ChapterNavigator(
     val maxTickCount = configuration.screenWidthDp / 6
     val showTicks = totalPages < maxTickCount
 
+    // Match with toolbar background color set in ReaderActivity
+    val backgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp).copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
+
     // We explicitly handle direction based on the reader viewer rather than the system direction
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Match with toolbar background color set in ReaderActivity
-            val backgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp).copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
             if (totalPages > 1) {
                 CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
                     Row(
