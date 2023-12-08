@@ -19,13 +19,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.VectorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 
+private inline fun <K, V> MutableMap<K, V>.computeIfAbsentInline(key: K, compute: () -> V) = get(key) ?: compute().also { put(key, it) }
+
 @Stable
 @Composable
 private fun rememberNeverRecomposeVectorPainter(image: ImageVector): VectorPainter {
     val cache = LocalVectorPainterCache.current
     return remember(image) {
         val (context, map) = cache
-        map.computeIfAbsent(image) {
+        map.computeIfAbsentInline(image) {
             lateinit var b: VectorPainter
             val composition = ReusableComposition(
                 object : Applier<Unit> {
