@@ -307,6 +307,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                 }
             },
             refreshState = refreshState,
+            scrollToTopOnRefresh = urlBuilder.favCat != FavListUrlBuilder.FAV_CAT_LOCAL,
             onRefresh = { refresh() },
             onLoading = { searchBarOffsetY = 0 },
         )
