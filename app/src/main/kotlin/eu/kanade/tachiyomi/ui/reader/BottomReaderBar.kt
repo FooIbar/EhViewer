@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Settings
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -41,7 +43,10 @@ fun BottomReaderBar(onClickSettings: () -> Unit) {
     val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
     var readingModeExpanded by remember { mutableStateOf(false) }
     Box {
-        DropdownMenu(readingModeExpanded, onDismissRequest = { readingModeExpanded = false }) {
+        DropdownMenu(
+            readingModeExpanded,
+            onDismissRequest = { readingModeExpanded = false },
+        ) {
             ReadingModeType.entries.forEach {
                 DropdownMenuItem(
                     text = { Text(stringResource(it.stringRes)) },
@@ -49,6 +54,7 @@ fun BottomReaderBar(onClickSettings: () -> Unit) {
                         Settings.readingMode.value = it.flagValue
                         readingModeExpanded = false
                     },
+                    modifier = Modifier.width(192.dp),
                     leadingIcon = {
                         if (readingMode == it) {
                             Icon(imageVector = Icons.Default.Check, contentDescription = null)
@@ -62,7 +68,11 @@ fun BottomReaderBar(onClickSettings: () -> Unit) {
     val orientationMode by Settings.orientationMode.collectAsState { OrientationType.fromPreference(it) }
     var orientationModeExpanded by remember { mutableStateOf(false) }
     Box {
-        DropdownMenu(orientationModeExpanded, onDismissRequest = { orientationModeExpanded = false }) {
+        DropdownMenu(
+            orientationModeExpanded,
+            onDismissRequest = { orientationModeExpanded = false },
+            offset = DpOffset(320.dp, 0.dp),
+        ) {
             OrientationType.entries.forEach {
                 DropdownMenuItem(
                     text = { Text(stringResource(it.stringRes)) },
@@ -70,6 +80,7 @@ fun BottomReaderBar(onClickSettings: () -> Unit) {
                         Settings.orientationMode.value = it.flagValue
                         orientationModeExpanded = false
                     },
+                    modifier = Modifier.width(192.dp),
                     leadingIcon = {
                         if (orientationMode == it) {
                             Icon(imageVector = Icons.Default.Check, contentDescription = null)
