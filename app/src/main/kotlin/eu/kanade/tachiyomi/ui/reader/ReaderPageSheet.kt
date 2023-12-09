@@ -1,73 +1,63 @@
 package eu.kanade.tachiyomi.ui.reader
 
-import android.view.LayoutInflater
-import android.view.View
-import com.hippo.ehviewer.databinding.ReaderPageSheetBinding
+import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FileCopy
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.hippo.ehviewer.R
+import com.hippo.ehviewer.util.findActivity
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
-import eu.kanade.tachiyomi.widget.sheet.BaseBottomSheetDialog
+import moe.tarsin.kt.andThen
 
-/**
- * Sheet to show when a page is long clicked.
- */
-class ReaderPageSheet(
-    private val activity: ReaderActivity,
-    private val page: ReaderPage,
-) : BaseBottomSheetDialog(activity) {
+@Composable
+fun ReaderPageSheet(page: ReaderPage, dismiss: () -> Unit) {
+    val activity = LocalContext.current.run { remember { findActivity<ReaderActivity>() } }
+    val modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp)
 
-    private lateinit var binding: ReaderPageSheetBinding
-
-    override fun createView(inflater: LayoutInflater): View {
-        binding = ReaderPageSheetBinding.inflate(activity.layoutInflater, null, false)
-
-        binding.share.setOnClickListener { share() }
-        binding.copy.setOnClickListener { copy() }
-        binding.save.setOnClickListener { save() }
-        binding.saveTo.setOnClickListener { saveTo() }
-        binding.refresh.setOnClickListener { refresh() }
-        binding.refreshOrgImg.setOnClickListener { refreshOrgImg() }
-
-        return binding.root
+    @Composable
+    fun Item(icon: ImageVector, @StringRes text: Int, onClick: () -> Unit) = Row(
+        modifier = modifier.clickable(onClick = onClick andThen dismiss),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(imageVector = icon, contentDescription = null)
+        Spacer(modifier = Modifier.size(32.dp))
+        Text(text = stringResource(id = text))
     }
-
-    /**
-     * Shares the image of this page with external apps.
-     */
-    private fun share() {
-        activity.shareImage(page.index)
-        dismiss()
-    }
-
-    /**
-     * Copy the image of this page with external apps.
-     */
-    private fun copy() {
-        activity.copyImage(page.index)
-        dismiss()
-    }
-
-    /**
-     * Saves the image of this page on external storage.
-     */
-    private fun save() {
-        activity.saveImage(page.index)
-        dismiss()
-    }
-
-    /**
-     * Saves the image of this page to a custom location on external storage.
-     */
-    private fun saveTo() {
-        activity.saveImageTo(page.index)
-        dismiss()
-    }
-
-    private fun refresh() {
+    Item(icon = Icons.Default.Refresh, text = R.string.refresh) {
         activity.mGalleryProvider?.retryPage(page.index)
-        dismiss()
     }
-
-    private fun refreshOrgImg() {
+    Item(icon = Icons.Default.Refresh, text = R.string.refresh_original) {
         activity.mGalleryProvider?.retryPage(page.index, true)
-        dismiss()
+    }
+    Item(icon = Icons.Default.Share, text = R.string.action_share) {
+        activity.shareImage(page.index)
+    }
+    Item(icon = Icons.Default.FileCopy, text = R.string.action_copy) {
+        activity.copyImage(page.index)
+    }
+    Item(icon = Icons.Default.Save, text = R.string.action_save) {
+        activity.saveImage(page.index)
+    }
+    Item(icon = Icons.Default.Save, text = R.string.action_save_to) {
+        activity.saveImageTo(page.index)
     }
 }
