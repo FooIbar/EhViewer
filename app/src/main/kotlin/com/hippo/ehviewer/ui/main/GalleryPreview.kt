@@ -27,8 +27,8 @@ import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
 import com.hippo.ehviewer.ktbuilder.imageRequest
-import com.hippo.ehviewer.ui.tools.CropDefaults
 import com.hippo.ehviewer.ui.tools.CrystalCard
+import com.hippo.ehviewer.ui.tools.shouldCrop
 
 @Composable
 @ReadOnlyComposable
@@ -69,14 +69,12 @@ fun EhAsyncPreview(
             if (it is AsyncImagePainter.State.Success) {
                 model.run {
                     if (this is NormalGalleryPreview) {
-                        if (CropDefaults.shouldCrop(clipWidth, clipHeight)) {
+                        if (shouldCrop) {
                             contentScale = ContentScale.Crop
                         }
                     } else {
-                        it.result.image.asDrawable(context.resources).run {
-                            if (CropDefaults.shouldCrop(intrinsicWidth, intrinsicHeight)) {
-                                contentScale = ContentScale.Crop
-                            }
+                        if (it.result.image.shouldCrop) {
+                            contentScale = ContentScale.Crop
                         }
                     }
                 }
