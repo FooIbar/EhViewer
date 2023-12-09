@@ -2,16 +2,16 @@
 
 package com.hippo.ehviewer.coil
 
-import android.net.Uri
 import android.webkit.MimeTypeMap
-import coil.ComponentRegistry
-import coil.ImageLoader
-import coil.decode.DataSource
-import coil.decode.ImageSource
-import coil.fetch.FetchResult
-import coil.fetch.Fetcher
-import coil.fetch.SourceResult
-import coil.request.Options
+import coil3.ComponentRegistry
+import coil3.ImageLoader
+import coil3.Uri
+import coil3.decode.DataSource
+import coil3.decode.ImageSource
+import coil3.fetch.FetchResult
+import coil3.fetch.Fetcher
+import coil3.fetch.SourceFetchResult
+import coil3.request.Options
 import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.util.copyTo
 import io.ktor.client.statement.bodyAsChannel
@@ -34,7 +34,7 @@ class KtorHttpUriFetcher(private val data: String, private val options: Options,
             // diskcache snapshot MUST exist here
             requireNotNull(diskCache.openSnapshot(diskCacheKey))
         }
-        return SourceResult(
+        return SourceFetchResult(
             source = ImageSource(snapshot.data, diskCache.fileSystem, diskCacheKey, snapshot),
             mimeType = getMimeType(data),
             dataSource = DataSource.DISK,

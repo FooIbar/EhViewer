@@ -27,5 +27,7 @@
 -dontwarn org.ietf.jgss.GSSName
 -dontwarn org.ietf.jgss.Oid
 
+-dontwarn org.conscrypt.Conscrypt
+
 -allowaccessmodification
 -repackageclasses

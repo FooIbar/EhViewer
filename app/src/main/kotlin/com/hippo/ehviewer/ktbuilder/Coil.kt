@@ -1,9 +1,9 @@
 package com.hippo.ehviewer.ktbuilder
 
 import android.content.Context
-import coil.ImageLoader
-import coil.disk.DiskCache
-import coil.request.ImageRequest
+import coil3.ImageLoader
+import coil3.disk.DiskCache
+import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.coil.ehPreview

@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.coil
 
-import coil.intercept.Interceptor
-import coil.request.ImageResult
+import coil3.intercept.Interceptor
+import coil3.request.ImageResult
 import com.hippo.ehviewer.Settings
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -41,7 +41,7 @@ object MergeInterceptor : Interceptor {
 
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
         val req = chain.request
-        val key = req.memoryCacheKey?.key?.takeIf { it.startsWith("m/") || Settings.preloadThumbAggressively } ?: return withContext(req.interceptorDispatcher) { chain.proceed(req) }
+        val key = req.memoryCacheKey?.takeIf { it.startsWith("m/") || Settings.preloadThumbAggressively } ?: return withContext(req.interceptorDispatcher) { chain.proceed() }
 
         suspendCancellableCoroutine { continuation ->
             synchronized(pendingContinuationMapLock) {
@@ -62,7 +62,7 @@ object MergeInterceptor : Interceptor {
         }
 
         try {
-            return withContext(req.interceptorDispatcher) { chain.proceed(req) }.apply {
+            return withContext(req.interceptorDispatcher) { chain.proceed() }.apply {
                 // Wake all pending continuations shared with the same memory key since we have written it to memory cache
                 notifyScope.launch {
                     synchronized(pendingContinuationMapLock) {

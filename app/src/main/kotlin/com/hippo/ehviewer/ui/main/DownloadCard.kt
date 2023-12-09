@@ -35,8 +35,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
+import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
 import com.hippo.ehviewer.EhApplication
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -80,7 +80,7 @@ private fun AsyncThumb(
         modifier = modifier,
         onState = { state ->
             if (state is AsyncImagePainter.State.Success) {
-                state.result.drawable.run {
+                state.result.image.asDrawable(context.resources).run {
                     if (CropDefaults.shouldCrop(intrinsicWidth, intrinsicHeight)) {
                         contentScale = ContentScale.Crop
                     }

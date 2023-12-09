@@ -7,12 +7,12 @@ import com.hippo.ehviewer.legacy.readLegacySpiderInfo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
 import com.hippo.unifile.openOutputStream
-import java.io.File
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path.Companion.toOkioPath
 import splitties.init.appCtx
 
 @Serializable
@@ -50,7 +50,7 @@ fun SpiderInfo.saveToCache() {
 
 private val spiderInfoCache by lazy {
     diskCache {
-        directory(File(appCtx.cacheDir, "spider_info_v2_1"))
+        directory(appCtx.cacheDir.toOkioPath() / "spider_info_v2_1")
         maxSizeBytes(20 * 1024 * 1024)
     }
 }

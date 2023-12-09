@@ -79,7 +79,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import arrow.core.partially1
-import coil.imageLoader
+import coil3.imageLoader
 import com.hippo.ehviewer.EhApplication.Companion.galleryDetailCache
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
