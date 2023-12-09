@@ -46,10 +46,10 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.ktbuilder.imageRequest
-import com.hippo.ehviewer.ui.tools.CropDefaults
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
+import com.hippo.ehviewer.ui.tools.shouldCrop
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
@@ -80,10 +80,8 @@ private fun AsyncThumb(
         modifier = modifier,
         onState = { state ->
             if (state is AsyncImagePainter.State.Success) {
-                state.result.image.asDrawable(context.resources).run {
-                    if (CropDefaults.shouldCrop(intrinsicWidth, intrinsicHeight)) {
-                        contentScale = ContentScale.Crop
-                    }
+                if (state.result.image.shouldCrop) {
+                    contentScale = ContentScale.Crop
                 }
                 path?.let {
                     coroutineScope.launch {

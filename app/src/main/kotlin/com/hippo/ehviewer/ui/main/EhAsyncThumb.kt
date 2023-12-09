@@ -14,7 +14,7 @@ import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
-import com.hippo.ehviewer.ui.tools.CropDefaults
+import com.hippo.ehviewer.ui.tools.shouldCrop
 
 @Composable
 @ReadOnlyComposable
@@ -39,7 +39,6 @@ fun EhAsyncCropThumb(
     key: GalleryInfo,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
     var contentScale by remember(key.gid) { mutableStateOf(ContentScale.Fit) }
     AsyncImage(
         model = requestOf(key),
@@ -47,10 +46,8 @@ fun EhAsyncCropThumb(
         modifier = modifier,
         onState = {
             if (it is AsyncImagePainter.State.Success) {
-                it.result.image.asDrawable(context.resources).run {
-                    if (CropDefaults.shouldCrop(intrinsicWidth, intrinsicHeight)) {
-                        contentScale = ContentScale.Crop
-                    }
+                if (it.result.image.shouldCrop) {
+                    contentScale = ContentScale.Crop
                 }
             }
         },
