@@ -85,8 +85,8 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                 )
             }
         }
-        private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 2
-        private val targetHeight = appCtx.resources.displayMetrics.heightPixels * 2
+        private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 3 / 2
+        private val targetHeight = appCtx.resources.displayMetrics.heightPixels * 3 / 2
 
         @delegate:RequiresApi(Build.VERSION_CODES.O)
         val isWideColorGamut by lazy { appCtx.resources.configuration.isScreenWideColorGamut }
