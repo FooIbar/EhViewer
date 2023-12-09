@@ -28,7 +28,7 @@ fun MetaRatingWidgetReuse(rating: Float, ratingSize: Dp, ratingInterval: Dp, mod
     val outlineStar = 5 - fullStar - halfStar
     Row(modifier = modifier) {
         repeat(fullStar) {
-            IconFix(
+            IconCached(
                 imageVector = Icons.Default.Star,
                 contentDescription = null,
                 modifier = Modifier.size(ratingSize),
@@ -37,7 +37,7 @@ fun MetaRatingWidgetReuse(rating: Float, ratingSize: Dp, ratingInterval: Dp, mod
             Spacer(modifier = Modifier.width(ratingInterval))
         }
         repeat(halfStar) {
-            IconFix(
+            IconCached(
                 imageVector = Icons.AutoMirrored.Default.StarHalf,
                 contentDescription = null,
                 modifier = Modifier.size(ratingSize),
@@ -46,7 +46,7 @@ fun MetaRatingWidgetReuse(rating: Float, ratingSize: Dp, ratingInterval: Dp, mod
             Spacer(modifier = Modifier.width(ratingInterval))
         }
         repeat(outlineStar) {
-            IconFix(
+            IconCached(
                 imageVector = Icons.Default.StarOutline,
                 contentDescription = null,
                 modifier = Modifier.size(ratingSize),
