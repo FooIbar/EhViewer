@@ -2,11 +2,12 @@ package com.hippo.ehviewer.coil
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import coil.decode.DecodeResult
-import coil.decode.Decoder
-import coil.request.CachePolicy
-import coil.request.ImageRequest
-import coil.size.Size
+import coil3.asCoilImage
+import coil3.decode.DecodeResult
+import coil3.decode.Decoder
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
+import coil3.size.Size
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
@@ -27,7 +28,8 @@ fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = apply {
     if (preview is NormalGalleryPreview) size(Size.ORIGINAL)
 }
 
-private val stubResult = DecodeResult(ColorDrawable(Color.BLACK), false)
+private val stubImage = ColorDrawable(Color.BLACK).asCoilImage(true)
+private val stubResult = DecodeResult(stubImage, false)
 private val stubFactory = Decoder { stubResult }
 
 fun ImageRequest.Builder.justDownload() = apply {

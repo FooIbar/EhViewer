@@ -39,7 +39,7 @@ import androidx.room.paging.util.getClippedRefreshKey
 import androidx.room.paging.util.getLimit
 import androidx.room.paging.util.getOffset
 import arrow.fx.coroutines.parMap
-import coil.imageLoader
+import coil3.imageLoader
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine

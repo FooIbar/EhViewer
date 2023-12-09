@@ -21,9 +21,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
 import com.hippo.ehviewer.ktbuilder.imageRequest
@@ -44,6 +44,7 @@ fun EhAsyncPreview(
     model: GalleryPreview,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
     var contentScale by remember(model.imageKey) { mutableStateOf(ContentScale.Fit) }
     AsyncImage(
         model = requestOf(model),
@@ -54,7 +55,7 @@ fun EhAsyncPreview(
                 if (it is AsyncImagePainter.State.Success && this is NormalGalleryPreview) {
                     it.copy(
                         painter = BitmapPainter(
-                            (it.result.drawable as BitmapDrawable).bitmap.asImageBitmap(),
+                            (it.result.image.asDrawable(context.resources) as BitmapDrawable).bitmap.asImageBitmap(),
                             IntOffset(offsetX, 0),
                             IntSize(clipWidth - 1, clipHeight - 1),
                         ),
@@ -72,7 +73,7 @@ fun EhAsyncPreview(
                             contentScale = ContentScale.Crop
                         }
                     } else {
-                        it.result.drawable.run {
+                        it.result.image.asDrawable(context.resources).run {
                             if (CropDefaults.shouldCrop(intrinsicWidth, intrinsicHeight)) {
                                 contentScale = ContentScale.Crop
                             }

@@ -30,18 +30,17 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
-import coil.decode.BitmapFactoryDecoder
-import coil.decode.DecodeUtils
-import coil.decode.ImageSource
-import coil.request.Options
-import coil.size.Scale
-import coil.size.Size
+import coil3.decode.BitmapFactoryDecoder
+import coil3.decode.DecodeUtils
+import coil3.decode.ImageSource
+import coil3.request.Options
+import coil3.size.Scale
+import coil3.size.Size
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.jni.isGif
 import com.hippo.ehviewer.jni.mmap
 import com.hippo.ehviewer.jni.munmap
 import com.hippo.ehviewer.jni.rewriteGifSource
-import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
@@ -122,13 +121,12 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                         } else {
                             val options = Options(
                                 appCtx,
-                                colorSpace = if (isAtLeastO) colorSpace else null,
                                 size = Size(targetWidth, targetHeight),
                                 scale = Scale.FILL,
                                 allowInexactSize = true,
                             )
-                            val drawable = ImageSource(src.source.openInputStream().source().buffer(), appCtx).use {
-                                BitmapFactoryDecoder(it, options).decode().drawable
+                            val drawable = ImageSource(src.source.openInputStream().source().buffer()).use {
+                                BitmapFactoryDecoder(it, options).decode().image.asDrawable(appCtx.resources)
                             }
                             src.close()
                             Image(drawable, src)
