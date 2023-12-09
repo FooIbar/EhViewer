@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.main
 
-import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -21,6 +20,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import coil3.BitmapImage
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
@@ -55,7 +55,7 @@ fun EhAsyncPreview(
                 if (it is AsyncImagePainter.State.Success && this is NormalGalleryPreview) {
                     it.copy(
                         painter = BitmapPainter(
-                            (it.result.image.asDrawable(context.resources) as BitmapDrawable).bitmap.asImageBitmap(),
+                            (it.result.image as BitmapImage).bitmap.asImageBitmap(),
                             IntOffset(offsetX, 0),
                             IntSize(clipWidth - 1, clipHeight - 1),
                         ),
