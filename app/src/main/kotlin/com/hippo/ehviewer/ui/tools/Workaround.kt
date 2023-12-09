@@ -24,7 +24,7 @@ private fun rememberCachedVectorPainter(image: ImageVector): VectorPainter {
 }
 
 @Composable
-fun IconFix(
+fun IconCached(
     imageVector: ImageVector,
     contentDescription: String?,
     modifier: Modifier = Modifier,

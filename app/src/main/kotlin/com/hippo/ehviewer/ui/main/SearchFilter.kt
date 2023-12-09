@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +37,6 @@ import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.ui.tools.IconFix
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.toIntOrDefault
 import kotlinx.coroutines.launch
@@ -107,7 +107,7 @@ fun SearchFilter(
                 Text(text = if (languageFilter == -1) languageStr else languages[languageFilter])
             },
             trailingIcon = {
-                IconFix(
+                Icon(
                     imageVector = if (languageFilter == -1) Icons.Outlined.FilterAlt else Icons.Default.FilterAlt,
                     contentDescription = null,
                 )
@@ -179,7 +179,7 @@ fun SearchFilter(
                                 ListItem(
                                     headlineContent = { Text(text = error) },
                                     leadingContent = {
-                                        IconFix(imageVector = Icons.Default.Info, contentDescription = null)
+                                        Icon(imageVector = Icons.Default.Info, contentDescription = null)
                                     },
                                     colors = ListItemDefaults.colors(
                                         headlineColor = MaterialTheme.colorScheme.error,
