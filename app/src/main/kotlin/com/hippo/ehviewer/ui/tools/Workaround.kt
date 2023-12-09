@@ -4,7 +4,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
@@ -45,11 +44,6 @@ fun ProvideVectorPainterCache(content: @Composable () -> Unit) {
         LocalVectorPainterCache provides cache,
         content = content,
     )
-    DisposableEffect(Unit) {
-        onDispose {
-            cache.clear()
-        }
-    }
 }
 
 typealias VectorPainterCache = MutableMap<ImageVector, VectorPainter>
