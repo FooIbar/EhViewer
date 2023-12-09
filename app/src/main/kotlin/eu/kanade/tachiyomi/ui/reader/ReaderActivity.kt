@@ -46,10 +46,13 @@ import androidx.annotation.RequiresApi
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheetFix
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.BlendMode
 import androidx.core.content.FileProvider
@@ -109,6 +112,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.launch
 import splitties.init.appCtx
 import splitties.systemservices.clipboardManager
 
@@ -735,7 +739,21 @@ class ReaderActivity : EhActivity() {
      * actions to perform is shown.
      */
     fun onPageLongTap(page: ReaderPage) {
-        ReaderPageSheet(this, page).show()
+        lifecycleScope.launch {
+            dialogState.dialog {
+                val coroutineScope = rememberCoroutineScope()
+                fun dismiss() = it.cancel()
+                val sheetState = rememberModalBottomSheetState()
+                ModalBottomSheetFix(
+                    onDismissRequest = { dismiss() },
+                    sheetState = sheetState,
+                ) {
+                    ReaderPageSheet(page) {
+                        coroutineScope.launch { sheetState.hide() }
+                    }
+                }
+            }
+        }
     }
 
     /**
