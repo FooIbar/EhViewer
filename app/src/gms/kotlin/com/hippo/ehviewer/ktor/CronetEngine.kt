@@ -29,6 +29,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.chromium.net.CronetException
 import org.chromium.net.UploadDataProvider
@@ -109,7 +110,7 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
             data.headers.flattenForEach { key, value -> addHeader(key, value) }
             data.body.contentType?.let { addHeader(HttpHeaders.ContentType, it.toString()) }
             data.body.contentLength?.let { addHeader(HttpHeaders.ContentLength, it.toString()) }
-            data.body.toUploadDataProvider()?.let { setUploadDataProvider(it, cronetHttpClientExecutor) }
+            data.body.toUploadDataProvider(callContext)?.let { setUploadDataProvider(it, cronetHttpClientExecutor) }
         }.build()
         request.start()
         callContext[Job]!!.invokeOnCompletion { request.cancel() }
@@ -141,7 +142,8 @@ private fun UrlResponseInfo.toHttpResponseData(
     )
 }
 
-private fun OutgoingContent.toUploadDataProvider(): UploadDataProvider? = when (this) {
+@OptIn(DelicateCoroutinesApi::class)
+private fun OutgoingContent.toUploadDataProvider(callContext: CoroutineContext): UploadDataProvider? = when (this) {
     is OutgoingContent.NoContent -> null
     is OutgoingContent.ByteArrayContent -> object : UploadDataProvider() {
         val buffer = ByteBuffer.wrap(bytes()).slice()
@@ -152,6 +154,21 @@ private fun OutgoingContent.toUploadDataProvider(): UploadDataProvider? = when (
         }
         override fun rewind(uploadDataSink: UploadDataSink) {
             buffer.position(0)
+            uploadDataSink.onRewindSucceeded()
+        }
+    }
+    is OutgoingContent.WriteChannelContent -> object : UploadDataProvider() {
+        fun launch() = GlobalScope.writer(callContext) { writeTo(channel) }.channel
+        var chan = launch()
+        override fun getLength() = contentLength!!
+        override fun read(uploadDataSink: UploadDataSink, byteBuffer: ByteBuffer) {
+            GlobalScope.launch(callContext) {
+                chan.readAvailable(byteBuffer)
+                uploadDataSink.onReadSucceeded(false)
+            }
+        }
+        override fun rewind(uploadDataSink: UploadDataSink) {
+            chan = launch()
             uploadDataSink.onRewindSucceeded()
         }
     }
