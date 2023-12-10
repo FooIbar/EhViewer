@@ -2,7 +2,9 @@ package com.hippo.ehviewer.ui.tools
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.currentCompositeKeyHash
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.lifecycle.ViewModel
@@ -32,3 +34,8 @@ fun <T : Any> rememberInVM(
     }
     return value
 }
+
+@Composable
+fun <T> rememberUpdatedStateInVM(newValue: T): State<T> = rememberInVM {
+    mutableStateOf(newValue)
+}.apply { value = newValue }

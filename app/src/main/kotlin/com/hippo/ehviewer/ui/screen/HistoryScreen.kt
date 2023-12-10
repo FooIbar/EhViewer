@@ -49,6 +49,7 @@ import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -67,6 +68,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
             EhDB.historyLazyList
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
+    FavouriteStatusRouter.observe(historyData)
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {

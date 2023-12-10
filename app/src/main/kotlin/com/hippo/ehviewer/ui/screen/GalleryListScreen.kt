@@ -134,6 +134,7 @@ import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.AppConfig
+import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.pickVisualMedia
 import com.ramcosta.composedestinations.annotation.Destination
@@ -278,6 +279,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             }
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
+    FavouriteStatusRouter.observe(data)
     val listMode by Settings.listMode.collectAsState()
 
     val quickSearchList = remember { mutableStateListOf<QuickSearch>() }
