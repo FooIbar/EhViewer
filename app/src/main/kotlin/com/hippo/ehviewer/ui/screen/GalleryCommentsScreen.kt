@@ -108,7 +108,6 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
-import moe.tarsin.coroutines.replace
 import moe.tarsin.coroutines.runSuspendCatching
 import rikka.core.res.resolveColor
 
@@ -174,6 +173,9 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
         val detail = EhEngine.getGalleryDetail(url)
         comments = detail.comments
+
+        // Refresh comments of GalleryDetail cache
+        galleryDetail.comments = comments
     }
 
     val copyComment = stringResource(R.string.copy_comment_text)
@@ -303,10 +305,15 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
                     bottom = paddingValues.calculateBottomPadding() + additionalPadding,
                 ),
             ) {
-                items(comments.comments) { item ->
+                items(
+                    items = comments.comments,
+                    key = { it.id },
+                ) { item ->
                     suspend fun voteComment(comment: GalleryComment, isUp: Boolean) {
                         galleryDetail.runSuspendCatching {
-                            EhEngine.voteComment(apiUid, apiKey, gid, token, comment.id, if (isUp) 1 else -1)
+                            EhEngine.voteComment(apiUid, apiKey, gid, token, comment.id, if (isUp) 1 else -1).also {
+                                refreshComment(true)
+                            }
                         }.onSuccess { result ->
                             activity.showTip(
                                 if (isUp) {
@@ -315,13 +322,6 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
                                     if (0 != result.vote) R.string.vote_down_successfully else R.string.cancel_vote_down_successfully
                                 },
                             )
-                            val newComment = comment.copy(
-                                score = result.score,
-                                voteUpEd = 0 != result.vote && isUp,
-                                voteDownEd = 0 != result.vote && !isUp,
-                            )
-                            val list = comments.comments.replace(comment, newComment)
-                            comments = comments.copy(comments = list)
                         }.onFailure {
                             activity.showTip(R.string.vote_failed)
                         }
@@ -359,6 +359,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
                     }
 
                     GalleryCommentCard(
+                        modifier = Modifier.animateItemPlacement(),
                         comment = item,
                         onUserClick = {
                             val lub = ListUrlBuilder(
