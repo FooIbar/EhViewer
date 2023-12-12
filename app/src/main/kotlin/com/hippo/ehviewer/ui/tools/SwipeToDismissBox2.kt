@@ -2,7 +2,7 @@ package com.hippo.ehviewer.ui.tools
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissState
+import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -11,7 +11,7 @@ import com.hippo.ehviewer.Settings
 
 @Composable
 fun SwipeToDismissBox2(
-    state: SwipeToDismissState,
+    state: SwipeToDismissBoxState,
     backgroundContent: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
