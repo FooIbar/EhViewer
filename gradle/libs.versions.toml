@@ -109,7 +109,7 @@ photoview = "com.github.chrisbanes:PhotoView:2.3.0"
 
 r8 = { module = "com.android.tools:r8", version.ref = "android-tools-r8" }
 
-reorderable = "sh.calvin.reorderable:reorderable:1.1.0"
+reorderable = "sh.calvin.reorderable:reorderable:1.2.0"
 
 splitties-appctx = { module = "com.louiscad.splitties:splitties-appctx", version.ref = "splitties" }
 splitties-arch-room = { module = "com.louiscad.splitties:splitties-arch-room", version.ref = "splitties" }
