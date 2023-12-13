@@ -62,7 +62,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -125,20 +124,6 @@ fun SearchBarScreen(
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
     val dialogState = LocalDialogState.current
-
-    // Workaround for BTF2 cursor not showing
-    // We can't use an always focused WindowInfo because callbacks won't be called once
-    // the window regained focus after losing it (e.g. showing a dialog on top of it)
-    // https://issuetracker.google.com/issues/307323842
-    val windowInfo = LocalWindowInfo.current
-    remember {
-        val clazz = Class.forName("androidx.compose.ui.platform.WindowInfoImpl")
-        clazz.cast(windowInfo).let {
-            clazz.getDeclaredMethod("setWindowFocused", Boolean::class.javaPrimitiveType).apply {
-                invoke(it, true)
-            }
-        }
-    }
 
     class TagSuggestion(
         override val hint: String?,
