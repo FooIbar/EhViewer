@@ -6,7 +6,6 @@
   "packageRules": [
     {
       "description": "Disable updates for SNAPSHOTs",
-      "matchPackagePrefixes": ["androidx"],
       "allowedVersions": "!/SNAPSHOT$/"
     }
   ]
