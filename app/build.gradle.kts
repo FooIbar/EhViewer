@@ -233,8 +233,6 @@ dependencies {
     implementation(libs.androidx.work.runtime)
     implementation(libs.photoview) // Dead Dependency
     implementation(libs.directionalviewpager) // Dead Dependency
-    // https://github.com/google/accompanist/releases
-    implementation(libs.bundles.accompanist)
     implementation(libs.material)
 
     implementation(libs.bundles.splitties)

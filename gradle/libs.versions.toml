@@ -20,7 +20,6 @@ coil = "3.0.0-SNAPSHOT"
 compose-bom = "2023.12.00-alpha03"
 compose-compiler = "1.5.5-dev-k2.0.0-Beta1-06b8ae672a4"
 compose-destinations = "1.9.55"
-google-accompanist = "0.32.0"
 google-android-material = "1.12.0-alpha02"
 kotlin = "2.0.0-Beta1"
 kotlinx-coroutines = "1.7.3"
@@ -34,8 +33,6 @@ splitties = "3.0.0"
 
 [libraries]
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
-
-accompanist-webview = { module = "com.google.accompanist:accompanist-webview", version.ref = "google-accompanist" }
 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
@@ -116,7 +113,6 @@ splitties-preferences = { module = "com.louiscad.splitties:splitties-preferences
 splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemservices", version.ref = "splitties" }
 
 [bundles]
-accompanist = ["accompanist-webview"]
 androidx-navigation = ["androidx-navigation-compose", "androidx-navigation-ui"]
 coil = ["coil-compose", "coil-gif"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
