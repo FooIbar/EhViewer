@@ -218,7 +218,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
             )
             SwitchPreference(
                 title = stringResource(id = R.string.black_dark_theme),
-                value = Settings::blackDarkTheme,
+                value = Settings.blackDarkTheme::value,
             )
             SwitchPreference(
                 title = stringResource(id = R.string.harmonize_category_color),

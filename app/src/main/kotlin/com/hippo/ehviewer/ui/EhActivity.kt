@@ -15,32 +15,14 @@
  */
 package com.hippo.ehviewer.ui
 
-import android.content.res.Resources.Theme
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.StyleRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.ActivityNavigator
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.view.setSecureScreen
 
 abstract class EhActivity : AppCompatActivity() {
-    @StyleRes
-    fun getThemeStyleRes(): Int {
-        return if (Settings.blackDarkTheme && isNightMode()) R.style.ThemeOverlay_Black else R.style.ThemeOverlay
-    }
-
-    override fun onApplyThemeResource(theme: Theme, resid: Int, first: Boolean) {
-        super.onApplyThemeResource(theme, resid, first)
-        theme.applyStyle(getThemeStyleRes(), true)
-    }
-
-    override fun onNightModeChanged(mode: Int) {
-        theme.applyStyle(getThemeStyleRes(), true)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
