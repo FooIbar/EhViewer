@@ -122,10 +122,11 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
     val data = rememberInVM(urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
         if (urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
             Pager(PagingConfig(20, jumpThreshold = 40)) {
-                if (keyword.isBlank()) {
+                val keywordNow = urlBuilder.keyword.orEmpty()
+                if (keywordNow.isBlank()) {
                     EhDB.localFavLazyList
                 } else {
-                    EhDB.searchLocalFav(keyword)
+                    EhDB.searchLocalFav(keywordNow)
                 }
             }
         } else {
