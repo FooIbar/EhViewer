@@ -110,6 +110,7 @@ object Settings : DataStorePreferences(null) {
     val languageFilter = intPref("language_filter", -1)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
     val predictiveNavAnim = boolPref("predictive_nav_anim", true)
+    val blackDarkTheme = boolPref("black_dark_theme", false)
 
     val needSignInFlow: Flow<Boolean>
     var downloadScheme by stringOrNullPref("image_scheme", null)
@@ -146,7 +147,6 @@ object Settings : DataStorePreferences(null) {
     var security by boolPref("require_unlock", false)
     var removeImageFiles by boolPref("include_pic", true)
     var needSignIn by boolPref("need_sign_in", true).also { needSignInFlow = it.valueFlow() }
-    var blackDarkTheme by boolPref("black_dark_theme", false).observed { updateWhenAmoledModeChanges() }
     var harmonizeCategoryColor by boolPref("harmonize_category_color", true)
     var preloadThumbAggressively by boolPref("preload_thumb_aggressively", false)
     var downloadOriginImage by boolPref("download_origin_image", false)

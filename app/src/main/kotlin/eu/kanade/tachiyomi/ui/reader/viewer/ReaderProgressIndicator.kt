@@ -14,7 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.isVisible
-import com.google.accompanist.themeadapter.material3.Mdc3Theme
+import com.hippo.ehviewer.ui.theme.EhTheme
 
 class ReaderProgressIndicator @JvmOverloads constructor(
     context: Context,
@@ -32,7 +32,7 @@ class ReaderProgressIndicator @JvmOverloads constructor(
 
     @Composable
     override fun Content() {
-        Mdc3Theme {
+        EhTheme {
             if (visible) CombinedCircularProgressIndicator(progress = progress)
         }
     }

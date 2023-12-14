@@ -2,7 +2,6 @@ package com.hippo.ehviewer
 
 import android.app.UiModeManager
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY
 import androidx.core.os.LocaleListCompat
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
@@ -55,14 +54,6 @@ fun updateWhenThemeChanges() {
             }
             uiModeManager.setApplicationNightMode(mode)
         }
-        AppCompatDelegate.setDefaultNightMode(Settings.theme)
-    }
-}
-
-fun updateWhenAmoledModeChanges() {
-    collectScope.launch {
-        delay(100) // Avoid recompose being cancelled
-        AppCompatDelegate.setDefaultNightMode(MODE_NIGHT_AUTO_BATTERY) // Trigger onNightModeChanged
         AppCompatDelegate.setDefaultNightMode(Settings.theme)
     }
 }

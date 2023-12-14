@@ -17,7 +17,6 @@ import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.Settings as AppSettings
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import kotlin.math.roundToInt
 import splitties.systemservices.windowManager
@@ -122,8 +121,6 @@ fun Context.createReaderThemeContext(): Context {
 
         val wrappedContext = ContextThemeWrapper(this, R.style.AppTheme)
         wrappedContext.applyOverrideConfiguration(overrideConf)
-        val resId = if (AppSettings.blackDarkTheme && isDarkBackground) R.style.ThemeOverlay_Black else R.style.ThemeOverlay
-        wrappedContext.theme.applyStyle(resId, true)
         return wrappedContext
     }
     return this
