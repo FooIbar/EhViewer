@@ -43,6 +43,9 @@ import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.activity.viewModels
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheetFix
@@ -53,6 +56,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.core.content.FileProvider
 import androidx.core.graphics.ColorUtils
@@ -745,10 +749,12 @@ class ReaderActivity : EhActivity() {
                 ModalBottomSheetFix(
                     onDismissRequest = { dismiss() },
                     sheetState = sheetState,
+                    windowInsets = WindowInsets(0),
                 ) {
                     ReaderPageSheet(page) {
                         coroutineScope.launch { sheetState.hide() }
                     }
+                    Spacer(modifier = Modifier.navigationBarsPadding())
                 }
             }
         }

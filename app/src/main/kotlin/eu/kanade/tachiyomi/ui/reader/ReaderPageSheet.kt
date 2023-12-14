@@ -31,11 +31,11 @@ import moe.tarsin.kt.andThen
 @Composable
 fun ReaderPageSheet(page: ReaderPage, dismiss: () -> Unit) {
     val activity = LocalContext.current.run { remember { findActivity<ReaderActivity>() } }
-    val modifier = Modifier.fillMaxWidth().height(56.dp).padding(horizontal = 16.dp)
 
     @Composable
     fun Item(icon: ImageVector, @StringRes text: Int, onClick: () -> Unit) = Row(
-        modifier = modifier.clickable(onClick = onClick andThen dismiss),
+        modifier = Modifier.fillMaxWidth().height(56.dp)
+            .clickable(onClick = onClick andThen dismiss).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(imageVector = icon, contentDescription = null)
