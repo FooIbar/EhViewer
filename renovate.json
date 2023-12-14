@@ -6,6 +6,7 @@
   "packageRules": [
     {
       "description": "Disable updates for SNAPSHOTs",
+      "matchCategories": ["java"],
       "allowedVersions": "!/SNAPSHOT$/"
     }
   ]
