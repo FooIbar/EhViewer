@@ -1,5 +1,29 @@
 # 变更日志
 
+## 未发布
+
+### 重大变更
+
+* 后备 HTTP 引擎变更为 Apache HttpClient 5
+* 类别和高级搜索选项移至搜索栏下方
+
+### 新功能
+
+* 支持在搜索时指定画廊语言
+
+### 改进
+
+* 在下载中阅读画廊时会更新历史记录
+* 多处性能改进
+
+### Bug 修复
+
+* 修复无法由外部应用进入画廊页面 [#436](https://github.com/FooIbar/EhViewer/issues/436)
+* 修复点击精确到页的画廊链接闪退 [#430](https://github.com/FooIbar/EhViewer/issues/430)
+* 修复无法搜索本地收藏 [#491](https://github.com/FooIbar/EhViewer/issues/491)
+* 修复 CI 版本不显示更新日志
+
+
 ## 1.9.0
 
 ### 重大变更
