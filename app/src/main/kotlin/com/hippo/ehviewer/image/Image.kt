@@ -47,6 +47,7 @@ import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
 import java.nio.ByteBuffer
 import kotlin.math.min
+import okio.FileSystem
 import okio.buffer
 import okio.source
 import splitties.init.appCtx
@@ -125,7 +126,10 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                                 scale = Scale.FILL,
                                 allowInexactSize = true,
                             )
-                            val drawable = ImageSource(src.source.openInputStream().source().buffer()).use {
+                            val drawable = ImageSource(
+                                src.source.openInputStream().source().buffer(),
+                                FileSystem.SYSTEM,
+                            ).use {
                                 BitmapFactoryDecoder(it, options).decode().image.asDrawable(appCtx.resources)
                             }
                             src.close()
