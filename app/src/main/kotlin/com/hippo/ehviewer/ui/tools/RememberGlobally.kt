@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.tools
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.currentCompositeKeyHash
@@ -15,9 +16,9 @@ class StateMapViewModel : ViewModel() {
 }
 
 @Composable
-fun <T : Any> rememberInVM(
+inline fun <T : Any> rememberInVM(
     vararg inputs: Any?,
-    init: ViewModel.() -> T,
+    crossinline init: @DisallowComposableCalls ViewModel.() -> T,
 ): T {
     val vm: StateMapViewModel = viewModel()
     val key = currentCompositeKeyHash
