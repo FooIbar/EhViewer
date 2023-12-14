@@ -1,6 +1,6 @@
 # 变更日志
 
-## 未发布
+## 1.10.0
 
 ### 重大变更
 
@@ -21,7 +21,7 @@
 * 修复无法由外部应用进入画廊页面 [#436](https://github.com/FooIbar/EhViewer/issues/436)
 * 修复点击精确到页的画廊链接闪退 [#430](https://github.com/FooIbar/EhViewer/issues/430)
 * 修复无法搜索本地收藏 [#491](https://github.com/FooIbar/EhViewer/issues/491)
-* 修复 CI 版本不显示更新日志
+* 修复 CI 版本不显示变更日志
 
 
 ## 1.9.0
