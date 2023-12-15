@@ -36,18 +36,12 @@
     <string name="torrent_count">Torrent (%d)</string>
     <string name="share">Del</string>
     <string name="gallery_list_search_bar_open_gallery">Åpne galleriet</string>
-    <string name="search_normal_search">Normalt søk</string>
-    <string name="search_subscription_search">Abonnementssøk</string>
     <string name="search_sp_to">til</string>
     <string name="search_sfu">Opplaster</string>
     <string name="delete">Slett</string>
-    <string name="search">Søk</string>
     <string name="image_search">Bildesøk</string>
-    <string name="search_normal">Normalt søk</string>
     <string name="search_cover">Søk i omslag</string>
     <string name="search_image">Bildesøk</string>
-    <string name="search_specify_uploader">Angi opplaster</string>
-    <string name="search_specify_tag">Angi etikett</string>
     <string name="select_image">Velg bilde</string>
     <string name="star_3">3 stjerner</string>
     <string name="read">Les</string>
@@ -64,7 +58,6 @@
     <string name="refresh">Gjenoppfrisk</string>
     <string name="get_it">Skjønner</string>
     <string name="keyword_search">Nøkkelordssøk</string>
-    <string name="search_sp">Sider:</string>
     <string name="search_sft">Etiketter</string>
     <string name="any">Ubegrenset</string>
     <plurals name="page_count">

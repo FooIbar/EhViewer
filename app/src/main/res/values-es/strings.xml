@@ -78,29 +78,17 @@
     <string name="gallery_list_search_bar_hint_e_hentai">Buscar E-Hentai</string>
     <string name="gallery_list_empty_hit">El mundo es grande y el panda está sentado solo</string>
 
-    <string name="search">Buscar</string>
-
     <string name="keyword_search">Búsqueda por palabras clave</string>
     <string name="image_search">Búsqueda de imagen</string>
-    <string name="search_normal">Búsqueda normal</string>
-    <string name="search_advance">Opciones avanzadas</string>
     <string name="search_image">Búsqueda de imágenes</string>
-    <string name="search_normal_search">Búsqueda general</string>
-    <string name="search_specify_uploader">Uploader específicos</string>
-    <string name="search_specify_tag">Etiquetas específicas</string>
-    <string name="search_enable_advance">Habilitar opciones avanzadas</string>
-
-    <string name="search_tip">Búsqueda normal: Solo busca.\n\nBúsqueda de suscripción: Buscar etiquetas suscriptas.n\nUploader especifico: Listar de galerías subidas por el uploader. Otras opciones serán ignoradas.\n\nEtiquetas específicas: Listar las galerías que contienen la etiqueta. Solo se acepta una etiqueta. Otras opciones serán ignoradas.</string>
 
     <string name="search_sh">Mostrar galerías borradas</string>
     <string name="search_sto">Mostrar solo galerías con torrents</string>
     <string name="search_sr">Valoración mínima:</string>
-    <string name="search_subscription_search">Búsqueda de etiquetas suscritas</string>
     <string name="select_image">Seleccionar imagen</string>
     <string name="search_uss">Usar búsqueda similar</string>
     <string name="search_osc">Buscar solo portadas</string>
     <string name="select_image_first">Seleccione la imagen primero</string>
-    <string name="search_sp">Páginas:</string>
     <string name="search_sp_to">hasta</string>
     <string name="search_sf">Deshabilitar filtros para:</string>
     <string name="search_sfl">Lenguaje</string>

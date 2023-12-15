@@ -81,26 +81,14 @@
     <string name="gallery_list_empty_hit">Le monde est grand et le panda s\'assied tout seul.</string>
     <string name="gallery_list_empty_hit_subscription">Vous pouvez suivre des tags à Paramètres -> EH -> Mes tags.</string>
 
-    <string name="search">Chercher</string>
-
     <string name="keyword_search">Recherche du mot-clé</string>
     <string name="image_search">Recherche d\'une image</string>
 
-    <string name="search_normal">Recherche normale</string>
-    <string name="search_advance">Options avancées</string>
     <string name="search_image">Recherche d\'une image</string>
-    <string name="search_subscription_search">Recherche dans les tags suivis</string>
-    <string name="search_normal_search">Chercher</string>
-    <string name="search_specify_uploader">Spécifier un uploader</string>
-    <string name="search_specify_tag">Spécifier un tag</string>
-    <string name="search_enable_advance">Activer options avancées</string>
-
-    <string name="search_tip">Recherche normale : faire recherche.\n\nRecherche dans les tags suivis : seulement rechercher dans les tags suivis.\n\nSpécifer un uploader : faire la liste des galeries mises en ligne par l\'uploader spécifié. Autres options sont ignorées.\n\nSpécifier un tag : faire la liste des galeries qui contiennent le tag spécifié. Vous ne pouvez spécifier qu\'un tag. Autres options sont ignorées.</string>
 
     <string name="search_sh">Montrer les galeries supprimées</string>
     <string name="search_sto">Seulement montrer galeries avec des fiches torrent</string>
     <string name="search_sr">Minimum note :</string>
-    <string name="search_sp">Pages : </string>
     <string name="search_sp_to">à</string>
     <string name="search_sf">Désactiver le filtre par défaut pour les items suivants :</string>
     <string name="search_sfl">Langue</string>

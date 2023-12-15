@@ -100,8 +100,6 @@
     <string name="sign_in_failed">Sign in failed</string>
     <string name="sign_in_failed_tip">If this issue continues, try \"Sign in via WebView\" or \"Sign in via cookies\".</string>
     <string name="get_it">Got it</string>
-    <string name="cloudflare_bypass_failed">Failed to bypass Cloudflare challenge</string>
-    <string name="open_in_webview">Open URL in WebView to finish the challenge?</string>
     <!-- Select scene -->
     <string name="select_scene">Which gallery site do you want to visit?</string>
     <string name="select_scene_explain">e-hentai: available for anyone\nexhentai: available for who has signed in</string>
@@ -112,22 +110,12 @@
     <string name="gallery_list_search_bar_open_gallery">Open the gallery</string>
     <string name="gallery_list_empty_hit">The World is Big and the panda sit alone</string>
     <string name="gallery_list_empty_hit_subscription">Subscribe to tags in Settings-&gt;EH-&gt;My tags</string>
-    <string name="search">Search</string>
     <string name="keyword_search">Keyword search</string>
     <string name="image_search">Image search</string>
-    <string name="search_normal">Normal Search</string>
-    <string name="search_advance">Advanced Options</string>
     <string name="search_image">Image Search</string>
-    <string name="search_normal_search">Normal search</string>
-    <string name="search_subscription_search">Subscription search</string>
-    <string name="search_specify_uploader">Specify uploader</string>
-    <string name="search_specify_tag">Specify tag</string>
-    <string name="search_enable_advance">Enable advance options</string>
-    <string name="search_tip">Normal search: Simply search.\n\nSubscription search: Search in subscriptions.\n\nSpecify uploader: Search for galleries uploaded by the specified uploader. All other options will be ignored.\n\nSpecify tag: Search for galleries that contain the specified tag. Only one tag accepted. Other options will be ignored.</string>
     <string name="search_sh">Expunged</string>
     <string name="search_sto">Has Torrent</string>
     <string name="search_sr">Minimum Rating:</string>
-    <string name="search_sp">Pages:</string>
     <string name="search_sp_to">to</string>
     <string name="search_sp_err1">The page range maximum cannot be below 10</string>
     <string name="search_sp_err2">The page range must be at least 20</string>

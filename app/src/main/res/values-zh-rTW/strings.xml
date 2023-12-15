@@ -62,8 +62,6 @@
     <string name="sign_in_failed">登入失敗</string>
     <string name="sign_in_failed_tip">若持續出錯，請嘗試“通過網頁登入”或“通過 Cookie 登入”。</string>
     <string name="get_it">知道了</string>
-    <string name="cloudflare_bypass_failed">未能繞過 Cloudflare 驗證</string>
-    <string name="open_in_webview">在 WebView 中開啟網址以完成驗證？</string>
     <!-- Select scene -->
     <string name="select_scene">你想選擇哪個圖庫站台？</string>
     <string name="select_scene_explain">e-hentai：對任何人開放\nexhentai：僅對登入使用者開放</string>
@@ -74,22 +72,12 @@
     <string name="gallery_list_search_bar_open_gallery">開啟圖庫</string>
     <string name="gallery_list_empty_hit">什麼都沒找到</string>
     <string name="gallery_list_empty_hit_subscription">請至 設定-&gt;EH-&gt;我的標籤 訂閱標籤</string>
-    <string name="search">搜尋</string>
     <string name="keyword_search">關鍵字搜尋</string>
     <string name="image_search">圖片搜尋</string>
-    <string name="search_normal">一般搜尋</string>
-    <string name="search_advance">進階選項</string>
     <string name="search_image">圖片搜尋</string>
-    <string name="search_normal_search">一般搜尋</string>
-    <string name="search_subscription_search">訂閱搜尋</string>
-    <string name="search_specify_uploader">指定上傳者</string>
-    <string name="search_specify_tag">指定標籤</string>
-    <string name="search_enable_advance">啟用進階選項</string>
-    <string name="search_tip">一般搜尋：就是搜尋。\n\n訂閱搜尋：在訂閱中搜尋。\n\n指定上傳者：列出該上傳者上傳的圖庫。其他選項會被忽略。\n\n指定標籤：列出含有該標籤的圖庫。其他選項會被忽略。</string>
     <string name="search_sh">已被移除</string>
     <string name="search_sto">有種子</string>
     <string name="search_sr">最低評分：</string>
-    <string name="search_sp">頁數：</string>
     <string name="search_sp_to">到</string>
     <string name="search_sp_err1">頁數最大值至少為 10</string>
     <string name="search_sp_err2">頁數範圍差至少為 20</string>

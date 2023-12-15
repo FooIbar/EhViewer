@@ -82,20 +82,10 @@
     <string name="gallery_list_search_bar_open_gallery">เปิดแกลเลอรี่</string>
     <string name="gallery_list_empty_hit">โลกนั้นนะมันกว้างงงงงใหญ่ไพรศาล และแพนด้านั่งโดดเดี่ยวเดียวดายในโลกกลมๆ</string>
 
-    <string name="search">ค้นหา</string>
-
     <string name="keyword_search">คีย์เวิร์ดในการค้นหา</string>
     <string name="image_search">ค้นหาด้วยรูป</string>
 
-    <string name="search_normal">ค้นหาแบบธรรมดา</string>
-    <string name="search_advance">ตัวเลือกขั้นสูง</string>
     <string name="search_image">ค้นหาด้วยรูปภาพ</string>
-    <string name="search_normal_search">ค้นหาแบบธรรมดา</string>
-    <string name="search_specify_uploader">ระบุผู้อัพโหลด</string>
-    <string name="search_specify_tag">ระบุป้ายกำกับ</string>
-    <string name="search_enable_advance">เปิดโหมดค้นหาขั้นสูง</string>
-
-    <string name="search_tip">ค้นหาแบบธรรมดา: ค้นหาแบบง๊ายง่าย\n\nระบุผู้อัพโหลด: ค้นหาแกลเลอรี่ที่อัพโหลดโดยระบุชื่อผู้ใช้ของคนอัพโหลด โดยตัวเลือกอื่นๆจะถูกข้ามไป\n\nระบุป้ายกำกับ: ค้นหาแกลเลอรี่ที่ถูกใส่ป้ายกำกับหรือแท็กไว้ในแต่ละแกลเลอรี่ ระบุได้เพียงหนึ่งป้ายกำกับ ตัวเลือกอื่นๆจะถูกข้ามไป</string>
 
     <string name="search_sh">แสดงแกลเลอรี่ที่ถูกลบออก</string>
     <string name="search_sto">แสดงผลเฉพาะแกลเลอรี่ที่มีไฟล์ Torrents</string>

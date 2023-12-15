@@ -62,8 +62,6 @@
     <string name="sign_in_failed">登录失败</string>
     <string name="sign_in_failed_tip">若持续出错，请尝试“通过网页登录”或“通过 Cookie 登录”。</string>
     <string name="get_it">知道了</string>
-    <string name="cloudflare_bypass_failed">未能绕过 Cloudflare 验证</string>
-    <string name="open_in_webview">在 WebView 中打开链接以通过验证？</string>
     <!-- Select scene -->
     <string name="select_scene">你想选择哪个画廊站点？</string>
     <string name="select_scene_explain">e-hentai：对任何人开放\nexhentai：仅对登录用户开放</string>
@@ -74,22 +72,12 @@
     <string name="gallery_list_search_bar_open_gallery">打开画廊</string>
     <string name="gallery_list_empty_hit">什么都没有找到</string>
     <string name="gallery_list_empty_hit_subscription">请至 设置-&gt;EH-&gt;我的标签 订阅标签</string>
-    <string name="search">搜索</string>
     <string name="keyword_search">关键字搜索</string>
     <string name="image_search">图片搜索</string>
-    <string name="search_normal">普通搜索</string>
-    <string name="search_advance">高级选项</string>
     <string name="search_image">图片搜索</string>
-    <string name="search_normal_search">一般搜索</string>
-    <string name="search_subscription_search">订阅搜索</string>
-    <string name="search_specify_uploader">指定上传者</string>
-    <string name="search_specify_tag">指定标签</string>
-    <string name="search_enable_advance">启用高级选项</string>
-    <string name="search_tip">一般搜索：就是搜索。\n\n订阅搜素：在订阅中搜索。\n\n指定上传者：列出该上传者上传的画廊。其他选项会被忽略。\n\n指定标签：列出含有该标签的画廊。其他选项会被忽略。</string>
     <string name="search_sh">已删除</string>
     <string name="search_sto">有种子</string>
     <string name="search_sr">最低评分：</string>
-    <string name="search_sp">页数：</string>
     <string name="search_sp_to">到</string>
     <string name="search_sp_err1">页数最大值至少为 10</string>
     <string name="search_sp_err2">页数范围差至少为 20</string>

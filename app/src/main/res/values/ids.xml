@@ -16,7 +16,6 @@
 
 <resources>
 
-    <item name="copy" type="id" />
     <item name="reader_pager" type="id" />
 
 </resources>

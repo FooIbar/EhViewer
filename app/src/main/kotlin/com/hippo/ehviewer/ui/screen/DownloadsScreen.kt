@@ -138,6 +138,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     val labelsList = DownloadManager.labelList
 
     val newLabel = stringResource(R.string.new_label_title)
+    val renameLabel = stringResource(R.string.rename_label_title)
     val labelsStr = stringResource(R.string.download_labels)
     val labelEmpty = stringResource(R.string.label_text_is_empty)
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
@@ -276,7 +277,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                         IconButton(
                                             onClick = {
                                                 coroutineScope.launch {
-                                                    val new = dialogState.awaitInputText(title = newLabel, hint = labelsStr) { text ->
+                                                    val new = dialogState.awaitInputText(title = renameLabel, hint = labelsStr) { text ->
                                                         when {
                                                             text.isBlank() -> labelEmpty
                                                             text == defaultName -> defaultInvalid

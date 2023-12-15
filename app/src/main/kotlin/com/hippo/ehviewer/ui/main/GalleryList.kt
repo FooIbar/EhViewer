@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.main
 
-import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -51,17 +49,13 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
-import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
-import com.hippo.ehviewer.ui.WebViewActivity
 import com.hippo.ehviewer.ui.screen.collectDetailSizeAsState
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.util.ExceptionUtils
 import kotlinx.coroutines.CoroutineScope
 
@@ -81,7 +75,6 @@ fun GalleryList(
     onRefresh: suspend CoroutineScope.() -> Unit,
     onLoading: suspend CoroutineScope.() -> Unit,
 ) {
-    val context = LocalContext.current
     val layoutDirection = LocalLayoutDirection.current
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
     val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
@@ -175,7 +168,6 @@ fun GalleryList(
             }
         }
 
-        val dialogState = LocalDialogState.current
         when (val state = data.loadState.refresh) {
             is LoadState.Loading -> if (!refreshState.isRefreshing && scrollToTopOnRefresh) {
                 LaunchedEffect(Unit) {
@@ -200,18 +192,6 @@ fun GalleryList(
 
             is LoadState.Error -> {
                 Surface {
-                    LaunchedEffect(state) {
-                        if (state.error.cause is CloudflareBypassException) {
-                            dialogState.awaitPermissionOrCancel(title = R.string.cloudflare_bypass_failed) {
-                                Text(text = stringResource(id = R.string.open_in_webview))
-                            }
-                            context.startActivity(
-                                Intent(context, WebViewActivity::class.java).apply {
-                                    putExtra(WebViewActivity.KEY_URL, EhUrl.host)
-                                },
-                            )
-                        }
-                    }
                     ErrorTip(
                         modifier = Modifier.widthIn(max = 228.dp)
                             .clip(ShapeDefaults.Small).clickable { data.retry() },
