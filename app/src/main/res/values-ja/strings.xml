@@ -79,26 +79,14 @@
     <string name="gallery_list_empty_hit">何も見つかりませんでした。</string>
     <string name="gallery_list_empty_hit_subscription">リストは空です。設定->EH->マイタグにてタグを購読することができます。</string>
 
-    <string name="search">検索</string>
-
     <string name="keyword_search">キーワードで検索</string>
     <string name="image_search">画像で検索</string>
 
-    <string name="search_normal">検索</string>
-    <string name="search_advance">その他のオプション</string>
     <string name="search_image">画像検索</string>
-    <string name="search_normal_search">一般検索</string>
-    <string name="search_subscription_search">購読検索</string>
-    <string name="search_specify_uploader">アップローダを検索</string>
-    <string name="search_specify_tag">タグを検索</string>
-    <string name="search_enable_advance">その他のオプションを有効化</string>
-
-    <string name="search_tip">普通検索：検索します。\n\n購読検索：購読しているタグで検索します。\n\nアップローダを検索：このアップローダーがアップロードしたギャラリーをリストします。他のオプションは無視されます。\n\nタグを検索：指定したタグを含むギャラリーをリストします。他のオプションは無視されます。</string>
 
     <string name="search_sh">削除済みのギャラリーを表示</string>
     <string name="search_sto">Torrentのあるギャラリーのみを表示</string>
     <string name="search_sr">評価の下限：</string>
-    <string name="search_sp">ページ：</string>
     <string name="search_sp_to">から</string>
     <string name="search_sp_suffix">まで</string>
     <string name="search_sf">既定フィルターから下記のものを例外とする：</string>

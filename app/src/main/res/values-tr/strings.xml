@@ -46,17 +46,9 @@
     <string name="sign_in_failed">Giriş başarısız</string>
     <string name="get_it">Anladım</string>
     <string name="gallery_list_empty_hit">Dünya büyük olmasına rağmen pandacık yalnız oturuyor</string>
-    <string name="search">Arayın</string>
     <string name="keyword_search">Anahtar Kelime Arama</string>
     <string name="image_search">Görsel Arama</string>
-    <string name="search_normal">Normal Arama</string>
-    <string name="search_advance">Gelişmiş Seçenekler</string>
     <string name="search_image">Görsel Arama</string>
-    <string name="search_normal_search">Normal arama</string>
-    <string name="search_subscription_search">Abonelik araması</string>
-    <string name="search_specify_uploader">Belirli yükleyici</string>
-    <string name="search_specify_tag">Belirli etiket</string>
-    <string name="search_enable_advance">Gelişmiş seçenekleri etkinleştir</string>
     <string name="search_sh">Yalnızca Silinen Galerileri Gösteri</string>
     <string name="search_sto">Yalnızca Torrent\'li Galerileri Göster</string>
     <string name="search_sr">En Az Derecelendirme:</string>
@@ -91,7 +83,6 @@
     <string name="select_scene">Hangi galeri sitesini ziyaret etmek istiyorsunuz\?</string>
     <string name="gallery_list_search_bar_hint_e_hentai">E-Hentai\'de Arayın</string>
     <string name="gallery_list_empty_hit_subscription">Etiketlere Ayarlar-&gt;EH-&gt;Etiketlerim yerinden abone olun</string>
-    <string name="search_sp">Sayfa:</string>
     <string name="duplicate_quick_search">Aynı bir hızlı arama zaten var. Adı \"%s\".</string>
     <string name="search_sp_err1">Sayfa oranı en fazla 10un altında olamaz</string>
     <string name="readme">BENIOKU</string>
