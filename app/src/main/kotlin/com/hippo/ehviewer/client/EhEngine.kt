@@ -52,12 +52,10 @@ import com.hippo.ehviewer.dailycheck.showEventNotification
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.StatusCodeException
-import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.request.forms.append
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.statement.request
 import io.ktor.http.ContentType
 import io.ktor.utils.io.core.writeFully
 import io.ktor.utils.io.pool.DirectByteBufferPool
@@ -78,8 +76,6 @@ import moe.tarsin.coroutines.removeAllSuspend
 import moe.tarsin.coroutines.runSuspendCatching
 import org.jsoup.Jsoup
 import splitties.init.appCtx
-
-const val TAG = "EhEngine"
 
 // https://ehwiki.org/wiki/API#Basics
 private const val MAX_REQUEST_SIZE = 25
@@ -145,7 +141,6 @@ fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): N
 val httpContentPool = DirectByteBufferPool(8, 0x80000)
 
 suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend String.() -> T) = execute { response ->
-    logcat(tag = TAG) { response.request.url.toString() }
     val body = response.bodyAsText()
     runSuspendCatching {
         block(body)
@@ -155,7 +150,6 @@ suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend
 }
 
 suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: suspend ByteBuffer.() -> T) = execute { response ->
-    logcat(tag = TAG) { response.request.url.toString() }
     httpContentPool.useInstance { buffer ->
         with(response.bodyAsChannel()) { while (!isClosedForRead) readAvailable(buffer) }
         buffer.flip()
