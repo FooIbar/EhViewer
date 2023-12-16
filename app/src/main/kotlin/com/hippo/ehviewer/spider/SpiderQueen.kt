@@ -556,7 +556,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             val state = mPageStateArray[index]
             if (!force && state == STATE_FINISHED) return
             val currentJob = mFetcherJobMap[index]
-            if (force) currentJob?.cancel()
+            if (force) currentJob?.cancel(CancellationException(FORCE_RETRY))
             if (currentJob?.isActive != true) {
                 mFetcherJobMap[index] = launch {
                     runCatching {
@@ -566,7 +566,9 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     }.onFailure {
                         if (it is CancellationException) {
                             Log.d(WORKER_DEBUG_TAG, "Download image $index cancelled")
-                            updatePageState(index, STATE_FAILED, "Cancelled")
+                            if (it.message != FORCE_RETRY) {
+                                updatePageState(index, STATE_FAILED, "Cancelled")
+                            }
                             throw it
                         }
                         updatePageState(index, STATE_FAILED, ExceptionUtils.getReadableString(it))
@@ -782,6 +784,7 @@ private val PTOKEN_FAILED_MESSAGE = appCtx.getString(R.string.error_get_ptoken_e
 private val ERROR_TIMEOUT = appCtx.getString(R.string.error_timeout)
 private val DECODE_ERROR = appCtx.getString(R.string.error_decoding_failed)
 private val URL_509_PATTERN = Regex("\\.org/.+/509s?\\.gif")
+private const val FORCE_RETRY = "Force retry"
 private const val WORKER_DEBUG_TAG = "SpiderQueenWorker"
 
 private fun check509(url: String) {
