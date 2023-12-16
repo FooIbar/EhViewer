@@ -142,7 +142,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
             var enableCronet by Settings::enableCronet.observed
             Preference(
                 title = stringResource(id = R.string.settings_advanced_http_engine),
-                summary = if (enableCronet) "Cronet" else "Apache 5",
+                summary = if (enableCronet) "Cronet" else "CIO",
             ) {
                 coroutineScope.launch {
                     dialogState.awaitPermissionOrCancel(
@@ -156,7 +156,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                                     onClick = { enableCronet = false },
                                     shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
                                 ) {
-                                    Text("Apache 5")
+                                    Text("CIO")
                                 }
                                 SegmentedButton(
                                     selected = enableCronet,
