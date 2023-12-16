@@ -6,7 +6,6 @@ import android.content.res.Resources
 import android.graphics.Color
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
 import android.view.Display
 import android.view.View
 import androidx.annotation.AttrRes
@@ -124,8 +123,4 @@ fun Context.createReaderThemeContext(): Context {
         return wrappedContext
     }
     return this
-}
-
-inline fun Any.logcat(priority: Int = Log.DEBUG, tag: String? = null, message: () -> String) {
-    Log.println(priority, tag ?: javaClass.simpleName, message())
 }
