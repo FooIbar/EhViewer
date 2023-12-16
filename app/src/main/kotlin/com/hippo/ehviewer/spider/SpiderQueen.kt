@@ -384,16 +384,16 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             galleryInfo.gid,
             galleryInfo.token!!,
         )
-        return try {
+        return runSuspendCatching {
             ehRequest(url, referer).fetchUsingAsText {
                 GalleryMultiPageViewerPTokenParser.parse(this).forEachIndexed { index, s ->
                     spiderInfo.pTokenMap[index] = s
                 }
                 spiderInfo.pTokenMap[index]
             }
-        } catch (e: Throwable) {
-            ExceptionUtils.throwIfFatal(e)
-            return null
+        }.getOrElse {
+            it.printStackTrace()
+            null
         }
     }
 
@@ -416,13 +416,13 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             previewIndex,
             false,
         )
-        return try {
+        return runSuspendCatching {
             ehRequest(url, referer).fetchUsingAsText {
                 readPreviews(this, previewIndex, spiderInfo)
                 spiderInfo.pTokenMap[index]
             }
-        } catch (e: Throwable) {
-            ExceptionUtils.throwIfFatal(e)
+        }.getOrElse {
+            it.printStackTrace()
             null
         }
     }
@@ -605,18 +605,19 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 }
             }
             val previousPToken: String?
-            val pToken: String
+            val pToken: String?
 
             pTokenLock.withLock {
-                pToken = getPToken(index) ?: return updatePageState(
-                    index,
-                    STATE_FAILED,
-                    PTOKEN_FAILED_MESSAGE,
-                ).also {
+                // Non-local return will not release the lock
+                // https://github.com/Kotlin/kotlinx.coroutines/issues/3985
+                pToken = getPToken(index)
+                if (pToken == null) {
+                    updatePageState(index, STATE_FAILED, PTOKEN_FAILED_MESSAGE)
                     mSpiderInfo.pTokenMap[index] = TOKEN_FAILED
                 }
                 previousPToken = getPToken(index - 1)
             }
+            pToken ?: return
 
             delayLock.withLock {
                 val new = delayedTime + mDownloadDelay
