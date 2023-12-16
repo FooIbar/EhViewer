@@ -74,7 +74,7 @@
 
 \* 不支持压缩包和 GIF
 
-** 在不支持 [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine) 的设备上回退到 Apache5
+** 在不支持 [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine) 的设备上回退到 CIO
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>

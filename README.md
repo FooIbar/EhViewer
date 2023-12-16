@@ -75,7 +75,7 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 
 \* Archives and GIFs are not supported
 
-** Fall back to Apache5 on devices that don't support [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine)
+** Fall back to CIO on devices that don't support [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine)
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
