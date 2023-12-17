@@ -28,7 +28,7 @@ kotlinx-serialization = "1.6.2"
 ksp = "2.0.0-Beta1-1.0.15"
 ktlint = "1.0.1"
 ktor = "3.0.0-beta-1"
-okhttp3 = "5.0.0-alpha.11"
+okhttp3 = "5.0.0-alpha.12"
 okio = "3.7.0"
 splitties = "3.0.0"
 
