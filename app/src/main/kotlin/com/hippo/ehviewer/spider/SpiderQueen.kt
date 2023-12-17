@@ -522,7 +522,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         private val mDownloadDelay = Settings.downloadDelay.milliseconds
         private val downloadTimeout = Settings.downloadTimeout.seconds
         private val delayLock = Mutex()
-        private var delayedTime = TimeSource.Monotonic.markNow()
+        private var lastRequestTime = TimeSource.Monotonic.markNow()
         private var isDownloadMode = false
 
         fun cancelDecode(index: Int) {
@@ -620,14 +620,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             pToken ?: return
 
             delayLock.withLock {
-                val new = delayedTime + mDownloadDelay
-                val duration = new.elapsedNow()
-                if (duration.isNegative()) {
-                    delayedTime = new
-                    delay(-duration)
-                } else {
-                    delayedTime = TimeSource.Monotonic.markNow()
-                }
+                delay(mDownloadDelay - lastRequestTime.elapsedNow())
+                lastRequestTime = TimeSource.Monotonic.markNow()
             }
 
             var skipHathKey: String? = null
