@@ -74,7 +74,7 @@
 
 \* 不支援壓縮包和 GIF
 
-** 在不支援 [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine) 的裝置上回退到 Apache5
+** 在不支援 [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine) 的裝置上回退到 OkHttp
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
@@ -94,6 +94,7 @@
 - [Kotlin & KotlinX](https://kotlinlang.org/)
 - [MDC-Android](https://github.com/material-components/material-components-android)
 - [Material Icons](https://github.com/google/material-design-icons)
+- [OkHttp](https://square.github.io/okhttp/)
 - [Ktor](https://ktor.io/)
 - [Coil](https://coil-kt.github.io/coil/)
 - [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
