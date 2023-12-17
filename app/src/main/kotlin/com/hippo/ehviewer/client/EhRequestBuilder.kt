@@ -68,11 +68,12 @@ suspend inline fun ehRequest(
     url: String,
     referer: String? = null,
     origin: String? = null,
+    verbose: Boolean = true,
     builder: HttpRequestBuilder.() -> Unit = {},
 ) = ktorClient.prepareRequest(url) {
     applyEhConfig(referer, origin)
     apply(builder)
-}.also { logcat("EhRequest") { url } }
+}.also { if (verbose) logcat("EhRequest") { url } }
 
 suspend inline fun noRedirectEhRequest(
     url: String,

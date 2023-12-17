@@ -691,7 +691,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         referer = null
                     }
                     checkNotNull(targetImageUrl)
-                    Log.d(WORKER_DEBUG_TAG, targetImageUrl)
 
                     repeat(3) { times ->
                         runCatching {

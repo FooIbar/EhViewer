@@ -25,7 +25,7 @@ class KtorHttpUriFetcher(private val data: String, private val options: Options,
         val diskCacheKey = options.diskCacheKey ?: data
         val diskCache = requireNotNull(imageLoader.diskCache)
         val snapshot = diskCache.openSnapshot(diskCacheKey) ?: run {
-            val success = ehRequest(data).execute {
+            val success = ehRequest(data, verbose = false).execute {
                 diskCache.suspendEdit(diskCacheKey) {
                     it.bodyAsChannel().copyTo(data.toFile())
                 }
