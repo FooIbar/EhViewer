@@ -28,6 +28,7 @@ kotlinx-serialization = "1.6.2"
 ksp = "2.0.0-Beta1-1.0.15"
 ktlint = "1.0.1"
 ktor = "3.0.0-beta-1"
+okhttp3 = "5.0.0-alpha.11"
 okio = "3.7.0"
 splitties = "3.0.0"
 
@@ -95,10 +96,12 @@ kotlinx-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-seri
 # For renovate
 ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
 
-ktor-client-apache5 = { module = "io.ktor:ktor-client-apache5", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
 material = { module = "com.google.android.material:material", version.ref = "google-android-material" }
 
+okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }
+okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp3" }
 okio-jvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
 
 photoview = "com.github.chrisbanes:PhotoView:2.3.0"
@@ -118,7 +121,8 @@ coil = ["coil-compose", "coil-gif"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
 cronet = ["cronet-api", "cronet-gms"]
 kotlinx-serialization = ["kotlinx-serialization-cbor", "kotlinx-serialization-json", "kotlinx-serialization-json-okio"]
-ktor = ["ktor-client-apache5"]
+ktor = ["ktor-client-okhttp"]
+okhttp = ["okhttp-android"]
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
 
 [plugins]

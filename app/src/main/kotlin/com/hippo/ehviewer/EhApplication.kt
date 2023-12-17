@@ -51,15 +51,19 @@ import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.isAtLeastP
+import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.ehviewer.util.isCronetAvailable
+import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache5.Apache5
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.cookies.HttpCookies
 import kotlinx.coroutines.launch
+import okhttp3.AsyncDns
+import okhttp3.android.AndroidAsyncDns
 import okio.Path.Companion.toOkioPath
 import splitties.arch.room.roomDb
 import splitties.init.appCtx
@@ -178,7 +182,15 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
                     }
                 }
             } else {
-                HttpClient(Apache5) {
+                HttpClient(OkHttp) {
+                    engine {
+                        config {
+                            if (isAtLeastQ) {
+                                dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
+                            }
+                            addInterceptor(UncaughtExceptionInterceptor())
+                        }
+                    }
                     install(HttpCookies) {
                         storage = EhCookieStore
                     }
