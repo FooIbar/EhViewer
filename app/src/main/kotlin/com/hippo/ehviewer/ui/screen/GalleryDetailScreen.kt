@@ -275,6 +275,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         }
                     }
                 }.onFailure {
+                    galleryInfo?.let { info -> EhDB.putHistoryInfo(info.findBaseInfo()) }
                     getDetailError = ExceptionUtils.getReadableString(it)
                 }.getOrNull()
             galleryDetail?.let {
