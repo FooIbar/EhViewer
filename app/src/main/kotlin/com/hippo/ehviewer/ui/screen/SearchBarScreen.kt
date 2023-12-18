@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.screen
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -77,6 +79,7 @@ import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.util.isAtLeastP
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -233,15 +236,21 @@ fun SearchBarScreen(
         Modifier
     }
 
-    // Workaround IME not hiding after performing search
-    // https://github.com/FooIbar/EhViewer/pull/412
-    val view = LocalView.current
-    val keyboardManager = remember { SoftwareKeyboardControllerCompat(view) }
-    SideEffect {
-        if (!active) keyboardManager.hide()
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
+        if (isAtLeastP) {
+            // Workaround IME not hiding after performing search
+            // https://github.com/FooIbar/EhViewer/pull/412
+            val view = LocalView.current
+            val keyboardManager = remember { SoftwareKeyboardControllerCompat(view) }
+            SideEffect {
+                if (!active) keyboardManager.hide()
+            }
+        } else {
+            // Workaround unable to exit search field
+            // https://android.googlesource.com/platform/frameworks/support/+/8f81d46e2c3f37564d0b7515ec9411314645e187
+            Box(Modifier.size(1.dp).focusable())
+        }
+
         Scaffold(
             topBar = {
                 // Placeholder, fill immutable SearchBar padding
@@ -289,8 +298,8 @@ fun SearchBarScreen(
                 }
                 active = it
             },
-            title = title?.let { { Text(it, overflow = TextOverflow.Ellipsis) } },
-            placeholder = searchFieldHint?.let { { Text(it) } },
+            title = title.ifNotNullThen { Text(title!!, overflow = TextOverflow.Ellipsis) },
+            placeholder = searchFieldHint.ifNotNullThen { Text(searchFieldHint!!) },
             leadingIcon = {
                 if (active) {
                     IconButton(onClick = { hideSearchView() }) {
