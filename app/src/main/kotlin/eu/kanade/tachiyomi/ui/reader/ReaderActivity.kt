@@ -51,9 +51,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheetFix
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -110,6 +112,8 @@ import eu.kanade.tachiyomi.util.system.isNightMode
 import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.merge
@@ -322,6 +326,12 @@ class ReaderActivity : EhActivity() {
             dialogState.Intercept()
 
             val showSeekbar by Settings.showReaderSeekbar.collectAsState()
+            val sliderValueFlow = remember { MutableStateFlow(0) }
+            LaunchedEffect(sliderValueFlow) {
+                sliderValueFlow.drop(1).debounce(200).collect {
+                    moveToPageIndex(it)
+                }
+            }
             ReaderAppBars(
                 visible = menuVisible,
                 isRtl = isRtl,
@@ -330,7 +340,8 @@ class ReaderActivity : EhActivity() {
                 totalPages = totalPage,
                 onSliderValueChange = {
                     isScrollingThroughPages = true
-                    moveToPageIndex(it)
+                    sliderValueFlow.value = it
+                    currentPage = it + 1
                 },
                 onClickSettings = { readerSettingSheetDialog?.show() },
             )
