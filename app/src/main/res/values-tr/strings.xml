@@ -42,7 +42,7 @@
     <string name="error_invalid_number">Geçersiz numara</string>
     <string name="error_username_cannot_empty">Kullanıcı adı boş bir metin olamaz</string>
     <string name="error_password_cannot_empty">Şifre boş bir metin olamaz</string>
-    <string name="tourist_mode">Giriş yapmaksızın devam et</string>
+    <string name="guest_mode">Giriş yapmaksızın devam et</string>
     <string name="sign_in_failed">Giriş başarısız</string>
     <string name="get_it">Anladım</string>
     <string name="gallery_list_empty_hit">Dünya büyük olmasına rağmen pandacık yalnız oturuyor</string>

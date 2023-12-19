@@ -62,7 +62,7 @@
     <string name="app_waring">このアプリの内容はインターネットから取得したものです。その内容の一部は使用者のお体や心理に傷つける恐れがあります。それでも続行しますか？</string>
     <string name="error_username_cannot_empty">ユーザー名を入力してください。</string>
     <string name="error_password_cannot_empty">パスワードを入力してください。</string>
-    <string name="tourist_mode">ログインをスキップ</string>
+    <string name="guest_mode">ログインをスキップ</string>
     <string name="sign_in_failed">ログインに失敗しました。</string>
     <string name="get_it">了解</string>
 
@@ -434,7 +434,7 @@
     <string name="download_service">ダウンロードサービス</string>
 
     <string name="settings_eh_identity_cookies_signed">下記の情報を持つ誰でもこのアカウントにログインできますので&lt;br&gt;&lt;b&gt;絶対に他人に渡さないように！&lt;/b&gt;&lt;br&gt;&lt;br&gt;%s</string>
-    <string name="settings_eh_identity_cookies_tourist">まだログインしていません</string>
+    <string name="settings_eh_identity_cookies_guest">まだログインしていません</string>
     <string name="settings_eh_identity_cookies_copy">コピー</string>
     <string name="settings_eh_show_gallery_pages">ギャラリーページ数を表示</string>
     <string name="settings_eh_show_gallery_pages_summary">リストにギャラリーのページの数量を表示します</string>

@@ -305,7 +305,7 @@
     <string name="app_waring">Inhalt dieser App kommt aus dem Internet, von dem einige dir körperlichen oder emotionalen Schaden zufügen kann. Du hast es wirklich erfahrt und möchtest immer noch fortsetzen.</string>
     <string name="error_username_cannot_empty">Gibt den Nutzername ein</string>
     <string name="error_password_cannot_empty">Gibt das Passwort ein</string>
-    <string name="tourist_mode">Anmeldung überspringen</string>
+    <string name="guest_mode">Anmeldung überspringen</string>
     <string name="sign_in_failed">Anmeldung fehlgeschlagen</string>
     <string name="clipboard_gallery_url_snack_message">Ein Link von einen Galerie wurde in Zwischenablage erkennt.</string>
     <string name="clipboard_gallery_url_snack_action">Gehen</string>
@@ -330,7 +330,7 @@
     <string name="download_reset_reading_progress">Lesefortschritte zurücksetzen</string>
     <string name="reset_reading_progress_message">Lesefortschritte aus allen heruntergeladenen Galerie zurücksetzen?</string>
     <string name="settings_eh_identity_cookies_signed">Wenn jemand die folgenden Informationen hat, kann er sich als du anmelden. &lt;br&gt;&lt;b&gt;ALSO GEHEIM HALTEN!&lt;/b&gt;&lt;br&gt;&lt;br&gt;%s</string>
-    <string name="settings_eh_identity_cookies_tourist">Du hast dich noch nicht angemeldet.</string>
+    <string name="settings_eh_identity_cookies_guest">Du hast dich noch nicht angemeldet.</string>
     <string name="settings_eh_identity_cookies_copy">Kopieren</string>
     <string name="settings_eh_show_gallery_pages">Galerieseitenzahl anzeigen</string>
     <string name="settings_eh_show_gallery_pages_summary">Die Galerieseitenzahle in der Galerieliste anzeigen</string>

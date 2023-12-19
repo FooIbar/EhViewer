@@ -259,7 +259,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                                 withStyle(
                                     style = SpanStyle(textDecoration = TextDecoration.Underline),
                                 ) {
-                                    append(stringResource(id = R.string.tourist_mode))
+                                    append(stringResource(id = R.string.guest_mode))
                                 }
                             },
                         )
@@ -356,7 +356,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                                     withStyle(
                                         style = SpanStyle(textDecoration = TextDecoration.Underline),
                                     ) {
-                                        append(stringResource(id = R.string.tourist_mode))
+                                        append(stringResource(id = R.string.guest_mode))
                                     }
                                 },
                             )

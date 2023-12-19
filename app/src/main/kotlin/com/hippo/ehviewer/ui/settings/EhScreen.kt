@@ -84,12 +84,12 @@ fun EhScreen(navigator: DestinationsNavigator) {
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
-        val touristMode = stringResource(id = R.string.settings_eh_identity_cookies_tourist)
+        val guestMode = stringResource(id = R.string.settings_eh_identity_cookies_guest)
         val copiedToClipboard = stringResource(id = R.string.copied_to_clipboard)
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             Preference(
                 title = stringResource(id = R.string.account_name),
-                summary = Settings.displayName ?: touristMode,
+                summary = Settings.displayName ?: guestMode,
             ) {
                 val eCookies = EhCookieStore.load(Url(EhUrl.HOST_E))
                 val exCookies = EhCookieStore.load(Url(EhUrl.HOST_EX))
@@ -114,7 +114,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) launchSnackBar(copiedToClipboard)
                         }
                     } else {
-                        setMessage(touristMode)
+                        setMessage(guestMode)
                     }
                     setPositiveButton(R.string.settings_eh_sign_out) { _, _ ->
                         EhUtils.signOut()
