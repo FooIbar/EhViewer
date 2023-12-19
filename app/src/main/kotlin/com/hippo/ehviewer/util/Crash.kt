@@ -78,5 +78,9 @@ object Crash {
             it.printStackTrace()
             file.delete()
         }
+        if (t is OutOfMemoryError) {
+            val dumpFile = File(dir, "hprof-$nowString.hprof")
+            Debug.dumpHprofData(dumpFile.absolutePath)
+        }
     }
 }
