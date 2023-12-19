@@ -61,7 +61,10 @@ import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.cookies.HttpCookies
+import java.io.File
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.AsyncDns
 import okhttp3.android.AndroidAsyncDns
 import okio.Path.Companion.toOkioPath
@@ -108,6 +111,22 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
             }
             launchIO {
                 DownloadManager.isIdle
+            }
+            launchIO {
+                runSuspendCatching {
+                    val files = mutableListOf<File>()
+                    AppConfig.externalCrashDir?.listFiles()?.let { files.addAll(it) }
+                    AppConfig.externalParseErrorDir?.listFiles()?.let { files.addAll(it) }
+                    files.sortByDescending { it.lastModified() }
+                    files.forEachIndexed { index, file ->
+                        ensureActive()
+                        if (index > 9) {
+                            file.delete()
+                        }
+                    }
+                }.onFailure {
+                    it.printStackTrace()
+                }
             }
             launchIO {
                 cleanupDownload()
