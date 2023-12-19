@@ -275,7 +275,7 @@ class MainActivity : EhActivity() {
                 LaunchedEffect(Unit) {
                     if (connectivityManager.isActiveNetworkMetered) {
                         if (isAtLeastQ) {
-                            val ret = snackbarState.showSnackbar(warning, settings)
+                            val ret = snackbarState.showSnackbar(warning, settings, true)
                             if (ret == SnackbarResult.ActionPerformed) {
                                 val panelIntent = Intent(android.provider.Settings.Panel.ACTION_INTERNET_CONNECTIVITY)
                                 startActivity(panelIntent)
@@ -304,7 +304,7 @@ class MainActivity : EhActivity() {
                             launch = { navController.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
                         }
                         launch?.let {
-                            val ret = snackbarState.showSnackbar(snackMessage, snackAction)
+                            val ret = snackbarState.showSnackbar(snackMessage, snackAction, true)
                             if (ret == SnackbarResult.ActionPerformed) it()
                         }
                     }
