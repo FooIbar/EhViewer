@@ -58,7 +58,7 @@
     <string name="app_waring_2">继续使用即代表您同意上述条款。</string>
     <string name="error_username_cannot_empty">用户名不可为空</string>
     <string name="error_password_cannot_empty">密码不可为空</string>
-    <string name="tourist_mode">游客模式</string>
+    <string name="guest_mode">游客模式</string>
     <string name="sign_in_failed">登录失败</string>
     <string name="sign_in_failed_tip">若持续出错，请尝试“通过网页登录”或“通过 Cookie 登录”。</string>
     <string name="get_it">知道了</string>
@@ -295,7 +295,7 @@
     <string name="settings_eh">EH</string>
     <string name="settings_eh_sign_out">退出登录</string>
     <string name="settings_eh_identity_cookies_signed">身份 Cookie 可用于登录该账号。&lt;br&gt;&lt;b&gt;注意数据安全&lt;/b&gt;&lt;br&gt;&lt;br&gt;%s</string>
-    <string name="settings_eh_identity_cookies_tourist">游客模式</string>
+    <string name="settings_eh_identity_cookies_guest">游客模式</string>
     <string name="settings_eh_identity_cookies_copy">复制 Cookies</string>
     <string name="settings_u_config">EHentai 设置</string>
     <string name="settings_u_config_summary">EHentai 网站上的设置</string>

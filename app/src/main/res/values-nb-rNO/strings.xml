@@ -30,7 +30,7 @@
     <string name="no_torrents">Ingen torrenter</string>
     <string name="search_sfl">Språk</string>
     <string name="search_osc">Kun søk i omslag</string>
-    <string name="tourist_mode">Fortsett uten å logge inn</string>
+    <string name="guest_mode">Fortsett uten å logge inn</string>
     <string name="select_scene">Hvilken galleriside vil du besøke\?</string>
     <string name="favored_times">♥ %d</string>
     <string name="torrent_count">Torrent (%d)</string>
@@ -90,7 +90,7 @@
     <string name="key_pages">Sider</string>
     <string name="share_image">Del bilde</string>
     <string name="settings_eh_sign_out">Logg ut</string>
-    <string name="settings_eh_identity_cookies_tourist">Turistmodus</string>
+    <string name="settings_eh_identity_cookies_guest">Turistmodus</string>
     <string name="settings_eh_identity_cookies_copy">Kopier informasjonskapsler</string>
     <string name="settings_about_version">Byggversjon</string>
     <string name="settings_my_tags">Mine etiketter</string>

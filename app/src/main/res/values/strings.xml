@@ -96,7 +96,7 @@
     <string name="app_waring_2">By continuing to use it, you agree to the above terms.</string>
     <string name="error_username_cannot_empty">Username cannot be an empty string</string>
     <string name="error_password_cannot_empty">Password cannot be an empty string</string>
-    <string name="tourist_mode">Continue without signing in</string>
+    <string name="guest_mode">Continue without signing in</string>
     <string name="sign_in_failed">Sign in failed</string>
     <string name="sign_in_failed_tip">If this issue continues, try \"Sign in via WebView\" or \"Sign in via cookies\".</string>
     <string name="get_it">Got it</string>
@@ -336,7 +336,7 @@
     <string name="settings_eh">EH</string>
     <string name="settings_eh_sign_out">Sign out</string>
     <string name="settings_eh_identity_cookies_signed">Identity cookies can be used to sign in to this account.&lt;br&gt;&lt;b&gt;KEEP IT SAFE&lt;/b&gt;&lt;br&gt;&lt;br&gt;%s</string>
-    <string name="settings_eh_identity_cookies_tourist">Tourist mode</string>
+    <string name="settings_eh_identity_cookies_guest">Guest mode</string>
     <string name="settings_eh_identity_cookies_copy">Copy Cookies</string>
     <string name="settings_u_config">EHentai settings</string>
     <string name="settings_u_config_summary">Settings on EHentai website</string>

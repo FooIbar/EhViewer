@@ -65,16 +65,18 @@ object EhCookieStore : CookiesStorage {
     override fun close() = Unit
 
     fun load(url: Url): List<Cookie> {
-        val cookies = manager.getCookie(url.toString()) ?: return emptyList()
+        val cookies = manager.getCookie(url.toString())
         val checkTips = EhUrl.DOMAIN_E in url.host
-        return parseClientCookiesHeader(cookies)
-            .map { Cookie(it.key, it.value, maxAge = Int.MAX_VALUE) }
-            .filterTo(mutableListOf()) { it.name != KEY_UTMP_NAME }.apply {
-                if (checkTips) {
-                    removeAll { it.name == KEY_CONTENT_WARNING }
-                    add(sTipsCookie)
+        return cookies?.let {
+            parseClientCookiesHeader(cookies)
+                .map { Cookie(it.key, it.value, maxAge = Int.MAX_VALUE) }
+                .filterTo(mutableListOf()) { it.name != KEY_UTMP_NAME }.apply {
+                    if (checkTips) {
+                        removeAll { it.name == KEY_CONTENT_WARNING }
+                        add(sTipsCookie)
+                    }
                 }
-            }
+        } ?: if (checkTips) listOf(sTipsCookie) else emptyList()
     }
 
     override suspend fun get(requestUrl: Url) = load(requestUrl)
