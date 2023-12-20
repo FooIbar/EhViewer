@@ -15,19 +15,25 @@ const uint8_t thresholdForBlack = (uint8_t) (255.0 * THRESHOLD);
 
 const uint8_t thresholdForWhite = (uint8_t) (255.0 - 255.0 * THRESHOLD);
 
-static bool inline isBlackPixel(const uint8_t *pixels, uint32_t width, uint32_t x, uint32_t y) {
-    const uint8_t pixel = *((uint8_t *) pixels + (y * width + x));
-    return pixel < thresholdForBlack;
+static bool inline isBlackPixel(const uint32_t *pixels, uint32_t width, uint32_t x, uint32_t y) {
+    const uint32_t pixel = *((uint32_t *) pixels + (y * width + x));
+    const uint8_t r = ((uint8_t *) &pixel)[0];
+    const uint8_t g = ((uint8_t *) &pixel)[1];
+    const uint8_t b = ((uint8_t *) &pixel)[2];
+    return r < thresholdForBlack && g < thresholdForBlack && b < thresholdForBlack;
 }
 
-static bool inline isWhitePixel(const uint8_t *pixels, uint32_t width, uint32_t x, uint32_t y) {
-    const uint8_t pixel = *((uint8_t *) pixels + (y * width + x));
-    return pixel > thresholdForWhite;
+static bool inline isWhitePixel(const uint32_t *pixels, uint32_t width, uint32_t x, uint32_t y) {
+    const uint32_t pixel = *((uint32_t *) pixels + (y * width + x));
+    const uint8_t r = ((uint8_t *) &pixel)[0];
+    const uint8_t g = ((uint8_t *) &pixel)[1];
+    const uint8_t b = ((uint8_t *) &pixel)[2];
+    return r < thresholdForWhite && g < thresholdForWhite && b < thresholdForWhite;
 }
 
 /** Return the first x position where there is a substantial amount of fill,
  * starting the search from the left. */
-uint32_t findBorderLeft(uint8_t *pixels, uint32_t width, uint32_t height,
+uint32_t findBorderLeft(uint32_t *pixels, uint32_t width, uint32_t height,
                         uint32_t top, uint32_t bottom) {
     int x, y;
     const uint32_t filledLimit = round(height * filledRatioLimit / 2);
@@ -44,7 +50,7 @@ uint32_t findBorderLeft(uint8_t *pixels, uint32_t width, uint32_t height,
         }
     }
 
-    bool (*detectFunc)(const uint8_t *, uint32_t, uint32_t, uint32_t) = isBlackPixel;
+    bool (*detectFunc)(const uint32_t *, uint32_t, uint32_t, uint32_t) = isBlackPixel;
     if (whitePixels > filledLimit && blackPixels > filledLimit) {
         // Mixed fill found... don't crop anything
         return 0;
@@ -74,7 +80,7 @@ uint32_t findBorderLeft(uint8_t *pixels, uint32_t width, uint32_t height,
 
 /** Return the first x position where there is a substantial amount of fill,
  * starting the search from the right. */
-uint32_t findBorderRight(uint8_t *pixels, uint32_t width, uint32_t height,
+uint32_t findBorderRight(uint32_t *pixels, uint32_t width, uint32_t height,
                          uint32_t top, uint32_t bottom) {
     int x, y;
     const uint32_t filledLimit = round(height * filledRatioLimit / 2);
@@ -92,7 +98,7 @@ uint32_t findBorderRight(uint8_t *pixels, uint32_t width, uint32_t height,
         }
     }
 
-    bool (*detectFunc)(const uint8_t *, uint32_t, uint32_t, uint32_t) = isBlackPixel;
+    bool (*detectFunc)(const uint32_t *, uint32_t, uint32_t, uint32_t) = isBlackPixel;
     if (whitePixels > filledLimit && blackPixels > filledLimit) {
         // Mixed fill found... don't crop anything
         return width;
@@ -122,7 +128,7 @@ uint32_t findBorderRight(uint8_t *pixels, uint32_t width, uint32_t height,
 
 /** Return the first y position where there is a substantial amount of fill,
  * starting the search from the top. */
-uint32_t findBorderTop(uint8_t *pixels, uint32_t width, uint32_t height) {
+uint32_t findBorderTop(uint32_t *pixels, uint32_t width, uint32_t height) {
     int x, y;
     const uint32_t filledLimit = round(width * filledRatioLimit / 2);
 
@@ -138,7 +144,7 @@ uint32_t findBorderTop(uint8_t *pixels, uint32_t width, uint32_t height) {
         }
     }
 
-    bool (*detectFunc)(const uint8_t *, uint32_t, uint32_t, uint32_t) = isBlackPixel;
+    bool (*detectFunc)(const uint32_t *, uint32_t, uint32_t, uint32_t) = isBlackPixel;
     if (whitePixels > filledLimit && blackPixels > filledLimit) {
         // Mixed fill found... don't crop anything
         return 0;
@@ -168,7 +174,7 @@ uint32_t findBorderTop(uint8_t *pixels, uint32_t width, uint32_t height) {
 
 /** Return the first y position where there is a substantial amount of fill,
  * starting the search from the bottom. */
-uint32_t findBorderBottom(uint8_t *pixels, uint32_t width, uint32_t height) {
+uint32_t findBorderBottom(uint32_t *pixels, uint32_t width, uint32_t height) {
     int x, y;
     const uint32_t filledLimit = round(width * filledRatioLimit / 2);
 
@@ -185,7 +191,7 @@ uint32_t findBorderBottom(uint8_t *pixels, uint32_t width, uint32_t height) {
         }
     }
 
-    bool (*detectFunc)(const uint8_t *, uint32_t, uint32_t, uint32_t) = isBlackPixel;
+    bool (*detectFunc)(const uint32_t *, uint32_t, uint32_t, uint32_t) = isBlackPixel;
     if (whitePixels > filledLimit && blackPixels > filledLimit) {
         // Mixed fill found... don't crop anything
         return height;
@@ -226,7 +232,7 @@ Java_com_hippo_ehviewer_image_ImageKt_detectBorder(JNIEnv *env, jclass clazz, jo
     uint32_t bottom = findBorderBottom(pixels, width, height);
     uint32_t left = findBorderLeft(pixels, width, height, top, bottom);
     uint32_t right = findBorderRight(pixels, width, height, top, bottom);
-    int array[4] = {left, top, bottom, right};
+    int array[4] = {left, top, right, bottom};
     AndroidBitmap_unlockPixels(env, bitmap);
     jintArray ret = (*env)->NewIntArray(env, 4);
     (*env)->SetIntArrayRegion(env, ret, 0, 4, array);
