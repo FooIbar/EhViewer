@@ -66,7 +66,11 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
         val cfg = if (isAtLeastQ) Bitmap.Config.HARDWARE else Bitmap.Config.ARGB_8888
 
         // Upload to Graphical Buffer to accelerate render
-        bitmap.copy(cfg, false).apply { bitmap.recycle() }.toDrawable(appCtx.resources)
+        bitmap.copy(cfg, false).apply {
+            bitmap.recycle()
+        }.toDrawable(appCtx.resources).apply {
+            bounds = rect
+        }
     }
 
     val size = drawable.run { intrinsicHeight * intrinsicWidth * 4 * if (this is Animatable) 4 else 1 }

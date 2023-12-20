@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
+import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.GestureDetector
@@ -145,7 +146,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
 
     // Min scale allowed (prevent infinite zoom)
     private var minScale = minScale()
-    private val sRegion = Rect(0, 0, 0, 0)
+    private var srcRect = Rect(0, 0, 0, 0)
+    private var dstRect = Rect(0, 0, 0, 0)
 
     // Is two-finger zooming in progress
     private var isZooming = false
@@ -230,9 +232,11 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      *
      * @param bitmap Image source.
      */
-    fun setImage(bitmap: Bitmap) {
+    fun setImage(bitmap: BitmapDrawable) {
         reset(true)
-        onImageLoaded(bitmap)
+        srcRect = bitmap.bounds
+        onImageLoaded(bitmap.bitmap)
+        dstRect = Rect(0, 0, sWidth, sHeight)
     }
 
     /**
@@ -267,7 +271,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             }
             sWidth = 0
             sHeight = 0
-            sRegion.setEmpty()
+            srcRect.setEmpty()
+            dstRect.setEmpty()
             isReady = false
             isImageLoaded = false
             bitmap = null
@@ -762,7 +767,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             mtrx.reset()
             mtrx.postScale(xScale, yScale)
             mtrx.postTranslate(vTranslate!!.x, vTranslate!!.y)
-            canvas.drawBitmap(bitmap!!, mtrx, bitmapPaint)
+            canvas.concat(mtrx)
+            canvas.drawBitmap(bitmap!!, srcRect, dstRect, bitmapPaint)
         }
     }
 
@@ -908,7 +914,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     @Synchronized
     private fun onImageLoaded(bitmap: Bitmap) {
         // If actual dimensions don't match the declared size, reset everything.
-        if (sWidth > 0 && sHeight > 0 && (sWidth != bitmap.width || sHeight != bitmap.height)) {
+        if (sWidth > 0 && sHeight > 0 && (sWidth != srcRect.width() || sHeight != srcRect.height())) {
             reset(false)
         }
         if (!this.bitmapIsCached) {
@@ -916,8 +922,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         }
         this.bitmapIsCached = true
         this.bitmap = bitmap
-        sWidth = bitmap.width
-        sHeight = bitmap.height
+        sWidth = srcRect.width()
+        sHeight = srcRect.height()
         val ready = checkReady()
         val imageLoaded = checkImageLoaded()
         if (ready || imageLoaded) {
