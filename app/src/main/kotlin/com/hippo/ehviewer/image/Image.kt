@@ -61,7 +61,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
         // Cannot crop animated image's border
         drawable
     } else {
-        if (Settings.cropBorder) {
+        if (Settings.cropBorder.value) {
             val bitmap = (drawable as BitmapDrawable).bitmap
             val array = detectBorder(bitmap)
             val rect = Rect(array[0], array[1], array[2], array[3])
@@ -185,7 +185,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
 
         @RequiresApi(Build.VERSION_CODES.P)
         private fun decodeDrawable(src: Source) = ImageDecoder.decodeDrawable(src) { decoder, info, _ ->
-            if (!isAtLeastQ || Settings.cropBorder) {
+            if (!isAtLeastQ || Settings.cropBorder.value) {
                 decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
             }
             decoder.setTargetColorSpace(colorSpace)

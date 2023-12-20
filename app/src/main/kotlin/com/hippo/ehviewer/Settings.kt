@@ -174,7 +174,7 @@ object Settings : DataStorePreferences(null) {
     var touchSlopFactor by intPref("touch_slop", 3)
 
     // Tachiyomi Reader
-    val cropBorder by boolPref("crop_borders", false)
+    val cropBorder = boolPref("crop_borders", false)
     val colorFilter = boolPref("pref_color_filter_key", false)
     val colorFilterValue = intPref("color_filter_value", 0)
     val colorFilterMode = intPref("color_filter_mode", 0)
