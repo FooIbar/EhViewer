@@ -57,6 +57,8 @@ import okio.source
 import splitties.init.appCtx
 
 class Image private constructor(drawable: Drawable, private val src: AutoCloseable) {
+    val size = drawable.run { intrinsicHeight * intrinsicWidth * 4 * if (this is Animatable) 4 else 1 }
+
     var mObtainedDrawable: Drawable? = if (drawable is Animatable) {
         // Cannot crop animated image's border
         drawable
@@ -79,8 +81,6 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
             }
         }
     }
-
-    val size = drawable.run { intrinsicHeight * intrinsicWidth * 4 * if (this is Animatable) 4 else 1 }
 
     @Synchronized
     fun recycle() {
