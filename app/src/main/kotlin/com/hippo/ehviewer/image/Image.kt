@@ -39,6 +39,7 @@ import coil3.request.Options
 import coil3.size.Scale
 import coil3.size.Size
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.jni.isGif
 import com.hippo.ehviewer.jni.mmap
 import com.hippo.ehviewer.jni.munmap
@@ -60,16 +61,22 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
         // Cannot crop animated image's border
         drawable
     } else {
-        val bitmap = (drawable as BitmapDrawable).bitmap
-        val array = detectBorder(bitmap)
-        val rect = Rect(array[0], array[1], array[2], array[3])
-        val cfg = if (isAtLeastQ) Bitmap.Config.HARDWARE else Bitmap.Config.ARGB_8888
+        if (Settings.cropBorder) {
+            val bitmap = (drawable as BitmapDrawable).bitmap
+            val array = detectBorder(bitmap)
+            val rect = Rect(array[0], array[1], array[2], array[3])
+            val cfg = if (isAtLeastQ) Bitmap.Config.HARDWARE else Bitmap.Config.ARGB_8888
 
-        // Upload to Graphical Buffer to accelerate render
-        bitmap.copy(cfg, false).apply {
-            bitmap.recycle()
-        }.toDrawable(appCtx.resources).apply {
-            bounds = rect
+            // Upload to Graphical Buffer to accelerate render
+            bitmap.copy(cfg, false).apply {
+                bitmap.recycle()
+            }.toDrawable(appCtx.resources).apply {
+                bounds = rect
+            }
+        } else {
+            drawable.apply {
+                bounds = Rect(0, 0, intrinsicWidth, intrinsicHeight)
+            }
         }
     }
 
@@ -178,7 +185,9 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
 
         @RequiresApi(Build.VERSION_CODES.P)
         private fun decodeDrawable(src: Source) = ImageDecoder.decodeDrawable(src) { decoder, info, _ ->
-            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            if (!isAtLeastQ || Settings.cropBorder) {
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+            }
             decoder.setTargetColorSpace(colorSpace)
             decoder.setTargetSampleSize(calculateSampleSize(info, targetHeight, targetWidth))
         }

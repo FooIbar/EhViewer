@@ -620,5 +620,6 @@
     <string name="dark_theme_follow_system">跟随系统</string>
     <string name="dark_theme_off">总是关闭</string>
     <string name="dark_theme_on">总是开启</string>
+    <string name="pref_crop_borders">裁剪边缘</string>
     <!-- Tachiyomi Reader End-->
 </resources>
