@@ -56,8 +56,11 @@ import okio.buffer
 import okio.source
 import splitties.init.appCtx
 
+private val CropAspect = 0.5..1.5
+
 class Image private constructor(drawable: Drawable, private val src: AutoCloseable) {
     val size = drawable.run { intrinsicHeight * intrinsicWidth * 4 * if (this is Animatable) 4 else 1 }
+    private val intrinsicRect = drawable.run { Rect(0, 0, intrinsicWidth, intrinsicHeight) }
 
     var mObtainedDrawable: Drawable? = if (drawable is Animatable) {
         // Cannot crop animated image's border
@@ -66,7 +69,11 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
         if (Settings.cropBorder.value) {
             val bitmap = (drawable as BitmapDrawable).bitmap
             val array = detectBorder(bitmap)
-            val rect = Rect(array[0], array[1], array[2], array[3])
+            val rect = with(bitmap) {
+                val r = Rect(array[0], array[1], array[2], array[3])
+                val aspectAfterCrop = r.height().toFloat() / r.width()
+                if (aspectAfterCrop in CropAspect) r else intrinsicRect
+            }
 
             val final = if (isAtLeastQ) {
                 // Upload to Graphical Buffer to accelerate render
@@ -79,7 +86,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
 
             final.toDrawable(appCtx.resources).apply { bounds = rect }
         } else {
-            drawable.apply { bounds = Rect(0, 0, intrinsicWidth, intrinsicHeight) }
+            drawable.apply { bounds = intrinsicRect }
         }
     }
 
