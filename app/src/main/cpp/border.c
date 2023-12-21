@@ -15,20 +15,21 @@ const uint8_t thresholdForBlack = (uint8_t) (255.0 * THRESHOLD);
 
 const uint8_t thresholdForWhite = (uint8_t) (255.0 - 255.0 * THRESHOLD);
 
-static bool inline isBlackPixel(const uint32_t *pixels, uint32_t width, uint32_t x, uint32_t y) {
-    const uint32_t pixel = *((uint32_t *) pixels + (y * width + x));
+static uint8_t inline grey(uint32_t pixel) {
     const uint8_t r = ((uint8_t *) &pixel)[0];
     const uint8_t g = ((uint8_t *) &pixel)[1];
     const uint8_t b = ((uint8_t *) &pixel)[2];
-    return r < thresholdForBlack && g < thresholdForBlack && b < thresholdForBlack;
+    return (r * 77 + g * 151 + b * 28) >> 8;
+}
+
+static bool inline isBlackPixel(const uint32_t *pixels, uint32_t width, uint32_t x, uint32_t y) {
+    const uint32_t pixel = *((uint32_t *) pixels + (y * width + x));
+    return grey(pixel) < thresholdForBlack;
 }
 
 static bool inline isWhitePixel(const uint32_t *pixels, uint32_t width, uint32_t x, uint32_t y) {
     const uint32_t pixel = *((uint32_t *) pixels + (y * width + x));
-    const uint8_t r = ((uint8_t *) &pixel)[0];
-    const uint8_t g = ((uint8_t *) &pixel)[1];
-    const uint8_t b = ((uint8_t *) &pixel)[2];
-    return r > thresholdForWhite && g > thresholdForWhite && b > thresholdForWhite;
+    return grey(pixel) > thresholdForWhite;
 }
 
 /** Return the first x position where there is a substantial amount of fill,

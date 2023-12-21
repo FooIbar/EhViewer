@@ -56,7 +56,7 @@ import okio.buffer
 import okio.source
 import splitties.init.appCtx
 
-private val CropAspect = 0.5..1.5
+private val CropAspect = 0.1..100.0
 
 class Image private constructor(drawable: Drawable, private val src: AutoCloseable) {
     val size = drawable.run { intrinsicHeight * intrinsicWidth * 4 * if (this is Animatable) 4 else 1 }
