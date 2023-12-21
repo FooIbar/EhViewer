@@ -234,7 +234,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      */
     fun setImage(bitmap: BitmapDrawable) {
         reset(true)
-        srcRect = bitmap.bounds
+        srcRect = Rect(bitmap.bounds)
         onImageLoaded(bitmap.bitmap)
         dstRect = Rect(0, 0, sWidth, sHeight)
     }
