@@ -67,18 +67,19 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
             val bitmap = (drawable as BitmapDrawable).bitmap
             val array = detectBorder(bitmap)
             val rect = Rect(array[0], array[1], array[2], array[3])
-            val cfg = if (isAtLeastQ) Bitmap.Config.HARDWARE else Bitmap.Config.ARGB_8888
 
-            // Upload to Graphical Buffer to accelerate render
-            bitmap.copy(cfg, false).apply {
-                bitmap.recycle()
-            }.toDrawable(appCtx.resources).apply {
-                bounds = rect
+            val final = if (isAtLeastQ) {
+                // Upload to Graphical Buffer to accelerate render
+                bitmap.copy(Bitmap.Config.HARDWARE, false).apply {
+                    bitmap.recycle()
+                }
+            } else {
+                bitmap
             }
+
+            final.toDrawable(appCtx.resources).apply { bounds = rect }
         } else {
-            drawable.apply {
-                bounds = Rect(0, 0, intrinsicWidth, intrinsicHeight)
-            }
+            drawable.apply { bounds = Rect(0, 0, intrinsicWidth, intrinsicHeight) }
         }
     }
 
