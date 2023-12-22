@@ -277,7 +277,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                         IconButton(
                                             onClick = {
                                                 coroutineScope.launch {
-                                                    val new = dialogState.awaitInputText(title = renameLabel, hint = labelsStr) { text ->
+                                                    val new = dialogState.awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
                                                         when {
                                                             text.isBlank() -> labelEmpty
                                                             text == defaultName -> defaultInvalid
