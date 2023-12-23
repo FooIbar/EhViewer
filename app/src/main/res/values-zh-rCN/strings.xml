@@ -365,7 +365,7 @@
     <string name="settings_advanced_dump_logcat_to">已保存日志至 %s</string>
     <string name="settings_advanced_read_cache_size">阅读缓存大小</string>
     <string name="settings_advanced_app_language_title">App 界面语言</string>
-    <string name="settings_advanced_http_engine">Http 引擎（重启生效)</string>
+    <string name="settings_advanced_http_engine">Http 引擎</string>
     <string name="settings_advanced_touch_slop">[实验性] 触摸溢出系数</string>
     <string name="settings_advanced_touch_slop_summary">增大此项将降低滑动手势敏感度</string>
     <string name="settings_advanced_export_data">导出数据</string>

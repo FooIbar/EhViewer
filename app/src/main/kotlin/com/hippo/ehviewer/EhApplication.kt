@@ -54,6 +54,7 @@ import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.ehviewer.util.isCronetAvailable
+import com.hippo.ehviewer.util.resettableLazy
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -193,7 +194,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
     }
 
     companion object {
-        val ktorClient by lazy {
+        var ktorClient by resettableLazy {
             if (Settings.enableCronet && isCronetAvailable) {
                 HttpClient(CronetEngine) {
                     install(HttpCookies) {
@@ -217,7 +218,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
             }
         }
 
-        val noRedirectKtorClient by lazy {
+        var noRedirectKtorClient by resettableLazy {
             HttpClient(ktorClient.engine) {
                 followRedirects = false
                 install(HttpCookies) {
