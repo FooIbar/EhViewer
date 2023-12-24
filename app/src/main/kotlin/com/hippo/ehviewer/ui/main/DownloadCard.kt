@@ -19,103 +19,26 @@ import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
-import com.hippo.ehviewer.EhApplication
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.download.downloadDir
-import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
-import com.hippo.ehviewer.ui.tools.shouldCrop
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.ehviewer.util.sendTo
-import com.hippo.unifile.UniFile
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItemScope
-
-@Composable
-private fun AsyncThumb(
-    info: DownloadInfo,
-    modifier: Modifier = Modifier,
-) {
-    val path = remember(info.gid) { info.downloadDir?.subFile(".thumb") }
-    var contentScale by remember(info.gid) { mutableStateOf(ContentScale.Fit) }
-    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    val context = LocalContext.current
-    var localReq by remember(info.gid) {
-        path?.takeIf { it.isFile }?.uri?.let {
-            context.imageRequest {
-                data(it.toString())
-                memoryCacheKey(info.thumbKey)
-            }
-        }.let { mutableStateOf(it) }
-    }
-    AsyncImage(
-        model = localReq ?: requestOf(info),
-        contentDescription = null,
-        modifier = modifier,
-        onState = { state ->
-            if (state is AsyncImagePainter.State.Success) {
-                if (state.result.image.shouldCrop) {
-                    contentScale = ContentScale.Crop
-                }
-                path?.let {
-                    coroutineScope.launch {
-                        runCatching {
-                            if (!path.exists() && path.ensureFile()) {
-                                val key = info.thumbKey!!
-                                EhApplication.imageCache.read(key) {
-                                    UniFile.fromFile(data.toFile())!!.openFileDescriptor("r").use { src ->
-                                        path.openFileDescriptor("w").use { dst ->
-                                            src sendTo dst
-                                        }
-                                    }
-                                }
-                            }
-                        }.onFailure {
-                            it.printStackTrace()
-                        }
-                    }
-                }
-            }
-            if (state is AsyncImagePainter.State.Error) {
-                path?.let {
-                    coroutineScope.launch {
-                        if (path.exists()) {
-                            path.delete()
-                            localReq = null
-                        }
-                    }
-                }
-            }
-        },
-        contentScale = contentScale,
-    )
-}
 
 @Composable
 fun ReorderableItemScope.DownloadCard(
@@ -134,8 +57,8 @@ fun ReorderableItemScope.DownloadCard(
     ) {
         Row {
             Card(onClick = onThumbClick) {
-                AsyncThumb(
-                    info = info,
+                EhAsyncCropThumb(
+                    key = info,
                     modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
                 )
             }
