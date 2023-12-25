@@ -5,7 +5,7 @@ import com.hippo.ehviewer.client.thumbUrl
 import com.hippo.ehviewer.dao.DownloadInfo
 
 object DownloadInfoMagics {
-    private const val DOWNLOAD_INFO_DIRNAME_URL_MAGIC = "Lolicon"
+    private const val DOWNLOAD_INFO_DIRNAME_URL_MAGIC = "$"
     private const val DOWNLOAD_INFO_DIRNAME_URL_SEPARATOR = "|"
 
     fun encodeMagicRequestOrUrl(info: GalleryInfo): String {
