@@ -11,12 +11,12 @@ import coil3.size.Size
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
-import com.hippo.ehviewer.client.thumbUrl
 import com.hippo.ehviewer.client.url
+import com.hippo.ehviewer.spider.DownloadInfoMagics.encodeMagicRequestOrUrl
 
 fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
     val key = info.thumbKey!!
-    data(info.thumbUrl)
+    data(encodeMagicRequestOrUrl(info))
     memoryCacheKey(key)
     diskCacheKey(key)
 }
