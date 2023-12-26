@@ -15,7 +15,6 @@
  */
 package com.hippo.unifile
 
-import android.content.Context
 import android.graphics.ImageDecoder
 import android.net.Uri
 import java.io.IOException
@@ -74,8 +73,8 @@ class MediaFile(override val uri: Uri) : UniFile(null) {
     override fun openFileDescriptor(mode: String) = Contracts.openFileDescriptor(appCtx, uri, mode)
 
     companion object {
-        fun isMediaUri(context: Context, uri: Uri): Boolean {
-            return null != MediaContract.getName(context, uri)
+        fun isMediaUri(uri: Uri): Boolean {
+            return null != MediaContract.getName(appCtx, uri)
         }
     }
 }

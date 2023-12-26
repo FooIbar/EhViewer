@@ -1,5 +1,6 @@
 package com.hippo.unifile
 
+import android.net.Uri
 import android.os.ParcelFileDescriptor.AutoCloseInputStream
 import android.os.ParcelFileDescriptor.AutoCloseOutputStream
 import java.io.File
@@ -24,3 +25,7 @@ fun UniFile.openOutputStream(): FileOutputStream {
 fun File.asUniFile() = UniFile.fromFile(this)
 
 fun Path.asUniFile() = toFile().asUniFile()
+
+fun Uri.asUniFileOrNull() = UniFile.fromUri(this)
+
+fun Uri.asUniFile() = requireNotNull(asUniFileOrNull())

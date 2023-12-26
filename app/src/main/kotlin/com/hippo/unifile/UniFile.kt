@@ -16,7 +16,6 @@
 package com.hippo.unifile
 
 import android.content.ContentResolver
-import android.content.Context
 import android.content.Intent
 import android.graphics.ImageDecoder
 import android.net.Uri
@@ -24,6 +23,7 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import androidx.annotation.RequiresApi
 import java.io.File
+import splitties.init.appCtx
 
 /**
  * In Android files can be accessed via [java.io.File] and [android.net.Uri].
@@ -280,17 +280,17 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
         /**
          * Create a [UniFile] representing the given [Uri].
          */
-        fun fromUri(context: Context, uri: Uri): UniFile? {
+        fun fromUri(uri: Uri): UniFile? {
             return if (isFileUri(uri)) {
                 fromFile(File(uri.path!!))
-            } else if (isDocumentUri(context, uri)) {
+            } else if (isDocumentUri(uri)) {
                 if (isTreeUri(uri)) {
                     fromTreeUri(uri)
                 } else {
                     fromSingleUri(uri)
                 }
-            } else if (MediaFile.isMediaUri(context, uri)) {
-                MediaFile(uri)
+            } else if (MediaFile.isMediaUri(uri)) {
+                fromMediaUri(uri)
             } else {
                 null
             }
@@ -307,14 +307,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
          * Test if given Uri is backed by a
          * [android.provider.DocumentsProvider].
          */
-        fun isDocumentUri(context: Context, uri: Uri): Boolean {
-            val version = Build.VERSION.SDK_INT
-            return if (version >= 19) {
-                DocumentsContractApi19.isDocumentUri(context, uri)
-            } else {
-                false
-            }
-        }
+        fun isDocumentUri(uri: Uri) = DocumentsContractApi19.isDocumentUri(appCtx, uri)
 
         /**
          * Test if given Uri is TreeUri
