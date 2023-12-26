@@ -38,11 +38,6 @@
         <profileable android:shell="true" />
 
         <activity
-            android:name=".ui.ConfigureActivity"
-            android:exported="false"
-            android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
             android:name=".ui.MainActivity"
             android:banner="@mipmap/ic_leanback_banner"
             android:configChanges="screenSize"

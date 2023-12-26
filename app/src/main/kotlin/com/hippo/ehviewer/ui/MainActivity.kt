@@ -65,6 +65,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -89,6 +90,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.compose.rememberNavController
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
@@ -105,6 +107,9 @@ import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.destinations.HistoryScreenDestination
 import com.hippo.ehviewer.ui.destinations.HomePageScreenDestination
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
+import com.hippo.ehviewer.ui.destinations.SelectSiteScreenDestination
+import com.hippo.ehviewer.ui.destinations.SettingsScreenDestination
+import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.destinations.SubscriptionScreenDestination
 import com.hippo.ehviewer.ui.destinations.ToplistScreenDestination
 import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
@@ -115,6 +120,7 @@ import com.hippo.ehviewer.ui.screen.navigate
 import com.hippo.ehviewer.ui.settings.showNewVersion
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
+import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
@@ -147,7 +153,11 @@ private val navItems = arrayOf(
     Triple(FavouritesScreenDestination, R.string.favourite, Icons.Default.Favorite),
     Triple(HistoryScreenDestination, R.string.history, Icons.Default.History),
     Triple(DownloadsScreenDestination, R.string.downloads, Icons.Default.Download),
+    Triple(SettingsScreenDestination, R.string.settings, Icons.Default.Settings),
 )
+
+val StartDestination
+    get() = navItems[Settings.launchPage].first
 
 class MainActivity : EhActivity() {
     private val sideSheet = mutableStateListOf<@Composable ColumnScope.(DrawerState2) -> Unit>()
@@ -357,19 +367,6 @@ class MainActivity : EhActivity() {
                                                 },
                                             )
                                         }
-                                        NavigationDrawerItem(
-                                            label = {
-                                                Text(text = stringResource(id = R.string.settings))
-                                            },
-                                            selected = false,
-                                            onClick = {
-                                                closeDrawer { startActivity(Intent(applicationContext, ConfigureActivity::class.java)) }
-                                            },
-                                            modifier = Modifier.padding(horizontal = 12.dp),
-                                            icon = {
-                                                Icon(imageVector = Icons.Default.Settings, contentDescription = null)
-                                            },
-                                        )
                                     }
                                 }
                             },
@@ -394,10 +391,18 @@ class MainActivity : EhActivity() {
                                 drawerState = sideSheetState,
                                 gesturesEnabled = sheet != null && !drawerLocked,
                             ) {
-                                CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
+                                val windowSizeClass = calculateWindowSizeClass(this)
+                                CompositionLocalProvider(
+                                    LocalViewConfiguration provides viewConfiguration,
+                                    LocalWindowSizeClass provides windowSizeClass,
+                                ) {
                                     DestinationsNavHost(
                                         navGraph = NavGraphs.root,
-                                        startRoute = navItems[Settings.launchPage].first,
+                                        startRoute = if (Settings.needSignIn) {
+                                            if (EhCookieStore.hasSignedIn()) SelectSiteScreenDestination else SignInScreenDestination
+                                        } else {
+                                            StartDestination
+                                        },
                                         engine = rememberNavHostEngine(rootDefaultAnimations = ehNavAnim),
                                         navController = navController,
                                     )
@@ -468,13 +473,6 @@ class MainActivity : EhActivity() {
             .setMessage(R.string.invalid_download_location)
             .setPositiveButton(R.string.get_it, null)
             .show()
-    }
-
-    override fun onResume() {
-        if (Settings.needSignIn) {
-            startActivity(Intent(this, ConfigureActivity::class.java))
-        }
-        super.onResume()
     }
 
     fun showTip(@StringRes id: Int, useToast: Boolean = false) {

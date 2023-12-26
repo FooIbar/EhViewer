@@ -1,7 +1,5 @@
 package com.hippo.ehviewer.ui.login
 
-import android.app.Activity
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,14 +20,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUrl
-import com.hippo.ehviewer.ui.destinations.FinishDestination
+import com.hippo.ehviewer.ui.StartDestination
+import com.hippo.ehviewer.ui.screen.popNavigate
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
@@ -37,11 +35,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 @Composable
 fun SelectSiteScreen(navigator: DestinationsNavigator) {
     var siteEx by remember { mutableStateOf(true) }
-    val context = LocalContext.current
-
-    BackHandler {
-        (context as Activity).moveTaskToBack(true)
-    }
 
     Column(
         modifier = Modifier.systemBarsPadding().padding(horizontal = dimensionResource(R.dimen.keyline_margin)).padding(top = dimensionResource(R.dimen.keyline_margin)).fillMaxSize(),
@@ -71,7 +64,7 @@ fun SelectSiteScreen(navigator: DestinationsNavigator) {
                     // Gallery site was set to ex in sad panda check
                     if (!siteEx) Settings.gallerySite = EhUrl.SITE_E
                     Settings.needSignIn = false
-                    navigator.navigate(FinishDestination)
+                    navigator.popNavigate(StartDestination)
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) {

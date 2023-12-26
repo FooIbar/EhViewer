@@ -1,7 +1,5 @@
 package com.hippo.ehviewer.ui.login
 
-import android.app.Activity
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,21 +59,24 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
+import com.hippo.ehviewer.ui.StartDestination
 import com.hippo.ehviewer.ui.destinations.CookieSignInSceneDestination
-import com.hippo.ehviewer.ui.destinations.FinishDestination
 import com.hippo.ehviewer.ui.destinations.SelectSiteScreenDestination
 import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
+import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Job
 
+@RootNavGraph(start = true)
 @Destination
 @Composable
 fun SignInScreen(navigator: DestinationsNavigator) {
@@ -91,10 +92,6 @@ fun SignInScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current
     var signInJob by remember { mutableStateOf<Job?>(null) }
     val dialogState = LocalDialogState.current
-
-    BackHandler {
-        (context as Activity).moveTaskToBack(true)
-    }
 
     fun signIn() {
         if (signInJob?.isActive == true) return
@@ -137,7 +134,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                 }
             }.onSuccess {
                 val canEx = withNonCancellableContext { postLogin() }
-                withUIContext { navigator.navigate(if (canEx) SelectSiteScreenDestination else FinishDestination) }
+                withUIContext { navigator.popNavigate(if (canEx) SelectSiteScreenDestination else StartDestination) }
             }
         }
     }
@@ -251,7 +248,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                         onClick = {
                             Settings.needSignIn = false
                             Settings.gallerySite = EhUrl.SITE_E
-                            navigator.navigate(FinishDestination)
+                            navigator.popNavigate(StartDestination)
                         },
                     ) {
                         Text(
@@ -347,7 +344,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                             onClick = {
                                 Settings.needSignIn = false
                                 Settings.gallerySite = EhUrl.SITE_E
-                                navigator.navigate(FinishDestination)
+                                navigator.popNavigate(StartDestination)
                             },
                             modifier = Modifier.padding(horizontal = 4.dp),
                         ) {
