@@ -56,8 +56,6 @@ class SingleDocumentFile(parent: UniFile?, override val uri: Uri) : UniFile(pare
 
     override fun findFirst(filter: (String) -> Boolean) = null
 
-    override fun findFile(displayName: String) = null
-
     override fun renameTo(displayName: String) = false
 
     override val imageSource: ImageDecoder.Source

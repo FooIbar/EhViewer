@@ -205,7 +205,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      *
      * @return the file if found it, or `null`.
      */
-    abstract fun findFile(displayName: String): UniFile?
+    fun findFile(displayName: String) = subFile(displayName).takeIf { it.exists() }
 
     /**
      * Renames this file to `displayName`.

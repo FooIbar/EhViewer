@@ -100,8 +100,6 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
 
     override fun findFirst(filter: (String) -> Boolean) = allChildren.firstOrNull { filter(it.name) }
 
-    override fun findFile(displayName: String) = subFile(displayName).takeIf { it.exists() }
-
     override fun renameTo(displayName: String): Boolean {
         val target = File(mFile.parentFile, displayName)
         if (mFile.renameTo(target)) {

@@ -133,8 +133,6 @@ class TreeDocumentFile(
 
     override fun findFirst(filter: (String) -> Boolean) = allChildren.firstOrNull { filter(it.filename) }
 
-    override fun findFile(displayName: String) = allChildren.firstOrNull { it.filename == displayName }
-
     override fun renameTo(displayName: String): Boolean {
         val result = DocumentsContractApi21.renameTo(appCtx, uri, displayName)
         if (result != null) {
