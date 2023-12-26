@@ -17,24 +17,22 @@ package com.hippo.ehviewer.ui
 
 import android.annotation.SuppressLint
 import android.app.assist.AssistContent
-import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE_NONE
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
@@ -54,6 +52,7 @@ import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.DrawerState2
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -74,9 +73,11 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -113,11 +114,12 @@ import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.destinations.SubscriptionScreenDestination
 import com.hippo.ehviewer.ui.destinations.ToplistScreenDestination
 import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
-import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.screen.TokenArgs
 import com.hippo.ehviewer.ui.screen.navWithUrl
 import com.hippo.ehviewer.ui.screen.navigate
 import com.hippo.ehviewer.ui.settings.showNewVersion
+import com.hippo.ehviewer.ui.tools.DialogState
+import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
@@ -128,6 +130,7 @@ import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.hippo.ehviewer.util.isAtLeastQ
+import com.hippo.ehviewer.util.isAtLeastS
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
@@ -220,6 +223,11 @@ class MainActivity : EhActivity() {
             fun closeDrawer(callback: () -> Unit = {}) = scope.launch {
                 navDrawerState.close()
                 callback()
+            }
+
+            LaunchedEffect(Unit) {
+                launch { dialogState.checkDownloadLocation() }.join()
+                launch { dialogState.checkAppLinkVerify() }
             }
 
             val cannotParse = stringResource(R.string.error_cannot_parse_the_url)
@@ -418,28 +426,42 @@ class MainActivity : EhActivity() {
             if (intent.action != Intent.ACTION_MAIN) {
                 onNewIntent(intent)
             }
-            checkDownloadLocation()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (!Settings.appLinkVerifyTip) {
-                    try {
-                        checkAppLinkVerify()
-                    } catch (ignored: PackageManager.NameNotFoundException) {
-                    }
-                }
-            }
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
-    private fun checkAppLinkVerify() {
-        val manager = getSystemService(DomainVerificationManager::class.java)
-        val userState = manager.getDomainVerificationUserState(packageName) ?: return
-        val hasUnverified = userState.hostToStateMap.values.any { it == DOMAIN_STATE_NONE }
-        if (hasUnverified) {
-            BaseDialogBuilder(this)
-                .setTitle(R.string.app_link_not_verified_title)
-                .setMessage(R.string.app_link_not_verified_message)
-                .setPositiveButton(R.string.open_settings) { _: DialogInterface?, _: Int ->
+    private suspend fun DialogState.checkAppLinkVerify() {
+        if (isAtLeastS && !Settings.appLinkVerifyTip) {
+            val manager = getSystemService(DomainVerificationManager::class.java)
+            val packageName = packageName
+            val userState = manager.getDomainVerificationUserState(packageName) ?: return
+            val hasUnverified = userState.hostToStateMap.values.any { it == DOMAIN_STATE_NONE }
+            if (hasUnverified) {
+                var checked by mutableStateOf(false)
+                awaitPermissionOrCancel(
+                    confirmText = R.string.open_settings,
+                    title = R.string.app_link_not_verified_title,
+                    onDismiss = {
+                        if (checked) Settings.appLinkVerifyTip = true
+                    },
+                ) {
+                    Column {
+                        Text(
+                            text = stringResource(id = R.string.app_link_not_verified_message),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        LabeledCheckbox(
+                            modifier = Modifier.fillMaxWidth(),
+                            checked = checked,
+                            onCheckedChange = { checked = it },
+                            label = stringResource(id = R.string.dont_show_again),
+                            indication = null,
+                        )
+                    }
+                }
+                if (checked) {
+                    Settings.appLinkVerifyTip = true
+                } else {
                     try {
                         val intent = Intent(
                             android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
@@ -454,25 +476,24 @@ class MainActivity : EhActivity() {
                         startActivity(intent)
                     }
                 }
-                .setNegativeButton(android.R.string.cancel, null)
-                .setNeutralButton(R.string.dont_show_again) { _: DialogInterface?, _: Int ->
-                    Settings.appLinkVerifyTip = true
-                }
-                .show()
+            }
         }
     }
 
-    private fun checkDownloadLocation() {
-        val uniFile = downloadLocation
-        // null == uniFile for first start
-        if (uniFile.ensureDir()) {
-            return
+    private suspend fun DialogState.checkDownloadLocation() {
+        val valid = withIOContext { downloadLocation.ensureDir() }
+        if (!valid) {
+            awaitPermissionOrCancel(
+                confirmText = R.string.get_it,
+                showCancelButton = false,
+                title = R.string.waring,
+            ) {
+                Text(
+                    text = stringResource(id = R.string.invalid_download_location),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
         }
-        BaseDialogBuilder(this)
-            .setTitle(R.string.waring)
-            .setMessage(R.string.invalid_download_location)
-            .setPositiveButton(R.string.get_it, null)
-            .show()
     }
 
     fun showTip(@StringRes id: Int, useToast: Boolean = false) {
