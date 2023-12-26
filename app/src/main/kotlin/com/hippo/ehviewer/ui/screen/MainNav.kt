@@ -5,6 +5,7 @@ import androidx.navigation.NavController
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryListUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
+import com.hippo.ehviewer.ui.NavGraphs
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
@@ -27,6 +28,11 @@ fun DestinationsNavigator.navWithUrl(url: String): Boolean {
     val dest = urlToDestination(url) ?: return false
     navigate(dest)
     return true
+}
+
+@MainThread
+fun DestinationsNavigator.popNavigate(direction: Direction) = navigate(direction) {
+    popUpTo(NavGraphs.root.route)
 }
 
 @MainThread
