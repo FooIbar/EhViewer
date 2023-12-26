@@ -535,7 +535,7 @@ class ReaderActivity : EhActivity() {
                     Toast.makeText(this@ReaderActivity, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
                     return@launchUI
                 }
-                if (!mGalleryProvider!!.save(page, UniFile.fromMediaUri(this@ReaderActivity, imageUri))) {
+                if (!mGalleryProvider!!.save(page, UniFile.fromMediaUri(imageUri))) {
                     try {
                         resolver.delete(imageUri, null, null)
                     } catch (e: Exception) {

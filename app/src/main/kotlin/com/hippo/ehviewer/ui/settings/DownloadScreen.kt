@@ -83,11 +83,9 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     coroutineScope.launch {
                         context.runCatching {
                             contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
-                            UniFile.fromTreeUri(treeUri).run {
-                                downloadLocationState = this
-                                coroutineScope.launchNonCancellable {
-                                    keepNoMediaFileStatus()
-                                }
+                            downloadLocationState = UniFile.fromTreeUri(treeUri)
+                            coroutineScope.launchNonCancellable {
+                                keepNoMediaFileStatus()
                             }
                         }.onFailure {
                             launchSnackBar(cannotGetDownloadLocation)

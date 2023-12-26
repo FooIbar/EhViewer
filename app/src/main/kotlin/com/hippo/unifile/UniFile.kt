@@ -275,9 +275,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
          * @param mediaUri the media uri to wrap
          * @return the [UniFile] representing the given [Uri].
          */
-        fun fromMediaUri(context: Context, mediaUri: Uri): UniFile {
-            return MediaFile(context, mediaUri)
-        }
+        fun fromMediaUri(mediaUri: Uri) = MediaFile(mediaUri)
 
         /**
          * Create a [UniFile] representing the given [Uri].
@@ -292,7 +290,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
                     fromSingleUri(uri)
                 }
             } else if (MediaFile.isMediaUri(context, uri)) {
-                MediaFile(context, uri)
+                MediaFile(uri)
             } else {
                 null
             }
