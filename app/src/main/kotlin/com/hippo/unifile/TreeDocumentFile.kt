@@ -194,9 +194,9 @@ internal class TreeDocumentFile : UniFile {
         return null
     }
 
-    override fun listFiles(): Array<UniFile> {
+    override fun listFiles(): List<TreeDocumentFile> {
         val result = DocumentsContractApi21.listFiles(mContext, uri)
-        return result.map { TreeDocumentFile(this, mContext, it, getFilenameForUri(it)) }.toTypedArray()
+        return result.map { TreeDocumentFile(this, mContext, it, getFilenameForUri(it)) }
     }
 
     override fun findFirst(filter: (String) -> Boolean): UniFile? {

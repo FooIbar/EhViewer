@@ -53,7 +53,7 @@ class SingleDocumentFile(parent: UniFile?, context: Context, override val uri: U
 
     override fun exists() = DocumentsContractApi19.exists(mContext, uri)
 
-    override fun listFiles() = null
+    override fun listFiles() = emptyList<SingleDocumentFile>()
 
     override fun findFirst(filter: (String) -> Boolean) = null
 

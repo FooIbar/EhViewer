@@ -19,40 +19,36 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.ParcelFileDescriptor
-import android.util.Log
 import android.webkit.MimeTypeMap
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.util.Locale
 
-internal class RawFile(parent: UniFile?, var mFile: File) : UniFile(parent) {
-    override fun createFile(displayName: String): UniFile? {
-        val target = File(mFile, displayName)
-        return if (target.exists()) {
-            if (target.isFile) {
-                RawFile(this, target)
-            } else {
-                null
-            }
-        } else {
-            runCatching {
-                FileOutputStream(target).use {}
-                RawFile(this, target)
-            }.getOrElse {
-                Log.w(TAG, "Failed to createFile $displayName: $it")
-                null
-            }
+class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
+    val parent = parent as? RawFile
+
+    private val allChildren by lazy {
+        val current = this
+        mutableListOf<RawFile>().apply {
+            val fs = mFile.listFiles()?.map { RawFile(current, it) }
+            if (fs != null) addAll(fs)
         }
     }
 
-    override fun createDirectory(displayName: String): UniFile? {
-        val target = File(mFile, displayName)
-        return if (target.isDirectory || target.mkdirs()) {
-            RawFile(this, target)
+    override fun createFile(displayName: String): UniFile? {
+        val target = RawFile(this, File(mFile, displayName))
+        if (target.exists()) {
+            if (target.isFile) return target
         } else {
-            null
+            if (target.ensureFile()) return target
         }
+        return null
+    }
+
+    override fun createDirectory(displayName: String): UniFile? {
+        val target = RawFile(this, File(mFile, displayName))
+        if (target.ensureDir()) return target
+        return null
     }
 
     override val uri: Uri
@@ -70,74 +66,49 @@ internal class RawFile(parent: UniFile?, var mFile: File) : UniFile(parent) {
     override val isFile: Boolean
         get() = mFile.isFile
 
-    override fun lastModified(): Long {
-        return mFile.lastModified()
-    }
+    override fun lastModified() = mFile.lastModified()
 
-    override fun length(): Long {
-        return mFile.length()
-    }
+    override fun length() = mFile.length()
 
-    override fun canRead(): Boolean {
-        return mFile.canRead()
-    }
+    override fun canRead() = mFile.canRead()
 
-    override fun canWrite(): Boolean {
-        return mFile.canWrite()
-    }
+    override fun canWrite() = mFile.canWrite()
 
     override fun ensureDir(): Boolean {
-        return mFile.isDirectory || mFile.mkdirs()
+        if (mFile.isDirectory) return true
+        if (mFile.mkdirs()) {
+            parent?.allChildren?.add(this)
+            return true
+        }
+        return false
     }
 
     override fun ensureFile(): Boolean {
-        return if (mFile.exists()) {
-            mFile.isFile
-        } else {
-            runCatching {
-                FileOutputStream(mFile).use {}
-                true
-            }.getOrDefault(false)
-        }
+        if (mFile.exists()) return mFile.isFile
+        val success = mFile.createNewFile()
+        if (success) parent?.allChildren?.add(this)
+        return success
     }
 
-    override fun subFile(displayName: String): UniFile {
-        return RawFile(this, File(mFile, displayName))
-    }
+    override fun subFile(displayName: String) = RawFile(this, File(mFile, displayName))
 
-    override fun delete(): Boolean {
-        deleteContents(mFile)
-        return mFile.delete()
-    }
+    override fun delete() = mFile.deleteRecursively()
 
-    override fun exists(): Boolean {
-        return mFile.exists()
-    }
+    override fun exists() = mFile.exists()
 
-    override fun listFiles(): Array<UniFile>? {
-        val files = mFile.listFiles() ?: return null
-        return files.map { RawFile(this, it) }.toTypedArray()
-    }
+    override fun listFiles() = allChildren
 
-    override fun findFirst(filter: (String) -> Boolean) = mFile.listFiles { _, name ->
-        filter(name)
-    }?.firstOrNull()?.let {
-        RawFile(this, it)
-    }
+    override fun findFirst(filter: (String) -> Boolean) = allChildren.firstOrNull { filter(it.name) }
 
-    override fun findFile(displayName: String): UniFile? {
-        val child = File(mFile, displayName)
-        return if (child.exists()) RawFile(this, child) else null
-    }
+    override fun findFile(displayName: String) = allChildren.firstOrNull { it.name == displayName }
 
     override fun renameTo(displayName: String): Boolean {
         val target = File(mFile.parentFile, displayName)
-        return if (mFile.renameTo(target)) {
+        if (mFile.renameTo(target)) {
             mFile = target
-            true
-        } else {
-            false
+            return true
         }
+        return false
     }
 
     override val imageSource: ImageDecoder.Source
@@ -149,39 +120,18 @@ internal class RawFile(parent: UniFile?, var mFile: File) : UniFile(parent) {
 
     override fun openFileDescriptor(mode: String): ParcelFileDescriptor {
         val md = ParcelFileDescriptor.parseMode(mode)
-        return ParcelFileDescriptor.open(mFile, md)
-            ?: throw IOException("Can't open ParcelFileDescriptor")
+        return ParcelFileDescriptor.open(mFile, md) ?: throw IOException("Can't open ParcelFileDescriptor")
     }
+}
 
-    companion object {
-        private val TAG = RawFile::class.java.simpleName
-        private fun getTypeForName(name: String): String {
-            val lastDot = name.lastIndexOf('.')
-            if (lastDot >= 0) {
-                val extension = name.substring(lastDot + 1).lowercase(Locale.getDefault())
-                val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-                if (mime != null) {
-                    return mime
-                }
-            }
-            return "application/octet-stream"
-        }
-
-        private fun deleteContents(dir: File): Boolean {
-            val files = dir.listFiles()
-            var success = true
-            if (files != null) {
-                for (file in files) {
-                    if (file.isDirectory) {
-                        success = success and deleteContents(file)
-                    }
-                    if (!file.delete()) {
-                        Log.w(TAG, "Failed to delete $file")
-                        success = false
-                    }
-                }
-            }
-            return success
+private fun getTypeForName(name: String): String {
+    val lastDot = name.lastIndexOf('.')
+    if (lastDot >= 0) {
+        val extension = name.substring(lastDot + 1).lowercase(Locale.getDefault())
+        val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+        if (mime != null) {
+            return mime
         }
     }
+    return "application/octet-stream"
 }

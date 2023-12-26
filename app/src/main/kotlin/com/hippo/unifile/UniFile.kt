@@ -196,14 +196,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      */
     abstract fun exists(): Boolean
 
-    /**
-     * Returns an array of files contained in the directory represented by this
-     * file.
-     *
-     * @return an array of files or `null`.
-     * @see android.provider.DocumentsContract.buildChildDocumentsUriUsingTree
-     */
-    abstract fun listFiles(): Array<UniFile>?
+    abstract fun listFiles(): List<UniFile>
 
     abstract fun findFirst(filter: (String) -> Boolean): UniFile?
 

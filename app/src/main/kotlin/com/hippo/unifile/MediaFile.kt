@@ -61,7 +61,7 @@ internal class MediaFile(context: Context, override val uri: Uri) : UniFile(null
 
     override fun exists() = isFile
 
-    override fun listFiles() = null
+    override fun listFiles() = emptyList<MediaFile>()
 
     override fun findFirst(filter: (String) -> Boolean) = null
 
