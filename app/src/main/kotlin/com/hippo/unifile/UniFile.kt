@@ -235,27 +235,6 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
     abstract fun openFileDescriptor(mode: String): ParcelFileDescriptor
 
     companion object {
-        private var sUriHandlerArray: MutableList<UriHandler>? = null
-
-        /**
-         * Add a UriHandler to get UniFile from uri
-         */
-        fun addUriHandler(handler: UriHandler) {
-            if (sUriHandlerArray == null) {
-                sUriHandlerArray = ArrayList()
-            }
-            sUriHandlerArray!!.add(handler)
-        }
-
-        /**
-         * Remove the UriHandler added before
-         */
-        fun removeUriHandler(handler: UriHandler) {
-            if (sUriHandlerArray != null) {
-                sUriHandlerArray!!.remove(handler)
-            }
-        }
-
         /**
          * Create a [UniFile] representing the given [File].
          *
@@ -324,18 +303,6 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
          * Create a [UniFile] representing the given [Uri].
          */
         fun fromUri(context: Context, uri: Uri): UniFile? {
-            // Custom handler
-            if (sUriHandlerArray != null) {
-                var i = 0
-                val size = sUriHandlerArray!!.size
-                while (i < size) {
-                    val file = sUriHandlerArray!![i].fromUri(context, uri)
-                    if (file != null) {
-                        return file
-                    }
-                    i++
-                }
-            }
             return if (isFileUri(uri)) {
                 fromFile(File(uri.path!!))
             } else if (isDocumentUri(context, uri)) {
