@@ -17,25 +17,23 @@ object DownloadThumbInterceptor : Interceptor {
         if (magicOrUrl != null) {
             val (url, location) = decodeMagicRequestOrUrl(magicOrUrl)
             if (location != null) {
-                val thumb = withIOContext { downloadLocation.subFile(location)?.subFile(".thumb") }
-                if (thumb != null) {
-                    if (withIOContext { thumb.isFile }) {
-                        val new = chain.request.newBuilder().data(thumb.uri.toString()).build()
-                        when (val result = chain.withRequest(new).proceed()) {
-                            is SuccessResult -> return result
-                            is ErrorResult -> withIOContext { thumb.delete() }
-                        }
+                val thumb = withIOContext { downloadLocation.subFile(location).subFile(".thumb") }
+                if (withIOContext { thumb.isFile }) {
+                    val new = chain.request.newBuilder().data(thumb.uri.toString()).build()
+                    when (val result = chain.withRequest(new).proceed()) {
+                        is SuccessResult -> return result
+                        is ErrorResult -> withIOContext { thumb.delete() }
                     }
-                    val new = chain.request.newBuilder().data(url).build()
-                    return chain.withRequest(new).proceed().also {
-                        if (it is SuccessResult) {
-                            withIOContext {
-                                if (thumb.ensureFile()) {
-                                    val key = requireNotNull(chain.request.memoryCacheKey)
-                                    imageCache.read(key) {
-                                        val cache = UniFile.fromFile(data.toFile())
-                                        requireNotNull(cache) sendTo thumb
-                                    }
+                }
+                val new = chain.request.newBuilder().data(url).build()
+                return chain.withRequest(new).proceed().also {
+                    if (it is SuccessResult) {
+                        withIOContext {
+                            if (thumb.ensureFile()) {
+                                val key = requireNotNull(chain.request.memoryCacheKey)
+                                imageCache.read(key) {
+                                    val cache = UniFile.fromFile(data.toFile())
+                                    requireNotNull(cache) sendTo thumb
                                 }
                             }
                         }

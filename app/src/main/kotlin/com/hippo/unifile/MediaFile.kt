@@ -55,7 +55,7 @@ internal class MediaFile(context: Context, override val uri: Uri) : UniFile(null
 
     override fun ensureFile() = isFile
 
-    override fun subFile(displayName: String) = null
+    override fun subFile(displayName: String) = error("MediaFile never have a children")
 
     override fun delete() = false
 

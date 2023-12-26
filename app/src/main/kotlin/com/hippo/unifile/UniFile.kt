@@ -173,9 +173,9 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
     /**
      * Get child file of this directory, the child might not exist.
      *
-     * @return the child file, `null` if not supported
+     * @return the child file
      */
-    abstract fun subFile(displayName: String): UniFile?
+    abstract fun subFile(displayName: String): UniFile
 
     /**
      * Deletes this file.
