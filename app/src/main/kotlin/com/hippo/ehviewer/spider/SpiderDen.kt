@@ -240,7 +240,7 @@ fun perFilename(index: Int, extension: String?): String {
 }
 
 private fun findImageFile(dir: UniFile, index: Int): UniFile? {
-    val head = String.format(Locale.US, "%08d", index + 1)
+    val head = perFilename(index, ".")
     return dir.findFirst { name -> name.startsWith(head) }
 }
 
