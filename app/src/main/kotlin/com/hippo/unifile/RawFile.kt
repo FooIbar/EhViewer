@@ -27,12 +27,19 @@ import java.util.Locale
 class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
     val parent = parent as? RawFile
 
+    var cachePresent = false
     private val allChildren by lazy {
         val current = this
+        cachePresent = true
         mutableListOf<RawFile>().apply {
             val fs = mFile.listFiles()?.map { RawFile(current, it) }
             if (fs != null) addAll(fs)
         }
+    }
+
+    private fun popParentCacheIfPresent() = apply {
+        val present = parent?.cachePresent ?: false
+        if (present) parent?.allChildren?.add(this)
     }
 
     override fun createFile(displayName: String): UniFile? {
@@ -77,7 +84,7 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
     override fun ensureDir(): Boolean {
         if (mFile.isDirectory) return true
         if (mFile.mkdirs()) {
-            parent?.allChildren?.add(this)
+            popParentCacheIfPresent()
             return true
         }
         return false
@@ -86,7 +93,7 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
     override fun ensureFile(): Boolean {
         if (mFile.exists()) return mFile.isFile
         val success = mFile.createNewFile()
-        if (success) parent?.allChildren?.add(this)
+        if (success) popParentCacheIfPresent()
         return success
     }
 
