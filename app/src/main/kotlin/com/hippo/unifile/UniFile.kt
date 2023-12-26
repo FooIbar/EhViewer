@@ -241,9 +241,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
          * @param file the file to wrap
          * @return the [UniFile] representing the given [File].
          */
-        fun fromFile(file: File?): UniFile? {
-            return if (file != null) RawFile(null, file) else null
-        }
+        fun fromFile(file: File) = RawFile(null, file)
 
         /**
          * Create a [UniFile] representing the single document at the

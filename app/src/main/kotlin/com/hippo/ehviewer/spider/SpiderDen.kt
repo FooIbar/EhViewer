@@ -30,6 +30,7 @@ import com.hippo.ehviewer.image.Image.UniFileSource
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
+import com.hippo.unifile.asUniFile
 import com.hippo.unifile.openOutputStream
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.statement.HttpResponse
@@ -154,7 +155,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
             val key = getImageKey(mGid, index)
             return sCache.suspendEdit(key) {
                 metadata.toFile().writeText(ext)
-                fops(UniFile.fromFile(data.toFile())!!)
+                fops(data.asUniFile())
             }
         }
         return false
@@ -172,34 +173,28 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
     }
 
     fun saveToUniFile(index: Int, file: UniFile): Boolean {
-        file.openFileDescriptor("w").use { toFd ->
-            val key = getImageKey(mGid, index)
+        val key = getImageKey(mGid, index)
 
-            // Read from diskCache first
-            sCache.read(key) {
-                runCatching {
-                    UniFile.fromFile(data.toFile())!!.openFileDescriptor("r").use {
-                        it sendTo toFd
-                    }
-                    return true
-                }.onFailure {
-                    it.printStackTrace()
-                    return false
-                }
+        // Read from diskCache first
+        sCache.read(key) {
+            runCatching {
+                data.asUniFile() sendTo file
+                return true
+            }.onFailure {
+                it.printStackTrace()
+                return false
             }
+        }
 
-            // Read from download dir
-            downloadDir?.let { uniFile ->
-                runCatching {
-                    findImageFile(uniFile, index)?.openFileDescriptor("r")?.use {
-                        it sendTo toFd
-                    }
-                }.onFailure {
-                    it.printStackTrace()
-                    return false
-                }.onSuccess {
-                    return true
-                }
+        // Read from download dir
+        downloadDir?.let { uniFile ->
+            runCatching {
+                requireNotNull(findImageFile(uniFile, index)) sendTo file
+            }.onFailure {
+                it.printStackTrace()
+                return false
+            }.onSuccess {
+                return true
             }
         }
         return false
@@ -216,9 +211,8 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
             val key = getImageKey(mGid, index)
             val snapshot = sCache.openSnapshot(key)
             if (snapshot != null) {
-                val source = UniFile.fromFile(snapshot.data.toFile())!!
                 return object : UniFileSource, AutoCloseable by snapshot {
-                    override val source = source
+                    override val source = snapshot.data.asUniFile()
                 }
             }
         }

@@ -44,6 +44,7 @@ import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.unifile.UniFile
+import com.hippo.unifile.asUniFile
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
@@ -105,7 +106,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                         .setMessage(file.uri.toString())
                         .setPositiveButton(R.string.pick_new_download_location) { _, _ -> selectDownloadDirLauncher.launch(null) }
                         .setNeutralButton(R.string.reset_download_location) { _, _ ->
-                            val uniFile = UniFile.fromFile(AppConfig.defaultDownloadDir)
+                            val uniFile = AppConfig.defaultDownloadDir?.asUniFile()
                             if (uniFile != null) {
                                 downloadLocationState = uniFile
                                 coroutineScope.launchNonCancellable { keepNoMediaFileStatus() }

@@ -97,6 +97,7 @@ import com.hippo.ehviewer.util.requestPermission
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.ehviewer.util.setValue
 import com.hippo.unifile.UniFile
+import com.hippo.unifile.asUniFile
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
@@ -408,7 +409,7 @@ class ReaderActivity : EhActivity() {
         }
         val file = mGalleryProvider!!.save(
             page,
-            UniFile.fromFile(dir)!!,
+            dir.asUniFile(),
             mGalleryProvider!!.getImageFilenameWithExtension(page),
         )
         if (file == null) {
@@ -466,7 +467,7 @@ class ReaderActivity : EhActivity() {
         }
         val file = mGalleryProvider!!.save(
             page,
-            UniFile.fromFile(dir)!!,
+            dir.asUniFile(),
             mGalleryProvider!!.getImageFilenameWithExtension(page),
         )
         if (file == null) {
@@ -571,7 +572,7 @@ class ReaderActivity : EhActivity() {
         }
         val file = mGalleryProvider!!.save(
             page,
-            UniFile.fromFile(dir)!!,
+            dir.asUniFile(),
             mGalleryProvider!!.getImageFilenameWithExtension(page),
         )
         if (file == null) {

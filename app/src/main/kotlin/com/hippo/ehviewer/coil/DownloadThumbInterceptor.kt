@@ -8,7 +8,7 @@ import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.spider.DownloadInfoMagics.decodeMagicRequestOrUrl
 import com.hippo.ehviewer.util.sendTo
-import com.hippo.unifile.UniFile
+import com.hippo.unifile.asUniFile
 import eu.kanade.tachiyomi.util.lang.withIOContext
 
 object DownloadThumbInterceptor : Interceptor {
@@ -32,8 +32,7 @@ object DownloadThumbInterceptor : Interceptor {
                             if (thumb.ensureFile()) {
                                 val key = requireNotNull(chain.request.memoryCacheKey)
                                 imageCache.read(key) {
-                                    val cache = UniFile.fromFile(data.toFile())
-                                    requireNotNull(cache) sendTo thumb
+                                    data.asUniFile() sendTo thumb
                                 }
                             }
                         }

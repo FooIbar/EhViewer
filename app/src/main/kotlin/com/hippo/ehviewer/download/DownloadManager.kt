@@ -46,6 +46,7 @@ import com.hippo.ehviewer.util.assertNotMainThread
 import com.hippo.ehviewer.util.mapNotNull
 import com.hippo.ehviewer.util.runAssertingNotMainThread
 import com.hippo.unifile.UniFile
+import com.hippo.unifile.asUniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.coroutineScope
@@ -1026,7 +1027,7 @@ var downloadLocation: UniFile
                 encodedQuery(downloadQuery)
                 encodedFragment(downloadFragment)
             }.build(),
-        ) ?: UniFile.fromFile(AppConfig.defaultDownloadDir)!!
+        ) ?: requireNotNull(AppConfig.defaultDownloadDir).asUniFile()
     }
     set(value) = with(value.uri) {
         Settings.edit {
