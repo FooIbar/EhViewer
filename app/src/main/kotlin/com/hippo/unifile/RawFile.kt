@@ -20,6 +20,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.webkit.MimeTypeMap
+import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.io.IOException
 import java.util.Locale
@@ -31,6 +32,7 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
     private val allChildren by lazy {
         val current = this
         cachePresent = true
+        logcat { "Directory lookup cache created for $name" }
         mutableListOf<RawFile>().apply {
             val fs = mFile.listFiles()?.map { RawFile(current, it) }
             if (fs != null) addAll(fs)

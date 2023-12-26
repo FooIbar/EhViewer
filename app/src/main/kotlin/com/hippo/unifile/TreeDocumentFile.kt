@@ -19,6 +19,7 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.webkit.MimeTypeMap
+import eu.kanade.tachiyomi.util.system.logcat
 import splitties.init.appCtx
 
 class TreeDocumentFile(
@@ -29,6 +30,7 @@ class TreeDocumentFile(
     private var cachePresent = false
     private val allChildren by lazy {
         cachePresent = true
+        logcat { "Directory lookup cache created for $name" }
         DocumentsContractApi21.listFiles(appCtx, uri).map {
             val name = getFilenameForUri(it)
             TreeDocumentFile(this, it, name)
