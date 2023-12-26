@@ -58,6 +58,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -223,7 +224,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val isTopList = remember(urlBuilder) { urlBuilder.mode == MODE_TOPLIST }
     val ehHint = stringResource(R.string.gallery_list_search_bar_hint_e_hentai)
     val exHint = stringResource(R.string.gallery_list_search_bar_hint_exhentai)
-    val searchBarHint = remember { if (EhUtils.isExHentai) exHint else ehHint }
+    val searchBarHint by rememberUpdatedState(if (EhUtils.isExHentai) exHint else ehHint)
     val suitableTitle = getSuitableTitleForUrlBuilder(urlBuilder)
     val data = rememberInVM {
         Pager(PagingConfig(25)) {
