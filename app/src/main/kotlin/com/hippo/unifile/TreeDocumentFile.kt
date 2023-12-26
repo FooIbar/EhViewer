@@ -26,11 +26,17 @@ class TreeDocumentFile(
     override var uri: Uri,
     val filename: String,
 ) : UniFile(parent) {
+    private var cachePresent = false
     private val allChildren by lazy {
+        cachePresent = true
         DocumentsContractApi21.listFiles(appCtx, uri).map {
             val name = getFilenameForUri(it)
             TreeDocumentFile(this, it, name)
         }.toMutableList()
+    }
+
+    private fun popCacheIfPresent(file: TreeDocumentFile) = apply {
+        if (cachePresent) allChildren.add(file)
     }
 
     constructor(parent: UniFile?, uri: Uri) : this(parent, uri, getFilenameForUri(uri))
@@ -49,7 +55,7 @@ class TreeDocumentFile(
                     val result = DocumentsContractApi21.createFile(appCtx, uri, mimeType, name)
                     if (result != null) {
                         val f = TreeDocumentFile(this, result, displayName)
-                        allChildren.add(f)
+                        popCacheIfPresent(f)
                         return f
                     }
                 }
@@ -58,7 +64,7 @@ class TreeDocumentFile(
                 val result = DocumentsContractApi21.createFile(appCtx, uri, "application/octet-stream", displayName)
                 if (result != null) {
                     val f = TreeDocumentFile(this, result, displayName)
-                    allChildren.add(f)
+                    popCacheIfPresent(f)
                     return f
                 }
             }
@@ -74,7 +80,7 @@ class TreeDocumentFile(
             val result = DocumentsContractApi21.createDirectory(appCtx, uri, displayName)
             if (result != null) {
                 val d = TreeDocumentFile(this, result, displayName)
-                allChildren.add(d)
+                popCacheIfPresent(d)
                 return d
             }
         }
