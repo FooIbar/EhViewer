@@ -40,9 +40,3 @@ abstract class PageLoader2 : PageLoader() {
      */
     abstract fun save(index: Int, dir: UniFile, filename: String): UniFile?
 }
-
-val SUPPORT_IMAGE_EXTENSIONS = arrayOf(
-    ".jpg",
-    ".png",
-    ".gif",
-)

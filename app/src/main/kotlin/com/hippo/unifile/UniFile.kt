@@ -205,15 +205,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      */
     abstract fun listFiles(): Array<UniFile>?
 
-    /**
-     * Gets a list of the files in the directory represented by this file. This
-     * list is then filtered through a FilenameFilter and the names of files
-     * with matching names are returned as an array of strings.
-     *
-     * @param filter the filter to match names against, may be `null`.
-     * @return an array of files or `null`.
-     */
-    abstract fun listFiles(filter: FilenameFilter?): Array<UniFile>?
+    abstract fun findFirst(filter: (String) -> Boolean): UniFile?
 
     /**
      * Test there is a file with the display name in the directory.
