@@ -461,20 +461,19 @@ class MainActivity : EhActivity() {
                 }
                 if (checked) {
                     Settings.appLinkVerifyTip = true
-                } else {
-                    try {
-                        val intent = Intent(
-                            android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
-                            Uri.parse("package:$packageName"),
-                        )
-                        startActivity(intent)
-                    } catch (t: Throwable) {
-                        val intent = Intent(
-                            android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.parse("package:$packageName"),
-                        )
-                        startActivity(intent)
-                    }
+                }
+                try {
+                    val intent = Intent(
+                        android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
+                        Uri.parse("package:$packageName"),
+                    )
+                    startActivity(intent)
+                } catch (t: Throwable) {
+                    val intent = Intent(
+                        android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:$packageName"),
+                    )
+                    startActivity(intent)
                 }
             }
         }
