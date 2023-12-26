@@ -119,18 +119,10 @@ internal class RawFile(parent: UniFile?, var mFile: File) : UniFile(parent) {
         return files.map { RawFile(this, it) }.toTypedArray()
     }
 
-    override fun listFiles(filter: FilenameFilter?): Array<UniFile>? {
-        if (filter == null) {
-            return listFiles()
-        }
-        val files = mFile.listFiles() ?: return null
-        val results = ArrayList<UniFile>()
-        for (file in files) {
-            if (filter.accept(this, file.name)) {
-                results.add(RawFile(this, file))
-            }
-        }
-        return results.toTypedArray<UniFile>()
+    override fun findFirst(filter: (String) -> Boolean) = mFile.listFiles { _, name ->
+        filter(name)
+    }?.firstOrNull()?.let {
+        RawFile(this, it)
     }
 
     override fun findFile(displayName: String): UniFile? {

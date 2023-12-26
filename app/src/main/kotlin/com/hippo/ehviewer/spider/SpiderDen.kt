@@ -26,7 +26,6 @@ import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.coil.suspendEdit
 import com.hippo.ehviewer.download.downloadLocation
-import com.hippo.ehviewer.gallery.SUPPORT_IMAGE_EXTENSIONS
 import com.hippo.ehviewer.image.Image.UniFileSource
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
@@ -72,7 +71,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
         val key = getImageKey(mGid, index)
         return runCatching {
             sCache.read(key) {
-                val extension = fixExtension("." + metadata.toFile().readText())
+                val extension = "." + metadata.toFile().readText()
                 val file = dir.createFile(perFilename(index, extension)) ?: return false
                 file.openFileDescriptor("w").use { outFd ->
                     ParcelFileDescriptor.open(data.toFile(), MODE_READ_WRITE).use {
@@ -117,7 +116,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
 
     private fun findDownloadFileForIndex(index: Int, extension: String): UniFile? {
         val dir = downloadDir ?: return null
-        val ext = fixExtension(".$extension")
+        val ext = ".$extension"
         return dir.createFile(perFilename(index, ext))
     }
 
@@ -233,8 +232,6 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
     }
 }
 
-private val COMPAT_IMAGE_EXTENSIONS = SUPPORT_IMAGE_EXTENSIONS + ".jpeg"
-
 /**
  * @param extension with dot
  */
@@ -242,15 +239,9 @@ fun perFilename(index: Int, extension: String?): String {
     return String.format(Locale.US, "%08d%s", index + 1, extension)
 }
 
-/**
- * @param extension with dot
- */
-private fun fixExtension(extension: String): String {
-    return extension.takeIf { SUPPORT_IMAGE_EXTENSIONS.contains(it) } ?: SUPPORT_IMAGE_EXTENSIONS[0]
-}
-
 private fun findImageFile(dir: UniFile, index: Int): UniFile? {
-    return COMPAT_IMAGE_EXTENSIONS.firstNotNullOfOrNull { dir.findFile(perFilename(index, it)) }
+    val head = String.format(Locale.US, "%08d", index + 1)
+    return dir.findFirst { name -> name.startsWith(head) }
 }
 
 suspend fun GalleryInfo.putToDownloadDir(): String {

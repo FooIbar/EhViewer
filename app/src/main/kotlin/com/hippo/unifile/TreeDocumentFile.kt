@@ -199,19 +199,15 @@ internal class TreeDocumentFile : UniFile {
         return result.map { TreeDocumentFile(this, mContext, it, getFilenameForUri(it)) }.toTypedArray()
     }
 
-    override fun listFiles(filter: FilenameFilter?): Array<UniFile> {
-        if (filter == null) {
-            return listFiles()
-        }
+    override fun findFirst(filter: (String) -> Boolean): UniFile? {
         val result = DocumentsContractApi21.listFiles(mContext, uri)
-        val results = ArrayList<UniFile>()
         for (uri in result) {
             val name = getFilenameForUri(uri)
-            if (filter.accept(this, name)) {
-                results.add(TreeDocumentFile(this, mContext, uri, name))
+            if (name != null && filter(name)) {
+                return TreeDocumentFile(this, mContext, uri, name)
             }
         }
-        return results.toTypedArray<UniFile>()
+        return null
     }
 
     override fun findFile(displayName: String): UniFile? {
