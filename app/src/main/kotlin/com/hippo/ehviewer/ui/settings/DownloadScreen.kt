@@ -83,7 +83,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     coroutineScope.launch {
                         context.runCatching {
                             contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
-                            UniFile.fromTreeUri(context, treeUri)!!.run {
+                            UniFile.fromTreeUri(treeUri).run {
                                 downloadLocationState = this
                                 coroutineScope.launchNonCancellable {
                                     keepNoMediaFileStatus()

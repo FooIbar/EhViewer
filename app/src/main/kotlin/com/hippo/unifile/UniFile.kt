@@ -266,18 +266,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
          * [Intent.ACTION_OPEN_DOCUMENT_TREE] request.
          * @return the [UniFile] representing the given [Uri].
          */
-        fun fromTreeUri(context: Context, treeUri: Uri): UniFile? {
-            val version = Build.VERSION.SDK_INT
-            return if (version >= 21) {
-                TreeDocumentFile(
-                    null,
-                    context,
-                    DocumentsContractApi21.prepareTreeUri(treeUri),
-                )
-            } else {
-                null
-            }
-        }
+        fun fromTreeUri(treeUri: Uri) = TreeDocumentFile(null, DocumentsContractApi21.prepareTreeUri(treeUri))
 
         /**
          * Create a [UniFile] representing the media file rooted at
@@ -298,7 +287,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
                 fromFile(File(uri.path!!))
             } else if (isDocumentUri(context, uri)) {
                 if (isTreeUri(uri)) {
-                    fromTreeUri(context, uri)
+                    fromTreeUri(uri)
                 } else {
                     fromSingleUri(uri)
                 }
