@@ -94,6 +94,7 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
 
     override fun ensureFile(): Boolean {
         if (mFile.exists()) return mFile.isFile
+        parent?.ensureDir()
         val success = mFile.createNewFile()
         if (success) popParentCacheIfPresent()
         return success
