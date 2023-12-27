@@ -556,7 +556,7 @@ class ReaderActivity : EhActivity() {
         val activity = this
         lifecycleScope.launchUI {
             runSuspendCatching {
-                val uri = applicationContext.awaitActivityResult(CreateDocument("todo/todo"), filename)
+                val uri = awaitActivityResult(CreateDocument("todo/todo"), filename)
                 if (uri != null) {
                     withIOContext {
                         val f = requireNotNull(AppConfig.externalTempDir).asUniFile() / filename
