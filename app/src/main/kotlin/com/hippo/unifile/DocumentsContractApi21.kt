@@ -18,27 +18,21 @@ package com.hippo.unifile
 import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
+import splitties.init.appCtx
 
-internal object DocumentsContractApi21 {
+object DocumentsContractApi21 {
     private const val PATH_DOCUMENT = "document"
     private const val PATH_TREE = "tree"
-    fun createFile(context: Context, self: Uri, mimeType: String, displayName: String): Uri? {
-        return try {
-            DocumentsContract.createDocument(
-                context.contentResolver,
-                self,
-                mimeType,
-                displayName,
-            )
-        } catch (e: Throwable) {
-            Utils.throwIfFatal(e)
-            null
-        }
-    }
+    fun createFile(self: Uri, mimeType: String, displayName: String) = runCatching {
+        DocumentsContract.createDocument(
+            appCtx.contentResolver,
+            self,
+            mimeType,
+            displayName,
+        )
+    }.getOrNull()
 
-    fun createDirectory(context: Context, self: Uri, displayName: String): Uri? {
-        return createFile(context, self, DocumentsContract.Document.MIME_TYPE_DIR, displayName)
-    }
+    fun createDirectory(self: Uri, displayName: String) = createFile(self, DocumentsContract.Document.MIME_TYPE_DIR, displayName)
 
     fun prepareTreeUri(treeUri: Uri?): Uri {
         return DocumentsContract.buildDocumentUriUsingTree(
@@ -52,7 +46,7 @@ internal object DocumentsContractApi21 {
         if (paths.size >= 4 && PATH_TREE == paths[0] && PATH_DOCUMENT == paths[2]) {
             return paths[3]
         }
-        throw IllegalArgumentException("Invalid URI: $documentUri")
+        error("Invalid URI: $documentUri")
     }
 
     fun buildChildUri(uri: Uri, displayName: String): Uri {
@@ -62,14 +56,14 @@ internal object DocumentsContractApi21 {
         )
     }
 
-    fun listFiles(context: Context, self: Uri): Array<Uri> {
+    fun listFiles(self: Uri): Array<Uri> {
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
             self,
             DocumentsContract.getDocumentId(self),
         )
         val results = ArrayList<Uri>()
         runCatching {
-            context.contentResolver.query(
+            appCtx.contentResolver.query(
                 childrenUri,
                 arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
                 null,
@@ -87,18 +81,11 @@ internal object DocumentsContractApi21 {
                     }
                 }
             }
-        }.onFailure {
-            Utils.throwIfFatal(it)
         }
         return results.toTypedArray<Uri>()
     }
 
-    fun renameTo(context: Context, self: Uri, displayName: String): Uri? {
-        return try {
-            DocumentsContract.renameDocument(context.contentResolver, self, displayName)
-        } catch (e: Throwable) {
-            Utils.throwIfFatal(e)
-            null
-        }
-    }
+    fun renameTo(context: Context, self: Uri, displayName: String) = runCatching {
+        DocumentsContract.renameDocument(context.contentResolver, self, displayName)
+    }.getOrNull()
 }
