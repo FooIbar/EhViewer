@@ -17,17 +17,16 @@
 package androidx.navigation.compose
 
 import android.annotation.SuppressLint
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.ExperimentalTransitionApi
+import androidx.compose.animation.core.SeekableTransitionState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
@@ -39,8 +38,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -56,10 +57,7 @@ import androidx.navigation.createGraph
 import androidx.navigation.get
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
-import kotlin.math.roundToLong
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.withContext
 
 /**
  * Provides in place in the Compose hierarchy for self contained navigation to occur.
@@ -189,6 +187,7 @@ public fun NavHost(
  * @param popEnterTransition callback to define popEnter transitions for destination in this host
  * @param popExitTransition callback to define popExit transitions for destination in this host
  */
+@OptIn(ExperimentalTransitionApi::class)
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 public fun NavHost(
@@ -247,10 +246,37 @@ public fun NavHost(
     val zIndices = remember { mutableMapOf<String, Float>() }
 
     if (backStackEntry != null) {
+        val enablePredictiveBack by Settings.predictiveNavAnim.collectAsState()
+        val transitionState = remember { SeekableTransitionState(backStackEntry) }
+        val transition = if (enablePredictiveBack) {
+            LaunchedEffect(backStackEntry) {
+                transitionState.animateTo(backStackEntry)
+            }
+            rememberTransition(transitionState, label = "entry")
+        } else {
+            updateTransition(backStackEntry, label = "entry")
+        }
+
+        var inPredictiveBack by remember { mutableStateOf(false) }
+        PredictiveBackHandler(currentBackStack.size > 1) { backEvent ->
+            inPredictiveBack = true
+            try {
+                val prev = requireNotNull(navController.previousBackStackEntry)
+                backEvent.collect {
+                    val interpolated = EaseOut.transform(it.progress)
+                    transitionState.snapTo(prev, interpolated)
+                }
+                inPredictiveBack = false
+                navController.popBackStack()
+            } catch (e: CancellationException) {
+                inPredictiveBack = false
+            }
+        }
+
         val finalEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = {
             val targetDestination = targetState.destination as ComposeNavigator.Destination
 
-            if (composeNavigator.isPop.value) {
+            if (composeNavigator.isPop.value || inPredictiveBack) {
                 targetDestination.hierarchy.firstNotNullOfOrNull { destination ->
                     destination.createPopEnterTransition(this)
                 } ?: popEnterTransition.invoke(this)
@@ -264,7 +290,7 @@ public fun NavHost(
         val finalExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = {
             val initialDestination = initialState.destination as ComposeNavigator.Destination
 
-            if (composeNavigator.isPop.value) {
+            if (composeNavigator.isPop.value || inPredictiveBack) {
                 initialDestination.hierarchy.firstNotNullOfOrNull { destination ->
                     destination.createPopExitTransition(this)
                 } ?: popExitTransition.invoke(this)
@@ -283,65 +309,6 @@ public fun NavHost(
             }
         }
 
-        val enablePredictiveBack by Settings.predictiveNavAnim.collectAsState()
-        val transition = if (enablePredictiveBack) {
-            val duration = 500000000L
-            val transitionState = remember { MutableTransitionState(backStackEntry) }
-            val transition = updateTransition(transitionState = transitionState, label = "entry")
-            val animatedFraction = remember { Animatable(0f).also { it.updateBounds(lowerBound = 0f, upperBound = 1f) } }
-
-            fun seekToFraction(lState: NavBackStackEntry, rState: NavBackStackEntry) {
-                val fraction = animatedFraction.value
-                val playTimeNanos = (fraction * duration).roundToLong()
-                transition.setPlaytimeAfterInitialAndTargetStateEstablished(lState, rState, playTimeNanos)
-            }
-
-            LaunchedEffect(backStackEntry) {
-                try {
-                    animatedFraction.animateTo(1f, animationSpec = tween(500, easing = LinearEasing)) {
-                        seekToFraction(transitionState.currentState, backStackEntry)
-                    }
-                } finally {
-                    withContext(NonCancellable) {
-                        animatedFraction.snapTo(0f)
-                        transition.setPlaytimeAfterInitialAndTargetStateEstablished(
-                            backStackEntry,
-                            backStackEntry,
-                            0,
-                        )
-                    }
-                }
-            }
-
-            PredictiveBackHandler(currentBackStack.size > 1) { flow ->
-                // Prev can never be null, i.e. BackHandler should not enabled when prev is null
-                val prev = currentBackStack.last { it != backStackEntry }
-                try {
-                    flow.collect {
-                        val interpolated = EaseOut.transform(it.progress)
-                        animatedFraction.snapTo(interpolated)
-                        seekToFraction(backStackEntry, prev)
-                    }
-                    navController.popBackStack()
-                } catch (e: CancellationException) {
-                    withContext(NonCancellable) {
-                        animatedFraction.snapTo(0f)
-                        transition.setPlaytimeAfterInitialAndTargetStateEstablished(
-                            backStackEntry,
-                            backStackEntry,
-                            0,
-                        )
-                    }
-                }
-            }
-            transition
-        } else {
-            BackHandler(currentBackStack.size > 1) {
-                navController.popBackStack()
-            }
-            updateTransition(backStackEntry, label = "entry")
-        }
-
         transition.AnimatedContent(
             modifier,
             transitionSpec = {
@@ -357,7 +324,7 @@ public fun NavHost(
                         else -> initialZIndex + 1f
                     }.also { zIndices[targetState.id] = it }
 
-                    ContentTransform(finalEnter(this), finalExit(this), targetZIndex)
+                    ContentTransform(finalEnter(this), finalExit(this), targetZIndex, null)
                 } else {
                     EnterTransition.None togetherWith ExitTransition.None
                 }
@@ -365,11 +332,25 @@ public fun NavHost(
             contentAlignment,
             contentKey = { it.id },
         ) {
+            // In some specific cases, such as clearing your back stack by changing your
+            // start destination, AnimatedContent can contain an entry that is no longer
+            // part of visible entries since it was cleared from the back stack and is not
+            // animating. In these cases the currentEntry will be null, and in those cases,
+            // AnimatedContent will just skip attempting to transition the old entry.
+            // See https://issuetracker.google.com/238686802
+            val currentEntry = if (inPredictiveBack) {
+                // We have to do this because the previous entry does not show up in visibleEntries
+                // even if we prepare it above as part of onBackStackChangeStarted
+                it
+            } else {
+                visibleEntries.lastOrNull { entry -> it == entry }
+            }
+
             // while in the scope of the composable, we provide the navBackStackEntry as the
             // ViewModelStoreOwner and LifecycleOwner
-            it.LocalOwnersProvider(saveableStateHolder) {
-                (it.destination as ComposeNavigator.Destination)
-                    .content(this, it)
+            currentEntry?.LocalOwnersProvider(saveableStateHolder) {
+                (currentEntry.destination as ComposeNavigator.Destination)
+                    .content(this, currentEntry)
             }
         }
         LaunchedEffect(transition.currentState, transition.targetState) {
