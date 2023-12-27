@@ -25,17 +25,17 @@ class SingleDocumentFile(parent: UniFile?, override val uri: Uri) : UniFile(pare
     override fun createDirectory(displayName: String) = null
 
     override val name: String?
-        get() = DocumentsContractApi19.getName(appCtx, uri)
+        get() = DocumentsContractApi19.getName(uri)
     override val type: String?
-        get() = DocumentsContractApi19.getType(appCtx, uri)
+        get() = DocumentsContractApi19.getType(uri)
     override val isDirectory: Boolean
-        get() = DocumentsContractApi19.isDirectory(appCtx, uri)
+        get() = DocumentsContractApi19.isDirectory(uri)
     override val isFile: Boolean
-        get() = DocumentsContractApi19.isFile(appCtx, uri)
+        get() = DocumentsContractApi19.isFile(uri)
 
-    override fun lastModified() = DocumentsContractApi19.lastModified(appCtx, uri)
+    override fun lastModified() = DocumentsContractApi19.lastModified(uri)
 
-    override fun length() = DocumentsContractApi19.length(appCtx, uri)
+    override fun length() = DocumentsContractApi19.length(uri)
 
     override fun canRead() = DocumentsContractApi19.canRead(appCtx, uri)
 

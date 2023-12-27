@@ -21,51 +21,24 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.DocumentsContract
 
-internal object DocumentsContractApi19 {
+object DocumentsContractApi19 {
 
-    fun getName(context: Context, self: Uri): String? {
-        return Contracts.queryForString(
-            context,
-            self,
-            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-            null,
-        )
-    }
+    fun getName(self: Uri) = Contracts.queryForString(self, DocumentsContract.Document.COLUMN_DISPLAY_NAME, null)
 
-    private fun getRawType(context: Context, self: Uri): String? {
-        return Contracts.queryForString(
-            context,
-            self,
-            DocumentsContract.Document.COLUMN_MIME_TYPE,
-            null,
-        )
-    }
+    private fun getRawType(self: Uri) = Contracts.queryForString(self, DocumentsContract.Document.COLUMN_MIME_TYPE, null)
 
-    fun getType(context: Context, self: Uri): String? {
-        return getRawType(context, self).takeUnless { it == DocumentsContract.Document.MIME_TYPE_DIR }
-    }
+    fun getType(self: Uri) = getRawType(self).takeUnless { it == DocumentsContract.Document.MIME_TYPE_DIR }
 
-    fun isDirectory(context: Context, self: Uri): Boolean {
-        return DocumentsContract.Document.MIME_TYPE_DIR == getRawType(context, self)
-    }
+    fun isDirectory(self: Uri) = DocumentsContract.Document.MIME_TYPE_DIR == getRawType(self)
 
-    fun isFile(context: Context, self: Uri): Boolean {
-        val type = getRawType(context, self)
+    fun isFile(self: Uri): Boolean {
+        val type = getRawType(self)
         return !(DocumentsContract.Document.MIME_TYPE_DIR == type || type.isNullOrEmpty())
     }
 
-    fun lastModified(context: Context, self: Uri): Long {
-        return Contracts.queryForLong(
-            context,
-            self,
-            DocumentsContract.Document.COLUMN_LAST_MODIFIED,
-            -1L,
-        )
-    }
+    fun lastModified(self: Uri) = Contracts.queryForLong(self, DocumentsContract.Document.COLUMN_LAST_MODIFIED, -1L)
 
-    fun length(context: Context, self: Uri): Long {
-        return Contracts.queryForLong(context, self, DocumentsContract.Document.COLUMN_SIZE, -1L)
-    }
+    fun length(self: Uri) = Contracts.queryForLong(self, DocumentsContract.Document.COLUMN_SIZE, -1L)
 
     fun canRead(context: Context, self: Uri): Boolean {
         // Ignore if grant doesn't allow read
@@ -76,7 +49,7 @@ internal object DocumentsContractApi19 {
             false
         } else {
             // Ignore documents without MIME
-            !getRawType(context, self).isNullOrEmpty()
+            !getRawType(self).isNullOrEmpty()
         }
     }
 
@@ -87,8 +60,8 @@ internal object DocumentsContractApi19 {
         ) {
             return false
         }
-        val type = getRawType(context, self)
-        val flags = Contracts.queryForInt(context, self, DocumentsContract.Document.COLUMN_FLAGS, 0)
+        val type = getRawType(self)
+        val flags = Contracts.queryForInt(self, DocumentsContract.Document.COLUMN_FLAGS, 0)
 
         // Ignore documents without MIME
         if (type.isNullOrEmpty()) {

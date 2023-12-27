@@ -251,6 +251,6 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
 
         fun isTreeUri(uri: Uri) = DocumentsContractCompat.isTreeUri(uri)
 
-        fun isMediaUri(uri: Uri) = null != MediaContract.getName(appCtx, uri)
+        fun isMediaUri(uri: Uri) = null != MediaContract.getName(uri)
     }
 }

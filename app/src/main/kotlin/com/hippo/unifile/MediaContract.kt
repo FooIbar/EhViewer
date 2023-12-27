@@ -15,24 +15,15 @@
  */
 package com.hippo.unifile
 
-import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
 
-internal object MediaContract {
-    fun getName(context: Context, self: Uri): String? {
-        return Contracts.queryForString(context, self, MediaStore.MediaColumns.DISPLAY_NAME, null)
-    }
+object MediaContract {
+    fun getName(self: Uri) = Contracts.queryForString(self, MediaStore.MediaColumns.DISPLAY_NAME, null)
 
-    fun getType(context: Context, self: Uri): String? {
-        return Contracts.queryForString(context, self, MediaStore.MediaColumns.MIME_TYPE, null)
-    }
+    fun getType(self: Uri) = Contracts.queryForString(self, MediaStore.MediaColumns.MIME_TYPE, null)
 
-    fun lastModified(context: Context, self: Uri): Long {
-        return Contracts.queryForLong(context, self, MediaStore.MediaColumns.DATE_MODIFIED, 0)
-    }
+    fun lastModified(self: Uri) = Contracts.queryForLong(self, MediaStore.MediaColumns.DATE_MODIFIED, 0)
 
-    fun length(context: Context, self: Uri): Long {
-        return Contracts.queryForLong(context, self, MediaStore.MediaColumns.SIZE, 0)
-    }
+    fun length(self: Uri) = Contracts.queryForLong(self, MediaStore.MediaColumns.SIZE, 0)
 }

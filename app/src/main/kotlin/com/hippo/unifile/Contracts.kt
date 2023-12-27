@@ -15,18 +15,17 @@
  */
 package com.hippo.unifile
 
-import android.content.Context
 import android.net.Uri
+import splitties.init.appCtx
 
-internal object Contracts {
+object Contracts {
     fun queryForString(
-        context: Context,
         self: Uri,
         column: String,
         defaultValue: String?,
     ): String? {
         return runCatching {
-            context.contentResolver.query(self, arrayOf(column), null, null, null).use {
+            appCtx.contentResolver.query(self, arrayOf(column), null, null, null).use {
                 if (it != null && it.moveToFirst() && !it.isNull(0)) {
                     it.getString(0)
                 } else {
@@ -39,13 +38,13 @@ internal object Contracts {
         }
     }
 
-    fun queryForInt(context: Context, self: Uri, column: String?, defaultValue: Int): Int {
-        return queryForLong(context, self, column, defaultValue.toLong()).toInt()
+    fun queryForInt(self: Uri, column: String?, defaultValue: Int): Int {
+        return queryForLong(self, column, defaultValue.toLong()).toInt()
     }
 
-    fun queryForLong(context: Context, self: Uri, column: String?, defaultValue: Long): Long {
+    fun queryForLong(self: Uri, column: String?, defaultValue: Long): Long {
         return runCatching {
-            context.contentResolver.query(self, arrayOf(column), null, null, null).use {
+            appCtx.contentResolver.query(self, arrayOf(column), null, null, null).use {
                 if (it != null && it.moveToFirst() && !it.isNull(0)) {
                     it.getLong(0)
                 } else {

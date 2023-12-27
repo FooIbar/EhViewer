@@ -17,7 +17,6 @@ package com.hippo.unifile
 
 import android.net.Uri
 import java.io.IOException
-import splitties.init.appCtx
 
 class MediaFile(override val uri: Uri) : UniFile(null) {
     override fun createFile(displayName: String) = null
@@ -25,16 +24,16 @@ class MediaFile(override val uri: Uri) : UniFile(null) {
     override fun createDirectory(displayName: String) = null
 
     override val name: String?
-        get() = MediaContract.getName(appCtx, uri)
+        get() = MediaContract.getName(uri)
     override val type: String?
-        get() = MediaContract.getType(appCtx, uri)
+        get() = MediaContract.getType(uri)
     override val isDirectory = false
     override val isFile: Boolean
-        get() = DocumentsContractApi19.isFile(appCtx, uri)
+        get() = DocumentsContractApi19.isFile(uri)
 
-    override fun lastModified() = MediaContract.lastModified(appCtx, uri)
+    override fun lastModified() = MediaContract.lastModified(uri)
 
-    override fun length() = MediaContract.length(appCtx, uri)
+    override fun length() = MediaContract.length(uri)
 
     override fun canRead() = isFile
 
