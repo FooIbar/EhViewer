@@ -27,6 +27,7 @@ import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.ExperimentalTransitionApi
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.rememberTransition
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -55,6 +56,8 @@ import androidx.navigation.Navigator
 import androidx.navigation.createGraph
 import androidx.navigation.get
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 /**
  * Provides in place in the Compose hierarchy for self contained navigation to occur.
@@ -261,7 +264,10 @@ public fun NavHost(
                 inPredictiveBack = false
                 navController.popBackStack()
             } catch (e: CancellationException) {
-                inPredictiveBack = false
+                withContext(NonCancellable) {
+                    transitionState.animateTo(backStackEntry, snap())
+                    inPredictiveBack = false
+                }
             }
         }
 
