@@ -100,9 +100,9 @@ class TreeDocumentFile(
 
     override fun length() = DocumentsContractApi19.length(uri)
 
-    override fun canRead() = DocumentsContractApi19.canRead(appCtx, uri)
+    override fun canRead() = DocumentsContractApi19.canRead(uri)
 
-    override fun canWrite() = DocumentsContractApi19.canWrite(appCtx, uri)
+    override fun canWrite() = DocumentsContractApi19.canWrite(uri)
 
     override fun ensureDir(): Boolean {
         if (isDirectory) return true

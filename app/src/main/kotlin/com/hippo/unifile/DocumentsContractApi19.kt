@@ -20,6 +20,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.DocumentsContract
+import splitties.init.appCtx
 
 object DocumentsContractApi19 {
 
@@ -40,46 +41,34 @@ object DocumentsContractApi19 {
 
     fun length(self: Uri) = Contracts.queryForLong(self, DocumentsContract.Document.COLUMN_SIZE, -1L)
 
-    fun canRead(context: Context, self: Uri): Boolean {
+    fun canRead(self: Uri): Boolean {
+        val granted = appCtx.checkCallingOrSelfUriPermission(self, Intent.FLAG_GRANT_READ_URI_PERMISSION) == PackageManager.PERMISSION_GRANTED
         // Ignore if grant doesn't allow read
-        return if (
-            context.checkCallingOrSelfUriPermission(self, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            false
-        } else {
-            // Ignore documents without MIME
-            !getRawType(self).isNullOrEmpty()
-        }
-    }
-
-    fun canWrite(context: Context, self: Uri): Boolean {
-        // Ignore if grant doesn't allow write
-        if (context.checkCallingOrSelfUriPermission(self, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            return false
-        }
-        val type = getRawType(self)
-        val flags = Contracts.queryForInt(self, DocumentsContract.Document.COLUMN_FLAGS, 0)
+        if (!granted) return false
 
         // Ignore documents without MIME
-        if (type.isNullOrEmpty()) {
-            return false
-        }
+        return !getRawType(self).isNullOrEmpty()
+    }
+
+    fun canWrite(self: Uri): Boolean {
+        val granted = appCtx.checkCallingOrSelfUriPermission(self, Intent.FLAG_GRANT_WRITE_URI_PERMISSION) == PackageManager.PERMISSION_GRANTED
+        // Ignore if grant doesn't allow write
+        if (!granted) return false
+
+        val type = getRawType(self)
+        val flags = Contracts.queryForInt(self, DocumentsContract.Document.COLUMN_FLAGS, 0)
+        // Ignore documents without MIME
+        if (type.isNullOrEmpty()) return false
 
         // Deletable documents considered writable
-        if (flags and DocumentsContract.Document.FLAG_SUPPORTS_DELETE != 0) {
-            return true
-        }
+        if (flags and DocumentsContract.Document.FLAG_SUPPORTS_DELETE != 0) return true
+
+        val dirSupportCreate = DocumentsContract.Document.MIME_TYPE_DIR == type && flags and DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE != 0
+        // Directories that allow create considered writable
+        if (dirSupportCreate) return true
 
         // Writable normal files considered writable
-        return if (DocumentsContract.Document.MIME_TYPE_DIR == type && flags and DocumentsContract.Document.FLAG_DIR_SUPPORTS_CREATE != 0) {
-            // Directories that allow create considered writable
-            true
-        } else {
-            flags and DocumentsContract.Document.FLAG_SUPPORTS_WRITE != 0
-        }
+        return flags and DocumentsContract.Document.FLAG_SUPPORTS_WRITE != 0
     }
 
     fun delete(context: Context, self: Uri): Boolean {
