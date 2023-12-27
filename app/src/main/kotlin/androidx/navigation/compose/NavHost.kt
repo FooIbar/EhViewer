@@ -28,7 +28,6 @@ import androidx.compose.animation.core.ExperimentalTransitionApi
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -55,8 +54,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.Navigator
 import androidx.navigation.createGraph
 import androidx.navigation.get
-import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.collectAsState
 import kotlinx.coroutines.CancellationException
 
 /**
@@ -246,15 +243,10 @@ public fun NavHost(
     val zIndices = remember { mutableMapOf<String, Float>() }
 
     if (backStackEntry != null) {
-        val enablePredictiveBack by Settings.predictiveNavAnim.collectAsState()
         val transitionState = remember { SeekableTransitionState(backStackEntry) }
-        val transition = if (enablePredictiveBack) {
-            LaunchedEffect(backStackEntry) {
-                transitionState.animateTo(backStackEntry)
-            }
-            rememberTransition(transitionState, label = "entry")
-        } else {
-            updateTransition(backStackEntry, label = "entry")
+        val transition = rememberTransition(transitionState, label = "entry")
+        LaunchedEffect(backStackEntry) {
+            transitionState.animateTo(backStackEntry)
         }
 
         var inPredictiveBack by remember { mutableStateOf(false) }
