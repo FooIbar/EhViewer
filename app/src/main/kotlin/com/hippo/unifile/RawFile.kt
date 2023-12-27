@@ -20,6 +20,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.webkit.MimeTypeMap
+import androidx.annotation.RequiresApi
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.io.IOException
@@ -119,12 +120,8 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
         return false
     }
 
-    override val imageSource: ImageDecoder.Source
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            ImageDecoder.createSource(mFile)
-        } else {
-            TODO("VERSION.SDK_INT < P")
-        }
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun imageSource() = ImageDecoder.createSource(mFile)
 
     override fun openFileDescriptor(mode: String): ParcelFileDescriptor {
         val md = ParcelFileDescriptor.parseMode(mode)

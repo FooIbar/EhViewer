@@ -15,8 +15,9 @@
  */
 package com.hippo.unifile
 
-import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import java.io.IOException
 import splitties.init.appCtx
 
@@ -65,14 +66,8 @@ class MediaFile(override val uri: Uri) : UniFile(null) {
 
     override fun renameTo(displayName: String) = false
 
-    override val imageSource: ImageDecoder.Source
-        get() = Contracts.getImageSource(appCtx, uri)
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun imageSource() = Contracts.getImageSource(appCtx, uri)
 
     override fun openFileDescriptor(mode: String) = Contracts.openFileDescriptor(appCtx, uri, mode)
-
-    companion object {
-        fun isMediaUri(uri: Uri): Boolean {
-            return null != MediaContract.getName(appCtx, uri)
-        }
-    }
 }

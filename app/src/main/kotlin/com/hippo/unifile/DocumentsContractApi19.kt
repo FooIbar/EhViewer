@@ -22,9 +22,6 @@ import android.net.Uri
 import android.provider.DocumentsContract
 
 internal object DocumentsContractApi19 {
-    fun isDocumentUri(context: Context, self: Uri): Boolean {
-        return DocumentsContract.isDocumentUri(context, self)
-    }
 
     fun getName(context: Context, self: Uri): String? {
         return Contracts.queryForString(

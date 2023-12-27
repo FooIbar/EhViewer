@@ -116,7 +116,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                                     }
                                 }
                             }
-                            val drawable = decodeDrawable(src.source.imageSource)
+                            val drawable = decodeDrawable(src.source.imageSource())
                             if (drawable !is Animatable) src.close()
                             Image(drawable, src)
                         } else {
