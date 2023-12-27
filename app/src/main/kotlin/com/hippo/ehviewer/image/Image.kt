@@ -44,6 +44,8 @@ import com.hippo.ehviewer.jni.rewriteGifSource
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
+import com.hippo.unifile.imageSource
+import com.hippo.unifile.openFileDescriptor
 import com.hippo.unifile.openInputStream
 import java.nio.ByteBuffer
 import kotlin.math.min
@@ -116,7 +118,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                                     }
                                 }
                             }
-                            val drawable = decodeDrawable(src.source.imageSource)
+                            val drawable = decodeDrawable(src.source.imageSource())
                             if (drawable !is Animatable) src.close()
                             Image(drawable, src)
                         } else {

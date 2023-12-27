@@ -15,9 +15,7 @@
  */
 package com.hippo.unifile
 
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.ParcelFileDescriptor
 import android.webkit.MimeTypeMap
 import eu.kanade.tachiyomi.util.system.logcat
 import splitties.init.appCtx
@@ -31,10 +29,10 @@ class TreeDocumentFile(
     private val allChildren by lazy {
         cachePresent = true
         logcat { "Directory lookup cache created for $name" }
-        DocumentsContractApi21.listFiles(appCtx, uri).map {
+        DocumentsContractApi21.listFiles(uri).mapTo(mutableListOf()) {
             val name = getFilenameForUri(it)
             TreeDocumentFile(this, it, name)
-        }.toMutableList()
+        }
     }
 
     private fun popCacheIfPresent(file: TreeDocumentFile) = apply {
@@ -54,7 +52,7 @@ class TreeDocumentFile(
                 val extension = displayName.substring(index + 1)
                 val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
                 if (!mimeType.isNullOrEmpty()) {
-                    val result = DocumentsContractApi21.createFile(appCtx, uri, mimeType, name)
+                    val result = DocumentsContractApi21.createFile(uri, mimeType, name)
                     if (result != null) {
                         val f = TreeDocumentFile(this, result, displayName)
                         popCacheIfPresent(f)
@@ -63,7 +61,7 @@ class TreeDocumentFile(
                 }
             } else {
                 // Not dot in displayName or dot is the first char or can't get MimeType
-                val result = DocumentsContractApi21.createFile(appCtx, uri, "application/octet-stream", displayName)
+                val result = DocumentsContractApi21.createFile(uri, "application/octet-stream", displayName)
                 if (result != null) {
                     val f = TreeDocumentFile(this, result, displayName)
                     popCacheIfPresent(f)
@@ -79,7 +77,7 @@ class TreeDocumentFile(
         if (child != null) {
             if (child.isDirectory) return null
         } else {
-            val result = DocumentsContractApi21.createDirectory(appCtx, uri, displayName)
+            val result = DocumentsContractApi21.createDirectory(uri, displayName)
             if (result != null) {
                 val d = TreeDocumentFile(this, result, displayName)
                 popCacheIfPresent(d)
@@ -90,21 +88,21 @@ class TreeDocumentFile(
     }
 
     override val name: String?
-        get() = DocumentsContractApi19.getName(appCtx, uri)
+        get() = DocumentsContractApi19.getName(uri)
     override val type: String?
-        get() = DocumentsContractApi19.getType(appCtx, uri)
+        get() = DocumentsContractApi19.getType(uri)
     override val isDirectory: Boolean
-        get() = DocumentsContractApi19.isDirectory(appCtx, uri)
+        get() = DocumentsContractApi19.isDirectory(uri)
     override val isFile: Boolean
-        get() = DocumentsContractApi19.isFile(appCtx, uri)
+        get() = DocumentsContractApi19.isFile(uri)
 
-    override fun lastModified() = DocumentsContractApi19.lastModified(appCtx, uri)
+    override fun lastModified() = DocumentsContractApi19.lastModified(uri)
 
-    override fun length() = DocumentsContractApi19.length(appCtx, uri)
+    override fun length() = DocumentsContractApi19.length(uri)
 
-    override fun canRead() = DocumentsContractApi19.canRead(appCtx, uri)
+    override fun canRead() = DocumentsContractApi19.canRead(uri)
 
-    override fun canWrite() = DocumentsContractApi19.canWrite(appCtx, uri)
+    override fun canWrite() = DocumentsContractApi19.canWrite(uri)
 
     override fun ensureDir(): Boolean {
         if (isDirectory) return true
@@ -128,14 +126,14 @@ class TreeDocumentFile(
         }
     }
 
-    override fun subFile(displayName: String): UniFile {
+    override fun resolve(displayName: String): UniFile {
         val childUri = DocumentsContractApi21.buildChildUri(uri, displayName)
         return TreeDocumentFile(this, childUri, displayName)
     }
 
-    override fun delete() = DocumentsContractApi19.delete(appCtx, uri)
+    override fun delete() = DocumentsContractApi19.delete(uri)
 
-    override fun exists() = DocumentsContractApi19.exists(appCtx, uri)
+    override fun exists() = DocumentsContractApi19.exists(uri)
 
     override fun listFiles() = allChildren
 
@@ -148,13 +146,6 @@ class TreeDocumentFile(
             return true
         }
         return false
-    }
-
-    override val imageSource: ImageDecoder.Source
-        get() = Contracts.getImageSource(appCtx, uri)
-
-    override fun openFileDescriptor(mode: String): ParcelFileDescriptor {
-        return Contracts.openFileDescriptor(appCtx, uri, mode)
     }
 }
 

@@ -35,6 +35,7 @@ import com.hippo.ehviewer.jni.providePassword
 import com.hippo.ehviewer.jni.releaseByteBuffer
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.unifile.UniFile
+import com.hippo.unifile.openFileDescriptor
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -169,11 +170,7 @@ class ArchivePageLoader(context: Context, private val uri: Uri, passwdProvider: 
         return true
     }
 
-    override fun save(index: Int, dir: UniFile, filename: String): UniFile {
-        val dst = dir.subFile(filename)
-        save(index, dst)
-        return dst
-    }
+    override fun save(index: Int, dir: UniFile, filename: String) = (dir / filename).apply { save(index, this) }
 
     override fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {}
 }

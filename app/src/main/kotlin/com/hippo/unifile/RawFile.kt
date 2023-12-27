@@ -15,14 +15,10 @@
  */
 package com.hippo.unifile
 
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
-import android.os.ParcelFileDescriptor
 import android.webkit.MimeTypeMap
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
-import java.io.IOException
 import java.util.Locale
 
 class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
@@ -100,7 +96,7 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
         return success
     }
 
-    override fun subFile(displayName: String) = RawFile(this, File(mFile, displayName))
+    override fun resolve(displayName: String) = RawFile(this, File(mFile, displayName))
 
     override fun delete() = mFile.deleteRecursively()
 
@@ -117,18 +113,6 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
             return true
         }
         return false
-    }
-
-    override val imageSource: ImageDecoder.Source
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            ImageDecoder.createSource(mFile)
-        } else {
-            TODO("VERSION.SDK_INT < P")
-        }
-
-    override fun openFileDescriptor(mode: String): ParcelFileDescriptor {
-        val md = ParcelFileDescriptor.parseMode(mode)
-        return ParcelFileDescriptor.open(mFile, md) ?: throw IOException("Can't open ParcelFileDescriptor")
     }
 }
 

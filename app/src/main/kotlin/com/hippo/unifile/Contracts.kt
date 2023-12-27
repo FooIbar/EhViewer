@@ -15,67 +15,29 @@
  */
 package com.hippo.unifile
 
-import android.content.Context
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
-import android.os.ParcelFileDescriptor
-import java.io.IOException
+import splitties.init.appCtx
 
-internal object Contracts {
-    fun queryForString(
-        context: Context,
-        self: Uri,
-        column: String,
-        defaultValue: String?,
-    ): String? {
-        return runCatching {
-            context.contentResolver.query(self, arrayOf(column), null, null, null).use {
-                if (it != null && it.moveToFirst() && !it.isNull(0)) {
-                    it.getString(0)
-                } else {
-                    defaultValue
-                }
+object Contracts {
+    fun queryForString(self: Uri, column: String, defaultValue: String?) = runCatching {
+        appCtx.contentResolver.query(self, arrayOf(column), null, null, null).use {
+            if (it != null && it.moveToFirst() && !it.isNull(0)) {
+                it.getString(0)
+            } else {
+                defaultValue
             }
-        }.getOrElse {
-            Utils.throwIfFatal(it)
-            defaultValue
         }
-    }
+    }.getOrDefault(defaultValue)
 
-    fun queryForInt(context: Context, self: Uri, column: String?, defaultValue: Int): Int {
-        return queryForLong(context, self, column, defaultValue.toLong()).toInt()
-    }
+    fun queryForInt(self: Uri, column: String?, defaultValue: Int) = queryForLong(self, column, defaultValue.toLong()).toInt()
 
-    fun queryForLong(context: Context, self: Uri, column: String?, defaultValue: Long): Long {
-        return runCatching {
-            context.contentResolver.query(self, arrayOf(column), null, null, null).use {
-                if (it != null && it.moveToFirst() && !it.isNull(0)) {
-                    it.getLong(0)
-                } else {
-                    defaultValue
-                }
+    fun queryForLong(self: Uri, column: String?, defaultValue: Long) = runCatching {
+        appCtx.contentResolver.query(self, arrayOf(column), null, null, null).use {
+            if (it != null && it.moveToFirst() && !it.isNull(0)) {
+                it.getLong(0)
+            } else {
+                defaultValue
             }
-        }.getOrElse {
-            Utils.throwIfFatal(it)
-            defaultValue
         }
-    }
-
-    fun openFileDescriptor(
-        context: Context,
-        uri: Uri?,
-        mode: String?,
-    ): ParcelFileDescriptor {
-        return context.contentResolver.openFileDescriptor(uri!!, mode!!)
-            ?: throw IOException("Can't open ParcelFileDescriptor")
-    }
-
-    fun getImageSource(context: Context, uri: Uri?): ImageDecoder.Source {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            ImageDecoder.createSource(context.contentResolver, uri!!)
-        } else {
-            TODO("VERSION.SDK_INT < P")
-        }
-    }
+    }.getOrDefault(defaultValue)
 }

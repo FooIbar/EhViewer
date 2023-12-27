@@ -15,9 +15,7 @@
  */
 package com.hippo.unifile
 
-import android.graphics.ImageDecoder
 import android.net.Uri
-import splitties.init.appCtx
 
 class SingleDocumentFile(parent: UniFile?, override val uri: Uri) : UniFile(parent) {
 
@@ -26,40 +24,35 @@ class SingleDocumentFile(parent: UniFile?, override val uri: Uri) : UniFile(pare
     override fun createDirectory(displayName: String) = null
 
     override val name: String?
-        get() = DocumentsContractApi19.getName(appCtx, uri)
+        get() = DocumentsContractApi19.getName(uri)
     override val type: String?
-        get() = DocumentsContractApi19.getType(appCtx, uri)
+        get() = DocumentsContractApi19.getType(uri)
     override val isDirectory: Boolean
-        get() = DocumentsContractApi19.isDirectory(appCtx, uri)
+        get() = DocumentsContractApi19.isDirectory(uri)
     override val isFile: Boolean
-        get() = DocumentsContractApi19.isFile(appCtx, uri)
+        get() = DocumentsContractApi19.isFile(uri)
 
-    override fun lastModified() = DocumentsContractApi19.lastModified(appCtx, uri)
+    override fun lastModified() = DocumentsContractApi19.lastModified(uri)
 
-    override fun length() = DocumentsContractApi19.length(appCtx, uri)
+    override fun length() = DocumentsContractApi19.length(uri)
 
-    override fun canRead() = DocumentsContractApi19.canRead(appCtx, uri)
+    override fun canRead() = DocumentsContractApi19.canRead(uri)
 
-    override fun canWrite() = DocumentsContractApi19.canWrite(appCtx, uri)
+    override fun canWrite() = DocumentsContractApi19.canWrite(uri)
 
     override fun ensureDir() = isDirectory
 
     override fun ensureFile() = isFile
 
-    override fun subFile(displayName: String) = error("SingleDocumentFile never have a children")
+    override fun resolve(displayName: String) = error("SingleDocumentFile never have a children")
 
-    override fun delete() = DocumentsContractApi19.delete(appCtx, uri)
+    override fun delete() = DocumentsContractApi19.delete(uri)
 
-    override fun exists() = DocumentsContractApi19.exists(appCtx, uri)
+    override fun exists() = DocumentsContractApi19.exists(uri)
 
     override fun listFiles() = emptyList<SingleDocumentFile>()
 
     override fun findFirst(filter: (String) -> Boolean) = null
 
     override fun renameTo(displayName: String) = false
-
-    override val imageSource: ImageDecoder.Source
-        get() = Contracts.getImageSource(appCtx, uri)
-
-    override fun openFileDescriptor(mode: String) = Contracts.openFileDescriptor(appCtx, uri, mode)
 }

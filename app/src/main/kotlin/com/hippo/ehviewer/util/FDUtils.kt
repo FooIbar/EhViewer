@@ -4,6 +4,7 @@ import android.os.ParcelFileDescriptor
 import android.system.Int64Ref
 import android.system.Os
 import com.hippo.unifile.UniFile
+import com.hippo.unifile.openFileDescriptor
 import java.io.FileDescriptor
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -18,10 +19,6 @@ private fun sendFileTotally(from: FileDescriptor, to: FileDescriptor) {
             }
         }
     }
-}
-
-infix fun ParcelFileDescriptor.sendTo(fd: FileDescriptor) {
-    sendFileTotally(fileDescriptor, fd)
 }
 
 infix fun ParcelFileDescriptor.sendTo(fd: ParcelFileDescriptor) {

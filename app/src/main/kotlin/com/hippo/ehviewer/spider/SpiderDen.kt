@@ -15,8 +15,6 @@
  */
 package com.hippo.ehviewer.spider
 
-import android.os.ParcelFileDescriptor
-import android.os.ParcelFileDescriptor.MODE_READ_WRITE
 import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
@@ -74,11 +72,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
             sCache.read(key) {
                 val extension = "." + metadata.toFile().readText()
                 val file = dir.createFile(perFilename(index, extension)) ?: return false
-                file.openFileDescriptor("w").use { outFd ->
-                    ParcelFileDescriptor.open(data.toFile(), MODE_READ_WRITE).use {
-                        it sendTo outFd
-                    }
-                }
+                data.asUniFile() sendTo file
                 true
             } ?: false
         }.onFailure {
@@ -247,5 +241,5 @@ suspend fun GalleryInfo.putToDownloadDir(): String {
 
 suspend fun getGalleryDownloadDir(gid: Long): UniFile? {
     val dirname = EhDB.getDownloadDirname(gid) ?: return null
-    return downloadLocation.subFile(dirname)
+    return downloadLocation / dirname
 }

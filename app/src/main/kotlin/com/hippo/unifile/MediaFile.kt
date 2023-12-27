@@ -15,10 +15,8 @@
  */
 package com.hippo.unifile
 
-import android.graphics.ImageDecoder
 import android.net.Uri
 import java.io.IOException
-import splitties.init.appCtx
 
 class MediaFile(override val uri: Uri) : UniFile(null) {
     override fun createFile(displayName: String) = null
@@ -26,16 +24,16 @@ class MediaFile(override val uri: Uri) : UniFile(null) {
     override fun createDirectory(displayName: String) = null
 
     override val name: String?
-        get() = MediaContract.getName(appCtx, uri)
+        get() = MediaContract.getName(uri)
     override val type: String?
-        get() = MediaContract.getType(appCtx, uri)
+        get() = MediaContract.getType(uri)
     override val isDirectory = false
     override val isFile: Boolean
-        get() = DocumentsContractApi19.isFile(appCtx, uri)
+        get() = DocumentsContractApi19.isFile(uri)
 
-    override fun lastModified() = MediaContract.lastModified(appCtx, uri)
+    override fun lastModified() = MediaContract.lastModified(uri)
 
-    override fun length() = MediaContract.length(appCtx, uri)
+    override fun length() = MediaContract.length(uri)
 
     override fun canRead() = isFile
 
@@ -53,7 +51,7 @@ class MediaFile(override val uri: Uri) : UniFile(null) {
 
     override fun ensureFile() = isFile
 
-    override fun subFile(displayName: String) = error("MediaFile never have a children")
+    override fun resolve(displayName: String) = error("MediaFile never have a children")
 
     override fun delete() = false
 
@@ -64,15 +62,4 @@ class MediaFile(override val uri: Uri) : UniFile(null) {
     override fun findFirst(filter: (String) -> Boolean) = null
 
     override fun renameTo(displayName: String) = false
-
-    override val imageSource: ImageDecoder.Source
-        get() = Contracts.getImageSource(appCtx, uri)
-
-    override fun openFileDescriptor(mode: String) = Contracts.openFileDescriptor(appCtx, uri, mode)
-
-    companion object {
-        fun isMediaUri(uri: Uri): Boolean {
-            return null != MediaContract.getName(appCtx, uri)
-        }
-    }
 }

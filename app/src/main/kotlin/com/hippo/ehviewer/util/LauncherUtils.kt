@@ -42,7 +42,7 @@ private val Context.lifecycle: Lifecycle
         }
     }
 
-private suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<I, O>, input: I): O {
+suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<I, O>, input: I): O {
     val key = "activity_rq#${atomicInteger.getAndIncrement()}"
     var launcher: ActivityResultLauncher<I>? = null
     var observer: LifecycleEventObserver? = null

@@ -17,11 +17,10 @@ package com.hippo.unifile
 
 import android.content.ContentResolver
 import android.content.Intent
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
-import android.os.ParcelFileDescriptor
-import androidx.annotation.RequiresApi
+import android.provider.DocumentsContract
+import androidx.core.net.toFile
+import androidx.core.provider.DocumentsContractCompat
 import java.io.File
 import splitties.init.appCtx
 
@@ -175,7 +174,9 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      *
      * @return the child file
      */
-    abstract fun subFile(displayName: String): UniFile
+    abstract fun resolve(displayName: String): UniFile
+
+    operator fun div(name: String) = resolve(name)
 
     /**
      * Deletes this file.
@@ -205,7 +206,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      *
      * @return the file if found it, or `null`.
      */
-    fun findFile(displayName: String) = subFile(displayName).takeIf { it.exists() }
+    fun findFile(displayName: String) = resolve(displayName).takeIf { it.exists() }
 
     /**
      * Renames this file to `displayName`.
@@ -229,92 +230,29 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      */
     abstract fun renameTo(displayName: String): Boolean
 
-    @get:RequiresApi(Build.VERSION_CODES.P)
-    abstract val imageSource: ImageDecoder.Source
-
-    abstract fun openFileDescriptor(mode: String): ParcelFileDescriptor
-
     companion object {
-        /**
-         * Create a [UniFile] representing the given [File].
-         *
-         * @param file the file to wrap
-         * @return the [UniFile] representing the given [File].
-         */
         fun fromFile(file: File) = RawFile(null, file)
 
-        /**
-         * Create a [UniFile] representing the single document at the
-         * given [Uri]. This is only useful on devices running
-         * [android.os.Build.VERSION_CODES.KITKAT] or later, and will return
-         * `null` when called on earlier platform versions.
-         *
-         * @param singleUri the [Intent.getData] from a successful
-         * [Intent.ACTION_OPEN_DOCUMENT] or
-         * [Intent.ACTION_CREATE_DOCUMENT] request.
-         * @return the [UniFile] representing the given [Uri].
-         */
         fun fromSingleUri(singleUri: Uri) = SingleDocumentFile(null, singleUri)
 
-        /**
-         * Create a [UniFile] representing the document tree rooted at
-         * the given [Uri]. This is only useful on devices running
-         * [Build.VERSION_CODES.LOLLIPOP] or later, and will return
-         * `null` when called on earlier platform versions.
-         *
-         * @param treeUri the [Intent.getData] from a successful
-         * [Intent.ACTION_OPEN_DOCUMENT_TREE] request.
-         * @return the [UniFile] representing the given [Uri].
-         */
         fun fromTreeUri(treeUri: Uri) = TreeDocumentFile(null, DocumentsContractApi21.prepareTreeUri(treeUri))
 
-        /**
-         * Create a [UniFile] representing the media file rooted at
-         * the given [Uri].
-         *
-         * @param mediaUri the media uri to wrap
-         * @return the [UniFile] representing the given [Uri].
-         */
         fun fromMediaUri(mediaUri: Uri) = MediaFile(mediaUri)
 
-        /**
-         * Create a [UniFile] representing the given [Uri].
-         */
-        fun fromUri(uri: Uri): UniFile? {
-            return if (isFileUri(uri)) {
-                fromFile(File(uri.path!!))
-            } else if (isDocumentUri(uri)) {
-                if (isTreeUri(uri)) {
-                    fromTreeUri(uri)
-                } else {
-                    fromSingleUri(uri)
-                }
-            } else if (MediaFile.isMediaUri(uri)) {
-                fromMediaUri(uri)
-            } else {
-                null
-            }
+        fun fromUri(uri: Uri) = when {
+            isFileUri(uri) -> fromFile(uri.toFile())
+            isTreeUri(uri) -> fromTreeUri(uri)
+            isDocumentUri(uri) -> fromSingleUri(uri)
+            isMediaUri(uri) -> fromMediaUri(uri)
+            else -> null
         }
 
-        /**
-         * Test if given Uri is FileUri
-         */
-        fun isFileUri(uri: Uri): Boolean {
-            return ContentResolver.SCHEME_FILE == uri.scheme
-        }
+        fun isFileUri(uri: Uri) = ContentResolver.SCHEME_FILE == uri.scheme
 
-        /**
-         * Test if given Uri is backed by a
-         * [android.provider.DocumentsProvider].
-         */
-        fun isDocumentUri(uri: Uri) = DocumentsContractApi19.isDocumentUri(appCtx, uri)
+        fun isDocumentUri(uri: Uri) = DocumentsContract.isDocumentUri(appCtx, uri)
 
-        /**
-         * Test if given Uri is TreeUri
-         */
-        fun isTreeUri(uri: Uri): Boolean {
-            val paths = uri.pathSegments
-            return ContentResolver.SCHEME_CONTENT == uri.scheme && paths.size >= 2 && "tree" == paths[0]
-        }
+        fun isTreeUri(uri: Uri) = DocumentsContractCompat.isTreeUri(uri)
+
+        fun isMediaUri(uri: Uri) = null != MediaContract.getName(uri)
     }
 }
