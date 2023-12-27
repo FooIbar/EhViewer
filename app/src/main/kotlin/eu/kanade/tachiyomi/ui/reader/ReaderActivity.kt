@@ -106,6 +106,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.isNightMode
 import java.io.File
@@ -119,7 +120,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
-import okio.Path.Companion.toOkioPath
 import splitties.init.appCtx
 import splitties.systemservices.clipboardManager
 
@@ -554,13 +554,15 @@ class ReaderActivity : EhActivity() {
             return
         }
         val activity = this
-        lifecycleScope.launchIO {
+        lifecycleScope.launchUI {
             runSuspendCatching {
                 val uri = applicationContext.awaitActivityResult(CreateDocument("todo/todo"), filename)
                 if (uri != null) {
-                    val f = (requireNotNull(AppConfig.externalTempDir).toOkioPath() / filename).asUniFile()
-                    f sendTo uri.asUniFile()
-                    f.delete()
+                    withIOContext {
+                        val f = requireNotNull(AppConfig.externalTempDir).asUniFile() / filename
+                        f sendTo uri.asUniFile()
+                        f.delete()
+                    }
                     Toast.makeText(activity, getString(R.string.image_saved, uri.path), Toast.LENGTH_SHORT).show()
                 }
             }.onFailure {
