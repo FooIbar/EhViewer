@@ -96,7 +96,7 @@ import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.requestPermission
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.ehviewer.util.setValue
-import com.hippo.unifile.UniFile
+import com.hippo.unifile.asUniFile
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
@@ -408,7 +408,7 @@ class ReaderActivity : EhActivity() {
         }
         val file = mGalleryProvider!!.save(
             page,
-            UniFile.fromFile(dir)!!,
+            dir.asUniFile(),
             mGalleryProvider!!.getImageFilenameWithExtension(page),
         )
         if (file == null) {
@@ -466,7 +466,7 @@ class ReaderActivity : EhActivity() {
         }
         val file = mGalleryProvider!!.save(
             page,
-            UniFile.fromFile(dir)!!,
+            dir.asUniFile(),
             mGalleryProvider!!.getImageFilenameWithExtension(page),
         )
         if (file == null) {
@@ -534,7 +534,7 @@ class ReaderActivity : EhActivity() {
                     Toast.makeText(this@ReaderActivity, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
                     return@launchUI
                 }
-                if (!mGalleryProvider!!.save(page, UniFile.fromMediaUri(this@ReaderActivity, imageUri))) {
+                if (!mGalleryProvider!!.save(page, imageUri.asUniFile())) {
                     try {
                         resolver.delete(imageUri, null, null)
                     } catch (e: Exception) {
@@ -571,7 +571,7 @@ class ReaderActivity : EhActivity() {
         }
         val file = mGalleryProvider!!.save(
             page,
-            UniFile.fromFile(dir)!!,
+            dir.asUniFile(),
             mGalleryProvider!!.getImageFilenameWithExtension(page),
         )
         if (file == null) {

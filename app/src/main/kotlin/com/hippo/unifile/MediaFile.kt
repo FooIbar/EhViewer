@@ -15,29 +15,27 @@
  */
 package com.hippo.unifile
 
-import android.content.Context
 import android.graphics.ImageDecoder
 import android.net.Uri
 import java.io.IOException
+import splitties.init.appCtx
 
-internal class MediaFile(context: Context, override val uri: Uri) : UniFile(null) {
-    private val mContext = context.applicationContext
-
+class MediaFile(override val uri: Uri) : UniFile(null) {
     override fun createFile(displayName: String) = null
 
     override fun createDirectory(displayName: String) = null
 
     override val name: String?
-        get() = MediaContract.getName(mContext, uri)
+        get() = MediaContract.getName(appCtx, uri)
     override val type: String?
-        get() = MediaContract.getType(mContext, uri)
+        get() = MediaContract.getType(appCtx, uri)
     override val isDirectory = false
     override val isFile: Boolean
-        get() = DocumentsContractApi19.isFile(mContext, uri)
+        get() = DocumentsContractApi19.isFile(appCtx, uri)
 
-    override fun lastModified() = MediaContract.lastModified(mContext, uri)
+    override fun lastModified() = MediaContract.lastModified(appCtx, uri)
 
-    override fun length() = MediaContract.length(mContext, uri)
+    override fun length() = MediaContract.length(appCtx, uri)
 
     override fun canRead() = isFile
 
@@ -55,28 +53,26 @@ internal class MediaFile(context: Context, override val uri: Uri) : UniFile(null
 
     override fun ensureFile() = isFile
 
-    override fun subFile(displayName: String) = null
+    override fun subFile(displayName: String) = error("MediaFile never have a children")
 
     override fun delete() = false
 
     override fun exists() = isFile
 
-    override fun listFiles() = null
+    override fun listFiles() = emptyList<MediaFile>()
 
     override fun findFirst(filter: (String) -> Boolean) = null
-
-    override fun findFile(displayName: String) = null
 
     override fun renameTo(displayName: String) = false
 
     override val imageSource: ImageDecoder.Source
-        get() = Contracts.getImageSource(mContext, uri)
+        get() = Contracts.getImageSource(appCtx, uri)
 
-    override fun openFileDescriptor(mode: String) = Contracts.openFileDescriptor(mContext, uri, mode)
+    override fun openFileDescriptor(mode: String) = Contracts.openFileDescriptor(appCtx, uri, mode)
 
     companion object {
-        fun isMediaUri(context: Context, uri: Uri): Boolean {
-            return null != MediaContract.getName(context, uri)
+        fun isMediaUri(uri: Uri): Boolean {
+            return null != MediaContract.getName(appCtx, uri)
         }
     }
 }

@@ -44,6 +44,7 @@ import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.unifile.UniFile
+import com.hippo.unifile.asUniFile
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
@@ -82,11 +83,9 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     coroutineScope.launch {
                         context.runCatching {
                             contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
-                            UniFile.fromTreeUri(context, treeUri)!!.run {
-                                downloadLocationState = this
-                                coroutineScope.launchNonCancellable {
-                                    keepNoMediaFileStatus()
-                                }
+                            downloadLocationState = treeUri.asUniFile()
+                            coroutineScope.launchNonCancellable {
+                                keepNoMediaFileStatus()
                             }
                         }.onFailure {
                             launchSnackBar(cannotGetDownloadLocation)
@@ -105,7 +104,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                         .setMessage(file.uri.toString())
                         .setPositiveButton(R.string.pick_new_download_location) { _, _ -> selectDownloadDirLauncher.launch(null) }
                         .setNeutralButton(R.string.reset_download_location) { _, _ ->
-                            val uniFile = UniFile.fromFile(AppConfig.defaultDownloadDir)
+                            val uniFile = AppConfig.defaultDownloadDir?.asUniFile()
                             if (uniFile != null) {
                                 downloadLocationState = uniFile
                                 coroutineScope.launchNonCancellable { keepNoMediaFileStatus() }
@@ -160,7 +159,6 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                 summary = stringResource(id = R.string.settings_download_download_origin_image_summary),
                 value = Settings::downloadOriginImage,
             )
-            val restoreFailed = stringResource(id = R.string.settings_download_restore_failed)
             WorkPreference(
                 title = stringResource(id = R.string.settings_download_restore_download_items),
                 summary = stringResource(id = R.string.settings_download_restore_download_items_summary),
@@ -191,25 +189,21 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     }.getOrNull()
                 }
                 runCatching {
-                    val result = downloadLocation.listFiles()?.mapNotNull { getRestoreItem(it) }?.apply {
+                    val result = downloadLocation.listFiles().mapNotNull { getRestoreItem(it) }.apply {
                         runSuspendCatching {
                             fillGalleryListByApi(this, EhUrl.referer)
                         }.onFailure {
                             it.printStackTrace()
                         }
                     }
-                    if (result == null) {
-                        launchSnackBar(restoreFailed)
+                    if (result.isEmpty()) {
+                        launchSnackBar(RESTORE_COUNT_MSG(restoreDirCount))
                     } else {
-                        if (result.isEmpty()) {
-                            launchSnackBar(RESTORE_COUNT_MSG(restoreDirCount))
-                        } else {
-                            val count = result.filterNot { it.title.isNullOrBlank() }.map {
-                                EhDB.putDownloadDirname(it.gid, it.dirname)
-                                DownloadManager.restoreDownload(it.galleryInfo, it.dirname)
-                            }.size
-                            launchSnackBar(RESTORE_COUNT_MSG(count + restoreDirCount))
-                        }
+                        val count = result.filterNot { it.title.isNullOrBlank() }.map {
+                            EhDB.putDownloadDirname(it.gid, it.dirname)
+                            DownloadManager.restoreDownload(it.galleryInfo, it.dirname)
+                        }.size
+                        launchSnackBar(RESTORE_COUNT_MSG(count + restoreDirCount))
                     }
                 }.onFailure {
                     it.printStackTrace()
@@ -233,7 +227,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     return true
                 }
                 runSuspendCatching {
-                    val cnt = downloadLocation.listFiles()?.sumOf { clearFile(it).compareTo(false) } ?: 0
+                    val cnt = downloadLocation.listFiles().sumOf { clearFile(it).compareTo(false) }
                     launchSnackBar(FINAL_CLEAR_REDUNDANCY_MSG(cnt))
                 }.onFailure {
                     it.printStackTrace()

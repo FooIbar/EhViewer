@@ -8,7 +8,7 @@ import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.spider.DownloadInfoMagics.decodeMagicRequestOrUrl
 import com.hippo.ehviewer.util.sendTo
-import com.hippo.unifile.UniFile
+import com.hippo.unifile.asUniFile
 import eu.kanade.tachiyomi.util.lang.withIOContext
 
 object DownloadThumbInterceptor : Interceptor {
@@ -17,25 +17,22 @@ object DownloadThumbInterceptor : Interceptor {
         if (magicOrUrl != null) {
             val (url, location) = decodeMagicRequestOrUrl(magicOrUrl)
             if (location != null) {
-                val thumb = withIOContext { downloadLocation.subFile(location)?.subFile(".thumb") }
-                if (thumb != null) {
-                    if (withIOContext { thumb.isFile }) {
-                        val new = chain.request.newBuilder().data(thumb.uri.toString()).build()
-                        when (val result = chain.withRequest(new).proceed()) {
-                            is SuccessResult -> return result
-                            is ErrorResult -> withIOContext { thumb.delete() }
-                        }
+                val thumb = withIOContext { downloadLocation.subFile(location).subFile(".thumb") }
+                if (withIOContext { thumb.isFile }) {
+                    val new = chain.request.newBuilder().data(thumb.uri.toString()).build()
+                    when (val result = chain.withRequest(new).proceed()) {
+                        is SuccessResult -> return result
+                        is ErrorResult -> withIOContext { thumb.delete() }
                     }
-                    val new = chain.request.newBuilder().data(url).build()
-                    return chain.withRequest(new).proceed().also {
-                        if (it is SuccessResult) {
-                            withIOContext {
-                                if (thumb.ensureFile()) {
-                                    val key = requireNotNull(chain.request.memoryCacheKey)
-                                    imageCache.read(key) {
-                                        val cache = UniFile.fromFile(data.toFile())
-                                        requireNotNull(cache) sendTo thumb
-                                    }
+                }
+                val new = chain.request.newBuilder().data(url).build()
+                return chain.withRequest(new).proceed().also {
+                    if (it is SuccessResult) {
+                        withIOContext {
+                            if (thumb.ensureFile()) {
+                                val key = requireNotNull(chain.request.memoryCacheKey)
+                                imageCache.read(key) {
+                                    data.asUniFile() sendTo thumb
                                 }
                             }
                         }

@@ -313,7 +313,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         if (STATE_FINISHED != state) {
             return null
         }
-        val dst = dir.subFile(filename) ?: return null
+        val dst = dir.subFile(filename)
         return if (!mSpiderDen.saveToUniFile(index, dst)) null else dst
     }
 

@@ -16,7 +16,6 @@
 package com.hippo.unifile
 
 import android.content.ContentResolver
-import android.content.Context
 import android.content.Intent
 import android.graphics.ImageDecoder
 import android.net.Uri
@@ -24,6 +23,7 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import androidx.annotation.RequiresApi
 import java.io.File
+import splitties.init.appCtx
 
 /**
  * In Android files can be accessed via [java.io.File] and [android.net.Uri].
@@ -173,9 +173,9 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
     /**
      * Get child file of this directory, the child might not exist.
      *
-     * @return the child file, `null` if not supported
+     * @return the child file
      */
-    abstract fun subFile(displayName: String): UniFile?
+    abstract fun subFile(displayName: String): UniFile
 
     /**
      * Deletes this file.
@@ -196,14 +196,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      */
     abstract fun exists(): Boolean
 
-    /**
-     * Returns an array of files contained in the directory represented by this
-     * file.
-     *
-     * @return an array of files or `null`.
-     * @see android.provider.DocumentsContract.buildChildDocumentsUriUsingTree
-     */
-    abstract fun listFiles(): Array<UniFile>?
+    abstract fun listFiles(): List<UniFile>
 
     abstract fun findFirst(filter: (String) -> Boolean): UniFile?
 
@@ -212,7 +205,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      *
      * @return the file if found it, or `null`.
      */
-    abstract fun findFile(displayName: String): UniFile?
+    fun findFile(displayName: String) = subFile(displayName).takeIf { it.exists() }
 
     /**
      * Renames this file to `displayName`.
@@ -242,36 +235,13 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
     abstract fun openFileDescriptor(mode: String): ParcelFileDescriptor
 
     companion object {
-        private var sUriHandlerArray: MutableList<UriHandler>? = null
-
-        /**
-         * Add a UriHandler to get UniFile from uri
-         */
-        fun addUriHandler(handler: UriHandler) {
-            if (sUriHandlerArray == null) {
-                sUriHandlerArray = ArrayList()
-            }
-            sUriHandlerArray!!.add(handler)
-        }
-
-        /**
-         * Remove the UriHandler added before
-         */
-        fun removeUriHandler(handler: UriHandler) {
-            if (sUriHandlerArray != null) {
-                sUriHandlerArray!!.remove(handler)
-            }
-        }
-
         /**
          * Create a [UniFile] representing the given [File].
          *
          * @param file the file to wrap
          * @return the [UniFile] representing the given [File].
          */
-        fun fromFile(file: File?): UniFile? {
-            return if (file != null) RawFile(null, file) else null
-        }
+        fun fromFile(file: File) = RawFile(null, file)
 
         /**
          * Create a [UniFile] representing the single document at the
@@ -284,14 +254,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
          * [Intent.ACTION_CREATE_DOCUMENT] request.
          * @return the [UniFile] representing the given [Uri].
          */
-        fun fromSingleUri(context: Context, singleUri: Uri): UniFile? {
-            val version = Build.VERSION.SDK_INT
-            return if (version >= 19) {
-                SingleDocumentFile(null, context, singleUri)
-            } else {
-                null
-            }
-        }
+        fun fromSingleUri(singleUri: Uri) = SingleDocumentFile(null, singleUri)
 
         /**
          * Create a [UniFile] representing the document tree rooted at
@@ -303,18 +266,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
          * [Intent.ACTION_OPEN_DOCUMENT_TREE] request.
          * @return the [UniFile] representing the given [Uri].
          */
-        fun fromTreeUri(context: Context, treeUri: Uri): UniFile? {
-            val version = Build.VERSION.SDK_INT
-            return if (version >= 21) {
-                TreeDocumentFile(
-                    null,
-                    context,
-                    DocumentsContractApi21.prepareTreeUri(treeUri),
-                )
-            } else {
-                null
-            }
-        }
+        fun fromTreeUri(treeUri: Uri) = TreeDocumentFile(null, DocumentsContractApi21.prepareTreeUri(treeUri))
 
         /**
          * Create a [UniFile] representing the media file rooted at
@@ -323,36 +275,22 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
          * @param mediaUri the media uri to wrap
          * @return the [UniFile] representing the given [Uri].
          */
-        fun fromMediaUri(context: Context, mediaUri: Uri): UniFile {
-            return MediaFile(context, mediaUri)
-        }
+        fun fromMediaUri(mediaUri: Uri) = MediaFile(mediaUri)
 
         /**
          * Create a [UniFile] representing the given [Uri].
          */
-        fun fromUri(context: Context, uri: Uri): UniFile? {
-            // Custom handler
-            if (sUriHandlerArray != null) {
-                var i = 0
-                val size = sUriHandlerArray!!.size
-                while (i < size) {
-                    val file = sUriHandlerArray!![i].fromUri(context, uri)
-                    if (file != null) {
-                        return file
-                    }
-                    i++
-                }
-            }
+        fun fromUri(uri: Uri): UniFile? {
             return if (isFileUri(uri)) {
                 fromFile(File(uri.path!!))
-            } else if (isDocumentUri(context, uri)) {
+            } else if (isDocumentUri(uri)) {
                 if (isTreeUri(uri)) {
-                    fromTreeUri(context, uri)
+                    fromTreeUri(uri)
                 } else {
-                    fromSingleUri(context, uri)
+                    fromSingleUri(uri)
                 }
-            } else if (MediaFile.isMediaUri(context, uri)) {
-                MediaFile(context, uri)
+            } else if (MediaFile.isMediaUri(uri)) {
+                fromMediaUri(uri)
             } else {
                 null
             }
@@ -369,14 +307,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
          * Test if given Uri is backed by a
          * [android.provider.DocumentsProvider].
          */
-        fun isDocumentUri(context: Context, uri: Uri): Boolean {
-            val version = Build.VERSION.SDK_INT
-            return if (version >= 19) {
-                DocumentsContractApi19.isDocumentUri(context, uri)
-            } else {
-                false
-            }
-        }
+        fun isDocumentUri(uri: Uri) = DocumentsContractApi19.isDocumentUri(appCtx, uri)
 
         /**
          * Test if given Uri is TreeUri
