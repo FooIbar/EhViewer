@@ -19,41 +19,25 @@ import android.net.Uri
 import splitties.init.appCtx
 
 object Contracts {
-    fun queryForString(
-        self: Uri,
-        column: String,
-        defaultValue: String?,
-    ): String? {
-        return runCatching {
-            appCtx.contentResolver.query(self, arrayOf(column), null, null, null).use {
-                if (it != null && it.moveToFirst() && !it.isNull(0)) {
-                    it.getString(0)
-                } else {
-                    defaultValue
-                }
+    fun queryForString(self: Uri, column: String, defaultValue: String?) = runCatching {
+        appCtx.contentResolver.query(self, arrayOf(column), null, null, null).use {
+            if (it != null && it.moveToFirst() && !it.isNull(0)) {
+                it.getString(0)
+            } else {
+                defaultValue
             }
-        }.getOrElse {
-            Utils.throwIfFatal(it)
-            defaultValue
         }
-    }
+    }.getOrDefault(defaultValue)
 
-    fun queryForInt(self: Uri, column: String?, defaultValue: Int): Int {
-        return queryForLong(self, column, defaultValue.toLong()).toInt()
-    }
+    fun queryForInt(self: Uri, column: String?, defaultValue: Int) = queryForLong(self, column, defaultValue.toLong()).toInt()
 
-    fun queryForLong(self: Uri, column: String?, defaultValue: Long): Long {
-        return runCatching {
-            appCtx.contentResolver.query(self, arrayOf(column), null, null, null).use {
-                if (it != null && it.moveToFirst() && !it.isNull(0)) {
-                    it.getLong(0)
-                } else {
-                    defaultValue
-                }
+    fun queryForLong(self: Uri, column: String?, defaultValue: Long) = runCatching {
+        appCtx.contentResolver.query(self, arrayOf(column), null, null, null).use {
+            if (it != null && it.moveToFirst() && !it.isNull(0)) {
+                it.getLong(0)
+            } else {
+                defaultValue
             }
-        }.getOrElse {
-            Utils.throwIfFatal(it)
-            defaultValue
         }
-    }
+    }.getOrDefault(defaultValue)
 }

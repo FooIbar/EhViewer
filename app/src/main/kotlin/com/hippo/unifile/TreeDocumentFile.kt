@@ -131,9 +131,9 @@ class TreeDocumentFile(
         return TreeDocumentFile(this, childUri, displayName)
     }
 
-    override fun delete() = DocumentsContractApi19.delete(appCtx, uri)
+    override fun delete() = DocumentsContractApi19.delete(uri)
 
-    override fun exists() = DocumentsContractApi19.exists(appCtx, uri)
+    override fun exists() = DocumentsContractApi19.exists(uri)
 
     override fun listFiles() = allChildren
 

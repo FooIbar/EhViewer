@@ -16,7 +16,6 @@
 package com.hippo.unifile
 
 import android.net.Uri
-import splitties.init.appCtx
 
 class SingleDocumentFile(parent: UniFile?, override val uri: Uri) : UniFile(parent) {
 
@@ -47,9 +46,9 @@ class SingleDocumentFile(parent: UniFile?, override val uri: Uri) : UniFile(pare
 
     override fun subFile(displayName: String) = error("SingleDocumentFile never have a children")
 
-    override fun delete() = DocumentsContractApi19.delete(appCtx, uri)
+    override fun delete() = DocumentsContractApi19.delete(uri)
 
-    override fun exists() = DocumentsContractApi19.exists(appCtx, uri)
+    override fun exists() = DocumentsContractApi19.exists(uri)
 
     override fun listFiles() = emptyList<SingleDocumentFile>()
 

@@ -15,7 +15,6 @@
  */
 package com.hippo.unifile
 
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -71,27 +70,15 @@ object DocumentsContractApi19 {
         return flags and DocumentsContract.Document.FLAG_SUPPORTS_WRITE != 0
     }
 
-    fun delete(context: Context, self: Uri): Boolean {
-        return try {
-            DocumentsContract.deleteDocument(context.contentResolver, self)
-        } catch (e: Throwable) {
-            Utils.throwIfFatal(e)
-            false
-        }
-    }
+    fun delete(self: Uri) = runCatching { DocumentsContract.deleteDocument(appCtx.contentResolver, self) }.getOrDefault(false)
 
-    fun exists(context: Context, self: Uri): Boolean {
-        return runCatching {
-            context.contentResolver.query(
-                self,
-                arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
-                null,
-                null,
-                null,
-            ).use { null != it && it.count > 0 }
-        }.getOrElse {
-            Utils.throwIfFatal(it)
-            false
-        }
-    }
+    fun exists(self: Uri) = runCatching {
+        appCtx.contentResolver.query(
+            self,
+            arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
+            null,
+            null,
+            null,
+        ).use { null != it && it.count > 0 }
+    }.getOrDefault(false)
 }
