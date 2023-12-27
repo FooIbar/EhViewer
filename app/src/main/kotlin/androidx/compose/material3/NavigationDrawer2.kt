@@ -75,7 +75,7 @@ class DrawerState2(
     val anchoredDraggableState = AnchoredDraggableState(
         initialValue = initialValue,
         snapAnimationSpec = AnimationSpec,
-        decayAnimationSpec = exponentialDecay(),
+        decayAnimationSpec = exponentialDecay(7.5f),
         confirmValueChange = confirmStateChange,
         positionalThreshold = { distance -> distance * DrawerPositionalThreshold },
         velocityThreshold = { with(requireDensity()) { DrawerVelocityThreshold.toPx() } },
