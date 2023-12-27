@@ -46,7 +46,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheetFix
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -736,7 +736,7 @@ class ReaderActivity : EhActivity() {
                 val coroutineScope = rememberCoroutineScope()
                 fun dismiss() = it.cancel()
                 val sheetState = rememberModalBottomSheetState()
-                ModalBottomSheetFix(
+                ModalBottomSheet(
                     onDismissRequest = { dismiss() },
                     sheetState = sheetState,
                     windowInsets = WindowInsets(0),

@@ -5,6 +5,7 @@ package androidx.compose.material3
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -73,7 +74,8 @@ class DrawerState2(
 
     val anchoredDraggableState = AnchoredDraggableState(
         initialValue = initialValue,
-        animationSpec = AnimationSpec,
+        snapAnimationSpec = AnimationSpec,
+        decayAnimationSpec = exponentialDecay(),
         confirmValueChange = confirmStateChange,
         positionalThreshold = { distance -> distance * DrawerPositionalThreshold },
         velocityThreshold = { with(requireDensity()) { DrawerVelocityThreshold.toPx() } },

@@ -49,7 +49,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.ModalBottomSheetFix
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -955,7 +955,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         var showBottomSheet by remember { mutableStateOf(false) }
 
         if (showBottomSheet && galleryDetail != null) {
-            ModalBottomSheetFix(
+            ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
                 windowInsets = WindowInsets(0, 0, 0, 0),
             ) {
