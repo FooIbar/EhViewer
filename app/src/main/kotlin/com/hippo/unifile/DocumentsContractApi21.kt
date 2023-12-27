@@ -55,7 +55,7 @@ object DocumentsContractApi21 {
     fun listFiles(self: Uri) = sequence {
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(self, DocumentsContract.getDocumentId(self))
         val id = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-        resolver.query(childrenUri, id, null, null)?.use {
+        resolver.query(childrenUri, id, null, null, null, null)?.use {
             while (it.moveToNext()) {
                 val documentId = it.getString(0)
                 val documentUri = DocumentsContract.buildDocumentUriUsingTree(
