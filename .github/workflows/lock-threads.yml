@@ -18,5 +18,4 @@ jobs:
       - uses: dessant/lock-threads@v5
         with:
           issue-inactive-days: '1'
-          include-any-issue-labels: 'duplicate, wontfix'
           process-only: 'issues'
