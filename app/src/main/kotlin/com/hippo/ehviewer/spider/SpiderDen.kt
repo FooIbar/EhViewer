@@ -15,8 +15,6 @@
  */
 package com.hippo.ehviewer.spider
 
-import android.os.ParcelFileDescriptor
-import android.os.ParcelFileDescriptor.MODE_READ_WRITE
 import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
@@ -31,7 +29,6 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
-import com.hippo.unifile.openFileDescriptor
 import com.hippo.unifile.openOutputStream
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.statement.HttpResponse
@@ -75,11 +72,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
             sCache.read(key) {
                 val extension = "." + metadata.toFile().readText()
                 val file = dir.createFile(perFilename(index, extension)) ?: return false
-                file.openFileDescriptor("w").use { outFd ->
-                    ParcelFileDescriptor.open(data.toFile(), MODE_READ_WRITE).use {
-                        it sendTo outFd
-                    }
-                }
+                data.asUniFile() sendTo file
                 true
             } ?: false
         }.onFailure {

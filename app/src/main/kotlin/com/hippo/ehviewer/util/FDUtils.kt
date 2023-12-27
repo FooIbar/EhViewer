@@ -21,10 +21,6 @@ private fun sendFileTotally(from: FileDescriptor, to: FileDescriptor) {
     }
 }
 
-infix fun ParcelFileDescriptor.sendTo(fd: FileDescriptor) {
-    sendFileTotally(fileDescriptor, fd)
-}
-
 infix fun ParcelFileDescriptor.sendTo(fd: ParcelFileDescriptor) {
     sendFileTotally(fileDescriptor, fd.fileDescriptor)
 }

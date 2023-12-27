@@ -17,8 +17,6 @@ package com.hippo.ehviewer
 
 import android.content.Context
 import android.net.Uri
-import android.os.ParcelFileDescriptor
-import android.os.ParcelFileDescriptor.MODE_READ_ONLY
 import arrow.fx.coroutines.release
 import arrow.fx.coroutines.resource
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -32,6 +30,7 @@ import com.hippo.ehviewer.dao.LocalFavoriteInfo
 import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.util.sendTo
+import com.hippo.unifile.asUniFile
 import kotlinx.coroutines.flow.Flow
 import splitties.arch.room.roomDb
 
@@ -261,11 +260,7 @@ object EhDB {
             db.filterDao().list().let { newDb.filterDao().insert(it) }
             newDb.close()
             val dbFile = context.getDatabasePath(ehExportName)
-            context.contentResolver.openFileDescriptor(uri, "rw")!!.use { toFd ->
-                ParcelFileDescriptor.open(dbFile, MODE_READ_ONLY).use { fromFd ->
-                    fromFd sendTo toFd
-                }
-            }
+            dbFile.asUniFile() sendTo uri.asUniFile()
         }
     }
 
