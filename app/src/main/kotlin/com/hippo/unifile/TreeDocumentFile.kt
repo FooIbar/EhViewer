@@ -29,10 +29,10 @@ class TreeDocumentFile(
     private val allChildren by lazy {
         cachePresent = true
         logcat { "Directory lookup cache created for $name" }
-        DocumentsContractApi21.listFiles(uri).map {
+        DocumentsContractApi21.listFiles(uri).mapTo(mutableListOf()) {
             val name = getFilenameForUri(it)
             TreeDocumentFile(this, it, name)
-        }.toMutableList()
+        }
     }
 
     private fun popCacheIfPresent(file: TreeDocumentFile) = apply {

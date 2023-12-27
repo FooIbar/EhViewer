@@ -23,13 +23,9 @@ import splitties.init.appCtx
 object DocumentsContractApi21 {
     private const val PATH_DOCUMENT = "document"
     private const val PATH_TREE = "tree"
+    private val resolver = appCtx.contentResolver
     fun createFile(self: Uri, mimeType: String, displayName: String) = runCatching {
-        DocumentsContract.createDocument(
-            appCtx.contentResolver,
-            self,
-            mimeType,
-            displayName,
-        )
+        DocumentsContract.createDocument(resolver, self, mimeType, displayName)
     }.getOrNull()
 
     fun createDirectory(self: Uri, displayName: String) = createFile(self, DocumentsContract.Document.MIME_TYPE_DIR, displayName)
@@ -56,33 +52,19 @@ object DocumentsContractApi21 {
         )
     }
 
-    fun listFiles(self: Uri): Array<Uri> {
-        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            self,
-            DocumentsContract.getDocumentId(self),
-        )
-        val results = ArrayList<Uri>()
-        runCatching {
-            appCtx.contentResolver.query(
-                childrenUri,
-                arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
-                null,
-                null,
-                null,
-            ).use {
-                if (null != it) {
-                    while (it.moveToNext()) {
-                        val documentId = it.getString(0)
-                        val documentUri = DocumentsContract.buildDocumentUriUsingTree(
-                            self,
-                            documentId,
-                        )
-                        results.add(documentUri)
-                    }
-                }
+    fun listFiles(self: Uri) = sequence {
+        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(self, DocumentsContract.getDocumentId(self))
+        val id = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
+        resolver.query(childrenUri, id, null, null)?.use {
+            while (it.moveToNext()) {
+                val documentId = it.getString(0)
+                val documentUri = DocumentsContract.buildDocumentUriUsingTree(
+                    self,
+                    documentId,
+                )
+                yield(documentUri)
             }
         }
-        return results.toTypedArray<Uri>()
     }
 
     fun renameTo(context: Context, self: Uri, displayName: String) = runCatching {
