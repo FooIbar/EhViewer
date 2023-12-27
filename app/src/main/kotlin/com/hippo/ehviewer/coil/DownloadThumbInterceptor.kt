@@ -17,7 +17,7 @@ object DownloadThumbInterceptor : Interceptor {
         if (magicOrUrl != null) {
             val (url, location) = decodeMagicRequestOrUrl(magicOrUrl)
             if (location != null) {
-                val thumb = withIOContext { downloadLocation.subFile(location).subFile(".thumb") }
+                val thumb = withIOContext { downloadLocation / location / ".thumb" }
                 if (withIOContext { thumb.isFile }) {
                     val new = chain.request.newBuilder().data(thumb.uri.toString()).build()
                     when (val result = chain.withRequest(new).proceed()) {

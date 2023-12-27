@@ -96,7 +96,7 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
         return success
     }
 
-    override fun subFile(displayName: String) = RawFile(this, File(mFile, displayName))
+    override fun resolve(displayName: String) = RawFile(this, File(mFile, displayName))
 
     override fun delete() = mFile.deleteRecursively()
 

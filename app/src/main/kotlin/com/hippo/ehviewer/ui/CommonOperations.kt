@@ -81,7 +81,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
 
 private fun removeNoMediaFile(downloadDir: UniFile) {
-    val noMedia = downloadDir.subFile(".nomedia")
+    val noMedia = downloadDir / ".nomedia"
     noMedia.delete()
 }
 

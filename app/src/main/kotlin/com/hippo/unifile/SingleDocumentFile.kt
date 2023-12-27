@@ -44,7 +44,7 @@ class SingleDocumentFile(parent: UniFile?, override val uri: Uri) : UniFile(pare
 
     override fun ensureFile() = isFile
 
-    override fun subFile(displayName: String) = error("SingleDocumentFile never have a children")
+    override fun resolve(displayName: String) = error("SingleDocumentFile never have a children")
 
     override fun delete() = DocumentsContractApi19.delete(uri)
 

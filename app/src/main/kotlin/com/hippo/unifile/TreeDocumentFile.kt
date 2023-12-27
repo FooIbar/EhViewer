@@ -126,7 +126,7 @@ class TreeDocumentFile(
         }
     }
 
-    override fun subFile(displayName: String): UniFile {
+    override fun resolve(displayName: String): UniFile {
         val childUri = DocumentsContractApi21.buildChildUri(uri, displayName)
         return TreeDocumentFile(this, childUri, displayName)
     }

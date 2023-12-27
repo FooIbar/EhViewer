@@ -174,7 +174,9 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      *
      * @return the child file
      */
-    abstract fun subFile(displayName: String): UniFile
+    abstract fun resolve(displayName: String): UniFile
+
+    operator fun div(name: String) = resolve(name)
 
     /**
      * Deletes this file.
@@ -204,7 +206,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      *
      * @return the file if found it, or `null`.
      */
-    fun findFile(displayName: String) = subFile(displayName).takeIf { it.exists() }
+    fun findFile(displayName: String) = resolve(displayName).takeIf { it.exists() }
 
     /**
      * Renames this file to `displayName`.

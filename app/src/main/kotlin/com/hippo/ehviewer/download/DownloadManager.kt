@@ -1037,4 +1037,4 @@ var downloadLocation: UniFile
         }
     }
 
-val DownloadInfo.downloadDir get() = dirname?.let { downloadLocation.subFile(it) }
+val DownloadInfo.downloadDir get() = dirname?.let { downloadLocation / it }

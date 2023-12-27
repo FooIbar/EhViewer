@@ -241,5 +241,5 @@ suspend fun GalleryInfo.putToDownloadDir(): String {
 
 suspend fun getGalleryDownloadDir(gid: Long): UniFile? {
     val dirname = EhDB.getDownloadDirname(gid) ?: return null
-    return downloadLocation.subFile(dirname)
+    return downloadLocation / dirname
 }

@@ -170,11 +170,7 @@ class ArchivePageLoader(context: Context, private val uri: Uri, passwdProvider: 
         return true
     }
 
-    override fun save(index: Int, dir: UniFile, filename: String): UniFile {
-        val dst = dir.subFile(filename)
-        save(index, dst)
-        return dst
-    }
+    override fun save(index: Int, dir: UniFile, filename: String) = (dir / filename).apply { save(index, this) }
 
     override fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {}
 }
