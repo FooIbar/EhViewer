@@ -411,7 +411,7 @@ class MainActivity : EhActivity() {
                                         } else {
                                             StartDestination
                                         },
-                                        engine = rememberNavHostEngine(rootDefaultAnimations = ehNavAnim),
+                                        engine = rememberNavHostEngine(rootDefaultAnimations = rememberEhNavAnim()),
                                         navController = navController,
                                     )
                                 }
