@@ -16,8 +16,6 @@
 package com.hippo.unifile
 
 import android.net.Uri
-import android.os.Build
-import androidx.annotation.RequiresApi
 import java.io.IOException
 import splitties.init.appCtx
 
@@ -65,9 +63,6 @@ class MediaFile(override val uri: Uri) : UniFile(null) {
     override fun findFirst(filter: (String) -> Boolean) = null
 
     override fun renameTo(displayName: String) = false
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    override fun imageSource() = Contracts.getImageSource(appCtx, uri)
 
     override fun openFileDescriptor(mode: String) = Contracts.openFileDescriptor(appCtx, uri, mode)
 }

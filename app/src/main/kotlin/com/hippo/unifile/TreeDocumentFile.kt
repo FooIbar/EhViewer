@@ -16,10 +16,8 @@
 package com.hippo.unifile
 
 import android.net.Uri
-import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.webkit.MimeTypeMap
-import androidx.annotation.RequiresApi
 import eu.kanade.tachiyomi.util.system.logcat
 import splitties.init.appCtx
 
@@ -150,9 +148,6 @@ class TreeDocumentFile(
         }
         return false
     }
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    override fun imageSource() = Contracts.getImageSource(appCtx, uri)
 
     override fun openFileDescriptor(mode: String): ParcelFileDescriptor {
         return Contracts.openFileDescriptor(appCtx, uri, mode)
