@@ -31,6 +31,7 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
+import com.hippo.unifile.openFileDescriptor
 import com.hippo.unifile.openOutputStream
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.statement.HttpResponse

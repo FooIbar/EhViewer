@@ -17,8 +17,6 @@ package com.hippo.unifile
 
 import android.content.Context
 import android.net.Uri
-import android.os.ParcelFileDescriptor
-import java.io.IOException
 
 internal object Contracts {
     fun queryForString(
@@ -58,14 +56,5 @@ internal object Contracts {
             Utils.throwIfFatal(it)
             defaultValue
         }
-    }
-
-    fun openFileDescriptor(
-        context: Context,
-        uri: Uri?,
-        mode: String?,
-    ): ParcelFileDescriptor {
-        return context.contentResolver.openFileDescriptor(uri!!, mode!!)
-            ?: throw IOException("Can't open ParcelFileDescriptor")
     }
 }

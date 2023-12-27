@@ -16,7 +16,6 @@
 package com.hippo.unifile
 
 import android.net.Uri
-import android.os.ParcelFileDescriptor
 import android.webkit.MimeTypeMap
 import eu.kanade.tachiyomi.util.system.logcat
 import splitties.init.appCtx
@@ -147,10 +146,6 @@ class TreeDocumentFile(
             return true
         }
         return false
-    }
-
-    override fun openFileDescriptor(mode: String): ParcelFileDescriptor {
-        return Contracts.openFileDescriptor(appCtx, uri, mode)
     }
 }
 

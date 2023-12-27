@@ -45,6 +45,7 @@ import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.imageSource
+import com.hippo.unifile.openFileDescriptor
 import com.hippo.unifile.openInputStream
 import java.nio.ByteBuffer
 import kotlin.math.min

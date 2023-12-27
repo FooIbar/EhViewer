@@ -16,11 +16,9 @@
 package com.hippo.unifile
 
 import android.net.Uri
-import android.os.ParcelFileDescriptor
 import android.webkit.MimeTypeMap
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
-import java.io.IOException
 import java.util.Locale
 
 class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
@@ -115,11 +113,6 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
             return true
         }
         return false
-    }
-
-    override fun openFileDescriptor(mode: String): ParcelFileDescriptor {
-        val md = ParcelFileDescriptor.parseMode(mode)
-        return ParcelFileDescriptor.open(mFile, md) ?: throw IOException("Can't open ParcelFileDescriptor")
     }
 }
 

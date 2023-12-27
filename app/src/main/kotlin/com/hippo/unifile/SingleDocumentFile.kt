@@ -56,6 +56,4 @@ class SingleDocumentFile(parent: UniFile?, override val uri: Uri) : UniFile(pare
     override fun findFirst(filter: (String) -> Boolean) = null
 
     override fun renameTo(displayName: String) = false
-
-    override fun openFileDescriptor(mode: String) = Contracts.openFileDescriptor(appCtx, uri, mode)
 }
