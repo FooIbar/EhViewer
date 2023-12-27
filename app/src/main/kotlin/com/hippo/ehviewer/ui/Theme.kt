@@ -2,9 +2,6 @@ package com.hippo.ehviewer.ui
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -16,6 +13,9 @@ import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.ProvideVectorPainterCache
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
+import soup.compose.material.motion.animation.materialSharedAxisXIn
+import soup.compose.material.motion.animation.materialSharedAxisXOut
+import soup.compose.material.motion.animation.rememberSlideDistance
 
 inline fun ComposeView.setMD3Content(crossinline content: @Composable () -> Unit) = setContent {
     EhTheme {
@@ -45,9 +45,15 @@ inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -
     }
 }
 
-val ehNavAnim by lazy {
-    RootNavGraphDefaultAnimations(
-        enterTransition = { fadeIn(animationSpec = tween(500)) },
-        exitTransition = { fadeOut(animationSpec = tween(500)) },
-    )
+@Composable
+fun rememberEhNavAnim(): RootNavGraphDefaultAnimations {
+    val slideDistance = rememberSlideDistance()
+    return remember {
+        RootNavGraphDefaultAnimations(
+            enterTransition = { materialSharedAxisXIn(true, slideDistance) },
+            exitTransition = { materialSharedAxisXOut(true, slideDistance) },
+            popEnterTransition = { materialSharedAxisXIn(false, slideDistance) },
+            popExitTransition = { materialSharedAxisXOut(false, slideDistance) },
+        )
+    }
 }
