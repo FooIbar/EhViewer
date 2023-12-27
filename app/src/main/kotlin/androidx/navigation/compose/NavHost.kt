@@ -324,31 +324,17 @@ public fun NavHost(
                         else -> initialZIndex + 1f
                     }.also { zIndices[targetState.id] = it }
 
-                    ContentTransform(finalEnter(this), finalExit(this), targetZIndex, null)
+                    ContentTransform(finalEnter(this), finalExit(this), targetZIndex)
                 } else {
                     EnterTransition.None togetherWith ExitTransition.None
                 }
             },
             contentAlignment,
             contentKey = { it.id },
-        ) {
-            // In some specific cases, such as clearing your back stack by changing your
-            // start destination, AnimatedContent can contain an entry that is no longer
-            // part of visible entries since it was cleared from the back stack and is not
-            // animating. In these cases the currentEntry will be null, and in those cases,
-            // AnimatedContent will just skip attempting to transition the old entry.
-            // See https://issuetracker.google.com/238686802
-            val currentEntry = if (inPredictiveBack) {
-                // We have to do this because the previous entry does not show up in visibleEntries
-                // even if we prepare it above as part of onBackStackChangeStarted
-                it
-            } else {
-                visibleEntries.lastOrNull { entry -> it == entry }
-            }
-
+        ) { currentEntry ->
             // while in the scope of the composable, we provide the navBackStackEntry as the
             // ViewModelStoreOwner and LifecycleOwner
-            currentEntry?.LocalOwnersProvider(saveableStateHolder) {
+            currentEntry.LocalOwnersProvider(saveableStateHolder) {
                 (currentEntry.destination as ComposeNavigator.Destination)
                     .content(this, currentEntry)
             }
