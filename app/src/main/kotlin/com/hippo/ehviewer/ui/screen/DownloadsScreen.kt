@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text2.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -72,6 +72,7 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.download.DownloadManager.labelList
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.Download
@@ -99,6 +100,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import kotlin.math.roundToInt
+import kotlin.math.sign
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -135,7 +137,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             } ?: true
         }
     }
-    val labelsList = DownloadManager.labelList
 
     val newLabel = stringResource(R.string.new_label_title)
     val renameLabel = stringResource(R.string.rename_label_title)
@@ -179,7 +180,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                         Settings.hasDefaultDownloadLabel = true
                                         Settings.defaultDownloadLabel = null
                                     }
-                                    DownloadManager.labelList.forEach { (label) ->
+                                    labelList.forEach { (label) ->
                                         onSelect(label) {
                                             Settings.hasDefaultDownloadLabel = true
                                             Settings.defaultDownloadLabel = label
@@ -196,12 +197,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
 
             val labelsListState = rememberLazyListState()
             val reorderableLabelState = rememberReorderableLazyColumnState(labelsListState) { from, to ->
-                coroutineScope.launch {
-                    DownloadManager.moveLabel(from.index - 2, to.index - 2)
-                }
+                val fromPosition = from.index - 2
+                val toPosition = to.index - 2
+                labelList.apply { add(toPosition, removeAt(fromPosition)) }
                 view.performHapticFeedback(draggingHapticFeedback)
             }
-
+            var fromIndex by remember { mutableStateOf(-1) }
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = labelsListState,
@@ -235,7 +236,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                         },
                     )
                 }
-                items(labelsList, key = { it.label }) { (item) ->
+                itemsIndexed(labelList, key = { _, item -> item.label }) { index, (item) ->
                     val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
@@ -292,7 +293,24 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                         ) {
                                             Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                         }
-                                        DragHandle()
+                                        DragHandle(
+                                            onDragStarted = {
+                                                fromIndex = index
+                                            },
+                                            onDragStopped = {
+                                                if (fromIndex != -1) {
+                                                    if (fromIndex != index) {
+                                                        val range = if (fromIndex < index) fromIndex..index else index..fromIndex
+                                                        val toUpdate = labelList.slice(range)
+                                                        toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                        coroutineScope.launchIO {
+                                                            EhDB.updateDownloadLabel(toUpdate)
+                                                        }
+                                                    }
+                                                    fromIndex = -1
+                                                }
+                                            },
+                                        )
                                     }
                                 },
                             )
@@ -395,13 +413,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         val reorderableState = rememberReorderableLazyColumnState(listState) { from, to ->
             val fromIndex = from.index - 1
             val toIndex = to.index - 1
-            val fromItem = list[fromIndex]
-            val toItem = list[toIndex]
-            val newList = DownloadManager.moveDownload(fromItem, toItem)
-            coroutineScope.launchIO {
-                EhDB.updateDownloadInfo(newList)
-            }
-            list.add(toIndex, list.removeAt(fromIndex))
+            list.apply { add(toIndex, removeAt(fromIndex)) }
             view.performHapticFeedback(draggingHapticFeedback)
         }
         val searchBarConnection = remember {
@@ -413,6 +425,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 }
             }
         }
+        var fromIndex by remember { mutableStateOf(-1) }
         FastScrollLazyColumn(
             modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
             state = listState,
@@ -421,7 +434,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         ) {
             // Fix the first item's reorder animation
             item {}
-            items(list, key = { it.gid }) { info ->
+            itemsIndexed(list, key = { _, item -> item.gid }) { index, info ->
                 ReorderableItem(reorderableState, key = info.gid) {
                     val checked = info.gid in checkedInfoMap
                     CheckableItem(checked = checked) {
@@ -455,6 +468,22 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                             onStop = {
                                 coroutineScope.launchIO {
                                     DownloadManager.stopDownload(info.gid)
+                                }
+                            },
+                            onDragStarted = {
+                                fromIndex = index
+                            },
+                            onDragStopped = {
+                                if (fromIndex != -1) {
+                                    val direction = (index - fromIndex).sign
+                                    if (direction != 0) {
+                                        val toItem = list[index - direction]
+                                        coroutineScope.launchIO {
+                                            val toUpdate = DownloadManager.moveDownload(info, toItem)
+                                            EhDB.updateDownloadInfo(toUpdate)
+                                        }
+                                    }
+                                    fromIndex = -1
                                 }
                             },
                             info = info,

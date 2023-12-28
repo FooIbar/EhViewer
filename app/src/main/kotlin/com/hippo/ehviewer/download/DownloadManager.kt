@@ -49,7 +49,6 @@ import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.asUniFileOrNull
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -594,17 +593,6 @@ object DownloadManager : OnSpiderListener {
         }
         labelList.add(EhDB.addDownloadLabel(DownloadLabel(label, labelList.size)))
         map[label] = mutableStateListOf()
-    }
-
-    suspend fun moveLabel(fromPosition: Int, toPosition: Int) {
-        val item = labelList.removeAt(fromPosition)
-        labelList.add(toPosition, item)
-        withIOContext {
-            val range = if (fromPosition < toPosition) fromPosition..toPosition else toPosition..fromPosition
-            val list = labelList.slice(range)
-            list.zip(range).forEach { it.first.position = it.second }
-            EhDB.updateDownloadLabel(list)
-        }
     }
 
     suspend fun renameLabel(from: String, to: String) {
