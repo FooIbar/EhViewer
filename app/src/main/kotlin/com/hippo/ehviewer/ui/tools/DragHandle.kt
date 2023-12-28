@@ -14,7 +14,11 @@ import com.hippo.ehviewer.util.isAtLeastU
 import sh.calvin.reorderable.ReorderableItemScope
 
 @Composable
-fun ReorderableItemScope.DragHandle(modifier: Modifier = Modifier) {
+fun ReorderableItemScope.DragHandle(
+    modifier: Modifier = Modifier,
+    onDragStarted: () -> Unit = {},
+    onDragStopped: () -> Unit = {},
+) {
     val view = LocalView.current
     IconButton(
         onClick = {},
@@ -30,6 +34,7 @@ fun ReorderableItemScope.DragHandle(modifier: Modifier = Modifier) {
                     HapticFeedbackConstants.VIRTUAL_KEY
                 }
                 view.performHapticFeedback(feedbackConstant)
+                onDragStarted()
             },
             onDragStopped = {
                 val feedbackConstant = if (isAtLeastR) {
@@ -40,6 +45,7 @@ fun ReorderableItemScope.DragHandle(modifier: Modifier = Modifier) {
                     HapticFeedbackConstants.VIRTUAL_KEY_RELEASE
                 }
                 view.performHapticFeedback(feedbackConstant)
+                onDragStopped()
             },
         ),
     ) {

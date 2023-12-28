@@ -24,7 +24,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.rememberScrollState
@@ -407,17 +407,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     val reorderableLazyListState = rememberReorderableLazyColumnState(quickSearchListState) { from, to ->
                         val fromIndex = from.index - 1
                         val toIndex = to.index - 1
-                        quickSearchList.apply {
-                            add(toIndex, removeAt(fromIndex))
-                        }
-                        coroutineScope.launchIO {
-                            val range = if (fromIndex < toIndex) fromIndex..toIndex else toIndex..fromIndex
-                            val list = quickSearchList.slice(range)
-                            list.zip(range).forEach { it.first.position = it.second }
-                            EhDB.updateQuickSearch(list)
-                        }
+                        quickSearchList.apply { add(toIndex, removeAt(fromIndex)) }
                         view.performHapticFeedback(draggingHapticFeedback)
                     }
+                    var fromIndex by remember { mutableStateOf(-1) }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         state = quickSearchListState,
@@ -427,7 +420,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         stickyHeader {
                             HorizontalDivider()
                         }
-                        items(quickSearchList, key = { it.id!! }) { item ->
+                        itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { index, item ->
                             ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
                                 val dismissState = rememberSwipeToDismissBoxState(
                                     confirmValueChange = {
@@ -469,7 +462,24 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                             Text(text = item.name)
                                         },
                                         trailingContent = {
-                                            DragHandle()
+                                            DragHandle(
+                                                onDragStarted = {
+                                                    fromIndex = index
+                                                },
+                                                onDragStopped = {
+                                                    if (fromIndex != -1) {
+                                                        if (fromIndex != index) {
+                                                            val range = if (fromIndex < index) fromIndex..index else index..fromIndex
+                                                            val toUpdate = quickSearchList.slice(range)
+                                                            toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                            coroutineScope.launchIO {
+                                                                EhDB.updateQuickSearch(toUpdate)
+                                                            }
+                                                        }
+                                                        fromIndex = -1
+                                                    }
+                                                },
+                                            )
                                         },
                                     )
                                 }

@@ -47,6 +47,8 @@ fun ReorderableItemScope.DownloadCard(
     onLongClick: () -> Unit,
     onStart: () -> Unit,
     onStop: () -> Unit,
+    onDragStarted: () -> Unit,
+    onDragStopped: () -> Unit,
     info: DownloadInfo,
     modifier: Modifier = Modifier,
 ) {
@@ -163,7 +165,7 @@ fun ReorderableItemScope.DownloadCard(
                         bottom.linkTo(parent.bottom)
                     },
                 ) {
-                    DragHandle()
+                    DragHandle(onDragStarted = onDragStarted, onDragStopped = onDragStopped)
                     if (downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD) {
                         IconButton(onClick = onStop) {
                             Icon(imageVector = Icons.Default.Pause, contentDescription = null)
