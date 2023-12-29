@@ -29,6 +29,7 @@ import androidx.lifecycle.coroutineScope
 import coil3.SingletonImageLoader
 import coil3.asCoilImage
 import coil3.decode.ImageDecoderDecoder
+import coil3.fetch.NetworkFetcher
 import coil3.request.crossfade
 import coil3.util.DebugLogger
 import com.hippo.ehviewer.client.EhCookieStore
@@ -36,7 +37,6 @@ import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.coil.DownloadThumbInterceptor
 import com.hippo.ehviewer.coil.MergeInterceptor
-import com.hippo.ehviewer.coil.installKtorHttpUriFetcher
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
@@ -56,6 +56,7 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.ehviewer.util.isCronetAvailable
 import com.hippo.ehviewer.util.resettableLazy
+import com.hippo.ehviewer.util.unsafeLazy
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -181,7 +182,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
 
     override fun newImageLoader() = imageLoader {
         components {
-            installKtorHttpUriFetcher()
+            add(NetworkFetcher.Factory(unsafeLazy { ktorClient }))
             if (isAtLeastP) {
                 add { result, options, _ -> ImageDecoderDecoder(result.source, options, false) }
             }
