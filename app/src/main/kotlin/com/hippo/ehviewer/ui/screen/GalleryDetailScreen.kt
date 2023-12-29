@@ -217,7 +217,7 @@ private fun List<GalleryTagGroup>.getArtist(): String? {
 @Composable
 fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) {
     LockDrawer(true)
-    var galleryInfo by rememberSaveable {
+    var galleryInfo by remember {
         val casted = args as? GalleryInfoArgs
         mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
     }
@@ -493,7 +493,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 else -> stringResource(R.string.more_comment)
             }
             fun onNavigateToCommentScene() {
-                navigator.navigate(GalleryCommentsScreenDestination(galleryDetail))
+                navigator.navigate(GalleryCommentsScreenDestination(galleryDetail.gid))
             }
             CrystalCard {
                 commentsList.take(maxShowCount).forEach { item ->
