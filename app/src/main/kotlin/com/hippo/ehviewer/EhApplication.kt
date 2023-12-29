@@ -62,6 +62,8 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
+import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.cookies.HttpCookies
@@ -201,20 +203,11 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         var ktorClient by resettableLazy {
             if (Settings.enableCronet && isCronetAvailable) {
                 HttpClient(CronetEngine) {
-                    followRedirects = false
-                    install(HttpRedirect) {
-                        checkHttpMethod = false
-                    }
-                    install(HttpCookies) {
-                        storage = EhCookieStore
-                    }
+                    commonConfigure()
                 }
             } else {
                 HttpClient(OkHttp) {
-                    followRedirects = false
-                    install(HttpRedirect) {
-                        checkHttpMethod = false
-                    }
+                    commonConfigure()
                     engine {
                         config {
                             if (isAtLeastQ) {
@@ -223,19 +216,13 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
                             addInterceptor(UncaughtExceptionInterceptor())
                         }
                     }
-                    install(HttpCookies) {
-                        storage = EhCookieStore
-                    }
                 }
             }
         }
 
         var noRedirectKtorClient by resettableLazy {
             HttpClient(ktorClient.engine) {
-                followRedirects = false
-                install(HttpCookies) {
-                    storage = EhCookieStore
-                }
+                commonConfigure(false)
             }
         }
 
@@ -255,5 +242,17 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         }
 
         val searchDatabase by lazy { roomDb<SearchDatabase>("search_database.db") }
+    }
+}
+
+private fun <T : HttpClientEngineConfig> HttpClientConfig<T>.commonConfigure(redirect: Boolean = true) {
+    followRedirects = false
+    if (redirect) {
+        install(HttpRedirect) {
+            checkHttpMethod = false
+        }
+    }
+    install(HttpCookies) {
+        storage = EhCookieStore
     }
 }
