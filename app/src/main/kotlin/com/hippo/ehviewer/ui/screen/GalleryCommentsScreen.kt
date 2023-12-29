@@ -72,12 +72,12 @@ import androidx.compose.ui.unit.max
 import androidx.compose.ui.util.lerp
 import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
+import com.hippo.ehviewer.EhApplication
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryComment
-import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
@@ -148,7 +148,7 @@ private val MinimumContentPaddingEditText = 88.dp
 
 @Destination
 @Composable
-fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsNavigator) {
+fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
     LockDrawer(true)
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val dialogState = LocalDialogState.current
@@ -157,6 +157,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
     var commenting by rememberSaveable { mutableStateOf(false) }
     val animationProgress by animateFloatMergePredictiveBackAsState(enable = commenting) { commenting = false }
 
+    val galleryDetail = remember { EhApplication.galleryDetailCache[gid]!! }
     val userCommentBackField = remember { mutableStateOf(TextFieldValue()) }
     var userComment by userCommentBackField
     var commentId by remember { mutableLongStateOf(-1) }
@@ -173,9 +174,6 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
         val detail = EhEngine.getGalleryDetail(url)
         comments = detail.comments
-
-        // Refresh comments of GalleryDetail cache
-        galleryDetail.comments = comments
     }
 
     val copyComment = stringResource(R.string.copy_comment_text)
@@ -193,13 +191,13 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
 
     val focusManager = LocalFocusManager.current
 
-    suspend fun Context.sendComment() {
+    suspend fun sendComment() {
         commenting = false
         withUIContext { focusManager.clearFocus() }
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, false)
         runSuspendCatching {
             val bbcode = userComment.annotatedString.normalizeSpan().toBBCode()
-            logcat { bbcode }
+            logcat("sendComment") { bbcode }
             EhEngine.commentGallery(url, bbcode, commentId)
         }.onSuccess {
             activity.showTip(if (commentId != -1L) editCommentSuccess else commentSuccess)
@@ -449,7 +447,7 @@ fun GalleryCommentsScreen(galleryDetail: GalleryDetail, navigator: DestinationsN
                     IconButton(
                         onClick = {
                             coroutineScope.launchIO {
-                                context.sendComment()
+                                sendComment()
                             }
                         },
                         modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
