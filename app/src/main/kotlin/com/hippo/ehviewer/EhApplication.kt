@@ -56,6 +56,7 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.ehviewer.util.isCronetAvailable
 import com.hippo.ehviewer.util.resettableLazy
+import com.hippo.ehviewer.util.unsafeLazy
 import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -181,7 +182,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
 
     override fun newImageLoader() = imageLoader {
         components {
-            add(NetworkFetcher.Factory(lazy(LazyThreadSafetyMode.NONE) { ktorClient }))
+            add(NetworkFetcher.Factory(unsafeLazy { ktorClient }))
             if (isAtLeastP) {
                 add { result, options, _ -> ImageDecoderDecoder(result.source, options, false) }
             }
