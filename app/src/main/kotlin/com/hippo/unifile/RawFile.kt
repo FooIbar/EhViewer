@@ -15,13 +15,19 @@
  */
 package com.hippo.unifile
 
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
+import android.os.ParcelFileDescriptor
+import android.os.ParcelFileDescriptor.open
+import android.os.ParcelFileDescriptor.parseMode
 import android.webkit.MimeTypeMap
+import androidx.annotation.RequiresApi
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.util.Locale
 
-class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
+class RawFile(parent: UniFile?, private var file: File) : UniFile(parent) {
     val parent = parent as? RawFile
 
     var cachePresent = false
@@ -30,7 +36,7 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
         cachePresent = true
         logcat { "Directory lookup cache created for $name" }
         mutableListOf<RawFile>().apply {
-            val fs = mFile.listFiles()?.map { RawFile(current, it) }
+            val fs = file.listFiles()?.map { RawFile(current, it) }
             if (fs != null) addAll(fs)
         }
     }
@@ -41,7 +47,7 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
     }
 
     override fun createFile(displayName: String): UniFile? {
-        val target = RawFile(this, File(mFile, displayName))
+        val target = RawFile(this, File(file, displayName))
         if (target.exists()) {
             if (target.isFile) return target
         } else {
@@ -51,37 +57,37 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
     }
 
     override fun createDirectory(displayName: String): UniFile? {
-        val target = RawFile(this, File(mFile, displayName))
+        val target = RawFile(this, File(file, displayName))
         if (target.ensureDir()) return target
         return null
     }
 
     override val uri: Uri
-        get() = Uri.fromFile(mFile)
+        get() = Uri.fromFile(file)
     override val name: String
-        get() = mFile.name
+        get() = file.name
     override val type: String?
-        get() = if (mFile.isDirectory) {
+        get() = if (file.isDirectory) {
             null
         } else {
-            getTypeForName(mFile.name)
+            getTypeForName(file.name)
         }
     override val isDirectory: Boolean
-        get() = mFile.isDirectory
+        get() = file.isDirectory
     override val isFile: Boolean
-        get() = mFile.isFile
+        get() = file.isFile
 
-    override fun lastModified() = mFile.lastModified()
+    override fun lastModified() = file.lastModified()
 
-    override fun length() = mFile.length()
+    override fun length() = file.length()
 
-    override fun canRead() = mFile.canRead()
+    override fun canRead() = file.canRead()
 
-    override fun canWrite() = mFile.canWrite()
+    override fun canWrite() = file.canWrite()
 
     override fun ensureDir(): Boolean {
-        if (mFile.isDirectory) return true
-        if (mFile.mkdirs()) {
+        if (file.isDirectory) return true
+        if (file.mkdirs()) {
             popParentCacheIfPresent()
             return true
         }
@@ -89,31 +95,36 @@ class RawFile(parent: UniFile?, private var mFile: File) : UniFile(parent) {
     }
 
     override fun ensureFile(): Boolean {
-        if (mFile.exists()) return mFile.isFile
+        if (file.exists()) return file.isFile
         parent?.ensureDir()
-        val success = mFile.createNewFile()
+        val success = file.createNewFile()
         if (success) popParentCacheIfPresent()
         return success
     }
 
-    override fun resolve(displayName: String) = RawFile(this, File(mFile, displayName))
+    override fun resolve(displayName: String) = RawFile(this, File(file, displayName))
 
-    override fun delete() = mFile.deleteRecursively()
+    override fun delete() = file.deleteRecursively()
 
-    override fun exists() = mFile.exists()
+    override fun exists() = file.exists()
 
     override fun listFiles() = allChildren
 
     override fun findFirst(filter: (String) -> Boolean) = allChildren.firstOrNull { filter(it.name) }
 
     override fun renameTo(displayName: String): Boolean {
-        val target = File(mFile.parentFile, displayName)
-        if (mFile.renameTo(target)) {
-            mFile = target
+        val target = File(file.parentFile, displayName)
+        if (file.renameTo(target)) {
+            file = target
             return true
         }
         return false
     }
+
+    override fun openFileDescriptor(mode: String): ParcelFileDescriptor = open(file, parseMode(mode))
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    override fun asImageSource() = ImageDecoder.createSource(file)
 }
 
 private fun getTypeForName(name: String): String {
