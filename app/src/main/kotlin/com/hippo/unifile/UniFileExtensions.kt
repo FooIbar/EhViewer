@@ -6,6 +6,8 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.ParcelFileDescriptor.AutoCloseInputStream
 import android.os.ParcelFileDescriptor.AutoCloseOutputStream
+import android.os.ParcelFileDescriptor.open
+import android.os.ParcelFileDescriptor.parseMode
 import androidx.annotation.RequiresApi
 import java.io.File
 import java.io.FileInputStream
@@ -28,6 +30,7 @@ fun UniFile.openOutputStream(): FileOutputStream {
 }
 
 fun UniFile.openFileDescriptor(mode: String): ParcelFileDescriptor {
+    if (this is RawFile) return open(file, parseMode(mode))
     return appCtx.contentResolver.openFileDescriptor(uri, mode) ?: error("Can't open ParcelFileDescriptor")
 }
 
