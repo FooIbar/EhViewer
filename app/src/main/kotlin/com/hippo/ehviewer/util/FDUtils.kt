@@ -4,7 +4,6 @@ import android.os.ParcelFileDescriptor
 import android.system.Int64Ref
 import android.system.Os
 import com.hippo.unifile.UniFile
-import com.hippo.unifile.openFileDescriptor
 import java.io.FileDescriptor
 import java.io.FileInputStream
 import java.io.FileOutputStream
