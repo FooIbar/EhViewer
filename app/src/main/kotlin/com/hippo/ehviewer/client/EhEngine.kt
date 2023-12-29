@@ -36,7 +36,6 @@ import com.hippo.ehviewer.client.parser.ForumsParser
 import com.hippo.ehviewer.client.parser.GalleryApiParser
 import com.hippo.ehviewer.client.parser.GalleryDetailParser
 import com.hippo.ehviewer.client.parser.GalleryListParser
-import com.hippo.ehviewer.client.parser.GalleryListResult
 import com.hippo.ehviewer.client.parser.GalleryNotAvailableParser
 import com.hippo.ehviewer.client.parser.GalleryPageParser
 import com.hippo.ehviewer.client.parser.GalleryTokenApiParser
@@ -254,18 +253,13 @@ object EhEngine {
                 append("edit_comment", id.toString())
             }
         }
-    }.execute { response ->
-        // Ktor does not handle POST redirect, we need to do it manually
-        // https://youtrack.jetbrains.com/issue/KTOR-478
-        val location = response.headers["Location"] ?: url
-        ehRequest(location, url).fetchUsingAsText {
-            val document = Jsoup.parse(this)
-            val elements = document.select("#chd + p")
-            if (elements.size > 0) {
-                throw EhException(elements[0].text())
-            }
-            GalleryDetailParser.parseComments(document)
+    }.fetchUsingAsText {
+        val document = Jsoup.parse(this)
+        val elements = document.select("#chd + p")
+        if (elements.size > 0) {
+            throw EhException(elements[0].text())
         }
+        GalleryDetailParser.parseComments(document)
     }
 
     suspend fun modifyFavorites(gid: Long, token: String?, dstCat: Int = -1, note: String = "") {
@@ -427,22 +421,19 @@ object EhEngine {
         }
     }.fetchUsingAsText(GalleryTokenApiParser::parse)
 
-    suspend fun imageSearch(jpeg: File, uss: Boolean, osc: Boolean): GalleryListResult {
-        val location = noRedirectEhRequest(EhUrl.imageSearchUrl, EhUrl.referer, EhUrl.origin) {
-            multipartBody {
-                append("sfile", "a.jpg", ContentType.Image.JPEG, jpeg.length()) {
-                    RandomAccessFile(jpeg, "r").use {
-                        writeFully(it.channel.map(FileChannel.MapMode.READ_ONLY, 0, it.length()))
-                    }
+    suspend fun imageSearch(jpeg: File, uss: Boolean, osc: Boolean) = ehRequest(EhUrl.imageSearchUrl, EhUrl.referer, EhUrl.origin) {
+        multipartBody {
+            append("sfile", "a.jpg", ContentType.Image.JPEG, jpeg.length()) {
+                RandomAccessFile(jpeg, "r").use {
+                    writeFully(it.channel.map(FileChannel.MapMode.READ_ONLY, 0, it.length()))
                 }
-                if (uss) append("fs_similar", "on")
-                if (osc) append("fs_covers", "on")
-                append("f_sfile", "File Search")
             }
-        }.execute { it.headers["Location"] ?: error("Failed to search image!!!") }
-        return ehRequest(location).fetchUsingAsByteBuffer(GalleryListParser::parse).apply {
-            galleryInfoList.fillInfo(EhUrl.imageSearchUrl)
+            if (uss) append("fs_similar", "on")
+            if (osc) append("fs_covers", "on")
+            append("f_sfile", "File Search")
         }
+    }.fetchUsingAsByteBuffer(GalleryListParser::parse).apply {
+        galleryInfoList.fillInfo(EhUrl.imageSearchUrl)
     }
 
     private suspend fun MutableList<BaseGalleryInfo>.fillInfo(url: String, filter: Boolean = false) = with(EhFilter) {

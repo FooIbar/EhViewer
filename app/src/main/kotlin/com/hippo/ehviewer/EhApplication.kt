@@ -63,6 +63,7 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.cookies.HttpCookies
 import java.io.File
 import kotlinx.coroutines.ensureActive
@@ -200,12 +201,20 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         var ktorClient by resettableLazy {
             if (Settings.enableCronet && isCronetAvailable) {
                 HttpClient(CronetEngine) {
+                    followRedirects = false
+                    install(HttpRedirect) {
+                        checkHttpMethod = false
+                    }
                     install(HttpCookies) {
                         storage = EhCookieStore
                     }
                 }
             } else {
                 HttpClient(OkHttp) {
+                    followRedirects = false
+                    install(HttpRedirect) {
+                        checkHttpMethod = false
+                    }
                     engine {
                         config {
                             if (isAtLeastQ) {
