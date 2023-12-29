@@ -332,7 +332,7 @@ fun SearchBarScreen(
                 contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime)
                     .only(WindowInsetsSides.Bottom).asPaddingValues(),
             ) {
-                items(mSuggestionList, key = { it.keyword.hashCode() * 31 + it.hint.hashCode() }) {
+                items(mSuggestionList, key = { it.keyword.hashCode() * 31 + it.canDelete.hashCode() }) {
                     ListItem(
                         headlineContent = { Text(text = it.keyword) },
                         supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
