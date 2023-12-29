@@ -64,6 +64,7 @@ arrow-stack = { module = "io.arrow-kt:arrow-stack", version.ref = "arrow" }
 coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif" }
+coil-network = { module = "io.coil-kt.coil3:coil-network" }
 
 compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "compose-bom" }
 # For renovate
@@ -119,7 +120,7 @@ splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemse
 
 [bundles]
 androidx-navigation = ["androidx-navigation-compose", "androidx-navigation-ui"]
-coil = ["coil-compose", "coil-gif"]
+coil = ["coil-compose", "coil-gif", "coil-network"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
 cronet = ["cronet-api", "cronet-gms"]
 kotlinx-serialization = ["kotlinx-serialization-cbor", "kotlinx-serialization-json", "kotlinx-serialization-json-okio"]
