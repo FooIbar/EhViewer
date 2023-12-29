@@ -93,8 +93,7 @@ object GalleryDetailParser {
 
         // Error info
         PATTERN_ERROR.find(body)?.run { throw EhException(groupValues[1]) }
-        // Temporary workaround, see https://github.com/jhy/jsoup/issues/1850
-        val document = Jsoup.parse(body.replace("del>", "s>"))
+        val document = Jsoup.parse(body)
         val galleryDetail = GalleryDetail(
             tags = parseTagGroups(document),
             comments = parseComments(document),
@@ -412,6 +411,8 @@ object GalleryDetailParser {
      * Parse comments with html parser
      */
     suspend fun parseComments(document: Document): GalleryCommentList {
+        // Disable pretty print to get comments in raw html
+        document.outputSettings().prettyPrint(false)
         return try {
             val cdiv = document.getElementById("cdiv")!!
             val c1s = cdiv.getElementsByClass("c1")
