@@ -35,7 +35,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -221,7 +220,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
     var expanded by remember { mutableStateOf(false) }
     var hidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
-    val selectMode by rememberUpdatedState(checkedInfoMap.isNotEmpty())
+    val selectMode = checkedInfoMap.isNotEmpty()
     LockDrawer(selectMode)
 
     SearchBarScreen(
@@ -322,8 +321,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         }.mapLatest { it }
     }.collectAsState(hidden)
 
-    // Explicitly reallocate fabBuilder lambda to recompose secondary fab
-    val select = selectMode
     FabLayout(
         hidden = hideFab,
         expanded = expanded || selectMode,
@@ -333,7 +330,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         },
         autoCancel = !selectMode,
     ) {
-        if (!select) {
+        if (!selectMode) {
             onClick(EhIcons.Default.GoTo) {
                 coroutineScope.launch {
                     val date = dialogState.showDatePicker()
