@@ -38,8 +38,8 @@ import androidx.compose.ui.util.lerp
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 
 enum class FabLayoutValue {
@@ -128,18 +128,9 @@ fun FabLayout(
     }
     val builder by rememberUpdatedState(fabBuilder)
 
-    fun buildFab(builder: FabBuilder.() -> Unit) = buildList {
-        builder { icon, action ->
-            add(icon to action)
-        }
-    }
-
     val secondaryFab by remember {
-        snapshotFlow { builder }.map { one ->
-            state.waitCollapse()
-            buildFab(one)
-        }
-    }.collectAsState(remember { buildFab(fabBuilder) })
+        snapshotFlow { buildFab(builder) }.onEachLatest { state.waitCollapse() }
+    }.collectAsState(emptyList())
     val coroutineScope = rememberCoroutineScope()
     if (updatedExpanded && autoCancel) {
         Spacer(
@@ -216,6 +207,12 @@ fun FabLayout(
                 }
             }
         }
+    }
+}
+
+private fun buildFab(builder: FabBuilder.() -> Unit) = buildList {
+    builder { icon, action ->
+        add(icon to action)
     }
 }
 
