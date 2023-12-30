@@ -40,7 +40,7 @@ struct BaseGalleryInfo {
 
 #[derive(Serialize)]
 #[allow(non_snake_case)]
-struct GalleryListResult {
+pub struct GalleryListResult {
     prev: Option<String>,
     next: Option<String>,
     galleryInfoList: Vec<BaseGalleryInfo>,
@@ -190,7 +190,7 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
     })
 }
 
-fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Option<GalleryListResult> {
+pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Option<GalleryListResult> {
     check_html(str);
     if str.contains("<p>You do not have any watched tags") {
         panic!("No watched tags!")

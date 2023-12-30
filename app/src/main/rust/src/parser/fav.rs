@@ -2,13 +2,22 @@ use jni_fn::jni_fn;
 use jnix::jni::objects::{JByteBuffer, JClass};
 use jnix::jni::sys::jint;
 use jnix::jni::JNIEnv;
-
 use parse_marshal_inplace;
+use parser::list::{parse_info_list, GalleryListResult};
 use quick_xml::escape::unescape;
+use serde::Serialize;
 use tl::Parser;
 use tl::VDom;
 
-fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Option<Vec<(String, i32)>> {
+#[derive(Serialize)]
+#[allow(non_snake_case)]
+struct FavResult {
+    catArray: Vec<String>,
+    countArray: Vec<i32>,
+    galleryListResult: GalleryListResult,
+}
+
+fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Option<FavResult> {
     if html.contains("This page requires you to log on.</p>") {
         panic!("Not logged in!")
     }
@@ -32,7 +41,13 @@ fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Option<Vec<(String, i32
         })
         .collect();
     if vec.len() == 10 {
-        Some(vec)
+        let list = parse_info_list(dom, parser, html)?;
+        let cat = vec.iter().cloned().unzip();
+        Some(FavResult {
+            catArray: cat.0,
+            countArray: cat.1,
+            galleryListResult: list,
+        })
     } else {
         None
     }
