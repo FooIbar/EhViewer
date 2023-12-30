@@ -10,6 +10,7 @@ extern crate log;
 extern crate once_cell;
 extern crate quick_xml;
 extern crate regex_lite;
+extern crate serde;
 extern crate tl;
 
 use android_logger::Config;

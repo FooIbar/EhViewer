@@ -1,16 +1,25 @@
 package com.hippo.ehviewer.client.parser
 
-import androidx.annotation.Keep
 import com.hippo.ehviewer.client.exception.ParseException
+import com.hippo.ehviewer.client.parseAs
 import java.nio.ByteBuffer
+import kotlinx.serialization.Serializable
+import okio.buffer
 
 object TorrentParser {
     fun parse(body: ByteBuffer) = runCatching {
-        parseTorrent(body)
-    }.getOrElse { throw ParseException("Can't parse torrent list", it) }
+        parseTorrent(body).also {
+            body.clear()
+            body.limit(it)
+        }
+        body.asSource().buffer().use { it.parseAs<TorrentResult>() }
+    }.getOrElse {
+        throw ParseException("Can't parse torrent list", it)
+    }
 }
 
-class Torrent @Keep constructor(
+@Serializable
+data class Torrent(
     val posted: String,
     val size: String,
     val seeds: Int,
@@ -24,4 +33,4 @@ fun Torrent.format() = "[$posted] $name [$size] [↑$seeds ↓$peers ✓$downloa
 
 typealias TorrentResult = List<Torrent>
 
-private external fun parseTorrent(body: ByteBuffer, size: Int = body.limit()): ArrayList<Torrent>
+private external fun parseTorrent(body: ByteBuffer, size: Int = body.limit()): Int

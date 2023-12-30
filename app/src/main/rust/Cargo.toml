@@ -19,6 +19,8 @@ log = "0.4"
 android_logger = { default-features = false, version = "0.13" }
 apply = "0.3"
 once_cell = { default-features = false, version = "1.19" }
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 
 [profile.release]
 strip = true
