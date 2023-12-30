@@ -8,10 +8,7 @@ crate_type = ["cdylib"]
 
 [dependencies]
 regex-lite = { version = "0.1" }
-jnix = { path = "jnix" }
-jnix-macros = "0.4"
-catch_panic = { path = "catch_panic" }
-catch_panic_macros = { path = "catch_panic_macros" }
+jni = "0.21"
 jni_fn = "0.1.2"
 quick-xml = { default-features = false, version = "0.31" }
 tl = "0.7"
@@ -19,6 +16,8 @@ log = "0.4"
 android_logger = { default-features = false, version = "0.13" }
 apply = "0.3"
 once_cell = { default-features = false, version = "1.19" }
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 
 [profile.release]
 strip = true

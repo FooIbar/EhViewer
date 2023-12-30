@@ -1,18 +1,18 @@
 package com.hippo.ehviewer.client.parser
 
 import android.os.Parcelable
-import androidx.annotation.Keep
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
 import com.hippo.ehviewer.client.exception.ParseException
 import java.nio.ByteBuffer
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 object HomeParser {
     private val PATTERN_FUNDS = Regex("Available: ([\\d,]+) Credits.*Available: ([\\d,]+) kGP", RegexOption.DOT_MATCHES_ALL)
     private const val INSUFFICIENT_FUNDS = "Insufficient funds."
 
     fun parse(body: ByteBuffer) = runCatching {
-        parseLimit(body)
+        unmarshalParsingAs<Limits>(body, ::parseLimit)
     }.getOrElse { throw ParseException("Parse image limits error", it) }
 
     fun parseResetLimits(body: String) {
@@ -36,6 +36,7 @@ object HomeParser {
 }
 
 @Parcelize
-data class Limits @Keep constructor(val current: Int, val maximum: Int, val resetCost: Int) : Parcelable
+@Serializable
+data class Limits(val current: Int, val maximum: Int, val resetCost: Int) : Parcelable
 
-private external fun parseLimit(body: ByteBuffer, limit: Int = body.limit()): Limits
+private external fun parseLimit(body: ByteBuffer, limit: Int = body.limit()): Int

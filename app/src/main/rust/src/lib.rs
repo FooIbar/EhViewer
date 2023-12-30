@@ -2,22 +2,24 @@ mod parser;
 
 extern crate android_logger;
 extern crate apply;
-extern crate catch_panic;
+extern crate jni;
 extern crate jni_fn;
-extern crate jnix;
-extern crate jnix_macros;
 extern crate log;
 extern crate once_cell;
 extern crate quick_xml;
 extern crate regex_lite;
+extern crate serde;
 extern crate tl;
 
 use android_logger::Config;
-use jnix::jni::objects::JByteBuffer;
-use jnix::jni::sys::{jint, JavaVM, JNI_VERSION_1_6};
-use jnix::JnixEnv;
+use jni::objects::JByteBuffer;
+use jni::sys::{jint, JavaVM, JNI_VERSION_1_6};
+use jni::JNIEnv;
 use log::LevelFilter;
+use serde::Serialize;
 use std::ffi::c_void;
+use std::io::Write;
+use std::panic::{catch_unwind, UnwindSafe};
 use std::ptr::slice_from_raw_parts;
 use std::str::from_utf8_unchecked;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
@@ -32,6 +34,28 @@ macro_rules! regex {
 
 const EHGT_PREFIX: &str = "https://ehgt.org/";
 const EX_PREFIX: &str = "https://s.exhentai.org/";
+
+struct PtrCursor {
+    ptr: *mut u8,
+    pos: i32,
+}
+
+impl Write for PtrCursor {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        let len = buf.len();
+        unsafe {
+            self.ptr.copy_from(buf.as_ptr(), len);
+            self.ptr = self.ptr.add(len);
+            self.pos += len as i32;
+        }
+        Ok(len)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        // Nothing
+        Ok(())
+    }
+}
 
 fn check_html(str: &str) {
     if !str.contains('<') {
@@ -68,18 +92,44 @@ where
     handle.get(parser)
 }
 
-fn parse_bytebuffer<F, R>(env: &mut JnixEnv, str: JByteBuffer, limit: jint, mut f: F) -> Option<R>
+fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, mut f: F) -> i32
 where
-    F: FnMut(&VDom, &Parser, &JnixEnv, &str) -> Option<R>,
+    F: FnMut(&VDom, &Parser, &str) -> Option<R> + UnwindSafe,
+    R: Serialize,
 {
-    let ptr = env.get_direct_buffer_address(str).ok()?;
+    let ptr = env.get_direct_buffer_address(&str).unwrap();
     let html = unsafe {
         let buff = slice_from_raw_parts(ptr, limit as usize);
         from_utf8_unchecked(&*buff)
     };
-    let dom = tl::parse(html, tl::ParserOptions::default()).ok()?;
-    let parser = dom.parser();
-    f(&dom, parser, env, html)
+    let f = move || {
+        let dom = tl::parse(html, tl::ParserOptions::default()).unwrap();
+        let parser = dom.parser();
+        let result = f(&dom, parser, html);
+        match result {
+            // Nothing to marshal
+            None => 0,
+            Some(value) => {
+                let mut cursor = PtrCursor { ptr, pos: 0 };
+                serde_json::to_writer(&mut cursor, &value).unwrap();
+                cursor.pos
+            }
+        }
+    };
+    match catch_unwind(f) {
+        Ok(result) => result,
+        Err(err) => {
+            let msg = match err.downcast_ref::<&'static str>() {
+                Some(s) => *s,
+                None => match err.downcast_ref::<String>() {
+                    Some(s) => &s[..],
+                    None => "Box<dyn Any>",
+                },
+            };
+            env.throw_new("java/lang/RuntimeException", msg).unwrap();
+            0
+        }
+    }
 }
 
 fn get_node_handle_attr<'a>(

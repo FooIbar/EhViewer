@@ -152,8 +152,8 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                         }.onFailure {
                             return@withIOContext LoadResult.Error(it)
                         }.getOrThrow()
-                        Settings.favCat = r.catArray
-                        Settings.favCount = r.countArray
+                        Settings.favCat = r.catArray.toTypedArray()
+                        Settings.favCount = r.countArray.toIntArray()
                         Settings.favCloudCount = r.countArray.sum()
                         urlBuilder.jumpTo = null
                         LoadResult.Page(r.galleryInfoList, r.prev, r.next)
