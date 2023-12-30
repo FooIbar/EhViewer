@@ -18,6 +18,7 @@ use jni::JNIEnv;
 use log::LevelFilter;
 use serde::Serialize;
 use std::ffi::c_void;
+use std::io::Write;
 use std::panic::{catch_unwind, UnwindSafe};
 use std::ptr::slice_from_raw_parts;
 use std::str::from_utf8_unchecked;
@@ -33,6 +34,28 @@ macro_rules! regex {
 
 const EHGT_PREFIX: &str = "https://ehgt.org/";
 const EX_PREFIX: &str = "https://s.exhentai.org/";
+
+struct PtrCursor {
+    ptr: *mut u8,
+    pos: i32,
+}
+
+impl Write for PtrCursor {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        let len = buf.len();
+        unsafe {
+            self.ptr.copy_from(buf.as_ptr(), len);
+            self.ptr = self.ptr.add(len);
+            self.pos += len as i32;
+        }
+        Ok(len)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        // Nothing
+        Ok(())
+    }
+}
 
 fn check_html(str: &str) {
     if !str.contains('<') {
@@ -87,10 +110,9 @@ where
             // Nothing to marshal
             None => 0,
             Some(value) => {
-                // Figure out how to directly write to ByteBuffer and get bytes count we write
-                let str = serde_json::to_vec(&value).unwrap();
-                unsafe { ptr.copy_from(str.as_ptr(), str.len()) }
-                str.len() as i32
+                let mut cursor = PtrCursor { ptr, pos: 0 };
+                serde_json::to_writer(&mut cursor, &value).unwrap();
+                cursor.pos
             }
         }
     };
