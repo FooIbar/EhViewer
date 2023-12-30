@@ -25,6 +25,8 @@ fun ByteBuffer.asSource() = object : Source {
 }
 
 inline fun <reified T> unmarshalParsingAs(body: ByteBuffer, parser: (ByteBuffer, Int) -> Int): T {
+    // We want to use cbor as it have smaller output size
+    // But we would rather reuse allocated ByteArrays (i.e. decode with okio Buffer)
     val jsonBytes = parser(body, body.limit())
     body.clear()
     body.limit(jsonBytes)
