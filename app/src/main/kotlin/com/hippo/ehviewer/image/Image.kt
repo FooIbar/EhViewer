@@ -101,16 +101,11 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
 
     companion object {
         @RequiresApi(Build.VERSION_CODES.P)
-        fun calculateSampleSize(info: ImageInfo, targetHeight: Int, targetWidth: Int): Int {
-            var idealFactor = min(
-                info.size.width / targetWidth,
+        fun calculateSampleSize(info: ImageInfo, targetHeight: Int, targetWeight: Int): Int {
+            return min(
+                info.size.width / targetWeight,
                 info.size.height / targetHeight,
             ).coerceAtLeast(1)
-
-            // Check if bitmap > 100M
-            val size = (info.size.width / idealFactor) * (info.size.height / idealFactor) * 4
-            if (size > 100 * 1024 * 1024) idealFactor++
-            return idealFactor
         }
 
         private val imageSearchMaxSize = appCtx.resources.getDimensionPixelOffset(R.dimen.image_search_max_size)
