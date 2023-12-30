@@ -59,6 +59,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.SideDrawer
+import androidx.compose.material3.Snackbar2
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -307,7 +308,7 @@ class MainActivity : EhActivity() {
             val snackMessage = stringResource(R.string.clipboard_gallery_url_snack_message)
             val snackAction = stringResource(R.string.clipboard_gallery_url_snack_action)
             LifecycleResumeEffect {
-                scope.launch {
+                val job = scope.launch {
                     delay(300)
                     val text = clipboardManager.getUrlFromClipboard(applicationContext)
                     val hashCode = text?.hashCode() ?: 0
@@ -328,7 +329,7 @@ class MainActivity : EhActivity() {
                     }
                     Settings.clipboardTextHashCode = hashCode
                 }
-                onPauseOrDispose { }
+                onPauseOrDispose { job.cancel() }
             }
             val currentDestination by navController.currentDestinationAsState()
             val lockDrawerHandle = remember { mutableStateListOf<Int>() }
@@ -340,7 +341,7 @@ class MainActivity : EhActivity() {
                 LocalDrawerLockHandle provides lockDrawerHandle,
                 LocalSnackbarHostState provides snackbarState,
             ) {
-                Scaffold(snackbarHost = { SnackbarHost(snackbarState) }) {
+                Scaffold(snackbarHost = { SnackbarHost(snackbarState) { Snackbar2(it) } }) {
                     LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
                         ModalNavigationDrawer(
                             drawerContent = {
