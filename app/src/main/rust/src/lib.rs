@@ -16,8 +16,10 @@ extern crate tl;
 use android_logger::Config;
 use jnix::jni::objects::JByteBuffer;
 use jnix::jni::sys::{jint, JavaVM, JNI_VERSION_1_6};
+use jnix::jni::JNIEnv;
 use jnix::JnixEnv;
 use log::LevelFilter;
+use serde::Serialize;
 use std::ffi::c_void;
 use std::ptr::slice_from_raw_parts;
 use std::str::from_utf8_unchecked;
@@ -81,6 +83,30 @@ where
     let dom = tl::parse(html, tl::ParserOptions::default()).ok()?;
     let parser = dom.parser();
     f(&dom, parser, env, html)
+}
+
+fn parse_marshal_inplace<F, R>(env: &JNIEnv, str: JByteBuffer, limit: jint, mut f: F) -> i32
+where
+    F: FnMut(&VDom, &Parser, &str) -> Option<R>,
+    R: Serialize,
+{
+    let ptr = env.get_direct_buffer_address(str).unwrap();
+    let html = unsafe {
+        let buff = slice_from_raw_parts(ptr, limit as usize);
+        from_utf8_unchecked(&*buff)
+    };
+    let dom = tl::parse(html, tl::ParserOptions::default()).unwrap();
+    let parser = dom.parser();
+    let result = f(&dom, parser, html);
+    match result {
+        // Nothing to marshal
+        None => 0,
+        Some(value) => {
+            let str = serde_json::to_vec(&value).unwrap();
+            unsafe { ptr.copy_from(str.as_ptr(), str.len()) }
+            str.len() as i32
+        }
+    }
 }
 
 fn get_node_handle_attr<'a>(

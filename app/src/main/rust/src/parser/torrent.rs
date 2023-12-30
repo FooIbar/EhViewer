@@ -4,11 +4,9 @@ use jnix::jni::objects::{JByteBuffer, JClass};
 use jnix::jni::sys::jint;
 use jnix::jni::JNIEnv;
 use quick_xml::escape::unescape;
-use regex;
 use serde::Serialize;
-use std::ptr::slice_from_raw_parts;
-use std::str::from_utf8_unchecked;
 use tl::{Parser, VDom};
+use {parse_marshal_inplace, regex};
 
 #[derive(Serialize)]
 struct Torrent {
@@ -48,20 +46,7 @@ fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Option<Vec<Torrent>> {
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.TorrentParserKt")]
 pub fn parseTorrent(env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
-    let ptr = env.get_direct_buffer_address(buffer).unwrap();
-    let html = unsafe {
-        let buff = slice_from_raw_parts(ptr, limit as usize);
-        from_utf8_unchecked(&*buff)
-    };
-    let dom = tl::parse(html, tl::ParserOptions::default()).unwrap();
-    let parser = dom.parser();
-    let list = parse_torrent_list(&dom, parser);
-    return match list {
-        None => 0,
-        Some(value) => {
-            let str = serde_json::to_vec(&value).unwrap();
-            unsafe { ptr.copy_from(str.as_ptr(), str.len()) }
-            str.len() as i32
-        }
-    };
+    parse_marshal_inplace(&env, buffer, limit, |dom, parser, _html| {
+        parse_torrent_list(dom, parser)
+    })
 }
