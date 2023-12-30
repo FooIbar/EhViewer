@@ -102,6 +102,7 @@ where
         // Nothing to marshal
         None => 0,
         Some(value) => {
+            // Figure out how to directly write to ByteBuffer and get bytes count we write
             let str = serde_json::to_vec(&value).unwrap();
             unsafe { ptr.copy_from(str.as_ptr(), str.len()) }
             str.len() as i32
