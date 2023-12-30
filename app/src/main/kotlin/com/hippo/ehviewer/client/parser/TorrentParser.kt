@@ -1,18 +1,12 @@
 package com.hippo.ehviewer.client.parser
 
 import com.hippo.ehviewer.client.exception.ParseException
-import com.hippo.ehviewer.client.parseAs
 import java.nio.ByteBuffer
 import kotlinx.serialization.Serializable
-import okio.buffer
 
 object TorrentParser {
     fun parse(body: ByteBuffer) = runCatching {
-        parseTorrent(body).also {
-            body.clear()
-            body.limit(it)
-        }
-        body.asSource().buffer().use { it.parseAs<TorrentResult>() }
+        unmarshalParsingAs<TorrentResult>(body, ::parseTorrent)
     }.getOrElse {
         throw ParseException("Can't parse torrent list", it)
     }

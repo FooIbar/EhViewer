@@ -1,9 +1,11 @@
 package com.hippo.ehviewer.client.parser
 
+import com.hippo.ehviewer.client.parseAs
 import java.nio.ByteBuffer
 import okio.Buffer
 import okio.Source
 import okio.Timeout
+import okio.buffer
 
 fun ByteBuffer.asSource() = object : Source {
     private val buffer = this@asSource.slice()
@@ -20,4 +22,11 @@ fun ByteBuffer.asSource() = object : Source {
     }
 
     override fun timeout() = Timeout.NONE
+}
+
+inline fun <reified T> unmarshalParsingAs(body: ByteBuffer, parser: (ByteBuffer, Int) -> Int): T {
+    val jsonBytes = parser(body, body.limit())
+    body.clear()
+    body.limit(jsonBytes)
+    return body.asSource().buffer().use { it.parseAs<T>() }
 }
