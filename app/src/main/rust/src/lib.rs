@@ -79,7 +79,7 @@ where
         let buff = slice_from_raw_parts(ptr, limit as usize);
         from_utf8_unchecked(&*buff)
     };
-    match catch_unwind(move || {
+    let f = move || {
         let dom = tl::parse(html, tl::ParserOptions::default()).unwrap();
         let parser = dom.parser();
         let result = f(&dom, parser, html);
@@ -93,7 +93,8 @@ where
                 str.len() as i32
             }
         }
-    }) {
+    };
+    match catch_unwind(f) {
         Ok(result) => result,
         Err(err) => {
             let msg = match err.downcast_ref::<&'static str>() {
