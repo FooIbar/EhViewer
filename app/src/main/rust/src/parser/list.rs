@@ -1,4 +1,3 @@
-use catch_panic::catch_panic;
 use check_html;
 use jni_fn::jni_fn;
 use jnix::jni::objects::{JByteBuffer, JClass};
@@ -231,7 +230,6 @@ fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Option<GalleryList
 }
 
 #[no_mangle]
-#[catch_panic]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryListParserKt")]
 pub fn parseGalleryInfoList(env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {

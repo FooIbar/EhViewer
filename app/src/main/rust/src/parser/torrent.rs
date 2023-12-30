@@ -1,4 +1,3 @@
-use catch_panic::catch_panic;
 use jni_fn::jni_fn;
 use jnix::jni::objects::{JByteBuffer, JClass};
 use jnix::jni::sys::jint;
@@ -42,7 +41,6 @@ fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Option<Vec<Torrent>> {
 }
 
 #[no_mangle]
-#[catch_panic]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.TorrentParserKt")]
 pub fn parseTorrent(env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {

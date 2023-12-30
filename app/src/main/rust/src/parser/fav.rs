@@ -1,5 +1,4 @@
 use apply::Also;
-use catch_panic::catch_panic;
 use jni_fn::jni_fn;
 use jnix::jni::objects::{JByteBuffer, JClass};
 use jnix::jni::sys::{jint, jintArray, jobjectArray};
@@ -9,7 +8,6 @@ use parse_bytebuffer;
 use quick_xml::escape::unescape;
 
 #[no_mangle]
-#[catch_panic(default = "std::ptr::null_mut()")]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.FavoritesParserKt")]
 pub fn parseFav(

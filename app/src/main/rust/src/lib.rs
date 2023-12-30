@@ -2,7 +2,6 @@ mod parser;
 
 extern crate android_logger;
 extern crate apply;
-extern crate catch_panic;
 extern crate jni_fn;
 extern crate jnix;
 extern crate jnix_macros;

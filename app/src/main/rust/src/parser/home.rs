@@ -1,4 +1,3 @@
-use catch_panic::catch_panic;
 use get_vdom_first_element_by_class_name;
 use jni_fn::jni_fn;
 use jnix::jni::objects::{JByteBuffer, JClass};
@@ -32,7 +31,6 @@ fn parse_limit(dom: &VDom, parser: &Parser) -> Option<Limits> {
 }
 
 #[no_mangle]
-#[catch_panic]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.HomeParserKt")]
 pub fn parseLimit(env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
