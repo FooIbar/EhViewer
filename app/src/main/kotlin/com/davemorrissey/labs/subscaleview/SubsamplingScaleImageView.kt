@@ -147,7 +147,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     // Min scale allowed (prevent infinite zoom)
     private var minScale = minScale()
     private var srcRect = Rect(0, 0, 0, 0)
-    private var dstRect = Rect(0, 0, 0, 0)
 
     // Is two-finger zooming in progress
     private var isZooming = false
@@ -236,7 +235,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
         reset(true)
         srcRect = Rect(bitmap.bounds)
         onImageLoaded(bitmap.bitmap)
-        dstRect = Rect(0, 0, sWidth, sHeight)
     }
 
     /**
@@ -272,7 +270,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             sWidth = 0
             sHeight = 0
             srcRect.setEmpty()
-            dstRect.setEmpty()
             isReady = false
             isImageLoaded = false
             bitmap = null
@@ -765,10 +762,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
             val xScale = scale
             val yScale = scale
             mtrx.reset()
+            mtrx.postTranslate((-srcRect.left).toFloat(), (-srcRect.top).toFloat())
             mtrx.postScale(xScale, yScale)
             mtrx.postTranslate(vTranslate!!.x, vTranslate!!.y)
-            canvas.concat(mtrx)
-            canvas.drawBitmap(bitmap!!, srcRect, dstRect, bitmapPaint)
+            canvas.drawBitmap(bitmap!!, mtrx, bitmapPaint)
         }
     }
 
