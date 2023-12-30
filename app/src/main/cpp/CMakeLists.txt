@@ -76,7 +76,7 @@ FetchContent_MakeAvailable(libarchive)
 include_directories(${libarchive_SOURCE_DIR}/libarchive)
 
 # Build and link our app's native lib
-add_library(${PROJECT_NAME} SHARED archive.c gifutils.c natsort/strnatcmp.c)
-target_link_libraries(${PROJECT_NAME} archive_static log)
+add_library(${PROJECT_NAME} SHARED archive.c border.c gifutils.c natsort/strnatcmp.c)
+target_link_libraries(${PROJECT_NAME} archive_static log jnigraphics)
 
 add_custom_target("noop")

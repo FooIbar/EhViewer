@@ -588,6 +588,7 @@
     <string name="already_latest_version">Already the latest version</string>
     <string name="permission_denied">Permission denied</string>
     <!-- Tachiyomi Reader Start-->
+    <string name="pref_crop_borders">Crop borders</string>
     <string name="action_settings">Settings</string>
     <string name="pref_rotation_type">Default rotation type</string>
     <string name="viewer">Reading mode</string>

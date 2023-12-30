@@ -254,8 +254,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
             },
         )
 
-        val bitmap = (image as BitmapDrawable).bitmap
-        setImage(bitmap)
+        setImage(image as BitmapDrawable)
         isVisible = true
     }
 

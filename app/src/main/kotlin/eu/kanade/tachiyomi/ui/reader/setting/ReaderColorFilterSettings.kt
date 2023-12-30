@@ -44,17 +44,26 @@ class ReaderColorFilterSettings @JvmOverloads constructor(context: Context, attr
             }
             binding.wideColorGamut.bindToPreference(readerPreferences.wideColorGamut())
 
+            val activity = context as ReaderActivity
+
+            readerPreferences.cropBorders().asHotFlow {
+                with(activity) {
+                    mGalleryProvider?.restart()
+                    setGallery()
+                }
+            }.launchIn(activity.lifecycleScope)
+
             readerPreferences.wideColorGamut().asHotFlow {
                 Image.colorSpace = ColorSpace.get(if (Image.isWideColorGamut && it) ColorSpace.Named.DISPLAY_P3 else ColorSpace.Named.SRGB)
                 val colorMode = if (Image.isWideColorGamut && it) ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT else ActivityInfo.COLOR_MODE_DEFAULT
-                (context as ReaderActivity).run {
+                with(activity) {
                     if (window.colorMode != colorMode) {
                         window.colorMode = colorMode
                         mGalleryProvider?.restart()
                         setGallery()
                     }
                 }
-            }.launchIn((context as ReaderActivity).lifecycleScope)
+            }.launchIn(activity.lifecycleScope)
         } else {
             binding.wideColorGamut.isVisible = false
         }

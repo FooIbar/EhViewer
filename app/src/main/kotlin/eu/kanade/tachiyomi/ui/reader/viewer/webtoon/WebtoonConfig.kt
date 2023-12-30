@@ -38,9 +38,6 @@ class WebtoonConfig(
     val theme = readerPreferences.readerTheme().get()
 
     init {
-        // readerPreferences.cropBordersWebtoon()
-        //     .register({ imageCropBorders = it }, { imagePropertyChangedListener?.invoke() })
-
         readerPreferences.webtoonSidePadding()
             .register({ sidePadding = it }, { imagePropertyChangedListener?.invoke() })
 

@@ -24,12 +24,14 @@ import android.graphics.ColorSpace
 import android.graphics.ImageDecoder
 import android.graphics.ImageDecoder.ImageInfo
 import android.graphics.ImageDecoder.Source
+import android.graphics.Rect
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.core.graphics.drawable.toDrawable
 import coil3.decode.BitmapFactoryDecoder
 import coil3.decode.DecodeUtils
 import coil3.decode.ImageSource
@@ -37,11 +39,13 @@ import coil3.request.Options
 import coil3.size.Scale
 import coil3.size.Size
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.jni.isGif
 import com.hippo.ehviewer.jni.mmap
 import com.hippo.ehviewer.jni.munmap
 import com.hippo.ehviewer.jni.rewriteGifSource
 import com.hippo.ehviewer.util.isAtLeastP
+import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
@@ -52,11 +56,39 @@ import okio.buffer
 import okio.source
 import splitties.init.appCtx
 
-class Image private constructor(drawable: Drawable, private val src: AutoCloseable) {
-    var mObtainedDrawable: Drawable? = drawable
-        private set
+private val CropAspect = 0.1..100.0
 
+class Image private constructor(drawable: Drawable, private val src: AutoCloseable) {
     val size = drawable.run { intrinsicHeight * intrinsicWidth * 4 * if (this is Animatable) 4 else 1 }
+    private val intrinsicRect = drawable.run { Rect(0, 0, intrinsicWidth, intrinsicHeight) }
+
+    var mObtainedDrawable: Drawable? = if (drawable is Animatable) {
+        // Cannot crop animated image's border
+        drawable
+    } else {
+        if (Settings.cropBorder.value) {
+            val bitmap = (drawable as BitmapDrawable).bitmap
+            val array = detectBorder(bitmap)
+            val rect = with(bitmap) {
+                val r = Rect(array[0], array[1], array[2], array[3])
+                val aspectAfterCrop = r.height().toFloat() / r.width()
+                if (aspectAfterCrop in CropAspect) r else intrinsicRect
+            }
+
+            val final = if (isAtLeastQ) {
+                // Upload to Graphical Buffer to accelerate render
+                bitmap.copy(Bitmap.Config.HARDWARE, false).apply {
+                    bitmap.recycle()
+                }
+            } else {
+                bitmap
+            }
+
+            final.toDrawable(appCtx.resources).apply { bounds = rect }
+        } else {
+            drawable.apply { bounds = intrinsicRect }
+        }
+    }
 
     @Synchronized
     fun recycle() {
@@ -161,8 +193,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
 
         @RequiresApi(Build.VERSION_CODES.P)
         private fun decodeDrawable(src: Source) = ImageDecoder.decodeDrawable(src) { decoder, info, _ ->
-            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.P) {
-                // Allocating hardware bitmap may cause a crash on framework versions prior to Android Q
+            if (!isAtLeastQ || Settings.cropBorder.value) {
                 decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
             }
             decoder.setTargetColorSpace(colorSpace)
@@ -204,3 +235,5 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
         val source: ByteBuffer
     }
 }
+
+private external fun detectBorder(bitmap: Bitmap): IntArray
