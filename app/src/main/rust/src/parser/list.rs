@@ -1,24 +1,23 @@
 use catch_panic::catch_panic;
+use check_html;
 use jni_fn::jni_fn;
 use jnix::jni::objects::{JByteBuffer, JClass};
-use jnix::jni::sys::{jint, jobject};
+use jnix::jni::sys::jint;
 use jnix::jni::JNIEnv;
-use jnix::{IntoJava, JnixEnv};
-use jnix_macros::IntoJava;
+use parse_marshal_inplace;
 use quick_xml::escape::unescape;
+use serde::Serialize;
 use std::borrow::Cow;
 use std::ops::Index;
-use tl::{Node, Parser};
-use {check_html, parse_bytebuffer};
+use tl::{Node, Parser, VDom};
 use {get_element_by_id, get_vdom_first_element_by_class_name};
 use {get_first_element_by_class_name, query_childs_first_match_attr};
 use {get_node_attr, get_node_handle_attr, regex};
 use {EHGT_PREFIX, EX_PREFIX};
 
-#[derive(Default, IntoJava)]
+#[derive(Serialize)]
 #[allow(non_snake_case)]
-#[jnix(package = "com.hippo.ehviewer.client.data")]
-pub struct BaseGalleryInfo {
+struct BaseGalleryInfo {
     gid: i64,
     token: String,
     title: String,
@@ -40,10 +39,9 @@ pub struct BaseGalleryInfo {
     favoriteNote: Option<String>,
 }
 
-#[derive(Default, IntoJava)]
+#[derive(Serialize)]
 #[allow(non_snake_case)]
-#[jnix(package = "com.hippo.ehviewer.client.parser")]
-pub struct GalleryListResult {
+struct GalleryListResult {
     prev: Option<String>,
     next: Option<String>,
     galleryInfoList: Vec<BaseGalleryInfo>,
@@ -193,57 +191,51 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
     })
 }
 
+fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Option<GalleryListResult> {
+    check_html(str);
+    if str.contains("<p>You do not have any watched tags") {
+        panic!("No watched tags!")
+    }
+    if str.contains("No hits found</p>") || str.contains("No unfiltered results found") {
+        panic!("No hits found!")
+    }
+    let itg = get_vdom_first_element_by_class_name(dom, "itg")?;
+    let children = itg.children()?;
+    let iter = children.top().iter();
+    let info: Vec<BaseGalleryInfo> = iter
+        .filter_map(|x| parse_gallery_info(x.get(parser)?, parser))
+        .collect();
+    let prev = dom.get_element_by_id("uprev").and_then(|e| {
+        let str = get_node_handle_attr(&e, parser, "href")?;
+        Some(
+            regex!("prev=(\\d+(-\\d+)?)")
+                .captures(str)?
+                .index(1)
+                .to_string(),
+        )
+    });
+    let next = dom.get_element_by_id("unext").and_then(|e| {
+        let str = get_node_handle_attr(&e, parser, "href")?;
+        Some(
+            regex!("next=(\\d+(-\\d+)?)")
+                .captures(str)?
+                .index(1)
+                .to_string(),
+        )
+    });
+    (!info.is_empty()).then_some(GalleryListResult {
+        prev,
+        next,
+        galleryInfoList: info,
+    })
+}
+
 #[no_mangle]
-#[catch_panic(default = "std::ptr::null_mut()")]
+#[catch_panic]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryListParserKt")]
-pub fn parseGalleryInfoList(
-    env: JNIEnv,
-    _class: JClass,
-    buffer: JByteBuffer,
-    limit: jint,
-) -> jobject {
-    let mut env = JnixEnv { env };
-    parse_bytebuffer(&mut env, buffer, limit, |dom, parser, _, str| {
-        check_html(str);
-        if str.contains("<p>You do not have any watched tags") {
-            panic!("No watched tags!")
-        }
-        if str.contains("No hits found</p>") || str.contains("No unfiltered results found") {
-            panic!("No hits found!")
-        }
-        let itg = get_vdom_first_element_by_class_name(dom, "itg")?;
-        let children = itg.children()?;
-        let iter = children.top().iter();
-        let info: Vec<BaseGalleryInfo> = iter
-            .filter_map(|x| parse_gallery_info(x.get(parser)?, parser))
-            .collect();
-        let prev = dom.get_element_by_id("uprev").and_then(|e| {
-            let str = get_node_handle_attr(&e, parser, "href")?;
-            Some(
-                regex!("prev=(\\d+(-\\d+)?)")
-                    .captures(str)?
-                    .index(1)
-                    .to_string(),
-            )
-        });
-        let next = dom.get_element_by_id("unext").and_then(|e| {
-            let str = get_node_handle_attr(&e, parser, "href")?;
-            Some(
-                regex!("next=(\\d+(-\\d+)?)")
-                    .captures(str)?
-                    .index(1)
-                    .to_string(),
-            )
-        });
-        (!info.is_empty()).then_some(GalleryListResult {
-            prev,
-            next,
-            galleryInfoList: info,
-        })
+pub fn parseGalleryInfoList(env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+    parse_marshal_inplace(&env, buffer, limit, |dom, parser, str| {
+        parse_info_list(dom, parser, str)
     })
-    .unwrap()
-    .into_java(&env)
-    .forget()
-    .into_raw()
 }
