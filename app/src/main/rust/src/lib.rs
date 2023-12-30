@@ -2,9 +2,8 @@ mod parser;
 
 extern crate android_logger;
 extern crate apply;
+extern crate jni;
 extern crate jni_fn;
-extern crate jnix;
-extern crate jnix_macros;
 extern crate log;
 extern crate once_cell;
 extern crate quick_xml;
@@ -13,9 +12,9 @@ extern crate serde;
 extern crate tl;
 
 use android_logger::Config;
-use jnix::jni::objects::JByteBuffer;
-use jnix::jni::sys::{jint, JavaVM, JNI_VERSION_1_6};
-use jnix::jni::JNIEnv;
+use jni::objects::JByteBuffer;
+use jni::sys::{jint, JavaVM, JNI_VERSION_1_6};
+use jni::JNIEnv;
 use log::LevelFilter;
 use serde::Serialize;
 use std::ffi::c_void;
@@ -70,12 +69,12 @@ where
     handle.get(parser)
 }
 
-fn parse_marshal_inplace<F, R>(env: &JNIEnv, str: JByteBuffer, limit: jint, mut f: F) -> i32
+fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, mut f: F) -> i32
 where
     F: FnMut(&VDom, &Parser, &str) -> Option<R> + UnwindSafe,
     R: Serialize,
 {
-    let ptr = env.get_direct_buffer_address(str).unwrap();
+    let ptr = env.get_direct_buffer_address(&str).unwrap();
     let html = unsafe {
         let buff = slice_from_raw_parts(ptr, limit as usize);
         from_utf8_unchecked(&*buff)

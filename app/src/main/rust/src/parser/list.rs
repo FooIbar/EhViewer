@@ -1,8 +1,8 @@
 use check_html;
+use jni::objects::{JByteBuffer, JClass};
+use jni::sys::jint;
+use jni::JNIEnv;
 use jni_fn::jni_fn;
-use jnix::jni::objects::{JByteBuffer, JClass};
-use jnix::jni::sys::jint;
-use jnix::jni::JNIEnv;
 use parse_marshal_inplace;
 use quick_xml::escape::unescape;
 use serde::Serialize;
@@ -232,8 +232,13 @@ pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Option<Gallery
 #[no_mangle]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryListParserKt")]
-pub fn parseGalleryInfoList(env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&env, buffer, limit, |dom, parser, str| {
+pub fn parseGalleryInfoList(
+    mut env: JNIEnv,
+    _class: JClass,
+    buffer: JByteBuffer,
+    limit: jint,
+) -> jint {
+    parse_marshal_inplace(&mut env, buffer, limit, |dom, parser, str| {
         parse_info_list(dom, parser, str)
     })
 }

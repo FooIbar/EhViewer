@@ -1,7 +1,7 @@
+use jni::objects::{JByteBuffer, JClass};
+use jni::sys::jint;
+use jni::JNIEnv;
 use jni_fn::jni_fn;
-use jnix::jni::objects::{JByteBuffer, JClass};
-use jnix::jni::sys::jint;
-use jnix::jni::JNIEnv;
 use parse_marshal_inplace;
 use parser::list::{parse_info_list, GalleryListResult};
 use quick_xml::escape::unescape;
@@ -56,8 +56,8 @@ fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Option<FavResult> {
 #[no_mangle]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.FavoritesParserKt")]
-pub fn parseFav(env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&env, input, limit, |dom, parser, html| {
+pub fn parseFav(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
+    parse_marshal_inplace(&mut env, input, limit, |dom, parser, html| {
         parse_fav(dom, parser, html)
     })
 }

@@ -1,8 +1,8 @@
 use get_vdom_first_element_by_class_name;
+use jni::objects::{JByteBuffer, JClass};
+use jni::sys::jint;
+use jni::JNIEnv;
 use jni_fn::jni_fn;
-use jnix::jni::objects::{JByteBuffer, JClass};
-use jnix::jni::sys::jint;
-use jnix::jni::JNIEnv;
 use parse_marshal_inplace;
 use serde::Serialize;
 use tl::Parser;
@@ -33,8 +33,8 @@ fn parse_limit(dom: &VDom, parser: &Parser) -> Option<Limits> {
 #[no_mangle]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.HomeParserKt")]
-pub fn parseLimit(env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&env, input, limit, |dom, parser, _| {
+pub fn parseLimit(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
+    parse_marshal_inplace(&mut env, input, limit, |dom, parser, _| {
         parse_limit(dom, parser)
     })
 }
