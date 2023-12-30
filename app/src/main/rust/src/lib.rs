@@ -16,10 +16,10 @@ use android_logger::Config;
 use jnix::jni::objects::JByteBuffer;
 use jnix::jni::sys::{jint, JavaVM, JNI_VERSION_1_6};
 use jnix::jni::JNIEnv;
-use jnix::JnixEnv;
 use log::LevelFilter;
 use serde::Serialize;
 use std::ffi::c_void;
+use std::panic::{catch_unwind, UnwindSafe};
 use std::ptr::slice_from_raw_parts;
 use std::str::from_utf8_unchecked;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
@@ -70,23 +70,9 @@ where
     handle.get(parser)
 }
 
-fn parse_bytebuffer<F, R>(env: &mut JnixEnv, str: JByteBuffer, limit: jint, mut f: F) -> Option<R>
-where
-    F: FnMut(&VDom, &Parser, &JnixEnv, &str) -> Option<R>,
-{
-    let ptr = env.get_direct_buffer_address(str).ok()?;
-    let html = unsafe {
-        let buff = slice_from_raw_parts(ptr, limit as usize);
-        from_utf8_unchecked(&*buff)
-    };
-    let dom = tl::parse(html, tl::ParserOptions::default()).ok()?;
-    let parser = dom.parser();
-    f(&dom, parser, env, html)
-}
-
 fn parse_marshal_inplace<F, R>(env: &JNIEnv, str: JByteBuffer, limit: jint, mut f: F) -> i32
 where
-    F: FnMut(&VDom, &Parser, &str) -> Option<R>,
+    F: FnMut(&VDom, &Parser, &str) -> Option<R> + UnwindSafe,
     R: Serialize,
 {
     let ptr = env.get_direct_buffer_address(str).unwrap();
@@ -94,17 +80,32 @@ where
         let buff = slice_from_raw_parts(ptr, limit as usize);
         from_utf8_unchecked(&*buff)
     };
-    let dom = tl::parse(html, tl::ParserOptions::default()).unwrap();
-    let parser = dom.parser();
-    let result = f(&dom, parser, html);
-    match result {
-        // Nothing to marshal
-        None => 0,
-        Some(value) => {
-            // Figure out how to directly write to ByteBuffer and get bytes count we write
-            let str = serde_json::to_vec(&value).unwrap();
-            unsafe { ptr.copy_from(str.as_ptr(), str.len()) }
-            str.len() as i32
+    match catch_unwind(move || {
+        let dom = tl::parse(html, tl::ParserOptions::default()).unwrap();
+        let parser = dom.parser();
+        let result = f(&dom, parser, html);
+        match result {
+            // Nothing to marshal
+            None => 0,
+            Some(value) => {
+                // Figure out how to directly write to ByteBuffer and get bytes count we write
+                let str = serde_json::to_vec(&value).unwrap();
+                unsafe { ptr.copy_from(str.as_ptr(), str.len()) }
+                str.len() as i32
+            }
+        }
+    }) {
+        Ok(result) => result,
+        Err(err) => {
+            let msg = match err.downcast_ref::<&'static str>() {
+                Some(s) => *s,
+                None => match err.downcast_ref::<String>() {
+                    Some(s) => &s[..],
+                    None => "Box<dyn Any>",
+                },
+            };
+            env.throw_new("java/lang/RuntimeException", msg).unwrap();
+            0
         }
     }
 }
