@@ -6,25 +6,25 @@ import java.nio.ByteBuffer
 import kotlinx.serialization.Serializable
 import moe.tarsin.coroutines.runSuspendCatching
 
+@Serializable
+data class FavParserResult(
+    val catArray: List<String>,
+    val countArray: List<Int>,
+    val galleryListResult: GalleryListResult,
+) {
+    val prev = galleryListResult.prev
+    val next = galleryListResult.next
+    val galleryInfoList = galleryListResult.galleryInfoList
+}
+
 object FavoritesParser {
-    suspend fun parse(body: ByteBuffer): Result {
+    fun parse(body: ByteBuffer): FavParserResult {
         return runSuspendCatching {
-            unmarshalParsingAs<Result>(body, ::parseFav)
+            unmarshalParsingAs<FavParserResult>(body, ::parseFav)
         }.getOrElse {
             if (it is RuntimeException && it.message == "Not logged in!") throw NotLoggedInException()
             throw ParseException("Parse favorites error", it)
         }
-    }
-
-    @Serializable
-    class Result(
-        val catArray: Array<String>,
-        val countArray: IntArray,
-        val galleryListResult: GalleryListResult,
-    ) {
-        val prev = galleryListResult.prev
-        val next = galleryListResult.next
-        val galleryInfoList = galleryListResult.galleryInfoList
     }
 }
 
