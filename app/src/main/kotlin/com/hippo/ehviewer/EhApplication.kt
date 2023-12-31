@@ -181,7 +181,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         }
     }
 
-    override fun newImageLoader(context: Context) = imageLoader(context) {
+    override fun newImageLoader(context: Context) = context.imageLoader {
         components {
             add(NetworkFetcher.Factory(unsafeLazy { ktorClient }))
             if (isAtLeastP) {
