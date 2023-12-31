@@ -73,7 +73,7 @@ where
         from_utf8_unchecked(&*buff)
     };
     let mut f = || {
-        let dom = tl::parse(html, tl::ParserOptions::default()).map_err(|_| "Illegal html!")?;
+        let dom = tl::parse(html, tl::ParserOptions::default()).map_err(|_| html)?;
         let parser = dom.parser();
         f(&dom, parser, html)
     };
