@@ -42,4 +42,6 @@ interface BaseViewer {
      * return true if the event was handled, false otherwise.
      */
     fun handleGenericMotionEvent(event: MotionEvent): Boolean
+
+    fun refreshAdapter()
 }

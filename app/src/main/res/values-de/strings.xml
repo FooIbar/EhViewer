@@ -264,7 +264,6 @@
     <string name="settings_download_restore_download_items">Download-Elemente wiederherstellen</string>
     <string name="settings_download_restore_download_items_summary">Alle Download-Elemente im Downloadpfad wiederherstellen</string>
     <string name="settings_download_restore_not_found">Keine zu wiederhestellenden Elemente</string>
-    <string name="settings_download_restore_failed">Wiederherstellung gescheitert</string>
     <string name="settings_download_restore_successfully">%d Element(e) wiederhergestellt</string>
     <string name="settings_download_clean_redundancy">Unnötige Dateien löschen</string>
     <string name="settings_download_clean_redundancy_summary">Bilddateien, die sich im Downloadpfad befinden, aber nicht in Downloadliste, löschen</string>

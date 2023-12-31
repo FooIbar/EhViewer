@@ -303,7 +303,6 @@
     <string name="settings_download_restore_download_items">다운로드 항목 복구</string>
     <string name="settings_download_restore_download_items_summary">다운로드 위치에 존재하는 모든 다운로드 항목 복구</string>
     <string name="settings_download_restore_not_found">복구할 다운로드 항목을 찾을 수 없습니다.</string>
-    <string name="settings_download_restore_failed">복구하지 못했습니다.</string>
     <string name="settings_download_restore_successfully">%d개 항목을 복구했습니다.</string>
     <string name="settings_download_clean_redundancy">잉여 파일 삭제</string>
     <string name="settings_download_clean_redundancy_summary">다운로드 위치에 존재하지만 다운로드 목록에는 없는 갤러리 이미지 제거</string>

@@ -276,11 +276,15 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         moveToNext()
     }
 
+    override fun refreshAdapter() {
+        refreshAdapter(pager.currentItem)
+    }
+
     /**
      * Resets the adapter in order to recreate all the views. Used when a image configuration is
      * changed.
      */
-    private fun refreshAdapter(currentItem: Int = pager.currentItem) {
+    private fun refreshAdapter(currentItem: Int) {
         adapter.refresh()
         pager.adapter = adapter
         pager.setCurrentItem(currentItem, false)

@@ -43,10 +43,10 @@ fun ReaderPageSheet(page: ReaderPage, dismiss: () -> Unit) {
         Text(text = stringResource(id = text))
     }
     Item(icon = Icons.Default.Refresh, text = R.string.refresh) {
-        activity.mGalleryProvider?.retryPage(page.index)
+        activity.retryPage(page.index)
     }
     Item(icon = Icons.Default.Refresh, text = R.string.refresh_original) {
-        activity.mGalleryProvider?.retryPage(page.index, true)
+        activity.retryPage(page.index, true)
     }
     Item(icon = Icons.Default.Share, text = R.string.action_share) {
         activity.shareImage(page.index)

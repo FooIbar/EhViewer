@@ -328,7 +328,6 @@
     <string name="settings_download_restore_download_items">ダウンロードタスクを復元</string>
     <string name="settings_download_restore_download_items_summary">ダウンロードディレクトリのダウンロードタスクを復元</string>
     <string name="settings_download_restore_not_found">復元可能なダウンロードが見つかりません</string>
-    <string name="settings_download_restore_failed">復元できませんでした</string>
     <string name="settings_download_restore_successfully">%d件のタスクが復元されました</string>
     <string name="settings_download_clean_redundancy">ダウンロードフォルダの不要なファイルを整理</string>
     <string name="settings_download_clean_redundancy_summary">ダウンロードディレクトリからダウンロードタスクにない画像ファイルを削除</string>

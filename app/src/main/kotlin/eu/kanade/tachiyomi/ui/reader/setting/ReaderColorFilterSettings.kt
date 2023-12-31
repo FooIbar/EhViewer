@@ -47,10 +47,7 @@ class ReaderColorFilterSettings @JvmOverloads constructor(context: Context, attr
             val activity = context as ReaderActivity
 
             readerPreferences.cropBorders().asHotFlow {
-                with(activity) {
-                    mGalleryProvider?.restart()
-                    setGallery()
-                }
+                activity.restartGalleryProvider()
             }.launchIn(activity.lifecycleScope)
 
             readerPreferences.wideColorGamut().asHotFlow {
@@ -59,8 +56,7 @@ class ReaderColorFilterSettings @JvmOverloads constructor(context: Context, attr
                 with(activity) {
                     if (window.colorMode != colorMode) {
                         window.colorMode = colorMode
-                        mGalleryProvider?.restart()
-                        setGallery()
+                        restartGalleryProvider()
                     }
                 }
             }.launchIn(activity.lifecycleScope)

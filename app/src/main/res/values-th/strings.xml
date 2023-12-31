@@ -318,7 +318,6 @@
     <string name="settings_download_restore_download_items">คืนรายการดาวน์โหลด</string>
     <string name="settings_download_restore_download_items_summary">คืนรายการดาวน์โหลดทั้งหมดในแหล่งดาวน์โหลด</string>
     <string name="settings_download_restore_not_found">ไม่พบรายการดาวน์โหลดที่จะคืนค่า</string>
-    <string name="settings_download_restore_failed">การคืนค่าล้มเหลว</string>
     <string name="settings_download_restore_successfully">การคืนค่า %d รายการสำเร็จแล้ว</string>
     <string name="settings_download_clean_redundancy">ลบการดาวน์โหลดที่ไม่จำเป็น</string>
     <string name="settings_download_clean_redundancy_summary">ลบรูปภาพแกลเลอรี่ที่ไม่ได้อยู่ในรายการดาวน์โหลด แต่อยู่ในแหล่งดาวน์โหลด</string>
