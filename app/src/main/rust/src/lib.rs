@@ -91,7 +91,7 @@ where
                     let slice = slice_from_raw_parts_mut(ptr, 0x80000);
                     Cursor::new(&mut *slice)
                 };
-                serde_json::to_writer(&mut cursor, &value).unwrap();
+                serde_cbor::to_writer(&mut cursor, &value).unwrap();
                 cursor.position() as i32
             }
         }
