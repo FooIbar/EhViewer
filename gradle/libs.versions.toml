@@ -1,5 +1,5 @@
 [versions]
-aboutlibraries = "10.9.2"
+aboutlibraries = "10.10.0"
 agp = "8.2.0"
 android-tools-r8 = "8.3.16-dev"
 androidx-activity = "1.8.2"
