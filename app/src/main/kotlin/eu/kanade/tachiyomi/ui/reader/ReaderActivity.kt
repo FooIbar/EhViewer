@@ -146,7 +146,7 @@ class ReaderActivity : EhActivity() {
      * Whether the menu is currently visible.
      */
     var menuVisible by mutableStateOf(false)
-    var mGalleryProvider by lazyMut { vm::galleryProvider }
+    private var mGalleryProvider by lazyMut { vm::galleryProvider }
     private var mCurrentIndex: Int = 0
 
     private val galleryDetailUrl: String?
@@ -338,7 +338,18 @@ class ReaderActivity : EhActivity() {
         initializeMenu()
     }
 
-    fun setGallery() {
+    fun retryPage(index: Int, orgImg: Boolean = false) {
+        mGalleryProvider?.retryPage(index, orgImg)
+    }
+
+    fun restartGalleryProvider() {
+        mGalleryProvider?.let {
+            it.restart()
+            viewer?.refreshAdapter()
+        }
+    }
+
+    private fun setGallery() {
         if (mGalleryProvider?.isReady != true) return
 
         // Get start page
