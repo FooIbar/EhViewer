@@ -77,6 +77,7 @@ import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
@@ -379,22 +380,22 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
                 val info = checkedInfoMap.run { toMap().values.also { clear() } }
                 if (srcCat != dstCat) {
-                    if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
-                        // Move from local to cloud
-                        EhDB.removeLocalFavorites(info)
-                        val galleryList = info.map { it.gid to it.token!! }
-                        runSuspendCatching {
+                    runSuspendCatching {
+                        if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
+                            // Move from local to cloud
+                            val galleryList = info.map { it.gid to it.token!! }
                             EhEngine.addFavorites(galleryList, dstCat)
-                        }
-                    } else if (dstCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
-                        // Move from cloud to local
-                        EhDB.putLocalFavorites(info)
-                    } else {
-                        // Move from cloud to cloud
-                        val gidArray = info.mapToLongArray(BaseGalleryInfo::gid)
-                        runSuspendCatching {
+                            EhDB.removeLocalFavorites(info)
+                        } else if (dstCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
+                            // Move from cloud to local
+                            EhDB.putLocalFavorites(info)
+                        } else {
+                            // Move from cloud to cloud
+                            val gidArray = info.mapToLongArray(BaseGalleryInfo::gid)
                             EhEngine.modifyFavorites(gidArray, srcCat, dstCat)
                         }
+                    }.onFailure {
+                        activity.showTip(ExceptionUtils.getReadableString(it))
                     }
                     data.refresh()
                 }
