@@ -19,7 +19,7 @@ use serde::Serialize;
 use std::ffi::c_void;
 use std::io::Cursor;
 use std::panic::{catch_unwind, UnwindSafe};
-use std::ptr::slice_from_raw_parts;
+use std::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
 use std::str::from_utf8_unchecked;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
 
@@ -75,10 +75,9 @@ where
     R: Serialize,
 {
     let ptr = env.get_direct_buffer_address(&str).unwrap();
-    let (html, buffer) = unsafe {
+    let html = unsafe {
         let buff = slice_from_raw_parts(ptr, limit as usize);
-        let vec = Vec::from_raw_parts(ptr, limit as usize, 0x80000);
-        (from_utf8_unchecked(&*buff), vec)
+        from_utf8_unchecked(&*buff)
     };
     let f = move || {
         let dom = tl::parse(html, tl::ParserOptions::default()).unwrap();
@@ -88,7 +87,10 @@ where
             // Nothing to marshal
             None => 0,
             Some(value) => {
-                let mut cursor = Cursor::new(buffer);
+                let mut cursor = unsafe {
+                    let slice = slice_from_raw_parts_mut(ptr, 0x80000);
+                    Cursor::new(&mut *slice)
+                };
                 serde_json::to_writer(&mut cursor, &value).unwrap();
                 cursor.position() as i32
             }
