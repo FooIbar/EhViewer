@@ -1,5 +1,27 @@
 # 变更日志
 
+## [1.10.2] - 2023-12-31
+
+### 新功能
+
+* [阅读器] 支持裁剪图片黑色/白色边缘
+
+### 改进
+
+* 切换 HTTP 引擎无需重启
+* 优化过渡动画
+* 杂项性能优化
+
+### Bug 修复
+
+* 修复搜索建议中出现关键词相同的条目时崩溃 [#533](https://github.com/FooIbar/EhViewer/issues/533) [#555](https://github.com/FooIbar/EhViewer/issues/555)
+* 修复重命名下载标签时不显示原标签 [#534](https://github.com/FooIbar/EhViewer/issues/534)
+* 修复调整下载项目顺序时卡顿 [#552](https://github.com/FooIbar/EhViewer/issues/552)
+* 修复新增或修改评论后黑屏 [#554](https://github.com/FooIbar/EhViewer/issues/554)
+* 修复剪贴板读取bug [#566](https://github.com/FooIbar/EhViewer/issues/566)
+* 修复画廊信息对话框无法通过返回按钮/手势关闭 [#413](https://github.com/FooIbar/EhViewer/issues/413)
+
+
 ## [1.10.1] - 2023-12-19
 
 ### 重大变更
