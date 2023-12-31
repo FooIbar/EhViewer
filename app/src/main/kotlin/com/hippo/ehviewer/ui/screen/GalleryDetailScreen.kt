@@ -1136,7 +1136,13 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             contentDescription = null,
                         )
                     }
-                    IconButton(onClick = { AppHelper.share(activity, galleryDetailUrl) }) {
+                    IconButton(
+                        onClick = {
+                            AppHelper.share(activity, galleryDetailUrl)
+                            // In case the link is copied to the clipboard
+                            Settings.clipboardTextHashCode = galleryDetailUrl.hashCode()
+                        },
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = null,
