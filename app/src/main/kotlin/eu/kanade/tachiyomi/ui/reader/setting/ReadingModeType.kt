@@ -22,14 +22,14 @@ enum class ReadingModeType(val prefValue: Int, @StringRes val stringRes: Int, @D
     companion object {
         const val MASK = 0x00000007
 
-        fun fromPreference(preference: Int?): ReadingModeType = values().find { it.flagValue == preference } ?: DEFAULT
+        fun fromPreference(preference: Int?): ReadingModeType = entries.find { it.flagValue == preference } ?: DEFAULT
 
         fun isPagerType(preference: Int): Boolean {
             val mode = fromPreference(preference)
             return mode == LEFT_TO_RIGHT || mode == RIGHT_TO_LEFT || mode == VERTICAL
         }
 
-        fun fromSpinner(position: Int?) = values().find { value -> value.prefValue == position } ?: DEFAULT
+        fun fromSpinner(position: Int?) = entries.find { value -> value.prefValue == position } ?: DEFAULT
 
         fun toViewer(preference: Int?, activity: ReaderActivity): BaseViewer {
             return when (fromPreference(preference)) {

@@ -31,7 +31,7 @@ object ProfileParser {
             val avatar = runCatching {
                 val avatar =
                     profilename.nextElementSibling()!!.nextElementSibling()!!.child(0).attr("src")
-                if (avatar.isNullOrEmpty()) {
+                if (avatar.isEmpty()) {
                     null
                 } else if (!avatar.startsWith("http")) {
                     EhUrl.URL_FORUMS + avatar

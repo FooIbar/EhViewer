@@ -31,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,7 +97,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 fun FavouritesScreen(navigator: DestinationsNavigator) {
     // Meta State
     var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
-    var searchBarOffsetY by remember { mutableStateOf(0) }
+    var searchBarOffsetY by remember { mutableIntStateOf(0) }
 
     // Derived State
     val keyword = remember(urlBuilder) { urlBuilder.keyword.orEmpty() }

@@ -26,6 +26,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,7 +54,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.util.lerp
 import com.hippo.ehviewer.ui.tools.animateFloatMergeOneWayPredictiveBackAsState
 import kotlin.math.roundToInt
@@ -256,7 +256,7 @@ fun ModalNavigationDrawer(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    var minValue by remember { mutableStateOf(-with(density) { ContainerWidth.toPx() }) }
+    var minValue by remember { mutableFloatStateOf(-with(density) { ContainerWidth.toPx() }) }
     val maxValue = 0f
 
     SideEffect {
@@ -393,7 +393,7 @@ fun SideDrawer(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    var minValue by remember { mutableStateOf(with(density) { ContainerWidth.toPx() }) }
+    var minValue by remember { mutableFloatStateOf(with(density) { ContainerWidth.toPx() }) }
     val maxValue = 0f
 
     SideEffect {
