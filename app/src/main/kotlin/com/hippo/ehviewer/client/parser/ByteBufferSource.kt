@@ -1,7 +1,9 @@
 package com.hippo.ehviewer.client.parser
 
 import com.hippo.ehviewer.client.parseAs
+import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
+import kotlin.system.measureNanoTime
 import okio.Buffer
 import okio.Source
 import okio.Timeout
@@ -27,8 +29,15 @@ fun ByteBuffer.asSource() = object : Source {
 inline fun <reified T> unmarshalParsingAs(body: ByteBuffer, parser: (ByteBuffer, Int) -> Int): T {
     // We want to use cbor as it have smaller output size
     // But we would rather reuse allocated ByteArrays (i.e. decode with okio Buffer)
-    val jsonBytes = parser(body, body.limit())
+    val jsonBytes: Int
+    measureNanoTime {
+        jsonBytes = parser(body, body.limit())
+    }.also { it.logcat { "Parse + marshal use $it ns" } }
     body.clear()
     body.limit(jsonBytes)
-    return body.asSource().buffer().use { it.parseAs<T>() }
+    val t: T
+    measureNanoTime {
+        t = body.asSource().buffer().use { it.parseAs<T>() }
+    }.also { it.logcat { "Unmarshal + allocate java use $it ns" } }
+    return t
 }
