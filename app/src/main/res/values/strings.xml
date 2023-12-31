@@ -143,7 +143,6 @@
     <string name="duplicate_quick_search">A duplicate quick search exists. The name is \"%s\".</string>
     <string name="duplicate_name">This name is already in use.</string>
     <string name="save_progress">Save progress</string>
-    <string name="delete_quick_search">Delete quick search \"%s\"?</string>
     <string name="go_to_hint">Page %1$d, total %2$d pages</string>
     <!-- search_min_rating -->
     <string name="any">Any</string>
@@ -305,7 +304,6 @@
     <string name="label_text_is_invalid">\"Default\" is an invalid label</string>
     <string name="label_text_exist">Label exists</string>
     <string name="rename_label_title">Rename label</string>
-    <string name="delete_label">Delete label \"%s\"?</string>
     <!-- History -->
     <string name="no_history">Viewed galleries will be shown here</string>
     <string name="clear_all">Clear all</string>
@@ -392,7 +390,6 @@
     <string name="settings_download_restore_download_items">Restore download items</string>
     <string name="settings_download_restore_download_items_summary">Restore all download items in download location</string>
     <string name="settings_download_restore_not_found">Not found download items to restore</string>
-    <string name="settings_download_restore_failed">Restore failed</string>
     <string name="settings_download_restore_successfully">Restore %d items successfully</string>
     <string name="settings_download_clean_redundancy">Clear download redundancy</string>
     <string name="settings_download_clean_redundancy_summary">Remove gallery images which are not in download list but in download location</string>
@@ -574,7 +571,6 @@
     <string name="list_tile_thumb_size">Thumb size in thumb mode</string>
     <string name="account_name">Account</string>
     <string name="preload_thumb_aggressively">Preload thumbs aggressively</string>
-    <string name="predictive_nav_anim">Enable predictive back navigation animation</string>
     <string name="user_agent">User Agent</string>
     <string name="auto_updates">Automatically check for updates</string>
     <string name="update_frequency_never">Never</string>

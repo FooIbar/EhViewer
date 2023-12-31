@@ -330,7 +330,6 @@
     <string name="settings_download_restore_download_items">Rétablir les galeries téléchargées</string>
     <string name="settings_download_restore_download_items_summary">Rétablir tous objets déjà téléchargés dans la destination de téléchargement</string>
     <string name="settings_download_restore_not_found">Aucun objet trouvé à rétablir</string>
-    <string name="settings_download_restore_failed">Échec de rétablissement</string>
     <string name="settings_download_restore_successfully">%d objets rétablis avec succès</string>
     <string name="settings_download_clean_redundancy">Effacer fiches inutiles de téléchargement</string>
     <string name="settings_download_clean_redundancy_summary">Effacer les fiches des galeries qui ne sont pas dans la liste de téléchargement mais se trouvent dans la destination de téléchargement</string>

@@ -103,7 +103,6 @@
     <string name="duplicate_quick_search">已存在相同的快速搜尋，名稱為“%s”。</string>
     <string name="duplicate_name">已經由重複的名稱了</string>
     <string name="save_progress">儲存進度</string>
-    <string name="delete_quick_search">刪除快速搜尋“%s”？</string>
     <string name="go_to_hint">第 %1$d 頁，共 %2$d 頁</string>
     <!-- search_min_rating -->
     <string name="any">不限</string>
@@ -263,7 +262,6 @@
     <string name="label_text_is_invalid">“預設”是無效的標籤</string>
     <string name="label_text_exist">標籤已存在</string>
     <string name="rename_label_title">重新命名標籤</string>
-    <string name="delete_label">刪除標籤“%s”？</string>
     <!-- History -->
     <string name="no_history">歷史紀錄將會顯示在這裡</string>
     <string name="clear_all">全部清除</string>
@@ -346,7 +344,6 @@
     <string name="settings_download_restore_download_items">復原下載的檔案</string>
     <string name="settings_download_restore_download_items_summary">復原下載路徑中的所有下載的檔案</string>
     <string name="settings_download_restore_not_found">未尋獲可復原的已下載檔案</string>
-    <string name="settings_download_restore_failed">復原失敗</string>
     <string name="settings_download_restore_successfully">成功復原 %d 項</string>
     <string name="settings_download_clean_redundancy">清除冗餘的檔案</string>
     <string name="settings_download_clean_redundancy_summary">清除已下載但不在下載列表中的圖檔</string>
