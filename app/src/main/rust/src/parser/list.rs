@@ -1,4 +1,3 @@
-use check_html;
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
@@ -101,7 +100,7 @@ fn parse_uploader_and_pages(str: &str) -> (Option<String>, bool, i32) {
         .map(|grp| grp[1].to_string());
     let pages = match regex!(r"<div>(\d+) pages</div>").captures(str) {
         None => 0,
-        Some(grp) => grp[1].parse().unwrap(),
+        Some(grp) => grp[1].parse().unwrap_or(0),
     };
     (uploader, str.contains("style=\"opacity:0.5\""), pages)
 }
@@ -109,7 +108,7 @@ fn parse_uploader_and_pages(str: &str) -> (Option<String>, bool, i32) {
 fn parse_thumb_resolution(str: &str) -> (i32, i32) {
     match regex!(r"height:(\d+)px;width:(\d+)px").captures(str) {
         None => (0, 0),
-        Some(grp) => (grp[1].parse().unwrap(), grp[2].parse().unwrap()),
+        Some(grp) => (grp[1].parse().unwrap_or(0), grp[2].parse().unwrap_or(0)),
     }
 }
 
@@ -129,7 +128,7 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
     let (thumb, (thumb_height, thumb_width)) =
         match tag.query_selector(parser, "[data-src]")?.next() {
             None => match tag.query_selector(parser, "[src]")?.next() {
-                None => panic!("No thumb found"),
+                None => return None,
                 Some(thumb) => (
                     get_node_handle_attr(&thumb, parser, "src")?,
                     parse_thumb_resolution(get_node_handle_attr(&thumb, parser, "style")?),
@@ -190,43 +189,52 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
     })
 }
 
-pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Option<GalleryListResult> {
-    check_html(str);
+pub fn parse_info_list(
+    dom: &VDom,
+    parser: &Parser,
+    str: &str,
+) -> Result<GalleryListResult, &'static str> {
+    if !str.contains('<') {
+        return Err("No content!");
+    }
     if str.contains("<p>You do not have any watched tags") {
-        panic!("No watched tags!")
+        return Err("No watched tags!");
     }
     if str.contains("No hits found</p>") || str.contains("No unfiltered results found") {
-        panic!("No hits found!")
+        return Err("No hits found!");
     }
-    let itg = get_vdom_first_element_by_class_name(dom, "itg")?;
-    let children = itg.children()?;
-    let iter = children.top().iter();
-    let info: Vec<BaseGalleryInfo> = iter
-        .filter_map(|x| parse_gallery_info(x.get(parser)?, parser))
-        .collect();
-    let prev = dom.get_element_by_id("uprev").and_then(|e| {
-        let str = get_node_handle_attr(&e, parser, "href")?;
-        Some(
-            regex!("prev=(\\d+(-\\d+)?)")
-                .captures(str)?
-                .index(1)
-                .to_string(),
-        )
-    });
-    let next = dom.get_element_by_id("unext").and_then(|e| {
-        let str = get_node_handle_attr(&e, parser, "href")?;
-        Some(
-            regex!("next=(\\d+(-\\d+)?)")
-                .captures(str)?
-                .index(1)
-                .to_string(),
-        )
-    });
-    (!info.is_empty()).then_some(GalleryListResult {
-        prev,
-        next,
-        galleryInfoList: info,
-    })
+    let f = || {
+        let itg = get_vdom_first_element_by_class_name(dom, "itg")?;
+        let children = itg.children()?;
+        let iter = children.top().iter();
+        let info: Vec<BaseGalleryInfo> = iter
+            .filter_map(|x| parse_gallery_info(x.get(parser)?, parser))
+            .collect();
+        let prev = dom.get_element_by_id("uprev").and_then(|e| {
+            let str = get_node_handle_attr(&e, parser, "href")?;
+            Some(
+                regex!("prev=(\\d+(-\\d+)?)")
+                    .captures(str)?
+                    .index(1)
+                    .to_string(),
+            )
+        });
+        let next = dom.get_element_by_id("unext").and_then(|e| {
+            let str = get_node_handle_attr(&e, parser, "href")?;
+            Some(
+                regex!("next=(\\d+(-\\d+)?)")
+                    .captures(str)?
+                    .index(1)
+                    .to_string(),
+            )
+        });
+        (!info.is_empty()).then_some(GalleryListResult {
+            prev,
+            next,
+            galleryInfoList: info,
+        })
+    };
+    f().ok_or("No content")
 }
 
 #[no_mangle]

@@ -18,13 +18,13 @@ struct Torrent {
     name: String,
 }
 
-fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Option<Vec<Torrent>> {
-    let list = dom.query_selector("table")?.filter_map(|e| {
+fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>, &'static str> {
+    let list = dom.query_selector("table").ok_or("No Table")?.filter_map(|e| {
         let html = e.get(parser)?.inner_html(parser);
         if html.contains("Expunged") {
             None
         } else {
-            let grp = regex!("</span> ([0-9-]+) [0-9:]+</td>[\\s\\S]+</span> ([0-9.]+ [KMGT]iB)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span>([^<]+)</td>[\\s\\S]+onclick=\"document.location='([^\"]+)'[^<]+>([^<]+)</a>").captures(&html).unwrap();
+            let grp = regex!("</span> ([0-9-]+) [0-9:]+</td>[\\s\\S]+</span> ([0-9.]+ [KMGT]iB)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span>([^<]+)</td>[\\s\\S]+onclick=\"document.location='([^\"]+)'[^<]+>([^<]+)</a>").captures(&html)?;
             let name = unescape(&grp[8]).ok()?;
             Some(Torrent {
                 posted: grp[1].to_string(),
@@ -37,7 +37,7 @@ fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Option<Vec<Torrent>> {
             })
         }
     }).collect::<Vec<Torrent>>();
-    Some(list)
+    Ok(list)
 }
 
 #[no_mangle]
