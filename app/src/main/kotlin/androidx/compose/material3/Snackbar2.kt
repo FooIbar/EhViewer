@@ -109,7 +109,7 @@ fun Snackbar2(
                             Icons.Filled.Close,
                             contentDescription = null,
                             // Workaround for regression of https://android-review.googlesource.com/c/platform/frameworks/support/+/2881006
-                            tint = SnackbarDefaults.dismissActionContentColor,
+                            tint = dismissActionContentColor,
                         )
                     },
                 )
