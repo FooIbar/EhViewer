@@ -14,5 +14,5 @@ inline fun <T> Collection<T>.mapToLongArray(transform: (T) -> Long): LongArray {
 }
 
 inline fun <R : Any> LongArray.mapNotNull(transform: (Long) -> R?): List<R> {
-    return mapNotNullTo(ArrayList<R>(), transform)
+    return mapNotNullTo(ArrayList(), transform)
 }

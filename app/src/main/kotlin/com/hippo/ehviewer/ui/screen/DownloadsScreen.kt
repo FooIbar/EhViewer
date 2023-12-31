@@ -44,6 +44,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -112,8 +113,8 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 fun DownloadsScreen(navigator: DestinationsNavigator) {
     var label by Settings::recentDownloadLabel.observed
     var keyword by rememberSaveable { mutableStateOf<String?>(null) }
-    var filterType by rememberSaveable { mutableStateOf(-1) }
-    var searchBarOffsetY by remember(label) { mutableStateOf(0) }
+    var filterType by rememberSaveable { mutableIntStateOf(-1) }
+    var searchBarOffsetY by remember(label) { mutableIntStateOf(0) }
     val searchFieldState = rememberTextFieldState()
     val checkedInfoMap = remember { mutableStateMapOf<Long, DownloadInfo>() }
     val selectMode by rememberUpdatedState(checkedInfoMap.isNotEmpty())
@@ -202,7 +203,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 labelList.apply { add(toPosition, removeAt(fromPosition)) }
                 view.performHapticFeedback(draggingHapticFeedback)
             }
-            var fromIndex by remember { mutableStateOf(-1) }
+            var fromIndex by remember { mutableIntStateOf(-1) }
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = labelsListState,
@@ -425,7 +426,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 }
             }
         }
-        var fromIndex by remember { mutableStateOf(-1) }
+        var fromIndex by remember { mutableIntStateOf(-1) }
         FastScrollLazyColumn(
             modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
             state = listState,

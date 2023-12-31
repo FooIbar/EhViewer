@@ -179,7 +179,7 @@ fun ToplistScreen(navigator: DestinationsNavigator) =
 fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val searchFieldState = rememberTextFieldState()
     var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
-    var searchBarOffsetY by remember { mutableStateOf(0) }
+    var searchBarOffsetY by remember { mutableIntStateOf(0) }
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
 
     var category by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
@@ -410,7 +410,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         quickSearchList.apply { add(toIndex, removeAt(fromIndex)) }
                         view.performHapticFeedback(draggingHapticFeedback)
                     }
-                    var fromIndex by remember { mutableStateOf(-1) }
+                    var fromIndex by remember { mutableIntStateOf(-1) }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         state = quickSearchListState,

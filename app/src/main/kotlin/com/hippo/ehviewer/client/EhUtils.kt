@@ -99,7 +99,7 @@ object EhUtils {
     }
 
     fun getCategory(type: Int): String {
-        return CATEGORY_VALUES.getOrDefault(type, CATEGORY_VALUES[UNKNOWN])!![0]
+        return CATEGORY_VALUES.getOrDefault(type, CATEGORY_VALUES[UNKNOWN]!!)[0]
     }
 
     @SuppressLint("RestrictedApi")
