@@ -12,11 +12,10 @@ inline fun <reified T> unmarshalParsingAs(body: ByteBuffer, parser: (ByteBuffer,
     measureNanoTime {
         jsonBytes = parser(body, body.limit())
     }.also { it.logcat { "Parse + marshal use $it ns" } }
-    body.clear()
     body.limit(jsonBytes)
     val t: T
     measureNanoTime {
-        val array = body.slice().moveToByteArray()
+        val array = body.moveToByteArray()
         t = Cbor.decodeFromByteArray(array)
     }.also { it.logcat { "Unmarshal + allocate java use $it ns" } }
     return t
