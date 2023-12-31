@@ -18,7 +18,6 @@ use log::LevelFilter;
 use serde::Serialize;
 use std::ffi::c_void;
 use std::io::Cursor;
-use std::panic::{catch_unwind, UnwindSafe};
 use std::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
 use std::str::from_utf8_unchecked;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
@@ -33,12 +32,6 @@ macro_rules! regex {
 
 const EHGT_PREFIX: &str = "https://ehgt.org/";
 const EX_PREFIX: &str = "https://s.exhentai.org/";
-
-fn check_html(str: &str) {
-    if !str.contains('<') {
-        panic!("{}", str)
-    }
-}
 
 fn get_vdom_first_element_by_class_name<'a>(dom: &'a VDom, name: &str) -> Option<&'a Node<'a>> {
     let handle = dom.get_elements_by_class_name(name).next()?;
@@ -71,7 +64,7 @@ where
 
 fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, mut f: F) -> i32
 where
-    F: FnMut(&VDom, &Parser, &str) -> Option<R> + UnwindSafe,
+    F: FnMut(&VDom, &Parser, &str) -> Result<R, &'static str>,
     R: Serialize,
 {
     let ptr = env.get_direct_buffer_address(&str).unwrap();
@@ -79,35 +72,30 @@ where
         let buff = slice_from_raw_parts(ptr, limit as usize);
         from_utf8_unchecked(&*buff)
     };
-    let f = move || {
-        let dom = tl::parse(html, tl::ParserOptions::default()).unwrap();
+    let mut f = || {
+        let dom = tl::parse(html, tl::ParserOptions::default()).map_err(|_| "Illegal html!")?;
         let parser = dom.parser();
-        let result = f(&dom, parser, html);
-        match result {
-            // Nothing to marshal
-            None => 0,
-            Some(value) => {
-                let mut cursor = unsafe {
-                    let slice = slice_from_raw_parts_mut(ptr, 0x80000);
-                    Cursor::new(&mut *slice)
-                };
-                serde_cbor::to_writer(&mut cursor, &value).unwrap();
-                cursor.position() as i32
-            }
-        }
+        f(&dom, parser, html)
     };
-    match catch_unwind(f) {
-        Ok(result) => result,
+    match f() {
+        // Nothing to marshal
         Err(err) => {
-            let msg = match err.downcast_ref::<&'static str>() {
-                Some(s) => *s,
-                None => match err.downcast_ref::<String>() {
-                    Some(s) => &s[..],
-                    None => "Box<dyn Any>",
-                },
-            };
-            env.throw_new("java/lang/RuntimeException", msg).unwrap();
+            env.throw_new("java/lang/RuntimeException", err).ok();
             0
+        }
+        Ok(value) => {
+            let mut cursor = unsafe {
+                let slice = slice_from_raw_parts_mut(ptr, 0x80000);
+                Cursor::new(&mut *slice)
+            };
+            match serde_cbor::to_writer(&mut cursor, &value) {
+                Ok(_) => cursor.position() as i32,
+                Err(err) => {
+                    env.throw_new("java/lang/RuntimeException", format!("{}", err))
+                        .ok();
+                    0
+                }
+            }
         }
     }
 }

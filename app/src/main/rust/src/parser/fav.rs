@@ -17,9 +17,9 @@ struct FavResult {
     galleryListResult: GalleryListResult,
 }
 
-fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Option<FavResult> {
+fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult, &'static str> {
     if html.contains("This page requires you to log on.</p>") {
-        panic!("Not logged in!")
+        return Err("Not logged in!");
     }
     let vec: Vec<(String, i32)> = dom
         .get_elements_by_class_name("fp")
@@ -43,13 +43,13 @@ fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Option<FavResult> {
     if vec.len() == 10 {
         let list = parse_info_list(dom, parser, html)?;
         let cat = vec.iter().cloned().unzip();
-        Some(FavResult {
+        Ok(FavResult {
             catArray: cat.0,
             countArray: cat.1,
             galleryListResult: list,
         })
     } else {
-        None
+        Err("Illegal fav cat count!")
     }
 }
 
