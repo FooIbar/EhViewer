@@ -18,6 +18,7 @@ package com.hippo.ehviewer
 
 import android.app.Application
 import android.content.ComponentCallbacks2
+import android.content.Context
 import android.os.StrictMode
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
@@ -180,7 +181,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         }
     }
 
-    override fun newImageLoader() = imageLoader {
+    override fun newImageLoader(context: Context) = imageLoader(context) {
         components {
             add(NetworkFetcher.Factory(unsafeLazy { ktorClient }))
             if (isAtLeastP) {
