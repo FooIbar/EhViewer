@@ -50,7 +50,6 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
-import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import kotlin.math.min
 import okio.FileSystem
@@ -59,26 +58,36 @@ import okio.source
 import splitties.init.appCtx
 
 private val CropAspect = 0.1..100.0
+private fun useSoftwareAllocation() = Settings.evictQRCode.value || Settings.cropBorder.value
 
 class Image private constructor(drawable: Drawable, private val src: AutoCloseable) {
     val size = drawable.run { intrinsicHeight * intrinsicWidth * 4 * if (this is Animatable) 4 else 1 }
     private val intrinsicRect = drawable.run { Rect(0, 0, intrinsicWidth, intrinsicHeight) }
+    var isQRCode = false
 
-    var mObtainedDrawable: Drawable? = if (drawable is Animatable) {
+    var innerDrawable: Drawable? = if (drawable is Animatable) {
         // Cannot crop animated image's border
         drawable
     } else {
-        if (Settings.cropBorder.value) {
+        if (useSoftwareAllocation()) {
             val bitmap = (drawable as BitmapDrawable).bitmap
-            val array = detectBorder(bitmap)
-            val isQRCode = detectQRCode(bitmap)
-            logcat { isQRCode.toString() }
-            val rect = with(bitmap) {
-                val r = Rect(array[0], array[1], array[2], array[3])
-                val aspectAfterCrop = r.height().toFloat() / r.width()
-                if (aspectAfterCrop in CropAspect) r else intrinsicRect
+
+            // Detect border
+            val rect = if (Settings.cropBorder.value) {
+                val array = detectBorder(bitmap)
+                with(bitmap) {
+                    val r = Rect(array[0], array[1], array[2], array[3])
+                    val aspectAfterCrop = r.height().toFloat() / r.width()
+                    if (aspectAfterCrop in CropAspect) r else intrinsicRect
+                }
+            } else {
+                intrinsicRect
             }
 
+            // Detect QRCode
+            if (Settings.evictQRCode.value) isQRCode = detectQRCode(bitmap)
+
+            // Upload to HWBuffer if possible
             val final = if (isAtLeastQ) {
                 // Upload to Graphical Buffer to accelerate render
                 bitmap.copy(Bitmap.Config.HARDWARE, false).apply {
@@ -96,11 +105,11 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
 
     @Synchronized
     fun recycle() {
-        (mObtainedDrawable as? Animatable)?.stop()
-        (mObtainedDrawable as? BitmapDrawable)?.bitmap?.recycle()
-        mObtainedDrawable?.callback = null
-        if (mObtainedDrawable is Animatable) src.close()
-        mObtainedDrawable = null
+        (innerDrawable as? Animatable)?.stop()
+        (innerDrawable as? BitmapDrawable)?.bitmap?.recycle()
+        innerDrawable?.callback = null
+        if (innerDrawable is Animatable) src.close()
+        innerDrawable = null
     }
 
     companion object {
@@ -197,7 +206,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
 
         @RequiresApi(Build.VERSION_CODES.P)
         private fun decodeDrawable(src: Source) = ImageDecoder.decodeDrawable(src) { decoder, info, _ ->
-            if (!isAtLeastQ || Settings.cropBorder.value) {
+            if (!isAtLeastQ || useSoftwareAllocation()) {
                 decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
             }
             decoder.setTargetColorSpace(colorSpace)

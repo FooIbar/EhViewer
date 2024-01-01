@@ -97,7 +97,13 @@ class PagerPageHolder(
                 setDownloading()
             }
             Page.State.READY -> {
-                page.image?.mObtainedDrawable?.let { setImage(it) }
+                page.image?.apply {
+                    if (isQRCode) {
+                        isVisible = false
+                    } else {
+                        innerDrawable?.let { setImage(it) }
+                    }
+                }
                 cancelProgressJob()
             }
             Page.State.ERROR -> {

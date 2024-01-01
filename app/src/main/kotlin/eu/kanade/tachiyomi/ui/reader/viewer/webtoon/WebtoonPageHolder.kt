@@ -145,7 +145,13 @@ class WebtoonPageHolder(
                 setDownloading()
             }
             Page.State.READY -> {
-                page?.image?.mObtainedDrawable?.let { setImage(it) }
+                page?.image?.apply {
+                    if (isQRCode) {
+                        frame.isVisible = false
+                    } else {
+                        innerDrawable?.let { setImage(it) }
+                    }
+                }
                 cancelProgressJob()
             }
             Page.State.ERROR -> {

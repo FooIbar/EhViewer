@@ -173,6 +173,7 @@ object Settings : DataStorePreferences(null) {
 
     // Tachiyomi Reader
     val cropBorder = boolPref("crop_borders", false)
+    val evictQRCode = boolPref("evict_qrcode", false)
     val colorFilter = boolPref("pref_color_filter_key", false)
     val colorFilterValue = intPref("color_filter_value", 0)
     val colorFilterMode = intPref("color_filter_mode", 0)
