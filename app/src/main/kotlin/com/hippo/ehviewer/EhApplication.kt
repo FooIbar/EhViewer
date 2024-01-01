@@ -177,7 +177,8 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
         if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) {
-            galleryDetailCache.evictAll()
+            // Keep one entry for GalleryCommentsScreen
+            galleryDetailCache.trimToSize(1)
         }
     }
 
