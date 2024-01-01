@@ -76,7 +76,10 @@ FetchContent_MakeAvailable(libarchive)
 include_directories(${libarchive_SOURCE_DIR}/libarchive)
 
 # Build and link our app's native lib
-add_library(${PROJECT_NAME} SHARED archive.c border.c gifutils.c natsort/strnatcmp.c)
-target_link_libraries(${PROJECT_NAME} archive_static log jnigraphics)
-
-add_custom_target("noop")
+if (MARSHMALLOW)
+    add_library(${PROJECT_NAME} SHARED border.c)
+    target_link_libraries(${PROJECT_NAME} jnigraphics)
+else ()
+    add_library(${PROJECT_NAME} SHARED archive.c border.c gifutils.c natsort/strnatcmp.c)
+    target_link_libraries(${PROJECT_NAME} archive_static log jnigraphics)
+endif ()

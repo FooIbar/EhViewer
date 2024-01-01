@@ -103,7 +103,7 @@ android {
             versionNameSuffix = "-M"
             externalNativeBuild {
                 cmake {
-                    targets += "noop"
+                    arguments("-DMARSHMALLOW=1")
                 }
             }
             compileOptions {
