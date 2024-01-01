@@ -99,7 +99,7 @@ class PagerPageHolder(
             Page.State.READY -> {
                 page.image?.apply {
                     if (isQRCode) {
-                        isVisible = false
+                        viewer.adapter.evictQRCodePages()
                     } else {
                         innerDrawable?.let { setImage(it) }
                     }

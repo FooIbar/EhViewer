@@ -80,4 +80,12 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
     fun refresh() {
         readerThemedContext = viewer.activity.createReaderThemeContext()
     }
+
+    fun evictQRCodePages() {
+        val hasQRCode = items.any { it.image?.isQRCode == true }
+        if (hasQRCode) {
+            items = items.filterNot { it.image?.isQRCode == true }
+            notifyDataSetChanged()
+        }
+    }
 }
