@@ -568,7 +568,7 @@
     <string name="archive_need_passwd">Archive need password</string>
     <string name="passwd_wrong">Password Wrong</string>
     <string name="passwd_cannot_be_empty">Password can\'t be empty</string>
-    <string name="list_tile_thumb_size">Thumb size in thumb mode</string>
+    <string name="list_tile_thumb_size">Thumb size in detail mode</string>
     <string name="account_name">Account</string>
     <string name="preload_thumb_aggressively">Preload thumbs aggressively</string>
     <string name="user_agent">User Agent</string>
