@@ -47,14 +47,12 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
@@ -744,17 +742,11 @@ class ReaderActivity : EhActivity() {
     fun onPageLongTap(page: ReaderPage) {
         lifecycleScope.launch {
             dialogState.dialog {
-                val coroutineScope = rememberCoroutineScope()
-                fun dismiss() = it.cancel()
-                val sheetState = rememberModalBottomSheetState()
                 ModalBottomSheet(
-                    onDismissRequest = { dismiss() },
-                    sheetState = sheetState,
+                    onDismissRequest = { it.cancel() },
                     windowInsets = WindowInsets(0),
                 ) {
-                    ReaderPageSheet(page) {
-                        coroutineScope.launch { sheetState.hide() }
-                    }
+                    ReaderPageSheet(page) { it.cancel() }
                     Spacer(modifier = Modifier.navigationBarsPadding())
                 }
             }
