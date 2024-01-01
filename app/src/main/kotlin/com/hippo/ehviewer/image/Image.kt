@@ -40,6 +40,7 @@ import coil3.size.Scale
 import coil3.size.Size
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.jni.detectQRCode
 import com.hippo.ehviewer.jni.isGif
 import com.hippo.ehviewer.jni.mmap
 import com.hippo.ehviewer.jni.munmap
@@ -49,6 +50,7 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
+import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import kotlin.math.min
 import okio.FileSystem
@@ -69,6 +71,8 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
         if (Settings.cropBorder.value) {
             val bitmap = (drawable as BitmapDrawable).bitmap
             val array = detectBorder(bitmap)
+            val isQRCode = detectQRCode(bitmap)
+            logcat { isQRCode.toString() }
             val rect = with(bitmap) {
                 val r = Rect(array[0], array[1], array[2], array[3])
                 val aspectAfterCrop = r.height().toFloat() / r.width()

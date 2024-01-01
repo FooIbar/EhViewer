@@ -1,9 +1,11 @@
 mod parser;
 
 extern crate android_logger;
+extern crate image;
 extern crate jni;
 extern crate jni_fn;
 extern crate log;
+extern crate ndk;
 extern crate once_cell;
 extern crate quick_xml;
 extern crate regex_lite;
@@ -11,10 +13,13 @@ extern crate serde;
 extern crate tl;
 
 use android_logger::Config;
-use jni::objects::JByteBuffer;
-use jni::sys::{jint, JavaVM, JNI_VERSION_1_6};
+use image::{ImageBuffer, Rgba};
+use jni::objects::{JByteBuffer, JClass};
+use jni::sys::{jboolean, jint, jobject, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
+use jni_fn::jni_fn;
 use log::LevelFilter;
+use ndk::bitmap::Bitmap;
 use serde::Serialize;
 use std::ffi::c_void;
 use std::io::Cursor;
@@ -121,6 +126,24 @@ fn query_childs_first_match_attr<'a>(
     let selector = format!("[{}]", attr);
     let mut iter = node.as_tag()?.query_selector(parser, &selector)?;
     get_node_handle_attr(&iter.next()?, parser, attr)
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+#[jni_fn("com.hippo.ehviewer.jni.ImageKt")]
+pub fn detectQRCode(env: JNIEnv, _class: JClass, bitmap: jobject) -> jboolean {
+    let bm = unsafe { Bitmap::from_jni(env.get_raw(), bitmap) };
+    let info = bm.info().unwrap();
+    let byteCnt = info.width() * info.height() * 4;
+    let pixels = bm.lock_pixels().unwrap() as *mut u8;
+    let slice = unsafe { &*slice_from_raw_parts_mut(pixels, byteCnt as usize) };
+    let image: ImageBuffer<Rgba<u8>, &[u8]> =
+        ImageBuffer::from_raw(info.width(), info.height(), slice).unwrap();
+    let decoder = bardecoder::default_decoder();
+    let result = decoder.decode(&image);
+    bm.unlock_pixels().unwrap();
+    let any = result.iter().any(|re| re.is_ok());
+    any as jboolean
 }
 
 #[no_mangle]
