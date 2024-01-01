@@ -147,7 +147,7 @@ class WebtoonPageHolder(
             Page.State.READY -> {
                 page?.image?.apply {
                     if (isQRCode) {
-                        frame.isVisible = false
+                        viewer.adapter.evictQRCodePages()
                     } else {
                         innerDrawable?.let { setImage(it) }
                     }

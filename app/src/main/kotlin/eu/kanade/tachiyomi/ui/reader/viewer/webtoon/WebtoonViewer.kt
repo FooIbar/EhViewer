@@ -50,7 +50,7 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
     /**
      * Adapter of the recycler view.
      */
-    private val adapter = WebtoonAdapter(this)
+    val adapter = WebtoonAdapter(this)
 
     /**
      * Distance to scroll when the user taps on one side of the recycler view.

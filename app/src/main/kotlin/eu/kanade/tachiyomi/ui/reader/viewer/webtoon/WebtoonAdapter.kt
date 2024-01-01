@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
 
+import android.annotation.SuppressLint
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
@@ -72,6 +73,15 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : RecyclerView.Adapter<RecyclerV
         currentChapter?.cancelRequest(holder.bindingAdapterPosition)
         when (holder) {
             is WebtoonPageHolder -> holder.recycle()
+        }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun evictQRCodePages() {
+        val qrCode = items.any { it.image?.isQRCode == true }
+        if (qrCode) {
+            items = items.filterNot { it.image?.isQRCode == true }
+            notifyDataSetChanged()
         }
     }
 }
