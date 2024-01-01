@@ -128,11 +128,15 @@ fn query_childs_first_match_attr<'a>(
     get_node_handle_attr(&iter.next()?, parser, attr)
 }
 
+fn get_bitmap(env: JNIEnv, bitmap: jobject) -> Bitmap {
+    unsafe { Bitmap::from_jni(env.get_raw(), bitmap) }
+}
+
 #[no_mangle]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.jni.ImageKt")]
 pub fn detectQRCode(env: JNIEnv, _class: JClass, bitmap: jobject) -> jboolean {
-    let bm = unsafe { Bitmap::from_jni(env.get_raw(), bitmap) };
+    let bm = get_bitmap(env, bitmap);
     let info = bm.info().unwrap();
     let byteCnt = info.width() * info.height() * 4;
     let pixels = bm.lock_pixels().unwrap() as *mut u8;
