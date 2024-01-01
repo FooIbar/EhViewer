@@ -149,6 +149,15 @@
             android:text="@string/settings_read_reverse_volume"
             android:textColor="?android:attr/textColorSecondary" />
 
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/evict_qrcode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp"
+            android:text="@string/settings_evict_qrcode"
+            android:textColor="?android:attr/textColorSecondary" />
+
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

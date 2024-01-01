@@ -520,6 +520,7 @@
     <string name="already_latest_version">已是最新版本</string>
     <string name="permission_denied">权限被拒</string>
     <!-- Tachiyomi Reader Start-->
+    <string name="settings_evict_qrcode">隐藏含有二维码的页面(通常是广告)</string>
     <string name="action_settings">设置</string>
     <string name="action_retry">重试</string>
     <string name="action_share">分享</string>

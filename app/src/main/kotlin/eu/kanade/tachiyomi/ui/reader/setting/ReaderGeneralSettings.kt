@@ -27,6 +27,12 @@ class ReaderGeneralSettings @JvmOverloads constructor(context: Context, attrs: A
         addView(binding.root)
 
         initGeneralPreferences()
+
+        context as ReaderActivity
+
+        readerPreferences.evictQRCode().asHotFlow {
+            context.restartGalleryProvider()
+        }.launchIn(context.lifecycleScope)
     }
 
     /**
@@ -48,6 +54,7 @@ class ReaderGeneralSettings @JvmOverloads constructor(context: Context, attrs: A
 
         binding.keepscreen.bindToPreference(readerPreferences.keepScreenOn())
         binding.longTap.bindToPreference(readerPreferences.readWithLongTap())
+        binding.evictQrcode.bindToPreference(readerPreferences.evictQRCode())
         binding.pageTransitions.bindToPreference(readerPreferences.pageTransitions())
         binding.volumePage.bindToPreference(readerPreferences.readWithVolumeKeys())
         binding.reserveVolumePage.bindToPreference(readerPreferences.readWithVolumeKeysInverted())

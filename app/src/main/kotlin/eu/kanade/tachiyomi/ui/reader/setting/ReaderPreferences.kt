@@ -92,6 +92,8 @@ object ReaderPreferences {
 
     fun readWithLongTap() = preferenceStore.getBoolean("reader_long_tap", true)
 
+    fun evictQRCode() = preferenceStore.getBoolean("evict_qrcode", false)
+
     fun readWithVolumeKeys() = preferenceStore.getBoolean("reader_volume_keys", false)
 
     fun readWithVolumeKeysInterval() = preferenceStore.getInt("reader_volume_keys_interval", 0)
