@@ -101,9 +101,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
             handler?.uncaughtException(t, e)
         }
         super.onCreate()
-        if (isAtLeastP) {
-            System.loadLibrary("ehviewer")
-        }
+        System.loadLibrary("ehviewer")
         System.loadLibrary("ehviewer_rust")
         ReadableTime.initialize(this)
         lifecycleScope.launchIO {
