@@ -19,10 +19,7 @@ package com.hippo.ehviewer.image
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.ColorSpace
-import android.graphics.ImageDecoder
-import android.graphics.ImageDecoder.ImageInfo
 import android.graphics.Rect
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
@@ -34,15 +31,16 @@ import androidx.core.graphics.drawable.toDrawable
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import coil3.decode.DecodeUtils
+import coil3.BitmapImage
+import coil3.executeBlocking
 import coil3.imageLoader
+import coil3.request.CachePolicy
 import coil3.request.ErrorResult
 import coil3.request.SuccessResult
 import coil3.request.allowHardware
 import coil3.request.colorSpace
 import coil3.size.Precision
 import coil3.size.Scale
-import coil3.size.Size
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.jni.isGif
@@ -56,7 +54,6 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
 import java.nio.ByteBuffer
-import kotlin.math.min
 import splitties.init.appCtx
 
 private val CropAspect = 0.1..100.0
@@ -103,24 +100,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
     }
 
     companion object {
-        @RequiresApi(Build.VERSION_CODES.P)
-        fun calculateSampleSize(info: ImageInfo, targetHeight: Int, targetWeight: Int): Int {
-            return min(
-                info.size.width / targetWeight,
-                info.size.height / targetHeight,
-            ).coerceAtLeast(1)
-        }
-
         private val imageSearchMaxSize = appCtx.resources.getDimensionPixelOffset(R.dimen.image_search_max_size)
-
-        @delegate:RequiresApi(Build.VERSION_CODES.P)
-        val imageSearchDecoderSampleListener by lazy {
-            ImageDecoder.OnHeaderDecodedListener { decoder, info, _ ->
-                decoder.setTargetSampleSize(
-                    calculateSampleSize(info, imageSearchMaxSize, imageSearchMaxSize),
-                )
-            }
-        }
         private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 3 / 2
         private val targetHeight = appCtx.resources.displayMetrics.heightPixels * 3 / 2
 
@@ -130,11 +110,11 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
         @RequiresApi(Build.VERSION_CODES.O)
         lateinit var colorSpace: ColorSpace
 
-        suspend fun Either<ByteBufferSource, UniFileSource>.decodeCoil(): Drawable {
+        private suspend fun Either<ByteBufferSource, UniFileSource>.decodeCoil(): Drawable {
             val req = appCtx.imageRequest {
                 onLeft { data(it.source) }
                 onRight { data(it.source.uri) }
-                size(Size(targetWidth, targetHeight))
+                size(targetWidth, targetHeight)
                 scale(Scale.FILL)
                 precision(Precision.INEXACT)
                 if (isAtLeastO) {
@@ -143,6 +123,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                 if (Settings.cropBorder.value) {
                     allowHardware(false)
                 }
+                memoryCachePolicy(CachePolicy.DISABLED)
             }
             val image = when (val result = appCtx.imageLoader.execute(req)) {
                 is SuccessResult -> result.image
@@ -193,30 +174,18 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
             }.getOrNull()
         }
 
-        fun Context.decodeBitmap(uri: Uri): Bitmap? = if (isAtLeastP) {
-            val src = ImageDecoder.createSource(contentResolver, uri)
-            ImageDecoder.decodeBitmap(src, imageSearchDecoderSampleListener)
-        } else {
-            contentResolver.openFileDescriptor(uri, "r")!!.use {
-                val options = BitmapFactory.Options()
-
-                // Disable these since we straight up compress the bitmap to JPEG
-                options.inScaled = false
-                options.inPremultiplied = false
-
-                options.inJustDecodeBounds = true
-                BitmapFactory.decodeFileDescriptor(it.fileDescriptor, null, options)
-                options.inJustDecodeBounds = false
-
-                options.inSampleSize = DecodeUtils.calculateInSampleSize(
-                    options.outWidth,
-                    options.outHeight,
-                    imageSearchMaxSize,
-                    imageSearchMaxSize,
-                    Scale.FILL,
-                )
-                BitmapFactory.decodeFileDescriptor(it.fileDescriptor, null, options)
+        fun Context.decodeBitmap(uri: Uri): Bitmap {
+            val req = imageRequest {
+                memoryCachePolicy(CachePolicy.DISABLED)
+                data(uri)
+                size(imageSearchMaxSize)
+                scale(Scale.FILL)
             }
+            val image = when (val result = appCtx.imageLoader.executeBlocking(req)) {
+                is SuccessResult -> result.image
+                is ErrorResult -> throw result.throwable
+            }
+            return (image as BitmapImage).bitmap
         }
     }
 
