@@ -2,11 +2,11 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.drawable.Animatable
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import androidx.core.view.isVisible
+import coil3.BitmapImage
 import com.hippo.ehviewer.databinding.ReaderErrorBinding
+import com.hippo.ehviewer.image.Image
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
@@ -97,7 +97,7 @@ class PagerPageHolder(
                 setDownloading()
             }
             Page.State.READY -> {
-                page.image?.mObtainedDrawable?.let { setImage(it) }
+                page.image?.let { setImage(it) }
                 cancelProgressJob()
             }
             Page.State.ERROR -> {
@@ -148,12 +148,12 @@ class PagerPageHolder(
     /**
      * Called when the page is ready.
      */
-    private fun setImage(drawable: Drawable) {
+    private fun setImage(image: Image) {
         progressIndicator.setProgress(0)
         progressIndicator.hide()
         errorLayout?.root?.isVisible = false
         setImage(
-            drawable,
+            image,
             Config(
                 zoomDuration = viewer.config.doubleTapAnimDuration,
                 minimumScaleType = viewer.config.imageScaleType,
@@ -162,7 +162,7 @@ class PagerPageHolder(
                 landscapeZoom = viewer.config.landscapeZoom,
             ),
         )
-        if (drawable !is Animatable) {
+        if (image.innerImage is BitmapImage) {
             pageBackground = background
         }
     }
