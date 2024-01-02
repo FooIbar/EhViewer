@@ -29,6 +29,8 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.coroutineScope
 import coil3.SingletonImageLoader
 import coil3.asCoilImage
+import coil3.decode.AnimatedImageDecoderDecoder
+import coil3.decode.GifDecoder
 import coil3.fetch.NetworkFetcher
 import coil3.request.crossfade
 import coil3.util.DebugLogger
@@ -51,6 +53,7 @@ import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
+import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.ehviewer.util.isCronetAvailable
@@ -183,6 +186,11 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
             add(NetworkFetcher.Factory(unsafeLazy { ktorClient }))
             add(MergeInterceptor)
             add(DownloadThumbInterceptor)
+            if (isAtLeastP) {
+                add(AnimatedImageDecoderDecoder.Factory(false))
+            } else {
+                add(GifDecoder.Factory())
+            }
         }
         diskCache(imageCache)
         crossfade(300)
