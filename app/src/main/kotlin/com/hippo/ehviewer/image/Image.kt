@@ -56,17 +56,17 @@ import com.hippo.unifile.UniFile
 import java.nio.ByteBuffer
 import splitties.init.appCtx
 
-private val CropAspect = 0.1..100.0
+private const val CROP_THRESHOLD = 0.8f
 
 class Image private constructor(image: CoilImage, private val src: AutoCloseable) {
     val size = image.size
     private val intrinsicRect = image.run { Rect(0, 0, width, height) }
     val rect: Rect = if (Settings.cropBorder.value && image is BitmapImage) {
-        val bitmap = image.bitmap
-        val array = detectBorder(bitmap)
+        val array = detectBorder(image.bitmap)
         val r = Rect(array[0], array[1], array[2], array[3])
-        val aspectAfterCrop = r.height().toFloat() / r.width()
-        if (aspectAfterCrop in CropAspect) r else intrinsicRect
+        val minWidth = image.width * CROP_THRESHOLD
+        val minHeight = image.height * CROP_THRESHOLD
+        if (r.width() > minWidth && r.height() > minHeight) r else intrinsicRect
     } else {
         intrinsicRect
     }
