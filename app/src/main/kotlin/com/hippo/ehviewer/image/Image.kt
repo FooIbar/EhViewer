@@ -56,7 +56,7 @@ import com.hippo.unifile.UniFile
 import java.nio.ByteBuffer
 import splitties.init.appCtx
 
-private const val CROP_THRESHOLD = 0.8f
+private const val CROP_THRESHOLD = 0.75f
 
 class Image private constructor(image: CoilImage, private val src: AutoCloseable) {
     val size = image.size
