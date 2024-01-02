@@ -23,7 +23,6 @@ import android.graphics.BitmapFactory
 import android.graphics.ColorSpace
 import android.graphics.ImageDecoder
 import android.graphics.ImageDecoder.ImageInfo
-import android.graphics.ImageDecoder.Source
 import android.graphics.Rect
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
@@ -32,10 +31,16 @@ import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toDrawable
-import coil3.decode.BitmapFactoryDecoder
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import coil3.decode.DecodeUtils
-import coil3.decode.ImageSource
-import coil3.request.Options
+import coil3.imageLoader
+import coil3.request.ErrorResult
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import coil3.request.colorSpace
+import coil3.size.Precision
 import coil3.size.Scale
 import coil3.size.Size
 import com.hippo.ehviewer.R
@@ -44,16 +49,14 @@ import com.hippo.ehviewer.jni.isGif
 import com.hippo.ehviewer.jni.mmap
 import com.hippo.ehviewer.jni.munmap
 import com.hippo.ehviewer.jni.rewriteGifSource
+import com.hippo.ehviewer.ktbuilder.imageRequest
+import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
-import com.hippo.unifile.openInputStream
 import java.nio.ByteBuffer
 import kotlin.math.min
-import okio.FileSystem
-import okio.buffer
-import okio.source
 import splitties.init.appCtx
 
 private val CropAspect = 0.1..100.0
@@ -127,60 +130,59 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
         @RequiresApi(Build.VERSION_CODES.O)
         lateinit var colorSpace: ColorSpace
 
+        suspend fun Either<ByteBufferSource, UniFileSource>.decodeCoil(): Drawable {
+            val req = appCtx.imageRequest {
+                onLeft { data(it.source) }
+                onRight { data(it.source.uri) }
+                size(Size(targetWidth, targetHeight))
+                scale(Scale.FILL)
+                precision(Precision.INEXACT)
+                if (isAtLeastO) {
+                    colorSpace(colorSpace)
+                }
+                if (Settings.cropBorder.value) {
+                    allowHardware(false)
+                }
+            }
+            val image = when (val result = appCtx.imageLoader.execute(req)) {
+                is SuccessResult -> result.image
+                is ErrorResult -> throw result.throwable
+            }
+            return image.asDrawable(appCtx.resources)
+        }
+
         suspend fun decode(src: AutoCloseable): Image? {
             return runCatching {
                 when (src) {
                     is UniFileSource -> {
-                        if (isAtLeastP) {
-                            if (!isAtLeastU) {
-                                src.source.openFileDescriptor("rw").use {
-                                    val fd = it.fd
-                                    if (isGif(fd)) {
-                                        val buffer = mmap(fd)!!
-                                        val source = object : ByteBufferSource {
-                                            override val source = buffer
-                                            override fun close() {
-                                                munmap(buffer)
-                                                src.close()
-                                            }
+                        if (isAtLeastP && !isAtLeastU) {
+                            src.source.openFileDescriptor("rw").use {
+                                val fd = it.fd
+                                if (isGif(fd)) {
+                                    val buffer = mmap(fd)!!
+                                    val source = object : ByteBufferSource {
+                                        override val source = buffer
+                                        override fun close() {
+                                            munmap(buffer)
+                                            src.close()
                                         }
-                                        return decode(source)
                                     }
+                                    return decode(source)
                                 }
                             }
-                            val drawable = decodeDrawable(src.source.asImageSource())
-                            if (drawable !is Animatable) src.close()
-                            Image(drawable, src)
-                        } else {
-                            val options = Options(
-                                appCtx,
-                                size = Size(targetWidth, targetHeight),
-                                scale = Scale.FILL,
-                                allowInexactSize = true,
-                            )
-                            val drawable = ImageSource(
-                                src.source.openInputStream().source().buffer(),
-                                FileSystem.SYSTEM,
-                            ).use {
-                                BitmapFactoryDecoder(it, options).decode().image.asDrawable(appCtx.resources)
-                            }
-                            src.close()
-                            Image(drawable, src)
                         }
+                        val drawable = src.right().decodeCoil()
+                        if (drawable !is Animatable) src.close()
+                        Image(drawable, src)
                     }
 
                     is ByteBufferSource -> {
-                        if (isAtLeastP) {
-                            if (!isAtLeastU) {
-                                rewriteGifSource(src.source)
-                            }
-                            val source = ImageDecoder.createSource(src.source)
-                            val drawable = decodeDrawable(source)
-                            if (drawable !is Animatable) src.close()
-                            Image(drawable, src)
-                        } else {
-                            TODO("Unsupported")
+                        if (isAtLeastP && !isAtLeastU) {
+                            rewriteGifSource(src.source)
                         }
+                        val drawable = src.left().decodeCoil()
+                        if (drawable !is Animatable) src.close()
+                        Image(drawable, src)
                     }
 
                     else -> TODO("Unsupported")
@@ -189,15 +191,6 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                 src.close()
                 it.printStackTrace()
             }.getOrNull()
-        }
-
-        @RequiresApi(Build.VERSION_CODES.P)
-        private fun decodeDrawable(src: Source) = ImageDecoder.decodeDrawable(src) { decoder, info, _ ->
-            if (!isAtLeastQ || Settings.cropBorder.value) {
-                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-            }
-            decoder.setTargetColorSpace(colorSpace)
-            decoder.setTargetSampleSize(calculateSampleSize(info, targetHeight, targetWidth))
         }
 
         fun Context.decodeBitmap(uri: Uri): Bitmap? = if (isAtLeastP) {
