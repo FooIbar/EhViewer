@@ -127,7 +127,7 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
             }
         }
 
-        suspend fun decode(src: AutoCloseable): Image? {
+        suspend fun decode(src: ImageSource): Image? {
             return runCatching {
                 when (src) {
                     is UniFileSource -> {
@@ -160,8 +160,6 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
                         if (image is BitmapImage) src.close()
                         Image(image, src)
                     }
-
-                    else -> TODO("Unsupported")
                 }
             }.onFailure {
                 src.close()
@@ -183,14 +181,16 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
             return (image as BitmapImage).bitmap
         }
     }
+}
 
-    interface UniFileSource : AutoCloseable {
-        val source: UniFile
-    }
+sealed interface ImageSource : AutoCloseable
 
-    interface ByteBufferSource : AutoCloseable {
-        val source: ByteBuffer
-    }
+interface UniFileSource : ImageSource {
+    val source: UniFile
+}
+
+interface ByteBufferSource : ImageSource {
+    val source: ByteBuffer
 }
 
 private external fun detectBorder(bitmap: Bitmap): IntArray

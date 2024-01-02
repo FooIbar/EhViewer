@@ -24,6 +24,7 @@ import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.hippo.ehviewer.Settings.archivePasswds
+import com.hippo.ehviewer.image.ByteBufferSource
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.jni.closeArchive
 import com.hippo.ehviewer.jni.extractToByteBuffer
@@ -110,7 +111,7 @@ class ArchivePageLoader(context: Context, private val uri: Uri, passwdProvider: 
         val buffer = extractToByteBuffer(index)
         buffer ?: return
         check(buffer.isDirect)
-        val src = object : Image.ByteBufferSource {
+        val src = object : ByteBufferSource {
             override val source: ByteBuffer = buffer
 
             override fun close() {
