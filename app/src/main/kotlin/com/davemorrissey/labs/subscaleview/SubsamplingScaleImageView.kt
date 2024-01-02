@@ -9,7 +9,6 @@ import android.graphics.Paint
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.GestureDetector
@@ -231,10 +230,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      *
      * @param bitmap Image source.
      */
-    fun setImage(bitmap: BitmapDrawable) {
+    fun setImage(bitmap: Bitmap, rect: Rect) {
         reset(true)
-        srcRect = Rect(bitmap.bounds)
-        onImageLoaded(bitmap.bitmap)
+        srcRect = Rect(rect)
+        onImageLoaded(bitmap)
     }
 
     /**

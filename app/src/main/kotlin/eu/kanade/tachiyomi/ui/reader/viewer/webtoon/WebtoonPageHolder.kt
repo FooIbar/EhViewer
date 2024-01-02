@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
 
 import android.content.res.Resources
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -10,6 +9,7 @@ import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.hippo.ehviewer.databinding.ReaderErrorBinding
+import com.hippo.ehviewer.image.Image
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
@@ -145,7 +145,7 @@ class WebtoonPageHolder(
                 setDownloading()
             }
             Page.State.READY -> {
-                page?.image?.mObtainedDrawable?.let { setImage(it) }
+                page?.image?.let { setImage(it) }
                 cancelProgressJob()
             }
             Page.State.ERROR -> {
@@ -194,7 +194,7 @@ class WebtoonPageHolder(
     /**
      * Called when the page is ready.
      */
-    private fun setImage(drawable: Drawable) {
+    private fun setImage(drawable: Image) {
         progressIndicator.setProgress(0)
         progressIndicator.hide()
         removeErrorLayout()

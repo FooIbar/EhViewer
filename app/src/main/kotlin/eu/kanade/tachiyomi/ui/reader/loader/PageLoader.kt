@@ -19,7 +19,7 @@ abstract class PageLoader {
         } else {
             (OSUtils.appMaxMemory / 3 * 2).toInt()
         },
-        sizeOf = { _, v -> v.size },
+        sizeOf = { _, v -> v.size.toInt() },
         onEntryRemoved = { _, _, o, _ -> o.recycle() },
     )
     val mPages by lazy {

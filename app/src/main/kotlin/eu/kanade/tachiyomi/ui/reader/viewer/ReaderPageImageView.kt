@@ -1,10 +1,11 @@
 package eu.kanade.tachiyomi.ui.reader.viewer
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.PointF
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Animatable
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.GestureDetector
@@ -18,10 +19,13 @@ import androidx.annotation.StyleRes
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.os.postDelayed
 import androidx.core.view.isVisible
+import coil3.BitmapImage
+import coil3.DrawableImage
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView.Companion.EASE_OUT_QUAD
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView.Companion.SCALE_TYPE_CENTER_INSIDE
 import com.github.chrisbanes.photoview.PhotoView
+import com.hippo.ehviewer.image.Image
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonSubsamplingImageView
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
@@ -120,14 +124,16 @@ open class ReaderPageImageView @JvmOverloads constructor(
         }
     }
 
-    fun setImage(drawable: Drawable, config: Config) {
+    fun setImage(drawable: Image, config: Config) {
         this.config = config
-        if (drawable is Animatable) {
+        val image = drawable.innerImage ?: return
+        if (image is DrawableImage) {
             prepareAnimatedImageView()
-            setAnimatedImage(drawable, config)
-        } else {
+            setAnimatedImage(image.drawable, config)
+        }
+        if (image is BitmapImage) {
             prepareNonAnimatedImageView()
-            setNonAnimatedImage(drawable, config)
+            setNonAnimatedImage(image.bitmap, drawable.rect, config)
         }
     }
 
@@ -233,7 +239,8 @@ open class ReaderPageImageView @JvmOverloads constructor(
     }
 
     private fun setNonAnimatedImage(
-        image: Drawable,
+        image: Bitmap,
+        bounds: Rect,
         config: Config,
     ) = (pageView as? SubsamplingScaleImageView)?.apply {
         setDoubleTapZoomDuration(config.zoomDuration.getSystemScaledDuration())
@@ -254,7 +261,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
             },
         )
 
-        setImage(image as BitmapDrawable)
+        setImage(image, bounds)
         isVisible = true
     }
 

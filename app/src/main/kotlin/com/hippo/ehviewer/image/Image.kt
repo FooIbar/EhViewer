@@ -22,16 +22,16 @@ import android.graphics.Bitmap
 import android.graphics.ColorSpace
 import android.graphics.Rect
 import android.graphics.drawable.Animatable
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.core.graphics.drawable.toDrawable
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import coil3.BitmapImage
+import coil3.DrawableImage
+import coil3.Image as CoilImage
+import coil3.asCoilImage
 import coil3.executeBlocking
 import coil3.imageLoader
 import coil3.request.CachePolicy
@@ -58,45 +58,41 @@ import splitties.init.appCtx
 
 private val CropAspect = 0.1..100.0
 
-class Image private constructor(drawable: Drawable, private val src: AutoCloseable) {
-    val size = drawable.run { intrinsicHeight * intrinsicWidth * 4 * if (this is Animatable) 4 else 1 }
-    private val intrinsicRect = drawable.run { Rect(0, 0, intrinsicWidth, intrinsicHeight) }
-
-    var mObtainedDrawable: Drawable? = if (drawable is Animatable) {
-        // Cannot crop animated image's border
-        drawable
+class Image private constructor(image: CoilImage, private val src: AutoCloseable) {
+    val size = image.size
+    private val intrinsicRect = image.run { Rect(0, 0, width, height) }
+    val rect: Rect = if (Settings.cropBorder.value && image is BitmapImage) {
+        val bitmap = image.bitmap
+        val array = detectBorder(bitmap)
+        val r = Rect(array[0], array[1], array[2], array[3])
+        val aspectAfterCrop = r.height().toFloat() / r.width()
+        if (aspectAfterCrop in CropAspect) r else intrinsicRect
     } else {
-        if (Settings.cropBorder.value) {
-            val bitmap = (drawable as BitmapDrawable).bitmap
-            val array = detectBorder(bitmap)
-            val rect = with(bitmap) {
-                val r = Rect(array[0], array[1], array[2], array[3])
-                val aspectAfterCrop = r.height().toFloat() / r.width()
-                if (aspectAfterCrop in CropAspect) r else intrinsicRect
-            }
+        intrinsicRect
+    }
 
-            val final = if (isAtLeastQ) {
-                // Upload to Graphical Buffer to accelerate render
-                bitmap.copy(Bitmap.Config.HARDWARE, false).apply {
-                    bitmap.recycle()
-                }
-            } else {
-                bitmap
-            }
+    var innerImage: CoilImage? = if (image is BitmapImage && isAtLeastQ) {
+        val bitmap = image.bitmap
 
-            final.toDrawable(appCtx.resources).apply { bounds = rect }
-        } else {
-            drawable.apply { bounds = intrinsicRect }
-        }
+        // Upload to Graphical Buffer to accelerate render
+        bitmap.copy(Bitmap.Config.HARDWARE, false).apply {
+            bitmap.recycle()
+        }.asCoilImage()
+    } else {
+        image
     }
 
     @Synchronized
     fun recycle() {
-        (mObtainedDrawable as? Animatable)?.stop()
-        (mObtainedDrawable as? BitmapDrawable)?.bitmap?.recycle()
-        mObtainedDrawable?.callback = null
-        if (mObtainedDrawable is Animatable) src.close()
-        mObtainedDrawable = null
+        when (val image = innerImage ?: return) {
+            is DrawableImage -> {
+                (image.drawable as Animatable).stop()
+                image.drawable.callback = null
+                src.close()
+            }
+            is BitmapImage -> image.bitmap.recycle()
+        }
+        innerImage = null
     }
 
     companion object {
@@ -110,7 +106,7 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
         @RequiresApi(Build.VERSION_CODES.O)
         lateinit var colorSpace: ColorSpace
 
-        private suspend fun Either<ByteBufferSource, UniFileSource>.decodeCoil(): Drawable {
+        private suspend fun Either<ByteBufferSource, UniFileSource>.decodeCoil(): CoilImage {
             val req = appCtx.imageRequest {
                 onLeft { data(it.source) }
                 onRight { data(it.source.uri) }
@@ -125,11 +121,10 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                 }
                 memoryCachePolicy(CachePolicy.DISABLED)
             }
-            val image = when (val result = appCtx.imageLoader.execute(req)) {
+            return when (val result = appCtx.imageLoader.execute(req)) {
                 is SuccessResult -> result.image
                 is ErrorResult -> throw result.throwable
             }
-            return image.asDrawable(appCtx.resources)
         }
 
         suspend fun decode(src: AutoCloseable): Image? {
@@ -152,18 +147,18 @@ class Image private constructor(drawable: Drawable, private val src: AutoCloseab
                                 }
                             }
                         }
-                        val drawable = src.right().decodeCoil()
-                        if (drawable !is Animatable) src.close()
-                        Image(drawable, src)
+                        val image = src.right().decodeCoil()
+                        if (image is BitmapImage) src.close()
+                        Image(image, src)
                     }
 
                     is ByteBufferSource -> {
                         if (isAtLeastP && !isAtLeastU) {
                             rewriteGifSource(src.source)
                         }
-                        val drawable = src.left().decodeCoil()
-                        if (drawable !is Animatable) src.close()
-                        Image(drawable, src)
+                        val image = src.left().decodeCoil()
+                        if (image is BitmapImage) src.close()
+                        Image(image, src)
                     }
 
                     else -> TODO("Unsupported")
