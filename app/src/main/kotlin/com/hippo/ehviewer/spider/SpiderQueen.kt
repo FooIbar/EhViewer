@@ -602,19 +602,15 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 }
             }
             val previousPToken: String?
-            val pToken: String?
+            val pToken: String
 
             pTokenLock.withLock {
-                // Non-local return will not release the lock
-                // https://github.com/Kotlin/kotlinx.coroutines/issues/3985
                 pToken = getPToken(index)
-                if (pToken == null) {
-                    updatePageState(index, STATE_FAILED, PTOKEN_FAILED_MESSAGE)
-                    mSpiderInfo.pTokenMap[index] = TOKEN_FAILED
-                }
+                    ?: return updatePageState(index, STATE_FAILED, PTOKEN_FAILED_MESSAGE).also {
+                        mSpiderInfo.pTokenMap[index] = TOKEN_FAILED
+                    }
                 previousPToken = getPToken(index - 1)
             }
-            pToken ?: return
 
             delayLock.withLock {
                 delay(mDownloadDelay - lastRequestTime.elapsedNow())
