@@ -28,9 +28,9 @@ import java.io.File
 import java.util.Locale
 
 class RawFile(parent: UniFile?, private var file: File) : UniFile(parent) {
-    val parent = parent as? RawFile
+    private val parent = parent as? RawFile
 
-    var cachePresent = false
+    private var cachePresent = false
     private val allChildren by lazy {
         val current = this
         cachePresent = true
@@ -41,9 +41,12 @@ class RawFile(parent: UniFile?, private var file: File) : UniFile(parent) {
         }
     }
 
-    private fun popParentCacheIfPresent() = apply {
-        val present = parent?.cachePresent ?: false
-        if (present) parent?.allChildren?.add(this)
+    private fun popCacheIfPresent(file: RawFile) = apply {
+        if (cachePresent) {
+            synchronized(allChildren) {
+                allChildren.add(file)
+            }
+        }
     }
 
     override fun createFile(displayName: String): UniFile? {
@@ -88,7 +91,7 @@ class RawFile(parent: UniFile?, private var file: File) : UniFile(parent) {
     override fun ensureDir(): Boolean {
         if (file.isDirectory) return true
         if (file.mkdirs()) {
-            popParentCacheIfPresent()
+            parent?.popCacheIfPresent(this)
             return true
         }
         return false
@@ -98,7 +101,7 @@ class RawFile(parent: UniFile?, private var file: File) : UniFile(parent) {
         if (file.exists()) return file.isFile
         parent?.ensureDir()
         val success = file.createNewFile()
-        if (success) popParentCacheIfPresent()
+        if (success) parent?.popCacheIfPresent(this)
         return success
     }
 
@@ -108,9 +111,13 @@ class RawFile(parent: UniFile?, private var file: File) : UniFile(parent) {
 
     override fun exists() = file.exists()
 
-    override fun listFiles() = allChildren
+    override fun listFiles() = synchronized(allChildren) {
+        allChildren.toList()
+    }
 
-    override fun findFirst(filter: (String) -> Boolean) = allChildren.firstOrNull { filter(it.name) }
+    override fun findFirst(filter: (String) -> Boolean) = synchronized(allChildren) {
+        allChildren.firstOrNull { filter(it.name) }
+    }
 
     override fun renameTo(displayName: String): Boolean {
         val target = File(file.parentFile, displayName)
