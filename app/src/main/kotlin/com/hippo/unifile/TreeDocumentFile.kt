@@ -36,7 +36,11 @@ class TreeDocumentFile(
     }
 
     private fun popCacheIfPresent(file: TreeDocumentFile) = apply {
-        if (cachePresent) allChildren.add(file)
+        if (cachePresent) {
+            synchronized(allChildren) {
+                allChildren.add(file)
+            }
+        }
     }
 
     constructor(parent: UniFile?, uri: Uri) : this(parent, uri, getFilenameForUri(uri))
@@ -135,9 +139,13 @@ class TreeDocumentFile(
 
     override fun exists() = DocumentsContractApi19.exists(uri)
 
-    override fun listFiles() = allChildren
+    override fun listFiles() = synchronized(allChildren) {
+        allChildren.toList()
+    }
 
-    override fun findFirst(filter: (String) -> Boolean) = allChildren.firstOrNull { filter(it.filename) }
+    override fun findFirst(filter: (String) -> Boolean) = synchronized(allChildren) {
+        allChildren.firstOrNull { filter(it.filename) }
+    }
 
     override fun renameTo(displayName: String): Boolean {
         val result = DocumentsContractApi21.renameTo(appCtx, uri, displayName)
