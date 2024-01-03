@@ -836,6 +836,10 @@ class ReaderActivity : EhActivity() {
                 .onEach { setGallery() }
                 .launchIn(lifecycleScope)
 
+            ReaderPreferences.cropBorders().changes()
+                .onEach { restartGalleryProvider() }
+                .launchIn(lifecycleScope)
+
             ReaderPreferences.readerTheme().changes()
                 .onEach { theme ->
                     binding.readerContainer.setBackgroundResource(
