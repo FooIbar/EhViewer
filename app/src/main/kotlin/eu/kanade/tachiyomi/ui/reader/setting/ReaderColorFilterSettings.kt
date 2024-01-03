@@ -39,10 +39,6 @@ class ReaderColorFilterSettings @JvmOverloads constructor(context: Context, attr
 
         context as ReaderActivity
 
-        readerPreferences.cropBorders().asHotFlow {
-            context.restartGalleryProvider()
-        }.launchIn(context.lifecycleScope)
-
         if (isAtLeastO) {
             binding.wideColorGamut.isEnabled = Image.isWideColorGamut
             if (!Image.isWideColorGamut) {
