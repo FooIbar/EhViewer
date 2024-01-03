@@ -7,6 +7,12 @@ import kotlin.reflect.KProperty
 
 fun <T> unsafeLazy(initializer: () -> T) = lazy(LazyThreadSafetyMode.NONE, initializer)
 fun <T> resettableLazy(initializer: () -> T) = ResettableLazy(initializer)
+fun <T> delegateLazy(initializer: () -> T) = object : kotlin.Lazy<T> {
+    override val value: T
+        get() = initializer()
+
+    override fun isInitialized() = true
+}
 
 interface Lazy<T> {
     var value: T
