@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:RequiresApi(Build.VERSION_CODES.P)
-
 package com.hippo.ehviewer.gallery
 
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.hippo.ehviewer.Settings.archivePasswds
 import com.hippo.ehviewer.image.ByteBufferSource
 import com.hippo.ehviewer.image.Image

@@ -73,7 +73,7 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 | OSS         | FOSS dependencies**               |
 | GMS         | Proprietary GMS component         |
 
-\* Archives and GIFs are not supported
+\* May not support some archives
 
 ** Fall back to OkHttp on devices that don't support [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine)
 

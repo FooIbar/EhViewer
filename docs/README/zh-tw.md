@@ -72,7 +72,7 @@
 | OSS         | FOSS 依賴項**             |
 | GMS         | 專有 GMS 元件              |
 
-\* 不支援壓縮包和 GIF
+\* 可能不支援某些壓縮包
 
 ** 在不支援 [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine) 的裝置上回退到 OkHttp
 
