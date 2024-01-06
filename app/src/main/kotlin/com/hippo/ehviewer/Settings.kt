@@ -148,7 +148,7 @@ object Settings : DataStorePreferences(null) {
     var harmonizeCategoryColor by boolPref("harmonize_category_color", true)
     var preloadThumbAggressively by boolPref("preload_thumb_aggressively", false)
     var downloadOriginImage by boolPref("download_origin_image", false)
-    var enableCronet by boolPref("enable_cronet", true)
+    var enableCronet by boolPref("enable_cronet", true).observed { updateWhenEnableCronetChanges() }
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)
     var defaultFavSlot by intPref("default_favorite_slot", -2)
     var securityDelay by intPref("require_unlock_delay", 0)
