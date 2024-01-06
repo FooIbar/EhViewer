@@ -168,42 +168,38 @@ class ReaderActivity : EhActivity() {
         if (ACTION_EH == mAction) {
             mGalleryInfo?.let { mGalleryProvider = EhPageLoader(it) }
         } else if (Intent.ACTION_VIEW == mAction) {
-            if (isAtLeastP) {
-                if (mUri != null) {
-                    try {
-                        grantUriPermission(
-                            BuildConfig.APPLICATION_ID,
-                            mUri,
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                        )
-                    } catch (e: Exception) {
-                        Toast.makeText(this, R.string.error_reading_failed, Toast.LENGTH_SHORT).show()
-                    }
-
-                    mGalleryProvider = ArchivePageLoader(
-                        appCtx,
-                        mUri!!,
-                    ) { invalidator ->
-                        runCatching {
-                            dialogState.awaitInputText(
-                                title = getString(R.string.archive_need_passwd),
-                                hint = getString(R.string.archive_passwd),
-                            ) {
-                                if (it.isBlank()) {
-                                    getString(R.string.passwd_cannot_be_empty)
-                                } else if (invalidator(it)) {
-                                    null
-                                } else {
-                                    getString(R.string.passwd_wrong)
-                                }
-                            }
-                        }.onFailure {
-                            finish()
-                        }.getOrThrow()
-                    }
+            if (mUri != null) {
+                try {
+                    grantUriPermission(
+                        BuildConfig.APPLICATION_ID,
+                        mUri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                    )
+                } catch (e: Exception) {
+                    Toast.makeText(this, R.string.error_reading_failed, Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                Toast.makeText(this, "Archives are not supported before Android P", Toast.LENGTH_LONG).show()
+
+                mGalleryProvider = ArchivePageLoader(
+                    appCtx,
+                    mUri!!,
+                ) { invalidator ->
+                    runCatching {
+                        dialogState.awaitInputText(
+                            title = getString(R.string.archive_need_passwd),
+                            hint = getString(R.string.archive_passwd),
+                        ) {
+                            if (it.isBlank()) {
+                                getString(R.string.passwd_cannot_be_empty)
+                            } else if (invalidator(it)) {
+                                null
+                            } else {
+                                getString(R.string.passwd_wrong)
+                            }
+                        }
+                    }.onFailure {
+                        finish()
+                    }.getOrThrow()
+                }
             }
         }
     }

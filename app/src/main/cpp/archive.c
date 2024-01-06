@@ -86,6 +86,8 @@ const char supportExt[10][6] = {
 };
 
 static inline int filename_is_playable_file(const char *name) {
+    if (!name)
+        return false;
     const char *dotptr = strrchr(name, '.');
     if (!dotptr++)
         return false;
@@ -105,7 +107,7 @@ static inline int compare_entries(const void *a, const void *b) {
 static long archive_map_entries_index(archive_ctx *ctx) {
     long count = 0;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK) {
-        const char *name = archive_entry_pathname(ctx->entry);
+        const char *name = archive_entry_pathname_utf8(ctx->entry);
         if (filename_is_playable_file(name)) {
             entries[count].filename = strdup(name);
             entries[count].index = count;
@@ -164,7 +166,7 @@ static void mempool_release_pages(void *addr, size_t size) {
 static long archive_list_all_entries(archive_ctx *ctx) {
     long count = 0;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK)
-        if (filename_is_playable_file(archive_entry_pathname(ctx->entry)))
+        if (filename_is_playable_file(archive_entry_pathname_utf8(ctx->entry)))
             count++;
     if (!count)
         LOGE("%s", archive_error_string(ctx->arc));
@@ -212,7 +214,7 @@ static int archive_alloc_ctx(archive_ctx **ctxptr) {
 
 static int archive_skip_to_index(archive_ctx *ctx, int index) {
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK) {
-        if (!filename_is_playable_file(archive_entry_pathname(ctx->entry)))
+        if (!filename_is_playable_file(archive_entry_pathname_utf8(ctx->entry)))
             continue;
         if (ctx->next_index++ == index) {
             return ctx->next_index - 1;
@@ -431,7 +433,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz,
     archive_alloc_ctx(&ctx);
     void *tmpBuf = alloca(4096);
     while (archive_read_next_header(ctx->arc, &entry) == ARCHIVE_OK) {
-        if (!filename_is_playable_file(archive_entry_pathname(entry)))
+        if (!filename_is_playable_file(archive_entry_pathname_utf8(entry)))
             continue;
         if (!archive_entry_is_encrypted(entry))
             continue;
@@ -456,7 +458,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_getFilename(JNIEnv *env, jclass thiz,
     ret = archive_get_ctx(&ctx, index);
     if (ret)
         return NULL;
-    jstring str = (*env)->NewStringUTF(env, archive_entry_pathname(ctx->entry));
+    jstring str = (*env)->NewStringUTF(env, archive_entry_pathname_utf8(ctx->entry));
     ctx->using = 0;
     return str;
 }

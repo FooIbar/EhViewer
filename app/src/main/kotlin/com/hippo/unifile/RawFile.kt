@@ -15,14 +15,11 @@
  */
 package com.hippo.unifile
 
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.ParcelFileDescriptor.open
 import android.os.ParcelFileDescriptor.parseMode
 import android.webkit.MimeTypeMap
-import androidx.annotation.RequiresApi
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.util.Locale
@@ -129,9 +126,6 @@ class RawFile(parent: UniFile?, private var file: File) : UniFile(parent) {
     }
 
     override fun openFileDescriptor(mode: String): ParcelFileDescriptor = open(file, parseMode(mode))
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    override fun asImageSource() = ImageDecoder.createSource(file)
 }
 
 private fun getTypeForName(name: String): String {

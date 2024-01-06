@@ -17,11 +17,8 @@ package com.hippo.unifile
 
 import android.content.ContentResolver
 import android.content.Intent
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
 import android.provider.DocumentsContract
-import androidx.annotation.RequiresApi
 import androidx.core.net.toFile
 import androidx.core.provider.DocumentsContractCompat
 import java.io.File
@@ -205,9 +202,6 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
     abstract fun findFirst(filter: (String) -> Boolean): UniFile?
 
     open fun openFileDescriptor(mode: String) = appCtx.contentResolver.openFileDescriptor(uri, mode) ?: error("Can't open ParcelFileDescriptor")
-
-    @RequiresApi(Build.VERSION_CODES.P)
-    open fun asImageSource() = ImageDecoder.createSource(appCtx.contentResolver, uri)
 
     /**
      * Test there is a file with the display name in the directory.

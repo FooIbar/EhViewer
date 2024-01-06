@@ -101,11 +101,6 @@ android {
             minSdk = 23
             applicationIdSuffix = ".m"
             versionNameSuffix = "-M"
-            externalNativeBuild {
-                cmake {
-                    arguments("-DMARSHMALLOW=1")
-                }
-            }
             compileOptions {
                 isCoreLibraryDesugaringEnabled = true
             }
