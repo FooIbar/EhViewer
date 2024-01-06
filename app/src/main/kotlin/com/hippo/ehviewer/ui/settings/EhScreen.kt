@@ -39,9 +39,6 @@ import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.parser.HomeParser
-import com.hippo.ehviewer.dailycheck.schedHour
-import com.hippo.ehviewer.dailycheck.schedMinute
-import com.hippo.ehviewer.dailycheck.updateDailyCheckWork
 import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
 import com.hippo.ehviewer.ui.destinations.MyTagsScreenDestination
 import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
@@ -59,6 +56,7 @@ import io.ktor.http.Url
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalTime
 import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination
@@ -325,10 +323,9 @@ fun EhScreen(navigator: DestinationsNavigator) {
                     val pickerTitle = stringResource(id = R.string.settings_eh_request_news_timepicker)
                     Preference(title = pickerTitle) {
                         coroutineScope.launch {
-                            val (hour, minute) = dialogState.showTimePicker(pickerTitle, schedHour, schedMinute)
-                            Settings.requestNewsTimerHour = hour
-                            Settings.requestNewsTimerMinute = minute
-                            updateDailyCheckWork(context)
+                            val time = LocalTime.fromSecondOfDay(Settings.requestNewsTime)
+                            val (hour, minute) = dialogState.showTimePicker(pickerTitle, time.hour, time.minute)
+                            Settings.requestNewsTime = LocalTime(hour, minute).toSecondOfDay()
                         }
                     }
                 }
