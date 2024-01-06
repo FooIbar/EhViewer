@@ -54,6 +54,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import splitties.preferences.edit
 
 object DownloadManager : OnSpiderListener {
@@ -82,6 +84,8 @@ object DownloadManager : OnSpiderListener {
 
     private val mutableNotifyFlow = MutableSharedFlow<DownloadInfo>(extraBufferCapacity = 1)
     val notifyFlow = mutableNotifyFlow.asSharedFlow()
+
+    private val mutex = Mutex()
 
     init {
         assertNotMainThread()
@@ -134,35 +138,37 @@ object DownloadManager : OnSpiderListener {
     }
 
     private suspend fun ensureDownload() {
-        if (mCurrentTask != null) {
-            // Only one download
-            return
-        }
-
-        // Get download from wait list
-        if (!mWaitList.isEmpty()) {
-            val info = mWaitList.removeFirst()
-            val spider = SpiderQueen.obtainSpiderQueen(info, SpiderQueen.MODE_DOWNLOAD)
-            mCurrentTask = info
-            mCurrentSpider = spider
-            spider.addOnSpiderListener(this)
-            info.state = DownloadInfo.STATE_DOWNLOAD
-            info.speed = -1
-            info.remaining = -1
-            info.total = -1
-            info.finished = 0
-            info.downloaded = 0
-            info.legacy = -1
-            // Update in DB
-            EhDB.putDownloadInfo(info)
-            // Start speed count
-            mSpeedReminder.start()
-            // Notify start downloading
-            if (mDownloadListener != null) {
-                mDownloadListener!!.onStart(info)
+        mutex.withLock {
+            if (mCurrentTask != null) {
+                // Only one download
+                return
             }
-            // Notify state update
-            mutableNotifyFlow.emit(info)
+
+            // Get download from wait list
+            if (!mWaitList.isEmpty()) {
+                val info = mWaitList.removeFirst()
+                val spider = SpiderQueen.obtainSpiderQueen(info, SpiderQueen.MODE_DOWNLOAD)
+                mCurrentTask = info
+                mCurrentSpider = spider
+                spider.addOnSpiderListener(this)
+                info.state = DownloadInfo.STATE_DOWNLOAD
+                info.speed = -1
+                info.remaining = -1
+                info.total = -1
+                info.finished = 0
+                info.downloaded = 0
+                info.legacy = -1
+                // Update in DB
+                EhDB.putDownloadInfo(info)
+                // Start speed count
+                mSpeedReminder.start()
+                // Notify start downloading
+                if (mDownloadListener != null) {
+                    mDownloadListener!!.onStart(info)
+                }
+                // Notify state update
+                mutableNotifyFlow.emit(info)
+            }
         }
     }
 
@@ -365,20 +371,22 @@ object DownloadManager : OnSpiderListener {
     }
 
     suspend fun stopAllDownload() {
-        // Stop all in wait list
-        for (info in mWaitList) {
-            info.state = DownloadInfo.STATE_NONE
-            // Update in DB
-            EhDB.putDownloadInfo(info)
+        mutex.withLock {
+            // Stop all in wait list
+            for (info in mWaitList) {
+                info.state = DownloadInfo.STATE_NONE
+                // Update in DB
+                EhDB.putDownloadInfo(info)
 
-            // Notify
-            mutableNotifyFlow.emit(info)
+                // Notify
+                mutableNotifyFlow.emit(info)
+            }
+            mWaitList.clear()
+
+            // Stop current
+            val info = stopCurrentDownloadInternal()
+            info?.let { mutableNotifyFlow.emit(it) }
         }
-        mWaitList.clear()
-
-        // Stop current
-        val info = stopCurrentDownloadInternal()
-        info?.let { mutableNotifyFlow.emit(it) }
     }
 
     suspend fun deleteDownload(gid: Long, deleteFiles: Boolean = false) {

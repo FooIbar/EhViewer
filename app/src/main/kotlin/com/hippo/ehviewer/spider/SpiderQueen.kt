@@ -212,7 +212,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             MODE_READ -> mReadReference++
             MODE_DOWNLOAD -> mDownloadReference++
         }
-        check(mDownloadReference <= 1) { "mDownloadReference can't more than 0" }
+        check(mDownloadReference <= 1) { "mDownloadReference can't more than 1" }
     }
 
     private fun clearMode(@Mode mode: Int) {
@@ -562,9 +562,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         }
                     }.onFailure {
                         if (it is CancellationException) {
-                            Log.d(WORKER_DEBUG_TAG, "Download image $index cancelled")
-                            if (it.message != FORCE_RETRY) {
-                                updatePageState(index, STATE_FAILED, "Cancelled")
+                            if (mReadReference > 0) {
+                                Log.d(WORKER_DEBUG_TAG, "Download image $index cancelled")
+                                if (it.message != FORCE_RETRY) {
+                                    updatePageState(index, STATE_FAILED, "Cancelled")
+                                }
                             }
                             throw it
                         }
