@@ -48,18 +48,12 @@ class DailyCheckWork(context: Context, workerParams: WorkerParameters) :
     }
 }
 
-val schedHour
-    get() = Settings.requestNewsTimerHour.takeUnless { it == -1 } ?: 0
-
-val schedMinute
-    get() = Settings.requestNewsTimerMinute.takeUnless { it == -1 } ?: 0
-
 private fun getDailyCheckWorkRequest(): PeriodicWorkRequest {
     val now = Clock.System.now()
     val timeZone = TimeZone.currentSystemDefault()
     val whenToWork = LocalDateTime(
         now.toLocalDateTime(timeZone).date,
-        LocalTime(schedHour, schedMinute),
+        LocalTime.fromSecondOfDay(Settings.requestNewsTime),
     ).toInstant(timeZone)
     val initialDelay = (whenToWork - now).run { if (isNegative()) plus(1.days) else this }
     val constraints = Constraints.Builder()
@@ -77,7 +71,7 @@ fun updateDailyCheckWork(context: Context) {
     if (Settings.requestNews) {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             WORK_NAME,
-            ExistingPeriodicWorkPolicy.UPDATE,
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             getDailyCheckWorkRequest(),
         )
     } else {
