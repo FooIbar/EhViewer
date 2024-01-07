@@ -68,6 +68,11 @@ fn deref_direct_bytebuffer<'a>(env: &JNIEnv, buffer: &JByteBuffer) -> &'a mut [u
     unsafe { &mut *slice_from_raw_parts_mut(ptr, cap) }
 }
 
+fn throw_msg(env: &mut JNIEnv, msg: &str) -> i32 {
+    env.throw_new("java/lang/RuntimeException", msg).ok();
+    0
+}
+
 fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, mut f: F) -> i32
 where
     F: FnMut(&VDom, &Parser, &str) -> Result<R, &'static str>,
@@ -82,19 +87,12 @@ where
     };
     match f() {
         // Nothing to marshal
-        Err(err) => {
-            env.throw_new("java/lang/RuntimeException", err).ok();
-            0
-        }
+        Err(err) => throw_msg(env, err),
         Ok(value) => {
             let mut cursor = Cursor::new(buffer);
             match serde_cbor::to_writer(&mut cursor, &value) {
                 Ok(_) => cursor.position() as i32,
-                Err(err) => {
-                    env.throw_new("java/lang/RuntimeException", format!("{}", err))
-                        .ok();
-                    0
-                }
+                Err(err) => throw_msg(env, &format!("{}", err)),
             }
         }
     }
