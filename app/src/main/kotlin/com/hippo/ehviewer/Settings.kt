@@ -109,6 +109,7 @@ object Settings : DataStorePreferences(null) {
     val listThumbSize = intPref("list_tile_size", 40)
     val languageFilter = intPref("language_filter", -1)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
+    val predictiveNavAnim = boolPref("predictive_nav_anim_2", false)
     val blackDarkTheme = boolPref("black_dark_theme", false)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
