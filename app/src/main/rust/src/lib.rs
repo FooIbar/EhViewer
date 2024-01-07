@@ -18,7 +18,7 @@ use log::LevelFilter;
 use serde::Serialize;
 use std::ffi::c_void;
 use std::io::Cursor;
-use std::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
+use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
 
@@ -62,39 +62,36 @@ where
     handle.get(parser)
 }
 
-fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, mut f: F) -> i32
+fn deref_direct_bytebuffer<'a>(env: &JNIEnv, buffer: &JByteBuffer) -> &'a mut [u8] {
+    let ptr = env.get_direct_buffer_address(buffer).unwrap();
+    let cap = env.get_direct_buffer_capacity(buffer).unwrap();
+    unsafe { &mut *slice_from_raw_parts_mut(ptr, cap) }
+}
+
+fn throw_msg(env: &mut JNIEnv, msg: &str) -> i32 {
+    env.throw_new("java/lang/RuntimeException", msg).ok();
+    0
+}
+
+fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, f: F) -> i32
 where
-    F: FnMut(&VDom, &Parser, &str) -> Result<R, &'static str>,
+    F: Fn(&VDom, &str) -> Result<R, &'static str>,
     R: Serialize,
 {
-    let ptr = env.get_direct_buffer_address(&str).unwrap();
-    let html = unsafe {
-        let buff = slice_from_raw_parts(ptr, limit as usize);
-        from_utf8_unchecked(&*buff)
-    };
-    let mut f = || {
+    let buffer = deref_direct_bytebuffer(env, &str);
+    let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
+    let f = || {
         let dom = tl::parse(html, tl::ParserOptions::default()).map_err(|_| html)?;
-        let parser = dom.parser();
-        f(&dom, parser, html)
+        f(&dom, html)
     };
     match f() {
         // Nothing to marshal
-        Err(err) => {
-            env.throw_new("java/lang/RuntimeException", err).ok();
-            0
-        }
+        Err(err) => throw_msg(env, err),
         Ok(value) => {
-            let mut cursor = unsafe {
-                let slice = slice_from_raw_parts_mut(ptr, 0x80000);
-                Cursor::new(&mut *slice)
-            };
+            let mut cursor = Cursor::new(buffer);
             match serde_cbor::to_writer(&mut cursor, &value) {
                 Ok(_) => cursor.position() as i32,
-                Err(err) => {
-                    env.throw_new("java/lang/RuntimeException", format!("{}", err))
-                        .ok();
-                    0
-                }
+                Err(err) => throw_msg(env, &format!("{}", err)),
             }
         }
     }
