@@ -73,14 +73,14 @@ fn throw_msg(env: &mut JNIEnv, msg: &str) -> i32 {
     0
 }
 
-fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, mut f: F) -> i32
+fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, f: F) -> i32
 where
-    F: FnMut(&VDom, &str) -> Result<R, &'static str>,
+    F: Fn(&VDom, &str) -> Result<R, &'static str>,
     R: Serialize,
 {
     let buffer = deref_direct_bytebuffer(env, &str);
     let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
-    let mut f = || {
+    let f = || {
         let dom = tl::parse(html, tl::ParserOptions::default()).map_err(|_| html)?;
         f(&dom, html)
     };
