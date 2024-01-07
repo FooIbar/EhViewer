@@ -290,7 +290,7 @@ class ReaderActivity : EhActivity() {
             dialogState.Intercept()
 
             val showSeekbar by Settings.showReaderSeekbar.collectAsState()
-            val sliderValueFlow = remember { MutableStateFlow(0) }
+            val sliderValueFlow = remember { MutableStateFlow(-1) }
             LaunchedEffect(sliderValueFlow) {
                 sliderValueFlow.drop(1).debounce(200).collect {
                     moveToPageIndex(it)
