@@ -57,7 +57,7 @@ fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult, &'sta
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.FavoritesParserKt")]
 pub fn parseFav(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&mut env, input, limit, |dom, parser, html| {
-        parse_fav(dom, parser, html)
+    parse_marshal_inplace(&mut env, input, limit, |dom, html| {
+        parse_fav(dom, dom.parser(), html)
     })
 }

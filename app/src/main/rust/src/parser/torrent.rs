@@ -44,7 +44,7 @@ fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>, &'sta
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.TorrentParserKt")]
 pub fn parseTorrent(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&mut env, buffer, limit, |dom, parser, _html| {
-        parse_torrent_list(dom, parser)
+    parse_marshal_inplace(&mut env, buffer, limit, |dom, _| {
+        parse_torrent_list(dom, dom.parser())
     })
 }

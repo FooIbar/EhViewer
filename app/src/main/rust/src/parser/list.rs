@@ -241,7 +241,7 @@ pub fn parse_info_list(
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.GalleryListParserKt")]
 pub fn parseGalleryInfoList(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&mut env, buffer, limit, |dom, parser, str| {
-        parse_info_list(dom, parser, str)
+    parse_marshal_inplace(&mut env, buffer, limit, |dom, str| {
+        parse_info_list(dom, dom.parser(), str)
     })
 }
