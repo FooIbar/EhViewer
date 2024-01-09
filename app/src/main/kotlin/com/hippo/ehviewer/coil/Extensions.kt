@@ -5,9 +5,9 @@ import android.graphics.drawable.ColorDrawable
 import coil3.asCoilImage
 import coil3.decode.DecodeResult
 import coil3.decode.Decoder
+import coil3.network.httpHeaders
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.httpHeaders
 import coil3.size.Size
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.CHROME_ACCEPT
