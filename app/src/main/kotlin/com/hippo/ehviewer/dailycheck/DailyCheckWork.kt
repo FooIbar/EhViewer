@@ -28,7 +28,6 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.days
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -79,12 +78,13 @@ fun updateDailyCheckWork(context: Context) {
     }
 }
 
+val today
+    get() = (Clock.System.now().epochSeconds / 86400).toInt()
+
 suspend fun checkDawn() = runCatching {
-    val now = Clock.System.now()
-    val last = Instant.fromEpochSeconds(Settings.lastDawnTime)
-    if (EhCookieStore.hasSignedIn() && now > last + 1.days) {
+    if (EhCookieStore.hasSignedIn() && Settings.lastDawnDays != today) {
         EhEngine.getNews(true)?.let {
-            Settings.lastDawnTime = now.epochSeconds
+            Settings.lastDawnDays = today
             showEventNotification(it)
         }
     }

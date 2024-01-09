@@ -50,6 +50,7 @@ import com.hippo.ehviewer.client.parser.TorrentResult
 import com.hippo.ehviewer.client.parser.VoteCommentResult
 import com.hippo.ehviewer.client.parser.VoteTagParser
 import com.hippo.ehviewer.dailycheck.showEventNotification
+import com.hippo.ehviewer.dailycheck.today
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.StatusCodeException
@@ -68,7 +69,6 @@ import java.nio.channels.FileChannel
 import kotlin.math.ceil
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Clock
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.addJsonArray
@@ -217,7 +217,7 @@ object EhEngine {
     suspend fun getGalleryDetail(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsText {
         val eventPane = EventPaneParser.parse(this)
         if (eventPane != null) {
-            Settings.lastDawnTime = Clock.System.now().epochSeconds
+            Settings.lastDawnDays = today
             showEventNotification(eventPane)
         }
         GalleryDetailParser.parse(this)
