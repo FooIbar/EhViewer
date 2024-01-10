@@ -109,11 +109,7 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
         private suspend fun Either<ByteBufferSource, UniFileSource>.decodeCoil(): CoilImage {
             val req = appCtx.imageRequest {
                 onLeft { data(it.source) }
-                onRight {
-                    // Workaround https://github.com/coil-kt/coil/issues/2006
-                    val uri = it.source.uri
-                    data(if (UniFile.isFileUri(uri)) uri.path else uri)
-                }
+                onRight { data(it.source.uri) }
                 size(targetWidth, targetHeight)
                 scale(Scale.FILL)
                 precision(Precision.INEXACT)
