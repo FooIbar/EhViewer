@@ -96,10 +96,10 @@ fun CookieSignInScene(navigator: DestinationsNavigator) {
     fun storeCookie(id: String, hash: String, igneous: String) {
         EhUtils.signOut()
         EhCookieStore.addCookie(EhCookieStore.KEY_IPB_MEMBER_ID, id, EhUrl.DOMAIN_E)
-        EhCookieStore.addCookie(EhCookieStore.KEY_IPB_MEMBER_ID, id, EhUrl.DOMAIN_EX)
         EhCookieStore.addCookie(EhCookieStore.KEY_IPB_PASS_HASH, hash, EhUrl.DOMAIN_E)
-        EhCookieStore.addCookie(EhCookieStore.KEY_IPB_PASS_HASH, hash, EhUrl.DOMAIN_EX)
-        if (igneous.isNotBlank()) EhCookieStore.addCookie(EhCookieStore.KEY_IGNEOUS, igneous, EhUrl.DOMAIN_EX)
+        if (igneous.isNotBlank() && igneous != "mystery") {
+            EhCookieStore.addCookie(EhCookieStore.KEY_IGNEOUS, igneous, EhUrl.DOMAIN_EX)
+        }
     }
 
     fun login() {
@@ -161,7 +161,7 @@ fun CookieSignInScene(navigator: DestinationsNavigator) {
                 coroutineScope.launch { snackbarHostState.showSnackbar(noCookies) }
                 return
             }
-            if (kvs.size < 3) {
+            if (kvs.size < 2) {
                 coroutineScope.launch { snackbarHostState.showSnackbar(noCookies) }
                 return
             }
