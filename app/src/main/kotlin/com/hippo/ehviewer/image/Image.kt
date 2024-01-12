@@ -97,8 +97,8 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
 
     companion object {
         private val imageSearchMaxSize = appCtx.resources.getDimensionPixelOffset(R.dimen.image_search_max_size)
-        private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 3 / 2
-        private val targetHeight = appCtx.resources.displayMetrics.heightPixels * 3 / 2
+        private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 2
+        private val targetHeight = appCtx.resources.displayMetrics.heightPixels * 2
 
         @delegate:RequiresApi(Build.VERSION_CODES.O)
         val isWideColorGamut by lazy { appCtx.resources.configuration.isScreenWideColorGamut }
