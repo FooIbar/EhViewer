@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.login
 
-import android.webkit.CookieManager
 import android.webkit.WebView
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -59,11 +58,6 @@ fun WebViewSignInScreen(navigator: DestinationsNavigator) {
     }
     SideEffect {
         EhUtils.signOut()
-        CookieManager.getInstance().apply {
-            flush()
-            removeAllCookies(null)
-            removeSessionCookies(null)
-        }
     }
     WebView(
         state = state,

@@ -36,7 +36,7 @@ object EhCookieStore : CookiesStorage {
         val cookies = load(Url(EhUrl.HOST_E))
         cookies.fastForEach {
             if (it.name == KEY_STAR || it.name == KEY_IPB_MEMBER_ID || it.name == KEY_IPB_PASS_HASH) {
-                manager.setCookie(EhUrl.HOST_EX, it.toString())
+                manager.setCookie(EhUrl.HOST_EX, it.copy(maxAge = Int.MAX_VALUE).toString())
             }
         }
     }
@@ -69,7 +69,7 @@ object EhCookieStore : CookiesStorage {
         val checkTips = EhUrl.DOMAIN_E in url.host
         return cookies?.let {
             parseClientCookiesHeader(cookies)
-                .map { Cookie(it.key, it.value, maxAge = Int.MAX_VALUE) }
+                .map { Cookie(it.key, it.value) }
                 .filterTo(mutableListOf()) { it.name != KEY_UTMP_NAME }.apply {
                     if (checkTips) {
                         removeAll { it.name == KEY_CONTENT_WARNING }
