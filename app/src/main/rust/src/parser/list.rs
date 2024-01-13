@@ -194,9 +194,6 @@ pub fn parse_info_list(
     parser: &Parser,
     str: &str,
 ) -> Result<GalleryListResult, &'static str> {
-    if !str.contains('<') {
-        return Err("No content!");
-    }
     if str.contains("<p>You do not have any watched tags") {
         return Err("No watched tags!");
     }

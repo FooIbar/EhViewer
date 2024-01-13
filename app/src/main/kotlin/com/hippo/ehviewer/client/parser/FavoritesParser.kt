@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.client.parser
 
-import com.hippo.ehviewer.client.exception.NotLoggedInException
 import com.hippo.ehviewer.client.exception.ParseException
 import java.nio.ByteBuffer
 import kotlinx.serialization.Serializable
@@ -22,7 +21,6 @@ object FavoritesParser {
         return runSuspendCatching {
             unmarshalParsingAs<FavParserResult>(body, ::parseFav)
         }.getOrElse {
-            if (it is RuntimeException && it.message == "Not logged in!") throw NotLoggedInException()
             throw ParseException("Parse favorites error", it)
         }
     }
