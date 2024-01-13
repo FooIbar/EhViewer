@@ -443,8 +443,7 @@ object DownloadManager : OnSpiderListener {
         val list = allInfoList.slice(range)
         val limit = allInfoList.size - 1
         list.zip(range).forEach { it.first.position = limit - it.second }
-        val label = allInfoList[fromPosition].label
-        getInfoListForLabel(label)!!.sortByPositionDescending()
+        getInfoListForLabel(info.label)!!.sortByPositionDescending()
         return list
     }
 
