@@ -151,7 +151,7 @@ fun SearchFilter(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 OutlinedTextField(
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     value = expectedValue.first.takeIf { it > 0 }?.toString().orEmpty(),
                                     onValueChange = {
                                         expectedValue =
@@ -163,7 +163,7 @@ fun SearchFilter(
                                 )
                                 Text(text = stringResource(id = R.string.search_sp_to))
                                 OutlinedTextField(
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     value = expectedValue.second.takeIf { it > 0 }?.toString().orEmpty(),
                                     onValueChange = {
                                         expectedValue =
