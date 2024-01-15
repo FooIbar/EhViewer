@@ -59,7 +59,6 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.SideDrawer
-import androidx.compose.material3.Snackbar2
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -341,7 +340,7 @@ class MainActivity : EhActivity() {
                 LocalDrawerLockHandle provides lockDrawerHandle,
                 LocalSnackbarHostState provides snackbarState,
             ) {
-                Scaffold(snackbarHost = { SnackbarHost(snackbarState) { Snackbar2(it) } }) {
+                Scaffold(snackbarHost = { SnackbarHost(snackbarState) }) {
                     LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
                         ModalNavigationDrawer(
                             drawerContent = {
