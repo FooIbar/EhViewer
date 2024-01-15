@@ -1,5 +1,29 @@
 # 变更日志
 
+## [1.10.3] - 2024-01-15
+
+### 新功能
+
+* [Marshmallow] 支持裁剪边缘、打开压缩包和 GIF
+
+### 改进
+
+* 由于部分设备上的非预期行为 [#578](https://github.com/FooIbar/EhViewer/issues/578) [#596](https://github.com/FooIbar/EhViewer/issues/596)，默认禁用预见式返回导航动画，可于 设置-高级 中开启
+* 杂项优化
+
+### Bug 修复
+
+* 刷新后页面无响应 [#579](https://github.com/FooIbar/EhViewer/issues/579)
+* 浏览中保存图片后点击操作被阻挡 [#581](https://github.com/FooIbar/EhViewer/issues/581)
+* 在画廊详情页面切换至后台后点击评论闪退 [#580](https://github.com/FooIbar/EhViewer/issues/580)
+* 已下载的画廊中未阅读缓存过的图片解码失败 [#592](https://github.com/FooIbar/EhViewer/issues/592)
+* 在收藏页多选并下载会使得下载状态出现问题 [#603](https://github.com/FooIbar/EhViewer/issues/603)
+* 未能在不重启情况下切换 Http 引擎 [#610](https://github.com/FooIbar/EhViewer/issues/610)
+* 在有进度的画廊阅读界面无法直接回到第一页 [#614](https://github.com/FooIbar/EhViewer/issues/614)
+* 请求新闻界面失效 [#605](https://github.com/FooIbar/EhViewer/issues/605)
+* 收藏夹为空解析失败 [#630](https://github.com/FooIbar/EhViewer/issues/630)
+
+
 ## [1.10.2] - 2023-12-31
 
 ### 新功能
@@ -73,7 +97,7 @@
 
 ### 改进
 
-* \[阅读器] 画廊页数过多时隐藏进度条刻度并禁用触感反馈
+* [阅读器] 画廊页数过多时隐藏进度条刻度并禁用触感反馈
 * 优化原图下载重试策略
 * 优化小屏设备上的搜索类别布局
 * 优化过渡动画
@@ -91,7 +115,7 @@
 * 修复手速过快页面切换过快使加载圈圈不自动消失 [#209](https://github.com/FooIbar/EhViewer/issues/209)
 * 修复打开并关闭右侧抽屉后，状态栏一片白色 [#101](https://github.com/FooIbar/EhViewer/issues/101)
 * 修复使用深色主题时，切换界面会闪过亮色界面 [#121](https://github.com/FooIbar/EhViewer/issues/121)
-* \[Marshmallow] 修复小内存设备上图片解码失败 [#229](https://github.com/FooIbar/EhViewer/issues/229) [#372](https://github.com/FooIbar/EhViewer/issues/372)
+* [Marshmallow] 修复小内存设备上图片解码失败 [#229](https://github.com/FooIbar/EhViewer/issues/229) [#372](https://github.com/FooIbar/EhViewer/issues/372)
 * 修复已舍弃画廊上传者解析
 
 ### 已知问题
