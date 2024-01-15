@@ -1,7 +1,7 @@
 [versions]
 aboutlibraries = "10.10.0"
 agp = "8.2.1"
-android-tools-r8 = "8.3.16-dev"
+android-tools-r8 = "8.3.31"
 androidx-activity = "1.8.2"
 androidx-appcompat = "1.6.1"
 androidx-biometric = "1.2.0-alpha05"
