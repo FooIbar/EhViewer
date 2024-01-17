@@ -81,7 +81,7 @@ compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinat
 
 material-motion-core = "io.github.fornewid:material-motion-compose-core:1.1.1"
 
-cronet-api = "org.chromium.net:cronet-api:113.5672.61"
+cronet-api = "org.chromium.net:cronet-api:119.6045.31"
 cronet-gms = "com.google.android.gms:play-services-cronet:18.0.1"
 
 desugar = "com.android.tools:desugar_jdk_libs_nio:2.0.4"
