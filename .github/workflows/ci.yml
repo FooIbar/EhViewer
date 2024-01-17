@@ -48,7 +48,7 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: CMake Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             app/.cxx

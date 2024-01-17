@@ -30,7 +30,7 @@ jobs:
           workspaces: "./app/src/main/rust"
 
       - name: CMake Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             app/.cxx
