@@ -65,7 +65,7 @@ arrow-stack = { module = "io.arrow-kt:arrow-stack", version.ref = "arrow" }
 coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif" }
-coil-network = { module = "io.coil-kt.coil3:coil-network" }
+coil-network = { module = "io.coil-kt.coil3:coil-network-ktor" }
 
 compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "compose-bom" }
 # For renovate
