@@ -5,6 +5,7 @@ import android.graphics.drawable.ColorDrawable
 import coil3.asCoilImage
 import coil3.decode.DecodeResult
 import coil3.decode.Decoder
+import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -18,13 +19,12 @@ import com.hippo.ehviewer.client.data.NormalGalleryPreview
 import com.hippo.ehviewer.client.url
 import com.hippo.ehviewer.spider.DownloadInfoMagics.encodeMagicRequestOrUrl
 import io.ktor.http.HttpHeaders
-import io.ktor.http.headers
 
-private val header = headers {
-    append(HttpHeaders.UserAgent, Settings.userAgent)
-    append(HttpHeaders.Accept, CHROME_ACCEPT)
-    append(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
-}
+private val header = NetworkHeaders.Builder().apply {
+    add(HttpHeaders.UserAgent, Settings.userAgent)
+    add(HttpHeaders.Accept, CHROME_ACCEPT)
+    add(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
+}.build()
 
 fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
     val key = info.thumbKey!!
