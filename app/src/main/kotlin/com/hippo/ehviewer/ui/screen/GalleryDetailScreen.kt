@@ -940,7 +940,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             val lub = ListUrlBuilder(category = category)
             navigator.navigate(GalleryListScreenDestination(lub))
         }
-        fun onUploaderChipClick() {
+        fun onUploaderChipClick(galleryInfo: GalleryInfo) {
             val uploader = galleryInfo.uploader
             val disowned = uploader == "(Disowned)"
             if (uploader.isNullOrEmpty() || disowned) {
@@ -967,7 +967,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             showBottomSheet = true
         }
 
-        fun showFilterUploaderDialog() {
+        fun showFilterUploaderDialog(galleryInfo: GalleryInfo) {
             val uploader = galleryInfo.uploader
             val disowned = uploader == "(Disowned)"
             if (uploader.isNullOrEmpty() || disowned) {
@@ -1009,8 +1009,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             info = galleryInfo,
                             onInfoCardClick = ::onGalleryInfoCardClick,
                             onCategoryChipClick = ::onCategoryChipClick,
-                            onUploaderChipClick = ::onUploaderChipClick,
-                            onBlockUploaderIconClick = ::showFilterUploaderDialog,
+                            onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
+                            onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
                             modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
                         )
                         Row {
@@ -1060,11 +1060,11 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             GalleryDetailHeaderCard(
-                                info = galleryDetail ?: galleryInfo,
+                                info = galleryInfo,
                                 onInfoCardClick = ::onGalleryInfoCardClick,
                                 onCategoryChipClick = ::onCategoryChipClick,
-                                onUploaderChipClick = ::onUploaderChipClick,
-                                onBlockUploaderIconClick = ::showFilterUploaderDialog,
+                                onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
+                                onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
                                 modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
                             )
                             Column(
