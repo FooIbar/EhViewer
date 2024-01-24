@@ -313,6 +313,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             return
         }
         class ArchiveListDialogHelper : DialogInterface.OnDismissListener {
+            @Suppress("ktlint:standard:property-naming")
             private var _binding: DialogArchiveListBinding? = null
             private val binding get() = _binding!!
             private var mJob: Job? = null
@@ -663,6 +664,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         val granted = isAtLeastQ || context.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         if (granted) {
                             class TorrentListDialogHelper : DialogInterface.OnDismissListener {
+                                @Suppress("ktlint:standard:property-naming")
                                 private var _binding: DialogTorrentListBinding? = null
                                 private val binding get() = _binding!!
                                 private var mJob: Job? = null
