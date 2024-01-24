@@ -179,10 +179,6 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.preload_thumb_aggressively),
                 value = Settings::preloadThumbAggressively,
             )
-            SwitchPreference(
-                title = stringResource(id = R.string.predictive_nav_anim),
-                value = Settings.predictiveNavAnim::value,
-            )
             IntSliderPreference(
                 maxValue = 5,
                 minValue = 1,

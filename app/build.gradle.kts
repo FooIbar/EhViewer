@@ -207,14 +207,16 @@ dependencies {
     implementation(libs.androidx.core)
     implementation(libs.androidx.core.splashscreen)
 
+    // TODO: Delete me after move out of snapshot
+    implementation(libs.androidx.collection.ktx)
+
     implementation(libs.androidx.constraintlayout.compose)
     // https://developer.android.com/jetpack/androidx/releases/lifecycle
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.lifecycle.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     // https://developer.android.com/jetpack/androidx/releases/navigation
-    implementation(libs.bundles.androidx.navigation)
+    implementation(libs.androidx.navigation.compose)
 
     // https://developer.android.com/jetpack/androidx/releases/paging
     implementation(libs.androidx.paging.compose)
@@ -268,9 +270,10 @@ dependencies {
     "gmsImplementation"(libs.bundles.cronet)
 }
 
+// TODO: Delete me after move out of snapshot
 configurations.all {
     resolutionStrategy {
-        exclude("androidx.navigation", "navigation-compose")
+        force("androidx.annotation:annotation-experimental:1.4.0-SNAPSHOT")
     }
 }
 
