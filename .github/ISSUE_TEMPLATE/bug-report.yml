@@ -141,9 +141,6 @@ body:
         请确认您已经遵守所有必选项
         Please ensure you have obtained all needed options
       options:
-      - label: 如果您有足够的时间和能力，并愿意为此提交 PR ，请勾上此复选框 / Pull request is welcome. Check this if you want to start a pull request
-        required: false
-
       - label: 您已搜索过 [Issue Tracker](https://github.com/FooIbar/EhViewer/issues)，没有找到类似内容 / I have searched on [Issue Tracker](https://github.com/FooIbar/EhViewer/issues), No duplicate or related open issue has been found
         required: true
 
