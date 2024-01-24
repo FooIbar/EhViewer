@@ -295,16 +295,14 @@ cargo {
     if (isRelease) profile = "release"
 }
 
-val ktlintVersion = libs.versions.ktlint.get()
-
 spotless {
     kotlin {
         // https://github.com/diffplug/spotless/issues/111
         target("src/**/*.kt")
-        ktlint(ktlintVersion)
+        ktlint()
     }
     kotlinGradle {
-        ktlint(ktlintVersion)
+        ktlint()
     }
 }
 

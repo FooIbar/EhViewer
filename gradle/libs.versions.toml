@@ -26,7 +26,6 @@ kotlinx-coroutines = "1.8.0-RC2"
 kotlinx-datetime = "0.5.0"
 kotlinx-serialization = "1.6.2"
 ksp = "2.0.0-Beta3-1.0.17"
-ktlint = "1.0.1"
 ktor = "3.0.0-beta-1"
 okhttp3 = "5.0.0-alpha.12"
 okio = "3.7.0"
@@ -96,9 +95,6 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 kotlinx-serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinx-serialization" }
-
-# For renovate
-ktlint = { module = "com.pinterest:ktlint", version.ref = "ktlint" }
 
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
