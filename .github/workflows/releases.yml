@@ -39,7 +39,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cmake-
 
       - name: Gradle Build
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/gradle-build-action@v3
         with:
           arguments: assembleRelease
 
