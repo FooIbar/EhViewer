@@ -4,7 +4,9 @@ import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.unifile.UniFile
+import com.hippo.unifile.openInputStream
 import com.hippo.unifile.openOutputStream
+import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -67,6 +69,16 @@ fun ComicInfo.write(file: UniFile) {
         }
     }
 }
+
+fun readComicInfo(file: UniFile): ComicInfo? = runCatching {
+    file.openInputStream().use {
+        InputStreamReader(it, Charsets.UTF_8).use { reader ->
+            xmlStreaming.newGenericReader(reader).use { xmlReader ->
+                xml.decodeFromReader(ComicInfo.serializer(), xmlReader)
+            }
+        }
+    }
+}.getOrNull()
 
 @Serializable
 data class ComicInfo(
