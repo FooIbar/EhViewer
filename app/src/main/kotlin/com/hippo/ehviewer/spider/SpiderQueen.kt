@@ -41,6 +41,7 @@ import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -431,6 +432,21 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         mSpiderInfo.saveToCache()
     }
 
+    private suspend fun writeComicInfo() {
+        mSpiderDen.downloadDir?.run {
+            createFile(COMIC_INFO_FILE)?.also {
+                runCatching {
+                    withNonCancellableContext {
+                        EhEngine.fillGalleryListByApi(listOf(galleryInfo))
+                    }
+                    galleryInfo.getComicInfo().write(it)
+                }.onFailure {
+                    it.printStackTrace()
+                }
+            }
+        }
+    }
+
     private fun isStateDone(state: Int): Boolean {
         return state == STATE_FINISHED || state == STATE_FAILED
     }
@@ -493,7 +509,13 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             val gid = galleryInfo.gid
             return (sQueenMap[gid] ?: SpiderQueen(galleryInfo).also { sQueenMap[gid] = it }).apply {
                 setMode(mode)
-                launchIO { updateMode() }
+                launchIO {
+                    // Will create download dir if not exists
+                    updateMode()
+                    if (mode == MODE_DOWNLOAD) {
+                        writeComicInfo()
+                    }
+                }
             }
         }
 

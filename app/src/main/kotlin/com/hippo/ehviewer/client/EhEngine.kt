@@ -372,7 +372,7 @@ object EhEngine {
         }
     }.fetchUsingAsText(String::parseAs)
 
-    suspend fun fillGalleryListByApi(galleryInfoList: List<GalleryInfo>, referer: String) =
+    suspend fun fillGalleryListByApi(galleryInfoList: List<GalleryInfo>, referer: String? = null) =
         galleryInfoList.chunked(MAX_REQUEST_SIZE).chunked(MAX_SEQUENTIAL_REQUESTS).forEachIndexed { index, chunk ->
             if (index != 0) {
                 delay(REQUEST_INTERVAL)

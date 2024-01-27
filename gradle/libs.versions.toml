@@ -30,6 +30,7 @@ ktor = "3.0.0-beta-1"
 okhttp3 = "5.0.0-alpha.12"
 okio = "3.7.0"
 splitties = "3.0.0"
+xmlutil = "0.86.3"
 
 [libraries]
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
@@ -92,9 +93,6 @@ jsoup = "org.jsoup:jsoup:1.17.2"
 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
-kotlinx-serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-kotlinx-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinx-serialization" }
 
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
@@ -110,6 +108,13 @@ r8 = { module = "com.android.tools:r8", version.ref = "android-tools-r8" }
 
 reorderable = "sh.calvin.reorderable:reorderable:1.2.0"
 
+serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
+serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinx-serialization" }
+
+serialization-xml-core = { module = "io.github.pdvrieze.xmlutil:core-android", version.ref = "xmlutil" }
+serialization-xml = { module = "io.github.pdvrieze.xmlutil:serialization-android", version.ref = "xmlutil" }
+
 splitties-appctx = { module = "com.louiscad.splitties:splitties-appctx", version.ref = "splitties" }
 splitties-arch-room = { module = "com.louiscad.splitties:splitties-arch-room", version.ref = "splitties" }
 splitties-preferences = { module = "com.louiscad.splitties:splitties-preferences", version.ref = "splitties" }
@@ -120,7 +125,7 @@ androidx-navigation = ["androidx-navigation-compose", "androidx-navigation-ui"]
 coil = ["coil-compose", "coil-gif", "coil-network"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
 cronet = ["cronet-api", "cronet-gms"]
-kotlinx-serialization = ["kotlinx-serialization-cbor", "kotlinx-serialization-json", "kotlinx-serialization-json-okio"]
+kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-okio", "serialization-xml-core", "serialization-xml"]
 ktor = ["ktor-client-okhttp"]
 okhttp = ["okhttp-android"]
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
