@@ -40,5 +40,5 @@ object GalleryDetailUrlParser {
         }
     }
 
-    class Result(val gid: Long, val token: String)
+    data class Result(val gid: Long, val token: String)
 }

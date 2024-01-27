@@ -34,9 +34,12 @@ import com.hippo.ehviewer.client.EhEngine.fillGalleryListByApi
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadLocation
-import com.hippo.ehviewer.spider.SpiderQueen
+import com.hippo.ehviewer.spider.COMIC_INFO_FILE
+import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
+import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromUniFile
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
@@ -166,10 +169,16 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                 var restoreDirCount = 0
                 suspend fun getRestoreItem(file: UniFile): RestoreItem? {
                     if (!file.isDirectory) return null
-                    val siFile = file.findFile(SpiderQueen.SPIDER_INFO_FILENAME) ?: return null
                     return runCatching {
-                        val spiderInfo = readCompatFromUniFile(siFile) ?: return null
-                        val gid = spiderInfo.gid
+                        val (gid, token) = file.findFile(SPIDER_INFO_FILENAME)?.let {
+                            readCompatFromUniFile(it)?.run {
+                                GalleryDetailUrlParser.Result(gid, token!!)
+                            }
+                        } ?: file.findFile(COMIC_INFO_FILE)?.let {
+                            readComicInfo(it)?.run {
+                                GalleryDetailUrlParser.parse(web)
+                            }
+                        } ?: return null
                         val dirname = file.name ?: return null
                         if (DownloadManager.containDownloadInfo(gid)) {
                             // Restore download dir to avoid redownload
@@ -180,10 +189,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                             }
                             return null
                         }
-                        RestoreItem(dirname).also {
-                            it.gid = spiderInfo.gid
-                            it.token = spiderInfo.token
-                        }
+                        RestoreItem(dirname, gid, token)
                     }.onFailure {
                         it.printStackTrace()
                     }.getOrNull()
@@ -237,7 +243,12 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
     }
 }
 
-private class RestoreItem(val dirname: String, val galleryInfo: BaseGalleryInfo = BaseGalleryInfo()) : GalleryInfo by galleryInfo
+private class RestoreItem(
+    val dirname: String,
+    gid: Long,
+    token: String,
+    val galleryInfo: BaseGalleryInfo = BaseGalleryInfo(gid, token),
+) : GalleryInfo by galleryInfo
 private val RESTORE_NOT_FOUND = appCtx.getString(R.string.settings_download_restore_not_found)
 private val RESTORE_COUNT_MSG = { cnt: Int -> if (cnt == 0) RESTORE_NOT_FOUND else appCtx.getString(R.string.settings_download_restore_successfully, cnt) }
 private val NO_REDUNDANCY = appCtx.getString(R.string.settings_download_clean_redundancy_no_redundancy)
