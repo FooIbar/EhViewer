@@ -108,7 +108,7 @@ data class ComicInfo(
 
     @XmlElement
     @SerialName("PageCount")
-    val pageCount: Int,
+    val pageCount: Int = 0,
 
     @XmlElement
     @SerialName("LanguageISO")
