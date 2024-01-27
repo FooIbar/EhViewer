@@ -101,10 +101,10 @@ fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): N
     // Don't translate coroutine cancellation
     if (e is CancellationException) throw e
 
-    // Check sad panda(without panda)
+    // Check sad panda (without panda)
     val empty = body.fold(
         { it.isEmpty() },
-        { !it.hasRemaining() },
+        { it.limit() == 0 },
     )
     if (empty) {
         if (EhUtils.isExHentai) {
