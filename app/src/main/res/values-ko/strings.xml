@@ -31,13 +31,10 @@
     <string name="sign_in">로그인</string>
     <string name="register">회원가입</string>
     <string name="sign_in_via_webview">WebView를 통하여 로그인</string>
-    <string name="sign_in_via_cookies">쿠키를 사용하여 로그인</string>
     <string name="sign_in_first">먼저 로그인하세요.</string>
 
-    <string name="cookie_explain">쿠키는 웹 브라우저에 저장되는 적은 양의 데이터입니다. 이게 뭐고 어떻게 찾는지 잘 모르겠으면 검색해 보세요.\n\n특정 쿠키를 입력하여 로그인하세요.</string>
     <string name="text_is_empty">텍스트가 비어 있습니다.</string>
     <string name="waring">경고</string>
-    <string name="wrong_cookie_warning">입력한 쿠키가 잘못된 것 같습니다. 확인해 보는 게 좋겠어요.</string>
 
     <string name="invalid_download_location">다운로드 위치가 잘못되었습니다. 설정을 확인하세요.</string>
 
@@ -69,12 +66,6 @@
     <string name="guest_mode">로그인 없이 사용</string>
     <string name="sign_in_failed">로그인 실패</string>
     <string name="get_it">알겠습니다</string>
-
-    <!-- Select scene -->
-    <string name="select_scene">어느 갤러리 사이트를 사용하시겠습니까?</string>
-    <string name="select_scene_explain">e-hentai: 모든 사람들이 사용할 수 있음\nexhentai: 로그인한 사람만 사용할 수 있음</string>
-
-    <!-- Update -->
 
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">ExHentai 검색</string>

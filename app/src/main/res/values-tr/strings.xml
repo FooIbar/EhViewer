@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="select_scene_explain">e-hentai: herkes için kullanılabilir
-\nexhentai: giriş yapmış olanlar için kullanılabilir</string>
     <string name="gallery_list_search_bar_hint_exhentai">ExHentai\'de Arayın</string>
     <string name="homepage">Ana sayfa</string>
     <string name="subscription">Abonelikler</string>
@@ -15,11 +13,7 @@
     <string name="sign_in">Giriş yap</string>
     <string name="register">Kaydol</string>
     <string name="sign_in_via_webview">WebView aracılığıyla giriş yap</string>
-    <string name="sign_in_via_cookies">Çerezler aracılığıyla giriş yap</string>
     <string name="sign_in_first">Lütfen önce giriş yap</string>
-    <string name="cookie_explain">Çerez, web tarayıcısında depolanan küçük bir veri parçasıdır. Ne olduğunu bilmiyorsanız, veya nasıl alacağınızı bilmiyorsanız Google\'layın.
-\n
-\nLütfen giriş yapmak için özel çerez girin.</string>
     <string name="waring">Uyarı</string>
     <string name="invalid_download_location">İndirme konumu kullanılamıyor. Lütfen Ayarlardan ayarlayın.</string>
     <string name="clipboard_gallery_url_snack_message">Panoda galeri bağlantısı var</string>
@@ -74,13 +68,11 @@
     <string name="duplicate_name">Ad zaten kullanımda.</string>
     <string name="text_is_empty">Yazı boş</string>
     <string name="error_bad_status_code">Kötü durum kodu: %d</string>
-    <string name="wrong_cookie_warning">Yanlış çerez girmişsiniz gibi görünüyor. Kontrol edin.</string>
     <string name="error_unknown_host">Bilinmeyen host</string>
     <string name="app_waring">Bu uygulamadaki içerikler internetten alınmaktadır. Bazı içerikler fiziksel veya zihinsel olarak size zararlı gelebilir.Yukarıda, riskleri öğrendiniz ve üstleneceksiniz.
 \nKullanmaya devam ederek, yukarıdaki koşulları kabul edersiniz.</string>
     <string name="sign_in_failed_tip">Bu sorun devam ederse, \"WebView aracılığıyla giriş yap\" seçeneğini veya \"Çerez aracılığıyla giriş yap\" seçeneğini deneyin.</string>
     <string name="gallery_list_search_bar_open_gallery">Galeriyi aç</string>
-    <string name="select_scene">Hangi galeri sitesini ziyaret etmek istiyorsunuz\?</string>
     <string name="gallery_list_search_bar_hint_e_hentai">E-Hentai\'de Arayın</string>
     <string name="gallery_list_empty_hit_subscription">Etiketlere Ayarlar-&gt;EH-&gt;Etiketlerim yerinden abone olun</string>
     <string name="duplicate_quick_search">Aynı bir hızlı arama zaten var. Adı \"%s\".</string>

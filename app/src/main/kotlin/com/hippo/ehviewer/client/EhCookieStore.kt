@@ -2,7 +2,6 @@ package com.hippo.ehviewer.client
 
 import android.webkit.CookieManager
 import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastJoinToString
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
@@ -23,7 +22,6 @@ object EhCookieStore : CookiesStorage {
     const val KEY_IPB_MEMBER_ID = "ipb_member_id"
     const val KEY_IPB_PASS_HASH = "ipb_pass_hash"
     const val KEY_IGNEOUS = "igneous"
-    private const val KEY_STAR = "star"
     private const val KEY_CONTENT_WARNING = "nw"
     private const val CONTENT_WARNING_NOT_SHOW = "1"
     private const val KEY_UTMP_NAME = "__utmp"
@@ -31,21 +29,6 @@ object EhCookieStore : CookiesStorage {
         name = KEY_CONTENT_WARNING,
         value = CONTENT_WARNING_NOT_SHOW,
     )
-
-    fun copyNecessaryCookies() {
-        val cookies = load(Url(EhUrl.HOST_E))
-        cookies.fastForEach {
-            if (it.name == KEY_STAR || it.name == KEY_IPB_MEMBER_ID || it.name == KEY_IPB_PASS_HASH) {
-                manager.setCookie(EhUrl.HOST_EX, it.copy(maxAge = Int.MAX_VALUE).toString())
-            }
-        }
-    }
-
-    fun addCookie(k: String, v: String, domain: String) {
-        val cookie = Cookie(name = k, value = v, domain = domain, maxAge = Int.MAX_VALUE)
-        val url = if (EhUrl.DOMAIN_E == cookie.domain) EhUrl.HOST_E else EhUrl.HOST_EX
-        manager.setCookie(url, renderSetCookieHeader(cookie))
-    }
 
     fun flush() = manager.flush()
 

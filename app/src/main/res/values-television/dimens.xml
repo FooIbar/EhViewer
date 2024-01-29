@@ -22,6 +22,5 @@
     <dimen name="gallery_detail_thumb_height">192dp</dimen>
     <dimen name="gallery_detail_card_landscape_width">608dp</dimen>
     <dimen name="signinscreen_landscape_caption_frame_width">640dp</dimen>
-    <dimen name="signinscreen_landscape_caption_text_width">480dp</dimen>
 
 </resources>
