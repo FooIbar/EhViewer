@@ -19,7 +19,6 @@
     <string name="subscription">Abonnement</string>
     <string name="settings">Innstillinger</string>
     <string name="username">Brukernavn</string>
-    <string name="sign_in_via_cookies">Logg inn via informasjonskapsler</string>
     <string name="sign_in">Logg inn</string>
     <string name="sign_in_first">Logg inn først</string>
     <string name="download">Last ned</string>
@@ -31,7 +30,6 @@
     <string name="search_sfl">Språk</string>
     <string name="search_osc">Kun søk i omslag</string>
     <string name="guest_mode">Fortsett uten å logge inn</string>
-    <string name="select_scene">Hvilken galleriside vil du besøke\?</string>
     <string name="favored_times">♥ %d</string>
     <string name="torrent_count">Torrent (%d)</string>
     <string name="share">Del</string>
@@ -192,7 +190,6 @@
     <string name="move_favorites_dialog_title">Flytt favoritter</string>
     <string name="let_me_select">La meg velge</string>
     <string name="toplist_pastmonth">Forrige måned</string>
-    <string name="from_clipboard">Fra utklippstavlen</string>
     <string name="delete_search_history">Slett «%s» fra søkehistorikk\?</string>
     <string name="collections">Samlinger</string>
     <string name="tag_vote_down">Stem ned</string>

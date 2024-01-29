@@ -32,13 +32,10 @@
     <string name="sign_in">Se connecter</string>
     <string name="register">Créer un compte</string>
     <string name="sign_in_via_webview">Se connecter via WebView</string>
-    <string name="sign_in_via_cookies">Se connecter à l\'aide de cookies</string>
     <string name="sign_in_first">Connectez-vous pour continuer</string>
 
-    <string name="cookie_explain">Les cookies gardent des informations dans un navigateur Web. Cherchez-en les informations si vous ignorez ce qui c\'est ou où vous pouvez les obtenir.\n\nEntrez le cookie spéciale pour vous connecter.</string>
     <string name="text_is_empty">Entrez le texte.</string>
     <string name="waring">Attention</string>
-    <string name="wrong_cookie_warning">Les cookies entrés n\'ont pas l\'air corrects. Vérifiez-les.</string>
 
     <string name="invalid_download_location">La location de téléchargement actuelle n\'est pas disponible. Choissez-en une à nouveau dans les Paramétres.</string>
 
@@ -67,12 +64,6 @@
     <string name="guest_mode">Continuer sans se connecter</string>
     <string name="sign_in_failed">Impossible de se connecter</string>
     <string name="get_it">Compris</string>
-
-    <!-- Select scene -->
-    <string name="select_scene">Sélectionnez un site galerie.</string>
-    <string name="select_scene_explain">e-hentai : disponible pour tout le monde\nexhentai : disponible pour ce qui s\'est connecté(e)</string>
-
-    <!-- Update -->
 
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">Chercher sur ExHentai</string>
