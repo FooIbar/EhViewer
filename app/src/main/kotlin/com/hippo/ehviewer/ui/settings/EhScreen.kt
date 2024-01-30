@@ -119,6 +119,11 @@ fun EhScreen(navigator: DestinationsNavigator) {
                         EhUtils.signOut()
                         navigator.popNavigate(SignInScreenDestination)
                     }
+                    if (igneous != null) {
+                        setNegativeButton(R.string.settings_eh_clear_igneous) { _, _ ->
+                            EhCookieStore.clearIgneous()
+                        }
+                    }
                 }.show()
             }
             if (signin) {
