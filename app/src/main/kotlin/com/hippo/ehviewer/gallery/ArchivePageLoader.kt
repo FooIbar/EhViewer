@@ -15,8 +15,6 @@
  */
 package com.hippo.ehviewer.gallery
 
-import android.content.Context
-import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import com.hippo.ehviewer.Settings.archivePasswds
@@ -49,17 +47,17 @@ import moe.tarsin.coroutines.withLock
 typealias PasswdInvalidator = (String) -> Boolean
 typealias PasswdProvider = suspend (PasswdInvalidator) -> String
 
-class ArchivePageLoader(context: Context, private val uri: Uri, passwdProvider: PasswdProvider) : PageLoader2(), CoroutineScope {
+class ArchivePageLoader(private val file: UniFile, passwdProvider: PasswdProvider? = null) : PageLoader2(), CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
     private lateinit var pfd: ParcelFileDescriptor
     private val hostJob = launch(start = CoroutineStart.LAZY) {
-        Log.d(DEBUG_TAG, "Open archive $uri")
-        pfd = context.contentResolver.openFileDescriptor(uri, "r")!!
+        Log.d(DEBUG_TAG, "Open archive ${file.uri}")
+        pfd = file.openFileDescriptor("r")
         size = openArchive(pfd.fd, pfd.statSize)
         if (size == 0) {
             return@launch
         }
-        if (needPassword()) {
+        if (passwdProvider != null && needPassword()) {
             archivePasswds?.forEach {
                 it ?: return@forEach
                 if (providePassword(it)) return@launch
@@ -80,7 +78,7 @@ class ArchivePageLoader(context: Context, private val uri: Uri, passwdProvider: 
         cancel()
         closeArchive()
         pfd.close()
-        Log.d(DEBUG_TAG, "Close archive $uri successfully!")
+        Log.d(DEBUG_TAG, "Close archive ${file.uri} successfully!")
         super.stop()
     }
 

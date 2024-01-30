@@ -72,6 +72,8 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.databinding.ReaderActivityBinding
+import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.PageLoader2
@@ -118,7 +120,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
-import splitties.init.appCtx
 import splitties.systemservices.clipboardManager
 
 class GalleryModel : ViewModel() {
@@ -166,7 +167,12 @@ class ReaderActivity : EhActivity() {
         }
 
         if (ACTION_EH == mAction) {
-            mGalleryInfo?.let { mGalleryProvider = EhPageLoader(it) }
+            mGalleryInfo?.let {
+                mGalleryProvider = DownloadManager.getDownloadInfo(it.gid)?.downloadDir
+                    ?.findFile("${it.gid}.cbz")
+                    ?.let { file -> ArchivePageLoader(file) }
+                    ?: EhPageLoader(it)
+            }
         } else if (Intent.ACTION_VIEW == mAction) {
             if (mUri != null) {
                 try {
@@ -179,10 +185,7 @@ class ReaderActivity : EhActivity() {
                     Toast.makeText(this, R.string.error_reading_failed, Toast.LENGTH_SHORT).show()
                 }
 
-                mGalleryProvider = ArchivePageLoader(
-                    appCtx,
-                    mUri!!,
-                ) { invalidator ->
+                mGalleryProvider = ArchivePageLoader(mUri!!.asUniFile()) { invalidator ->
                     runCatching {
                         dialogState.awaitInputText(
                             title = getString(R.string.archive_need_passwd),
