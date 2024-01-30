@@ -288,6 +288,7 @@
     <string name="settings_eh_identity_cookies_signed">身份 Cookie 可用於登入該帳號。&lt;br&gt;&lt;b&gt;請注意資料安全&lt;/b&gt;&lt;br&gt;&lt;br&gt;%s</string>
     <string name="settings_eh_identity_cookies_guest">訪客模式</string>
     <string name="settings_eh_identity_cookies_copy">複製 Cookies</string>
+    <string name="settings_eh_clear_igneous">清除 igneous</string>
     <string name="settings_u_config">EHentai 設定</string>
     <string name="settings_u_config_summary">EHentai 網站上的設定</string>
     <string name="settings_my_tags">我的標籤</string>

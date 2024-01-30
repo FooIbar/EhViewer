@@ -7,6 +7,7 @@ import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
 import io.ktor.http.Url
 import io.ktor.http.parseClientCookiesHeader
+import io.ktor.http.renderCookieHeader
 import io.ktor.http.renderSetCookieHeader
 
 object EhCookieStore : CookiesStorage {
@@ -30,11 +31,18 @@ object EhCookieStore : CookiesStorage {
         value = CONTENT_WARNING_NOT_SHOW,
     )
 
+    fun clearIgneous() {
+        manager.setCookie(
+            EhUrl.HOST_EX,
+            renderSetCookieHeader(KEY_IGNEOUS, "", maxAge = 0, domain = EhUrl.DOMAIN_EX, path = "/"),
+        )
+    }
+
     fun flush() = manager.flush()
 
     fun getCookieHeader(url: String): String {
         return load(Url(url)).fastJoinToString("; ") {
-            "${it.name}=${it.value}"
+            renderCookieHeader(it)
         }
     }
 
