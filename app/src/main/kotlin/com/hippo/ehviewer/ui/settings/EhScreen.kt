@@ -1,16 +1,20 @@
 package com.hippo.ehviewer.ui.settings
 
-import android.content.DialogInterface
-import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -18,15 +22,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.text.parseAsHtml
@@ -36,25 +44,25 @@ import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
-import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
 import com.hippo.ehviewer.ui.destinations.MyTagsScreenDestination
 import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.destinations.UConfigScreenDestination
-import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
+import com.hippo.ehviewer.ui.tools.toAnnotatedString
+import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.copyTextToClipboard
+import com.hippo.ehviewer.util.isAtLeastT
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import io.ktor.http.Url
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
 import moe.tarsin.coroutines.runSuspendCatching
@@ -85,96 +93,115 @@ fun EhScreen(navigator: DestinationsNavigator) {
     ) { paddingValues ->
         val guestMode = stringResource(id = R.string.settings_eh_identity_cookies_guest)
         val copiedToClipboard = stringResource(id = R.string.copied_to_clipboard)
-        Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
+        Column(
+            modifier = Modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .verticalScroll(rememberScrollState())
+                .padding(paddingValues),
+        ) {
             Preference(
                 title = stringResource(id = R.string.account_name),
                 summary = Settings.displayName ?: guestMode,
             ) {
-                val eCookies = EhCookieStore.load(Url(EhUrl.HOST_E))
-                val exCookies = EhCookieStore.load(Url(EhUrl.HOST_EX))
-                var ipbMemberId: String? = null
-                var ipbPassHash: String? = null
-                var igneous: String? = null
-                (eCookies + exCookies).forEach {
-                    when (it.name) {
-                        EhCookieStore.KEY_IPB_MEMBER_ID -> ipbMemberId = it.value
-                        EhCookieStore.KEY_IPB_PASS_HASH -> ipbPassHash = it.value
-                        EhCookieStore.KEY_IGNEOUS -> igneous = it.value
-                    }
-                }
-                BaseDialogBuilder(context).apply {
-                    if (ipbMemberId != null || ipbPassHash != null || igneous != null) {
-                        val str = EhCookieStore.KEY_IPB_MEMBER_ID + ": " + ipbMemberId + "<br>" + EhCookieStore.KEY_IPB_PASS_HASH + ": " + ipbPassHash + "<br>" + EhCookieStore.KEY_IGNEOUS + ": " + igneous
-                        val spanned = context.getString(R.string.settings_eh_identity_cookies_signed, str).parseAsHtml()
-                        setMessage(spanned)
-                        setNeutralButton(R.string.settings_eh_identity_cookies_copy) { _, _ ->
-                            copyTextToClipboard(str.replace("<br>", "\n"), true)
-                            // Avoid double notify user since system have done that on Tiramisu above
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) launchSnackBar(copiedToClipboard)
+                coroutineScope.launch {
+                    val cookies = EhCookieStore.getIdentityCookies()
+                    dialogState.awaitPermissionOrCancel(
+                        confirmText = R.string.settings_eh_sign_out,
+                        dismissText = R.string.settings_eh_clear_igneous,
+                        showCancelButton = cookies.last().second != null,
+                        onCancelButtonClick = { EhCookieStore.clearIgneous() },
+                    ) {
+                        if (signin) {
+                            Column {
+                                val warning = stringResource(id = R.string.settings_eh_identity_cookies_signed)
+                                val str = cookies.joinToString("\n") { (k, v) -> "$k: $v" }
+                                Text(text = warning.parseAsHtml().toAnnotatedString())
+                                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+                                OutlinedTextField(
+                                    value = str,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    trailingIcon = {
+                                        IconButton(onClick = {
+                                            copyTextToClipboard(str, true)
+                                            // Avoid double notify user since system have done that on Tiramisu above
+                                            if (!isAtLeastT) launchSnackBar(copiedToClipboard)
+                                        }) {
+                                            Icon(imageVector = Icons.Default.ContentCopy, contentDescription = null)
+                                        }
+                                    },
+                                )
+                            }
+                        } else {
+                            Text(text = guestMode)
                         }
-                    } else {
-                        setMessage(guestMode)
                     }
-                    setPositiveButton(R.string.settings_eh_sign_out) { _, _ ->
-                        EhUtils.signOut()
+                    EhUtils.signOut()
+                    withUIContext {
                         navigator.popNavigate(SignInScreenDestination)
                     }
-                    if (igneous != null) {
-                        setNegativeButton(R.string.settings_eh_clear_igneous) { _, _ ->
-                            EhCookieStore.clearIgneous()
-                        }
-                    }
-                }.show()
+                }
             }
             if (signin) {
                 val placeholder = stringResource(id = R.string.please_wait)
                 val resetImageLimitSucceed = stringResource(id = R.string.reset_limits_succeed)
-                val noImageLimits = stringResource(id = R.string.image_limits_summary, 0, 0)
-                var result by remember { mutableStateOf<HomeParser.Result?>(null) }
-                var summary by rememberSaveable { mutableStateOf(noImageLimits) }
-                suspend fun getImageLimits() = EhEngine.getImageLimits().also {
-                    result = it
-                    summary = context.getString(R.string.image_limits_summary, it.limits.current, it.limits.maximum)
+                var result by rememberSaveable { mutableStateOf<HomeParser.Result?>(null) }
+                var error by rememberSaveable { mutableStateOf<String?>(null) }
+                val summary by rememberUpdatedState(
+                    stringResource(
+                        id = R.string.image_limits_summary,
+                        result?.run { limits.current } ?: 0,
+                        result?.run { limits.maximum } ?: 0,
+                    ),
+                )
+                suspend fun getImageLimits() {
+                    result = EhEngine.getImageLimits()
+                    error = null
                 }
-                val deferredResult = remember { coroutineScope.async { runSuspendCatching { getImageLimits() } } }
+                if (result == null && error == null) {
+                    LaunchedEffect(Unit) {
+                        runSuspendCatching {
+                            withIOContext { getImageLimits() }
+                        }.onFailure {
+                            error = ExceptionUtils.getReadableString(it)
+                        }
+                    }
+                }
                 Preference(
                     title = stringResource(id = R.string.image_limits),
                     summary = summary,
                 ) {
-                    val builder = BaseDialogBuilder(context).setMessage(placeholder)
-                        .setPositiveButton(R.string.reset, null)
-                        .setNegativeButton(android.R.string.cancel, null)
-                    val dialog = builder.show()
-                    val resetButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
-                    fun bind(result: HomeParser.Result) {
-                        val (current, maximum, resetCost) = result.limits
-                        val (fundsGP, fundsC) = result.funds
-                        val message = context.getString(R.string.current_limits, "$current / $maximum", resetCost) + "\n" + context.getString(R.string.current_funds, "$fundsGP+", fundsC)
-                        dialog.setMessage(message)
-                        resetButton.isEnabled = resetCost != 0
-                    }
                     coroutineScope.launch {
-                        runSuspendCatching {
-                            result ?: deferredResult.await().getOrNull() ?: getImageLimits()
-                            withUIContext { bind(result!!) }
-                        }.onFailure {
-                            withUIContext { dialog.setMessage(it.localizedMessage) }
-                        }
-                    }
-                    resetButton.isEnabled = false
-                    resetButton.setOnClickListener { button ->
-                        button.isEnabled = false
-                        dialog.setMessage(placeholder)
-                        coroutineScope.launch {
-                            runSuspendCatching {
-                                EhEngine.resetImageLimits()
-                                getImageLimits()
-                            }.onSuccess {
-                                launchSnackBar(resetImageLimitSucceed)
-                                withUIContext { bind(it) }
-                            }.onFailure {
-                                withUIContext { dialog.setMessage(it.localizedMessage) }
+                        dialogState.awaitPermissionOrCancel(
+                            confirmText = R.string.reset,
+                            title = R.string.image_limits,
+                            confirmButtonEnabled = result?.run { limits.resetCost != 0 } ?: false,
+                        ) {
+                            error?.let {
+                                Text(text = it)
+                            } ?: result?.let { (limits, funds) ->
+                                Text(
+                                    text = stringResource(id = R.string.current_limits, summary, limits.resetCost) +
+                                        "\n" + stringResource(id = R.string.current_funds, "${funds.fundsGP}+", funds.fundsC),
+                                )
+                            } ?: run {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    CircularProgressIndicator()
+                                    Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+                                    Text(text = placeholder)
+                                }
                             }
+                        }
+                        runSuspendCatching {
+                            EhEngine.resetImageLimits()
+                            getImageLimits()
+                        }.onSuccess {
+                            launchSnackBar(resetImageLimitSucceed)
+                        }.onFailure {
+                            error = ExceptionUtils.getReadableString(it)
                         }
                     }
                 }

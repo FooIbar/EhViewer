@@ -254,7 +254,7 @@
 
     <string name="settings_eh">EH</string>
     <string name="settings_eh_sign_out">로그아웃</string>
-    <string name="settings_eh_identity_cookies_signed">식별용 쿠키를 사용하여 이 계정으로 로그인할 수 있습니다.&lt;br&gt;&lt;b&gt;안전하게 보관하세요.&lt;/b&gt;&lt;br&gt;&lt;br&gt;%s</string>
+    <string name="settings_eh_identity_cookies_signed">식별용 쿠키를 사용하여 이 계정으로 로그인할 수 있습니다.&lt;br&gt;&lt;b&gt;안전하게 보관하세요.&lt;/b&gt;</string>
     <string name="settings_eh_identity_cookies_guest">로그인 상태가 아닙니다.</string>
     <string name="settings_eh_identity_cookies_copy">복사</string>
     <string name="settings_u_config">E-Hentai 설정</string>

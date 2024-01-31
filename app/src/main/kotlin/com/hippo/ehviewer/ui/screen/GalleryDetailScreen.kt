@@ -49,6 +49,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarResult
@@ -60,6 +61,8 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -112,7 +115,6 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.databinding.DialogArchiveListBinding
-import com.hippo.ehviewer.databinding.DialogRateBinding
 import com.hippo.ehviewer.databinding.DialogTorrentListBinding
 import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
 import com.hippo.ehviewer.ktbuilder.imageRequest
@@ -131,7 +133,6 @@ import com.hippo.ehviewer.ui.getFavoriteIcon
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
-import com.hippo.ehviewer.ui.legacy.GalleryRatingBar.OnUserRateListener
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
@@ -145,6 +146,7 @@ import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
+import com.hippo.ehviewer.ui.tools.GalleryRatingBar
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberLambda
 import com.hippo.ehviewer.util.AppHelper
@@ -779,45 +781,36 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 activity.showTip(R.string.sign_in_first)
                 return
             }
-            val binding = DialogRateBinding.inflate(context.layoutInflater)
-            class RateDialogHelper(rating: Float) : OnUserRateListener, DialogInterface.OnClickListener {
-                init {
-                    binding.ratingText.setText(getRatingText(rating))
-                    binding.ratingView.rating = rating
-                    binding.ratingView.setOnUserRateListener(this)
-                }
-
-                override fun onUserRate(rating: Float) {
-                    binding.ratingText.setText(getRatingText(rating))
-                }
-
-                override fun onClick(dialog: DialogInterface, which: Int) {
-                    if (which != DialogInterface.BUTTON_POSITIVE) return
-                    val r = binding.ratingView.rating
-                    coroutineScope.launchIO {
-                        galleryDetail.runSuspendCatching {
-                            EhEngine.rateGallery(apiUid, apiKey, gid, token, r)
-                        }.onSuccess { result ->
-                            activity.showTip(R.string.rate_successfully)
-                            galleryInfo = galleryDetail.apply {
-                                rating = result.rating
-                                ratingCount = result.ratingCount
-                            }
-                            ratingText = getAllRatingText(result.rating, result.ratingCount)
-                        }.onFailure {
-                            it.printStackTrace()
-                            activity.showTip(R.string.rate_failed)
-                        }
+            coroutineScope.launchIO {
+                dialogState.awaitPermissionOrCancel(title = R.string.rate) {
+                    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                        var rating by remember { mutableFloatStateOf(galleryDetail.rating.coerceAtLeast(.5f)) }
+                        var text by remember { mutableIntStateOf(getRatingText(rating)) }
+                        Text(text = stringResource(id = text), style = MaterialTheme.typography.bodyLarge)
+                        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+                        GalleryRatingBar(
+                            rating = rating,
+                            onRatingChange = {
+                                rating = it.coerceAtLeast(.5f)
+                                text = getRatingText(rating)
+                            },
+                        )
                     }
                 }
+                galleryDetail.runSuspendCatching {
+                    EhEngine.rateGallery(apiUid, apiKey, gid, token, rating)
+                }.onSuccess { result ->
+                    activity.showTip(R.string.rate_successfully)
+                    galleryInfo = galleryDetail.apply {
+                        rating = result.rating
+                        ratingCount = result.ratingCount
+                    }
+                    ratingText = getAllRatingText(result.rating, result.ratingCount)
+                }.onFailure {
+                    it.printStackTrace()
+                    activity.showTip(R.string.rate_failed)
+                }
             }
-            val helper = RateDialogHelper(galleryDetail.rating)
-            BaseDialogBuilder(context)
-                .setTitle(R.string.rate)
-                .setView(binding.root)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(android.R.string.ok, helper)
-                .show()
         }
         CrystalCard(onClick = ::showRateDialog) {
             Column(

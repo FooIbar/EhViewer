@@ -267,25 +267,23 @@ class DialogState {
     suspend fun awaitPermissionOrCancel(
         @StringRes confirmText: Int = android.R.string.ok,
         @StringRes dismissText: Int = android.R.string.cancel,
-        showCancelButton: Boolean = true,
         @StringRes title: Int? = null,
-        onDismiss: () -> Unit = {},
-        text: (@Composable () -> Unit)? = null,
+        confirmButtonEnabled: Boolean = true,
+        showCancelButton: Boolean = true,
+        onCancelButtonClick: () -> Unit = {},
+        text: @Composable (() -> Unit)? = null,
     ) {
         return dialog { cont ->
             AlertDialog(
-                onDismissRequest = {
-                    onDismiss()
-                    cont.cancel()
-                },
+                onDismissRequest = { cont.cancel() },
                 confirmButton = {
-                    TextButton(onClick = { cont.resume(Unit) }) {
+                    TextButton(onClick = { cont.resume(Unit) }, enabled = confirmButtonEnabled) {
                         Text(text = stringResource(id = confirmText))
                     }
                 },
                 dismissButton = showCancelButton.ifTrueThen {
                     TextButton(onClick = {
-                        onDismiss()
+                        onCancelButtonClick()
                         cont.cancel()
                     }) {
                         Text(text = stringResource(id = dismissText))

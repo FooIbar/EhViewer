@@ -15,6 +15,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.gowtham.ratingbar.RatingBar
+import com.gowtham.ratingbar.RatingBarStyle
+import com.gowtham.ratingbar.StepSize
 import com.hippo.ehviewer.R
 import kotlin.math.roundToInt
 
@@ -107,4 +110,18 @@ fun GalleryListCardRating(rating: Float, modifier: Modifier = Modifier) {
 @Composable
 fun GalleryDetailRating(rating: Float) {
     MetaRatingWidget(rating = rating, ratingSize = 48.dp, ratingInterval = 12.dp)
+}
+
+@Composable
+fun GalleryRatingBar(rating: Float, onRatingChange: (Float) -> Unit, modifier: Modifier = Modifier) {
+    RatingBar(
+        value = rating,
+        modifier = modifier,
+        size = 40.dp,
+        spaceBetween = 4.dp,
+        stepSize = StepSize.HALF,
+        style = RatingBarStyle.Fill(activeColor = colorYellow800),
+        onValueChange = onRatingChange,
+        onRatingChanged = {},
+    )
 }

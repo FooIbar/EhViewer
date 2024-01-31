@@ -38,6 +38,19 @@ object EhCookieStore : CookiesStorage {
         )
     }
 
+    fun getIdentityCookies(): List<Pair<String, String?>> {
+        val eCookies = getCookies(EhUrl.HOST_E)
+        val exCookies = getCookies(EhUrl.HOST_EX)
+        val ipbMemberId = eCookies?.get(KEY_IPB_MEMBER_ID)
+        val ipbPassHash = eCookies?.get(KEY_IPB_PASS_HASH)
+        val igneous = exCookies?.get(KEY_IGNEOUS)
+        return listOf(
+            KEY_IPB_MEMBER_ID to ipbMemberId,
+            KEY_IPB_PASS_HASH to ipbPassHash,
+            KEY_IGNEOUS to igneous,
+        )
+    }
+
     fun flush() = manager.flush()
 
     fun getCookieHeader(url: String): String {
@@ -55,18 +68,16 @@ object EhCookieStore : CookiesStorage {
 
     override fun close() = Unit
 
+    private fun getCookies(url: String) = manager.getCookie(url)?.let { parseClientCookiesHeader(it) }
+
     fun load(url: Url): List<Cookie> {
-        val cookies = manager.getCookie(url.toString())
         val checkTips = EhUrl.DOMAIN_E in url.host
-        return cookies?.let {
-            parseClientCookiesHeader(cookies)
-                .map { Cookie(it.key, it.value) }
-                .filterTo(mutableListOf()) { it.name != KEY_UTMP_NAME }.apply {
-                    if (checkTips) {
-                        removeAll { it.name == KEY_CONTENT_WARNING }
-                        add(sTipsCookie)
-                    }
-                }
+        return getCookies(url.toString())?.mapTo(mutableListOf()) {
+            Cookie(it.key, it.value)
+        }?.apply {
+            if (checkTips) {
+                add(sTipsCookie)
+            }
         } ?: if (checkTips) listOf(sTipsCookie) else emptyList()
     }
 

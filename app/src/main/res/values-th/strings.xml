@@ -269,7 +269,7 @@
 
     <string name="settings_eh">EH</string>
     <string name="settings_eh_sign_out">ออกจากระบบ</string>
-    <string name="settings_eh_identity_cookies_signed">คุกกี๊ยืนยันตัวตนสามารถใช้ลงชื่อเข้าสู่ระบบสำหรับบัญชีนี้เท่านั้น&lt;br&gt;&lt;b&gt;เก็บ รักษา ให้ ปลอดภัย&lt;/b&gt;&lt;br&gt;&lt;br&gt;%s</string>
+    <string name="settings_eh_identity_cookies_signed">คุกกี๊ยืนยันตัวตนสามารถใช้ลงชื่อเข้าสู่ระบบสำหรับบัญชีนี้เท่านั้น&lt;br&gt;&lt;b&gt;เก็บ รักษา ให้ ปลอดภัย&lt;/b&gt;</string>
     <string name="settings_eh_identity_cookies_guest">ยังไม่ลงชื่อเข้าสู่ระบบ</string>
     <string name="settings_eh_identity_cookies_copy">คัดลอก</string>
     <string name="settings_u_config">การตั้งค่า EHentai</string>

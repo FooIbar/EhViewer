@@ -329,11 +329,10 @@ suspend fun DialogState.doGalleryInfoAction(info: BaseGalleryInfo, context: Cont
 
 private const val MAX_FAVNOTE_CHAR = 200
 
-suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo, onDismiss: () -> Unit = {}) {
+suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo) {
     var checked by mutableStateOf(Settings.removeImageFiles)
     awaitPermissionOrCancel(
         title = R.string.download_remove_dialog_title,
-        onDismiss = onDismiss,
         text = {
             Column {
                 Text(

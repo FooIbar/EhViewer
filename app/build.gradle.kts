@@ -246,6 +246,7 @@ dependencies {
 
     implementation(libs.insetter) // Dead Dependency
 
+    implementation(libs.ratingbar)
     implementation(libs.reorderable)
 
     implementation(platform(libs.arrow.stack))

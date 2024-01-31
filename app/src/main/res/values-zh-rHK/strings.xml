@@ -297,7 +297,7 @@
     <!-- Settings -->
     <string name="settings_eh">EH</string>
     <string name="settings_eh_sign_out">退出登錄</string>
-    <string name="settings_eh_identity_cookies_signed">身份 Cookie 可用於登錄該賬號。&lt;br&gt;&lt;b&gt;注意數據安全&lt;/b&gt;&lt;br&gt;&lt;br&gt;%s</string>
+    <string name="settings_eh_identity_cookies_signed">身份 Cookie 可用於登錄該賬號。&lt;br&gt;&lt;b&gt;注意數據安全&lt;/b&gt;</string>
     <string name="settings_eh_identity_cookies_guest">未登錄</string>
     <string name="settings_eh_identity_cookies_copy">複製</string>
     <string name="settings_u_config">EHentai 設置</string>
