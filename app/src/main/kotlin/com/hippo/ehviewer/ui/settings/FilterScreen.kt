@@ -44,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -56,7 +55,6 @@ import com.hippo.ehviewer.client.EhFilter.remember
 import com.hippo.ehviewer.client.EhFilter.trigger
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
-import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.ramcosta.composedestinations.annotation.Destination
@@ -69,7 +67,6 @@ import moe.tarsin.coroutines.groupByToObserved
 @Destination
 @Composable
 fun FilterScreen(navigator: DestinationsNavigator) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val allFilterMap = remember { scope.async { EhFilter.filters.await().groupByToObserved { it.mode } } }
@@ -188,7 +185,16 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = { BaseDialogBuilder(context).setTitle(R.string.filter).setMessage(R.string.filter_tip).setPositiveButton(android.R.string.ok, null).show() }) {
+                    IconButton(onClick = {
+                        scope.launch {
+                            dialogState.awaitPermissionOrCancel(
+                                title = R.string.filter,
+                                showCancelButton = false,
+                            ) {
+                                Text(text = stringResource(id = R.string.filter_tip))
+                            }
+                        }
+                    }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.Help, contentDescription = null)
                     }
                 },

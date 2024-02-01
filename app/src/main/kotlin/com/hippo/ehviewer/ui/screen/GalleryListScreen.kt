@@ -329,8 +329,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         IconButton(onClick = {
                             coroutineScope.launch {
                                 dialogState.awaitPermissionOrCancel(
-                                    showCancelButton = false,
                                     title = R.string.quick_search,
+                                    showCancelButton = false,
                                 ) {
                                     Text(text = stringResource(id = R.string.add_quick_search_tip))
                                 }

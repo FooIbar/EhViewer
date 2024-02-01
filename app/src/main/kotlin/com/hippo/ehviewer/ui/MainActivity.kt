@@ -438,7 +438,7 @@ class MainActivity : EhActivity() {
                 awaitPermissionOrCancel(
                     confirmText = R.string.open_settings,
                     title = R.string.app_link_not_verified_title,
-                    onDismiss = {
+                    onCancelButtonClick = {
                         if (checked) Settings.appLinkVerifyTip = true
                     },
                 ) {
@@ -482,8 +482,8 @@ class MainActivity : EhActivity() {
         if (!valid) {
             awaitPermissionOrCancel(
                 confirmText = R.string.get_it,
-                showCancelButton = false,
                 title = R.string.waring,
+                showCancelButton = false,
             ) {
                 Text(
                     text = stringResource(id = R.string.invalid_download_location),

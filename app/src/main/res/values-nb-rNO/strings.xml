@@ -89,7 +89,6 @@
     <string name="share_image">Del bilde</string>
     <string name="settings_eh_sign_out">Logg ut</string>
     <string name="settings_eh_identity_cookies_guest">Turistmodus</string>
-    <string name="settings_eh_identity_cookies_copy">Kopier informasjonskapsler</string>
     <string name="settings_about_version">Byggversjon</string>
     <string name="settings_my_tags">Mine etiketter</string>
     <string name="settings_eh_tag_translations_source">Plassholder</string>

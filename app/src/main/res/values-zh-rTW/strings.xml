@@ -285,9 +285,8 @@
     <!-- Settings -->
     <string name="settings_eh">EH</string>
     <string name="settings_eh_sign_out">登出</string>
-    <string name="settings_eh_identity_cookies_signed">身份 Cookie 可用於登入該帳號。&lt;br&gt;&lt;b&gt;請注意資料安全&lt;/b&gt;&lt;br&gt;&lt;br&gt;%s</string>
+    <string name="settings_eh_identity_cookies_signed">身份 Cookie 可用於登入該帳號。&lt;br&gt;&lt;b&gt;請注意資料安全&lt;/b&gt;</string>
     <string name="settings_eh_identity_cookies_guest">訪客模式</string>
-    <string name="settings_eh_identity_cookies_copy">複製 Cookies</string>
     <string name="settings_eh_clear_igneous">清除 igneous</string>
     <string name="settings_u_config">EHentai 設定</string>
     <string name="settings_u_config_summary">EHentai 網站上的設定</string>
@@ -435,8 +434,8 @@
     <string name="current_funds">資金：%1$s GP，%2$d Credits</string>
     <string name="insufficient_funds">餘額不足</string>
     <string name="image_limits">圖片配額</string>
-    <string name="image_limits_summary">%1$d / %2$d（點擊以重新整理）</string>
-    <string name="current_limits">已用：%1$s\n重置花費：%2$d GP</string>
+    <string name="image_limits_summary">已用：%1$d / %2$d</string>
+    <string name="current_limits">%1$s\n重置花費：%2$d GP</string>
     <string name="reset_limits_succeed">成功重置圖片配額</string>
     <string name="reset">重置</string>
     <string name="settings_privacy">隱私</string>

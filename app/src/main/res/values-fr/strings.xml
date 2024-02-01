@@ -425,9 +425,8 @@
     <string name="settings_privacy_secure_summary">Quand cette option est activée, vous ne pouvez prendre aucune capture d\'écran de l\'application, et le systéme n\'affiche pas le contenu d\'écran dans le sélecteur de tâches.\n\nRedémarrage de l\'application est nécessaire pour appliquer le changement</string>
     <string name="settings_advanced_app_language_title">Langue de l\'app (Language)</string>
     <string name="app_language_system">Langue du système (défaut)</string>
-    <string name="settings_eh_identity_cookies_signed">Tout le monde peut utiliser les cookies de ce compte pour s\'y connecter.&lt;br&gt;&lt;b&gt;GARDEZ-LES BIEN !&lt;/b&gt;&lt;br&gt;&lt;br&gt;%s</string>
+    <string name="settings_eh_identity_cookies_signed">Tout le monde peut utiliser les cookies de ce compte pour s\'y connecter.&lt;br&gt;&lt;b&gt;GARDEZ-LES BIEN !&lt;/b&gt;</string>
     <string name="settings_eh_identity_cookies_guest">Vous ne vous êtes pas connecté.</string>
-    <string name="settings_eh_identity_cookies_copy">Copier</string>
     <string name="settings_eh_show_gallery_pages">Montrer les nombres des pages des galeries</string>
     <string name="settings_eh_show_gallery_pages_summary">Montrer le nombre des pages des galerie dans la liste des galeries</string>
     <string name="dark_theme">Thème sombre</string>
