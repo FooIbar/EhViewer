@@ -72,22 +72,25 @@ fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier
     val ratingSizePx = remember { with(density) { ratingSize.toPx() } }
     val ratingIntervalPx = remember { with(density) { ratingInterval.toPx() } }
     fun calculateRating(offset: Float): Float {
-        return ((offset + ratingIntervalPx / 2) / (ratingSizePx + ratingIntervalPx)).coerceIn(0f, 5f)
+        return ((offset * 2 + ratingIntervalPx) / (ratingSizePx + ratingIntervalPx))
+            .roundToInt().coerceIn(0, 10).div(2f)
     }
     Row(
         modifier = onRatingChange?.let {
-            modifier.pointerInput(onRatingChange) {
-                detectHorizontalDragGestures { change, _ ->
-                    change.consume()
-                    val newRating = calculateRating(change.position.x)
-                    onRatingChange(newRating)
+            modifier
+                .pointerInput(onRatingChange) {
+                    detectHorizontalDragGestures { change, _ ->
+                        change.consume()
+                        val newRating = calculateRating(change.position.x)
+                        onRatingChange(newRating)
+                    }
                 }
-            }.pointerInput(onRatingChange) {
-                detectTapGestures {
-                    val newRating = calculateRating(it.x)
-                    onRatingChange(newRating)
+                .pointerInput(onRatingChange) {
+                    detectTapGestures {
+                        val newRating = calculateRating(it.x)
+                        onRatingChange(newRating)
+                    }
                 }
-            }
         } ?: modifier,
     ) {
         repeat(fullStar) {

@@ -328,7 +328,6 @@
     <string name="settings_eh_sign_out">Sign out</string>
     <string name="settings_eh_identity_cookies_signed">Identity cookies can be used to sign in to this account.&lt;br&gt;&lt;b&gt;KEEP IT SAFE&lt;/b&gt;</string>
     <string name="settings_eh_identity_cookies_guest">Guest mode</string>
-    <string name="settings_eh_identity_cookies_copy">Copy Cookies</string>
     <string name="settings_eh_clear_igneous">Clear igneous</string>
     <string name="settings_u_config">EHentai settings</string>
     <string name="settings_u_config_summary">Settings on EHentai website</string>

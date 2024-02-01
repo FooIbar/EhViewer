@@ -15,8 +15,6 @@
   -->
 
 <resources>
-    <color name="yellow_800">#fff9a825</color>
-
     <!-- Navigation Overlay Colors -->
     <color name="navigation_next">#CB84E296</color>
     <color name="navigation_prev">#CCFF7733</color>

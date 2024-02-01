@@ -25,11 +25,6 @@
         <item name="materialAlertDialogTheme">@style/MaterialAlertDialogTheme</item>
     </style>
 
-    <style name="RatingBarTheme" parent="ThemeOverlay.Material3">
-        <item name="colorControlNormal">@color/yellow_800</item>
-        <item name="colorControlActivated">@color/yellow_800</item>
-    </style>
-
     <!-- Apply blur on Android 12 above -->
     <style name="DialogTheme" parent="Theme.Material3.DayNight.Dialog">
         <item name="android:windowBlurBehindEnabled" tools:targetApi="s">true</item>

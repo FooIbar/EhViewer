@@ -287,7 +287,6 @@
     <string name="settings_eh_sign_out">退出登录</string>
     <string name="settings_eh_identity_cookies_signed">身份 Cookie 可用于登录该账号。&lt;br&gt;&lt;b&gt;注意数据安全&lt;/b&gt;</string>
     <string name="settings_eh_identity_cookies_guest">游客模式</string>
-    <string name="settings_eh_identity_cookies_copy">复制 Cookies</string>
     <string name="settings_eh_clear_igneous">清除 igneous</string>
     <string name="settings_u_config">EHentai 设置</string>
     <string name="settings_u_config_summary">EHentai 网站上的设置</string>

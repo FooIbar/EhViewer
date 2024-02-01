@@ -24,9 +24,6 @@
 
     <dimen name="strip_item_padding">8dp</dimen>
 
-    <!-- Text size -->
-    <dimen name="text_little_small">16sp</dimen>
-
     <!-- RatingView -->
     <dimen name="rating_size">16dp</dimen>
     <dimen name="rating_interval">1dp</dimen>
