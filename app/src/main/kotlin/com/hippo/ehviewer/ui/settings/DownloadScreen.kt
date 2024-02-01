@@ -42,12 +42,11 @@ import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromUniFile
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
-import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
-import com.hippo.ehviewer.util.AppConfig
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
+import com.hippo.unifile.toPathOrNull
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
@@ -88,7 +87,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                             contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
                             downloadLocationState = treeUri.asUniFile()
                             coroutineScope.launchNonCancellable {
-                                keepNoMediaFileStatus()
+                                keepNoMediaFileStatus(downloadLocationState)
                             }
                         }.onFailure {
                             launchSnackBar(cannotGetDownloadLocation)
@@ -98,27 +97,9 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
             }
             Preference(
                 title = stringResource(id = R.string.settings_download_download_location),
-                summary = downloadLocationState.uri.toString(),
+                summary = downloadLocationState.uri.run { toPathOrNull() ?: toString() },
             ) {
-                val file = downloadLocationState
-                if (!UniFile.isFileUri(downloadLocationState.uri)) {
-                    BaseDialogBuilder(context)
-                        .setTitle(R.string.settings_download_download_location)
-                        .setMessage(file.uri.toString())
-                        .setPositiveButton(R.string.pick_new_download_location) { _, _ -> selectDownloadDirLauncher.launch(null) }
-                        .setNeutralButton(R.string.reset_download_location) { _, _ ->
-                            val uniFile = AppConfig.defaultDownloadDir?.asUniFile()
-                            if (uniFile != null) {
-                                downloadLocationState = uniFile
-                                coroutineScope.launchNonCancellable { keepNoMediaFileStatus() }
-                            } else {
-                                launchSnackBar(cannotGetDownloadLocation)
-                            }
-                        }
-                        .show()
-                } else {
-                    selectDownloadDirLauncher.launch(null)
-                }
+                selectDownloadDirLauncher.launch(null)
             }
             val mediaScan = Settings::mediaScan.observed
             SwitchPreference(

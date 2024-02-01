@@ -91,12 +91,14 @@ private fun ensureNoMediaFile(downloadDir: UniFile) {
 
 private val lck = Mutex()
 
-suspend fun keepNoMediaFileStatus() {
-    lck.withLock {
-        if (Settings.mediaScan) {
-            removeNoMediaFile(downloadLocation)
-        } else {
-            ensureNoMediaFile(downloadLocation)
+suspend fun keepNoMediaFileStatus(downloadDir: UniFile = downloadLocation) {
+    if (downloadDir.isDirectory) {
+        lck.withLock {
+            if (Settings.mediaScan) {
+                removeNoMediaFile(downloadDir)
+            } else {
+                ensureNoMediaFile(downloadDir)
+            }
         }
     }
 }

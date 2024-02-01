@@ -235,11 +235,11 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
     companion object {
         fun fromFile(file: File) = RawFile(null, file)
 
-        fun fromSingleUri(singleUri: Uri) = SingleDocumentFile(null, singleUri)
+        private fun fromSingleUri(singleUri: Uri) = SingleDocumentFile(null, singleUri)
 
-        fun fromTreeUri(treeUri: Uri) = TreeDocumentFile(null, DocumentsContractApi21.prepareTreeUri(treeUri))
+        private fun fromTreeUri(treeUri: Uri) = TreeDocumentFile(null, DocumentsContractApi21.prepareTreeUri(treeUri))
 
-        fun fromMediaUri(mediaUri: Uri) = MediaFile(mediaUri)
+        private fun fromMediaUri(mediaUri: Uri) = MediaFile(mediaUri)
 
         fun fromUri(uri: Uri) = when {
             isFileUri(uri) -> fromFile(uri.toFile())
@@ -256,5 +256,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
         fun isTreeUri(uri: Uri) = DocumentsContractCompat.isTreeUri(uri)
 
         fun isMediaUri(uri: Uri) = null != MediaContract.getName(uri)
+
+        val Stub = fromFile(File(""))
     }
 }
