@@ -145,7 +145,6 @@
     <string name="toplist_pastyear">Forrige år</string>
     <string name="toplist_yesterday">I går</string>
     <string name="action_add_tag">Legg til etikett</string>
-    <string name="reset_download_location">Tilbakestill til forvalg</string>
     <string name="dont_show_again">Ikke vis igjen</string>
     <string name="comment_user_uploader">%s (opplaster)</string>
     <string name="copy_trans">Kopier oversettelse</string>

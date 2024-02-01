@@ -1029,7 +1029,7 @@ var downloadLocation: UniFile
             encodedQuery(downloadQuery)
             encodedFragment(downloadFragment)
         }.build()
-        uri.asUniFileOrNull() ?: requireNotNull(AppConfig.defaultDownloadDir).asUniFile()
+        uri.asUniFileOrNull() ?: AppConfig.defaultDownloadDir?.asUniFile() ?: UniFile.Stub
     }
     set(value) = with(value.uri) {
         Settings.edit {

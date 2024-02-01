@@ -100,6 +100,7 @@ import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.Subscriptions
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
+import com.hippo.ehviewer.ui.destinations.DownloadScreenDestination
 import com.hippo.ehviewer.ui.destinations.DownloadsScreenDestination
 import com.hippo.ehviewer.ui.destinations.FavouritesScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
@@ -223,9 +224,35 @@ class MainActivity : EhActivity() {
                 callback()
             }
 
+            suspend fun DialogState.checkDownloadLocation() {
+                val valid = withIOContext { downloadLocation.ensureDir() }
+                if (!valid) {
+                    awaitPermissionOrCancel(
+                        confirmText = R.string.open_settings,
+                        title = R.string.waring,
+                        showCancelButton = false,
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.invalid_download_location),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+                    navController.navigate(DownloadScreenDestination)
+                }
+            }
+
             LaunchedEffect(Unit) {
-                launch { dialogState.checkDownloadLocation() }.join()
-                launch { dialogState.checkAppLinkVerify() }
+                runCatching { dialogState.checkDownloadLocation() }
+                runCatching { dialogState.checkAppLinkVerify() }
+                runSuspendCatching {
+                    withIOContext {
+                        AppUpdater.checkForUpdate()?.let {
+                            dialogState.showNewVersion(this@MainActivity, it)
+                        }
+                    }
+                }.onFailure {
+                    showTip(getString(R.string.update_failed, ExceptionUtils.getReadableString(it)))
+                }
             }
 
             val cannotParse = stringResource(R.string.error_cannot_parse_the_url)
@@ -267,17 +294,6 @@ class MainActivity : EhActivity() {
                 }
             }
 
-            LaunchedEffect(Unit) {
-                runSuspendCatching {
-                    withIOContext {
-                        AppUpdater.checkForUpdate()?.let {
-                            dialogState.showNewVersion(this@MainActivity, it)
-                        }
-                    }
-                }.onFailure {
-                    showTip(getString(R.string.update_failed, ExceptionUtils.getReadableString(it)))
-                }
-            }
             val snackbarState = remember { SnackbarHostState() }
             LaunchedEffect(Unit) {
                 tipFlow.collectLatest {
@@ -473,22 +489,6 @@ class MainActivity : EhActivity() {
                     )
                     startActivity(intent)
                 }
-            }
-        }
-    }
-
-    private suspend fun DialogState.checkDownloadLocation() {
-        val valid = withIOContext { downloadLocation.ensureDir() }
-        if (!valid) {
-            awaitPermissionOrCancel(
-                confirmText = R.string.get_it,
-                title = R.string.waring,
-                showCancelButton = false,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.invalid_download_location),
-                    style = MaterialTheme.typography.titleMedium,
-                )
             }
         }
     }

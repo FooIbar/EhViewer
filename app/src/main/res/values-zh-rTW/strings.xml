@@ -475,8 +475,6 @@
     <string name="settings_eh_request_news">啟動時請求新聞頁面</string>
     <string name="settings_eh_hide_hv_events">隱藏 HV 事件通知</string>
     <string name="copy_trans">複製翻譯</string>
-    <string name="reset_download_location">恢復預設路徑</string>
-    <string name="pick_new_download_location">選擇新路徑</string>
     <string name="dont_show_again">不再顯示</string>
     <string name="open_settings">打開設定</string>
     <string name="app_link_not_verified_message">對於 Android 12 及更新的版本，您需要手動增加連結到已驗證連結才能在 EhViewer 中打開 E-Hentai 連結。</string>
