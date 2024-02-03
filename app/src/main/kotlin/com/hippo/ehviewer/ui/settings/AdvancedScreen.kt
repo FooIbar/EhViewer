@@ -153,18 +153,14 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                             SingleChoiceSegmentedButtonRow(modifier = Modifier.align(Alignment.Center)) {
                                 SegmentedButton(
                                     selected = !enableCronet,
-                                    onClick = {
-                                        enableCronet = false
-                                    },
+                                    onClick = { enableCronet = false },
                                     shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
                                 ) {
                                     Text("OkHttp")
                                 }
                                 SegmentedButton(
                                     selected = enableCronet,
-                                    onClick = {
-                                        enableCronet = true
-                                    },
+                                    onClick = { enableCronet = true },
                                     shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
                                     enabled = isCronetAvailable,
                                 ) {

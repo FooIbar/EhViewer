@@ -6,34 +6,9 @@ import kotlin.reflect.KMutableProperty0
 import kotlin.reflect.KProperty
 
 fun <T> unsafeLazy(initializer: () -> T) = lazy(LazyThreadSafetyMode.NONE, initializer)
-fun <T> resettableLazy(initializer: () -> T) = ResettableLazy(initializer)
-fun <T> delegateLazy(initializer: () -> T) = object : kotlin.Lazy<T> {
-    override val value: T
-        get() = initializer()
-
-    override fun isInitialized() = true
-}
 
 interface Lazy<T> {
     var value: T
-}
-
-class ResettableLazy<T>(private val initializer: () -> T) {
-
-    private var value: T? = null
-
-    operator fun getValue(thisRef: Any?, prop: KProperty<*>): T {
-        return value ?: initializer().apply { value = this }
-    }
-
-    operator fun setValue(thisRef: Any?, prop: KProperty<*>, value: T) {
-        check(this.value == value) { "New values aren't accepted to reset this delegated property" }
-        invalidate()
-    }
-
-    private fun invalidate() {
-        value = null
-    }
 }
 
 fun <T> lazyMut(init: () -> KMutableProperty0<T>) = object : Lazy<T> {

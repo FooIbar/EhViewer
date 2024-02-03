@@ -3,8 +3,6 @@ package com.hippo.ehviewer
 import android.app.UiModeManager
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import com.hippo.ehviewer.EhApplication.Companion.ktorClient
-import com.hippo.ehviewer.EhApplication.Companion.noRedirectKtorClient
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
@@ -42,13 +40,6 @@ fun updateWhenKeepMediaStatusChanges() {
         runCatching {
             keepNoMediaFileStatus()
         }
-    }
-}
-
-fun updateWhenEnableCronetChanges() {
-    collectScope.launchIO {
-        ktorClient = ktorClient.apply { close() }
-        noRedirectKtorClient = noRedirectKtorClient.apply { close() }
     }
 }
 
