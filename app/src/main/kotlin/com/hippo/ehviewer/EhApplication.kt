@@ -191,7 +191,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
                 add(AnimatedImageDecoder.Factory(false))
             }
         }
-        diskCache(imageCache)
+        diskCache { imageCache }
         crossfade(300)
         val drawable = AppCompatResources.getDrawable(appCtx, R.drawable.image_failed)
         if (drawable != null) error(drawable.asCoilImage(true))
