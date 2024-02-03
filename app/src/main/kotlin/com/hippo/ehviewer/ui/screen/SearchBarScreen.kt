@@ -3,7 +3,6 @@ package com.hippo.ehviewer.ui.screen
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -76,7 +74,6 @@ import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.LocalDialogState
-import com.hippo.ehviewer.util.isAtLeastP
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -234,12 +231,6 @@ fun SearchBarScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (!isAtLeastP) {
-            // Workaround unable to exit search field
-            // https://issuetracker.google.com/issues/318968220
-            Box(Modifier.size(1.dp).focusable())
-        }
-
         Scaffold(
             topBar = {
                 // Placeholder, fill immutable SearchBar padding
