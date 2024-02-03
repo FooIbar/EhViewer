@@ -30,6 +30,7 @@ import androidx.lifecycle.coroutineScope
 import coil3.SingletonImageLoader
 import coil3.asCoilImage
 import coil3.gif.AnimatedImageDecoder
+import coil3.gif.GifDecoder
 import coil3.network.ktor.KtorNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.serviceLoaderEnabled
@@ -189,6 +190,8 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
             add(DownloadThumbInterceptor)
             if (isAtLeastP) {
                 add(AnimatedImageDecoder.Factory(false))
+            } else {
+                add(GifDecoder.Factory())
             }
         }
         diskCache { imageCache }
