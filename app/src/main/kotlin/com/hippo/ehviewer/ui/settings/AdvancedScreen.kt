@@ -36,8 +36,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.BuildConfig
-import com.hippo.ehviewer.EhApplication.Companion.ktorClient
-import com.hippo.ehviewer.EhApplication.Companion.noRedirectKtorClient
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -147,11 +145,6 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 summary = if (enableCronet) "Cronet" else "OkHttp",
             ) {
                 coroutineScope.launch {
-                    fun reset() {
-                        ktorClient = ktorClient.apply { close() }
-                        noRedirectKtorClient = noRedirectKtorClient.apply { close() }
-                    }
-
                     dialogState.awaitPermissionOrCancel(
                         title = R.string.settings_advanced_http_engine,
                         showCancelButton = false,
@@ -160,20 +153,14 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                             SingleChoiceSegmentedButtonRow(modifier = Modifier.align(Alignment.Center)) {
                                 SegmentedButton(
                                     selected = !enableCronet,
-                                    onClick = {
-                                        enableCronet = false
-                                        reset()
-                                    },
+                                    onClick = { enableCronet = false },
                                     shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
                                 ) {
                                     Text("OkHttp")
                                 }
                                 SegmentedButton(
                                     selected = enableCronet,
-                                    onClick = {
-                                        enableCronet = true
-                                        reset()
-                                    },
+                                    onClick = { enableCronet = true },
                                     shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
                                     enabled = isCronetAvailable,
                                 ) {
