@@ -71,6 +71,7 @@ class ArchivePageLoader(private val file: UniFile, passwdProvider: PasswdProvide
         private set
 
     override fun start() {
+        super.start()
         hostJob.start()
     }
 
