@@ -467,8 +467,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_getExtension(JNIEnv *env, jclass thiz,
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     const char *ext = strrchr(entries[index].filename, '.') + 1;
-    jstring str = (*env)->NewStringUTF(env, ext);
-    return str;
+    return (*env)->NewStringUTF(env, ext);
 }
 
 JNIEXPORT jboolean JNICALL
