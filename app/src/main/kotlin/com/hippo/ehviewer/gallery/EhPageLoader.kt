@@ -15,6 +15,7 @@
  */
 package com.hippo.ehviewer.gallery
 
+import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.spider.SpiderQueen
@@ -23,7 +24,6 @@ import com.hippo.ehviewer.spider.SpiderQueen.Companion.releaseSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
 import com.hippo.ehviewer.util.SimpleHandler
 import com.hippo.unifile.UniFile
-import java.util.Locale
 
 class EhPageLoader(private val mGalleryInfo: GalleryInfo) : PageLoader2(), OnSpiderListener {
     private lateinit var mSpiderQueen: SpiderQueen
@@ -44,27 +44,16 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo) : PageLoader2(), OnSpi
     override val startPage
         get() = mSpiderQueen.startPage
 
-    override fun getImageFilename(index: Int): String {
-        return String.format(
-            Locale.US,
-            "%d-%s-%08d",
-            mGalleryInfo.gid,
-            mGalleryInfo.token,
-            index + 1,
-        )
+    override val title by lazy {
+        EhUtils.getSuitableTitle(mGalleryInfo)
     }
 
-    override fun getImageFilenameWithExtension(index: Int): String {
-        val filename = getImageFilename(index)
-        return mSpiderQueen.getExtension(index)?.let { "$filename.$it" } ?: filename
+    override fun getImageExtension(index: Int): String {
+        return mSpiderQueen.getExtension(index)!!
     }
 
     override fun save(index: Int, file: UniFile): Boolean {
         return mSpiderQueen.save(index, file)
-    }
-
-    override fun save(index: Int, dir: UniFile, filename: String): UniFile? {
-        return mSpiderQueen.save(index, dir, filename)
     }
 
     override fun putStartPage(page: Int) {
