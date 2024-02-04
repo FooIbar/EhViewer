@@ -13,15 +13,17 @@ private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
 abstract class PageLoader {
 
-    private val mImageCache = lruCache<Int, Image>(
-        maxSize = if (isAtLeastO) {
-            (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
-        } else {
-            (OSUtils.appMaxMemory / 3 * 2).toInt()
-        },
-        sizeOf = { _, v -> v.size.toInt() },
-        onEntryRemoved = { _, _, o, _ -> o.recycle() },
-    )
+    private val mImageCache by lazy {
+        lruCache<Int, Image>(
+            maxSize = if (isAtLeastO) {
+                (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
+            } else {
+                (OSUtils.appMaxMemory / 3 * 2).toInt()
+            },
+            sizeOf = { _, v -> v.size.toInt() },
+            onEntryRemoved = { _, _, o, _ -> o.recycle() },
+        )
+    }
     val mPages by lazy {
         check(size > 0)
         (0 until size).map { ReaderPage(it) }
@@ -32,7 +34,10 @@ abstract class PageLoader {
     abstract suspend fun awaitReady(): Boolean
     abstract val isReady: Boolean
 
-    abstract fun start()
+    @CallSuper
+    open fun start() {
+        mImageCache
+    }
 
     @CallSuper
     open fun stop() {

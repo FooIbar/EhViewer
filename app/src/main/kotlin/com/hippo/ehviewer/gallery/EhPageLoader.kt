@@ -28,6 +28,7 @@ import com.hippo.unifile.UniFile
 class EhPageLoader(private val mGalleryInfo: GalleryInfo) : PageLoader2(), OnSpiderListener {
     private lateinit var mSpiderQueen: SpiderQueen
     override fun start() {
+        super.start()
         if (!::mSpiderQueen.isInitialized) {
             mSpiderQueen = obtainSpiderQueen(mGalleryInfo, SpiderQueen.MODE_READ)
             mSpiderQueen.addOnSpiderListener(this)
