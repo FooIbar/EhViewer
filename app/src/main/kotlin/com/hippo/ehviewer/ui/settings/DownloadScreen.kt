@@ -46,7 +46,7 @@ import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
-import com.hippo.unifile.toPathOrNull
+import com.hippo.unifile.displayPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
@@ -97,7 +97,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
             }
             Preference(
                 title = stringResource(id = R.string.settings_download_download_location),
-                summary = downloadLocationState.uri.run { toPathOrNull() ?: toString() },
+                summary = downloadLocationState.uri.displayPath,
             ) {
                 selectDownloadDirLauncher.launch(null)
             }
