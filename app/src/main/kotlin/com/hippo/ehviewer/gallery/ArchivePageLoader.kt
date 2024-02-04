@@ -23,7 +23,7 @@ import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.jni.closeArchive
 import com.hippo.ehviewer.jni.extractToByteBuffer
 import com.hippo.ehviewer.jni.extractToFd
-import com.hippo.ehviewer.jni.getFilename
+import com.hippo.ehviewer.jni.getExtension
 import com.hippo.ehviewer.jni.needPassword
 import com.hippo.ehviewer.jni.openArchive
 import com.hippo.ehviewer.jni.providePassword
@@ -144,28 +144,24 @@ class ArchivePageLoader(private val file: UniFile, passwdProvider: PasswdProvide
         mJobMap[index]?.cancel()
     }
 
-    override fun getImageFilename(index: Int): String {
-        return FileUtils.getNameFromFilename(getImageFilenameWithExtension(index))!!
+    override val title by lazy {
+        FileUtils.getNameFromFilename(file.name)!!
     }
 
-    override fun getImageFilenameWithExtension(index: Int): String {
-        return getFilename(index)?.let { FileUtils.sanitizeFilename(it) }
-            ?: "${file.name!!.substringBeforeLast('.')}-${index + 1}.jpg"
+    override fun getImageExtension(index: Int): String {
+        return getExtension(index)
     }
 
     override fun save(index: Int, file: UniFile): Boolean {
-        runCatching {
+        return runCatching {
             file.openFileDescriptor("w").use {
                 extractToFd(index, it.fd)
             }
-        }.onFailure {
+        }.getOrElse {
             it.printStackTrace()
-            return false
+            false
         }
-        return true
     }
-
-    override fun save(index: Int, dir: UniFile, filename: String) = (dir / filename).apply { save(index, this) }
 
     override fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {}
 }

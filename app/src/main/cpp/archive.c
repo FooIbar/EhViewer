@@ -462,22 +462,16 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz,
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_getFilename(JNIEnv *env, jclass thiz,
+Java_com_hippo_ehviewer_jni_ArchiveKt_getExtension(JNIEnv *env, jclass thiz,
                                                                 jint index) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
-    index = entries[index].index;
-    archive_ctx *ctx = NULL;
-    int ret;
-    ret = archive_get_ctx(&ctx, index);
-    if (ret)
-        return NULL;
-    jstring str = (*env)->NewStringUTF(env, archive_entry_pathname_utf8(ctx->entry));
-    ctx->using = 0;
+    const char *ext = strrchr(entries[index].filename, '.') + 1;
+    jstring str = (*env)->NewStringUTF(env, ext);
     return str;
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_extractToFd(JNIEnv *env, jclass thiz,
                                                                 jint index, jint fd) {
     EH_UNUSED(env);
@@ -487,9 +481,10 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToFd(JNIEnv *env, jclass thiz,
     int ret;
     ret = archive_get_ctx(&ctx, index);
     if (!ret) {
-        archive_read_data_into_fd(ctx->arc, fd);
+        ret = archive_read_data_into_fd(ctx->arc, fd);
         ctx->using = 0;
     }
+    return ret == ARCHIVE_OK;
 }
 
 JNIEXPORT void JNICALL

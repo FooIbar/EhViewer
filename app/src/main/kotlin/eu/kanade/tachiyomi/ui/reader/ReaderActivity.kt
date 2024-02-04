@@ -384,11 +384,7 @@ class ReaderActivity : EhActivity() {
             Toast.makeText(this, R.string.error_cant_create_temp_file, Toast.LENGTH_SHORT).show()
             return
         }
-        val file = mGalleryProvider!!.save(
-            page,
-            dir.asUniFile(),
-            mGalleryProvider!!.getImageFilenameWithExtension(page),
-        )
+        val file = mGalleryProvider!!.saveToDir(page, dir.asUniFile())
         if (file == null) {
             Toast.makeText(this, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
             return
@@ -399,12 +395,8 @@ class ReaderActivity : EhActivity() {
             return
         }
 
-        var mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-            MimeTypeMap.getFileExtensionFromUrl(filename),
-        )
-        if (mimeType.isNullOrEmpty()) {
-            mimeType = "image/jpeg"
-        }
+        val extension = FileUtils.getExtensionFromFilename(filename)
+        val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
 
         val uri = FileProvider.getUriForFile(
             this,
@@ -442,11 +434,7 @@ class ReaderActivity : EhActivity() {
             Toast.makeText(this, R.string.error_cant_create_temp_file, Toast.LENGTH_SHORT).show()
             return
         }
-        val file = mGalleryProvider!!.save(
-            page,
-            dir.asUniFile(),
-            mGalleryProvider!!.getImageFilenameWithExtension(page),
-        )
+        val file = mGalleryProvider!!.saveToDir(page, dir.asUniFile())
         if (file == null) {
             Toast.makeText(this, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
             return
@@ -474,13 +462,9 @@ class ReaderActivity : EhActivity() {
         lifecycleScope.launchUI {
             val granted = isAtLeastQ || requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             if (granted) {
-                val filename = mGalleryProvider!!.getImageFilenameWithExtension(page)
-                var mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                    MimeTypeMap.getFileExtensionFromUrl(filename),
-                )
-                if (mimeType.isNullOrEmpty()) {
-                    mimeType = "image/jpeg"
-                }
+                val filename = mGalleryProvider!!.getImageFilename(page)
+                val extension = FileUtils.getExtensionFromFilename(filename)
+                val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
 
                 val realPath: String
                 val resolver = contentResolver
@@ -547,11 +531,7 @@ class ReaderActivity : EhActivity() {
             Toast.makeText(this, R.string.error_cant_create_temp_file, Toast.LENGTH_SHORT).show()
             return
         }
-        val file = mGalleryProvider!!.save(
-            page,
-            dir.asUniFile(),
-            mGalleryProvider!!.getImageFilenameWithExtension(page),
-        )
+        val file = mGalleryProvider!!.saveToDir(page, dir.asUniFile())
         if (file == null) {
             Toast.makeText(this, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
             return

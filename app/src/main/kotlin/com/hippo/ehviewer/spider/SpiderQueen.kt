@@ -309,12 +309,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    fun save(index: Int, dir: UniFile, filename: String): UniFile? {
-        val state = getPageState(index)
-        if (STATE_FINISHED != state) return null
-        return (dir / filename).takeIf { mSpiderDen.saveToUniFile(index, it) }
-    }
-
     fun getExtension(index: Int): String? {
         val state = getPageState(index)
         return if (STATE_FINISHED != state) {

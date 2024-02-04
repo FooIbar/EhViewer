@@ -24,19 +24,18 @@ abstract class PageLoader2 : PageLoader() {
 
     open fun putStartPage(page: Int) {}
 
-    /**
-     * @return without extension
-     */
-    abstract fun getImageFilename(index: Int): String
+    protected abstract val title: String
 
-    /**
-     * @return with extension
-     */
-    abstract fun getImageFilenameWithExtension(index: Int): String
+    protected abstract fun getImageExtension(index: Int): String
+
+    fun getImageFilename(index: Int): String {
+        return "$title-${index + 1}.${getImageExtension(index)}"
+    }
+
     abstract fun save(index: Int, file: UniFile): Boolean
 
-    /**
-     * @param filename with extension
-     */
-    abstract fun save(index: Int, dir: UniFile, filename: String): UniFile?
+    fun saveToDir(index: Int, dir: UniFile): UniFile? {
+        val filename = getImageFilename(index)
+        return (dir / filename).takeIf { save(index, it) }
+    }
 }
