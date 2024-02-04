@@ -98,6 +98,20 @@ static inline int filename_is_playable_file(const char *name) {
     return false;
 }
 
+static inline const char *archive_entry_pathname2(struct archive_entry *entry) {
+    const char *name = archive_entry_pathname_utf8(entry);
+    return name ? name : archive_entry_pathname(entry);
+}
+
+static inline bool archive_entry_is_file(struct archive_entry *entry) {
+    return archive_entry_filetype(entry) == AE_IFREG;
+}
+
+static inline bool archive_entry_is_playable(struct archive_entry *entry) {
+    return archive_entry_is_file(entry) &&
+           filename_is_playable_file(archive_entry_pathname2(entry));
+}
+
 static inline int compare_entries(const void *a, const void *b) {
     const char *fa = ((entry *) a)->filename;
     const char *fb = ((entry *) b)->filename;
@@ -107,8 +121,8 @@ static inline int compare_entries(const void *a, const void *b) {
 static long archive_map_entries_index(archive_ctx *ctx) {
     long count = 0;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK) {
-        const char *name = archive_entry_pathname_utf8(ctx->entry);
-        if (filename_is_playable_file(name)) {
+        const char *name = archive_entry_pathname2(ctx->entry);
+        if (archive_entry_is_file(ctx->entry) && filename_is_playable_file(name)) {
             entries[count].filename = strdup(name);
             entries[count].index = count;
             entries[count].size = archive_entry_size(ctx->entry);
@@ -166,7 +180,7 @@ static void mempool_release_pages(void *addr, size_t size) {
 static long archive_list_all_entries(archive_ctx *ctx) {
     long count = 0;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK)
-        if (filename_is_playable_file(archive_entry_pathname_utf8(ctx->entry)))
+        if (archive_entry_is_playable(ctx->entry))
             count++;
     if (!count)
         LOGE("%s", archive_error_string(ctx->arc));
@@ -214,7 +228,7 @@ static int archive_alloc_ctx(archive_ctx **ctxptr) {
 
 static int archive_skip_to_index(archive_ctx *ctx, int index) {
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK) {
-        if (!filename_is_playable_file(archive_entry_pathname_utf8(ctx->entry)))
+        if (!archive_entry_is_playable(ctx->entry))
             continue;
         if (ctx->next_index++ == index) {
             return ctx->next_index - 1;
@@ -433,7 +447,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz,
     archive_alloc_ctx(&ctx);
     void *tmpBuf = alloca(4096);
     while (archive_read_next_header(ctx->arc, &entry) == ARCHIVE_OK) {
-        if (!filename_is_playable_file(archive_entry_pathname_utf8(entry)))
+        if (!archive_entry_is_playable(entry))
             continue;
         if (!archive_entry_is_encrypted(entry))
             continue;

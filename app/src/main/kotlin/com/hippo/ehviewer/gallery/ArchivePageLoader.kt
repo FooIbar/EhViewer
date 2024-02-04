@@ -149,7 +149,8 @@ class ArchivePageLoader(private val file: UniFile, passwdProvider: PasswdProvide
     }
 
     override fun getImageFilenameWithExtension(index: Int): String {
-        return FileUtils.sanitizeFilename(getFilename(index))
+        return getFilename(index)?.let { FileUtils.sanitizeFilename(it) }
+            ?: "${file.name!!.substringBeforeLast('.')}-${index + 1}.jpg"
     }
 
     override fun save(index: Int, file: UniFile): Boolean {
