@@ -25,7 +25,6 @@ object AppConfig {
     const val APP_DIRNAME = "EhViewer"
     private const val DOWNLOAD = "download"
     private const val TEMP = "temp"
-    private const val COPY = "copy"
     private const val PARSE_ERROR = "parse_error"
     private const val CRASH = "crash"
 
@@ -45,9 +44,6 @@ object AppConfig {
 
     val externalTempDir: File?
         get() = appCtx.externalCacheDir?.run { File(this, TEMP).takeIf { it.ensureDirectory() } }
-
-    val externalCopyTempDir: File?
-        get() = appCtx.externalCacheDir?.run { File(this, COPY).takeIf { it.ensureDirectory() } }
 
     val externalParseErrorDir: File?
         get() = getDirInExternalAppDir(PARSE_ERROR)

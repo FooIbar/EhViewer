@@ -32,17 +32,18 @@ fun Uri.asUniFileOrNull() = UniFile.fromUri(this)
 
 fun Uri.asUniFile() = requireNotNull(asUniFileOrNull())
 
-fun Uri.toPathOrNull(): String? {
-    if (UniFile.isFileUri(this)) {
-        return path
-    }
-    if (UniFile.isDocumentUri(this)) {
-        if (authority == "com.android.externalstorage.documents") {
-            val (type, id) = DocumentsContract.getDocumentId(this).split(":", limit = 2)
-            if (type == "primary") {
-                return Environment.getExternalStorageDirectory().absolutePath + "/" + id
+val Uri.displayPath: String?
+    get() {
+        if (UniFile.isFileUri(this)) {
+            return path
+        }
+        if (UniFile.isDocumentUri(this)) {
+            if (authority == "com.android.externalstorage.documents") {
+                val (type, id) = DocumentsContract.getDocumentId(this).split(":", limit = 2)
+                if (type == "primary") {
+                    return Environment.getExternalStorageDirectory().absolutePath + "/" + id
+                }
             }
         }
+        return toString()
     }
-    return null
-}

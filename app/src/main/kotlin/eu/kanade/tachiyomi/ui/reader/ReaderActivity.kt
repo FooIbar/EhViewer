@@ -41,6 +41,7 @@ import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.activity.viewModels
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -82,7 +83,6 @@ import com.hippo.ehviewer.ui.EhActivity
 import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.AppConfig
-import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.getParcelableCompat
@@ -93,9 +93,9 @@ import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.requestPermission
-import com.hippo.ehviewer.util.sendTo
 import com.hippo.ehviewer.util.setValue
 import com.hippo.unifile.asUniFile
+import com.hippo.unifile.displayPath
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
@@ -105,8 +105,6 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.isNightMode
 import java.io.File
@@ -119,6 +117,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.clipboardManager
 
@@ -374,95 +373,63 @@ class ReaderActivity : EhActivity() {
         readerSettingSheetDialog = null
     }
 
-    fun shareImage(page: Int) {
-        if (null == mGalleryProvider) {
-            return
-        }
+    private suspend fun makeToast(text: String) = withUIContext {
+        Toast.makeText(this@ReaderActivity, text, Toast.LENGTH_SHORT).show()
+    }
 
-        val dir = AppConfig.externalTempDir
-        if (null == dir) {
-            Toast.makeText(this, R.string.error_cant_create_temp_file, Toast.LENGTH_SHORT).show()
-            return
-        }
-        val file = mGalleryProvider!!.saveToDir(page, dir.asUniFile())
-        if (file == null) {
-            Toast.makeText(this, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
-            return
-        }
-        val filename = file.name
-        if (filename == null) {
-            Toast.makeText(this, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
-            return
-        }
+    private suspend fun makeToast(@StringRes resId: Int) = makeToast(getString(resId))
 
-        val extension = FileUtils.getExtensionFromFilename(filename)
-        val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
-
-        val uri = FileProvider.getUriForFile(
-            this,
-            BuildConfig.APPLICATION_ID + ".fileprovider",
-            File(dir, filename),
-        )
-
-        val intent = Intent()
-        intent.action = Intent.ACTION_SEND
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        intent.putExtra(Intent.EXTRA_STREAM, uri)
-        if (mGalleryInfo != null) {
-            intent.putExtra(
-                Intent.EXTRA_TEXT,
-                EhUrl.getGalleryDetailUrl(mGalleryInfo!!.gid, mGalleryInfo!!.token),
-            )
-        }
-        intent.setDataAndType(uri, mimeType)
-
-        try {
-            startActivity(Intent.createChooser(intent, getString(R.string.share_image)))
-        } catch (e: Throwable) {
-            ExceptionUtils.throwIfFatal(e)
-            Toast.makeText(this, R.string.error_cant_find_activity, Toast.LENGTH_SHORT).show()
+    private fun provideImage(index: Int): Uri? {
+        return AppConfig.externalTempDir?.let { dir ->
+            mGalleryProvider?.saveToDir(index, dir.asUniFile())?.name?.let {
+                FileProvider.getUriForFile(
+                    this,
+                    BuildConfig.APPLICATION_ID + ".fileprovider",
+                    File(dir, it),
+                )
+            }
         }
     }
 
-    fun copyImage(page: Int) {
-        if (null == mGalleryProvider) {
-            return
-        }
+    fun shareImage(index: Int) {
+        lifecycleScope.launchIO {
+            val uri = provideImage(index) ?: return@launchIO makeToast(R.string.error_cant_save_image)
+            val intent = Intent()
+            intent.action = Intent.ACTION_SEND
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.putExtra(Intent.EXTRA_STREAM, uri)
+            mGalleryInfo?.run {
+                intent.putExtra(Intent.EXTRA_TEXT, EhUrl.getGalleryDetailUrl(gid, token))
+            }
 
-        val dir = AppConfig.externalCopyTempDir
-        if (null == dir) {
-            Toast.makeText(this, R.string.error_cant_create_temp_file, Toast.LENGTH_SHORT).show()
-            return
-        }
-        val file = mGalleryProvider!!.saveToDir(page, dir.asUniFile())
-        if (file == null) {
-            Toast.makeText(this, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
-            return
-        }
-        val filename = file.name
-        if (filename == null) {
-            Toast.makeText(this, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
-            return
-        }
+            val extension = FileUtils.getExtensionFromFilename(uri.path)
+            val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
+            intent.setDataAndType(uri, mimeType)
 
-        val uri = FileProvider.getUriForFile(
-            this,
-            BuildConfig.APPLICATION_ID + ".fileprovider",
-            File(dir, filename),
-        )
-
-        val clipData = ClipData.newUri(contentResolver, "ehviewer", uri)
-        clipboardManager.setPrimaryClip(clipData)
-        Toast.makeText(this, getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
+            try {
+                startActivity(Intent.createChooser(intent, getString(R.string.share_image)))
+            } catch (e: Throwable) {
+                makeToast(R.string.error_cant_find_activity)
+            }
+        }
     }
 
-    fun saveImage(page: Int) {
+    fun copyImage(index: Int) {
+        lifecycleScope.launchIO {
+            val uri = provideImage(index) ?: return@launchIO makeToast(R.string.error_cant_save_image)
+            val clipData = ClipData.newUri(contentResolver, "ehviewer", uri)
+            clipboardManager.setPrimaryClip(clipData)
+            makeToast(R.string.copied_to_clipboard)
+        }
+    }
+
+    fun saveImage(index: Int) {
         mGalleryProvider ?: return
 
-        lifecycleScope.launchUI {
+        lifecycleScope.launchIO {
             val granted = isAtLeastQ || requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             if (granted) {
-                val filename = mGalleryProvider!!.getImageFilename(page)
+                val filename = mGalleryProvider!!.getImageFilename(index)
                 val extension = FileUtils.getExtensionFromFilename(filename)
                 val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
 
@@ -470,91 +437,56 @@ class ReaderActivity : EhActivity() {
                 val resolver = contentResolver
                 val values = ContentValues()
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-                values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis())
+                values.put(MediaStore.Images.Media.DATE_ADDED, Clock.System.now().toEpochMilliseconds())
                 values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
                 if (isAtLeastQ) {
-                    values.put(
-                        MediaStore.MediaColumns.RELATIVE_PATH,
-                        Environment.DIRECTORY_PICTURES + File.separator + AppConfig.APP_DIRNAME,
-                    )
-                    values.put(MediaStore.MediaColumns.IS_PENDING, 1)
                     realPath = Environment.DIRECTORY_PICTURES + File.separator + AppConfig.APP_DIRNAME
+                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, realPath)
+                    values.put(MediaStore.MediaColumns.IS_PENDING, 1)
                 } else {
-                    val path = File(
-                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                        AppConfig.APP_DIRNAME,
-                    )
+                    val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                    val path = File(dir, AppConfig.APP_DIRNAME)
                     realPath = path.toString()
                     if (!FileUtils.ensureDirectory(path)) {
-                        Toast.makeText(this@ReaderActivity, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
-                        return@launchUI
+                        return@launchIO makeToast(R.string.error_cant_save_image)
                     }
-                    values.put(MediaStore.MediaColumns.DATA, path.toString() + File.separator + filename)
+                    values.put(MediaStore.MediaColumns.DATA, realPath + File.separator + filename)
                 }
                 val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-                if (imageUri == null) {
-                    Toast.makeText(this@ReaderActivity, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
-                    return@launchUI
-                }
-                if (!mGalleryProvider!!.save(page, imageUri.asUniFile())) {
+                    ?: return@launchIO makeToast(R.string.error_cant_save_image)
+                if (!mGalleryProvider!!.save(index, imageUri.asUniFile())) {
                     try {
                         resolver.delete(imageUri, null, null)
                     } catch (e: Exception) {
                         e.printStackTrace()
                     }
-
-                    Toast.makeText(this@ReaderActivity, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
-                    return@launchUI
+                    return@launchIO makeToast(R.string.error_cant_save_image)
                 } else if (isAtLeastQ) {
                     val contentValues = ContentValues()
                     contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
                     resolver.update(imageUri, contentValues, null, null)
                 }
 
-                Toast.makeText(
-                    this@ReaderActivity,
-                    getString(R.string.image_saved, realPath + File.separator + filename),
-                    Toast.LENGTH_SHORT,
-                ).show()
+                makeToast(getString(R.string.image_saved, realPath + File.separator + filename))
             } else {
-                Toast.makeText(this@ReaderActivity, R.string.permission_denied, Toast.LENGTH_SHORT).show()
+                makeToast(R.string.permission_denied)
             }
         }
     }
 
-    fun saveImageTo(page: Int) {
-        if (null == mGalleryProvider) {
-            return
-        }
-        val dir = AppConfig.externalTempDir
-        if (null == dir) {
-            Toast.makeText(this, R.string.error_cant_create_temp_file, Toast.LENGTH_SHORT).show()
-            return
-        }
-        val file = mGalleryProvider!!.saveToDir(page, dir.asUniFile())
-        if (file == null) {
-            Toast.makeText(this, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
-            return
-        }
-        val filename = file.name
-        if (filename == null) {
-            Toast.makeText(this, R.string.error_cant_save_image, Toast.LENGTH_SHORT).show()
-            return
-        }
-        val activity = this
-        lifecycleScope.launchUI {
+    fun saveImageTo(index: Int) {
+        lifecycleScope.launchIO {
+            val filename = mGalleryProvider?.getImageFilename(index) ?: return@launchIO
+            val extension = FileUtils.getExtensionFromFilename(filename)
+            val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
             runSuspendCatching {
-                val uri = awaitActivityResult(CreateDocument("todo/todo"), filename)
-                if (uri != null) {
-                    withIOContext {
-                        val f = requireNotNull(AppConfig.externalTempDir).asUniFile() / filename
-                        f sendTo uri.asUniFile()
-                        f.delete()
-                    }
-                    Toast.makeText(activity, getString(R.string.image_saved, uri.path), Toast.LENGTH_SHORT).show()
+                awaitActivityResult(CreateDocument(mimeType), filename)?.let {
+                    mGalleryProvider!!.save(index, it.asUniFile())
+                    makeToast(getString(R.string.image_saved, it.displayPath))
                 }
             }.onFailure {
-                Toast.makeText(activity, R.string.error_cant_find_activity, Toast.LENGTH_SHORT).show()
+                it.printStackTrace()
+                makeToast(R.string.error_cant_find_activity)
             }
         }
     }
