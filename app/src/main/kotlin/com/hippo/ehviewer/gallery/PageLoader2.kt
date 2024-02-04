@@ -29,7 +29,7 @@ abstract class PageLoader2 : PageLoader() {
     protected abstract fun getImageExtension(index: Int): String
 
     fun getImageFilename(index: Int): String {
-        return "$title-${index + 1}.${getImageExtension(index)}"
+        return "$title - ${index + 1}.${getImageExtension(index)}"
     }
 
     abstract fun save(index: Int, file: UniFile): Boolean
