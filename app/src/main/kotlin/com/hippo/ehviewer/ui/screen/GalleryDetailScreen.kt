@@ -10,6 +10,7 @@ import android.os.Parcelable
 import android.text.TextUtils.TruncateAt.END
 import android.view.View
 import android.widget.ArrayAdapter
+import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -118,6 +119,7 @@ import com.hippo.ehviewer.databinding.DialogArchiveListBinding
 import com.hippo.ehviewer.databinding.DialogTorrentListBinding
 import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
 import com.hippo.ehviewer.ktbuilder.imageRequest
+import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.MODE_READ
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
@@ -154,9 +156,11 @@ import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.addTextToClipboard
+import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
+import com.hippo.unifile.asUniFile
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -1212,6 +1216,31 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             onClick = {
                                 dropdown = false
                                 context.openBrowser(galleryDetailUrl)
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.export_as_archive)) },
+                            onClick = {
+                                coroutineScope.launchIO {
+                                    val canExport = EhDownloadManager.getDownloadState(gid) == DownloadInfo.STATE_FINISH
+                                    if (!canExport) {
+                                        dialogState.awaitPermissionOrCancel(
+                                            showCancelButton = false,
+                                            text = { Text(text = stringResource(id = R.string.download_gallery_first)) },
+                                        )
+                                    } else {
+                                        val info = galleryInfo!!
+                                        val uri = with(context) {
+                                            awaitActivityResult(CreateDocument("application/x-cbz"), info.title!!)
+                                        }
+                                        if (uri != null) {
+                                            SpiderDen(info).apply {
+                                                initDownloadDirIfExist()
+                                                exportAsCbz(uri.asUniFile())
+                                            }
+                                        }
+                                    }
+                                }
                             },
                         )
                     }

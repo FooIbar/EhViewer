@@ -15,6 +15,10 @@
  */
 package com.hippo.ehviewer.spider
 
+import arrow.fx.coroutines.autoCloseable
+import arrow.fx.coroutines.closeable
+import arrow.fx.coroutines.parMap
+import arrow.fx.coroutines.resourceScope
 import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
@@ -25,6 +29,7 @@ import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.coil.suspendEdit
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.image.UniFileSource
+import com.hippo.ehviewer.jni.archiveFdBatch
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
@@ -39,8 +44,8 @@ import io.ktor.utils.io.jvm.nio.copyTo
 import java.util.Locale
 import kotlin.io.path.readText
 
-class SpiderDen(mGalleryInfo: GalleryInfo) {
-    private val mGid = mGalleryInfo.gid
+class SpiderDen(val info: GalleryInfo) {
+    private val gid = info.gid
     var downloadDir: UniFile? = null
 
     @Volatile
@@ -51,12 +56,12 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
     suspend fun setMode(value: Int) {
         mode = value
         if (mode == SpiderQueen.MODE_DOWNLOAD && downloadDir == null) {
-            downloadDir = getGalleryDownloadDir(mGid)?.takeIf { it.ensureDir() }
+            downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.ensureDir() }
         }
     }
 
     private fun containInCache(index: Int): Boolean {
-        val key = getImageKey(mGid, index)
+        val key = getImageKey(gid, index)
         return sCache.read(key) { true } ?: false
     }
 
@@ -67,7 +72,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
 
     private fun copyFromCacheToDownloadDir(index: Int): Boolean {
         val dir = downloadDir ?: return false
-        val key = getImageKey(mGid, index)
+        val key = getImageKey(gid, index)
         return runCatching {
             sCache.read(key) {
                 val extension = "." + metadata.toFile().readText()
@@ -97,7 +102,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
     }
 
     private fun removeFromCache(index: Int): Boolean {
-        val key = getImageKey(mGid, index)
+        val key = getImageKey(gid, index)
         return sCache.remove(key)
     }
 
@@ -146,7 +151,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
 
         // Read Mode, allow save to cache
         if (mode == SpiderQueen.MODE_READ) {
-            val key = getImageKey(mGid, index)
+            val key = getImageKey(gid, index)
             return sCache.suspendEdit(key) {
                 metadata.toFile().writeText(ext)
                 fops(data.asUniFile())
@@ -167,7 +172,7 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
     }
 
     fun saveToUniFile(index: Int, file: UniFile): Boolean {
-        val key = getImageKey(mGid, index)
+        val key = getImageKey(gid, index)
 
         // Read from diskCache first
         sCache.read(key) {
@@ -195,14 +200,14 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
     }
 
     fun getExtension(index: Int): String? {
-        val key = getImageKey(mGid, index)
+        val key = getImageKey(gid, index)
         return sCache.read(key) { metadata.toNioPath().readText() }
             ?: downloadDir?.let { findImageFile(it, index) }?.name.let { FileUtils.getExtensionFromFilename(it) }
     }
 
     fun getImageSource(index: Int): UniFileSource? {
         if (mode == SpiderQueen.MODE_READ) {
-            val key = getImageKey(mGid, index)
+            val key = getImageKey(gid, index)
             val snapshot = sCache.openSnapshot(key)
             if (snapshot != null) {
                 return object : UniFileSource, AutoCloseable by snapshot {
@@ -217,6 +222,21 @@ class SpiderDen(mGalleryInfo: GalleryInfo) {
 
             override fun close() {}
         }
+    }
+
+    suspend fun exportAsCbz(file: UniFile) = resourceScope {
+        val pages = info.pages
+        val (fdBatch, names) = (0 until pages).parMap { idx ->
+            val ext = requireNotNull(getExtension(idx))
+            val f = autoCloseable { requireNotNull(getImageSource(idx)) }
+            closeable { f.source.openFileDescriptor("r") }.fd to "$idx.$ext"
+        }.unzip()
+        val arcFd = closeable { file.openFileDescriptor("rw") }
+        archiveFdBatch(fdBatch.toIntArray(), names.toTypedArray(), arcFd.fd, pages)
+    }
+
+    suspend fun initDownloadDirIfExist() {
+        downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.isDirectory }
     }
 }
 
