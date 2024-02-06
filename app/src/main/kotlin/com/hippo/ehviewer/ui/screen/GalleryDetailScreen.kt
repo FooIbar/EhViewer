@@ -157,6 +157,7 @@ import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.awaitActivityResult
+import com.hippo.ehviewer.util.bgWork
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
@@ -1221,6 +1222,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         DropdownMenuItem(
                             text = { Text(text = stringResource(id = R.string.export_as_archive)) },
                             onClick = {
+                                dropdown = false
                                 coroutineScope.launchIO {
                                     val canExport = EhDownloadManager.getDownloadState(gid) == DownloadInfo.STATE_FINISH
                                     if (!canExport) {
@@ -1234,9 +1236,13 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                             awaitActivityResult(CreateDocument("application/x-cbz"), info.title!!)
                                         }
                                         if (uri != null) {
-                                            SpiderDen(info).apply {
-                                                initDownloadDirIfExist()
-                                                exportAsCbz(uri.asUniFile())
+                                            val success = dialogState.bgWork {
+                                                withIOContext {
+                                                    SpiderDen(info).run {
+                                                        initDownloadDirIfExist()
+                                                        exportAsCbz(uri.asUniFile())
+                                                    }
+                                                }
                                             }
                                         }
                                     }

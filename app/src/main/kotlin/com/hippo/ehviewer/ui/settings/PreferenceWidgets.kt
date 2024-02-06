@@ -11,13 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.AlertDialogDefaults
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -38,12 +33,11 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import arrow.atomic.Atomic
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.ui.destinations.DirectionDestination
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.settings.PreferenceTokens.PreferenceTextPadding
+import com.hippo.ehviewer.util.ProgressDialog
 import com.jamal.composeprefs3.ui.prefs.DropDownPref
 import com.jamal.composeprefs3.ui.prefs.DropDownPrefInt
 import com.jamal.composeprefs3.ui.prefs.SliderPref
@@ -155,30 +149,6 @@ fun SimpleMenuPreference(title: String, @ArrayRes entry: Int, @ArrayRes entryVal
     fun set(new: String) = value.set(new.also { v = it })
     check(entryArray.size == valuesArray.size)
     DropDownPref(title = title, defaultValue = v, onValueChange = ::set, useSelectedAsSummary = true, entries = map)
-}
-
-@Composable
-private fun ProgressDialog() {
-    BasicAlertDialog(
-        onDismissRequest = { },
-        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
-    ) {
-        Surface(
-            modifier = Modifier.width(280.dp),
-            shape = AlertDialogDefaults.shape,
-            color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation,
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(18.dp),
-            ) {
-                CircularProgressIndicator()
-                Spacer(modifier = Modifier.size(18.dp))
-                Text(text = stringResource(id = R.string.please_wait))
-            }
-        }
-    }
 }
 
 @Composable
