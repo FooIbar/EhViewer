@@ -19,29 +19,31 @@ import splitties.init.appCtx
 class SpiderInfo(
     val gid: Long,
 
+    val token: String,
+
     val pages: Int,
 
     val pTokenMap: MutableMap<Int, String> = hashMapOf(),
-
-    var startPage: Int = 0,
-
-    var token: String? = null,
 
     var previewPages: Int = -1,
 
     var previewPerPage: Int = -1,
 )
 
+private val cbor = Cbor {
+    ignoreUnknownKeys = true
+}
+
 fun SpiderInfo.write(file: UniFile) {
     file.openOutputStream().use {
-        it.write(Cbor.encodeToByteArray(this))
+        it.write(cbor.encodeToByteArray(this))
     }
 }
 
 fun SpiderInfo.saveToCache() {
     runSuspendCatching {
         spiderInfoCache.edit(gid.toString()) {
-            data.toFile().writeBytes(Cbor.encodeToByteArray(this@saveToCache))
+            data.toFile().writeBytes(cbor.encodeToByteArray(this@saveToCache))
         }
     }.onFailure {
         it.printStackTrace()
@@ -58,7 +60,7 @@ private val spiderInfoCache by lazy {
 fun readFromCache(gid: Long): SpiderInfo? {
     return spiderInfoCache.read(gid.toString()) {
         runCatching {
-            Cbor.decodeFromByteArray<SpiderInfo>(data.toFile().readBytes())
+            cbor.decodeFromByteArray<SpiderInfo>(data.toFile().readBytes())
         }.onFailure {
             it.printStackTrace()
         }.getOrNull()
@@ -68,7 +70,7 @@ fun readFromCache(gid: Long): SpiderInfo? {
 fun readCompatFromUniFile(file: UniFile): SpiderInfo? {
     return runCatching {
         file.openInputStream().use {
-            Cbor.decodeFromByteArray<SpiderInfo>(it.readBytes())
+            cbor.decodeFromByteArray<SpiderInfo>(it.readBytes())
         }
     }.getOrNull() ?: runCatching {
         file.openInputStream().use { readLegacySpiderInfo(it) }

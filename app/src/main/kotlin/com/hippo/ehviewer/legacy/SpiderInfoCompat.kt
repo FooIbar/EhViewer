@@ -26,7 +26,7 @@ fun readLegacySpiderInfo(inputStream: InputStream): SpiderInfo {
     val previewPerPage = readInt()
     val pages = read().toInt()
     val pTokenMap = hashMapOf<Int, String>()
-    val info = SpiderInfo(gid, pages, pTokenMap, 0, token, previewPages, previewPerPage)
+    val info = SpiderInfo(gid, token, pages, pTokenMap, previewPages, previewPerPage)
     runCatching {
         while (true) {
             val line = read()

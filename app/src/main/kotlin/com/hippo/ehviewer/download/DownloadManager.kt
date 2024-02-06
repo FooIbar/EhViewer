@@ -37,8 +37,6 @@ import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
 import com.hippo.ehviewer.spider.putToDownloadDir
-import com.hippo.ehviewer.spider.readCompatFromUniFile
-import com.hippo.ehviewer.spider.write
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ConcurrentPool
 import com.hippo.ehviewer.util.SimpleHandler
@@ -49,11 +47,9 @@ import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.asUniFileOrNull
 import eu.kanade.tachiyomi.util.lang.launchIO
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import splitties.preferences.edit
@@ -457,26 +453,9 @@ object DownloadManager : OnSpiderListener {
         }
     }
 
-    suspend fun resetAllReadingProgress() = coroutineScope {
-        allInfoList.forEach { info ->
-            launch {
-                runCatching {
-                    resetReadingProgress(info)
-                    Log.d(TAG, "Current thread: ${Thread.currentThread().name}")
-                }.onFailure {
-                    Log.e(TAG, "Can't write SpiderInfo", it)
-                }
-            }
-        }
-    }
-
-    private fun resetReadingProgress(info: DownloadInfo) {
-        val downloadDir = info.downloadDir ?: return
-        val file = downloadDir.findFile(SpiderQueen.SPIDER_INFO_FILENAME) ?: return
-        val spiderInfo = readCompatFromUniFile(file) ?: return
-        spiderInfo.startPage = 0
-        spiderInfo.write(file)
-    }
+    suspend fun resetAllReadingProgress() = runCatching {
+        EhDB.clearProgressInfo()
+    }.onFailure { it.printStackTrace() }
 
     // Update in DB
     // Update listener

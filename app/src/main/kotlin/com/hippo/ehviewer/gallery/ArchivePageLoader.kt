@@ -31,11 +31,8 @@ import com.hippo.ehviewer.jni.releaseByteBuffer
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.unifile.UniFile
 import java.nio.ByteBuffer
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
@@ -47,8 +44,12 @@ import moe.tarsin.coroutines.withLock
 typealias PasswdInvalidator = (String) -> Boolean
 typealias PasswdProvider = suspend (PasswdInvalidator) -> String
 
-class ArchivePageLoader(private val file: UniFile, passwdProvider: PasswdProvider? = null) : PageLoader2(), CoroutineScope {
-    override val coroutineContext = Dispatchers.IO + Job()
+class ArchivePageLoader(
+    private val file: UniFile,
+    gid: Long = 0,
+    startPage: Int = 0,
+    passwdProvider: PasswdProvider? = null,
+) : PageLoader2(gid, startPage) {
     private lateinit var pfd: ParcelFileDescriptor
     private val hostJob = launch(start = CoroutineStart.LAZY) {
         Log.d(DEBUG_TAG, "Open archive ${file.uri}")
@@ -76,11 +77,10 @@ class ArchivePageLoader(private val file: UniFile, passwdProvider: PasswdProvide
     }
 
     override fun stop() {
-        cancel()
+        super.stop()
         closeArchive()
         pfd.close()
         Log.d(DEBUG_TAG, "Close archive ${file.uri} successfully!")
-        super.stop()
     }
 
     private val mJobMap = hashMapOf<Int, Job>()
@@ -135,7 +135,7 @@ class ArchivePageLoader(private val file: UniFile, passwdProvider: PasswdProvide
 
     override suspend fun awaitReady(): Boolean {
         hostJob.join()
-        return size != 0
+        return super.awaitReady() && size != 0
     }
 
     override val isReady: Boolean

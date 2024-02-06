@@ -27,6 +27,7 @@ import com.hippo.ehviewer.dao.EhDatabase
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.HistoryInfo
 import com.hippo.ehviewer.dao.LocalFavoriteInfo
+import com.hippo.ehviewer.dao.ProgressInfo
 import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.util.sendTo
@@ -44,6 +45,11 @@ object EhDB {
     private suspend fun deleteGalleryInfo(galleryInfo: BaseGalleryInfo) {
         runCatching { db.galleryDao().delete(galleryInfo) }
     }
+
+    fun getReadProgressFlow(gid: Long) = db.progressDao().getPageFlow(gid)
+    suspend fun getReadProgress(gid: Long) = db.progressDao().getPage(gid)
+    suspend fun putReadProgress(gid: Long, page: Int) = db.progressDao().upsert(ProgressInfo(gid, page))
+    suspend fun clearProgressInfo() = db.progressDao().deleteAll()
 
     suspend fun getAllDownloadInfo() = db.downloadsDao().joinList().onEach {
         if (it.state == DownloadInfo.STATE_WAIT || it.state == DownloadInfo.STATE_DOWNLOAD) {
@@ -251,6 +257,7 @@ object EhDB {
             context.deleteDatabase(ehExportName)
         } use { newDb ->
             db.galleryDao().list().let { newDb.galleryDao().insertOrIgnore(it) }
+            db.progressDao().list().let { newDb.progressDao().insertOrIgnore(it) }
             db.downloadLabelDao().list().let { newDb.downloadLabelDao().insert(it) }
             db.downloadDirnameDao().list().let { newDb.downloadDirnameDao().insertOrIgnore(it) }
             db.downloadsDao().list().let { newDb.downloadsDao().insert(it) }
@@ -275,6 +282,9 @@ object EhDB {
         } use { oldDB ->
             runCatching {
                 db.galleryDao().insertOrIgnore(oldDB.galleryDao().list())
+            }
+            runCatching {
+                db.progressDao().insertOrIgnore(oldDB.progressDao().list())
             }
             runCatching {
                 val downloadLabelList = oldDB.downloadLabelDao().list()

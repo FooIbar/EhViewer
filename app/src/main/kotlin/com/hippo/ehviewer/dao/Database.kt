@@ -108,8 +108,11 @@ class ThumbKeyMigration : AutoMigrationSpec {
 }
 
 @Database(
-    entities = [BaseGalleryInfo::class, DownloadLabel::class, DownloadEntity::class, DownloadDirname::class, Filter::class, HistoryInfo::class, LocalFavoriteInfo::class, QuickSearch::class],
-    version = 16,
+    entities = [
+        BaseGalleryInfo::class, DownloadLabel::class, DownloadEntity::class, DownloadDirname::class,
+        Filter::class, HistoryInfo::class, LocalFavoriteInfo::class, ProgressInfo::class, QuickSearch::class,
+    ],
+    version = 17,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(
@@ -167,6 +170,10 @@ class ThumbKeyMigration : AutoMigrationSpec {
             from = 15,
             to = 16,
         ),
+        AutoMigration(
+            from = 16,
+            to = 17,
+        ),
     ],
 )
 @TypeConverters(FilterModeConverter::class)
@@ -178,6 +185,7 @@ abstract class EhDatabase : RoomDatabase() {
     abstract fun filterDao(): FilterDao
     abstract fun historyDao(): HistoryDao
     abstract fun localFavoritesDao(): LocalFavoritesDao
+    abstract fun progressDao(): ProgressDao
     abstract fun quickSearchDao(): QuickSearchDao
 }
 
