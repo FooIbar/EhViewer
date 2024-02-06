@@ -226,13 +226,14 @@ class SpiderDen(val info: GalleryInfo) {
 
     suspend fun exportAsCbz(file: UniFile) = resourceScope {
         val pages = info.pages
+        val comicInfo = closeable { (downloadDir!! / COMIC_INFO_FILE).openFileDescriptor("r") }
         val (fdBatch, names) = (0 until pages).parMap { idx ->
             val ext = requireNotNull(getExtension(idx))
             val f = autoCloseable { requireNotNull(getImageSource(idx)) }
             closeable { f.source.openFileDescriptor("r") }.fd to "$idx.$ext"
-        }.unzip()
+        }.run { plus(comicInfo.fd to COMIC_INFO_FILE) }.unzip()
         val arcFd = closeable { file.openFileDescriptor("rw") }
-        archiveFdBatch(fdBatch.toIntArray(), names.toTypedArray(), arcFd.fd, pages)
+        archiveFdBatch(fdBatch.toIntArray(), names.toTypedArray(), arcFd.fd, pages + 1)
     }
 
     suspend fun initDownloadDirIfExist() {
