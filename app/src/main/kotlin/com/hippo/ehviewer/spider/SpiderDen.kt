@@ -15,6 +15,7 @@
  */
 package com.hippo.ehviewer.spider
 
+import android.webkit.MimeTypeMap
 import arrow.fx.coroutines.autoCloseable
 import arrow.fx.coroutines.closeable
 import arrow.fx.coroutines.parMap
@@ -40,10 +41,9 @@ import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.contentType
+import io.ktor.client.statement.request
 import io.ktor.http.isSuccess
 import io.ktor.utils.io.jvm.nio.copyTo
-import java.util.Locale
 import kotlin.io.path.readText
 
 class SpiderDen(val info: GalleryInfo) {
@@ -77,7 +77,7 @@ class SpiderDen(val info: GalleryInfo) {
         val key = getImageKey(gid, index)
         return runCatching {
             sCache.read(key) {
-                val extension = "." + metadata.toFile().readText()
+                val extension = metadata.toFile().readText()
                 val file = dir.createFile(perFilename(index, extension)) ?: return false
                 data.asUniFile() sendTo file
                 true
@@ -118,8 +118,7 @@ class SpiderDen(val info: GalleryInfo) {
 
     private fun findDownloadFileForIndex(index: Int, extension: String): UniFile? {
         val dir = downloadDir ?: return null
-        val ext = ".$extension"
-        return dir.createFile(perFilename(index, ext))
+        return dir.createFile(perFilename(index, extension))
     }
 
     suspend fun makeHttpCallAndSaveImage(
@@ -163,8 +162,8 @@ class SpiderDen(val info: GalleryInfo) {
     }
 
     private suspend fun saveFromHttpResponse(index: Int, response: HttpResponse): Boolean {
-        val contentType = response.contentType()
-        val extension = contentType?.contentSubtype ?: "jpg"
+        val url = response.request.url.toString()
+        val extension = MimeTypeMap.getFileExtensionFromUrl(url).takeUnless { it.isEmpty() } ?: "jpg"
         return saveResponseMeta(index, extension) { outFile ->
             outFile.openOutputStream().use {
                 val chan = it.channel.apply { truncate(0) }
@@ -236,7 +235,7 @@ class SpiderDen(val info: GalleryInfo) {
         val (fdBatch, names) = (0 until pages).parMap { idx ->
             val ext = requireNotNull(getExtension(idx))
             val f = autoCloseable { requireNotNull(getImageSource(idx)) }
-            closeable { f.source.openFileDescriptor("r") }.fd to perFilename(idx, ".$ext")
+            closeable { f.source.openFileDescriptor("r") }.fd to perFilename(idx, ext)
         }.run { plus(comicInfo.fd to COMIC_INFO_FILE) }.unzip()
         val arcFd = closeable { file.openFileDescriptor("rw") }
         archiveFdBatch(fdBatch.toIntArray(), names.toTypedArray(), arcFd.fd, pages + 1)
@@ -262,15 +261,12 @@ class SpiderDen(val info: GalleryInfo) {
     }
 }
 
-/**
- * @param extension with dot
- */
-fun perFilename(index: Int, extension: String?): String {
-    return String.format(Locale.US, "%08d%s", index + 1, extension)
+fun perFilename(index: Int, extension: String = ""): String {
+    return "%08d.%s".format(index + 1, extension)
 }
 
 private fun findImageFile(dir: UniFile, index: Int): UniFile? {
-    val head = perFilename(index, ".")
+    val head = perFilename(index)
     return dir.findFirst { name -> name.startsWith(head) }
 }
 
