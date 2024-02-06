@@ -23,6 +23,7 @@ import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
+import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.client.getImageKey
@@ -250,8 +251,10 @@ class SpiderDen(val info: GalleryInfo) {
         downloadDir?.run {
             createFile(COMIC_INFO_FILE)?.also {
                 runCatching {
-                    withNonCancellableContext {
-                        EhEngine.fillGalleryListByApi(listOf(info))
+                    if (info !is GalleryDetail) {
+                        withNonCancellableContext {
+                            EhEngine.fillGalleryListByApi(listOf(info))
+                        }
                     }
                     info.getComicInfo().write(it)
                 }.onFailure {
