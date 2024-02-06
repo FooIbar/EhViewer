@@ -499,7 +499,7 @@ JNIEXPORT jboolean JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, jintArray fd_batch,
                                                      jobjectArray names, jint arc_fd, jint size) {
     struct archive *arc = archive_write_new();
-    struct stat64 st;
+    struct stat st;
     char buff[8192];
     jint fdBatch[size];
     (*env)->GetIntArrayRegion(env, fd_batch, 0, size, fdBatch);
@@ -513,10 +513,8 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, 
         const char *cname = (*env)->GetStringUTFChars(env, name, false);
         archive_entry_set_pathname(entry, cname);
         (*env)->ReleaseStringUTFChars(env, name, cname);
-        fstat64(fd, &st);
-        archive_entry_set_size(entry, st.st_size);
-        archive_entry_set_filetype(entry, AE_IFREG);
-        archive_entry_set_perm(entry, 0644);
+        fstat(fd, &st);
+        archive_entry_copy_stat(entry, &st);
         archive_write_header(arc, entry);
         int len = read(fd, buff, sizeof(buff));
         while (len > 0) {
