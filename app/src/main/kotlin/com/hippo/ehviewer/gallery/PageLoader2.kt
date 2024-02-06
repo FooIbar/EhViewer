@@ -15,14 +15,47 @@
  */
 package com.hippo.ehviewer.gallery
 
+import androidx.annotation.CallSuper
+import com.hippo.ehviewer.EhDB
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
-abstract class PageLoader2 : PageLoader() {
-    open val startPage: Int
-        get() = 0
+abstract class PageLoader2(private val gid: Long, var startPage: Int) : PageLoader(), CoroutineScope {
+    override val coroutineContext = Dispatchers.IO + Job()
+    private val progressJob = launch(start = CoroutineStart.LAZY) {
+        if (startPage == -1) {
+            startPage = EhDB.getReadProgress(gid)
+        }
+    }
 
-    open fun putStartPage(page: Int) {}
+    override fun start() {
+        super.start()
+        progressJob.start()
+    }
+
+    @CallSuper
+    override suspend fun awaitReady(): Boolean {
+        progressJob.join()
+        return startPage != -1
+    }
+
+    override fun stop() {
+        super.stop()
+        if (gid != 0L) {
+            launch {
+                EhDB.putReadProgress(gid, startPage)
+                this@PageLoader2.cancel()
+            }
+        } else {
+            cancel()
+        }
+    }
 
     protected abstract val title: String
 

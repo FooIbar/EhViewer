@@ -237,12 +237,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         return isReady
     }
 
-    suspend fun awaitStartPage(): Int {
-        prepareJob.join()
-        if (!isReady) return 0
-        return mSpiderInfo.startPage
-    }
-
     private fun stop() {
         val queenScope = this
         launchIO {
@@ -317,13 +311,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    val startPage: Int
-        get() = mSpiderInfo.startPage
-
-    fun putStartPage(page: Int) {
-        mSpiderInfo.startPage = page
-    }
-
     private fun readSpiderInfoFromLocal(): SpiderInfo? {
         return mSpiderDen.downloadDir?.run {
             findFile(SPIDER_INFO_FILENAME)?.let { file ->
@@ -360,7 +347,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 referer,
             ).fetchUsingAsText {
                 val pages = parsePages(this)
-                val spiderInfo = SpiderInfo(galleryInfo.gid, pages, token = galleryInfo.token)
+                val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token!!, pages)
                 readPreviews(this, 0, spiderInfo)
                 spiderInfo
             }
@@ -632,12 +619,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     showKeyLock.withLock {
                         localShowKey = showKey
                         if (localShowKey == null || forceHtml) {
-                            var pageUrl = EhUrl.getPageUrl(mSpiderInfo.gid, index, pToken)
+                            var pageUrl = EhUrl.getPageUrl(galleryInfo.gid, index, pToken)
                             // Skipping H@H costs 50 points, only use it as last resort
                             if (skipHathKey != null) {
                                 pageUrl += "?nl=$skipHathKey"
                             }
-                            EhEngine.getGalleryPage(pageUrl, mSpiderInfo.gid, mSpiderInfo.token)
+                            EhEngine.getGalleryPage(pageUrl, galleryInfo.gid, galleryInfo.token)
                                 .let { result ->
                                     check509(result.imageUrl)
                                     imageUrl = result.imageUrl

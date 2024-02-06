@@ -22,10 +22,10 @@ import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.obtainSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.releaseSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
-import com.hippo.ehviewer.util.SimpleHandler
 import com.hippo.unifile.UniFile
 
-class EhPageLoader(private val mGalleryInfo: GalleryInfo) : PageLoader2(), OnSpiderListener {
+class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
+    PageLoader2(mGalleryInfo.gid, startPage), OnSpiderListener {
     private lateinit var mSpiderQueen: SpiderQueen
     override fun start() {
         super.start()
@@ -38,12 +38,8 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo) : PageLoader2(), OnSpi
     override fun stop() {
         super.stop()
         mSpiderQueen.removeOnSpiderListener(this)
-        // Activity recreate may called, so wait 0.5s
-        SimpleHandler.postDelayed(ReleaseTask(mSpiderQueen), 500)
+        releaseSpiderQueen(mSpiderQueen, SpiderQueen.MODE_READ)
     }
-
-    override val startPage
-        get() = mSpiderQueen.startPage
 
     override val title by lazy {
         EhUtils.getSuitableTitle(mGalleryInfo)
@@ -55,10 +51,6 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo) : PageLoader2(), OnSpi
 
     override fun save(index: Int, file: UniFile): Boolean {
         return mSpiderQueen.save(index, file)
-    }
-
-    override fun putStartPage(page: Int) {
-        mSpiderQueen.putStartPage(page)
     }
 
     override val size: Int
@@ -73,7 +65,7 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo) : PageLoader2(), OnSpi
     }
 
     override suspend fun awaitReady(): Boolean {
-        return mSpiderQueen.awaitReady()
+        return super.awaitReady() && mSpiderQueen.awaitReady()
     }
 
     override val isReady: Boolean
@@ -120,12 +112,5 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo) : PageLoader2(), OnSpi
 
     override fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {
         mSpiderQueen.preloadPages(pages, pair)
-    }
-
-    private class ReleaseTask(private var mSpiderQueen: SpiderQueen?) : Runnable {
-        override fun run() {
-            mSpiderQueen?.let { releaseSpiderQueen(it, SpiderQueen.MODE_READ) }
-            mSpiderQueen = null
-        }
     }
 }

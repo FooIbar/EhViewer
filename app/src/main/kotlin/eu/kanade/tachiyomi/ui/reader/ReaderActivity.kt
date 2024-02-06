@@ -133,10 +133,9 @@ class GalleryModel : ViewModel() {
 class ReaderActivity : EhActivity() {
     lateinit var binding: ReaderActivityBinding
     private var mAction: String? = null
-    private var mFilename: String? = null
     private var mUri: Uri? = null
     private var mGalleryInfo: BaseGalleryInfo? = null
-    private var mPage: Int = 0
+    private var mPage: Int = -1
     private val vm: GalleryModel by viewModels()
     private val dialogState = DialogState()
 
@@ -145,7 +144,11 @@ class ReaderActivity : EhActivity() {
      */
     var menuVisible by mutableStateOf(false)
     private var mGalleryProvider by lazyMut { vm::galleryProvider }
-    private var mCurrentIndex: Int = 0
+    private var mCurrentIndex: Int
+        get() = mGalleryProvider!!.startPage
+        set(value) {
+            mGalleryProvider!!.startPage = value
+        }
 
     private val galleryDetailUrl: String?
         get() {
@@ -160,56 +163,56 @@ class ReaderActivity : EhActivity() {
             return EhUrl.getGalleryDetailUrl(gid, token, 0, false)
         }
 
-    private fun buildProvider(replace: Boolean = false) {
-        if (mGalleryProvider != null) {
-            if (replace) mGalleryProvider!!.stop() else return
+    private suspend fun buildProvider(replace: Boolean = false): PageLoader2? {
+        mGalleryProvider?.let {
+            if (replace) it.stop() else return it
         }
 
-        if (ACTION_EH == mAction) {
-            mGalleryInfo?.let {
-                mGalleryProvider = DownloadManager.getDownloadInfo(it.gid)?.downloadDir
-                    ?.findFile("${it.gid}.cbz")
-                    ?.let { file -> ArchivePageLoader(file) }
-                    ?: EhPageLoader(it)
-            }
-        } else if (Intent.ACTION_VIEW == mAction) {
-            if (mUri != null) {
-                try {
-                    grantUriPermission(
-                        BuildConfig.APPLICATION_ID,
-                        mUri,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                    )
-                } catch (e: Exception) {
-                    Toast.makeText(this, R.string.error_reading_failed, Toast.LENGTH_SHORT).show()
+        val provider = when (mAction) {
+            ACTION_EH -> {
+                mGalleryInfo?.let {
+                    DownloadManager.getDownloadInfo(it.gid)?.downloadDir
+                        ?.findFile("${it.gid}.cbz")
+                        ?.let { file -> ArchivePageLoader(file, it.gid, mPage) }
+                        ?: EhPageLoader(it, mPage)
                 }
+            }
 
-                mGalleryProvider = ArchivePageLoader(mUri!!.asUniFile()) { invalidator ->
-                    runCatching {
-                        dialogState.awaitInputText(
-                            title = getString(R.string.archive_need_passwd),
-                            hint = getString(R.string.archive_passwd),
-                        ) {
-                            if (it.isBlank()) {
-                                getString(R.string.passwd_cannot_be_empty)
-                            } else if (invalidator(it)) {
-                                null
-                            } else {
-                                getString(R.string.passwd_wrong)
+            Intent.ACTION_VIEW -> {
+                mUri?.run {
+                    ArchivePageLoader(asUniFile()) { invalidator ->
+                        runCatching {
+                            dialogState.awaitInputText(
+                                title = getString(R.string.archive_need_passwd),
+                                hint = getString(R.string.archive_passwd),
+                            ) {
+                                if (it.isBlank()) {
+                                    getString(R.string.passwd_cannot_be_empty)
+                                } else if (invalidator(it)) {
+                                    null
+                                } else {
+                                    getString(R.string.passwd_wrong)
+                                }
                             }
-                        }
-                    }.onFailure {
-                        finish()
-                    }.getOrThrow()
+                        }.onFailure {
+                            finish()
+                        }.getOrThrow()
+                    }
                 }
             }
+
+            else -> null
         }
+        if (provider == null) {
+            makeToast(R.string.error_reading_failed)
+            finish()
+        }
+        return provider
     }
 
     private fun handleIntent(intent: Intent?) {
         intent ?: return
         mAction = intent.action
-        mFilename = intent.getStringExtra(KEY_FILENAME)
         mUri = intent.data
         mGalleryInfo = intent.getParcelableExtraCompat(KEY_GALLERY_INFO)
         mPage = intent.getIntExtra(KEY_PAGE, -1)
@@ -221,19 +224,17 @@ class ReaderActivity : EhActivity() {
 
     private fun onRestore(savedInstanceState: Bundle) {
         mAction = savedInstanceState.getString(KEY_ACTION)
-        mFilename = savedInstanceState.getString(KEY_FILENAME)
         mUri = savedInstanceState.getParcelableCompat(KEY_URI)
         mGalleryInfo = savedInstanceState.getParcelableCompat(KEY_GALLERY_INFO)
         mPage = savedInstanceState.getInt(KEY_PAGE, -1)
-        mCurrentIndex = savedInstanceState.getInt(KEY_CURRENT_INDEX)
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         handleIntent(intent)
-        buildProvider(true)
-        mGalleryProvider?.let {
-            lifecycleScope.launchIO {
+        lifecycleScope.launchIO {
+            buildProvider(true)?.let {
+                mGalleryProvider = it
                 it.start()
                 if (it.awaitReady()) {
                     withUIContext {
@@ -241,6 +242,9 @@ class ReaderActivity : EhActivity() {
                         viewer?.setGalleryProvider(it)
                         moveToPageIndex(0)
                     }
+                } else {
+                    makeToast(R.string.error_reading_failed)
+                    finish()
                 }
             }
         }
@@ -249,13 +253,11 @@ class ReaderActivity : EhActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(KEY_ACTION, mAction)
-        outState.putString(KEY_FILENAME, mFilename)
         outState.putParcelable(KEY_URI, mUri)
         if (mGalleryInfo != null) {
             outState.putParcelable(KEY_GALLERY_INFO, mGalleryInfo)
         }
         outState.putInt(KEY_PAGE, mPage)
-        outState.putInt(KEY_CURRENT_INDEX, mCurrentIndex)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -272,7 +274,6 @@ class ReaderActivity : EhActivity() {
         } else {
             onRestore(savedInstanceState)
         }
-        buildProvider()
         binding = ReaderActivityBinding.inflate(layoutInflater)
         binding.dialogStub.setMD3Content {
             val brightness by Settings.customBrightness.collectAsState()
@@ -319,14 +320,16 @@ class ReaderActivity : EhActivity() {
             )
         }
         setContentView(binding.root)
-        mGalleryProvider.let {
-            if (it == null) {
-                finish()
-                return
-            }
-            lifecycleScope.launchIO {
+        lifecycleScope.launchIO {
+            buildProvider()?.let {
+                mGalleryProvider = it
                 it.start()
-                if (it.awaitReady()) withUIContext { setGallery() }
+                if (it.awaitReady()) {
+                    withUIContext { setGallery() }
+                } else {
+                    makeToast(R.string.error_reading_failed)
+                    finish()
+                }
             }
         }
 
@@ -348,10 +351,6 @@ class ReaderActivity : EhActivity() {
     private fun setGallery() {
         if (mGalleryProvider?.isReady != true) return
 
-        // Get start page
-        if (mCurrentIndex == 0) {
-            mCurrentIndex = if (mPage >= 0) mPage else mGalleryProvider!!.startPage
-        }
         totalPage = mGalleryProvider!!.size
         viewer?.destroy()
         viewer = ReadingModeType.toViewer(ReaderPreferences.defaultReadingMode().get(), this)
@@ -503,11 +502,9 @@ class ReaderActivity : EhActivity() {
     companion object {
         const val ACTION_EH = "eh"
         const val KEY_ACTION = "action"
-        const val KEY_FILENAME = "filename"
         const val KEY_URI = "uri"
         const val KEY_GALLERY_INFO = "gallery_info"
         const val KEY_PAGE = "page"
-        const val KEY_CURRENT_INDEX = "current_index"
     }
 
     // Tachiyomi funcs
@@ -637,13 +634,11 @@ class ReaderActivity : EhActivity() {
      * Called from the viewer whenever a [page] is marked as active. It updates the values of the
      * bottom menu and delegates the change to the presenter.
      */
-    @SuppressLint("SetTextI18n")
     fun onPageSelected(page: ReaderPage) {
         // Set bottom page number
         currentPage = page.number
 
         mCurrentIndex = page.index
-        mGalleryProvider?.putStartPage(mCurrentIndex)
     }
 
     /**

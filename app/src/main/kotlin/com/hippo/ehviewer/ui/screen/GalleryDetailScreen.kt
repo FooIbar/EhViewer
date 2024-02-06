@@ -61,6 +61,7 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -120,8 +121,6 @@ import com.hippo.ehviewer.databinding.DialogTorrentListBinding
 import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderDen
-import com.hippo.ehviewer.spider.SpiderQueen
-import com.hippo.ehviewer.spider.SpiderQueen.Companion.MODE_READ
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
 import com.hippo.ehviewer.ui.LocalSnackbarHostState
 import com.hippo.ehviewer.ui.LockDrawer
@@ -150,6 +149,7 @@ import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
 import com.hippo.ehviewer.ui.tools.GalleryRatingBar
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.rememberLambda
 import com.hippo.ehviewer.util.AppHelper
 import com.hippo.ehviewer.util.ExceptionUtils
@@ -905,13 +905,13 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         val windowSizeClass = calculateWindowSizeClass(activity)
         val thumbColumns by Settings.thumbColumns.collectAsState()
         val readText = stringResource(R.string.read)
+        val startPage by rememberInVM {
+            EhDB.getReadProgressFlow(galleryInfo.gid)
+        }.collectAsState(0)
         var readButtonText by rememberSaveable { mutableStateOf(readText) }
         LifecycleResumeEffect(Unit) {
             coroutineScope.launchIO {
                 runSuspendCatching {
-                    val queen = SpiderQueen.obtainSpiderQueen(galleryInfo, MODE_READ)
-                    val startPage = queen.awaitStartPage()
-                    SpiderQueen.releaseSpiderQueen(queen, MODE_READ)
                     readButtonText = if (startPage == 0) {
                         readText
                     } else {
@@ -931,7 +931,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             DownloadInfo.STATE_FAILED -> stringResource(R.string.download_state_failed)
             else -> error("Invalid DownloadState!!!")
         }
-        fun onReadButtonClick() = context.navToReader(galleryInfo.findBaseInfo())
+        fun onReadButtonClick() = context.navToReader(galleryInfo.findBaseInfo(), startPage)
         fun onCategoryChipClick() {
             val category = galleryInfo.category
             if (category == EhUtils.NONE || category == EhUtils.PRIVATE || category == EhUtils.UNKNOWN) {
