@@ -1235,7 +1235,10 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                     } else {
                                         val info = galleryInfo!!
                                         val uri = with(context) {
-                                            awaitActivityResult(CreateDocument("application/x-cbz"), info.title!!)
+                                            awaitActivityResult(
+                                                CreateDocument("application/x-cbz"),
+                                                EhUtils.getSuitableTitle(info),
+                                            )
                                         }
                                         if (uri != null) {
                                             val success = dialogState.bgWork {
