@@ -21,6 +21,7 @@ import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.resourceScope
 import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 import com.hippo.ehviewer.EhDB
+import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.ehRequest
@@ -35,6 +36,7 @@ import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.openOutputStream
+import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
@@ -226,7 +228,11 @@ class SpiderDen(val info: GalleryInfo) {
 
     suspend fun exportAsCbz(file: UniFile) = resourceScope {
         val pages = info.pages
-        val comicInfo = closeable { (downloadDir!! / COMIC_INFO_FILE).openFileDescriptor("r") }
+        val comicInfo = closeable {
+            val f = downloadDir!! / COMIC_INFO_FILE
+            if (!f.exists()) writeComicInfo()
+            f.openFileDescriptor("r")
+        }
         val (fdBatch, names) = (0 until pages).parMap { idx ->
             val ext = requireNotNull(getExtension(idx))
             val f = autoCloseable { requireNotNull(getImageSource(idx)) }
@@ -238,6 +244,21 @@ class SpiderDen(val info: GalleryInfo) {
 
     suspend fun initDownloadDirIfExist() {
         downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.isDirectory }
+    }
+
+    suspend fun writeComicInfo() {
+        downloadDir?.run {
+            createFile(COMIC_INFO_FILE)?.also {
+                runCatching {
+                    withNonCancellableContext {
+                        EhEngine.fillGalleryListByApi(listOf(info))
+                    }
+                    info.getComicInfo().write(it)
+                }.onFailure {
+                    it.printStackTrace()
+                }
+            }
+        }
     }
 }
 
