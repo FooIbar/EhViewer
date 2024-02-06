@@ -515,6 +515,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, 
         (*env)->ReleaseStringUTFChars(env, name, cname);
         fstat(fd, &st);
         archive_entry_copy_stat(entry, &st);
+        archive_entry_set_perm(entry, 0644);
         archive_write_header(arc, entry);
         int len = read(fd, buff, sizeof(buff));
         while (len > 0) {
