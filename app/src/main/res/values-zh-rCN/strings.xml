@@ -511,6 +511,8 @@
     <string name="permission_denied">权限被拒</string>
     <string name="download_gallery_first">请先下载画廊！</string>
     <string name="export_as_archive">导出为归档文件</string>
+    <string name="export_as_archive_success">导出成功</string>
+    <string name="export_as_archive_failed">导出失败</string>
     <!-- Tachiyomi Reader Start-->
     <string name="action_settings">设置</string>
     <string name="action_retry">重试</string>

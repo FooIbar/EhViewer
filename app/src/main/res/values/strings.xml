@@ -575,6 +575,8 @@
     <string name="permission_denied">Permission denied</string>
     <string name="download_gallery_first">Please download the gallery first!</string>
     <string name="export_as_archive">Export as archive</string>
+    <string name="export_as_archive_success">Export succeed</string>
+    <string name="export_as_archive_failed">Export failed</string>
     <!-- Tachiyomi Reader Start-->
     <string name="pref_crop_borders">Crop borders</string>
     <string name="action_settings">Settings</string>

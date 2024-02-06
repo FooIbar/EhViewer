@@ -1219,6 +1219,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                 context.openBrowser(galleryDetailUrl)
                             },
                         )
+                        val exportSuccess = stringResource(id = R.string.export_as_archive_success)
+                        val exportFailed = stringResource(id = R.string.export_as_archive_failed)
                         DropdownMenuItem(
                             text = { Text(text = stringResource(id = R.string.export_as_archive)) },
                             onClick = {
@@ -1244,6 +1246,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                                     }
                                                 }
                                             }
+                                            val msg = if (success) exportSuccess else exportFailed
+                                            snackbarState.showSnackbar(message = msg)
                                         }
                                     }
                                 }
