@@ -236,7 +236,7 @@ class SpiderDen(val info: GalleryInfo) {
         val (fdBatch, names) = (0 until pages).parMap { idx ->
             val ext = requireNotNull(getExtension(idx))
             val f = autoCloseable { requireNotNull(getImageSource(idx)) }
-            closeable { f.source.openFileDescriptor("r") }.fd to "$idx.$ext"
+            closeable { f.source.openFileDescriptor("r") }.fd to perFilename(idx, ext)
         }.run { plus(comicInfo.fd to COMIC_INFO_FILE) }.unzip()
         val arcFd = closeable { file.openFileDescriptor("rw") }
         archiveFdBatch(fdBatch.toIntArray(), names.toTypedArray(), arcFd.fd, pages + 1)
