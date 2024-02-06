@@ -50,27 +50,13 @@ class TreeDocumentFile(
         if (child != null) {
             if (child.isFile) return child
         } else {
-            val index = displayName.lastIndexOf('.')
-            if (index > 0) {
-                val name = displayName.substring(0, index)
-                val extension = displayName.substring(index + 1)
-                val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-                if (!mimeType.isNullOrEmpty()) {
-                    val result = DocumentsContractApi21.createFile(uri, mimeType, name)
-                    if (result != null) {
-                        val f = TreeDocumentFile(this, result, displayName)
-                        popCacheIfPresent(f)
-                        return f
-                    }
-                }
-            } else {
-                // Not dot in displayName or dot is the first char or can't get MimeType
-                val result = DocumentsContractApi21.createFile(uri, "application/octet-stream", displayName)
-                if (result != null) {
-                    val f = TreeDocumentFile(this, result, displayName)
-                    popCacheIfPresent(f)
-                    return f
-                }
+            val extension = displayName.substringAfterLast('.', "")
+            val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
+            val result = DocumentsContractApi21.createFile(uri, mimeType, displayName)
+            if (result != null) {
+                val f = TreeDocumentFile(this, result, displayName)
+                popCacheIfPresent(f)
+                return f
             }
         }
         return null
