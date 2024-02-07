@@ -907,12 +907,10 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         val startPage by rememberInVM {
             EhDB.getReadProgressFlow(galleryInfo.gid)
         }.collectAsState(0)
-        val readButtonText = rememberSaveable(startPage) {
-            if (startPage == 0) {
-                readText
-            } else {
-                context.getString(R.string.read_from, startPage + 1)
-            }
+        val readButtonText = if (startPage == 0) {
+            readText
+        } else {
+            stringResource(R.string.read_from, startPage + 1)
         }
         val downloadState by EhDownloadManager.collectDownloadState(gid)
         val downloadButtonText = when (downloadState) {
