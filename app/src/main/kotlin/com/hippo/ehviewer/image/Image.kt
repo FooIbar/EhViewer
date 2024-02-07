@@ -187,6 +187,7 @@ sealed interface ImageSource : AutoCloseable
 
 interface UniFileSource : ImageSource {
     val source: UniFile
+    val type: String
 }
 
 interface ByteBufferSource : ImageSource {

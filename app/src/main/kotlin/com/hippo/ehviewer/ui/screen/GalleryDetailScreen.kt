@@ -82,7 +82,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.text.parseAsHtml
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import arrow.core.partially1
 import coil3.imageLoader
 import com.hippo.ehviewer.EhApplication.Companion.galleryDetailCache
@@ -908,18 +907,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         val startPage by rememberInVM {
             EhDB.getReadProgressFlow(galleryInfo.gid)
         }.collectAsState(0)
-        var readButtonText by rememberSaveable { mutableStateOf(readText) }
-        LifecycleResumeEffect(Unit) {
-            coroutineScope.launchIO {
-                runSuspendCatching {
-                    readButtonText = if (startPage == 0) {
-                        readText
-                    } else {
-                        context.getString(R.string.read_from, startPage + 1)
-                    }
-                }
+        val readButtonText = rememberSaveable(startPage) {
+            if (startPage == 0) {
+                readText
+            } else {
+                context.getString(R.string.read_from, startPage + 1)
             }
-            onPauseOrDispose { }
         }
         val downloadState by EhDownloadManager.collectDownloadState(gid)
         val downloadButtonText = when (downloadState) {
@@ -1241,15 +1234,26 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                             )
                                         }
                                         if (uri != null) {
-                                            val success = dialogState.bgWork {
-                                                withIOContext {
-                                                    SpiderDen(info).run {
-                                                        initDownloadDirIfExist()
-                                                        exportAsCbz(uri.asUniFile())
+                                            val file = uri.asUniFile()
+                                            val success = runCatching {
+                                                dialogState.bgWork {
+                                                    withIOContext {
+                                                        SpiderDen(info).run {
+                                                            initDownloadDirIfExist()
+                                                            exportAsCbz(file)
+                                                        }
                                                     }
                                                 }
+                                            }.getOrElse {
+                                                it.printStackTrace()
+                                                false
                                             }
-                                            val msg = if (success) exportSuccess else exportFailed
+                                            val msg = if (success) {
+                                                exportSuccess
+                                            } else {
+                                                file.delete()
+                                                exportFailed
+                                            }
                                             snackbarState.showSnackbar(message = msg)
                                         }
                                     }

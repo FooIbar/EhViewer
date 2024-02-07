@@ -45,10 +45,16 @@ import io.ktor.client.statement.request
 import io.ktor.http.isSuccess
 import io.ktor.utils.io.jvm.nio.copyTo
 import kotlin.io.path.readText
+import kotlinx.coroutines.CancellationException
 
 class SpiderDen(val info: GalleryInfo) {
     private val gid = info.gid
     var downloadDir: UniFile? = null
+        private set
+
+    constructor(info: GalleryInfo, dirname: String) : this(info) {
+        downloadDir = downloadLocation / dirname
+    }
 
     @Volatile
     @SpiderQueen.Mode
@@ -213,6 +219,9 @@ class SpiderDen(val info: GalleryInfo) {
             if (snapshot != null) {
                 return object : UniFileSource, AutoCloseable by snapshot {
                     override val source = snapshot.data.asUniFile()
+                    override val type by lazy {
+                        snapshot.metadata.toNioPath().readText()
+                    }
                 }
             }
         }
@@ -220,22 +229,28 @@ class SpiderDen(val info: GalleryInfo) {
         val source = findImageFile(dir, index) ?: return null
         return object : UniFileSource {
             override val source = source
+            override val type by lazy {
+                FileUtils.getExtensionFromFilename(source.name)!!
+            }
 
             override fun close() {}
         }
     }
 
     suspend fun exportAsCbz(file: UniFile) = resourceScope {
-        val pages = info.pages
         val comicInfo = closeable {
             val f = downloadDir!! / COMIC_INFO_FILE
-            if (!f.exists()) writeComicInfo()
+            if (!f.exists()) {
+                writeComicInfo()
+            } else if (info.pages == 0) {
+                info.pages = readComicInfo(f)!!.pageCount
+            }
             f.openFileDescriptor("r")
         }
+        val pages = info.pages
         val (fdBatch, names) = (0 until pages).parMap { idx ->
-            val ext = requireNotNull(getExtension(idx))
-            val f = autoCloseable { requireNotNull(getImageSource(idx)) }
-            closeable { f.source.openFileDescriptor("r") }.fd to perFilename(idx, ext)
+            val f = autoCloseable { getImageSource(idx) ?: throw CancellationException("Image #$idx not found") }
+            closeable { f.source.openFileDescriptor("r") }.fd to perFilename(idx, f.type)
         }.run { plus(comicInfo.fd to COMIC_INFO_FILE) }.unzip()
         val arcFd = closeable { file.openFileDescriptor("rw") }
         archiveFdBatch(fdBatch.toIntArray(), names.toTypedArray(), arcFd.fd, pages + 1)
@@ -245,12 +260,14 @@ class SpiderDen(val info: GalleryInfo) {
         downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.isDirectory }
     }
 
-    suspend fun writeComicInfo() {
+    suspend fun writeComicInfo(fetchMetadata: Boolean = true) {
         downloadDir?.run {
             createFile(COMIC_INFO_FILE)?.also {
                 runCatching {
-                    withNonCancellableContext {
-                        EhEngine.fillGalleryListByApi(listOf(info))
+                    if (fetchMetadata) {
+                        withNonCancellableContext {
+                            EhEngine.fillGalleryListByApi(listOf(info))
+                        }
                     }
                     info.getComicInfo().write(it)
                 }.onFailure {
