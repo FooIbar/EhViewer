@@ -30,6 +30,7 @@ import com.hippo.ehviewer.jni.providePassword
 import com.hippo.ehviewer.jni.releaseByteBuffer
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.unifile.UniFile
+import com.hippo.unifile.displayPath
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -52,7 +53,7 @@ class ArchivePageLoader(
 ) : PageLoader2(gid, startPage) {
     private lateinit var pfd: ParcelFileDescriptor
     private val hostJob = launch(start = CoroutineStart.LAZY) {
-        Log.d(DEBUG_TAG, "Open archive ${file.uri}")
+        Log.d(DEBUG_TAG, "Open archive ${file.uri.displayPath}")
         pfd = file.openFileDescriptor("r")
         size = openArchive(pfd.fd, pfd.statSize)
         if (size == 0) {
@@ -80,7 +81,7 @@ class ArchivePageLoader(
         super.stop()
         closeArchive()
         pfd.close()
-        Log.d(DEBUG_TAG, "Close archive ${file.uri} successfully!")
+        Log.d(DEBUG_TAG, "Close archive ${file.uri.displayPath} successfully!")
     }
 
     private val mJobMap = hashMapOf<Int, Job>()

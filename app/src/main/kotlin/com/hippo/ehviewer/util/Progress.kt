@@ -47,7 +47,7 @@ fun ProgressDialog() {
 suspend fun <R> DialogState.bgWork(work: suspend () -> R) = dialog { cont ->
     ProgressDialog()
     LaunchedEffect(work) {
-        val result = runCatching { work() }.onFailure { it.printStackTrace() }
+        val result = runCatching { work() }
         cont.resumeWith(result)
     }
 }

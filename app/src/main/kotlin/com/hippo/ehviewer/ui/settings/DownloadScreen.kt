@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import arrow.fx.coroutines.parMap
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -38,6 +39,7 @@ import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
+import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromUniFile
@@ -153,7 +155,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     return runCatching {
                         val (gid, token) = file.findFile(SPIDER_INFO_FILENAME)?.let {
                             readCompatFromUniFile(it)?.run {
-                                GalleryDetailUrlParser.Result(gid, token!!)
+                                GalleryDetailUrlParser.Result(gid, token)
                             }
                         } ?: file.findFile(COMIC_INFO_FILE)?.let {
                             readComicInfo(it)?.run {
@@ -186,9 +188,12 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     if (result.isEmpty()) {
                         launchSnackBar(RESTORE_COUNT_MSG(restoreDirCount))
                     } else {
-                        val count = result.filterNot { it.title.isNullOrBlank() }.map {
-                            EhDB.putDownloadDirname(it.gid, it.dirname)
-                            DownloadManager.restoreDownload(it.galleryInfo, it.dirname)
+                        val count = result.parMap {
+                            if (it.pages != 0) {
+                                EhDB.putDownloadDirname(it.gid, it.dirname)
+                                DownloadManager.restoreDownload(it.galleryInfo, it.dirname)
+                                SpiderDen(it.galleryInfo, it.dirname).writeComicInfo(false)
+                            }
                         }.size
                         launchSnackBar(RESTORE_COUNT_MSG(count + restoreDirCount))
                     }
