@@ -57,7 +57,6 @@
     <string name="error_509">509</string>
     <string name="error_invalid_url">無效鏈接</string>
     <string name="error_get_ptoken_error">獲取 pToken 錯誤</string>
-    <string name="error_cant_create_temp_file">無法創建臨時文件</string>
     <string name="error_cant_save_image">無法保存圖片</string>
     <string name="error_invalid_number">非法數字</string>
 

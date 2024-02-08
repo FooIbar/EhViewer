@@ -52,7 +52,6 @@
     <string name="error_509">509エラー</string>
     <string name="error_invalid_url">無効なリンクです。</string>
     <string name="error_get_ptoken_error">pTokenの取得に失敗しました。</string>
-    <string name="error_cant_create_temp_file">一時ファイルを作成できませんでした</string>
     <string name="error_cant_save_image">画像を保存できませんでした</string>
     <string name="error_invalid_number">無効な数字です</string>
 

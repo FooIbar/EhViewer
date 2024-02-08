@@ -54,7 +54,6 @@
     <string name="error_509">509</string>
     <string name="error_invalid_url">Url invalida</string>
     <string name="error_get_ptoken_error">Error al obtener token</string>
-    <string name="error_cant_create_temp_file">Imposible crear archivo temporal</string>
     <string name="error_cant_save_image">Imposible guardar la imagen</string>
     <string name="error_invalid_number">Número invalido</string>
 

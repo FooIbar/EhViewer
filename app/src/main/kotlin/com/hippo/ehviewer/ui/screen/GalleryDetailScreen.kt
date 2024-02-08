@@ -1,15 +1,11 @@
 package com.hippo.ehviewer.ui.screen
 
 import android.Manifest
-import android.app.Dialog
 import android.app.DownloadManager
-import android.content.DialogInterface
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
 import android.text.TextUtils.TruncateAt.END
-import android.view.View
-import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
@@ -82,6 +78,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.text.parseAsHtml
+import arrow.core.left
 import arrow.core.partially1
 import coil3.imageLoader
 import com.hippo.ehviewer.EhApplication.Companion.galleryDetailCache
@@ -115,8 +112,6 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
-import com.hippo.ehviewer.databinding.DialogArchiveListBinding
-import com.hippo.ehviewer.databinding.DialogTorrentListBinding
 import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderDen
@@ -131,7 +126,6 @@ import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryPreviewScreenDestination
 import com.hippo.ehviewer.ui.getFavoriteIcon
 import com.hippo.ehviewer.ui.jumpToReaderByPage
-import com.hippo.ehviewer.ui.legacy.BaseDialogBuilder
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
@@ -150,6 +144,7 @@ import com.hippo.ehviewer.ui.tools.GalleryRatingBar
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.rememberLambda
+import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.AppHelper
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -169,14 +164,12 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.downloadManager
-import splitties.systemservices.layoutInflater
 
 sealed interface GalleryDetailScreenArgs : Parcelable
 
@@ -229,7 +222,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
     }
     val (gid, token) = remember {
         when (args) {
-            is GalleryInfoArgs -> args.galleryInfo.run { gid to token }
+            is GalleryInfoArgs -> args.galleryInfo.run { gid to token!! }
             is TokenArgs -> args.gid to args.token
         }
     }
@@ -318,88 +311,22 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             activity.showTip(R.string.sign_in_first)
             return
         }
-        class ArchiveListDialogHelper : DialogInterface.OnDismissListener {
-            @Suppress("ktlint:standard:property-naming")
-            private var _binding: DialogArchiveListBinding? = null
-            private val binding get() = _binding!!
-            private var mJob: Job? = null
-            private var mDialog: Dialog? = null
-            fun setDialog(dialog: Dialog?, dialogBinding: DialogArchiveListBinding, url: String?) {
-                mDialog = dialog
-                _binding = dialogBinding
-                binding.listView.setOnItemClickListener { _, _, position, _ ->
-                    val gi = galleryInfo ?: return@setOnItemClickListener
-                    if (null != mArchiveList && position < mArchiveList!!.size) {
-                        val res = mArchiveList!![position].res
-                        val isHAtH = mArchiveList!![position].isHAtH
-                        coroutineScope.launchIO {
-                            runSuspendCatching {
-                                EhEngine.downloadArchive(gid, token, mArchiveFormParamOr, res, isHAtH)
-                            }.onSuccess { result ->
-                                result?.let {
-                                    val r = DownloadManager.Request(Uri.parse(result))
-                                    val name = "$gid-" + EhUtils.getSuitableTitle(gi) + ".zip"
-                                    r.setDestinationInExternalPublicDir(
-                                        Environment.DIRECTORY_DOWNLOADS,
-                                        FileUtils.sanitizeFilename(name),
-                                    )
-                                    r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                                    runCatching {
-                                        downloadManager.enqueue(r)
-                                    }.onFailure {
-                                        it.printStackTrace()
-                                    }
-                                }
-                                activity.showTip(R.string.download_archive_started)
-                            }.onFailure {
-                                when (it) {
-                                    is NoHAtHClientException -> activity.showTip(R.string.download_archive_failure_no_hath)
-                                    is EhException -> activity.showTip(ExceptionUtils.getReadableString(it))
-                                    else -> activity.showTip(R.string.download_archive_failure)
-                                }
-                            }
-                        }
-                    }
-                    mDialog?.dismiss()
-                    mDialog = null
-                }
+        coroutineScope.launchIO {
+            runSuspendCatching {
                 if (mArchiveList == null) {
-                    binding.text.visibility = View.GONE
-                    binding.listView.visibility = View.GONE
-                    mJob = coroutineScope.launchIO {
-                        runSuspendCatching {
-                            EhEngine.getArchiveList(url!!, gid, token)
-                        }.onSuccess { result ->
-                            mArchiveFormParamOr = result.paramOr
-                            mArchiveList = result.archiveList
-                            mCurrentFunds = result.funds
-                            withUIContext {
-                                bind(result.archiveList, result.funds)
-                            }
-                        }.onFailure {
-                            withUIContext {
-                                binding.progress.visibility = View.GONE
-                                binding.text.visibility = View.VISIBLE
-                                binding.listView.visibility = View.GONE
-                                binding.text.text = ExceptionUtils.getReadableString(it)
-                            }
+                    val result = dialogState.bgWork {
+                        withIOContext {
+                            EhEngine.getArchiveList(galleryDetail.archiveUrl!!, gid, token)
                         }
-                        mJob = null
                     }
-                } else {
-                    bind(mArchiveList, mCurrentFunds)
+                    mArchiveFormParamOr = result.paramOr
+                    mArchiveList = result.archiveList
+                    mCurrentFunds = result.funds
                 }
-            }
-
-            fun bind(data: List<ArchiveParser.Archive>?, funds: HomeParser.Funds?) {
-                mDialog ?: return
-                if (data.isNullOrEmpty()) {
-                    binding.progress.visibility = View.GONE
-                    binding.text.visibility = View.VISIBLE
-                    binding.listView.visibility = View.GONE
-                    binding.text.setText(R.string.no_archives)
+                if (mArchiveList!!.isEmpty()) {
+                    activity.showTip(R.string.no_archives)
                 } else {
-                    val nameArray = data.map {
+                    val items = mArchiveList!!.map {
                         it.run {
                             if (isHAtH) {
                                 val costStr = if (cost == "Free") archiveFree else cost
@@ -410,37 +337,39 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                 "$nameStr [$size] [$costStr]"
                             }
                         }
-                    }.toTypedArray()
-                    binding.progress.visibility = View.GONE
-                    binding.text.visibility = View.GONE
-                    binding.listView.visibility = View.VISIBLE
-                    binding.listView.adapter = ArrayAdapter(mDialog!!.context, R.layout.item_select_dialog, nameArray)
-                    if (funds != null) {
-                        var fundsGP = funds.fundsGP.toString()
-                        // Ex GP numbers are rounded down to the nearest thousand
-                        if (EhUtils.isExHentai) {
-                            fundsGP += "+"
-                        }
-                        mDialog!!.setTitle(context.resources.getString(R.string.current_funds, fundsGP, funds.fundsC))
+                    }
+                    var fundsGP = mCurrentFunds!!.fundsGP.toString()
+                    // Ex GP numbers are rounded down to the nearest thousand
+                    if (EhUtils.isExHentai) {
+                        fundsGP += "+"
+                    }
+                    val title = context.getString(R.string.current_funds, fundsGP, mCurrentFunds!!.fundsC)
+                    val selected = dialogState.showSelectItem(items, title.left())
+                    val res = mArchiveList!![selected].res
+                    val isHAtH = mArchiveList!![selected].isHAtH
+                    EhEngine.downloadArchive(gid, token, mArchiveFormParamOr!!, res, isHAtH)?.let {
+                        val r = DownloadManager.Request(Uri.parse(it))
+                        val name = "$gid-${EhUtils.getSuitableTitle(galleryDetail)}.zip"
+                        r.setDestinationInExternalPublicDir(
+                            Environment.DIRECTORY_DOWNLOADS,
+                            AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
+                        )
+                        r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                        downloadManager.enqueue(r)
+                    }
+                    activity.showTip(R.string.download_archive_started)
+                }
+            }.onFailure {
+                when (it) {
+                    is NoHAtHClientException -> activity.showTip(R.string.download_archive_failure_no_hath)
+                    is EhException -> activity.showTip(ExceptionUtils.getReadableString(it))
+                    else -> {
+                        it.printStackTrace()
+                        activity.showTip(R.string.download_archive_failure)
                     }
                 }
             }
-
-            override fun onDismiss(dialog: DialogInterface) {
-                mJob?.cancel()
-                mJob = null
-                mDialog = null
-                _binding = null
-            }
         }
-        val helper = ArchiveListDialogHelper()
-        val binding = DialogArchiveListBinding.inflate(context.layoutInflater)
-        val dialog: Dialog = BaseDialogBuilder(context)
-            .setTitle(R.string.settings_download)
-            .setView(binding.root)
-            .setOnDismissListener(helper)
-            .show()
-        helper.setDialog(dialog, binding, galleryDetail.archiveUrl)
     }
 
     val keylineMargin = dimensionResource(R.dimen.keyline_margin)
@@ -658,109 +587,50 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             )
             val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
             val permissionDenied = stringResource(R.string.permission_denied)
+            val noTorrents = stringResource(R.string.no_torrents)
             var mTorrentList by remember { mutableStateOf<TorrentResult?>(null) }
+            suspend fun showTorrentDialog() {
+                if (mTorrentList == null) {
+                    mTorrentList = dialogState.bgWork {
+                        withIOContext {
+                            EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
+                        }
+                    }
+                }
+                val items = mTorrentList!!.map { it.format() }
+                val selected = dialogState.showSelectItem(items, R.string.torrents, false)
+                val url = mTorrentList!![selected].url
+                val name = "${mTorrentList!![selected].name}.torrent"
+                val r = DownloadManager.Request(Uri.parse(url))
+                r.setDestinationInExternalPublicDir(
+                    Environment.DIRECTORY_DOWNLOADS,
+                    AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
+                )
+                r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(url))
+                downloadManager.enqueue(r)
+                activity.showTip(R.string.download_torrent_started)
+            }
             EhIconButton(
                 icon = Icons.Default.SwapVerticalCircle,
                 text = torrentText,
                 onClick = {
-                    coroutineScope.launchIO {
-                        val granted = isAtLeastQ || context.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        if (granted) {
-                            class TorrentListDialogHelper : DialogInterface.OnDismissListener {
-                                @Suppress("ktlint:standard:property-naming")
-                                private var _binding: DialogTorrentListBinding? = null
-                                private val binding get() = _binding!!
-                                private var mJob: Job? = null
-                                private var mDialog: Dialog? = null
-                                fun setDialog(dialog: Dialog?, dialogBinding: DialogTorrentListBinding, url: String?) {
-                                    mDialog = dialog
-                                    _binding = dialogBinding
-                                    binding.listView.setOnItemClickListener { _, _, position, _ ->
-                                        if (null != mTorrentList && position < mTorrentList!!.size) {
-                                            val itemUrl = mTorrentList!![position].url
-                                            val name = mTorrentList!![position].name
-                                            val r = DownloadManager.Request(Uri.parse(itemUrl.replace("exhentai.org", "ehtracker.org")))
-                                            r.setDestinationInExternalPublicDir(
-                                                Environment.DIRECTORY_DOWNLOADS,
-                                                FileUtils.sanitizeFilename("$name.torrent"),
-                                            )
-                                            r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                                            r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(itemUrl))
-                                            try {
-                                                downloadManager.enqueue(r)
-                                                activity.showTip(R.string.download_torrent_started)
-                                            } catch (e: Throwable) {
-                                                e.printStackTrace()
-                                                ExceptionUtils.throwIfFatal(e)
-                                                activity.showTip(R.string.download_torrent_failure)
-                                            }
-                                        }
-                                        mDialog?.dismiss()
-                                        mDialog = null
-                                    }
-                                    if (mTorrentList == null) {
-                                        binding.text.visibility = View.GONE
-                                        binding.listView.visibility = View.GONE
-                                        mJob = coroutineScope.launchIO {
-                                            runSuspendCatching {
-                                                EhEngine.getTorrentList(url!!, gid, token)
-                                            }.onSuccess {
-                                                mTorrentList = it
-                                                withUIContext {
-                                                    bind(it)
-                                                }
-                                            }.onFailure {
-                                                withUIContext {
-                                                    binding.progress.visibility = View.GONE
-                                                    binding.text.visibility = View.VISIBLE
-                                                    binding.listView.visibility = View.GONE
-                                                    binding.text.text = ExceptionUtils.getReadableString(it)
-                                                }
-                                            }
-                                            mJob = null
-                                        }
-                                    } else {
-                                        bind(mTorrentList!!)
-                                    }
+                    if (galleryDetail.torrentCount > 0) {
+                        coroutineScope.launchIO {
+                            val granted = isAtLeastQ || context.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            if (granted) {
+                                runSuspendCatching {
+                                    showTorrentDialog()
+                                }.onFailure {
+                                    it.printStackTrace()
+                                    activity.showTip(R.string.download_torrent_failure)
                                 }
-
-                                private fun bind(data: TorrentResult) {
-                                    mDialog ?: return
-                                    if (data.isEmpty()) {
-                                        binding.progress.visibility = View.GONE
-                                        binding.text.visibility = View.VISIBLE
-                                        binding.listView.visibility = View.GONE
-                                        binding.text.setText(R.string.no_torrents)
-                                    } else {
-                                        val nameArray = data.map { it.format() }.toTypedArray()
-                                        binding.progress.visibility = View.GONE
-                                        binding.text.visibility = View.GONE
-                                        binding.listView.visibility = View.VISIBLE
-                                        binding.listView.adapter =
-                                            ArrayAdapter(mDialog!!.context, R.layout.item_select_dialog, nameArray)
-                                    }
-                                }
-
-                                override fun onDismiss(dialog: DialogInterface) {
-                                    mJob?.cancel()
-                                    mJob = null
-                                    mDialog = null
-                                    _binding = null
-                                }
+                            } else {
+                                activity.showTip(permissionDenied)
                             }
-                            val helper = TorrentListDialogHelper()
-                            withUIContext {
-                                val binding = DialogTorrentListBinding.inflate(context.layoutInflater)
-                                val dialog: Dialog = BaseDialogBuilder(context)
-                                    .setTitle(R.string.torrents)
-                                    .setView(binding.root)
-                                    .setOnDismissListener(helper)
-                                    .show()
-                                helper.setDialog(dialog, binding, galleryDetail.torrentUrl)
-                            }
-                        } else {
-                            activity.showTip(permissionDenied)
                         }
+                    } else {
+                        activity.showTip(noTorrents)
                     }
                 },
             )

@@ -87,5 +87,5 @@ object ArchiveParser {
         val isHAtH: Boolean,
     )
 
-    class Result(val paramOr: String?, val archiveList: List<Archive>, var funds: HomeParser.Funds?)
+    class Result(val paramOr: String, val archiveList: List<Archive>, var funds: HomeParser.Funds?)
 }
