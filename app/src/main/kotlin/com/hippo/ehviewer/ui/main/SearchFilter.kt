@@ -88,7 +88,7 @@ fun SearchFilter(
                     it
                 }
             }
-        }.toTypedArray()
+        }
     }
     Row(
         modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
@@ -100,7 +100,11 @@ fun SearchFilter(
             selected = languageFilter != -1,
             onClick = {
                 scope.launch {
-                    languageFilter = dialogState.showSingleChoice(any, *languages, selected = languageFilter + 1) - 1
+                    val items = buildList {
+                        add(any)
+                        addAll(languages)
+                    }
+                    languageFilter = dialogState.showSingleChoice(items, languageFilter + 1) - 1
                 }
             },
             label = {
@@ -201,7 +205,7 @@ fun SearchFilter(
             selected = advancedOption.minRating != 0,
             onClick = {
                 scope.launch {
-                    val selected = dialogState.showSingleChoice(*minRatingItems, selected = minRatingIndex)
+                    val selected = dialogState.showSingleChoice(minRatingItems.toList(), minRatingIndex)
                     onAdvancedOptionChanged(advancedOption.copy(minRating = if (selected == 0) 0 else selected + 1))
                 }
             },

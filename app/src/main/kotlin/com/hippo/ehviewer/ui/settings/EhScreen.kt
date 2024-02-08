@@ -233,12 +233,14 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 summary = summary,
             ) {
                 coroutineScope.launch {
-                    defaultFavSlot = dialogState.showSelectItem(
-                        disabled,
-                        localFav,
-                        *Settings.favCat.takeIf { signin } ?: emptyArray(),
-                        title = R.string.default_favorites_collection,
-                    ) - 2
+                    val items = buildList {
+                        add(disabled)
+                        add(localFav)
+                        if (signin) {
+                            addAll(Settings.favCat)
+                        }
+                    }
+                    defaultFavSlot = dialogState.showSelectItem(items, R.string.default_favorites_collection) - 2
                 }
             }
             SimpleMenuPreferenceInt(

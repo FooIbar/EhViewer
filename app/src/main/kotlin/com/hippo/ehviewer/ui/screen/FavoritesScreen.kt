@@ -371,12 +371,13 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
             }
             onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 // First is local favorite, the other 10 is cloud favorite
-                val array = if (EhCookieStore.hasSignedIn()) {
-                    arrayOf(localFavName, *Settings.favCat)
-                } else {
-                    arrayOf(localFavName)
+                val items = buildList {
+                    add(localFavName)
+                    if (EhCookieStore.hasSignedIn()) {
+                        addAll(Settings.favCat)
+                    }
                 }
-                val index = dialogState.showSelectItem(*array, title = R.string.move_favorites_dialog_title)
+                val index = dialogState.showSelectItem(items, R.string.move_favorites_dialog_title)
                 val srcCat = urlBuilder.favCat
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
                 val info = checkedInfoMap.run { toMap().values.also { clear() } }

@@ -405,7 +405,7 @@ class DialogState {
     }
 
     suspend fun showSingleChoice(
-        vararg items: String,
+        items: List<String>,
         selected: Int,
     ): Int = showNoButton {
         Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
@@ -423,17 +423,9 @@ class DialogState {
     }
 
     suspend fun showSelectItem(
-        vararg items: String?,
-        @StringRes title: Int,
-    ) = showSelectItem(
-        *items.filterNotNull().mapIndexed { a, b -> b to a }.toTypedArray(),
-        title = title,
-    )
-
-    suspend fun <R> showSelectItem(
-        vararg items: Pair<String, R>,
+        items: List<String>,
         @StringRes title: Int? = null,
-    ): R = showNoButton {
+    ): Int = showNoButton {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
             if (title != null) {
                 Text(
@@ -443,11 +435,11 @@ class DialogState {
                 )
             }
             LazyColumn {
-                items(items) { (text, item) ->
+                itemsIndexed(items) { index, text ->
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
                         Text(
                             text = text,
-                            modifier = Modifier.clickable { dismissWith(item) }.fillMaxWidth()
+                            modifier = Modifier.clickable { dismissWith(index) }.fillMaxWidth()
                                 .padding(horizontal = 24.dp, vertical = 16.dp),
                             style = MaterialTheme.typography.titleMedium,
                         )
@@ -460,26 +452,17 @@ class DialogState {
     suspend inline fun showSelectActions(
         @StringRes title: Int? = null,
         builder: ActionScope.() -> Unit,
-    ) = showSelectItem(
-        *buildList { builder(ActionScope { action, that -> add(action to that) }) }.toTypedArray(),
-        title = title,
-    ).invoke()
+    ) {
+        val (items, actions) = buildList { builder(ActionScope { action, that -> add(action to that) }) }.unzip()
+        val selected = showSelectItem(items, title)
+        actions[selected].invoke()
+    }
 
     suspend fun showSelectItemWithCheckBox(
-        vararg items: String?,
+        items: List<String>,
         @StringRes title: Int,
         @StringRes checkBoxText: Int,
-    ) = showSelectItemWithCheckBox(
-        *items.filterNotNull().mapIndexed { a, b -> b to a }.toTypedArray(),
-        title = title,
-        checkBoxText = checkBoxText,
-    )
-
-    private suspend fun <R> showSelectItemWithCheckBox(
-        vararg items: Pair<String, R>,
-        @StringRes title: Int,
-        @StringRes checkBoxText: Int,
-    ): Pair<R, Boolean> = showNoButton {
+    ): Pair<Int, Boolean> = showNoButton {
         var checked by remember { mutableStateOf(false) }
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
             Text(
@@ -488,11 +471,11 @@ class DialogState {
                 style = MaterialTheme.typography.headlineSmall,
             )
             LazyColumn {
-                items(items) { (text, item) ->
+                itemsIndexed(items) { index, text ->
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
                         Text(
                             text = text,
-                            modifier = Modifier.clickable { dismissWith(item to checked) }.fillMaxWidth()
+                            modifier = Modifier.clickable { dismissWith(index to checked) }.fillMaxWidth()
                                 .padding(horizontal = 24.dp, vertical = 16.dp),
                             style = MaterialTheme.typography.titleMedium,
                         )
@@ -509,7 +492,7 @@ class DialogState {
     }
 
     suspend fun showSelectItemWithIcon(
-        vararg items: Pair<ImageVector, Int>,
+        items: List<Pair<ImageVector, Int>>,
         title: String,
     ): Int = showNoButton {
         LazyColumn {
@@ -531,7 +514,7 @@ class DialogState {
     }
 
     suspend fun showSelectItemWithIconAndTextField(
-        vararg items: Pair<ImageVector, String>,
+        items: List<Pair<ImageVector, String>>,
         @StringRes title: Int,
         @StringRes hint: Int,
         maxChar: Int,

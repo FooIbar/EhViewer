@@ -536,16 +536,13 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         }
         suspend fun showNewerVersionDialog() {
             val items = galleryDetail.newerVersions.map {
-                context.getString(
-                    R.string.newer_version_title,
-                    it.title,
-                    it.posted,
-                ) to {
-                    navigator.navigate(GalleryDetailScreenDestination(TokenArgs(it.gid, it.token!!)))
-                }
-            }.toTypedArray()
-            val navAction = dialogState.showSelectItem(*items)
-            withUIContext { navAction.invoke() }
+                context.getString(R.string.newer_version_title, it.title, it.posted)
+            }
+            val selected = dialogState.showSelectItem(items)
+            val info = galleryDetail.newerVersions[selected]
+            withUIContext {
+                navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info)))
+            }
         }
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
         if (galleryDetail.newerVersions.isNotEmpty()) {
