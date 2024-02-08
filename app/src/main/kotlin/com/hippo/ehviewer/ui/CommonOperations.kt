@@ -155,12 +155,14 @@ suspend fun DialogState.startDownload(
     } else {
         // Let use chose label
         val list = DownloadManager.labelList
-        val items = arrayOf(
-            getString(R.string.default_download_label_name),
-            *list.map { it.label }.toTypedArray(),
-        )
+        val items = buildList {
+            add(getString(R.string.default_download_label_name))
+            list.forEach {
+                add(it.label)
+            }
+        }
         val (selected, checked) = showSelectItemWithCheckBox(
-            *items,
+            items,
             title = R.string.download,
             checkBoxText = R.string.remember_download_label,
         )
@@ -195,15 +197,17 @@ suspend fun DialogState.modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
             val localFav = getFavoriteIcon(localFavorited) to appCtx.getString(R.string.local_favorites)
             val cloudFav = Settings.favCat.mapIndexed { index, name ->
                 getFavoriteIcon(galleryInfo.favoriteSlot == index) to name
-            }.toTypedArray()
-            val items = if (isFavorited) {
-                val remove = Icons.Default.HeartBroken to appCtx.getString(R.string.remove_from_favourites)
-                arrayOf(remove, localFav, *cloudFav)
-            } else {
-                arrayOf(localFav, *cloudFav)
+            }
+            val items = buildList {
+                if (isFavorited) {
+                    val remove = Icons.Default.HeartBroken to appCtx.getString(R.string.remove_from_favourites)
+                    add(remove)
+                }
+                add(localFav)
+                addAll(cloudFav)
             }
             val (slot, note) = showSelectItemWithIconAndTextField(
-                *items,
+                items,
                 title = R.string.add_favorites_dialog_title,
                 hint = R.string.favorite_note,
                 maxChar = MAX_FAVNOTE_CHAR,
@@ -279,23 +283,26 @@ fun Context.navToReader(info: BaseGalleryInfo, page: Int = -1) {
 
 suspend fun DialogState.doGalleryInfoAction(info: BaseGalleryInfo, context: Context) {
     val downloaded = DownloadManager.getDownloadState(info.gid) != DownloadInfo.STATE_INVALID
-    val favourite = info.favoriteSlot != NOT_FAVORITED
-    val selected = if (!downloaded) {
-        showSelectItemWithIcon(
-            Icons.AutoMirrored.Default.MenuBook to R.string.read,
-            Icons.Default.Download to R.string.download,
-            if (!favourite) Icons.Default.Favorite to R.string.add_to_favourites else Icons.Default.HeartBroken to R.string.remove_from_favourites,
-            title = EhUtils.getSuitableTitle(info),
-        )
-    } else {
-        showSelectItemWithIcon(
-            Icons.AutoMirrored.Default.MenuBook to R.string.read,
-            Icons.Default.Delete to R.string.delete_downloads,
-            if (!favourite) Icons.Default.Favorite to R.string.add_to_favourites else Icons.Default.HeartBroken to R.string.remove_from_favourites,
-            Icons.AutoMirrored.Default.DriveFileMove to R.string.download_move_dialog_title,
-            title = EhUtils.getSuitableTitle(info),
-        )
+    val favorited = info.favoriteSlot != NOT_FAVORITED
+    val items = buildList {
+        add(Icons.AutoMirrored.Default.MenuBook to R.string.read)
+        val download = if (downloaded) {
+            Icons.Default.Delete to R.string.delete_downloads
+        } else {
+            Icons.Default.Download to R.string.download
+        }
+        add(download)
+        val favorite = if (favorited) {
+            Icons.Default.HeartBroken to R.string.remove_from_favourites
+        } else {
+            Icons.Default.Favorite to R.string.add_to_favourites
+        }
+        add(favorite)
+        if (downloaded) {
+            add(Icons.AutoMirrored.Default.DriveFileMove to R.string.download_move_dialog_title)
+        }
     }
+    val selected = showSelectItemWithIcon(items, EhUtils.getSuitableTitle(info))
     with(context.findActivity<MainActivity>()) {
         when (selected) {
             0 -> navToReader(info)
@@ -307,7 +314,7 @@ suspend fun DialogState.doGalleryInfoAction(info: BaseGalleryInfo, context: Cont
                 }
             }
 
-            2 -> if (favourite) {
+            2 -> if (favorited) {
                 runSuspendCatching {
                     removeFromFavorites(info)
                     showTip(R.string.remove_from_favorite_success)
@@ -397,18 +404,28 @@ suspend fun DialogState.confirmRemoveDownloadRange(list: Collection<DownloadInfo
 
 suspend fun DialogState.showMoveDownloadLabel(info: GalleryInfo) {
     val defaultLabel = appCtx.getString(R.string.default_download_label_name)
-    val labels = DownloadManager.labelList.map { it.label }.toTypedArray()
-    val selected = showSelectItem(defaultLabel, *labels, title = R.string.download_move_dialog_title)
+    val labels = buildList {
+        add(defaultLabel)
+        DownloadManager.labelList.forEach {
+            add(it.label)
+        }
+    }
+    val selected = showSelectItem(labels, R.string.download_move_dialog_title)
     val downloadInfo = DownloadManager.getDownloadInfo(info.gid) ?: return
-    val label = if (selected == 0) null else labels[selected - 1]
+    val label = if (selected == 0) null else labels[selected]
     withUIContext { DownloadManager.changeLabel(listOf(downloadInfo), label) }
 }
 
 suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>): String? {
     val defaultLabel = appCtx.getString(R.string.default_download_label_name)
-    val labels = DownloadManager.labelList.map { it.label }.toTypedArray()
-    val selected = showSelectItem(defaultLabel, *labels, title = R.string.download_move_dialog_title)
-    val label = if (selected == 0) null else labels[selected - 1]
+    val labels = buildList {
+        add(defaultLabel)
+        DownloadManager.labelList.forEach {
+            add(it.label)
+        }
+    }
+    val selected = showSelectItem(labels, R.string.download_move_dialog_title)
+    val label = if (selected == 0) null else labels[selected]
     withUIContext { DownloadManager.changeLabel(list, label) }
     return label
 }
