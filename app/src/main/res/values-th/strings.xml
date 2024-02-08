@@ -56,7 +56,6 @@
     <string name="error_509">509</string>
     <string name="error_invalid_url">URL ไม่ถูกต้อง</string>
     <string name="error_get_ptoken_error">การรับ pToken มีปัญหา</string>
-    <string name="error_cant_create_temp_file">ไม่สามารถสร้างไฟล์ชั่วคราวได้</string>
     <string name="error_cant_save_image">ไม่สามารถบันทึกรูปภาพได้</string>
     <string name="error_invalid_number">จำนวนไม่ถูกต้อง</string>
 

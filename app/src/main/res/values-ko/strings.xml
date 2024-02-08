@@ -56,7 +56,6 @@
     <string name="error_509">509</string>
     <string name="error_invalid_url">잘못된 URL</string>
     <string name="error_get_ptoken_error">pToken 획득 오류</string>
-    <string name="error_cant_create_temp_file">임시 파일을 만들 수 없음</string>
     <string name="error_cant_save_image">이미지를 저장할 수 없음</string>
     <string name="error_invalid_number">잘못된 번호</string>
 

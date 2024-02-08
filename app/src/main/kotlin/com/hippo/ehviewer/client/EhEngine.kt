@@ -174,12 +174,12 @@ object EhEngine {
         location.takeIf { "bounce_login" !in it } ?: throw NotLoggedInException()
     }
 
-    suspend fun getTorrentList(url: String, gid: Long, token: String?): TorrentResult {
+    suspend fun getTorrentList(url: String, gid: Long, token: String): TorrentResult {
         val referer = EhUrl.getGalleryDetailUrl(gid, token)
         return ehRequest(url, referer).fetchUsingAsByteBuffer(TorrentParser::parse)
     }
 
-    suspend fun getArchiveList(url: String, gid: Long, token: String?) = ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
+    suspend fun getArchiveList(url: String, gid: Long, token: String) = ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
         .fetchUsingAsText(ArchiveParser::parse)
         .apply { funds = funds ?: ehRequest(EhUrl.URL_FUNDS).fetchUsingAsText(HomeParser::parseFunds) }
 
@@ -293,9 +293,7 @@ object EhEngine {
         }.execute { }
     }
 
-    suspend fun downloadArchive(gid: Long, token: String?, or: String?, res: String?, isHAtH: Boolean): String? {
-        if (or.isNullOrEmpty()) throw EhException("Invalid form param or: $or")
-        if (res.isNullOrEmpty()) throw EhException("Invalid res: $res")
+    suspend fun downloadArchive(gid: Long, token: String, or: String, res: String, isHAtH: Boolean): String? {
         val url = EhUrl.getDownloadArchive(gid, token, or)
         val referer = EhUrl.getGalleryDetailUrl(gid, token)
         val request = ehRequest(url, referer, EhUrl.origin) {
@@ -421,7 +419,7 @@ object EhEngine {
             }
         }.fetchUsingAsText(VoteTagParser::parse)
 
-    suspend fun getGalleryToken(gid: Long, gtoken: String?, page: Int) = ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
+    suspend fun getGalleryToken(gid: Long, gtoken: String, page: Int) = ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
         jsonBody {
             put("method", "gtoken")
             array("pagelist") {

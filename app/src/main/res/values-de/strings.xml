@@ -47,7 +47,6 @@
     <string name="error_509">509</string>
     <string name="error_invalid_url">URL ungültig</string>
     <string name="error_get_ptoken_error">Fehler beim Erhalten pTokens</string>
-    <string name="error_cant_create_temp_file">Die Temporäre Datei konnte erstellt nicht werden</string>
     <string name="error_cant_save_image">Das Bild konnte nicht gespeichert werden</string>
     <string name="error_invalid_number">Nummer ungültig</string>
     <string name="get_it">Verstanden</string>
