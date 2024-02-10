@@ -74,6 +74,8 @@ object EhDB {
         deleteGalleryInfo(downloadInfo.galleryInfo)
     }
 
+    suspend fun randomLocalFav() = db.localFavoritesDao().random()
+
     suspend fun removeDownloadInfo(downloadInfo: List<DownloadInfo>) {
         val dao = db.downloadsDao()
         downloadInfo.forEach {

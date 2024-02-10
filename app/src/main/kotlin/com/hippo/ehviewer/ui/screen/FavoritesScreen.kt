@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.FolderSpecial
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -84,6 +85,7 @@ import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -338,6 +340,14 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         autoCancel = !selectMode,
     ) {
         if (!selectMode) {
+            if (isLocalFav) {
+                onClick(Icons.Default.Shuffle) {
+                    val random = EhDB.randomLocalFav()
+                    withUIContext {
+                        navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(random)))
+                    }
+                }
+            }
             onClick(EhIcons.Default.GoTo) {
                 coroutineScope.launch {
                     val date = dialogState.showDatePicker()
