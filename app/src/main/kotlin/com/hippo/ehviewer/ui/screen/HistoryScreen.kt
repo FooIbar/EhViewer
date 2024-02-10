@@ -41,7 +41,6 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.History
 import com.hippo.ehviewer.ui.LocalNavDrawerState
-import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.tools.Deferred
@@ -128,7 +127,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
                     ) {
                         GalleryInfoListItem(
                             onClick = {
-                                navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info)))
+                                navigator.navigate(info.asDestination())
                             },
                             onLongClick = {
                                 coroutineScope.launchIO {
