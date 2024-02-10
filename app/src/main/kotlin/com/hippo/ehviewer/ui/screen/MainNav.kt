@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.screen
 
 import androidx.annotation.MainThread
 import androidx.navigation.NavController
+import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryListUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
@@ -44,3 +45,5 @@ fun NavController.navWithUrl(url: String): Boolean {
 
 @MainThread
 fun NavController.navigate(direction: Direction) = navigate(direction.route)
+
+fun BaseGalleryInfo.asDestination() = GalleryDetailScreenDestination(GalleryInfoArgs(this))

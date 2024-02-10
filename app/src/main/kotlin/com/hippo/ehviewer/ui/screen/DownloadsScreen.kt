@@ -81,7 +81,6 @@ import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
-import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.main.DownloadCard
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.navToReader
@@ -455,7 +454,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                 }
                             },
                             onThumbClick = {
-                                navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info.galleryInfo)))
+                                navigator.navigate(info.galleryInfo.asDestination())
                             },
                             onLongClick = {
                                 checkedInfoMap[info.gid] = info

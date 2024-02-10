@@ -698,7 +698,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             detailItemContent = { info ->
                 GalleryInfoListItem(
                     onClick = {
-                        navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info)))
+                        navigator.navigate(info.asDestination())
                     },
                     onLongClick = {
                         coroutineScope.launch {
@@ -715,7 +715,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             thumbItemContent = { info ->
                 GalleryInfoGridItem(
                     onClick = {
-                        navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info)))
+                        navigator.navigate(info.asDestination())
                     },
                     onLongClick = {
                         coroutineScope.launch {

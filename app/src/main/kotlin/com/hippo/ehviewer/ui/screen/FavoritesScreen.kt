@@ -69,7 +69,6 @@ import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
@@ -280,7 +279,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info)))
+                                navigator.navigate(info.asDestination())
                             }
                         },
                         onLongClick = {
@@ -305,7 +304,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(info)))
+                                navigator.navigate(info.asDestination())
                             }
                         },
                         onLongClick = {
@@ -344,7 +343,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                 onClick(Icons.Default.Shuffle) {
                     val random = EhDB.randomLocalFav()
                     withUIContext {
-                        navigator.navigate(GalleryDetailScreenDestination(GalleryInfoArgs(random)))
+                        navigator.navigate(random.asDestination())
                     }
                 }
             }
