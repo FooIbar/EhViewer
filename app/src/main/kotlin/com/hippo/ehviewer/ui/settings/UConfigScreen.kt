@@ -65,12 +65,8 @@ fun UConfigScreen(navigator: DestinationsNavigator) {
         val state = rememberWebViewState(url = url)
         WebView(
             state = state,
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize(),
-            onCreated = {
-                it.setDefaultSettings()
-            },
+            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            onCreated = { it.setDefaultSettings() },
             factory = { WebView(it).apply { webview.set(this) } },
         )
         val applyTip = stringResource(id = R.string.apply_tip)

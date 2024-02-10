@@ -59,6 +59,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
+import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.StartDestination
 import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
@@ -78,6 +79,7 @@ import kotlinx.coroutines.Job
 @Destination
 @Composable
 fun SignInScreen(navigator: DestinationsNavigator) {
+    LockDrawer(true)
     val windowSizeClass = LocalWindowSizeClass.current
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
