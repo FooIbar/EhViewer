@@ -18,7 +18,7 @@ private fun urlToDestination(url: String): Direction? {
     val ret1 = GalleryListUrlParser.parse(url)
     if (ret1 != null) return GalleryListScreenDestination(ret1)
     val ret2 = GalleryDetailUrlParser.parse(url)
-    if (ret2 != null) return GalleryDetailScreenDestination(TokenArgs(ret2.gid, ret2.token))
+    if (ret2 != null) return ret2.gid asDstWith ret2.token
     val ret3 = GalleryPageUrlParser.parse(url)
     if (ret3 != null) return ProgressScreenDestination(ret3.gid, ret3.pToken, ret3.page)
     return null
@@ -46,4 +46,10 @@ fun NavController.navWithUrl(url: String): Boolean {
 @MainThread
 fun NavController.navigate(direction: Direction) = navigate(direction.route)
 
-fun BaseGalleryInfo.asDestination() = GalleryDetailScreenDestination(GalleryInfoArgs(this))
+fun BaseGalleryInfo.asDst() = GalleryDetailScreenDestination(GalleryInfoArgs(this))
+
+infix fun Long.asDstWith(token: String) = GalleryDetailScreenDestination(TokenArgs(this, token))
+
+infix fun Long.asDstPageTo(page: Int) = this to page
+
+infix fun Pair<Long, Int>.with(token: String) = GalleryDetailScreenDestination(TokenArgs(first, token, second))

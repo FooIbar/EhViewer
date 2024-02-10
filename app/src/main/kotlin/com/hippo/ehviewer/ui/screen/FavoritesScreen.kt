@@ -279,7 +279,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigator.navigate(info.asDestination())
+                                navigator.navigate(info.asDst())
                             }
                         },
                         onLongClick = {
@@ -304,7 +304,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigator.navigate(info.asDestination())
+                                navigator.navigate(info.asDst())
                             }
                         },
                         onLongClick = {
@@ -343,7 +343,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                 onClick(Icons.Default.Shuffle) {
                     val random = EhDB.randomLocalFav()
                     withUIContext {
-                        navigator.navigate(random.asDestination())
+                        navigator.navigate(random.asDst())
                     }
                 }
             }
