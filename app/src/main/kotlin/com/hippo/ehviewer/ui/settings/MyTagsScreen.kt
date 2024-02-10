@@ -41,12 +41,8 @@ fun MyTagsScreen(navigator: DestinationsNavigator) {
         val state = rememberWebViewState(url = url)
         WebView(
             state = state,
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize(),
-            onCreated = {
-                it.setDefaultSettings()
-            },
+            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            onCreated = { it.setDefaultSettings() },
         )
     }
 }
