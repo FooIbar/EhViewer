@@ -16,6 +16,7 @@ import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUrl
+import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.util.setDefaultSettings
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -24,6 +25,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 @Composable
 fun MyTagsScreen(navigator: DestinationsNavigator) {
     val url = EhUrl.myTagsUrl
+    LockDrawer(true)
     Scaffold(
         topBar = {
             TopAppBar(
@@ -39,7 +41,9 @@ fun MyTagsScreen(navigator: DestinationsNavigator) {
         val state = rememberWebViewState(url = url)
         WebView(
             state = state,
-            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize(),
             onCreated = {
                 it.setDefaultSettings()
             },
