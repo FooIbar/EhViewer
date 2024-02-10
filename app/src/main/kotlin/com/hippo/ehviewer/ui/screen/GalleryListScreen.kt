@@ -113,7 +113,6 @@ import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.destinations.GalleryDetailScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
@@ -516,18 +515,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         abstract val destination: Direction
     }
 
-    class GalleryDetailUrlSuggestion(
-        gid: Long,
-        token: String,
-    ) : UrlSuggestion() {
-        override val destination = GalleryDetailScreenDestination(TokenArgs(gid, token))
+    class GalleryDetailUrlSuggestion(gid: Long, token: String) : UrlSuggestion() {
+        override val destination = gid asDstWith token
     }
 
-    class GalleryPageUrlSuggestion(
-        gid: Long,
-        pToken: String,
-        page: Int,
-    ) : UrlSuggestion() {
+    class GalleryPageUrlSuggestion(gid: Long, pToken: String, page: Int) : UrlSuggestion() {
         override val destination = ProgressScreenDestination(gid, pToken, page)
     }
 
@@ -698,7 +690,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             detailItemContent = { info ->
                 GalleryInfoListItem(
                     onClick = {
-                        navigator.navigate(info.asDestination())
+                        navigator.navigate(info.asDst())
                     },
                     onLongClick = {
                         coroutineScope.launch {
@@ -715,7 +707,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             thumbItemContent = { info ->
                 GalleryInfoGridItem(
                     onClick = {
-                        navigator.navigate(info.asDestination())
+                        navigator.navigate(info.asDst())
                     },
                     onLongClick = {
                         coroutineScope.launch {

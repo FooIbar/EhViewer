@@ -454,7 +454,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                 }
                             },
                             onThumbClick = {
-                                navigator.navigate(info.galleryInfo.asDestination())
+                                navigator.navigate(info.galleryInfo.asDst())
                             },
                             onLongClick = {
                                 checkedInfoMap[info.gid] = info

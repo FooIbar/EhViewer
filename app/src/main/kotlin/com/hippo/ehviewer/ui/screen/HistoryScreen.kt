@@ -127,7 +127,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
                     ) {
                         GalleryInfoListItem(
                             onClick = {
-                                navigator.navigate(info.asDestination())
+                                navigator.navigate(info.asDst())
                             },
                             onLongClick = {
                                 coroutineScope.launchIO {
