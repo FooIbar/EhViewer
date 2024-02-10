@@ -54,8 +54,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -424,7 +424,10 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
                     layout(width, height) {
                         placeable.placeRelative(0, 0)
                     }
-                }.clip(RoundedCornerShape((animationProgress * 100).roundToInt())).height(IntrinsicSize.Min),
+                }.graphicsLayer {
+                    shape = RoundedCornerShape((animationProgress * 100).roundToInt())
+                    clip = true
+                }.height(IntrinsicSize.Min),
                 color = MaterialTheme.colorScheme.primaryContainer,
             ) {
                 Row(
