@@ -95,14 +95,17 @@ import moe.tarsin.coroutines.runSuspendCatching
 @Destination
 @Composable
 fun FavouritesScreen(navigator: DestinationsNavigator) {
+    // Immutables
+    val localFavName = stringResource(R.string.local_favorites)
+    val cloudFavName = stringResource(R.string.cloud_favorites)
+
     // Meta State
     var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
 
     // Derived State
-    val keyword = remember(urlBuilder) { urlBuilder.keyword.orEmpty() }
-    val localFavName = stringResource(R.string.local_favorites)
-    val cloudFavName = stringResource(R.string.cloud_favorites)
+    val keyword = urlBuilder.keyword
+    val isLocalFav = urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL
     val favCatName = remember(urlBuilder) {
         when (val favCat = urlBuilder.favCat) {
             in 0..9 -> Settings.favCat[favCat]
@@ -110,9 +113,11 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
             else -> cloudFavName
         }
     }
-    val favTitle = stringResource(R.string.favorites_title, favCatName)
-    val favTitleWithKeyword = stringResource(R.string.favorites_title_2, favCatName, keyword)
-    val title = remember(urlBuilder) { if (keyword.isBlank()) favTitle else favTitleWithKeyword }
+    val title = if (keyword.isNullOrBlank()) {
+        stringResource(R.string.favorites_title, favCatName)
+    } else {
+        stringResource(R.string.favorites_title_2, favCatName, keyword)
+    }
     val context = LocalContext.current
     val density = LocalDensity.current
     val dialogState = LocalDialogState.current
@@ -120,8 +125,8 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
     val coroutineScope = rememberCoroutineScope()
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
     val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
-    val data = rememberInVM(urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
-        if (urlBuilder.favCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
+    val data = rememberInVM(isLocalFav) {
+        if (isLocalFav) {
             Pager(PagingConfig(20, jumpThreshold = 40)) {
                 val keywordNow = urlBuilder.keyword.orEmpty()
                 if (keywordNow.isBlank()) {
