@@ -113,7 +113,6 @@ import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.AdvancedSearchOption
@@ -447,7 +446,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                     ListItem(
                                         modifier = Modifier.clickable {
                                             if (urlBuilder.mode == MODE_WHATS_HOT) {
-                                                navigator.navigate(GalleryListScreenDestination(ListUrlBuilder(item)))
+                                                val builder = ListUrlBuilder(item)
+                                                navigator.navigate(builder.asDst())
                                             } else {
                                                 urlBuilder = ListUrlBuilder(item)
                                                 data.refresh()
@@ -562,7 +562,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 MODE_TOPLIST, MODE_WHATS_HOT -> {
                     // Wait for search view to hide
                     delay(300)
-                    withUIContext { navigator.navigate(GalleryListScreenDestination(builder)) }
+                    withUIContext { navigator.navigate(builder.asDst()) }
                 }
                 else -> {
                     urlBuilder = builder

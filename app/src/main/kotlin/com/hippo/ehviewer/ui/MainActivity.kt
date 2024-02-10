@@ -103,7 +103,6 @@ import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.destinations.DownloadScreenDestination
 import com.hippo.ehviewer.ui.destinations.DownloadsScreenDestination
 import com.hippo.ehviewer.ui.destinations.FavouritesScreenDestination
-import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.destinations.HistoryScreenDestination
 import com.hippo.ehviewer.ui.destinations.HomePageScreenDestination
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
@@ -112,6 +111,7 @@ import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.destinations.SubscriptionScreenDestination
 import com.hippo.ehviewer.ui.destinations.ToplistScreenDestination
 import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
+import com.hippo.ehviewer.ui.screen.asDst
 import com.hippo.ehviewer.ui.screen.asDstWith
 import com.hippo.ehviewer.ui.screen.navWithUrl
 import com.hippo.ehviewer.ui.screen.navigate
@@ -269,18 +269,19 @@ class MainActivity : EhActivity() {
                             val type = intent.type
                             if ("text/plain" == type) {
                                 val keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
-                                navController.navigate(GalleryListScreenDestination(ListUrlBuilder(mKeyword = keyword)))
+                                navController.navigate(ListUrlBuilder(mKeyword = keyword).asDst())
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
                                 if (null != uri) {
                                     val temp = saveImageToTempFile(uri)
                                     if (null != temp) {
-                                        val builder = ListUrlBuilder(
-                                            mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
-                                            imagePath = temp.path,
-                                            isUseSimilarityScan = true,
+                                        navController.navigate(
+                                            ListUrlBuilder(
+                                                mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
+                                                imagePath = temp.path,
+                                                isUseSimilarityScan = true,
+                                            ).asDst(),
                                         )
-                                        navController.navigate(GalleryListScreenDestination(builder))
                                     }
                                 }
                             }

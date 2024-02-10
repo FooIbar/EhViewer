@@ -121,7 +121,6 @@ import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.destinations.GalleryCommentsScreenDestination
-import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryPreviewScreenDestination
 import com.hippo.ehviewer.ui.getFavoriteIcon
 import com.hippo.ehviewer.ui.jumpToReaderByPage
@@ -542,30 +541,24 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     val artist = galleryDetail.tags.getArtist()
                     if (null != keyword) {
                         navigator.navigate(
-                            GalleryListScreenDestination(
-                                ListUrlBuilder(
-                                    mode = ListUrlBuilder.MODE_NORMAL,
-                                    mKeyword = "\"" + keyword + "\"",
-                                ),
-                            ),
+                            ListUrlBuilder(
+                                mode = ListUrlBuilder.MODE_NORMAL,
+                                mKeyword = "\"" + keyword + "\"",
+                            ).asDst(),
                         )
                     } else if (artist != null) {
                         navigator.navigate(
-                            GalleryListScreenDestination(
-                                ListUrlBuilder(
-                                    mode = ListUrlBuilder.MODE_TAG,
-                                    mKeyword = "artist:$artist",
-                                ),
-                            ),
+                            ListUrlBuilder(
+                                mode = ListUrlBuilder.MODE_TAG,
+                                mKeyword = "artist:$artist",
+                            ).asDst(),
                         )
                     } else if (null != galleryDetail.uploader) {
                         navigator.navigate(
-                            GalleryListScreenDestination(
-                                ListUrlBuilder(
-                                    mode = ListUrlBuilder.MODE_UPLOADER,
-                                    mKeyword = galleryDetail.uploader,
-                                ),
-                            ),
+                            ListUrlBuilder(
+                                mode = ListUrlBuilder.MODE_UPLOADER,
+                                mKeyword = galleryDetail.uploader,
+                            ).asDst(),
                         )
                     }
                 },
@@ -576,12 +569,10 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 onClick = {
                     val key = galleryDetail.thumbKey.orEmpty()
                     navigator.navigate(
-                        GalleryListScreenDestination(
-                            ListUrlBuilder(
-                                mode = ListUrlBuilder.MODE_NORMAL,
-                                hash = key.substringAfterLast('/').substringBefore('-'),
-                            ),
-                        ),
+                        ListUrlBuilder(
+                            mode = ListUrlBuilder.MODE_NORMAL,
+                            hash = key.substringAfterLast('/').substringBefore('-'),
+                        ).asDst(),
                     )
                 },
             )
@@ -716,7 +707,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     val lub = ListUrlBuilder()
                     lub.mode = ListUrlBuilder.MODE_TAG
                     lub.keyword = it
-                    navigator.navigate(GalleryListScreenDestination(lub))
+                    navigator.navigate(lub.asDst())
                 },
                 onTagLongClick = { translated, tag ->
                     val index = tag.indexOf(':')
@@ -796,7 +787,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 return
             }
             val lub = ListUrlBuilder(category = category)
-            navigator.navigate(GalleryListScreenDestination(lub))
+            navigator.navigate(lub.asDst())
         }
         fun onUploaderChipClick(galleryInfo: GalleryInfo) {
             val uploader = galleryInfo.uploader
@@ -807,7 +798,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             val lub = ListUrlBuilder()
             lub.mode = ListUrlBuilder.MODE_UPLOADER
             lub.keyword = uploader
-            navigator.navigate(GalleryListScreenDestination(lub))
+            navigator.navigate(lub.asDst())
         }
 
         var showBottomSheet by remember { mutableStateOf(false) }
