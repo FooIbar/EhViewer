@@ -26,6 +26,10 @@ interface LocalFavoritesDao {
     @Query("SELECT * FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID) WHERE TITLE LIKE :title ORDER BY TIME DESC")
     fun joinListLazy(title: String): PagingSource<Int, BaseGalleryInfo>
 
+    @RewriteQueriesToDropUnusedColumns
+    @Query("SELECT * FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID) ORDER BY RANDOM() DESC LIMIT 1")
+    suspend fun random(): BaseGalleryInfo
+
     @Query("SELECT EXISTS(SELECT * FROM LOCAL_FAVORITES WHERE GID = :gid)")
     suspend fun contains(gid: Long): Boolean
 
