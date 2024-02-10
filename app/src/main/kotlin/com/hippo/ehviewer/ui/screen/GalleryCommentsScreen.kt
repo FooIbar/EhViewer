@@ -84,7 +84,6 @@ import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
@@ -366,7 +365,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
                                 mode = ListUrlBuilder.MODE_UPLOADER,
                                 mKeyword = item.user,
                             )
-                            navigator.navigate(GalleryListScreenDestination(lub))
+                            navigator.navigate(lub.asDst())
                         },
                         onCardClick = {
                             coroutineScope.launch {
