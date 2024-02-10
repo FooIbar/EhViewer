@@ -13,6 +13,7 @@ import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
+import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.StartDestination
 import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.util.setDefaultSettings
@@ -26,6 +27,7 @@ import io.ktor.http.Url
 @Destination
 @Composable
 fun WebViewSignInScreen(navigator: DestinationsNavigator) {
+    LockDrawer(true)
     val coroutineScope = rememberCoroutineScope()
     val state = rememberWebViewState(url = EhUrl.URL_SIGN_IN)
     val client = remember {
