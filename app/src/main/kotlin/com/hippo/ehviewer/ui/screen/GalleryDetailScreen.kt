@@ -366,6 +366,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
                             downloadManager.enqueue(r)
                         }
+                        if (Settings.archiveMetadata) {
+                            SpiderDen(galleryDetail).apply {
+                                initDownloadDir()
+                                writeComicInfo()
+                            }
+                        }
                     }
                     activity.showTip(R.string.download_archive_started)
                 }
