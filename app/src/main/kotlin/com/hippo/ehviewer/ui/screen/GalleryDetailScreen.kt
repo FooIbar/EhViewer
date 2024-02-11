@@ -2,6 +2,8 @@ package com.hippo.ehviewer.ui.screen
 
 import android.Manifest
 import android.app.DownloadManager
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
@@ -346,14 +348,24 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     val res = mArchiveList!![selected].res
                     val isHAtH = mArchiveList!![selected].isHAtH
                     EhEngine.downloadArchive(gid, token, mArchiveFormParamOr!!, res, isHAtH)?.let {
-                        val r = DownloadManager.Request(Uri.parse(it))
+                        val uri = Uri.parse(it)
+                        val intent = Intent().apply {
+                            action = Intent.ACTION_VIEW
+                            setDataAndType(uri, "application/zip")
+                        }
                         val name = "$gid-${EhUtils.getSuitableTitle(galleryDetail)}.zip"
-                        r.setDestinationInExternalPublicDir(
-                            Environment.DIRECTORY_DOWNLOADS,
-                            AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
-                        )
-                        r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                        downloadManager.enqueue(r)
+                        try {
+                            activity.startActivity(intent)
+                            context.addTextToClipboard(name, true)
+                        } catch (_: ActivityNotFoundException) {
+                            val r = DownloadManager.Request(uri)
+                            r.setDestinationInExternalPublicDir(
+                                Environment.DIRECTORY_DOWNLOADS,
+                                AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
+                            )
+                            r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                            downloadManager.enqueue(r)
+                        }
                     }
                     activity.showTip(R.string.download_archive_started)
                 }
