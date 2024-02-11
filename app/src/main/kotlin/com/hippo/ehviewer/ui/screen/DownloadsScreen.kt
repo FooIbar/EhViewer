@@ -20,13 +20,16 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
-import androidx.compose.material.icons.automirrored.outlined.Label
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NewLabel
 import androidx.compose.material.icons.filled.Pause
@@ -68,9 +71,11 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import arrow.core.partially1
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadManager.labelList
@@ -83,11 +88,13 @@ import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.main.DownloadCard
 import com.hippo.ehviewer.ui.main.FabLayout
+import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.showMoveDownloadLabelList
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
+import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
@@ -111,6 +118,7 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 @Composable
 fun DownloadsScreen(navigator: DestinationsNavigator) {
     var label by Settings::recentDownloadLabel.observed
+    var gridView by Settings::gridView.observed
     var keyword by rememberSaveable { mutableStateOf<String?>(null) }
     var filterType by rememberSaveable { mutableIntStateOf(-1) }
     var searchBarOffsetY by remember(label) { mutableIntStateOf(0) }
@@ -333,14 +341,24 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         trailingIcon = {
             var expanded by remember { mutableStateOf(false) }
             val sideSheetState = LocalSideSheetState.current
-            IconButton(onClick = { coroutineScope.launch { sideSheetState.open() } }) {
-                Icon(imageVector = Icons.AutoMirrored.Outlined.Label, contentDescription = stringResource(id = R.string.download_labels))
+            IconButton(onClick = { gridView = !gridView }) {
+                val icon = if (gridView) Icons.AutoMirrored.Default.ViewList else Icons.Default.GridView
+                Icon(imageVector = icon, contentDescription = null)
             }
             IconButton(onClick = { expanded = !expanded }) {
                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
             }
             val states = stringArrayResource(id = R.array.download_state)
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                DropdownMenuItem(
+                    text = { Text(text = stringResource(id = R.string.download_labels)) },
+                    onClick = {
+                        expanded = false
+                        coroutineScope.launch {
+                            sideSheetState.open()
+                        }
+                    },
+                )
                 DropdownMenuItem(
                     text = { Text(text = stringResource(id = R.string.download_filter)) },
                     onClick = {
@@ -409,13 +427,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             start = contentPadding.calculateStartPadding(layoutDirection) + marginH,
             end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
         )
-        val listState = rememberLazyListState()
-        val reorderableState = rememberReorderableLazyColumnState(listState) { from, to ->
-            val fromIndex = from.index - 1
-            val toIndex = to.index - 1
-            list.apply { add(toIndex, removeAt(fromIndex)) }
-            view.performHapticFeedback(draggingHapticFeedback)
-        }
         val searchBarConnection = remember {
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
@@ -425,70 +436,100 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 }
             }
         }
-        var fromIndex by remember { mutableIntStateOf(-1) }
-        FastScrollLazyColumn(
-            modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-            state = listState,
-            contentPadding = realPadding,
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-        ) {
-            // Fix the first item's reorder animation
-            item {}
-            itemsIndexed(list, key = { _, item -> item.gid }) { index, info ->
-                ReorderableItem(reorderableState, key = info.gid) {
-                    val checked = info.gid in checkedInfoMap
-                    CheckableItem(checked = checked) {
-                        DownloadCard(
-                            onClick = {
-                                if (selectMode) {
-                                    if (checked) {
-                                        checkedInfoMap.remove(info.gid)
-                                    } else {
-                                        checkedInfoMap[info.gid] = info
-                                    }
-                                } else {
-                                    coroutineScope.launchIO {
-                                        EhDB.putHistoryInfo(info.galleryInfo)
-                                    }
-                                    context.navToReader(info.galleryInfo)
-                                }
-                            },
-                            onThumbClick = {
-                                navigator.navigate(info.galleryInfo.asDst())
-                            },
-                            onLongClick = {
-                                checkedInfoMap[info.gid] = info
-                            },
-                            onStart = {
-                                val intent = Intent(activity, DownloadService::class.java)
-                                intent.action = DownloadService.ACTION_START
-                                intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                                ContextCompat.startForegroundService(activity, intent)
-                            },
-                            onStop = {
-                                coroutineScope.launchIO {
-                                    DownloadManager.stopDownload(info.gid)
-                                }
-                            },
-                            onDragStarted = {
-                                fromIndex = index
-                            },
-                            onDragStopped = {
-                                if (fromIndex != -1) {
-                                    val direction = (index - fromIndex).sign
-                                    if (direction != 0) {
-                                        val toItem = list[index - direction]
-                                        coroutineScope.launchIO {
-                                            val toUpdate = DownloadManager.moveDownload(info, toItem)
-                                            EhDB.updateDownloadInfo(toUpdate)
+        fun onItemClick(info: DownloadInfo) {
+            coroutineScope.launchIO {
+                EhDB.putHistoryInfo(info.galleryInfo)
+            }
+            context.navToReader(info.galleryInfo)
+        }
+        if (gridView) {
+            val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
+            val thumbColumns by Settings.thumbColumns.collectAsState()
+            FastScrollLazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Fixed(thumbColumns),
+                modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                verticalItemSpacing = gridInterval,
+                horizontalArrangement = Arrangement.spacedBy(gridInterval),
+                contentPadding = realPadding,
+            ) {
+                items(list) {
+                    GalleryInfoGridItem(
+                        onClick = ::onItemClick.partially1(it),
+                        onLongClick = { navigator.navigate(it.galleryInfo.asDst()) },
+                        info = it.galleryInfo,
+                    )
+                }
+            }
+        } else {
+            val listState = rememberLazyListState()
+            val reorderableState = rememberReorderableLazyColumnState(listState) { from, to ->
+                val fromIndex = from.index - 1
+                val toIndex = to.index - 1
+                list.apply { add(toIndex, removeAt(fromIndex)) }
+                view.performHapticFeedback(draggingHapticFeedback)
+            }
+            var fromIndex by remember { mutableIntStateOf(-1) }
+            FastScrollLazyColumn(
+                modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                state = listState,
+                contentPadding = realPadding,
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
+            ) {
+                // Fix the first item's reorder animation
+                item {}
+                itemsIndexed(list, key = { _, item -> item.gid }) { index, info ->
+                    ReorderableItem(reorderableState, key = info.gid) {
+                        val checked = info.gid in checkedInfoMap
+                        CheckableItem(checked = checked) {
+                            DownloadCard(
+                                onClick = {
+                                    if (selectMode) {
+                                        if (checked) {
+                                            checkedInfoMap.remove(info.gid)
+                                        } else {
+                                            checkedInfoMap[info.gid] = info
                                         }
+                                    } else {
+                                        onItemClick(info)
                                     }
-                                    fromIndex = -1
-                                }
-                            },
-                            info = info,
-                            modifier = Modifier.height(height),
-                        )
+                                },
+                                onThumbClick = {
+                                    navigator.navigate(info.galleryInfo.asDst())
+                                },
+                                onLongClick = {
+                                    checkedInfoMap[info.gid] = info
+                                },
+                                onStart = {
+                                    val intent = Intent(activity, DownloadService::class.java)
+                                    intent.action = DownloadService.ACTION_START
+                                    intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
+                                    ContextCompat.startForegroundService(activity, intent)
+                                },
+                                onStop = {
+                                    coroutineScope.launchIO {
+                                        DownloadManager.stopDownload(info.gid)
+                                    }
+                                },
+                                onDragStarted = {
+                                    fromIndex = index
+                                },
+                                onDragStopped = {
+                                    if (fromIndex != -1) {
+                                        val direction = (index - fromIndex).sign
+                                        if (direction != 0) {
+                                            val toItem = list[index - direction]
+                                            coroutineScope.launchIO {
+                                                val toUpdate = DownloadManager.moveDownload(info, toItem)
+                                                EhDB.updateDownloadInfo(toUpdate)
+                                            }
+                                        }
+                                        fromIndex = -1
+                                    }
+                                },
+                                info = info,
+                                modifier = Modifier.height(height),
+                            )
+                        }
                     }
                 }
             }

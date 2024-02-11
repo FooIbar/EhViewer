@@ -191,11 +191,6 @@ fun GalleryInfoGridItem(
     info: GalleryInfo,
     modifier: Modifier = Modifier,
 ) {
-    val aspect = if (info.thumbHeight != 0) {
-        (info.thumbWidth.toFloat() / info.thumbHeight).coerceIn(MIN_ASPECT, MAX_ASPECT)
-    } else {
-        DEFAULT_ASPECT
-    }
     val simpleLang = info.simpleLanguage
     ElevatedCard(
         modifier = modifier,
@@ -205,7 +200,7 @@ fun GalleryInfoGridItem(
         Box {
             EhAsyncThumb(
                 model = info,
-                modifier = Modifier.aspectRatio(aspect).fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 contentScale = ContentScale.Crop,
             )
             val categoryColor = EhUtils.getCategoryColor(info.category)
