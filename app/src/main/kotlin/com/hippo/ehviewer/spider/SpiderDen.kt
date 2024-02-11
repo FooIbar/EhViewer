@@ -260,6 +260,11 @@ class SpiderDen(val info: GalleryInfo) {
         downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.isDirectory }
     }
 
+    suspend fun initDownloadDir() {
+        downloadDir = getGalleryDownloadDir(gid) ?: (downloadLocation / info.putToDownloadDir())
+        check(downloadDir!!.ensureDir())
+    }
+
     suspend fun writeComicInfo(fetchMetadata: Boolean = true) {
         downloadDir?.run {
             createFile(COMIC_INFO_FILE)?.also {

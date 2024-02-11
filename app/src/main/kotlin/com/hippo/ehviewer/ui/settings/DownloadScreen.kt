@@ -145,6 +145,11 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                 summary = stringResource(id = R.string.settings_download_download_origin_image_summary),
                 value = Settings::downloadOriginImage,
             )
+            SwitchPreference(
+                title = stringResource(id = R.string.settings_download_archive_metadata),
+                summary = stringResource(id = R.string.settings_download_archive_metadata_summary),
+                value = Settings::archiveMetadata,
+            )
             WorkPreference(
                 title = stringResource(id = R.string.settings_download_restore_download_items),
                 summary = stringResource(id = R.string.settings_download_restore_download_items_summary),
