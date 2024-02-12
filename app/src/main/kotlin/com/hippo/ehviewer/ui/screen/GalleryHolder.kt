@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.Dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 
@@ -70,7 +69,7 @@ private fun controlledInteractionSource(enabled: Boolean): MutableInteractionSou
     val update by rememberUpdatedState(newValue = enabled)
     return remember {
         val impl = MutableInteractionSource()
-        val controlled = snapshotFlow { update }.drop(1).map { enable ->
+        val controlled = snapshotFlow { update }.map { enable ->
             if (enable) enter else exit
         }
         object : MutableInteractionSource by impl {
