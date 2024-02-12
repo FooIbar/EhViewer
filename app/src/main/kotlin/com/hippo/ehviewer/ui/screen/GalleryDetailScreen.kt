@@ -1105,7 +1105,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                         val uri = with(context) {
                                             awaitActivityResult(
                                                 CreateDocument("application/x-cbz"),
-                                                EhUtils.getSuitableTitle(info),
+                                                EhUtils.getSuitableTitle(info) + ".cbz",
                                             )
                                         }
                                         if (uri != null) {
