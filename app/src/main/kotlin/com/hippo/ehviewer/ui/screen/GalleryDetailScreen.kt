@@ -162,6 +162,7 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -380,7 +381,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     is NoHAtHClientException -> activity.showTip(R.string.download_archive_failure_no_hath)
                     is EhException -> activity.showTip(ExceptionUtils.getReadableString(it))
                     else -> {
-                        it.printStackTrace()
+                        logcat(it)
                         activity.showTip(R.string.download_archive_failure)
                     }
                 }
@@ -631,7 +632,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                 runSuspendCatching {
                                     showTorrentDialog()
                                 }.onFailure {
-                                    it.printStackTrace()
+                                    logcat(it)
                                     activity.showTip(R.string.download_torrent_failure)
                                 }
                             } else {
@@ -687,7 +688,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     }
                     ratingText = getAllRatingText(result.rating, result.ratingCount)
                 }.onFailure {
-                    it.printStackTrace()
+                    logcat(it)
                     activity.showTip(R.string.rate_failed)
                 }
             }
@@ -1119,7 +1120,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                                     }
                                                 }
                                             }.getOrElse {
-                                                it.printStackTrace()
+                                                logcat(it)
                                                 false
                                             }
                                             val msg = if (success) {

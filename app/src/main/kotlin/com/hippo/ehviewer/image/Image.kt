@@ -53,6 +53,7 @@ import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
+import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import splitties.init.appCtx
 
@@ -163,7 +164,7 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
                 }
             }.onFailure {
                 src.close()
-                it.printStackTrace()
+                logcat(it)
             }.getOrNull()
         }
 

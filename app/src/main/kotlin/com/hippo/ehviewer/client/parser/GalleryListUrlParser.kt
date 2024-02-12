@@ -19,6 +19,7 @@ import android.net.Uri
 import android.os.Build
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.ListUrlBuilder
+import eu.kanade.tachiyomi.util.system.logcat
 import java.io.UnsupportedEncodingException
 import java.net.MalformedURLException
 import java.net.URL
@@ -77,7 +78,7 @@ object GalleryListUrlParser {
             try {
                 URLDecoder.decode(uploader, StandardCharsets.UTF_8.displayName())
             } catch (e: UnsupportedEncodingException) {
-                e.printStackTrace()
+                logcat(e)
                 return null
             }
         }
@@ -106,7 +107,7 @@ object GalleryListUrlParser {
             try {
                 URLDecoder.decode(tag, StandardCharsets.UTF_8.displayName())
             } catch (e: UnsupportedEncodingException) {
-                e.printStackTrace()
+                logcat(e)
                 return null
             }
         }

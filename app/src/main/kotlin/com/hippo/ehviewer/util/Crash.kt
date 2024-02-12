@@ -3,6 +3,7 @@ package com.hippo.ehviewer.util
 import android.os.Build
 import android.os.Debug
 import com.hippo.ehviewer.BuildConfig
+import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.io.FileWriter
 import java.io.OutputStreamWriter
@@ -75,7 +76,7 @@ object Crash {
                 fw.flush()
             }
         }.onFailure {
-            it.printStackTrace()
+            logcat(it)
             file.delete()
         }
         if (t is OutOfMemoryError) {

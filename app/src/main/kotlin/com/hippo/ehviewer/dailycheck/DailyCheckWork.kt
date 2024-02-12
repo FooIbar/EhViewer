@@ -24,6 +24,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import eu.kanade.tachiyomi.util.system.logcat
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.days
@@ -89,7 +90,7 @@ suspend fun checkDawn() = runCatching {
         }
     }
 }.onFailure {
-    it.printStackTrace()
+    logcat(WORK_NAME, it)
 }
 
 @SuppressLint("MissingPermission")
@@ -118,6 +119,6 @@ fun showEventNotification(html: String) {
     runCatching {
         notificationManager.notify(1, msg.build())
     }.onFailure {
-        it.printStackTrace()
+        logcat(WORK_NAME, it)
     }
 }

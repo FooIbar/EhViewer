@@ -10,6 +10,7 @@ import com.hippo.ehviewer.dailycheck.updateDailyCheckWork
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.util.isAtLeastS
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -68,7 +69,7 @@ fun updateWhenGallerySiteChanges() {
             runCatching {
                 EhEngine.getUConfig()
             }.onFailure {
-                it.printStackTrace()
+                logcat(it)
             }
         }
     }
@@ -79,7 +80,7 @@ fun updateWhenTagTranslationChanges() {
         runCatching {
             EhTagDatabase.update()
         }.onFailure {
-            it.printStackTrace()
+            logcat(it)
         }
     }
 }

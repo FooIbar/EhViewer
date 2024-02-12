@@ -18,6 +18,7 @@
 package com.hippo.ehviewer.client.parser
 
 import com.hippo.ehviewer.util.ExceptionUtils
+import eu.kanade.tachiyomi.util.system.logcat
 import org.jsoup.Jsoup
 
 object GalleryNotAvailableParser {
@@ -27,7 +28,7 @@ object GalleryNotAvailableParser {
             e!!.child(0).html().replace("<br>", "\n")
         }.getOrElse {
             ExceptionUtils.throwIfFatal(it)
-            it.printStackTrace()
+            logcat(it)
             null
         }
     }

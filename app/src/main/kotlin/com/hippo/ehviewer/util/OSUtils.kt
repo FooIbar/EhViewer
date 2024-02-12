@@ -16,6 +16,7 @@
 package com.hippo.ehviewer.util
 
 import android.os.Looper
+import eu.kanade.tachiyomi.util.system.logcat
 import java.io.BufferedReader
 import java.io.FileReader
 import java.util.regex.Pattern
@@ -59,7 +60,7 @@ object OSUtils {
                         }
                     }
                 }.onFailure {
-                    it.printStackTrace()
+                    logcat(it)
                 }
                 if (sTotalMem == Long.MIN_VALUE) {
                     sTotalMem = -1L

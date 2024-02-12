@@ -17,6 +17,7 @@ package com.hippo.ehviewer.client.parser
 
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
 import com.hippo.ehviewer.client.exception.NoHAtHClientException
+import eu.kanade.tachiyomi.util.system.logcat
 import org.jsoup.Jsoup
 
 object ArchiveParser {
@@ -48,7 +49,7 @@ object ArchiveParser {
                 }.onSuccess {
                     archiveList.add(it)
                 }.onFailure {
-                    it.printStackTrace()
+                    logcat(it)
                 }
             }
         }

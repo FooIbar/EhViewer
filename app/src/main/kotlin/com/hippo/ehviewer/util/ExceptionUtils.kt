@@ -16,6 +16,7 @@
 package com.hippo.ehviewer.util
 
 import com.hippo.ehviewer.R
+import eu.kanade.tachiyomi.util.system.logcat
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.ProtocolException
@@ -27,7 +28,7 @@ import splitties.init.appCtx
 
 object ExceptionUtils {
     fun getReadableString(e: Throwable): String {
-        e.printStackTrace()
+        logcat(e)
         val cause = e.cause
         return if (e is IOException && cause != null) {
             getReadableStringInternal(cause)

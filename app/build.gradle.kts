@@ -239,6 +239,8 @@ dependencies {
 
     implementation(libs.okio.jvm)
 
+    implementation(libs.logcat)
+
     implementation(libs.diff)
 
     implementation(libs.aboutlibraries.core)

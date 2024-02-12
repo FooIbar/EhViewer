@@ -52,6 +52,7 @@ import com.hippo.unifile.displayPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
@@ -179,7 +180,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                         }
                         RestoreItem(dirname, gid, token)
                     }.onFailure {
-                        it.printStackTrace()
+                        logcat(it)
                     }.getOrNull()
                 }
                 runCatching {
@@ -187,7 +188,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                         runSuspendCatching {
                             fillGalleryListByApi(this, EhUrl.referer)
                         }.onFailure {
-                            it.printStackTrace()
+                            logcat(it)
                         }
                     }
                     if (result.isEmpty()) {
@@ -203,7 +204,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                         launchSnackBar(RESTORE_COUNT_MSG(count + restoreDirCount))
                     }
                 }.onFailure {
-                    it.printStackTrace()
+                    logcat(it)
                 }
             }
             WorkPreference(
@@ -227,7 +228,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     val cnt = downloadLocation.listFiles().sumOf { clearFile(it).compareTo(false) }
                     launchSnackBar(FINAL_CLEAR_REDUNDANCY_MSG(cnt))
                 }.onFailure {
-                    it.printStackTrace()
+                    logcat(it)
                 }
             }
         }

@@ -47,6 +47,7 @@ import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.asUniFileOrNull
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.transform
@@ -455,7 +456,7 @@ object DownloadManager : OnSpiderListener {
 
     suspend fun resetAllReadingProgress() = runCatching {
         EhDB.clearProgressInfo()
-    }.onFailure { it.printStackTrace() }
+    }.onFailure { logcat(it) }
 
     // Update in DB
     // Update listener

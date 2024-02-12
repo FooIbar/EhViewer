@@ -51,6 +51,7 @@ import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.isCronetAvailable
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -123,7 +124,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                         }
                     }.onFailure {
                         launchSnackBar(dumpLogError)
-                        it.printStackTrace()
+                        logcat(it)
                     }
                 }
             }
@@ -212,7 +213,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                         EhDB.exportDB(context, uri)
                         launchSnackBar(getString(R.string.settings_advanced_export_data_to, uri.toString()))
                     }.onFailure {
-                        it.printStackTrace()
+                        logcat(it)
                         launchSnackBar(exportFailed)
                     }
                 }
@@ -231,7 +232,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                         EhDB.importDB(context, uri)
                         launchSnackBar(importSucceed)
                     }.onFailure {
-                        it.printStackTrace()
+                        logcat(it)
                         launchSnackBar(importFailed)
                     }
                 }
@@ -270,7 +271,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                         }.onSuccess {
                             launchSnackBar(backupSucceed)
                         }.onFailure {
-                            it.printStackTrace()
+                            logcat(it)
                             launchSnackBar(backupFailed)
                         }
                     }

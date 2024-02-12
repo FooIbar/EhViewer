@@ -42,6 +42,7 @@ import com.hippo.ehviewer.util.toFloatOrDefault
 import com.hippo.ehviewer.util.toIntOrDefault
 import com.hippo.ehviewer.util.trimAnd
 import com.hippo.ehviewer.util.unescapeXml
+import eu.kanade.tachiyomi.util.system.logcat
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -298,7 +299,7 @@ object GalleryDetailParser {
             if (group.size > 0) group else null
         } catch (e: Throwable) {
             ExceptionUtils.throwIfFatal(e)
-            e.printStackTrace()
+            logcat(e)
             null
         }
     }
@@ -313,7 +314,7 @@ object GalleryDetailParser {
             parseTagGroups(tagGroups)
         } catch (e: Throwable) {
             ExceptionUtils.throwIfFatal(e)
-            e.printStackTrace()
+            logcat(e)
             emptyList()
         }
     }
@@ -323,7 +324,7 @@ object GalleryDetailParser {
             trs.mapNotNull { parseTagGroup(it) }
         } catch (e: Throwable) {
             ExceptionUtils.throwIfFatal(e)
-            e.printStackTrace()
+            logcat(e)
             emptyList()
         }
     }
@@ -402,7 +403,7 @@ object GalleryDetailParser {
             )
         } catch (e: Throwable) {
             ExceptionUtils.throwIfFatal(e)
-            e.printStackTrace()
+            logcat(e)
             null
         }
     }
@@ -434,7 +435,7 @@ object GalleryDetailParser {
             GalleryCommentList(list, hasMore)
         } catch (e: Throwable) {
             ExceptionUtils.throwIfFatal(e)
-            e.printStackTrace()
+            logcat(e)
             EMPTY_GALLERY_COMMENT_LIST
         }
     }
