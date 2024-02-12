@@ -456,7 +456,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                     GalleryInfoGridItem(
                         onClick = ::onItemClick.partially1(it),
                         onLongClick = { navigator.navigate(it.galleryInfo.asDst()) },
-                        info = it.galleryInfo,
+                        info = it,
                     )
                 }
             }

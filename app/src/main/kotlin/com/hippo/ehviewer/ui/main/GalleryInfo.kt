@@ -24,11 +24,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.font.FontStyle
@@ -198,9 +202,23 @@ fun GalleryInfoGridItem(
         onLongClick = onLongClick,
     ) {
         Box {
+            val placeholder = remember {
+                val aspect = if (info.thumbHeight != 0) {
+                    (info.thumbWidth.toFloat() / info.thumbHeight).coerceIn(MIN_ASPECT, MAX_ASPECT)
+                } else {
+                    DEFAULT_ASPECT
+                }
+                BrushPainter(
+                    Brush.linearGradient(
+                        listOf(Color.Transparent, Color.Transparent),
+                        end = Offset(aspect, 1f),
+                    ),
+                )
+            }
             EhAsyncThumb(
                 model = info,
                 modifier = Modifier.fillMaxWidth(),
+                placeholder = placeholder,
                 contentScale = ContentScale.Crop,
             )
             val categoryColor = EhUtils.getCategoryColor(info.category)
