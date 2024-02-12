@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.screen
 
 import android.content.Intent
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -442,93 +443,95 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             }
             context.navToReader(info.galleryInfo)
         }
-        if (gridView) {
-            val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
-            val thumbColumns by Settings.thumbColumns.collectAsState()
-            FastScrollLazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(thumbColumns),
-                modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-                verticalItemSpacing = gridInterval,
-                horizontalArrangement = Arrangement.spacedBy(gridInterval),
-                contentPadding = realPadding,
-            ) {
-                items(list) {
-                    GalleryInfoGridItem(
-                        onClick = ::onItemClick.partially1(it),
-                        onLongClick = { navigator.navigate(it.galleryInfo.asDst()) },
-                        info = it,
-                    )
+        Crossfade(targetState = gridView, label = "Downloads") { showGridView ->
+            if (showGridView) {
+                val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
+                val thumbColumns by Settings.thumbColumns.collectAsState()
+                FastScrollLazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(thumbColumns),
+                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    verticalItemSpacing = gridInterval,
+                    horizontalArrangement = Arrangement.spacedBy(gridInterval),
+                    contentPadding = realPadding,
+                ) {
+                    items(list) {
+                        GalleryInfoGridItem(
+                            onClick = ::onItemClick.partially1(it),
+                            onLongClick = { navigator.navigate(it.galleryInfo.asDst()) },
+                            info = it,
+                        )
+                    }
                 }
-            }
-        } else {
-            val listState = rememberLazyListState()
-            val reorderableState = rememberReorderableLazyColumnState(listState) { from, to ->
-                val fromIndex = from.index - 1
-                val toIndex = to.index - 1
-                list.apply { add(toIndex, removeAt(fromIndex)) }
-                view.performHapticFeedback(draggingHapticFeedback)
-            }
-            var fromIndex by remember { mutableIntStateOf(-1) }
-            FastScrollLazyColumn(
-                modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-                state = listState,
-                contentPadding = realPadding,
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-            ) {
-                // Fix the first item's reorder animation
-                item {}
-                itemsIndexed(list, key = { _, item -> item.gid }) { index, info ->
-                    ReorderableItem(reorderableState, key = info.gid) {
-                        val checked = info.gid in checkedInfoMap
-                        CheckableItem(checked = checked) {
-                            DownloadCard(
-                                onClick = {
-                                    if (selectMode) {
-                                        if (checked) {
-                                            checkedInfoMap.remove(info.gid)
-                                        } else {
-                                            checkedInfoMap[info.gid] = info
-                                        }
-                                    } else {
-                                        onItemClick(info)
-                                    }
-                                },
-                                onThumbClick = {
-                                    navigator.navigate(info.galleryInfo.asDst())
-                                },
-                                onLongClick = {
-                                    checkedInfoMap[info.gid] = info
-                                },
-                                onStart = {
-                                    val intent = Intent(activity, DownloadService::class.java)
-                                    intent.action = DownloadService.ACTION_START
-                                    intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                                    ContextCompat.startForegroundService(activity, intent)
-                                },
-                                onStop = {
-                                    coroutineScope.launchIO {
-                                        DownloadManager.stopDownload(info.gid)
-                                    }
-                                },
-                                onDragStarted = {
-                                    fromIndex = index
-                                },
-                                onDragStopped = {
-                                    if (fromIndex != -1) {
-                                        val direction = (index - fromIndex).sign
-                                        if (direction != 0) {
-                                            val toItem = list[index - direction]
-                                            coroutineScope.launchIO {
-                                                val toUpdate = DownloadManager.moveDownload(info, toItem)
-                                                EhDB.updateDownloadInfo(toUpdate)
+            } else {
+                val listState = rememberLazyListState()
+                val reorderableState = rememberReorderableLazyColumnState(listState) { from, to ->
+                    val fromIndex = from.index - 1
+                    val toIndex = to.index - 1
+                    list.apply { add(toIndex, removeAt(fromIndex)) }
+                    view.performHapticFeedback(draggingHapticFeedback)
+                }
+                var fromIndex by remember { mutableIntStateOf(-1) }
+                FastScrollLazyColumn(
+                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    state = listState,
+                    contentPadding = realPadding,
+                    verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
+                ) {
+                    // Fix the first item's reorder animation
+                    item {}
+                    itemsIndexed(list, key = { _, item -> item.gid }) { index, info ->
+                        ReorderableItem(reorderableState, key = info.gid) {
+                            val checked = info.gid in checkedInfoMap
+                            CheckableItem(checked = checked) {
+                                DownloadCard(
+                                    onClick = {
+                                        if (selectMode) {
+                                            if (checked) {
+                                                checkedInfoMap.remove(info.gid)
+                                            } else {
+                                                checkedInfoMap[info.gid] = info
                                             }
+                                        } else {
+                                            onItemClick(info)
                                         }
-                                        fromIndex = -1
-                                    }
-                                },
-                                info = info,
-                                modifier = Modifier.height(height),
-                            )
+                                    },
+                                    onThumbClick = {
+                                        navigator.navigate(info.galleryInfo.asDst())
+                                    },
+                                    onLongClick = {
+                                        checkedInfoMap[info.gid] = info
+                                    },
+                                    onStart = {
+                                        val intent = Intent(activity, DownloadService::class.java)
+                                        intent.action = DownloadService.ACTION_START
+                                        intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
+                                        ContextCompat.startForegroundService(activity, intent)
+                                    },
+                                    onStop = {
+                                        coroutineScope.launchIO {
+                                            DownloadManager.stopDownload(info.gid)
+                                        }
+                                    },
+                                    onDragStarted = {
+                                        fromIndex = index
+                                    },
+                                    onDragStopped = {
+                                        if (fromIndex != -1) {
+                                            val direction = (index - fromIndex).sign
+                                            if (direction != 0) {
+                                                val toItem = list[index - direction]
+                                                coroutineScope.launchIO {
+                                                    val toUpdate = DownloadManager.moveDownload(info, toItem)
+                                                    EhDB.updateDownloadInfo(toUpdate)
+                                                }
+                                            }
+                                            fromIndex = -1
+                                        }
+                                    },
+                                    info = info,
+                                    modifier = Modifier.height(height),
+                                )
+                            }
                         }
                     }
                 }
