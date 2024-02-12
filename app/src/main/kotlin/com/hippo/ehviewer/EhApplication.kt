@@ -89,6 +89,9 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
                     AppCompatDelegate.setDefaultNightMode(mode)
                 }
             }
+            if (!LogcatLogger.isInstalled && Settings.saveCrashLog) {
+                LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
+            }
         }
         lifecycle.addObserver(lockObserver)
         val handler = Thread.getDefaultUncaughtExceptionHandler()
@@ -105,7 +108,6 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         System.loadLibrary("ehviewer")
         System.loadLibrary("ehviewer_rust")
         ReadableTime.initialize(this)
-        LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
         lifecycleScope.launchIO {
             launchIO {
                 EhTagDatabase

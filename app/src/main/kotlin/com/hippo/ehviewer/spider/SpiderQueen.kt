@@ -16,7 +16,6 @@
  */
 package com.hippo.ehviewer.spider
 
-import android.util.Log
 import androidx.annotation.IntDef
 import androidx.collection.LongSparseArray
 import androidx.collection.set
@@ -551,7 +550,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     }.onFailure {
                         if (it is CancellationException) {
                             if (mReadReference > 0) {
-                                Log.d(WORKER_DEBUG_TAG, "Download image $index cancelled")
+                                logcat(WORKER_DEBUG_TAG) { "Download image $index cancelled" }
                                 if (it.message != FORCE_RETRY) {
                                     updatePageState(index, STATE_FAILED, "Cancelled")
                                 }
@@ -677,7 +676,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
                     repeat(2) { times ->
                         runCatching {
-                            Log.d(WORKER_DEBUG_TAG, "Start download image $index attempt #$times")
+                            logcat(WORKER_DEBUG_TAG) { "Start download image $index attempt #$times" }
                             val success = withTimeout(downloadTimeout) {
                                 mSpiderDen.makeHttpCallAndSaveImage(
                                     index,
@@ -688,12 +687,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                             }
 
                             check(success)
-                            Log.d(WORKER_DEBUG_TAG, "Download image $index succeed")
+                            logcat(WORKER_DEBUG_TAG) { "Download image $index succeed" }
                             updatePageState(index, STATE_FINISHED)
                             return
                         }.onFailure {
                             mSpiderDen.remove(index)
-                            Log.d(WORKER_DEBUG_TAG, "Download image $index attempt #$times failed")
+                            logcat(WORKER_DEBUG_TAG) { "Download image $index attempt #$times failed" }
                             error = when (it) {
                                 is TimeoutCancellationException -> ERROR_TIMEOUT
                                 is CancellationException -> throw it

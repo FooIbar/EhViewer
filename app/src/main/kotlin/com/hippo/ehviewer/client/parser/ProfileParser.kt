@@ -15,14 +15,13 @@
  */
 package com.hippo.ehviewer.client.parser
 
-import android.util.Log
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.exception.ParseException
 import com.hippo.ehviewer.util.ExceptionUtils
+import eu.kanade.tachiyomi.util.system.logcat
 import org.jsoup.Jsoup
 
 object ProfileParser {
-    private val TAG = ProfileParser::class.java.simpleName
     fun parse(body: String): Result {
         return runCatching {
             val d = Jsoup.parse(body)
@@ -40,7 +39,7 @@ object ProfileParser {
                 }
             }.getOrElse {
                 ExceptionUtils.throwIfFatal(it)
-                Log.i(TAG, "No avatar")
+                logcat { "No avatar" }
                 null
             }
             Result(displayName, avatar)

@@ -22,7 +22,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.SystemClock
-import android.util.Log
 import androidx.annotation.IntDef
 import androidx.collection.LongSparseArray
 import androidx.core.app.ActivityCompat
@@ -40,6 +39,7 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.SimpleHandler
 import com.hippo.ehviewer.util.getParcelableExtraCompat
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -339,7 +339,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
                         sItemTitleArray.valueAt(0),
                     )
                 } else {
-                    Log.d("TAG", "WTF, sItemTitleArray is null")
+                    logcat { "WTF, sItemTitleArray is null" }
                     getString(R.string.error_unknown)
                 }
                 needStyle = false
@@ -355,7 +355,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
                         sItemTitleArray.valueAt(0),
                     )
                 } else {
-                    Log.d("TAG", "WTF, sItemTitleArray is null")
+                    logcat { "WTF, sItemTitleArray is null" }
                     getString(R.string.error_unknown)
                 }
                 needStyle = false

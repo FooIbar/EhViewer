@@ -16,7 +16,6 @@
 package com.hippo.ehviewer.download
 
 import android.net.Uri
-import android.util.Log
 import android.util.SparseLongArray
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
@@ -53,6 +52,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import logcat.LogPriority
 import splitties.preferences.edit
 
 object DownloadManager : OnSpiderListener {
@@ -200,7 +200,7 @@ object DownloadManager : OnSpiderListener {
             // Add to label download list
             val list = getInfoListForLabel(info.label)
             if (list == null) {
-                Log.e(TAG, "Can't find download info list with label: $label")
+                logcat(TAG, LogPriority.ERROR) { "Can't find download info list with label: $label" }
                 return
             }
             list.add(0, info)
@@ -548,12 +548,12 @@ object DownloadManager : OnSpiderListener {
      */
     suspend fun changeLabel(list: Collection<DownloadInfo>, label: String?) {
         if (null != label && !containLabel(label)) {
-            Log.e(TAG, "Not exits label: $label")
+            logcat(TAG, LogPriority.ERROR) { "Not exits label: $label" }
             return
         }
         val dstList = getInfoListForLabel(label)
         if (dstList == null) {
-            Log.e(TAG, "Can't find label with label: $label")
+            logcat(TAG, LogPriority.ERROR) { "Can't find label with label: $label" }
             return
         }
         for (info in list) {
@@ -562,7 +562,7 @@ object DownloadManager : OnSpiderListener {
             }
             val srcList = getInfoListForLabel(info.label)
             if (srcList == null) {
-                Log.e(TAG, "Can't find label with label: " + info.label)
+                logcat(TAG, LogPriority.ERROR) { "Can't find label with label: " + info.label }
                 continue
             }
             srcList.remove(info)
@@ -800,7 +800,7 @@ object DownloadManager : OnSpiderListener {
                 TYPE_ON_GET_PAGES -> {
                     val info = mCurrentTask
                     if (info == null) {
-                        Log.e(TAG, "Current task is null, but it should not be")
+                        logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
                     } else {
                         info.total = mPages
                         launchIO {
@@ -826,7 +826,7 @@ object DownloadManager : OnSpiderListener {
                     mSpeedReminder.onDone(mIndex)
                     val info = mCurrentTask
                     if (info == null) {
-                        Log.e(TAG, "Current task is null, but it should not be")
+                        logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
                     } else {
                         info.finished = mFinished
                         info.downloaded = mDownloaded
@@ -844,7 +844,7 @@ object DownloadManager : OnSpiderListener {
                     mSpeedReminder.onDone(mIndex)
                     val info = mCurrentTask
                     if (info == null) {
-                        Log.e(TAG, "Current task is null, but it should not be")
+                        logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
                     } else {
                         info.finished = mFinished
                         info.downloaded = mDownloaded
@@ -869,7 +869,7 @@ object DownloadManager : OnSpiderListener {
                     }
                     // Check null
                     if (info == null || spider == null) {
-                        Log.e(TAG, "Current stuff is null, but it should not be")
+                        logcat(TAG, LogPriority.ERROR) { "Current stuff is null, but it should not be" }
                     } else {
                         // Stop speed count
                         mSpeedReminder.stop()

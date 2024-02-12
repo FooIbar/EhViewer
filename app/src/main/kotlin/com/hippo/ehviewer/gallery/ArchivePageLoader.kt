@@ -16,7 +16,6 @@
 package com.hippo.ehviewer.gallery
 
 import android.os.ParcelFileDescriptor
-import android.util.Log
 import com.hippo.ehviewer.Settings.archivePasswds
 import com.hippo.ehviewer.image.ByteBufferSource
 import com.hippo.ehviewer.image.Image
@@ -54,7 +53,7 @@ class ArchivePageLoader(
 ) : PageLoader2(gid, startPage) {
     private lateinit var pfd: ParcelFileDescriptor
     private val hostJob = launch(start = CoroutineStart.LAZY) {
-        Log.d(DEBUG_TAG, "Open archive ${file.uri.displayPath}")
+        logcat(DEBUG_TAG) { "Open archive ${file.uri.displayPath}" }
         pfd = file.openFileDescriptor("r")
         size = openArchive(pfd.fd, pfd.statSize)
         if (size == 0) {
@@ -82,7 +81,7 @@ class ArchivePageLoader(
         super.stop()
         closeArchive()
         pfd.close()
-        Log.d(DEBUG_TAG, "Close archive ${file.uri.displayPath} successfully!")
+        logcat(DEBUG_TAG) { "Close archive ${file.uri.displayPath} successfully!" }
     }
 
     private val mJobMap = hashMapOf<Int, Job>()
