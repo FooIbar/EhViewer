@@ -17,7 +17,6 @@
 package com.hippo.ehviewer
 
 import android.app.Application
-import android.content.ComponentCallbacks2
 import android.content.Context
 import android.os.StrictMode
 import androidx.appcompat.app.AppCompatDelegate
@@ -172,14 +171,6 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         dir = AppConfig.externalTempDir
         if (null != dir) {
             FileUtils.deleteContent(dir)
-        }
-    }
-
-    override fun onTrimMemory(level: Int) {
-        super.onTrimMemory(level)
-        if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) {
-            // Keep one entry for GalleryCommentsScreen
-            galleryDetailCache.trimToSize(1)
         }
     }
 
