@@ -1,7 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,9 +17,9 @@ import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.tools.shouldCrop
 
 @Composable
-@ReadOnlyComposable
 fun requestOf(model: GalleryInfo): ImageRequest {
-    return LocalContext.current.imageRequest(model)
+    val context = LocalContext.current
+    return remember { context.imageRequest(model) }
 }
 
 @Composable
@@ -31,7 +30,7 @@ fun EhAsyncThumb(
     contentScale: ContentScale = ContentScale.Fit,
 ) = AsyncImage(
     model = requestOf(model),
-    contentDescription = "",
+    contentDescription = null,
     modifier = modifier,
     placeholder = placeholder,
     contentScale = contentScale,
