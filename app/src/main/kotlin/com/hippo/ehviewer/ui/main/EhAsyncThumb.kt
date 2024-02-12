@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil3.compose.AsyncImage
@@ -26,11 +27,13 @@ fun requestOf(model: GalleryInfo): ImageRequest {
 fun EhAsyncThumb(
     model: GalleryInfo,
     modifier: Modifier = Modifier,
+    placeholder: Painter? = null,
     contentScale: ContentScale = ContentScale.Fit,
 ) = AsyncImage(
     model = requestOf(model),
     contentDescription = "",
     modifier = modifier,
+    placeholder = placeholder,
     contentScale = contentScale,
 )
 
