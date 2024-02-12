@@ -269,7 +269,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
             listMode = listMode,
             detailItemContent = { info ->
                 val checked = info.gid in checkedInfoMap
-                CheckableItem(checked = checked) {
+                CheckableItem(checked = checked) { interactionSource ->
                     GalleryInfoListItem(
                         onClick = {
                             if (selectMode) {
@@ -289,12 +289,13 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                         isInFavScene = true,
                         showPages = showPages,
                         modifier = Modifier.height(height),
+                        interactionSource = interactionSource,
                     )
                 }
             },
             thumbItemContent = { info ->
                 val checked = info.gid in checkedInfoMap
-                CheckableItem(checked = checked) {
+                CheckableItem(checked = checked) { interactionSource ->
                     GalleryInfoGridItem(
                         onClick = {
                             if (selectMode) {
@@ -311,6 +312,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                             checkedInfoMap[info.gid] = info
                         },
                         info = info,
+                        interactionSource = interactionSource,
                     )
                 }
             },
