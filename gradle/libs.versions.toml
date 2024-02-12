@@ -96,6 +96,8 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
+logcat = "com.squareup.logcat:logcat:0.1"
+
 material = { module = "com.google.android.material:material", version.ref = "google-android-material" }
 
 okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }

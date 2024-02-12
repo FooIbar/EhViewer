@@ -7,6 +7,7 @@ import com.hippo.ehviewer.legacy.readLegacySpiderInfo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
 import com.hippo.unifile.openOutputStream
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
@@ -46,7 +47,7 @@ fun SpiderInfo.saveToCache() {
             data.toFile().writeBytes(cbor.encodeToByteArray(this@saveToCache))
         }
     }.onFailure {
-        it.printStackTrace()
+        logcat(it)
     }
 }
 
@@ -62,7 +63,7 @@ fun readFromCache(gid: Long): SpiderInfo? {
         runCatching {
             cbor.decodeFromByteArray<SpiderInfo>(data.toFile().readBytes())
         }.onFailure {
-            it.printStackTrace()
+            logcat(it)
         }.getOrNull()
     }
 }

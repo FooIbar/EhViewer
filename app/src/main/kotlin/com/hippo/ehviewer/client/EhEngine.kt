@@ -54,6 +54,7 @@ import com.hippo.ehviewer.dailycheck.today
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.StatusCodeException
+import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.request.forms.append
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
@@ -203,7 +204,7 @@ object EhEngine {
         }.onFailure { throwable ->
             // It may get redirected when accessing ex for the first time
             if (url == EhUrl.URL_UCONFIG_EX) {
-                throwable.printStackTrace()
+                logcat(throwable)
                 ehRequest(url).fetchUsingAsText { check(U_CONFIG_TEXT in this) { "Unable to load config from $url!" } }
             } else {
                 throw throwable

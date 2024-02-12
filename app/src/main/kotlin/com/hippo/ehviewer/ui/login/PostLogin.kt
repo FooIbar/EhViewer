@@ -4,6 +4,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
+import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -15,7 +16,7 @@ suspend fun postLogin() = coroutineScope {
                 Settings.avatar = avatar
             }
         }.onFailure {
-            it.printStackTrace()
+            logcat(it)
         }
     }
     runCatching {
@@ -28,7 +29,7 @@ suspend fun postLogin() = coroutineScope {
                 EhEngine.getUConfig(EhUrl.URL_UCONFIG_E)
                 EhCookieStore.flush()
             }.onFailure {
-                it.printStackTrace()
+                logcat(it)
             }
         }
 

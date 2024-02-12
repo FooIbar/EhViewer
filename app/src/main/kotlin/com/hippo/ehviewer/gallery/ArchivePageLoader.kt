@@ -31,6 +31,7 @@ import com.hippo.ehviewer.jni.releaseByteBuffer
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.displayPath
+import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -160,7 +161,7 @@ class ArchivePageLoader(
                 extractToFd(index, it.fd)
             }
         }.getOrElse {
-            it.printStackTrace()
+            logcat(it)
             false
         }
     }

@@ -41,6 +41,7 @@ import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.system.logcat
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -244,7 +245,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             runCatching {
                 writeSpiderInfoToLocal()
             }.onFailure {
-                it.printStackTrace()
+                logcat(it)
             }
         }
     }
@@ -352,7 +353,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 spiderInfo
             }
         }.onFailure {
-            it.printStackTrace()
+            logcat(it)
         }.getOrNull()
     }
 
@@ -370,7 +371,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 spiderInfo.pTokenMap[index]
             }
         }.getOrElse {
-            it.printStackTrace()
+            logcat(it)
             null
         }
     }
@@ -400,7 +401,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 spiderInfo.pTokenMap[index]
             }
         }.getOrElse {
-            it.printStackTrace()
+            logcat(it)
             null
         }
     }

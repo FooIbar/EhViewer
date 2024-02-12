@@ -133,6 +133,7 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.io.FileOutputStream
 import kotlinx.coroutines.channels.BufferOverflow
@@ -193,7 +194,7 @@ class MainActivity : EhActivity() {
             FileOutputStream(temp).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
             temp
         }.getOrElse {
-            it.printStackTrace()
+            logcat(it)
             null
         }
     }

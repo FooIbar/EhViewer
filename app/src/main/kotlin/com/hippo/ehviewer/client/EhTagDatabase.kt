@@ -25,6 +25,7 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.StatusCodeException
 import com.hippo.ehviewer.util.copyTo
+import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
@@ -213,7 +214,7 @@ object EhTagDatabase : CoroutineScope {
                 runSuspendCatching {
                     issueUpdateInMemoryData()
                 }.onFailure {
-                    it.printStackTrace()
+                    logcat(it)
                 }
                 updateInternal()
             }
@@ -272,7 +273,7 @@ object EhTagDatabase : CoroutineScope {
                 // Read new EhTagDatabase
                 issueUpdateInMemoryData(dataFile)
             }.onFailure {
-                it.printStackTrace()
+                logcat(it)
             }
         }
     }
