@@ -106,7 +106,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         System.loadLibrary("ehviewer")
         System.loadLibrary("ehviewer_rust")
         ReadableTime.initialize(this)
-        LogcatLogger.install(AndroidLogcatLogger())
+        LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
         lifecycleScope.launchIO {
             launchIO {
                 EhTagDatabase
