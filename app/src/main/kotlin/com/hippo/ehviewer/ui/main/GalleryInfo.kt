@@ -208,12 +208,7 @@ fun GalleryInfoGridItem(
                 } else {
                     DEFAULT_ASPECT
                 }
-                BrushPainter(
-                    Brush.linearGradient(
-                        listOf(Color.Transparent, Color.Transparent),
-                        end = Offset(aspect, 1f),
-                    ),
-                )
+                BrushPainter(Brush.linearGradient(PlaceholderColors, end = Offset(aspect, 1f)))
             }
             EhAsyncThumb(
                 model = info,
@@ -234,6 +229,8 @@ fun GalleryInfoGridItem(
         }
     }
 }
+
+private val PlaceholderColors = listOf(Color.Transparent, Color.Transparent)
 
 private const val MIN_ASPECT = 0.33F
 private const val MAX_ASPECT = 1.5F
