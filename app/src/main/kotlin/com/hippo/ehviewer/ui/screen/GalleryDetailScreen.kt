@@ -356,7 +356,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         val name = "$gid-${EhUtils.getSuitableTitle(galleryDetail)}.zip"
                         try {
                             activity.startActivity(intent)
-                            context.addTextToClipboard(name, true)
+                            withUIContext { context.addTextToClipboard(name, true) }
                         } catch (_: ActivityNotFoundException) {
                             val r = DownloadManager.Request(uri)
                             r.setDestinationInExternalPublicDir(
