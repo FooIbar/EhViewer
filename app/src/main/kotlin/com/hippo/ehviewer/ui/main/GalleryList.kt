@@ -31,9 +31,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +55,7 @@ import com.hippo.ehviewer.ui.screen.collectDetailSizeAsState
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.util.ExceptionUtils
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.drop
 
 @Composable
 fun GalleryList(
@@ -72,8 +70,8 @@ fun GalleryList(
     thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit),
     refreshState: PullToRefreshState,
     scrollToTopOnRefresh: Boolean = true,
-    onRefresh: suspend CoroutineScope.() -> Unit,
-    onLoading: suspend CoroutineScope.() -> Unit,
+    onRefresh: () -> Unit,
+    onLoading: () -> Unit,
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
@@ -145,7 +143,6 @@ fun GalleryList(
             }
         }
 
-        var isLoading by remember { mutableStateOf(false) }
         if (refreshState.isRefreshing) {
             LaunchedEffect(Unit) {
                 if (data.loadState.prepend.endOfPaginationReached) {
@@ -153,16 +150,9 @@ fun GalleryList(
                 } else {
                     data.retry()
                 }
-            }
-            LaunchedEffect(data.loadState) {
-                if (data.loadState.prepend is LoadState.Loading ||
-                    data.loadState.refresh is LoadState.Loading
-                ) {
-                    isLoading = true
-                } else {
-                    if (isLoading) {
+                snapshotFlow { data.loadState }.drop(1).collect { state ->
+                    if (state.prepend !is LoadState.Loading && state.refresh !is LoadState.Loading) {
                         refreshState.endRefresh()
-                        isLoading = false
                     }
                 }
             }
