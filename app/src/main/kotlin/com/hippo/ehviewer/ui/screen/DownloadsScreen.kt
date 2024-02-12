@@ -482,7 +482,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                     itemsIndexed(list, key = { _, item -> item.gid }) { index, info ->
                         ReorderableItem(reorderableState, key = info.gid) {
                             val checked = info.gid in checkedInfoMap
-                            CheckableItem(checked = checked) {
+                            CheckableItem(checked = checked) { interactionSource ->
                                 DownloadCard(
                                     onClick = {
                                         if (selectMode) {
@@ -529,6 +529,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                         }
                                     },
                                     info = info,
+                                    interactionSource = interactionSource,
                                     modifier = Modifier.height(height),
                                 )
                             }

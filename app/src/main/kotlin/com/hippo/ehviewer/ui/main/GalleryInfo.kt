@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -95,11 +96,13 @@ fun GalleryInfoListItem(
     modifier: Modifier = Modifier,
     isInFavScene: Boolean = false,
     showPages: Boolean = false,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     CrystalCard(
         modifier = modifier,
         onClick = onClick,
         onLongClick = onLongClick,
+        interactionSource = interactionSource,
     ) {
         Row {
             Card {
@@ -194,12 +197,14 @@ fun GalleryInfoGridItem(
     onLongClick: () -> Unit,
     info: GalleryInfo,
     modifier: Modifier = Modifier,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val simpleLang = info.simpleLanguage
     ElevatedCard(
         modifier = modifier,
         onClick = onClick,
         onLongClick = onLongClick,
+        interactionSource = interactionSource,
     ) {
         Box {
             val placeholder = remember {
