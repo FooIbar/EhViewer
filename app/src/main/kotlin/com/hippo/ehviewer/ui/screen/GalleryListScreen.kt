@@ -231,7 +231,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 override suspend fun load(params: LoadParams<String>) = withIOContext {
                     if (urlBuilder.mode == MODE_TOPLIST) {
                         // TODO: Since we know total pages, let pager support jump
-                        val key = (params.key ?: urlBuilder.mJumpTo ?: "0").toInt()
+                        val key = (params.key ?: urlBuilder.mJumpTo)?.toInt() ?: 0
                         val prev = (key - 1).takeIf { it > 0 }
                         val next = (key + 1).takeIf { it < TOPLIST_PAGES }
                         runSuspendCatching {
@@ -240,7 +240,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         }.onFailure {
                             return@withIOContext LoadResult.Error(it)
                         }.onSuccess {
-                            urlBuilder.mJumpTo = null
                             return@withIOContext LoadResult.Page(it.galleryInfoList, prev?.toString(), next?.toString())
                         }
                     }
@@ -746,6 +745,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     ) {
         onClick(Icons.Default.Refresh) {
             urlBuilder.setIndex(null)
+            urlBuilder.mJumpTo = null
             data.refresh()
         }
         if (urlBuilder.mode != MODE_WHATS_HOT) {
