@@ -32,7 +32,6 @@ import coil3.BitmapImage
 import coil3.DrawableImage
 import coil3.Image as CoilImage
 import coil3.asCoilImage
-import coil3.executeBlocking
 import coil3.imageLoader
 import coil3.request.CachePolicy
 import coil3.request.ErrorResult
@@ -168,14 +167,14 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
             }.getOrNull()
         }
 
-        fun Context.decodeBitmap(uri: Uri): Bitmap {
+        suspend fun Context.decodeBitmap(uri: Uri): Bitmap {
             val req = imageRequest {
                 memoryCachePolicy(CachePolicy.DISABLED)
                 data(uri)
                 size(imageSearchMaxSize)
                 scale(Scale.FILL)
             }
-            val image = when (val result = appCtx.imageLoader.executeBlocking(req)) {
+            val image = when (val result = appCtx.imageLoader.execute(req)) {
                 is SuccessResult -> result.image
                 is ErrorResult -> throw result.throwable
             }
