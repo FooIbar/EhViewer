@@ -268,7 +268,9 @@ class MainActivity : EhActivity() {
                             val type = intent.type
                             if ("text/plain" == type) {
                                 val keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
-                                navController.navigate(ListUrlBuilder(mKeyword = keyword).asDst())
+                                if (keyword != null && !navController.navWithUrl(keyword)) {
+                                    navController.navigate(ListUrlBuilder(mKeyword = keyword).asDst())
+                                }
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
                                 if (null != uri) {
