@@ -552,7 +552,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 }
                 val uri = Uri.parse(imagePath)
                 val temp = AppConfig.createTempFile() ?: return@SearchBarScreen
-                val bitmap = context.decodeBitmap(uri) ?: return@SearchBarScreen
+                val bitmap = context.decodeBitmap(uri)
                 temp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
                 builder.imagePath = temp.path
                 builder.isUseSimilarityScan = useSimilarityScan

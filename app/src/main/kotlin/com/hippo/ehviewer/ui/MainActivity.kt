@@ -185,12 +185,10 @@ class MainActivity : EhActivity() {
         }
     }
 
-    private fun saveImageToTempFile(uri: Uri): File? {
-        val bitmap = runCatching {
-            decodeBitmap(uri)
-        }.getOrNull() ?: return null
-        val temp = AppConfig.createTempFile() ?: return null
-        return runCatching {
+    private suspend fun saveImageToTempFile(uri: Uri): File? {
+        return runSuspendCatching {
+            val bitmap = decodeBitmap(uri)
+            val temp = AppConfig.createTempFile()
             FileOutputStream(temp).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
             temp
         }.getOrElse {
@@ -274,7 +272,7 @@ class MainActivity : EhActivity() {
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
                                 if (null != uri) {
-                                    val temp = saveImageToTempFile(uri)
+                                    val temp = withIOContext { saveImageToTempFile(uri) }
                                     if (null != temp) {
                                         navController.navigate(
                                             ListUrlBuilder(
