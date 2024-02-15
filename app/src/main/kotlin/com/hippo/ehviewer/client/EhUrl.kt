@@ -139,19 +139,21 @@ object EhUrl {
     fun getTagDefinitionUrl(tag: String) = "https://ehwiki.org/wiki/" + tag.replace(' ', '_')
 }
 
-inline fun ehUrl(path: String?, builder: ParametersBuilder.() -> Unit) = ehUrl(
+inline fun ehUrl(path: String?, host: String = EhUrl.domain, builder: ParametersBuilder.() -> Unit) = ehUrl(
     path = if (path.isNullOrBlank()) emptyList() else listOf(path),
+    host = host,
     parameters = Parameters.build(builder),
 )
 
-inline fun ehUrl(path: List<String>, builder: ParametersBuilder.() -> Unit) = ehUrl(
+inline fun ehUrl(path: List<String>, host: String = EhUrl.domain, builder: ParametersBuilder.() -> Unit) = ehUrl(
     path = path,
+    host = host,
     parameters = Parameters.build(builder),
 )
 
-fun ehUrl(path: List<String>, parameters: Parameters = Parameters.Empty) = URLBuilder(
+fun ehUrl(path: List<String>, host: String = EhUrl.domain, parameters: Parameters = Parameters.Empty) = URLBuilder(
     protocol = URLProtocol.HTTPS,
-    host = EhUrl.domain,
+    host = host,
     pathSegments = path,
     parameters = parameters,
 )

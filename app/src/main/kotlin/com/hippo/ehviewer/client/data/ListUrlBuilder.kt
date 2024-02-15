@@ -25,7 +25,6 @@ import com.hippo.ehviewer.client.addQueryParameterIfNotBlank
 import com.hippo.ehviewer.client.ehUrl
 import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.ui.main.AdvanceTable
-import com.hippo.ehviewer.util.encodeUTF8
 import com.hippo.ehviewer.util.toIntOrDefault
 import java.io.UnsupportedEncodingException
 import java.net.URLDecoder
@@ -39,6 +38,7 @@ data class ListUrlBuilder(
     var mNext: String? = null,
     // Reset to null after initial loading
     var mJumpTo: String? = null,
+    private var mRange: Int = 0,
     var category: Int = EhUtils.NONE,
     private var mKeyword: String? = null,
     var hash: String? = null,
@@ -51,13 +51,21 @@ data class ListUrlBuilder(
     var isOnlySearchCovers: Boolean = false,
 ) : Parcelable {
 
-    fun setIndex(index: String?, isNext: Boolean = true) {
-        mNext = index?.takeIf { isNext }
-        mPrev = index?.takeUnless { isNext }
+    fun setIndex(index: String, isNext: Boolean = true) {
+        mNext = index.takeIf { isNext }
+        mPrev = index.takeUnless { isNext }
+        mRange = 0
     }
 
     fun setJumpTo(jumpTo: Int) {
         mJumpTo = jumpTo.takeUnless { it == 0 }?.toString()
+    }
+
+    fun setRange(range: Int) {
+        mRange = range
+        mPrev = null
+        mNext = null
+        mJumpTo = null
     }
 
     var keyword: String?
@@ -270,6 +278,7 @@ data class ListUrlBuilder(
                 addQueryParameterIfNotBlank("prev", mPrev)
                 addQueryParameterIfNotBlank("next", mNext)
                 addQueryParameterIfNotBlank("seek", mJumpTo)
+                addQueryParameterIfNotBlank("range", mRange.takeIf { it > 0 }?.toString())
                 // Advance search
                 if (advanceSearch > 0 || minRating > 0 || pageFrom > 0 || pageTo > 0) {
                     addQueryParameter("advsearch", "1")
@@ -306,55 +315,25 @@ data class ListUrlBuilder(
                         )
                     }
                 }
-            }.toString()
+            }.buildString()
 
-            MODE_UPLOADER -> {
-                buildString {
-                    append(EhUrl.host)
-                    mKeyword?.let {
-                        append("uploader/").append(encodeUTF8(it))
-                    }
-                    mPrev?.let {
-                        append("?prev=").append(it)
-                    }
-                    mNext?.let {
-                        append("?next=").append(it)
-                    }
-                    mJumpTo?.let {
-                        append("&seek=").append(it)
-                    }
-                }
-            }
-
-            MODE_TAG -> {
-                buildString {
-                    append(EhUrl.host)
-                    mKeyword?.let {
-                        append("tag/").append(encodeUTF8(it))
-                    }
-                    mPrev?.let {
-                        append("?prev=").append(it)
-                    }
-                    mNext?.let {
-                        append("?next=").append(it)
-                    }
-                    mJumpTo?.let {
-                        append("&seek=").append(it)
-                    }
-                }
+            MODE_UPLOADER, MODE_TAG -> {
+                val path = if (mode == MODE_UPLOADER) "uploader" else "tag"
+                ehUrl(listOf(path, requireNotNull(mKeyword))) {
+                    addQueryParameterIfNotBlank("prev", mPrev)
+                    addQueryParameterIfNotBlank("next", mNext)
+                    addQueryParameterIfNotBlank("seek", mJumpTo)
+                    addQueryParameterIfNotBlank("range", mRange.takeIf { it > 0 }?.toString())
+                }.buildString()
             }
 
             MODE_WHATS_HOT -> EhUrl.popularUrl
             MODE_IMAGE_SEARCH -> EhUrl.imageSearchUrl
             MODE_TOPLIST -> {
-                buildString {
-                    append(EhUrl.HOST_E)
-                    append("toplist.php?tl=")
-                    append(mKeyword!!)
-                    mJumpTo?.let {
-                        append("&p=").append(it)
-                    }
-                }
+                ehUrl("toplist.php", EhUrl.DOMAIN_E) {
+                    addQueryParameter("tl", requireNotNull(mKeyword))
+                    addQueryParameterIfNotBlank("p", mJumpTo)
+                }.buildString()
             }
 
             else -> throw IllegalStateException("Unexpected value: $mode")
