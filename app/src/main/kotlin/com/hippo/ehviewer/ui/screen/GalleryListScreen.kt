@@ -204,6 +204,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         }
     }
 
+    // Fix crash when TextField with focus is scaled to 0
     val focusManager = LocalFocusManager.current
     LaunchedEffect(showSearchLayout) {
         if (!showSearchLayout) {
@@ -421,9 +422,15 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { index, item ->
                             ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
                                 val dismissState = rememberSwipeToDismissBoxState(
-                                    confirmValueChange = {
-                                        if (it == SwipeToDismissBoxValue.EndToStart) {
-                                            quickSearchList.remove(item)
+                                    confirmValueChange = { value ->
+                                        if (value == SwipeToDismissBoxValue.EndToStart) {
+                                            quickSearchList.run {
+                                                val removeIndex = indexOf(item)
+                                                subList(removeIndex + 1, size).forEach {
+                                                    it.position--
+                                                }
+                                                removeAt(removeIndex)
+                                            }
                                             coroutineScope.launchIO {
                                                 EhDB.deleteQuickSearch(item)
                                             }
@@ -502,7 +509,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         data.loadState.refresh is LoadState.NotLoading
     }
 
-    var hidden by remember { mutableStateOf(false) }
+    var fabExpanded by remember { mutableStateOf(false) }
+    var fabHidden by remember { mutableStateOf(false) }
 
     val openGalleryKeyword = stringResource(R.string.gallery_list_search_bar_open_gallery)
     abstract class UrlSuggestion : Suggestion() {
@@ -522,8 +530,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     class GalleryPageUrlSuggestion(gid: Long, pToken: String, page: Int) : UrlSuggestion() {
         override val destination = ProgressScreenDestination(gid, pToken, page)
     }
-
-    var expanded by remember { mutableStateOf(false) }
 
     val selectImageFirst = stringResource(R.string.select_image_first)
     SearchBarScreen(
@@ -571,8 +577,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             }
             showSearchLayout = false
         },
-        onSearchExpanded = { hidden = true },
-        onSearchHidden = { hidden = false },
+        onSearchExpanded = { fabHidden = true },
+        onSearchHidden = { fabHidden = false },
         refreshState = refreshState,
         suggestionProvider = {
             GalleryDetailUrlParser.parse(it, false)?.run {
@@ -667,9 +673,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
                     val dy = -consumed.y
                     if (dy >= slop) {
-                        hidden = true
+                        fabHidden = true
                     } else if (dy <= -slop / 2) {
-                        hidden = false
+                        fabHidden = false
                     }
                     searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
                     return Offset.Zero // We never consume it
@@ -731,7 +737,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val outOfRange = stringResource(R.string.error_out_of_range)
 
     val hideFab by delegateSnapshotUpdate {
-        record { hidden || showSearchLayout }
+        record { fabHidden || showSearchLayout }
         transform {
             // Bug: IDE failed to inference 'hide's type
             onEachLatest { hide: Boolean ->
@@ -742,8 +748,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
 
     FabLayout(
         hidden = hideFab,
-        expanded = expanded,
-        onExpandChanged = { expanded = it },
+        expanded = fabExpanded,
+        onExpandChanged = { fabExpanded = it },
         autoCancel = true,
     ) {
         if (urlBuilder.mode in arrayOf(MODE_NORMAL, MODE_UPLOADER, MODE_TAG)) {

@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.screen
 
 import android.content.Intent
+import android.view.ViewConfiguration
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -26,16 +28,19 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NewLabel
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -47,6 +52,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -76,11 +82,13 @@ import arrow.core.partially1
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.client.data.contains
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadManager.labelList
 import com.hippo.ehviewer.download.DownloadService
+import com.hippo.ehviewer.download.SortMode
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.Download
 import com.hippo.ehviewer.ui.LocalSideSheetState
@@ -88,6 +96,7 @@ import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.main.DownloadCard
+import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.navToReader
@@ -98,9 +107,10 @@ import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
+import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.observed
-import com.hippo.ehviewer.util.containsIgnoreCase
+import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
@@ -108,10 +118,10 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import kotlin.math.roundToInt
-import kotlin.math.sign
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import moe.tarsin.coroutines.onEachLatest
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
@@ -120,10 +130,14 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 fun DownloadsScreen(navigator: DestinationsNavigator) {
     var label by Settings::recentDownloadLabel.observed
     var gridView by Settings::gridView.observed
+    var sortMode by Settings::downloadSortMode.observed
     var keyword by rememberSaveable { mutableStateOf<String?>(null) }
     var filterType by rememberSaveable { mutableIntStateOf(-1) }
     var searchBarOffsetY by remember(label) { mutableIntStateOf(0) }
     val searchFieldState = rememberTextFieldState()
+
+    var fabExpanded by remember { mutableStateOf(false) }
+    var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, DownloadInfo>() }
     val selectMode by rememberUpdatedState(checkedInfoMap.isNotEmpty())
     LockDrawer(selectMode)
@@ -138,12 +152,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     val defaultName = stringResource(R.string.default_download_label_name)
     val title = stringResource(R.string.scene_download_title, if (label == "") allName else label ?: defaultName)
     val hint = stringResource(R.string.search_bar_hint, title)
-    val list = remember(label, filterType, keyword) {
-        val raw = DownloadManager.getInfoListForLabel(label) ?: DownloadManager.allInfoList
-        raw.filterTo(mutableStateListOf()) { info ->
-            (filterType == -1 || info.state == filterType) && keyword?.let {
-                info.title.containsIgnoreCase(it) || info.titleJpn.containsIgnoreCase(it) || info.uploader.containsIgnoreCase(it)
-            } ?: true
+    val sortModes = stringArrayResource(id = R.array.download_sort_modes)
+    val downloadStates = stringArrayResource(id = R.array.download_state)
+    val list = remember(label, filterType, keyword, sortMode) {
+        DownloadManager.downloadInfoList.filterTo(mutableStateListOf()) { info ->
+            (label == "" || info.label == label) && (filterType == -1 || info.state == filterType) &&
+                keyword.orEmpty() in info
         }
     }
 
@@ -153,6 +167,8 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     val labelEmpty = stringResource(R.string.label_text_is_empty)
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
     val labelExists = stringResource(R.string.label_text_exist)
+    val downloadsCount by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
+    val totalCount = remember(downloadsCount) { downloadsCount.values.sum() }
     with(activity) {
         ProvideSideSheetContent { drawerState ->
             fun closeSheet() = coroutineScope.launch { drawerState.close() }
@@ -218,7 +234,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
             ) {
                 stickyHeader {
-                    val all = DownloadManager.allInfoList
                     ListItem(
                         modifier = Modifier.clickable {
                             label = ""
@@ -227,12 +242,11 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                         tonalElevation = 1.dp,
                         shadowElevation = 1.dp,
                         headlineContent = {
-                            Text("$allName [${all.size}]")
+                            Text("$allName [$totalCount]")
                         },
                     )
                 }
                 stickyHeader {
-                    val default = DownloadManager.getInfoListForLabel(null)!!
                     ListItem(
                         modifier = Modifier.clickable {
                             label = null
@@ -241,7 +255,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                         tonalElevation = 1.dp,
                         shadowElevation = 1.dp,
                         headlineContent = {
-                            Text("$defaultName [${default.size}]")
+                            Text("$defaultName [${downloadsCount.getOrDefault(null, 0)}]")
                         },
                     )
                 }
@@ -251,7 +265,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
                                 coroutineScope.launch {
                                     DownloadManager.deleteLabel(item)
-                                    label = ""
+                                    if (label == item) {
+                                        label = ""
+                                    }
                                 }
                             }
                             true
@@ -270,8 +286,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                 },
                                 label = "elevation",
                             )
-                            val thatList = DownloadManager.getInfoListForLabel(item)
-                            val text = if (thatList != null) "$item [${thatList.size}]" else item
                             ListItem(
                                 modifier = Modifier.clickable {
                                     label = item
@@ -280,7 +294,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                 tonalElevation = 1.dp,
                                 shadowElevation = elevation,
                                 headlineContent = {
-                                    Text(text)
+                                    Text("$item [${downloadsCount.getOrDefault(item, 0)}]")
                                 },
                                 trailingContent = {
                                     Row {
@@ -334,10 +348,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         title = title,
         searchFieldState = searchFieldState,
         searchFieldHint = hint,
-        showSearchFab = selectMode,
         onApplySearch = { keyword = it.takeUnless { it.isBlank() } },
-        onSearchExpanded = { checkedInfoMap.clear() },
-        onSearchHidden = {},
+        onSearchExpanded = {
+            checkedInfoMap.clear()
+            fabHidden = true
+        },
+        onSearchHidden = { fabHidden = false },
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             var expanded by remember { mutableStateOf(false) }
@@ -349,7 +365,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             IconButton(onClick = { expanded = !expanded }) {
                 Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
             }
-            val states = stringArrayResource(id = R.array.download_state)
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 DropdownMenuItem(
                     text = { Text(text = stringResource(id = R.string.download_labels)) },
@@ -357,15 +372,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                         expanded = false
                         coroutineScope.launch {
                             sideSheetState.open()
-                        }
-                    },
-                )
-                DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.download_filter)) },
-                    onClick = {
-                        expanded = false
-                        coroutineScope.launch {
-                            filterType = dialogState.showSingleChoice(states.toList(), filterType + 1) - 1
                         }
                     },
                 )
@@ -429,10 +435,17 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
         )
         val searchBarConnection = remember {
+            val slop = ViewConfiguration.get(context).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                    searchBarOffsetY = (searchBarOffsetY + consumed.y).roundToInt().coerceIn(-topPaddingPx, 0)
+                    val dy = -consumed.y
+                    if (dy >= slop) {
+                        fabHidden = true
+                    } else if (dy <= -slop / 2) {
+                        fabHidden = false
+                    }
+                    searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
                     return Offset.Zero // We never consume it
                 }
             }
@@ -459,80 +472,52 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                             onClick = ::onItemClick.partially1(it),
                             onLongClick = { navigator.navigate(it.galleryInfo.asDst()) },
                             info = it,
+                            modifier = Modifier.animateItemPlacement(),
                         )
                     }
                 }
             } else {
-                val listState = rememberLazyListState()
-                val reorderableState = rememberReorderableLazyColumnState(listState) { from, to ->
-                    val fromIndex = from.index - 1
-                    val toIndex = to.index - 1
-                    list.apply { add(toIndex, removeAt(fromIndex)) }
-                    view.performHapticFeedback(draggingHapticFeedback)
-                }
-                var fromIndex by remember { mutableIntStateOf(-1) }
                 FastScrollLazyColumn(
                     modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-                    state = listState,
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
                 ) {
-                    // Fix the first item's reorder animation
-                    item {}
-                    itemsIndexed(list, key = { _, item -> item.gid }) { index, info ->
-                        ReorderableItem(reorderableState, key = info.gid) {
-                            val checked = info.gid in checkedInfoMap
-                            CheckableItem(checked = checked) { interactionSource ->
-                                DownloadCard(
-                                    onClick = {
-                                        if (selectMode) {
-                                            if (checked) {
-                                                checkedInfoMap.remove(info.gid)
-                                            } else {
-                                                checkedInfoMap[info.gid] = info
-                                            }
+                    items(list, key = { it.gid }) { info ->
+                        val checked = info.gid in checkedInfoMap
+                        CheckableItem(checked = checked, modifier = Modifier.animateItemPlacement()) { interactionSource ->
+                            DownloadCard(
+                                onClick = {
+                                    if (selectMode) {
+                                        if (checked) {
+                                            checkedInfoMap.remove(info.gid)
                                         } else {
-                                            onItemClick(info)
+                                            checkedInfoMap[info.gid] = info
                                         }
-                                    },
-                                    onThumbClick = {
-                                        navigator.navigate(info.galleryInfo.asDst())
-                                    },
-                                    onLongClick = {
-                                        checkedInfoMap[info.gid] = info
-                                    },
-                                    onStart = {
-                                        val intent = Intent(activity, DownloadService::class.java)
-                                        intent.action = DownloadService.ACTION_START
-                                        intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                                        ContextCompat.startForegroundService(activity, intent)
-                                    },
-                                    onStop = {
-                                        coroutineScope.launchIO {
-                                            DownloadManager.stopDownload(info.gid)
-                                        }
-                                    },
-                                    onDragStarted = {
-                                        fromIndex = index
-                                    },
-                                    onDragStopped = {
-                                        if (fromIndex != -1) {
-                                            val direction = (index - fromIndex).sign
-                                            if (direction != 0) {
-                                                val toItem = list[index - direction]
-                                                coroutineScope.launchIO {
-                                                    val toUpdate = DownloadManager.moveDownload(info, toItem)
-                                                    EhDB.updateDownloadInfo(toUpdate)
-                                                }
-                                            }
-                                            fromIndex = -1
-                                        }
-                                    },
-                                    info = info,
-                                    interactionSource = interactionSource,
-                                    modifier = Modifier.height(height),
-                                )
-                            }
+                                    } else {
+                                        onItemClick(info)
+                                    }
+                                },
+                                onThumbClick = {
+                                    navigator.navigate(info.galleryInfo.asDst())
+                                },
+                                onLongClick = {
+                                    checkedInfoMap[info.gid] = info
+                                },
+                                onStart = {
+                                    val intent = Intent(activity, DownloadService::class.java)
+                                    intent.action = DownloadService.ACTION_START
+                                    intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
+                                    ContextCompat.startForegroundService(activity, intent)
+                                },
+                                onStop = {
+                                    coroutineScope.launchIO {
+                                        DownloadManager.stopDownload(info.gid)
+                                    }
+                                },
+                                info = info,
+                                modifier = Modifier.height(height),
+                                interactionSource = interactionSource,
+                            )
                         }
                     }
                 }
@@ -561,39 +546,76 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         }
     }
 
+    val hideFab by delegateSnapshotUpdate {
+        record { fabHidden }
+        transform {
+            // Bug: IDE failed to inference 'hide's type
+            onEachLatest { hide: Boolean ->
+                if (!hide) delay(FAB_ANIMATE_TIME.toLong())
+            }
+        }
+    }
+
     FabLayout(
-        hidden = !selectMode,
-        expanded = selectMode,
-        onExpandChanged = { checkedInfoMap.clear() },
-        autoCancel = false,
-        rotateWhenExpand = false,
+        hidden = hideFab && !selectMode,
+        expanded = fabExpanded || selectMode,
+        onExpandChanged = {
+            fabExpanded = it
+            checkedInfoMap.clear()
+        },
+        autoCancel = !selectMode,
     ) {
-        onClick(Icons.Default.DoneAll) {
-            val info = list.associateBy { it.gid }
-            checkedInfoMap.putAll(info)
-            throw CancellationException()
-        }
-        onClick(Icons.Default.PlayArrow) {
-            val gidList = checkedInfoMap.run { toMap().values.also { clear() } }.mapToLongArray(DownloadInfo::gid)
-            val intent = Intent(activity, DownloadService::class.java)
-            intent.action = DownloadService.ACTION_START_RANGE
-            intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
-            ContextCompat.startForegroundService(context, intent)
-        }
-        onClick(Icons.Default.Pause) {
-            val gidList = checkedInfoMap.run { toMap().values.also { clear() } }.mapToLongArray(DownloadInfo::gid)
-            DownloadManager.stopRangeDownload(gidList)
-        }
-        onClick(Icons.Default.Delete) {
-            val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
-            dialogState.confirmRemoveDownloadRange(infoList)
-            list.removeAll(infoList)
-        }
-        onClick(Icons.AutoMirrored.Default.DriveFileMove) {
-            val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
-            val toLabel = dialogState.showMoveDownloadLabelList(infoList)
-            if (label != "" && label != toLabel) {
+        if (!selectMode) {
+            onClick(Icons.Default.Shuffle) {
+                context.navToReader(list.random().galleryInfo)
+            }
+            onClick(Icons.AutoMirrored.Default.Sort) {
+                val selected = dialogState.showSingleChoice(
+                    sortModes.toList(),
+                    SortMode.All.indexOfFirst { it.flag == sortMode },
+                    R.string.sort_by,
+                )
+                val mode = SortMode.All[selected]
+                DownloadManager.sortDownloads(mode)
+                sortMode = mode.flag
+            }
+            onClick(Icons.Default.FilterList) {
+                filterType = dialogState.showSingleChoice(
+                    downloadStates.toList(),
+                    filterType + 1,
+                    R.string.download_filter,
+                ) - 1
+            }
+        } else {
+            onClick(Icons.Default.DoneAll) {
+                val info = list.associateBy { it.gid }
+                checkedInfoMap.putAll(info)
+                throw CancellationException()
+            }
+            onClick(Icons.Default.PlayArrow) {
+                val gidList = checkedInfoMap.run { toMap().values.also { clear() } }
+                    .mapToLongArray(DownloadInfo::gid)
+                val intent = Intent(activity, DownloadService::class.java)
+                intent.action = DownloadService.ACTION_START_RANGE
+                intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
+                ContextCompat.startForegroundService(context, intent)
+            }
+            onClick(Icons.Default.Pause) {
+                val gidList = checkedInfoMap.run { toMap().values.also { clear() } }
+                    .mapToLongArray(DownloadInfo::gid)
+                DownloadManager.stopRangeDownload(gidList)
+            }
+            onClick(Icons.Default.Delete) {
+                val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
+                dialogState.confirmRemoveDownloadRange(infoList)
                 list.removeAll(infoList)
+            }
+            onClick(Icons.AutoMirrored.Default.DriveFileMove) {
+                val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
+                val toLabel = dialogState.showMoveDownloadLabelList(infoList)
+                if (label != "" && label != toLabel) {
+                    list.removeAll(infoList)
+                }
             }
         }
     }

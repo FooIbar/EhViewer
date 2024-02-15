@@ -11,7 +11,7 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 
 @Dao
 interface HistoryDao {
-    @Query("SELECT * FROM HISTORY ORDER BY TIME DESC")
+    @Query("SELECT * FROM HISTORY ORDER BY TIME")
     suspend fun list(): List<HistoryInfo>
 
     @RewriteQueriesToDropUnusedColumns

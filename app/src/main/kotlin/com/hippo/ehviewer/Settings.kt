@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.download.SortMode
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import java.util.Locale
@@ -151,6 +152,7 @@ object Settings : DataStorePreferences(null) {
     var archiveMetadata by boolPref("archive_metadata", true)
     var enableCronet by boolPref("enable_cronet", true)
     var gridView by boolPref("grid_view", false)
+    var downloadSortMode by intPref("download_sort_mode", SortMode.Default.flag)
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)
     var defaultFavSlot by intPref("default_favorite_slot", -2)
     var securityDelay by intPref("require_unlock_delay", 0)

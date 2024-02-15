@@ -107,12 +107,15 @@ class ThumbKeyMigration : AutoMigrationSpec {
     }
 }
 
+@RenameColumn(tableName = "DOWNLOADS", fromColumnName = "POSITION", toColumnName = "TIME")
+class DownloadsMigration : AutoMigrationSpec
+
 @Database(
     entities = [
         BaseGalleryInfo::class, DownloadLabel::class, DownloadEntity::class, DownloadDirname::class,
         Filter::class, HistoryInfo::class, LocalFavoriteInfo::class, ProgressInfo::class, QuickSearch::class,
     ],
-    version = 18,
+    version = 19,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(
@@ -177,6 +180,11 @@ class ThumbKeyMigration : AutoMigrationSpec {
         AutoMigration(
             from = 17,
             to = 18,
+        ),
+        AutoMigration(
+            from = 18,
+            to = 19,
+            spec = DownloadsMigration::class,
         ),
     ],
 )
