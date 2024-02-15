@@ -36,6 +36,7 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
@@ -103,6 +104,7 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_NORMAL
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_SUBSCRIPTION
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TAG
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_TOPLIST
+import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_UPLOADER
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_WHATS_HOT
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
@@ -144,6 +146,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import kotlin.math.roundToInt
+import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
@@ -718,7 +721,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             },
             refreshState = refreshState,
             onRefresh = {
-                urlBuilder.setIndex(null)
+                urlBuilder.setRange(0)
                 data.refresh()
             },
             onLoading = { searchBarOffsetY = 0 },
@@ -743,9 +746,14 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         onExpandChanged = { expanded = it },
         autoCancel = true,
     ) {
+        if (urlBuilder.mode in arrayOf(MODE_NORMAL, MODE_UPLOADER, MODE_TAG)) {
+            onClick(Icons.Default.Shuffle) {
+                urlBuilder.setRange(Random.nextInt(100))
+                data.refresh()
+            }
+        }
         onClick(Icons.Default.Refresh) {
-            urlBuilder.setIndex(null)
-            urlBuilder.mJumpTo = null
+            urlBuilder.setRange(0)
             data.refresh()
         }
         if (urlBuilder.mode != MODE_WHATS_HOT) {
@@ -774,7 +782,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             }
             onClick(Icons.AutoMirrored.Default.LastPage) {
                 if (isTopList) {
-                    urlBuilder.mJumpTo = "${TOPLIST_PAGES - 1}"
+                    urlBuilder.setJumpTo(TOPLIST_PAGES - 1)
                     data.refresh()
                 } else {
                     urlBuilder.setIndex("1", false)
