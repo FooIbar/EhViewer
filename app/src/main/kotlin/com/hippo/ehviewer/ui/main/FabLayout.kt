@@ -21,7 +21,6 @@ import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -35,6 +34,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
@@ -128,9 +128,10 @@ fun FabLayout(
     }
     val builder by rememberUpdatedState(fabBuilder)
 
-    val secondaryFab by remember {
-        snapshotFlow { buildFab(builder) }.onEachLatest { state.waitCollapse() }
-    }.collectAsState(emptyList())
+    val secondaryFab by delegateSnapshotUpdate {
+        record { buildFab(builder) }
+        transform { onEachLatest { state.waitCollapse() } }
+    }
     val coroutineScope = rememberCoroutineScope()
     if (updatedExpanded && autoCancel) {
         Spacer(
