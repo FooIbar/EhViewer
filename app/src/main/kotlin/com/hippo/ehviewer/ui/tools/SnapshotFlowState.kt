@@ -28,5 +28,5 @@ fun <T : Any> delegateSnapshotUpdate(dsl: RecordSnapshotScope<T>.() -> Unit): St
             }
         }.apply(dsl)
     }
-    return state.flow.collectAsState(state.initial)
+    return with(state) { flow.collectAsState(initial) }
 }
