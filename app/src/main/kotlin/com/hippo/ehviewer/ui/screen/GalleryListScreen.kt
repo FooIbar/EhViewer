@@ -62,7 +62,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -134,6 +133,7 @@ import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.tools.rememberSnapshotFlowAsState
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.findActivity
@@ -148,9 +148,8 @@ import java.io.File
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyColumnState
@@ -732,13 +731,15 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     val invalidNum = stringResource(R.string.error_invalid_number)
     val outOfRange = stringResource(R.string.error_out_of_range)
 
-    val hideFab by remember {
-        snapshotFlow {
-            hidden || showSearchLayout
-        }.onEach {
-            if (!it) delay(FAB_ANIMATE_TIME.toLong())
-        }.mapLatest { it }
-    }.collectAsState(hidden || showSearchLayout)
+    val hideFab by rememberSnapshotFlowAsState {
+        record { hidden || showSearchLayout }
+        transform {
+            // Bug: IDE failed to inference 'hide's type
+            onEachLatest { hide: Boolean ->
+                if (!hide) delay(FAB_ANIMATE_TIME.toLong())
+            }
+        }
+    }
 
     FabLayout(
         hidden = hideFab,

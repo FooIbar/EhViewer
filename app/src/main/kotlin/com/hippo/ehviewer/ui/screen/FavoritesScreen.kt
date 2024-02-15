@@ -39,7 +39,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -78,6 +77,7 @@ import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.tools.rememberSnapshotFlowAsState
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
@@ -88,9 +88,8 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination
@@ -323,13 +322,15 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         )
     }
 
-    val hideFab by remember {
-        snapshotFlow {
-            hidden
-        }.onEach {
-            if (!it) delay(FAB_ANIMATE_TIME.toLong())
-        }.mapLatest { it }
-    }.collectAsState(hidden)
+    val hideFab by rememberSnapshotFlowAsState {
+        record { hidden }
+        transform {
+            // Bug: IDE failed to inference 'hide's type
+            onEachLatest { hide: Boolean ->
+                if (!hide) delay(FAB_ANIMATE_TIME.toLong())
+            }
+        }
+    }
 
     FabLayout(
         hidden = hideFab,
