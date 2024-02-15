@@ -76,8 +76,8 @@ import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.tools.rememberSnapshotFlowAsState
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
@@ -322,7 +322,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         )
     }
 
-    val hideFab by rememberSnapshotFlowAsState {
+    val hideFab by delegateSnapshotUpdate {
         record { hidden }
         transform {
             // Bug: IDE failed to inference 'hide's type

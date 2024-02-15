@@ -8,15 +8,15 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
 import kotlinx.coroutines.flow.Flow
 
-interface RecordSnapshotFlowScope<T : Any> {
+interface RecordSnapshotScope<T : Any> {
     fun record(block: () -> T)
     infix fun transform(block: Flow<T>.() -> Flow<T>)
 }
 
 @Composable
-fun <T : Any> rememberSnapshotFlowAsState(dsl: RecordSnapshotFlowScope<T>.() -> Unit): State<T> {
+fun <T : Any> delegateSnapshotUpdate(dsl: RecordSnapshotScope<T>.() -> Unit): State<T> {
     val state = remember(dsl) {
-        val obj = object : RecordSnapshotFlowScope<T> {
+        object : RecordSnapshotScope<T> {
             lateinit var flow: Flow<T>
             lateinit var initial: T
             override fun record(block: () -> T) {
@@ -26,8 +26,7 @@ fun <T : Any> rememberSnapshotFlowAsState(dsl: RecordSnapshotFlowScope<T>.() -> 
             override fun transform(block: Flow<T>.() -> Flow<T>) {
                 flow = block(flow)
             }
-        }
-        obj.apply(dsl)
+        }.apply(dsl)
     }
     return state.flow.collectAsState(state.initial)
 }
