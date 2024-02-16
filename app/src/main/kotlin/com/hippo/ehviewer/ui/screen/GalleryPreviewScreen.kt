@@ -53,8 +53,10 @@ import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
+import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.ramcosta.composedestinations.annotation.Destination
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
@@ -101,21 +103,20 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
         ) {
             object : PagingSource<Int, GalleryPreview>() {
                 override fun getRefreshKey(state: PagingState<Int, GalleryPreview>) = state.getClippedRefreshKey()
-                override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GalleryPreview> {
+                override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GalleryPreview> = withIOContext {
                     val key = params.key ?: 0
                     val up = getOffset(params, key, pages)
                     val end = (up + getLimit(params, key) - 1).coerceAtMost(pages - 1)
                     runSuspendCatching {
                         (up..end).filterNot { it in previewPagesMap }.map { it / pgSize }.toSet()
-                            .parMap(Dispatchers.IO, Settings.multiThreadDownload) { getPreviewListByPage(it) }
+                            .parMap(concurrency = Settings.multiThreadDownload) { getPreviewListByPage(it) }
                             .forEach { previews -> previews.forEach { previewPagesMap[it.position] = it } }
-                    }.onFailure {
-                        return LoadResult.Error(it)
+                    }.foldToLoadResult {
+                        val r = (up..end).map { requireNotNull(previewPagesMap[it]) }
+                        val prevK = if (up <= 0 || r.isEmpty()) null else up
+                        val nextK = if (end == pages - 1) null else end + 1
+                        LoadResult.Page(r, prevK, nextK, up, pages - end - 1)
                     }
-                    val r = (up..end).map { requireNotNull(previewPagesMap[it]) }
-                    val prevK = if (up <= 0 || r.isEmpty()) null else up
-                    val nextK = if (end == pages - 1) null else end + 1
-                    return LoadResult.Page(r, prevK, nextK, up, pages - end - 1)
                 }
                 override val jumpingSupported = true
             }
