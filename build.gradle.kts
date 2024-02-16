@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.spotless) apply false
     alias(libs.plugins.aboutlibrariesPlugin) apply false
-    alias(libs.plugins.rustAndroidPlugin) apply false
     alias(libs.plugins.composeCompilerReportGenerator) apply false
 }
 

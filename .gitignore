@@ -2,8 +2,7 @@
 /local.properties
 .DS_Store
 /build
-/src
+/.kotlin
 *.iml
 .idea
 /captures
-google-services.json

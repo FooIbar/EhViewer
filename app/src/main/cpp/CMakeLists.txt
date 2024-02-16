@@ -22,20 +22,22 @@ set(FETCHCONTENT_BASE_DIR ${deps})
 
 set(BUILD_TESTING 0)
 
-FetchContent_Declare(liblzma
+FetchContent_Declare(
+        liblzma
         GIT_REPOSITORY https://github.com/FooIbar/xz.git
         GIT_TAG v5.4.6
-        )
+)
 
 FetchContent_MakeAvailable(liblzma)
 include_directories(${liblzma_SOURCE_DIR}/src/liblzma/api)
 
 # Build GNUTLS libnettle
-FetchContent_Declare(nettle
+FetchContent_Declare(
+        nettle
         URL https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
         URL_MD5 29fcd2dec6bf5b48e5e3ffb3cbc4779e
         SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/nettle/nettle
-        )
+)
 
 FetchContent_MakeAvailable(nettle)
 add_subdirectory(nettle)
@@ -67,14 +69,24 @@ option(ENABLE_TEST OFF)
 # Configure libarchive link's static lib
 SET(LIBARCHIVE_CUSTOM_LIBS "nettle" "liblzma")
 
-FetchContent_Declare(libarchive
+FetchContent_Declare(
+        libarchive
         GIT_REPOSITORY https://github.com/FooIbar/libarchive.git
         GIT_TAG v3.7.2
-        )
+)
 
 FetchContent_MakeAvailable(libarchive)
 include_directories(${libarchive_SOURCE_DIR}/libarchive)
 
+FetchContent_Declare(
+        Corrosion
+        GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
+        GIT_TAG v0.4.7
+)
+
+FetchContent_MakeAvailable(Corrosion)
+corrosion_import_crate(MANIFEST_PATH ../rust/Cargo.toml)
+
 # Build and link our app's native lib
 add_library(${PROJECT_NAME} SHARED archive.c border.c gifutils.c natsort/strnatcmp.c)
-target_link_libraries(${PROJECT_NAME} archive_static log jnigraphics)
+target_link_libraries(${PROJECT_NAME} ehviewer_rust archive_static log jnigraphics)
