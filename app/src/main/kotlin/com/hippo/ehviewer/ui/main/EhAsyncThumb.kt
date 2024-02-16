@@ -19,7 +19,7 @@ import com.hippo.ehviewer.ui.tools.shouldCrop
 @Composable
 fun requestOf(model: GalleryInfo): ImageRequest {
     val context = LocalContext.current
-    return remember { context.imageRequest(model) }
+    return remember(model) { context.imageRequest(model) }
 }
 
 @Composable
