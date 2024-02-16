@@ -35,9 +35,6 @@ import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import androidx.room.paging.util.getClippedRefreshKey
-import androidx.room.paging.util.getLimit
-import androidx.room.paging.util.getOffset
 import arrow.fx.coroutines.parMap
 import coil3.imageLoader
 import com.hippo.ehviewer.R
@@ -54,6 +51,9 @@ import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
+import com.hippo.ehviewer.ui.tools.getClippedRefreshKey
+import com.hippo.ehviewer.ui.tools.getLimit
+import com.hippo.ehviewer.ui.tools.getOffset
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.withIOContext
