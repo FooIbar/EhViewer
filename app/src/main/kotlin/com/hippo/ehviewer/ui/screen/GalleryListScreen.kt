@@ -131,6 +131,7 @@ import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
+import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.AppConfig
@@ -238,42 +239,40 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         runSuspendCatching {
                             urlBuilder.setJumpTo(key)
                             EhEngine.getGalleryList(urlBuilder.build())
-                        }.onFailure {
-                            return@withIOContext LoadResult.Error(it)
-                        }.onSuccess {
-                            return@withIOContext LoadResult.Page(it.galleryInfoList, prev?.toString(), next?.toString())
+                        }.foldToLoadResult { result ->
+                            LoadResult.Page(result.galleryInfoList, prev?.toString(), next?.toString())
                         }
-                    }
-                    when (params) {
-                        is LoadParams.Prepend -> urlBuilder.setIndex(params.key, isNext = false)
-                        is LoadParams.Append -> urlBuilder.setIndex(params.key, isNext = true)
-                        is LoadParams.Refresh -> {
-                            val key = params.key
-                            if (key.isNullOrBlank()) {
-                                if (urlBuilder.mJumpTo != null) {
-                                    urlBuilder.mNext ?: urlBuilder.setIndex("2", true)
+                    } else {
+                        when (params) {
+                            is LoadParams.Prepend -> urlBuilder.setIndex(params.key, isNext = false)
+                            is LoadParams.Append -> urlBuilder.setIndex(params.key, isNext = true)
+                            is LoadParams.Refresh -> {
+                                val key = params.key
+                                if (key.isNullOrBlank()) {
+                                    if (urlBuilder.mJumpTo != null) {
+                                        urlBuilder.mNext ?: urlBuilder.setIndex("2", true)
+                                    }
+                                } else {
+                                    urlBuilder.setIndex(key, false)
                                 }
-                            } else {
-                                urlBuilder.setIndex(key, false)
                             }
                         }
-                    }
-                    val r = runSuspendCatching {
-                        if (MODE_IMAGE_SEARCH == urlBuilder.mode) {
-                            EhEngine.imageSearch(
-                                File(urlBuilder.imagePath!!),
-                                urlBuilder.isUseSimilarityScan,
-                                urlBuilder.isOnlySearchCovers,
-                            )
-                        } else {
-                            val url = urlBuilder.build()
-                            EhEngine.getGalleryList(url)
+                        runSuspendCatching {
+                            if (MODE_IMAGE_SEARCH == urlBuilder.mode) {
+                                EhEngine.imageSearch(
+                                    File(urlBuilder.imagePath!!),
+                                    urlBuilder.isUseSimilarityScan,
+                                    urlBuilder.isOnlySearchCovers,
+                                )
+                            } else {
+                                val url = urlBuilder.build()
+                                EhEngine.getGalleryList(url)
+                            }
+                        }.foldToLoadResult { result ->
+                            urlBuilder.mJumpTo = null
+                            LoadResult.Page(result.galleryInfoList, result.prev, result.next)
                         }
-                    }.onFailure {
-                        return@withIOContext LoadResult.Error(it)
-                    }.getOrThrow()
-                    urlBuilder.mJumpTo = null
-                    LoadResult.Page(r.galleryInfoList, r.prev, r.next)
+                    }
                 }
             }
         }.flow.cachedIn(viewModelScope)

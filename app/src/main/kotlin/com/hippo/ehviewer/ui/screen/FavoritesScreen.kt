@@ -77,6 +77,7 @@ import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
+import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.findActivity
@@ -154,16 +155,15 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                                 }
                             }
                         }
-                        val r = runSuspendCatching {
+                        runSuspendCatching {
                             EhEngine.getFavorites(urlBuilder.build())
-                        }.onFailure {
-                            return@withIOContext LoadResult.Error(it)
-                        }.getOrThrow()
-                        Settings.favCat = r.catArray.toTypedArray()
-                        Settings.favCount = r.countArray.toIntArray()
-                        Settings.favCloudCount = r.countArray.sum()
-                        urlBuilder.jumpTo = null
-                        LoadResult.Page(r.galleryInfoList, r.prev, r.next)
+                        }.foldToLoadResult { result ->
+                            Settings.favCat = result.catArray.toTypedArray()
+                            Settings.favCount = result.countArray.toIntArray()
+                            Settings.favCloudCount = result.countArray.sum()
+                            urlBuilder.jumpTo = null
+                            LoadResult.Page(result.galleryInfoList, result.prev, result.next)
+                        }
                     }
                 }
             }
