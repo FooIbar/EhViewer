@@ -8,13 +8,3 @@ plugins {
     alias(libs.plugins.aboutlibrariesPlugin) apply false
     alias(libs.plugins.composeCompilerReportGenerator) apply false
 }
-
-tasks.register("Delete", Delete::class) {
-    delete(rootProject.layout.buildDirectory)
-}
-
-buildscript {
-    dependencies {
-        classpath(libs.r8)
-    }
-}
