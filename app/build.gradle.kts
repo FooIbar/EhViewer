@@ -142,6 +142,7 @@ android {
             "-opt-in=splitties.preferences.DataStorePreferencesPreview",
 
             "-P", "plugin:androidx.compose.compiler.plugins.kotlin:experimentalStrongSkipping=true",
+            "-P", "plugin:androidx.compose.compiler.plugins.kotlin:nonSkippingGroupOptimization=true",
         )
     }
 
