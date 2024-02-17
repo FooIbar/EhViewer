@@ -19,8 +19,8 @@ plugins {
 }
 
 android {
-    compileSdk = 34
-    buildToolsVersion = "34.0.0"
+    compileSdkPreview = "VanillaIceCream"
+    buildToolsVersion = "35.0.0-rc1"
     ndkVersion = "26.2.11394342"
 
     splits {
