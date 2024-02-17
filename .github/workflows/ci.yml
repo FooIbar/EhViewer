@@ -8,16 +8,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  linux:
-    name: Build
+  check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-        with:
-          submodules: 'recursive'
+        uses: actions/checkout@v4
 
-      - name: Setup Java 21
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -30,6 +27,8 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: "./app/src/main/rust"
+          shared-key: ${{ runner.os }}
+          save-if: "false"
 
       - name: Rustfmt Check
         working-directory: ./app/src/main/rust
@@ -40,12 +39,38 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D warnings
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v3
         with:
           gradle-home-cache-cleanup: true
 
       - name: Spotless Check
         run: ./gradlew spotlessCheck
+
+  oss:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Rust Toolchain
+        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./app/src/main/rust"
+          shared-key: ${{ runner.os }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-home-cache-cleanup: true
 
       - name: CMake Cache
         uses: actions/cache@v4
@@ -98,6 +123,45 @@ jobs:
           name: default-oss-native-debug-symbols-${{ github.sha }}
           path: app/build/outputs/native-debug-symbols/defaultOssRelease/native-debug-symbols.zip
 
+  gms:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Rust Toolchain
+        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./app/src/main/rust"
+          shared-key: ${{ runner.os }}
+          save-if: "false"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: CMake Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            app/.cxx
+            app/src/main/cpp/nettle/nettle
+          key: ${{ runner.os }}-cmake-${{ hashFiles('gradle/libs.versions.toml', 'app/build.gradle.kts', 'app/src/main/cpp/CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-cmake-
+
+      - name: Install Build Tools
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1"
+
       - name: Build GMS
         run: ./gradlew assembleDefaultGmsRelease
 
@@ -137,6 +201,45 @@ jobs:
           name: default-gms-native-debug-symbols-${{ github.sha }}
           path: app/build/outputs/native-debug-symbols/defaultGmsRelease/native-debug-symbols.zip
 
+  marshmallow-oss:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Rust Toolchain
+        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./app/src/main/rust"
+          shared-key: ${{ runner.os }}
+          save-if: "false"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: CMake Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            app/.cxx
+            app/src/main/cpp/nettle/nettle
+          key: ${{ runner.os }}-cmake-${{ hashFiles('gradle/libs.versions.toml', 'app/build.gradle.kts', 'app/src/main/cpp/CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-cmake-
+
+      - name: Install Build Tools
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1"
+
       - name: Build Marshmallow OSS
         run: ./gradlew assembleMarshmallowOssRelease
 
@@ -175,6 +278,45 @@ jobs:
         with:
           name: marshmallow-oss-native-debug-symbols-${{ github.sha }}
           path: app/build/outputs/native-debug-symbols/marshmallowOssRelease/native-debug-symbols.zip
+
+  marshmallow-gms:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Rust Toolchain
+        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./app/src/main/rust"
+          shared-key: ${{ runner.os }}
+          save-if: "false"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-home-cache-cleanup: true
+
+      - name: CMake Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            app/.cxx
+            app/src/main/cpp/nettle/nettle
+          key: ${{ runner.os }}-cmake-${{ hashFiles('gradle/libs.versions.toml', 'app/build.gradle.kts', 'app/src/main/cpp/CMakeLists.txt') }}
+          restore-keys: ${{ runner.os }}-cmake-
+
+      - name: Install Build Tools
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1"
 
       - name: Build Marshmallow GMS
         run: ./gradlew assembleMarshmallowGmsRelease
