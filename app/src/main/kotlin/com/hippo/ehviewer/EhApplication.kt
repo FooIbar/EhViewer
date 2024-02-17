@@ -106,7 +106,6 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         }
         super.onCreate()
         System.loadLibrary("ehviewer")
-        System.loadLibrary("ehviewer_rust")
         ReadableTime.initialize(this)
         lifecycleScope.launchIO {
             launchIO {

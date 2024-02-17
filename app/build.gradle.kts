@@ -15,7 +15,6 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.spotless)
     alias(libs.plugins.aboutlibrariesPlugin)
-    alias(libs.plugins.rustAndroidPlugin)
     alias(libs.plugins.composeCompilerReportGenerator)
 }
 
@@ -290,13 +289,6 @@ aboutLibraries {
     duplicationRule = GROUP
 }
 
-cargo {
-    module = "src/main/rust"
-    libname = "ehviewer_rust"
-    targets = if (isRelease) listOf("arm", "x86", "arm64", "x86_64") else listOf("arm64", "x86_64")
-    if (isRelease) profile = "release"
-}
-
 spotless {
     kotlin {
         // https://github.com/diffplug/spotless/issues/111
@@ -305,13 +297,5 @@ spotless {
     }
     kotlinGradle {
         ktlint()
-    }
-}
-
-tasks.configureEach {
-    if (name.startsWith("merge") && name.endsWith("JniLibFolders")) {
-        dependsOn("cargoBuild")
-        // fix mergeDebugJniLibFolders  UP-TO-DATE
-        inputs.dir(layout.buildDirectory.dir("rustJniLibs/android"))
     }
 }
