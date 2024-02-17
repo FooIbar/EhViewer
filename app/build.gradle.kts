@@ -210,10 +210,9 @@ dependencies {
     // https://developer.android.com/jetpack/androidx/releases/lifecycle
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.lifecycle.compose)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     // https://developer.android.com/jetpack/androidx/releases/navigation
-    implementation(libs.bundles.androidx.navigation)
+    implementation(libs.androidx.navigation.compose)
 
     // https://developer.android.com/jetpack/androidx/releases/paging
     implementation(libs.androidx.paging.compose)
@@ -267,12 +266,6 @@ dependencies {
     coreLibraryDesugaring(libs.desugar)
 
     "gmsImplementation"(libs.bundles.cronet)
-}
-
-configurations.all {
-    resolutionStrategy {
-        exclude("androidx.navigation", "navigation-compose")
-    }
 }
 
 kotlin {
