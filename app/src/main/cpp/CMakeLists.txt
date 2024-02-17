@@ -16,10 +16,6 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
            -mllvm -polly-invariant-load-hoisting")
 endif (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 
-# Change the default path of fetch content to avoid downloading the same dependencies per architecture
-get_filename_component(deps "../_deps" REALPATH BASE_DIR "${CMAKE_BINARY_DIR}")
-set(FETCHCONTENT_BASE_DIR ${deps})
-
 option(BUILD_TESTING OFF)
 
 FetchContent_Declare(
@@ -36,14 +32,15 @@ FetchContent_Declare(
         nettle
         URL https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
         URL_MD5 29fcd2dec6bf5b48e5e3ffb3cbc4779e
-        SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/nettle/nettle
+        SOURCE_DIR nettle-src/nettle
 )
 
 FetchContent_MakeAvailable(nettle)
+set(NETTLE_DIR ${nettle_SOURCE_DIR})
 add_subdirectory(nettle)
 
 # Configure libnettle support for libarchive
-include_directories(nettle)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/nettle-src)
 include_directories(.)
 set(HAVE_LIBNETTLE 1)
 set(HAVE_NETTLE_AES_H 1)
