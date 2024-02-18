@@ -41,7 +41,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-home-cache-cleanup: true
+          cache-read-only: true
 
       - name: Spotless Check
         run: ./gradlew spotlessCheck
@@ -70,7 +70,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-home-cache-cleanup: true
+          cache-read-only: true
 
       - name: CMake Cache
         uses: actions/cache@v4
@@ -221,15 +221,14 @@ jobs:
         with:
           workspaces: "./app/src/main/rust"
           shared-key: ${{ runner.os }}
-          save-if: "false"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-home-cache-cleanup: true
+          cache-read-only: true
 
       - name: CMake Cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache@v4
         with:
           path: |
             app/.cxx
