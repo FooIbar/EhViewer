@@ -81,7 +81,7 @@ jobs:
           restore-keys: cmake-default-
 
       - name: Install Build Tools
-        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1"
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1" "ndk;26.2.11394342"
 
       - name: Build OSS
         run: ./gradlew assembleDefaultOssRelease
@@ -158,7 +158,7 @@ jobs:
           restore-keys: cmake-default-
 
       - name: Install Build Tools
-        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1"
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1" "ndk;26.2.11394342"
 
       - name: Build GMS
         run: ./gradlew assembleDefaultGmsRelease
@@ -235,7 +235,7 @@ jobs:
           restore-keys: cmake-marshmallow-
 
       - name: Install Build Tools
-        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1"
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1" "ndk;26.2.11394342"
 
       - name: Build Marshmallow OSS
         run: ./gradlew assembleMarshmallowOssRelease
@@ -312,7 +312,7 @@ jobs:
           restore-keys: cmake-marshmallow-
 
       - name: Install Build Tools
-        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1"
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1" "ndk;26.2.11394342"
 
       - name: Build Marshmallow GMS
         run: ./gradlew assembleMarshmallowGmsRelease
