@@ -656,6 +656,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         }
                     }
 
+                    // Skip H@H on force retry
+                    if (retries == 0 && force) {
+                        forceHtml = true
+                        return@repeat
+                    }
+
                     val targetImageUrl: String?
                     val referer: String?
 
