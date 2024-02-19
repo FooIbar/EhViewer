@@ -347,7 +347,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 referer,
             ).fetchUsingAsText {
                 val pages = parsePages(this)
-                val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token!!, pages)
+                val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, pages)
                 readPreviews(this, 0, spiderInfo)
                 spiderInfo
             }
@@ -360,7 +360,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         val spiderInfo = mSpiderInfo
         val url = getGalleryMultiPageViewerUrl(
             galleryInfo.gid,
-            galleryInfo.token!!,
+            galleryInfo.token,
         )
         return runSuspendCatching {
             ehRequest(url, referer).fetchUsingAsText {
@@ -619,11 +619,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     showKeyLock.withLock {
                         localShowKey = showKey
                         if (localShowKey == null || forceHtml) {
-                            var pageUrl = EhUrl.getPageUrl(galleryInfo.gid, index, pToken)
                             // Skipping H@H costs 50 points, only use it as last resort
-                            if (skipHathKey != null) {
-                                pageUrl += "?nl=$skipHathKey"
-                            }
+                            val pageUrl = EhUrl.getPageUrl(galleryInfo.gid, index, pToken, skipHathKey)
                             EhEngine.getGalleryPage(pageUrl, galleryInfo.gid, galleryInfo.token)
                                 .let { result ->
                                     check509(result.imageUrl)

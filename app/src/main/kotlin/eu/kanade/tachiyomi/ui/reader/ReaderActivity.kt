@@ -152,17 +152,7 @@ class ReaderActivity : EhActivity() {
         }
 
     private val galleryDetailUrl: String?
-        get() {
-            val gid: Long
-            val token: String
-            if (mGalleryInfo != null) {
-                gid = mGalleryInfo!!.gid
-                token = mGalleryInfo!!.token!!
-            } else {
-                return null
-            }
-            return EhUrl.getGalleryDetailUrl(gid, token, 0, false)
-        }
+        get() = mGalleryInfo?.run { EhUrl.getGalleryDetailUrl(gid, token) }
 
     private suspend fun buildProvider(replace: Boolean = false): PageLoader2? {
         mGalleryProvider?.let {

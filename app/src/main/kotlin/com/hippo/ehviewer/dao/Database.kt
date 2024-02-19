@@ -112,7 +112,7 @@ class ThumbKeyMigration : AutoMigrationSpec {
         BaseGalleryInfo::class, DownloadLabel::class, DownloadEntity::class, DownloadDirname::class,
         Filter::class, HistoryInfo::class, LocalFavoriteInfo::class, ProgressInfo::class, QuickSearch::class,
     ],
-    version = 17,
+    version = 18,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(
@@ -173,6 +173,10 @@ class ThumbKeyMigration : AutoMigrationSpec {
         AutoMigration(
             from = 16,
             to = 17,
+        ),
+        AutoMigration(
+            from = 17,
+            to = 18,
         ),
     ],
 )
