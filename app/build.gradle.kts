@@ -125,6 +125,7 @@ android {
             "-progressive",
             "-Xjvm-default=all",
             "-Xlambdas=indy",
+            "-Xcontext-receivers",
 
             "-opt-in=coil3.annotation.ExperimentalCoilApi",
             "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
