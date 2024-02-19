@@ -75,6 +75,7 @@ import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -243,7 +244,7 @@ fun SearchBarScreen(
                 )
                 FloatingActionButton(
                     onClick = { onApplySearch() },
-                    modifier = Modifier.rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
+                    modifier = Modifier.snackBarPadding().rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
                 ) {
                     Icon(imageVector = Icons.Default.Search, contentDescription = null)
                 }
