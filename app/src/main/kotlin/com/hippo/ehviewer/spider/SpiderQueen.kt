@@ -286,7 +286,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         val state = getPageState(index)
 
         // Fix state for force
-        if (force && (state == STATE_FINISHED || state == STATE_FAILED) || state == STATE_FAILED) {
+        if (force && state == STATE_FINISHED || state == STATE_FAILED) {
             // Update state to none at once
             updatePageState(index, STATE_NONE)
         }
@@ -540,12 +540,13 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             val state = mPageStateArray[index]
             if (!force && state == STATE_FINISHED) return
             val currentJob = mFetcherJobMap[index]
+            val skipHath = force && !orgImg && currentJob?.isActive == true
             if (force) currentJob?.cancel(CancellationException(FORCE_RETRY))
             if (currentJob?.isActive != true) {
                 mFetcherJobMap[index] = launch {
                     runCatching {
                         mSemaphore.withPermit {
-                            doInJob(index, force, orgImg)
+                            doInJob(index, force, orgImg, skipHath)
                         }
                     }.onFailure {
                         if (it is CancellationException) {
@@ -572,7 +573,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             decoder.launch(index)
         }
 
-        private suspend fun doInJob(index: Int, force: Boolean, orgImg: Boolean) {
+        private suspend fun doInJob(index: Int, force: Boolean, orgImg: Boolean, skipHath: Boolean) {
             suspend fun getPToken(index: Int): String? {
                 if (index !in 0 until size) return null
                 return mSpiderInfo.pTokenMap[index].takeIf { it != TOKEN_FAILED }
@@ -656,8 +657,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         }
                     }
 
-                    // Skip H@H on force retry
-                    if (retries == 0 && force) {
+                    if (retries == 0 && skipHath) {
                         forceHtml = true
                         return@repeat
                     }
