@@ -9,6 +9,7 @@ import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -20,7 +21,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -32,8 +35,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import com.hippo.ehviewer.ui.LocalSnackbarFabPadding
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.CancellationException
@@ -41,6 +47,15 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
+
+@Stable
+@ReadOnlyComposable
+private fun State<Dp>.asBottomPaddingValues() = object : PaddingValues {
+    override fun calculateBottomPadding() = value
+    override fun calculateLeftPadding(layoutDirection: LayoutDirection) = 0.dp
+    override fun calculateRightPadding(layoutDirection: LayoutDirection) = 0.dp
+    override fun calculateTopPadding() = 0.dp
+}
 
 enum class FabLayoutValue {
     Hidden,
@@ -108,6 +123,7 @@ fun FabLayout(
     rotateWhenExpand: Boolean = true,
     fabBuilder: FabBuilder.() -> Unit,
 ) {
+    val snackbarPadding = LocalSnackbarFabPadding.current.asBottomPaddingValues()
     val updatedHidden by rememberUpdatedState(hidden)
     val updatedExpanded by rememberUpdatedState(expanded)
     val newState = when {
@@ -142,7 +158,7 @@ fun FabLayout(
     }
     val appearState by state.appearProgress.asState()
     Box(
-        modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(16.dp),
+        modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(16.dp).padding(snackbarPadding),
         contentAlignment = Alignment.BottomEnd,
     ) {
         Box(
