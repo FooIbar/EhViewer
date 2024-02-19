@@ -124,6 +124,7 @@ class PagerPageHolder(
      * Called when the page is queued.
      */
     private fun setQueued() {
+        progressIndicator.setProgress(0)
         progressIndicator.show()
         errorLayout?.root?.isVisible = false
         recycle()

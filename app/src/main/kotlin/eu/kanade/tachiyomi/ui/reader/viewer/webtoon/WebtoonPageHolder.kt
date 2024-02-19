@@ -168,6 +168,7 @@ class WebtoonPageHolder(
      */
     private fun setQueued() {
         progressContainer.isVisible = true
+        progressIndicator.setProgress(0)
         progressIndicator.show()
         removeErrorLayout()
         frame.recycle()
