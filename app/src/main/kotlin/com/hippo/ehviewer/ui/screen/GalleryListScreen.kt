@@ -112,6 +112,7 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.LocalSideSheetState
+import com.hippo.ehviewer.ui.LocalSnackbarHostState
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
@@ -215,6 +216,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         animationSpec = tween(FAB_ANIMATE_TIME * 2),
     ) { showSearchLayout = false }
     val context = LocalContext.current
+    val snackbarState = LocalSnackbarHostState.current
     val activity = remember { context.findActivity<MainActivity>() }
     val density = LocalDensity.current
     val dialogState = LocalDialogState.current
@@ -338,55 +340,54 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                 contentDescription = stringResource(id = R.string.readme),
                             )
                         }
+                        val invalidImageQuickSearch = stringResource(R.string.image_search_not_quick_search)
                         IconButton(onClick = {
                             if (data.itemCount == 0) return@IconButton
 
-                            if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
-                                activity.showTip(R.string.image_search_not_quick_search, true)
-                                return@IconButton
-                            }
-
-                            val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
-                            val next = firstItem.gid + 1
-                            quickSearchList.fastForEach { q ->
-                                if (urlBuilder.equalsQuickSearch(q)) {
-                                    val nextStr = q.name.substringAfterLast('@', "")
-                                    if (nextStr.toLongOrNull() == next) {
-                                        activity.showTip(context.getString(R.string.duplicate_quick_search, q.name), true)
-                                        return@IconButton
-                                    }
-                                }
-                            }
-
                             coroutineScope.launch {
-                                dialogState.awaitInputTextWithCheckBox(
-                                    initial = quickSearchName ?: urlBuilder.keyword.orEmpty(),
-                                    title = R.string.add_quick_search_dialog_title,
-                                    hint = R.string.quick_search,
-                                    checked = saveProgress,
-                                    checkBoxText = R.string.save_progress,
-                                ) { input, checked ->
-                                    var text = input.trim()
-                                    if (text.isEmpty()) {
-                                        return@awaitInputTextWithCheckBox context.getString(R.string.name_is_empty)
+                                if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
+                                    snackbarState.showSnackbar(invalidImageQuickSearch)
+                                } else {
+                                    val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
+                                    val next = firstItem.gid + 1
+                                    quickSearchList.fastForEach { q ->
+                                        if (urlBuilder.equalsQuickSearch(q)) {
+                                            val nextStr = q.name.substringAfterLast('@', "")
+                                            if (nextStr.toLongOrNull() == next) {
+                                                snackbarState.showSnackbar(context.getString(R.string.duplicate_quick_search, q.name))
+                                                return@launch
+                                            }
+                                        }
                                     }
+                                    dialogState.awaitInputTextWithCheckBox(
+                                        initial = quickSearchName ?: urlBuilder.keyword.orEmpty(),
+                                        title = R.string.add_quick_search_dialog_title,
+                                        hint = R.string.quick_search,
+                                        checked = saveProgress,
+                                        checkBoxText = R.string.save_progress,
+                                    ) { input, checked ->
+                                        var text = input.trim()
+                                        if (text.isEmpty()) {
+                                            return@awaitInputTextWithCheckBox context.getString(R.string.name_is_empty)
+                                        }
 
-                                    if (checked) {
-                                        text += "@$next"
-                                    }
-                                    if (quickSearchList.fastAny { it.name == text }) {
-                                        return@awaitInputTextWithCheckBox context.getString(R.string.duplicate_name)
-                                    }
+                                        if (checked) {
+                                            text += "@$next"
+                                        }
+                                        if (quickSearchList.fastAny { it.name == text }) {
+                                            return@awaitInputTextWithCheckBox context.getString(R.string.duplicate_name)
+                                        }
 
-                                    val quickSearch = urlBuilder.toQuickSearch(text)
-                                    quickSearch.position = quickSearchList.size
-                                    // Insert to DB first to update the id
-                                    withIOContext {
-                                        EhDB.insertQuickSearch(quickSearch)
+                                        val quickSearch = urlBuilder.toQuickSearch(text)
+                                        quickSearch.position = quickSearchList.size
+                                        // Insert to DB first to update the id
+                                        withIOContext {
+                                            EhDB.insertQuickSearch(quickSearch)
+                                        }
+                                        quickSearchList.add(quickSearch)
+                                        saveProgress = checked
+                                        return@awaitInputTextWithCheckBox null
                                     }
-                                    quickSearchList.add(quickSearch)
-                                    saveProgress = checked
-                                    return@awaitInputTextWithCheckBox null
                                 }
                             }
                         }) {
@@ -530,7 +531,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
         showSearchFab = showSearchLayout,
-        onApplySearch = { query ->
+        onApplySearch = ret@{ query ->
             val builder = ListUrlBuilder()
             val oldMode = urlBuilder.mode
             if (!showSearchLayout) {
@@ -546,11 +547,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             } else {
                 builder.mode = MODE_IMAGE_SEARCH
                 if (imagePath.isBlank()) {
-                    activity.showTip(selectImageFirst)
-                    return@SearchBarScreen
+                    snackbarState.showSnackbar(selectImageFirst)
+                    return@ret
                 }
                 val uri = Uri.parse(imagePath)
-                val temp = AppConfig.createTempFile() ?: return@SearchBarScreen
+                val temp = AppConfig.createTempFile() ?: return@ret
                 val bitmap = context.decodeBitmap(uri)
                 temp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
                 builder.imagePath = temp.path

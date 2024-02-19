@@ -66,6 +66,7 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.LocalSideSheetState
+import com.hippo.ehviewer.ui.LocalSnackbarHostState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
@@ -121,6 +122,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
     }
     val context = LocalContext.current
     val density = LocalDensity.current
+    val snackbarState = LocalSnackbarHostState.current
     val dialogState = LocalDialogState.current
     val activity = remember(context) { context.findActivity<MainActivity>() }
     val coroutineScope = rememberCoroutineScope()
@@ -413,10 +415,11 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                             val gidArray = info.mapToLongArray(BaseGalleryInfo::gid)
                             EhEngine.modifyFavorites(gidArray, srcCat, dstCat)
                         }
+                    }.onSuccess {
+                        data.refresh()
                     }.onFailure {
-                        activity.showTip(ExceptionUtils.getReadableString(it))
+                        snackbarState.showSnackbar(ExceptionUtils.getReadableString(it))
                     }
-                    data.refresh()
                 }
             }
         }
