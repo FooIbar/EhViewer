@@ -82,7 +82,7 @@ import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
-import com.hippo.ehviewer.ui.LocalSnackbarHostState
+import com.hippo.ehviewer.ui.LocalSnackBarHostState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.jumpToReaderByPage
@@ -153,7 +153,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
     LockDrawer(true)
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val dialogState = LocalDialogState.current
-    val snackbarState = LocalSnackbarHostState.current
+    val snackbarState = LocalSnackBarHostState.current
     val coroutineScope = rememberCoroutineScope()
 
     var commenting by rememberSaveable { mutableStateOf(false) }

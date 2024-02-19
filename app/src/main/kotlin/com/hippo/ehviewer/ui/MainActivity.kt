@@ -360,8 +360,8 @@ class MainActivity : EhActivity() {
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
                 LocalDrawerLockHandle provides lockDrawerHandle,
-                LocalSnackbarHostState provides snackbarState,
-                LocalSnackbarFabPadding provides animateDpAsState(snackbarFabPadding, label = "SnackbarFabPadding"),
+                LocalSnackBarHostState provides snackbarState,
+                LocalSnackBarFabPadding provides animateDpAsState(snackbarFabPadding, label = "SnackbarFabPadding"),
             ) {
                 Scaffold(
                     snackbarHost = {
@@ -529,8 +529,8 @@ class MainActivity : EhActivity() {
 val LocalNavDrawerState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalNavDrawerState not present!") }
 val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }
 val LocalDrawerLockHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerLockHandle not present!") }
-val LocalSnackbarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackbarHostState not present!") }
-val LocalSnackbarFabPadding = compositionLocalOf<State<Dp>> { error("CompositionLocal LocalSnackbarFabPadding not present!") }
+val LocalSnackBarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackBarHostState not present!") }
+val LocalSnackBarFabPadding = compositionLocalOf<State<Dp>> { error("CompositionLocal LocalSnackBarFabPadding not present!") }
 
 @Composable
 fun LockDrawer(value: Boolean) {
