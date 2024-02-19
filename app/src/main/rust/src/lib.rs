@@ -78,22 +78,24 @@ where
     F: Fn(&VDom, &str) -> Result<R, &'static str>,
     R: Serialize,
 {
+    // Yeah, the two buffers refer the same memory region
+    // SAFETY: Inplace rewrite will not cause data corruption
     let buffer = deref_direct_bytebuffer(env, &str);
+    let write_buffer = deref_direct_bytebuffer(env, &str);
+
     let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
-    let f = || {
-        let dom = tl::parse(html, tl::ParserOptions::default()).map_err(|_| html)?;
-        f(&dom, html)
-    };
-    match f() {
-        // Nothing to marshal
-        Err(err) => throw_msg(env, err),
-        Ok(value) => {
-            let mut cursor = Cursor::new(buffer);
-            match serde_cbor::to_writer(&mut cursor, &value) {
-                Ok(_) => cursor.position() as i32,
-                Err(err) => throw_msg(env, &format!("{}", err)),
+    match tl::parse(html, tl::ParserOptions::default()) {
+        Ok(dom) => match f(&dom, html) {
+            Err(err) => throw_msg(env, err),
+            Ok(value) => {
+                let mut cursor = Cursor::new(write_buffer);
+                match serde_cbor::to_writer(&mut cursor, &value) {
+                    Ok(_) => cursor.position() as i32,
+                    Err(err) => throw_msg(env, &format!("{}", err)),
+                }
             }
-        }
+        },
+        Err(_) => throw_msg(env, html),
     }
 }
 
