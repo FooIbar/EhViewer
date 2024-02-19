@@ -112,7 +112,7 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.LocalSideSheetState
-import com.hippo.ehviewer.ui.LocalSnackbarHostState
+import com.hippo.ehviewer.ui.LocalSnackBarHostState
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
@@ -216,7 +216,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         animationSpec = tween(FAB_ANIMATE_TIME * 2),
     ) { showSearchLayout = false }
     val context = LocalContext.current
-    val snackbarState = LocalSnackbarHostState.current
+    val snackbarState = LocalSnackBarHostState.current
     val activity = remember { context.findActivity<MainActivity>() }
     val density = LocalDensity.current
     val dialogState = LocalDialogState.current
