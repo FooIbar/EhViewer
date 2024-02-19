@@ -93,6 +93,7 @@ import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.normalizeSpan
 import com.hippo.ehviewer.ui.tools.rememberBBCodeTextToolbar
+import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.ui.tools.toBBCode
 import com.hippo.ehviewer.ui.tools.updateSpan
@@ -273,6 +274,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
                         }
                         commenting = true
                     },
+                    modifier = Modifier.snackBarPadding(),
                 ) {
                     Icon(imageVector = Icons.AutoMirrored.Default.Reply, contentDescription = null)
                 }
