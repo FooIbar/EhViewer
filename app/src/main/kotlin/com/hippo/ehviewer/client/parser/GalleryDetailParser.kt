@@ -221,13 +221,14 @@ object GalleryDetailParser {
         d.getElementById("gnd")?.run {
             val dates = PATTERN_NEWER_DATE.findAll(body).map { it.groupValues[1] }.toList()
             select("a").forEachIndexed { index, element ->
-                val gi = BaseGalleryInfo()
                 val result = GalleryDetailUrlParser.parse(element.attr("href"))
                 if (result != null) {
-                    gi.gid = result.gid
-                    gi.token = result.token
-                    gi.title = element.text().trim()
-                    gi.posted = dates[index]
+                    val gi = BaseGalleryInfo(
+                        result.gid,
+                        result.token,
+                        element.text().trim(),
+                        posted = dates[index],
+                    )
                     gd.newerVersions.add(gi)
                 }
             }

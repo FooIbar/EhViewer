@@ -52,18 +52,11 @@ object EhUrl {
     const val REFERER_E = "https://$DOMAIN_E"
     const val ORIGIN_E = REFERER_E
 
-    val host: String
-        get() = when (Settings.gallerySite) {
-            SITE_E -> HOST_E
-            SITE_EX -> HOST_EX
-            else -> HOST_E
-        }
-
     val domain: String
         get() = when (Settings.gallerySite) {
             SITE_E -> DOMAIN_E
             SITE_EX -> DOMAIN_EX
-            else -> HOST_E
+            else -> DOMAIN_E
         }
 
     val apiUrl: String
@@ -119,22 +112,29 @@ object EhUrl {
             else -> URL_IMAGE_SEARCH_E
         }
 
-    fun getGalleryDetailUrl(gid: Long, token: String?): String {
-        return getGalleryDetailUrl(gid, token, 0, false)
-    }
+    fun getGalleryDetailUrl(gid: Long, token: String, index: Int = 0, allComment: Boolean = false) =
+        ehUrl(listOf("g", "$gid", token)) {
+            if (index != 0) addQueryParameter("p", "$index")
+            if (allComment) addQueryParameter("hc", "1")
+        }.buildString()
 
-    fun getGalleryDetailUrl(gid: Long, token: String?, index: Int, allComment: Boolean) = ehUrl(listOf("g", gid.toString(), token.orEmpty())) {
-        if (index != 0) addQueryParameter("p", "$index")
-        if (allComment) addQueryParameter("hc", "1")
+    fun getGalleryMultiPageViewerUrl(gid: Long, token: String) = ehUrl(listOf("mpv", "$gid", token)).buildString()
+
+    fun getPageUrl(gid: Long, index: Int, pToken: String, nl: String? = null) = ehUrl(listOf("s", pToken, "$gid-${index + 1}")) {
+        addQueryParameterIfNotBlank("nl", nl)
     }.buildString()
 
-    fun getGalleryMultiPageViewerUrl(gid: Long, token: String) = ehUrl(listOf("mpv", gid.toString(), token)).buildString()
+    fun getAddFavorites(gid: Long, token: String) = ehUrl("gallerypopups.php") {
+        addQueryParameter("gid", "$gid")
+        addQueryParameter("t", token)
+        addQueryParameter("act", "addfav")
+    }.buildString()
 
-    fun getPageUrl(gid: Long, index: Int, pToken: String) = host + "s/" + pToken + '/' + gid + '-' + (index + 1)
-
-    fun getAddFavorites(gid: Long, token: String?) = host + "gallerypopups.php?gid=" + gid + "&t=" + token + "&act=addfav"
-
-    fun getDownloadArchive(gid: Long, token: String, or: String) = host + "archiver.php?gid=" + gid + "&token=" + token + "&or=" + or
+    fun getDownloadArchive(gid: Long, token: String, or: String) = ehUrl("archiver.php") {
+        addQueryParameter("gid", "$gid")
+        addQueryParameter("token", token)
+        addQueryParameter("or", or)
+    }.buildString()
 
     fun getTagDefinitionUrl(tag: String) = "https://ehwiki.org/wiki/" + tag.replace(' ', '_')
 }

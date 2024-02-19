@@ -30,10 +30,10 @@ import kotlinx.serialization.Serializable
 data class BaseGalleryInfo(
     @PrimaryKey
     @ColumnInfo(name = "GID")
-    override var gid: Long = 0,
+    override var gid: Long,
 
     @ColumnInfo(name = "TOKEN")
-    override var token: String? = null,
+    override var token: String,
 
     @ColumnInfo(name = "TITLE")
     override var title: String? = null,
@@ -86,5 +86,5 @@ data class BaseGalleryInfo(
     @Ignore
     override var favoriteNote: String? = null,
 ) : GalleryInfo, Parcelable {
-    constructor() : this(0)
+    constructor() : this(0, "")
 }

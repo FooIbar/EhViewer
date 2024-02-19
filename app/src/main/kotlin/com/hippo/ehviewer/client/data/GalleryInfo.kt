@@ -20,7 +20,7 @@ import moe.tarsin.kt.unreachable
 
 interface GalleryInfo {
     var gid: Long
-    var token: String?
+    var token: String
     var title: String?
     var titleJpn: String?
     var thumbKey: String?

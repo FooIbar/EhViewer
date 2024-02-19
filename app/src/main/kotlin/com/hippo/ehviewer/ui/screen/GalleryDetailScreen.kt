@@ -222,7 +222,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
     }
     val (gid, token) = remember {
         when (args) {
-            is GalleryInfoArgs -> args.galleryInfo.run { gid to token!! }
+            is GalleryInfoArgs -> args.galleryInfo.run { gid to token }
             is TokenArgs -> args.gid to args.token
         }
     }
@@ -492,7 +492,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             val info = galleryDetail.newerVersions[selected]
             withUIContext {
                 // Can't use GalleryInfoArgs as thumbKey is null
-                navigator.navigate(info.gid asDstWith info.token!!)
+                navigator.navigate(info.gid asDstWith info.token)
             }
         }
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))

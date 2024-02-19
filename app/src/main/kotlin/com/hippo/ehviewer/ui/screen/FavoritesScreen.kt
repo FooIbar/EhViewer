@@ -402,7 +402,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                     runSuspendCatching {
                         if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
                             // Move from local to cloud
-                            val galleryList = info.map { it.gid to it.token!! }
+                            val galleryList = info.map { it.gid to it.token }
                             EhEngine.addFavorites(galleryList, dstCat)
                             EhDB.removeLocalFavorites(info)
                         } else if (dstCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
