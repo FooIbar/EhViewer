@@ -215,6 +215,7 @@ class MainActivity : EhActivity() {
             val dialogState = LocalDialogState.current
             val navDrawerState = rememberDrawerState(DrawerValue.Closed)
             val sideSheetState = rememberDrawerState(DrawerValue.Closed)
+            val snackbarState = remember { SnackbarHostState() }
             val scope = rememberCoroutineScope()
             val navController = rememberNavController()
             fun closeDrawer(callback: () -> Unit = {}) = scope.launch {
@@ -249,7 +250,7 @@ class MainActivity : EhActivity() {
                         }
                     }
                 }.onFailure {
-                    showTip(getString(R.string.update_failed, ExceptionUtils.getReadableString(it)))
+                    snackbarState.showSnackbar(getString(R.string.update_failed, ExceptionUtils.getReadableString(it)))
                 }
             }
 
@@ -295,7 +296,6 @@ class MainActivity : EhActivity() {
                 }
             }
 
-            val snackbarState = remember { SnackbarHostState() }
             LaunchedEffect(Unit) {
                 tipFlow.collectLatest {
                     snackbarState.showSnackbar(it)
@@ -495,11 +495,8 @@ class MainActivity : EhActivity() {
     }
 
     fun showTip(@StringRes id: Int, useToast: Boolean = false) {
-        showTip(getString(id), useToast)
-    }
-
-    fun showTip(message: CharSequence, useToast: Boolean = false) {
-        if (useToast || !tipFlow.tryEmit(message.toString())) {
+        val message = getString(id)
+        if (useToast || !tipFlow.tryEmit(message)) {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
     }
