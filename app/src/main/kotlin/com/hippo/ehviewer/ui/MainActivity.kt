@@ -74,7 +74,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -86,6 +85,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -352,22 +352,25 @@ class MainActivity : EhActivity() {
             }
             val currentDestination by navController.currentDestinationAsState()
             val lockDrawerHandle = remember { mutableStateListOf<Int>() }
-            var snackbarFabPadding by remember { mutableIntStateOf(0) }
+            var snackbarFabPadding by remember { mutableStateOf(0.dp) }
             val drawerLocked = lockDrawerHandle.isNotEmpty()
             val viewConfiguration = LocalViewConfiguration.current
+            val density = LocalDensity.current
             CompositionLocalProvider(
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
                 LocalDrawerLockHandle provides lockDrawerHandle,
                 LocalSnackbarHostState provides snackbarState,
-                LocalSnackbarFabPadding provides animateDpAsState(snackbarFabPadding.dp, label = "SnackbarFabPadding"),
+                LocalSnackbarFabPadding provides animateDpAsState(snackbarFabPadding, label = "SnackbarFabPadding"),
             ) {
                 Scaffold(
                     snackbarHost = {
                         SnackbarHost(
                             hostState = snackbarState,
                             modifier = Modifier.onGloballyPositioned {
-                                snackbarFabPadding = it.size.height
+                                with(density) {
+                                    snackbarFabPadding = it.size.height.toDp()
+                                }
                             },
                         )
                     },
