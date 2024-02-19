@@ -25,6 +25,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -69,9 +70,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,10 +84,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -347,6 +352,7 @@ class MainActivity : EhActivity() {
             }
             val currentDestination by navController.currentDestinationAsState()
             val lockDrawerHandle = remember { mutableStateListOf<Int>() }
+            var snackbarFabPadding by remember { mutableIntStateOf(0) }
             val drawerLocked = lockDrawerHandle.isNotEmpty()
             val viewConfiguration = LocalViewConfiguration.current
             CompositionLocalProvider(
@@ -354,8 +360,18 @@ class MainActivity : EhActivity() {
                 LocalSideSheetState provides sideSheetState,
                 LocalDrawerLockHandle provides lockDrawerHandle,
                 LocalSnackbarHostState provides snackbarState,
+                LocalSnackbarFabPadding provides animateDpAsState(snackbarFabPadding.dp, label = "SnackbarFabPadding"),
             ) {
-                Scaffold(snackbarHost = { SnackbarHost(snackbarState) }) {
+                Scaffold(
+                    snackbarHost = {
+                        SnackbarHost(
+                            hostState = snackbarState,
+                            modifier = Modifier.onGloballyPositioned {
+                                snackbarFabPadding = it.size.height
+                            },
+                        )
+                    },
+                ) {
                     LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
                         ModalNavigationDrawer(
                             drawerContent = {
@@ -509,8 +525,9 @@ class MainActivity : EhActivity() {
 
 val LocalNavDrawerState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalNavDrawerState not present!") }
 val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }
-val LocalDrawerLockHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalSideSheetState not present!") }
+val LocalDrawerLockHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerLockHandle not present!") }
 val LocalSnackbarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackbarHostState not present!") }
+val LocalSnackbarFabPadding = compositionLocalOf<State<Dp>> { error("CompositionLocal LocalSnackbarFabPadding not present!") }
 
 @Composable
 fun LockDrawer(value: Boolean) {
