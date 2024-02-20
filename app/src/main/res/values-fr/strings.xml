@@ -86,8 +86,6 @@
     <string name="search_sft">Tag</string>
 
     <string name="select_image">Sélectionner une image</string>
-    <string name="search_uss">Activer le scannage de similarité</string>
-    <string name="search_osc">Chercher seulement les couverture</string>
     <string name="select_image_first">Sélectionnez une image</string>
 
     <string name="add_to_favourites">Ajouter à favori</string>

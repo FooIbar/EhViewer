@@ -28,7 +28,6 @@
     <string name="star_4">4 stjerner</string>
     <string name="no_torrents">Ingen torrenter</string>
     <string name="search_sfl">Språk</string>
-    <string name="search_osc">Kun søk i omslag</string>
     <string name="guest_mode">Fortsett uten å logge inn</string>
     <string name="favored_times">♥ %d</string>
     <string name="torrent_count">Torrent (%d)</string>

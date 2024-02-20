@@ -593,10 +593,10 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 icon = Icons.Default.ImageSearch,
                 text = stringResource(id = R.string.search_cover),
                 onClick = {
-                    val key = galleryDetail.thumbKey.orEmpty()
+                    val key = galleryDetail.thumbKey!!
                     navigator.navigate(
                         ListUrlBuilder(
-                            mode = ListUrlBuilder.MODE_NORMAL,
+                            mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
                             hash = key.substringAfterLast('/').substringBefore('-'),
                         ).asDst(),
                     )
