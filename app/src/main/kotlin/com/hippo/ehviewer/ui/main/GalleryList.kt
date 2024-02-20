@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,16 +28,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -57,6 +56,15 @@ import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.util.ExceptionUtils
 import kotlinx.coroutines.flow.drop
 
+@Stable
+private operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
+    val l = this@plus
+    override fun calculateBottomPadding() = l.calculateBottomPadding() + r.calculateBottomPadding()
+    override fun calculateLeftPadding(layoutDirection: LayoutDirection) = l.calculateLeftPadding(layoutDirection) + r.calculateLeftPadding(layoutDirection)
+    override fun calculateRightPadding(layoutDirection: LayoutDirection) = l.calculateRightPadding(layoutDirection) + r.calculateRightPadding(layoutDirection)
+    override fun calculateTopPadding() = l.calculateTopPadding() + r.calculateTopPadding()
+}
+
 @Composable
 fun GalleryList(
     modifier: Modifier = Modifier,
@@ -73,15 +81,8 @@ fun GalleryList(
     onRefresh: () -> Unit,
     onLoading: () -> Unit,
 ) {
-    val layoutDirection = LocalLayoutDirection.current
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
     val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
-    val realPadding = PaddingValues(
-        top = contentPadding.calculateTopPadding() + marginV,
-        bottom = contentPadding.calculateBottomPadding() + marginV,
-        start = contentPadding.calculateStartPadding(layoutDirection) + marginH,
-        end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
-    )
     val combinedModifier = contentModifier.nestedScroll(refreshState.nestedScrollConnection)
     Box(modifier = modifier.fillMaxSize()) {
         if (listMode == 0) {
@@ -90,7 +91,7 @@ fun GalleryList(
                 columns = GridCells.Adaptive(columnWidth),
                 modifier = combinedModifier,
                 state = detailListState,
-                contentPadding = realPadding,
+                contentPadding = contentPadding + PaddingValues(marginH, marginV),
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
             ) {
@@ -121,7 +122,7 @@ fun GalleryList(
                 state = thumbListState,
                 verticalItemSpacing = gridInterval,
                 horizontalArrangement = Arrangement.spacedBy(gridInterval),
-                contentPadding = realPadding,
+                contentPadding = contentPadding + PaddingValues(marginH, marginV),
             ) {
                 items(
                     count = data.itemCount,
