@@ -893,7 +893,7 @@ object DownloadManager : OnSpiderListener {
     private const val TYPE_ON_PAGE_FAILURE = 4
     private const val TYPE_ON_FINISH = 5
 
-    private fun comparator() = SortMode.from(Settings.downloadSortMode).comparator()
+    private fun comparator() = SortMode.from(Settings.downloadSortMode.value).comparator()
 }
 
 var downloadLocation: UniFile

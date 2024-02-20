@@ -82,6 +82,7 @@ import arrow.core.partially1
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.data.contains
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
@@ -109,7 +110,6 @@ import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
-import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
@@ -128,9 +128,9 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 @Destination
 @Composable
 fun DownloadsScreen(navigator: DestinationsNavigator) {
-    var label by Settings::recentDownloadLabel.observed
-    var gridView by Settings::gridView.observed
-    var sortMode by Settings::downloadSortMode.observed
+    var label by Settings.recentDownloadLabel.asMutableState()
+    var gridView by Settings.gridView.asMutableState()
+    var sortMode by Settings.downloadSortMode.asMutableState()
     var keyword by rememberSaveable { mutableStateOf<String?>(null) }
     var filterType by rememberSaveable { mutableIntStateOf(-1) }
     var searchBarOffsetY by remember(label) { mutableIntStateOf(0) }
