@@ -8,10 +8,10 @@ import androidx.room.Update
 
 @Dao
 interface DownloadLabelDao {
-    @Query("SELECT * FROM DOWNLOAD_LABELS ORDER BY POSITION ASC")
+    @Query("SELECT * FROM DOWNLOAD_LABELS ORDER BY POSITION")
     suspend fun list(): List<DownloadLabel>
 
-    @Query("SELECT * FROM DOWNLOAD_LABELS ORDER BY POSITION ASC LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM DOWNLOAD_LABELS ORDER BY POSITION LIMIT :limit OFFSET :offset")
     suspend fun list(offset: Int, limit: Int): List<DownloadLabel>
 
     @Query("UPDATE DOWNLOAD_LABELS SET POSITION = POSITION - 1 WHERE POSITION > :position")

@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.screen
 
+import android.view.ViewConfiguration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -226,8 +227,8 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         data.loadState.refresh is LoadState.NotLoading
     }
 
-    var expanded by remember { mutableStateOf(false) }
-    var hidden by remember { mutableStateOf(false) }
+    var fabExpanded by remember { mutableStateOf(false) }
+    var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
     val selectMode = checkedInfoMap.isNotEmpty()
     LockDrawer(selectMode)
@@ -239,9 +240,9 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         onApplySearch = { refresh(FavListUrlBuilder(urlBuilder.favCat, it)) },
         onSearchExpanded = {
             checkedInfoMap.clear()
-            hidden = true
+            fabHidden = true
         },
-        onSearchHidden = { hidden = false },
+        onSearchHidden = { fabHidden = false },
         refreshState = refreshState,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
@@ -255,10 +256,17 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         val height by collectListThumbSizeAsState()
         val showPages = Settings.showGalleryPages
         val searchBarConnection = remember {
+            val slop = ViewConfiguration.get(context).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
-                    searchBarOffsetY = (searchBarOffsetY + consumed.y).roundToInt().coerceIn(-topPaddingPx, 0)
+                    val dy = -consumed.y
+                    if (dy >= slop) {
+                        fabHidden = true
+                    } else if (dy <= -slop / 2) {
+                        fabHidden = false
+                    }
+                    searchBarOffsetY = (searchBarOffsetY - dy).roundToInt().coerceIn(-topPaddingPx, 0)
                     return Offset.Zero // We never consume it
                 }
             }
@@ -270,7 +278,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
             listMode = listMode,
             detailItemContent = { info ->
                 val checked = info.gid in checkedInfoMap
-                CheckableItem(checked = checked) { interactionSource ->
+                CheckableItem(checked = checked, modifier = Modifier.animateItemPlacement()) { interactionSource ->
                     GalleryInfoListItem(
                         onClick = {
                             if (selectMode) {
@@ -296,7 +304,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
             },
             thumbItemContent = { info ->
                 val checked = info.gid in checkedInfoMap
-                CheckableItem(checked = checked) { interactionSource ->
+                CheckableItem(checked = checked, modifier = Modifier.animateItemPlacement()) { interactionSource ->
                     GalleryInfoGridItem(
                         onClick = {
                             if (selectMode) {
@@ -325,7 +333,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
     }
 
     val hideFab by delegateSnapshotUpdate {
-        record { hidden }
+        record { fabHidden }
         transform {
             // Bug: IDE failed to inference 'hide's type
             onEachLatest { hide: Boolean ->
@@ -335,10 +343,10 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
     }
 
     FabLayout(
-        hidden = hideFab,
-        expanded = expanded || selectMode,
+        hidden = hideFab && !selectMode,
+        expanded = fabExpanded || selectMode,
         onExpandChanged = {
-            expanded = it
+            fabExpanded = it
             checkedInfoMap.clear()
         },
         autoCancel = !selectMode,

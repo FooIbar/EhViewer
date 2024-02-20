@@ -8,10 +8,10 @@ import androidx.room.Update
 
 @Dao
 interface QuickSearchDao {
-    @Query("SELECT * FROM QUICK_SEARCH ORDER BY POSITION ASC")
+    @Query("SELECT * FROM QUICK_SEARCH ORDER BY POSITION")
     suspend fun list(): List<QuickSearch>
 
-    @Query("SELECT * FROM QUICK_SEARCH ORDER BY POSITION ASC LIMIT :limit OFFSET :offset")
+    @Query("SELECT * FROM QUICK_SEARCH ORDER BY POSITION LIMIT :limit OFFSET :offset")
     suspend fun list(offset: Int, limit: Int): List<QuickSearch>
 
     @Query("UPDATE QUICK_SEARCH SET POSITION = POSITION - 1 WHERE POSITION > :position")

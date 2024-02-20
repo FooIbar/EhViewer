@@ -42,9 +42,6 @@ data class DownloadEntity(
     @ColumnInfo(name = "LABEL", index = true)
     override var label: String? = null,
 
-    @ColumnInfo(name = "POSITION")
-    override var position: Int = 0,
-
     @Ignore
     override var speed: Long = 0,
 

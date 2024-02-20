@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.download.SortMode
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import java.util.Locale
@@ -108,8 +109,11 @@ object Settings : DataStorePreferences(null) {
     val thumbColumns = intPref("thumb_columns", 3)
     val listThumbSize = intPref("list_tile_size", 40)
     val languageFilter = intPref("language_filter", -1)
+    val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
     val blackDarkTheme = boolPref("black_dark_theme", false)
+    val gridView = boolPref("grid_view", false)
+    val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)
@@ -150,7 +154,6 @@ object Settings : DataStorePreferences(null) {
     var downloadOriginImage by boolPref("download_origin_image", false)
     var archiveMetadata by boolPref("archive_metadata", true)
     var enableCronet by boolPref("enable_cronet", true)
-    var gridView by boolPref("grid_view", false)
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)
     var defaultFavSlot by intPref("default_favorite_slot", -2)
     var securityDelay by intPref("require_unlock_delay", 0)
@@ -161,7 +164,6 @@ object Settings : DataStorePreferences(null) {
     var lastDawnDays by intPref("last_dawn_days", 0)
     var recentToplist by stringPref("recent_toplist", "11")
     var userAgent by stringPref("user_agent", CHROME_USER_AGENT)
-    var recentDownloadLabel by stringOrNullPref("recent_download_label", null)
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
     var displayName by stringOrNullPref("display_name", null)
     var avatar by stringOrNullPref("avatar", null)

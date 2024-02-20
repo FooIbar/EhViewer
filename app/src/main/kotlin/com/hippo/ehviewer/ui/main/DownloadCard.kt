@@ -37,23 +37,19 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ui.tools.CrystalCard
-import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
 import com.hippo.ehviewer.util.FileUtils
-import sh.calvin.reorderable.ReorderableItemScope
 
 @Composable
-fun ReorderableItemScope.DownloadCard(
+fun DownloadCard(
     onClick: () -> Unit,
     onThumbClick: () -> Unit,
     onLongClick: () -> Unit,
     onStart: () -> Unit,
     onStop: () -> Unit,
-    onDragStarted: () -> Unit,
-    onDragStopped: () -> Unit,
     info: DownloadInfo,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     modifier: Modifier = Modifier,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     CrystalCard(
         modifier = modifier,
@@ -169,7 +165,6 @@ fun ReorderableItemScope.DownloadCard(
                         bottom.linkTo(parent.bottom)
                     },
                 ) {
-                    DragHandle(onDragStarted = onDragStarted, onDragStopped = onDragStopped)
                     if (downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD) {
                         IconButton(onClick = onStop) {
                             Icon(imageVector = Icons.Default.Pause, contentDescription = null)

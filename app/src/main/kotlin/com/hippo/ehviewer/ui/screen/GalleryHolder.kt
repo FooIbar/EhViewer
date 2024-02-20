@@ -25,9 +25,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 
 @Composable
-fun CheckableItem(checked: Boolean, content: @Composable (MutableInteractionSource) -> Unit) {
+fun CheckableItem(
+    checked: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable (MutableInteractionSource) -> Unit,
+) {
     val src = controlledInteractionSource(enabled = checked)
-    Box {
+    Box(modifier) {
         content(src)
         if (checked) {
             Icon(

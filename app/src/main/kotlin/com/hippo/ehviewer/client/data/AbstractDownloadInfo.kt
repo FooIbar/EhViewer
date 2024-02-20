@@ -5,7 +5,6 @@ interface AbstractDownloadInfo {
     var legacy: Int
     var time: Long
     var label: String?
-    var position: Int
     var speed: Long
     var remaining: Long
     var finished: Int

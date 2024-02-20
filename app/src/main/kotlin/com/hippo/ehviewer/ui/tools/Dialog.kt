@@ -408,8 +408,16 @@ class DialogState {
     suspend fun showSingleChoice(
         items: List<String>,
         selected: Int,
+        @StringRes title: Int? = null,
     ): Int = showNoButton {
         Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
+            title?.let {
+                Text(
+                    text = stringResource(id = it),
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            }
             items.forEachIndexed { index, text ->
                 Row(
                     modifier = Modifier.clickable { dismissWith(index) }.fillMaxWidth()

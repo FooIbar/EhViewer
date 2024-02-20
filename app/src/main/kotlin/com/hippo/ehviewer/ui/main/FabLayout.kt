@@ -106,7 +106,6 @@ fun FabLayout(
     expanded: Boolean,
     onExpandChanged: (Boolean) -> Unit,
     autoCancel: Boolean,
-    rotateWhenExpand: Boolean = true,
     fabBuilder: FabBuilder.() -> Unit,
 ) {
     val updatedHidden by rememberUpdatedState(hidden)
@@ -174,12 +173,8 @@ fun FabLayout(
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = null,
-                    modifier = if (rotateWhenExpand) {
-                        Modifier.graphicsLayer {
-                            rotationZ = lerp(-135f, 0f, animatedProgress)
-                        }
-                    } else {
-                        Modifier
+                    modifier = Modifier.graphicsLayer {
+                        rotationZ = lerp(-135f, 0f, animatedProgress)
                     },
                 )
             }

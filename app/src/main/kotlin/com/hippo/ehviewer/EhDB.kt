@@ -57,7 +57,7 @@ object EhDB {
         }
     }
 
-    suspend fun updateDownloadInfo(downloadInfo: List<DownloadInfo>) {
+    suspend fun updateDownloadInfo(downloadInfo: Collection<DownloadInfo>) {
         val dao = db.downloadsDao()
         dao.update(downloadInfo.map(DownloadInfo::downloadInfo))
     }
@@ -70,7 +70,6 @@ object EhDB {
     suspend fun removeDownloadInfo(downloadInfo: DownloadInfo) {
         val dao = db.downloadsDao()
         dao.delete(downloadInfo.downloadInfo)
-        dao.fill(downloadInfo.position)
         deleteGalleryInfo(downloadInfo.galleryInfo)
     }
 
@@ -82,7 +81,6 @@ object EhDB {
             dao.delete(it.downloadInfo)
             deleteGalleryInfo(it.galleryInfo)
         }
-        dao.fill(downloadInfo.first().position, downloadInfo.size)
     }
 
     suspend fun getDownloadDirname(gid: Long): String? {
@@ -105,6 +103,9 @@ object EhDB {
         val dao = db.downloadDirnameDao()
         dao.insertOrIgnore(downloadDirnameList)
     }
+
+    val downloadsCount
+        get() = db.downloadsDao().count()
 
     suspend fun getAllDownloadLabelList() = db.downloadLabelDao().list()
 

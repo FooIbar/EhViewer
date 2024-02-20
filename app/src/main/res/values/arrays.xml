@@ -228,6 +228,17 @@
         <item>2</item>
     </integer-array>
 
+    <string-array name="download_sort_modes">
+        <item>@string/added_time_desc</item>
+        <item>@string/added_time_asc</item>
+        <item>@string/uploaded_time_desc</item>
+        <item>@string/uploaded_time_asc</item>
+        <item>@string/title_asc</item>
+        <item>@string/title_desc</item>
+        <item>@string/download_label_asc</item>
+        <item>@string/download_label_desc</item>
+    </string-array>
+
     <string-array name="download_state">
         <item>@string/download_all</item>
         <item>@string/download_state_none</item>
