@@ -118,8 +118,6 @@
     <string name="search_sfu">Uploader</string>
     <string name="search_sft">Tags</string>
     <string name="select_image">Select image</string>
-    <string name="search_uss">Use similarity scan</string>
-    <string name="search_osc">Only search covers</string>
     <string name="select_image_first">Please select image first</string>
     <string name="add_to_favourites">Add to favourites</string>
     <string name="remove_from_favourites">Remove from favourites</string>

@@ -47,8 +47,6 @@ data class ListUrlBuilder(
     var pageFrom: Int = -1,
     var pageTo: Int = -1,
     var imagePath: String? = null,
-    var isUseSimilarityScan: Boolean = false,
-    var isOnlySearchCovers: Boolean = false,
 ) : Parcelable {
 
     fun setIndex(index: String, isNext: Boolean = true) {
@@ -274,7 +272,6 @@ data class ListUrlBuilder(
                     } ?: it
                 }
                 addQueryParameterIfNotBlank("f_search", query)
-                addQueryParameterIfNotBlank("f_shash", hash)
                 addQueryParameterIfNotBlank("prev", mPrev)
                 addQueryParameterIfNotBlank("next", mNext)
                 addQueryParameterIfNotBlank("seek", mJumpTo)
@@ -328,7 +325,9 @@ data class ListUrlBuilder(
             }
 
             MODE_WHATS_HOT -> EhUrl.popularUrl
-            MODE_IMAGE_SEARCH -> EhUrl.imageSearchUrl
+            MODE_IMAGE_SEARCH -> ehUrl {
+                addQueryParameter("f_shash", requireNotNull(hash))
+            }.buildString()
             MODE_TOPLIST -> {
                 ehUrl("toplist.php", EhUrl.DOMAIN_E) {
                     addQueryParameter("tl", requireNotNull(mKeyword))

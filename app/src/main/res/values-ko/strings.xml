@@ -82,8 +82,6 @@
     <string name="search_sr">최소 평점:</string>
 
     <string name="select_image">이미지 선택</string>
-    <string name="search_uss">유사한 이미지 검색</string>
-    <string name="search_osc">커버만 검색</string>
     <string name="select_image_first">먼저 이미지를 선택해 주세요.</string>
 
     <string name="add_to_favourites">즐겨찾기에 추가</string>

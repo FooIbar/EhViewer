@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.screen
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.view.ViewConfiguration
 import androidx.activity.result.contract.ActivityResultContracts
@@ -110,7 +109,6 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
-import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.LocalSnackBarHostState
 import com.hippo.ehviewer.ui.MainActivity
@@ -135,17 +133,17 @@ import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.pickVisualMedia
+import com.hippo.unifile.asUniFile
+import com.hippo.unifile.sha1
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Direction
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import java.io.File
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.delay
@@ -186,9 +184,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
     var category by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
     var searchMethod by rememberSaveable { mutableIntStateOf(1) }
     var advancedSearchOption by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
-    var useSimilarityScan by rememberSaveable { mutableStateOf(false) }
-    var searchCoverOnly by rememberSaveable { mutableStateOf(false) }
-    var imagePath by rememberSaveable { mutableStateOf("") }
+    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     LaunchedEffect(urlBuilder) {
         if (urlBuilder.mode == MODE_SUBSCRIPTION) searchMethod = 2
@@ -261,16 +257,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                             }
                         }
                         runSuspendCatching {
-                            if (MODE_IMAGE_SEARCH == urlBuilder.mode) {
-                                EhEngine.imageSearch(
-                                    File(urlBuilder.imagePath!!),
-                                    urlBuilder.isUseSimilarityScan,
-                                    urlBuilder.isOnlySearchCovers,
-                                )
-                            } else {
-                                val url = urlBuilder.build()
-                                EhEngine.getGalleryList(url)
-                            }
+                            val url = urlBuilder.build()
+                            EhEngine.getGalleryList(url)
                         }.foldToLoadResult { result ->
                             urlBuilder.mJumpTo = null
                             LoadResult.Page(result.galleryInfoList, result.prev, result.next)
@@ -551,18 +539,12 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 builder.pageFrom = advancedSearchOption.fromPage
                 builder.pageTo = advancedSearchOption.toPage
             } else {
-                builder.mode = MODE_IMAGE_SEARCH
-                if (imagePath.isBlank()) {
+                if (imageUri == null) {
                     snackbarState.showSnackbar(selectImageFirst)
                     return@ret
                 }
-                val uri = Uri.parse(imagePath)
-                val temp = AppConfig.createTempFile() ?: return@ret
-                val bitmap = context.decodeBitmap(uri)
-                temp.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
-                builder.imagePath = temp.path
-                builder.isUseSimilarityScan = useSimilarityScan
-                builder.isOnlySearchCovers = searchCoverOnly
+                builder.mode = MODE_IMAGE_SEARCH
+                builder.hash = imageUri!!.asUniFile().sha1() ?: return@ret
             }
             when (oldMode) {
                 MODE_TOPLIST, MODE_WHATS_HOT -> {
@@ -648,17 +630,12 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         style = MaterialTheme.typography.titleMedium,
                     )
                     ImageSearch(
-                        imagePath = imagePath,
+                        image = imageUri,
                         onSelectImage = {
                             coroutineScope.launch {
-                                val image = context.pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                if (image != null) imagePath = image.toString()
+                                imageUri = context.pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             }
                         },
-                        uss = useSimilarityScan,
-                        onUssChecked = { useSimilarityScan = it },
-                        osc = searchCoverOnly,
-                        onOscChecked = { searchCoverOnly = it },
                     )
                 }
             }

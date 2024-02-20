@@ -90,8 +90,6 @@
     <string name="search_sft">標籤</string>
 
     <string name="select_image">選擇圖片</string>
-    <string name="search_uss">使用相似搜索</string>
-    <string name="search_osc">只搜索封面</string>
     <string name="select_image_first">請先選擇圖片</string>
 
     <string name="add_to_favourites">收藏</string>

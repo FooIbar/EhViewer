@@ -20,7 +20,6 @@ import android.app.assist.AssistContent
 import android.content.Intent
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE_NONE
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -104,7 +103,6 @@ import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.Subscriptions
-import com.hippo.ehviewer.image.Image.Companion.decodeBitmap
 import com.hippo.ehviewer.ui.destinations.DownloadScreenDestination
 import com.hippo.ehviewer.ui.destinations.DownloadsScreenDestination
 import com.hippo.ehviewer.ui.destinations.FavouritesScreenDestination
@@ -127,20 +125,18 @@ import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.updater.AppUpdater
-import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
+import com.hippo.unifile.asUniFile
+import com.hippo.unifile.sha1
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.system.logcat
-import java.io.File
-import java.io.FileOutputStream
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -187,18 +183,6 @@ class MainActivity : EhActivity() {
             onDispose {
                 shareUrl = null
             }
-        }
-    }
-
-    private suspend fun saveImageToTempFile(uri: Uri): File? {
-        return runSuspendCatching {
-            val bitmap = decodeBitmap(uri)
-            val temp = AppConfig.createTempFile()
-            FileOutputStream(temp).use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
-            temp
-        }.getOrElse {
-            logcat(it)
-            null
         }
     }
 
@@ -280,13 +264,11 @@ class MainActivity : EhActivity() {
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
                                 if (null != uri) {
-                                    val temp = withIOContext { saveImageToTempFile(uri) }
-                                    if (null != temp) {
+                                    withIOContext { uri.asUniFile().sha1() }?.let {
                                         navController.navigate(
                                             ListUrlBuilder(
                                                 mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
-                                                imagePath = temp.path,
-                                                isUseSimilarityScan = true,
+                                                hash = it,
                                             ).asDst(),
                                         )
                                     }

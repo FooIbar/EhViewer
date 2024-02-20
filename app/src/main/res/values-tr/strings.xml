@@ -52,8 +52,6 @@
     <string name="search_sfu">Yükleyen</string>
     <string name="search_sft">Etiketler</string>
     <string name="select_image">Görsel Seç</string>
-    <string name="search_uss">Benzerlik taramasını kullan</string>
-    <string name="search_osc">Yalnızca kapak ara</string>
     <string name="select_image_first">Lütfen önce görsel seç</string>
     <string name="add_to_favourites">Favorilere ekle</string>
     <string name="remove_from_favourites">Favorilerden kaldır</string>

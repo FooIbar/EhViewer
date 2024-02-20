@@ -82,8 +82,6 @@
     <string name="search_sr">เรตติ้งขั้นต่ำ:</string>
 
     <string name="select_image">เลือกรูปภาพ</string>
-    <string name="search_uss">ใช้สแกนหาความเหมือน</string>
-    <string name="search_osc">ค้นหาเฉพาะหน้าปก</string>
     <string name="select_image_first">โปรดเลือกรูปภาพก่อน</string>
 
     <string name="add_to_favourites">เพิ่มเข้าในรายการโปรด</string>
