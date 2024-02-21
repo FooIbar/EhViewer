@@ -25,7 +25,7 @@ inline fun <T : Any> rememberInVM(
     val value = remember(*inputs) {
         val states = vm.states[key] ?: ArrayDeque<Any>().also { vm.states[key] = it }
         @Suppress("UNCHECKED_CAST")
-        states.removeFirstOrNull() as T? ?: init(vm)
+        states.removeLastOrNull() as T? ?: init(vm)
     }
     val valueState = rememberUpdatedState(value)
     DisposableEffect(key) {
