@@ -74,6 +74,7 @@ import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -108,6 +109,10 @@ class DialogState {
             }
         }
         content = { block(realContinuation) }
+    }.also {
+        // Workaround SlotTable modification race
+        // IssueTracker: https://issuetracker.google.com/issues/325502738
+        delay(100)
     }
 
     suspend fun <R> awaitResult(
