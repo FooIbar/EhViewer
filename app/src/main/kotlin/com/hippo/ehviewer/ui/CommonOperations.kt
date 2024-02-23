@@ -33,9 +33,6 @@ import androidx.compose.material.icons.filled.HeartBroken
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -338,55 +335,41 @@ suspend fun DialogState.doGalleryInfoAction(info: BaseGalleryInfo, context: Cont
 
 private const val MAX_FAVNOTE_CHAR = 200
 
-suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo) {
-    var checked by mutableStateOf(Settings.removeImageFiles)
-    awaitPermissionOrCancel(
+private suspend fun DialogState.confirmRemoveDownload(text: String): Boolean {
+    val checked = awaitResult(
+        initial = Settings.removeImageFiles,
         title = R.string.download_remove_dialog_title,
-        text = {
-            Column {
-                Text(
-                    text = stringResource(id = R.string.download_remove_dialog_message, info.title.orEmpty()),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                LabeledCheckbox(
-                    modifier = Modifier.fillMaxWidth(),
-                    checked = checked,
-                    onCheckedChange = { checked = it },
-                    label = stringResource(id = R.string.download_remove_dialog_check_text),
-                    indication = null,
-                )
-            }
-        },
-    )
+    ) {
+        Column {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            LabeledCheckbox(
+                modifier = Modifier.fillMaxWidth(),
+                checked = expectedValue,
+                onCheckedChange = { expectedValue = it },
+                label = stringResource(id = R.string.download_remove_dialog_check_text),
+                indication = null,
+            )
+        }
+    }
     Settings.removeImageFiles = checked
+    return checked
+}
+
+suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo) {
+    val text = appCtx.getString(R.string.download_remove_dialog_message, EhUtils.getSuitableTitle(info))
+    val checked = confirmRemoveDownload(text)
     withIOContext {
         DownloadManager.deleteDownload(info.gid, checked)
     }
 }
 
 suspend fun DialogState.confirmRemoveDownloadRange(list: Collection<DownloadInfo>) {
-    var checked by mutableStateOf(Settings.removeImageFiles)
-    awaitPermissionOrCancel(
-        title = R.string.download_remove_dialog_title,
-        text = {
-            Column {
-                Text(
-                    text = stringResource(id = R.string.download_remove_dialog_message_2, list.size),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                LabeledCheckbox(
-                    modifier = Modifier.fillMaxWidth(),
-                    checked = checked,
-                    onCheckedChange = { checked = it },
-                    label = stringResource(id = R.string.download_remove_dialog_check_text),
-                    indication = null,
-                )
-            }
-        },
-    )
-    Settings.removeImageFiles = checked
+    val text = appCtx.getString(R.string.download_remove_dialog_message_2, list.size)
+    val checked = confirmRemoveDownload(text)
     withIOContext {
         // Delete
         DownloadManager.deleteRangeDownload(list.mapToLongArray(DownloadInfo::gid))
@@ -413,7 +396,7 @@ suspend fun DialogState.showMoveDownloadLabel(info: GalleryInfo) {
     val selected = showSelectItem(labels, R.string.download_move_dialog_title)
     val downloadInfo = DownloadManager.getDownloadInfo(info.gid) ?: return
     val label = if (selected == 0) null else labels[selected]
-    withUIContext { DownloadManager.changeLabel(listOf(downloadInfo), label) }
+    DownloadManager.changeLabel(listOf(downloadInfo), label)
 }
 
 suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>): String? {
@@ -426,7 +409,7 @@ suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>
     }
     val selected = showSelectItem(labels, R.string.download_move_dialog_title)
     val label = if (selected == 0) null else labels[selected]
-    withUIContext { DownloadManager.changeLabel(list, label) }
+    DownloadManager.changeLabel(list, label)
     return label
 }
 
