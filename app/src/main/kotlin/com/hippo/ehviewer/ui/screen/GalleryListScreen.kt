@@ -69,7 +69,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
@@ -197,14 +196,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             if (keyword.isNotBlank()) {
                 searchFieldState.setTextAndPlaceCursorAtEnd(keyword)
             }
-        }
-    }
-
-    // Fix crash when TextField with focus is scaled to 0
-    val focusManager = LocalFocusManager.current
-    LaunchedEffect(showSearchLayout) {
-        if (!showSearchLayout) {
-            focusManager.clearFocus()
         }
     }
 
