@@ -146,6 +146,13 @@ class DialogState {
                         Text(text = stringResource(id = android.R.string.ok))
                     }
                 },
+                dismissButton = {
+                    TextButton(onClick = {
+                        cont.cancel()
+                    }) {
+                        Text(text = stringResource(id = android.R.string.cancel))
+                    }
+                },
                 title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
                 text = { block(impl, error) },
             )
