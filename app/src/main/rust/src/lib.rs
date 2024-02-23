@@ -62,9 +62,9 @@ where
     handle.get(parser)
 }
 
-fn deref_direct_bytebuffer<'a>(env: &JNIEnv, buffer: &JByteBuffer) -> &'a mut [u8] {
-    let ptr = env.get_direct_buffer_address(buffer).unwrap();
-    let cap = env.get_direct_buffer_capacity(buffer).unwrap();
+fn deref_mut_direct_bytebuffer<'a>(env: &JNIEnv, buffer: JByteBuffer) -> &'a mut [u8] {
+    let ptr = env.get_direct_buffer_address(&buffer).unwrap();
+    let cap = env.get_direct_buffer_capacity(&buffer).unwrap();
     unsafe { &mut *slice_from_raw_parts_mut(ptr, cap) }
 }
 
@@ -78,22 +78,19 @@ where
     F: Fn(&VDom, &str) -> Result<R, &'static str>,
     R: Serialize,
 {
-    let buffer = deref_direct_bytebuffer(env, &str);
+    let buffer = deref_mut_direct_bytebuffer(env, str);
     let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
-    let f = || {
-        let dom = tl::parse(html, tl::ParserOptions::default()).map_err(|_| html)?;
-        f(&dom, html)
+    let value = match tl::parse(html, tl::ParserOptions::default()) {
+        Ok(dom) => match f(&dom, html) {
+            Err(err) => return throw_msg(env, err),
+            Ok(value) => value,
+        },
+        Err(_) => return throw_msg(env, html),
     };
-    match f() {
-        // Nothing to marshal
-        Err(err) => throw_msg(env, err),
-        Ok(value) => {
-            let mut cursor = Cursor::new(buffer);
-            match serde_cbor::to_writer(&mut cursor, &value) {
-                Ok(_) => cursor.position() as i32,
-                Err(err) => throw_msg(env, &format!("{}", err)),
-            }
-        }
+    let mut cursor = Cursor::new(buffer);
+    match serde_cbor::to_writer(&mut cursor, &value) {
+        Ok(_) => cursor.position() as i32,
+        Err(err) => throw_msg(env, &format!("{}", err)),
     }
 }
 
