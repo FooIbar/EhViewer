@@ -226,7 +226,7 @@ object EhEngine {
     }
 
     suspend fun getPreviewList(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsText {
-        GalleryDetailParser.parsePreviewList(this) to GalleryDetailParser.parsePreviewPages(this)
+        GalleryDetailParser.parsePreviewList(this)
     }
 
     suspend fun getFavorites(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(FavoritesParser::parse)

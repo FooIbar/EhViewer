@@ -95,7 +95,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
                         (up..end).filterNot { it in previewPagesMap }.map { it / pgSize }.toSet()
                             .parMap(concurrency = Settings.multiThreadDownload) { page ->
                                 val url = EhUrl.getGalleryDetailUrl(gid, token, page, false)
-                                EhEngine.getPreviewList(url).first.first
+                                EhEngine.getPreviewList(url).first
                             }.flatten().forEach {
                                 previewPagesMap[it.position] = it
                                 if (Settings.preloadThumbAggressively) {
