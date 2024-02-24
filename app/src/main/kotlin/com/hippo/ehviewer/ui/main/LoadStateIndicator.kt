@@ -17,21 +17,19 @@ fun LoadStateIndicator(
     modifier: Modifier = Modifier,
     state: LoadState,
     retry: () -> Unit,
-) {
-    when (state) {
-        is LoadState.Loading -> {
-            LinearProgressIndicator(modifier = modifier)
-        }
+) = when (state) {
+    is LoadState.Loading -> {
+        LinearProgressIndicator(modifier = modifier)
+    }
 
-        is LoadState.Error -> {
-            Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = ExceptionUtils.getReadableString(state.error))
-                Button(onClick = retry) {
-                    Text(text = stringResource(id = R.string.action_retry))
-                }
+    is LoadState.Error -> {
+        Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = ExceptionUtils.getReadableString(state.error))
+            Button(onClick = retry) {
+                Text(text = stringResource(id = R.string.action_retry))
             }
         }
-
-        is LoadState.NotLoading -> Unit
     }
+
+    is LoadState.NotLoading -> Unit
 }
