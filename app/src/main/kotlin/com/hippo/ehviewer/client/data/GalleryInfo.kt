@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.client.data
 
-import com.hippo.ehviewer.util.containsIgnoreCase
 import java.util.regex.Pattern
 import moe.tarsin.kt.unreachable
 
@@ -147,6 +146,3 @@ fun GalleryInfo.findBaseInfo(): BaseGalleryInfo {
 fun GalleryInfo.asGalleryDetail(): GalleryDetail? {
     return this as? GalleryDetail
 }
-
-operator fun GalleryInfo.contains(keyword: String): Boolean =
-    arrayOf(title, titleJpn, uploader).any { it.containsIgnoreCase(keyword) }

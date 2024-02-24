@@ -83,7 +83,6 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
-import com.hippo.ehviewer.client.data.contains
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
@@ -128,12 +127,13 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 @Destination
 @Composable
 fun DownloadsScreen(navigator: DestinationsNavigator) {
-    var label by Settings.recentDownloadLabel.asMutableState()
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
-    var keyword by rememberSaveable { mutableStateOf<String?>(null) }
-    var filterType by rememberSaveable { mutableIntStateOf(-1) }
-    var searchBarOffsetY by remember(label) { mutableIntStateOf(0) }
+    var filterState by rememberSaveable {
+        mutableStateOf(DownloadsFilterState(Settings.recentDownloadLabel.value))
+    }
+    var invalidateKey by rememberSaveable { mutableStateOf(false) }
+    var searchBarOffsetY by remember(filterState.label) { mutableIntStateOf(0) }
     val searchFieldState = rememberTextFieldState()
 
     var fabExpanded by remember { mutableStateOf(false) }
@@ -150,14 +150,16 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     val view = LocalView.current
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
-    val title = stringResource(R.string.scene_download_title, if (label == "") allName else label ?: defaultName)
+    val title = stringResource(
+        R.string.scene_download_title,
+        with(filterState) { if (label == "") allName else label ?: defaultName },
+    )
     val hint = stringResource(R.string.search_bar_hint, title)
     val sortModes = stringArrayResource(id = R.array.download_sort_modes)
     val downloadStates = stringArrayResource(id = R.array.download_state)
-    val list = remember(label, filterType, keyword, sortMode) {
+    val list = remember(filterState, invalidateKey) {
         DownloadManager.downloadInfoList.filterTo(mutableStateListOf()) { info ->
-            (label == "" || info.label == label) && (filterType == -1 || info.state == filterType) &&
-                keyword.orEmpty() in info
+            filterState.take(info)
         }
     }
 
@@ -169,6 +171,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     val labelExists = stringResource(R.string.label_text_exist)
     val downloadsCount by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
     val totalCount = remember(downloadsCount) { downloadsCount.values.sum() }
+
+    fun switchLabel(label: String?) {
+        Settings.recentDownloadLabel.value = label
+        filterState = filterState.copy(label = label)
+    }
+
     with(activity) {
         ProvideSideSheetContent { drawerState ->
             fun closeSheet() = coroutineScope.launch { drawerState.close() }
@@ -236,7 +244,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 stickyHeader {
                     ListItem(
                         modifier = Modifier.clickable {
-                            label = ""
+                            switchLabel("")
                             closeSheet()
                         },
                         tonalElevation = 1.dp,
@@ -249,7 +257,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 stickyHeader {
                     ListItem(
                         modifier = Modifier.clickable {
-                            label = null
+                            switchLabel(null)
                             closeSheet()
                         },
                         tonalElevation = 1.dp,
@@ -265,8 +273,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
                                 coroutineScope.launch {
                                     DownloadManager.deleteLabel(item)
-                                    if (label == item) {
-                                        label = ""
+                                    when (filterState.label) {
+                                        item -> switchLabel("")
+                                        null -> invalidateKey = !invalidateKey
                                     }
                                 }
                             }
@@ -288,7 +297,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                             )
                             ListItem(
                                 modifier = Modifier.clickable {
-                                    label = item
+                                    switchLabel(item)
                                     closeSheet()
                                 },
                                 tonalElevation = 1.dp,
@@ -310,7 +319,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                                         }
                                                     }
                                                     DownloadManager.renameLabel(item, new)
-                                                    label = new
+                                                    if (filterState.label == item) {
+                                                        switchLabel(new)
+                                                    }
                                                 }
                                             },
                                         ) {
@@ -348,7 +359,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
         title = title,
         searchFieldState = searchFieldState,
         searchFieldHint = hint,
-        onApplySearch = { keyword = it.takeUnless { it.isBlank() } },
+        onApplySearch = { filterState = filterState.copy(keyword = it) },
         onSearchExpanded = {
             checkedInfoMap.clear()
             fabHidden = true
@@ -450,6 +461,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 }
             }
         }
+
         fun onItemClick(info: DownloadInfo) {
             coroutineScope.launchIO {
                 EhDB.putHistoryInfo(info.galleryInfo)
@@ -578,13 +590,15 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 val mode = SortMode.All[selected]
                 DownloadManager.sortDownloads(mode)
                 sortMode = mode.flag
+                invalidateKey = !invalidateKey
             }
             onClick(Icons.Default.FilterList) {
-                filterType = dialogState.showSingleChoice(
+                val state = dialogState.showSingleChoice(
                     downloadStates.toList(),
-                    filterType + 1,
+                    filterState.state + 1,
                     R.string.download_filter,
                 ) - 1
+                filterState = filterState.copy(state = state)
             }
         } else {
             onClick(Icons.Default.DoneAll) {
@@ -613,8 +627,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
                 val toLabel = dialogState.showMoveDownloadLabelList(infoList)
-                if (label != "" && label != toLabel) {
-                    list.removeAll(infoList)
+                with(filterState) {
+                    if (label != "" && label != toLabel) {
+                        list.removeAll(infoList)
+                    }
                 }
             }
         }
