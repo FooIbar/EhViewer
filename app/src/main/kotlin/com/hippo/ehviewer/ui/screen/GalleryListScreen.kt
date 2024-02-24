@@ -259,7 +259,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             }
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
-    FavouriteStatusRouter.observe(data)
+    FavouriteStatusRouter.Observe(data)
     val listMode by Settings.listMode.collectAsState()
 
     val quickSearchList = remember { mutableStateListOf<QuickSearch>() }

@@ -21,11 +21,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.lifecycle.viewModelScope
 import androidx.paging.compose.LazyPagingItems
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberUpdatedStateInVM
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,14 +57,12 @@ object FavouriteStatusRouter {
     }.collectAsState(transform(initial.favoriteSlot))
 
     @Composable
-    fun observe(list: LazyPagingItems<out GalleryInfo>) {
+    fun Observe(list: LazyPagingItems<out GalleryInfo>) {
         val realList by rememberUpdatedStateInVM(newValue = list.itemSnapshotList.items)
-        rememberInVM {
-            viewModelScope.launch {
-                globalFlow.collect { (gid, newSlot) ->
-                    realList.forEach { info ->
-                        if (info.gid == gid) info.favoriteSlot = newSlot
-                    }
+        launchInVM {
+            globalFlow.collect { (gid, newSlot) ->
+                realList.forEach { info ->
+                    if (info.gid == gid) info.favoriteSlot = newSlot
                 }
             }
         }

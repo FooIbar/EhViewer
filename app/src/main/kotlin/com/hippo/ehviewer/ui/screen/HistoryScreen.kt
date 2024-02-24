@@ -67,7 +67,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
             EhDB.historyLazyList
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
-    FavouriteStatusRouter.observe(historyData)
+    FavouriteStatusRouter.Observe(historyData)
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
