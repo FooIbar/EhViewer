@@ -37,7 +37,6 @@ import com.hippo.ehviewer.client.parser.ForumsParser
 import com.hippo.ehviewer.client.parser.GalleryApiParser
 import com.hippo.ehviewer.client.parser.GalleryDetailParser
 import com.hippo.ehviewer.client.parser.GalleryListParser
-import com.hippo.ehviewer.client.parser.GalleryListResult
 import com.hippo.ehviewer.client.parser.GalleryNotAvailableParser
 import com.hippo.ehviewer.client.parser.GalleryPageParser
 import com.hippo.ehviewer.client.parser.GalleryTokenApiParser
@@ -54,19 +53,15 @@ import com.hippo.ehviewer.dailycheck.today
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.StatusCodeException
+import com.hippo.ehviewer.util.bodyAsUtf8Text
 import eu.kanade.tachiyomi.util.system.logcat
-import io.ktor.client.request.forms.append
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.utils.io.core.writeFully
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import java.io.File
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
-import java.nio.channels.FileChannel
 import kotlin.math.ceil
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -149,7 +144,7 @@ fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): N
 val httpContentPool = DirectByteBufferPool(8, 0x80000)
 
 suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend String.() -> T) = execute { response ->
-    val body = response.bodyAsText()
+    val body = response.bodyAsUtf8Text()
     runSuspendCatching {
         block(body)
     }.onFailure {
@@ -432,24 +427,6 @@ object EhEngine {
             }
         }
     }.fetchUsingAsText(GalleryTokenApiParser::parse)
-
-    suspend fun imageSearch(jpeg: File, uss: Boolean, osc: Boolean): GalleryListResult {
-        val location = noRedirectEhRequest(EhUrl.imageSearchUrl, EhUrl.referer, EhUrl.origin) {
-            multipartBody {
-                append("sfile", "a.jpg", ContentType.Image.JPEG, jpeg.length()) {
-                    RandomAccessFile(jpeg, "r").use {
-                        writeFully(it.channel.map(FileChannel.MapMode.READ_ONLY, 0, it.length()))
-                    }
-                }
-                if (uss) append("fs_similar", "on")
-                if (osc) append("fs_covers", "on")
-                append("f_sfile", "File Search")
-            }
-        }.execute { it.headers["Location"] ?: error("Failed to search image!!!") }
-        return ehRequest(location).fetchUsingAsByteBuffer(GalleryListParser::parse).apply {
-            galleryInfoList.fillInfo(EhUrl.imageSearchUrl)
-        }
-    }
 
     private suspend fun MutableList<BaseGalleryInfo>.fillInfo(url: String, filter: Boolean = false) = with(EhFilter) {
         if (filter) removeAllSuspend { filterTitle(it) || filterUploader(it) }
