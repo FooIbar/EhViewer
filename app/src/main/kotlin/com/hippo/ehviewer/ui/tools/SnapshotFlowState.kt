@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface RecordSnapshotScope<T : Any> {
     fun record(block: () -> T)
-    infix fun transform(block: Flow<T>.() -> Flow<T>)
+    fun transform(block: Flow<T>.() -> Flow<T>)
 }
 
 @Composable
