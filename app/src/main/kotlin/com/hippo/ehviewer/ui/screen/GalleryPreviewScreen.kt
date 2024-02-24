@@ -36,7 +36,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import arrow.fx.coroutines.parMap
-import coil3.imageLoader
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -45,6 +44,7 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
+import com.hippo.ehviewer.ktbuilder.executeIn
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.main.EhPreviewItem
@@ -58,7 +58,6 @@ import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination
@@ -66,7 +65,6 @@ import moe.tarsin.coroutines.runSuspendCatching
 fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, navigator: NavController) {
     LockDrawer(true)
     val context = LocalContext.current
-    fun onPreviewClick(index: Int) = context.navToReader(galleryDetail.galleryInfo, index)
     val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
     val state = rememberLazyGridState()
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
@@ -78,17 +76,6 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
     LaunchedEffect(Unit) {
         if (toNextPage) state.scrollToItem(pgSize)
         toNextPage = false
-    }
-
-    suspend fun getPreviewListByPage(page: Int) = galleryDetail.run {
-        val url = EhUrl.getGalleryDetailUrl(gid, token, page, false)
-        val result = EhEngine.getPreviewList(url)
-        if (Settings.preloadThumbAggressively) {
-            coroutineScope.launch {
-                context.run { result.first.first.forEach { imageLoader.enqueue(imageRequest(it) { justDownload() }) } }
-            }
-        }
-        result.first.first
     }
 
     val data = rememberInVM {
@@ -107,10 +94,19 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
                     val key = params.key ?: 0
                     val up = getOffset(params, key, pages)
                     val end = (up + getLimit(params, key) - 1).coerceAtMost(pages - 1)
-                    runSuspendCatching {
+                    galleryDetail.runSuspendCatching {
                         (up..end).filterNot { it in previewPagesMap }.map { it / pgSize }.toSet()
-                            .parMap(concurrency = Settings.multiThreadDownload) { getPreviewListByPage(it) }
-                            .forEach { previews -> previews.forEach { previewPagesMap[it.position] = it } }
+                            .parMap(concurrency = Settings.multiThreadDownload) { page ->
+                                val url = EhUrl.getGalleryDetailUrl(gid, token, page, false)
+                                EhEngine.getPreviewList(url).first.first
+                            }.flatten().forEach {
+                                previewPagesMap[it.position] = it
+                                if (Settings.preloadThumbAggressively) {
+                                    with(context) {
+                                        imageRequest(it) { justDownload() }.executeIn(coroutineScope)
+                                    }
+                                }
+                            }
                     }.foldToLoadResult {
                         val r = (up..end).map { requireNotNull(previewPagesMap[it]) }
                         val prevK = if (up <= 0 || r.isEmpty()) null else up
@@ -151,7 +147,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
             ) { index ->
                 val item = data[index]
                 EhPreviewItem(item, index) {
-                    onPreviewClick(index)
+                    context.navToReader(galleryDetail.galleryInfo, index)
                 }
             }
         }
