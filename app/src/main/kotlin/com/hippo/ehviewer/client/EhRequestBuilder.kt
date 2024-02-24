@@ -18,6 +18,7 @@ package com.hippo.ehviewer.client
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.EhApplication.Companion.noRedirectKtorClient
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.util.bodyAsUtf8Text
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.forms.FormBuilder
@@ -28,7 +29,6 @@ import io.ktor.client.request.header
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpStatement
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -45,7 +45,7 @@ import okio.BufferedSource
 
 inline fun JsonObjectBuilder.array(name: String, builder: JsonArrayBuilder.() -> Unit) = put(name, buildJsonArray(builder))
 
-suspend inline fun <reified T> HttpStatement.executeAndParseAs() = execute { it.bodyAsText().parseAs<T>() }
+suspend inline fun <reified T> HttpStatement.executeAndParseAs() = execute { it.bodyAsUtf8Text().parseAs<T>() }
 inline fun <reified T> BufferedSource.parseAs(): T = json.decodeFromBufferedSource(this)
 inline fun <reified T> String.parseAs(): T = json.decodeFromString(this)
 

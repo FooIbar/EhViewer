@@ -19,7 +19,6 @@ use serde::Serialize;
 use std::ffi::c_void;
 use std::io::Cursor;
 use std::ptr::slice_from_raw_parts_mut;
-use std::str::from_utf8_unchecked;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
 
 #[macro_export]
@@ -79,13 +78,13 @@ where
     R: Serialize,
 {
     let buffer = deref_mut_direct_bytebuffer(env, str);
-    let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
-    let value = match tl::parse(html, tl::ParserOptions::default()) {
-        Ok(dom) => match f(&dom, html) {
+    let html = String::from_utf8_lossy(&buffer[..limit as usize]);
+    let value = match tl::parse(&html, tl::ParserOptions::default()) {
+        Ok(dom) => match f(&dom, &html) {
             Err(err) => return throw_msg(env, err),
             Ok(value) => value,
         },
-        Err(_) => return throw_msg(env, html),
+        Err(_) => return throw_msg(env, &html),
     };
     let mut cursor = Cursor::new(buffer);
     match serde_cbor::to_writer(&mut cursor, &value) {
