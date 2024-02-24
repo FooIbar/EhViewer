@@ -21,7 +21,7 @@ option(BUILD_TESTING OFF)
 FetchContent_Declare(
         liblzma
         GIT_REPOSITORY https://github.com/FooIbar/xz.git
-        GIT_TAG v5.4.6
+        GIT_TAG v5.6.0
 )
 
 FetchContent_MakeAvailable(liblzma)
