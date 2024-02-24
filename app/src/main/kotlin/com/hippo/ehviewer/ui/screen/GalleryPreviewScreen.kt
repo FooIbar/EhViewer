@@ -43,8 +43,8 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.ktbuilder.executeIn
 import com.hippo.ehviewer.ktbuilder.imageRequest
+import com.hippo.ehviewer.ktbuilder.launchIn
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.navToReader
@@ -100,7 +100,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
                                 previewPagesMap[it.position] = it
                                 if (Settings.preloadThumbAggressively) {
                                     with(context) {
-                                        imageRequest(it) { justDownload() }.executeIn(viewModelScope)
+                                        imageRequest(it) { justDownload() }.launchIn(viewModelScope)
                                     }
                                 }
                             }
