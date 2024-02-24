@@ -4,10 +4,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,21 +30,18 @@ import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.shouldCrop
 
 @Composable
-@ReadOnlyComposable
+@NonRestartableComposable
 fun requestOf(model: GalleryPreview): ImageRequest {
-    return LocalContext.current.imageRequest(model)
+    val context = LocalContext.current
+    return remember(model) { context.imageRequest(model) }
 }
 
-/**
- * Show a part of the original drawable, non-animated only implementation.
- */
 @Composable
 fun EhAsyncPreview(
     model: GalleryPreview,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    var contentScale by remember(model.imageKey) { mutableStateOf(ContentScale.Fit) }
+    var contentScale by remember(model) { mutableStateOf(ContentScale.Fit) }
     AsyncImage(
         model = requestOf(model),
         contentDescription = null,
@@ -85,6 +81,7 @@ fun EhAsyncPreview(
 }
 
 @Composable
+@NonRestartableComposable
 fun EhPreviewItem(
     galleryPreview: GalleryPreview?,
     position: Int,
@@ -93,10 +90,15 @@ fun EhPreviewItem(
     Box(contentAlignment = Alignment.Center) {
         CrystalCard(
             onClick = onClick,
-            modifier = Modifier.fillMaxWidth().aspectRatio(0.6666667F),
+            modifier = Modifier.aspectRatio(0.6666667F),
         ) {
-            if (galleryPreview != null) EhAsyncPreview(model = galleryPreview, modifier = Modifier.fillMaxSize())
+            if (galleryPreview != null) {
+                EhAsyncPreview(
+                    model = galleryPreview,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
     }
-    Text((position + 1).toString())
+    Text(text = "${position + 1}")
 }
