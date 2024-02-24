@@ -55,8 +55,8 @@ import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
-import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.copyTextToClipboard
+import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastT
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -163,7 +163,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                         runSuspendCatching {
                             withIOContext { getImageLimits() }
                         }.onFailure {
-                            error = ExceptionUtils.getReadableString(it)
+                            error = it.displayString()
                         }
                     }
                 }
@@ -201,7 +201,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                         }.onSuccess {
                             launchSnackBar(resetImageLimitSucceed)
                         }.onFailure {
-                            error = ExceptionUtils.getReadableString(it)
+                            error = it.displayString()
                         }
                     }
                 }

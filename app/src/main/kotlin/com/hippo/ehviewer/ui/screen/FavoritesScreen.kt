@@ -81,7 +81,7 @@ import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.util.ExceptionUtils
+import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
@@ -426,7 +426,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                     }.onSuccess {
                         data.refresh()
                     }.onFailure {
-                        snackbarState.showSnackbar(ExceptionUtils.getReadableString(it))
+                        snackbarState.showSnackbar(it.displayString())
                     }
                 }
             }

@@ -25,7 +25,7 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.ui.LockDrawer
-import com.hippo.ehviewer.util.ExceptionUtils
+import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -50,7 +50,7 @@ fun ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsN
                         navigator.navigate(gid asDstPageTo page with it)
                     }
                 }.onFailure {
-                    error = ExceptionUtils.getReadableString(it)
+                    error = it.displayString()
                 }
             }
         }

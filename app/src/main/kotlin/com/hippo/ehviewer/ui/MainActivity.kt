@@ -125,8 +125,8 @@ import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.updater.AppUpdater
-import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.addTextToClipboard
+import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.hippo.ehviewer.util.isAtLeastQ
@@ -239,7 +239,7 @@ class MainActivity : EhActivity() {
                         }
                     }
                 }.onFailure {
-                    snackbarState.showSnackbar(getString(R.string.update_failed, ExceptionUtils.getReadableString(it)))
+                    snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
                 }
             }
 

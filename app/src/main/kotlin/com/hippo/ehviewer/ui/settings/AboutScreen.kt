@@ -39,7 +39,7 @@ import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.updater.Release
 import com.hippo.ehviewer.util.AppConfig
-import com.hippo.ehviewer.util.ExceptionUtils
+import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.installPackage
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -123,7 +123,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                         dialogState.showNewVersion(context, it)
                     } ?: launchSnackBar(context.getString(R.string.already_latest_version))
                 }.onFailure {
-                    launchSnackBar(context.getString(R.string.update_failed, ExceptionUtils.getReadableString(it)))
+                    launchSnackBar(context.getString(R.string.update_failed, it.displayString()))
                 }
             }
         }
