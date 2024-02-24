@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -57,7 +56,6 @@ import com.hippo.ehviewer.ui.tools.getOffset
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import kotlinx.coroutines.Dispatchers
 import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination
@@ -67,7 +65,6 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
     val context = LocalContext.current
     val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
     val state = rememberLazyGridState()
-    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
     val pages = galleryDetail.pages
     val pgSize = galleryDetail.previewList.size
     val thumbColumns by Settings.thumbColumns.collectAsState()
@@ -103,7 +100,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
                                 previewPagesMap[it.position] = it
                                 if (Settings.preloadThumbAggressively) {
                                     with(context) {
-                                        imageRequest(it) { justDownload() }.executeIn(coroutineScope)
+                                        imageRequest(it) { justDownload() }.executeIn(viewModelScope)
                                     }
                                 }
                             }
