@@ -129,7 +129,7 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 fun DownloadsScreen(navigator: DestinationsNavigator) {
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
-    var filterState by rememberSaveable(stateSaver = DownloadsFilterState.Saver) {
+    var filterState by rememberSaveable {
         mutableStateOf(DownloadsFilterState(Settings.recentDownloadLabel.value))
     }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
@@ -157,7 +157,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     val hint = stringResource(R.string.search_bar_hint, title)
     val sortModes = stringArrayResource(id = R.array.download_sort_modes)
     val downloadStates = stringArrayResource(id = R.array.download_state)
-    val list = rememberInVM(filterState, invalidateKey) {
+    val list = remember(filterState, invalidateKey) {
         DownloadManager.downloadInfoList.filterTo(mutableStateListOf()) { info ->
             filterState.take(info)
         }
