@@ -146,12 +146,12 @@ import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.rememberLambda
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.AppHelper
-import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.bgWork
+import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
@@ -275,7 +275,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     }
                 }.onFailure {
                     galleryInfo?.let { info -> EhDB.putHistoryInfo(info.findBaseInfo()) }
-                    getDetailError = ExceptionUtils.getReadableString(it)
+                    getDetailError = it.displayString()
                 }.getOrNull()
             galleryDetail?.let {
                 EhDB.putHistoryInfo(it.galleryInfo)
@@ -382,7 +382,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 }.onFailure {
                     when (it) {
                         is NoHAtHClientException -> snackbarState.showSnackbar(failureNoHath)
-                        is EhException -> snackbarState.showSnackbar(ExceptionUtils.getReadableString(it))
+                        is EhException -> snackbarState.showSnackbar(it.displayString())
                         else -> {
                             logcat(it)
                             snackbarState.showSnackbar(downloadFailed)

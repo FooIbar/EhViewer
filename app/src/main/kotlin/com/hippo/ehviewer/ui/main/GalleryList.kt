@@ -53,7 +53,7 @@ import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.ui.screen.collectDetailSizeAsState
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
-import com.hippo.ehviewer.util.ExceptionUtils
+import com.hippo.ehviewer.util.displayString
 import kotlinx.coroutines.flow.drop
 
 @Stable
@@ -184,9 +184,8 @@ fun GalleryList(
             is LoadState.Error -> {
                 Surface {
                     ErrorTip(
-                        modifier = Modifier.widthIn(max = 228.dp)
-                            .clip(ShapeDefaults.Small).clickable { data.retry() },
-                        text = ExceptionUtils.getReadableString(state.error),
+                        modifier = Modifier.widthIn(max = 228.dp).clip(ShapeDefaults.Small).clickable { data.retry() },
+                        text = state.error.displayString(),
                     )
                 }
             }

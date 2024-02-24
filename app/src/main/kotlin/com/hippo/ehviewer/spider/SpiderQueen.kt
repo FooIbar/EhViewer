@@ -37,7 +37,7 @@ import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewPages
 import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.image.Image
-import com.hippo.ehviewer.util.ExceptionUtils
+import com.hippo.ehviewer.util.displayString
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.logcat
@@ -558,7 +558,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                             }
                             throw it
                         }
-                        updatePageState(index, STATE_FAILED, ExceptionUtils.getReadableString(it))
+                        updatePageState(index, STATE_FAILED, it.displayString())
                     }
                 }
             }
@@ -699,7 +699,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                             error = when (it) {
                                 is TimeoutCancellationException -> ERROR_TIMEOUT
                                 is CancellationException -> throw it
-                                else -> ExceptionUtils.getReadableString(it)
+                                else -> it.displayString()
                             }
                         }
                     }
@@ -709,7 +709,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     is QuotaExceededException -> notifyGet509(index)
                     // TODO: Check IP ban
                 }
-                error = ExceptionUtils.getReadableString(it)
+                error = it.displayString()
             }
             updatePageState(index, STATE_FAILED, error)
         }

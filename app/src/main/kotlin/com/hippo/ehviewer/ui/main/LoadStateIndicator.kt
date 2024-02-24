@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.paging.LoadState
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.util.ExceptionUtils
+import com.hippo.ehviewer.util.displayString
 
 @Composable
 fun LoadStateIndicator(
@@ -24,7 +24,7 @@ fun LoadStateIndicator(
 
     is LoadState.Error -> {
         Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = ExceptionUtils.getReadableString(state.error))
+            Text(text = state.error.displayString())
             Button(onClick = retry) {
                 Text(text = stringResource(id = R.string.action_retry))
             }

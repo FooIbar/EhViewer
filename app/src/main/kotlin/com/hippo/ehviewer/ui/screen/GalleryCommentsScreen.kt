@@ -97,10 +97,10 @@ import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.ui.tools.toBBCode
 import com.hippo.ehviewer.ui.tools.updateSpan
-import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
+import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.findActivity
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -210,7 +210,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
             snackbarState.showSnackbar(msg)
         }.onFailure {
             val text = if (commentId != -1L) editCommentFail else commentFail
-            snackbarState.showSnackbar(text + "\n" + ExceptionUtils.getReadableString(it))
+            snackbarState.showSnackbar(text + "\n" + it.displayString())
         }
     }
 

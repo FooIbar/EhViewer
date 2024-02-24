@@ -26,44 +26,35 @@ import java.net.UnknownHostException
 import javax.net.ssl.SSLException
 import splitties.init.appCtx
 
+fun Throwable.displayString(): String {
+    logcat(this)
+    val cause = cause
+    return when {
+        cause != null && this is IOException -> getReadableStringInternal(cause)
+        else -> getReadableStringInternal(this)
+    }
+}
+
+private fun getReadableStringInternal(e: Throwable) = when (e) {
+    is MalformedURLException -> appCtx.getString(R.string.error_invalid_url)
+    is SocketTimeoutException -> appCtx.getString(R.string.error_timeout)
+    is UnknownHostException -> appCtx.getString(R.string.error_unknown_host)
+    is StatusCodeException -> buildString {
+        append(appCtx.getString(R.string.error_bad_status_code, e.responseCode))
+        if (e.isIdentifiedResponseCode) {
+            append(", ").append(e.message)
+        }
+    }
+    is ProtocolException -> if (e.message!!.startsWith("Too many follow-up requests:")) {
+        appCtx.getString(R.string.error_redirection)
+    } else {
+        appCtx.getString(R.string.error_socket)
+    }
+    is SocketException, is SSLException -> appCtx.getString(R.string.error_socket)
+    else -> e.message ?: appCtx.getString(R.string.error_unknown)
+}
+
 object ExceptionUtils {
-    fun getReadableString(e: Throwable): String {
-        logcat(e)
-        val cause = e.cause
-        return if (e is IOException && cause != null) {
-            getReadableStringInternal(cause)
-        } else {
-            getReadableStringInternal(e)
-        }
-    }
-
-    private fun getReadableStringInternal(e: Throwable): String {
-        return when (e) {
-            is MalformedURLException -> appCtx.getString(R.string.error_invalid_url)
-            is SocketTimeoutException -> appCtx.getString(R.string.error_timeout)
-            is UnknownHostException -> appCtx.getString(R.string.error_unknown_host)
-            is StatusCodeException -> {
-                buildString {
-                    append(appCtx.getString(R.string.error_bad_status_code, e.responseCode))
-                    if (e.isIdentifiedResponseCode) {
-                        append(", ").append(e.message)
-                    }
-                }
-            }
-
-            is ProtocolException -> {
-                if (e.message!!.startsWith("Too many follow-up requests:")) {
-                    appCtx.getString(R.string.error_redirection)
-                } else {
-                    appCtx.getString(R.string.error_socket)
-                }
-            }
-
-            is SocketException, is SSLException -> appCtx.getString(R.string.error_socket)
-            else -> e.message ?: appCtx.getString(R.string.error_unknown)
-        }
-    }
-
     fun throwIfFatal(t: Throwable) {
         // values here derived from https://github.com/ReactiveX/RxJava/issues/748#issuecomment-32471495
         when (t) {

@@ -66,7 +66,7 @@ import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
-import com.hippo.ehviewer.util.ExceptionUtils
+import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -124,7 +124,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                         text = {
                             Text(
                                 """
-                                ${ExceptionUtils.getReadableString(it)}
+                                ${it.displayString()}
                                 ${stringResource(R.string.sign_in_failed_tip)}
                                 """.trimIndent(),
                             )
