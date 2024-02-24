@@ -85,5 +85,5 @@ FetchContent_MakeAvailable(Corrosion)
 corrosion_import_crate(MANIFEST_PATH ../rust/Cargo.toml)
 
 # Build and link our app's native lib
-add_library(${PROJECT_NAME} SHARED archive.c border.c gifutils.c natsort/strnatcmp.c)
+add_library(${PROJECT_NAME} SHARED archive.c border.c gifutils.c hash.c natsort/strnatcmp.c)
 target_link_libraries(${PROJECT_NAME} ehviewer_rust archive_static log jnigraphics)
