@@ -13,11 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +49,7 @@ import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.getClippedRefreshKey
 import com.hippo.ehviewer.ui.tools.getLimit
 import com.hippo.ehviewer.ui.tools.getOffset
+import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -60,7 +57,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination
 @Composable
-fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, navigator: NavController) {
+fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navigator: NavController) {
     LockDrawer(true)
     val context = LocalContext.current
     val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
@@ -68,11 +65,9 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPageArg: Boolean, n
     val pages = galleryDetail.pages
     val pgSize = galleryDetail.previewList.size
     val thumbColumns by Settings.thumbColumns.collectAsState()
-    var toNextPage by rememberSaveable { mutableStateOf(toNextPageArg) }
 
-    LaunchedEffect(Unit) {
-        if (toNextPage) state.scrollToItem(pgSize)
-        toNextPage = false
+    if (toNextPage) {
+        launchInVM { state.scrollToItem(pgSize) }
     }
 
     val data = rememberInVM {

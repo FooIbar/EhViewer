@@ -9,7 +9,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.launch
 
 class StateMapViewModel : ViewModel() {
     val states: MutableMap<Int, ArrayDeque<Any>> = mutableMapOf()
@@ -34,6 +40,15 @@ inline fun <T : Any> rememberInVM(
         }
     }
     return value
+}
+
+@Composable
+fun launchInVM(
+    context: CoroutineContext = EmptyCoroutineContext,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend CoroutineScope.() -> Unit,
+) = rememberInVM {
+    viewModelScope.launch(context, start, block)
 }
 
 @Composable
