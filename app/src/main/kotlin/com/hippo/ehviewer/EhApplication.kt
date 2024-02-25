@@ -36,6 +36,7 @@ import coil3.util.DebugLogger
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.GalleryDetail
+import com.hippo.ehviewer.coil.CropBorderInterceptor
 import com.hippo.ehviewer.coil.DownloadThumbInterceptor
 import com.hippo.ehviewer.coil.MergeInterceptor
 import com.hippo.ehviewer.dailycheck.checkDawn
@@ -181,6 +182,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
             add(KtorNetworkFetcherFactory { ktorClient })
             add(MergeInterceptor)
             add(DownloadThumbInterceptor)
+            add(CropBorderInterceptor)
             if (isAtLeastP) {
                 add(AnimatedImageDecoder.Factory(false))
             } else {
