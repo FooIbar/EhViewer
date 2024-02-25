@@ -74,7 +74,7 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.databinding.ReaderActivityBinding
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.download.downloadDir
+import com.hippo.ehviewer.download.archiveFile
 import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.PageLoader2
@@ -162,8 +162,7 @@ class ReaderActivity : EhActivity() {
         val provider = when (mAction) {
             ACTION_EH -> {
                 mGalleryInfo?.let {
-                    DownloadManager.getDownloadInfo(it.gid)?.downloadDir
-                        ?.findFile("${it.gid}.cbz")
+                    DownloadManager.getDownloadInfo(it.gid)?.archiveFile
                         ?.let { file -> ArchivePageLoader(file, it.gid, mPage) }
                         ?: EhPageLoader(it, mPage)
                 }
