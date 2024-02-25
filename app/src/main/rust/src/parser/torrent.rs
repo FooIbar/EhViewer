@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
@@ -18,8 +19,8 @@ struct Torrent {
     name: String,
 }
 
-fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>, &'static str> {
-    let list = dom.query_selector("table").ok_or("No Table")?.filter_map(|e| {
+fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>> {
+    let list = dom.query_selector("table").ok_or(anyhow!("No Table"))?.filter_map(|e| {
         let html = e.get(parser)?.inner_html(parser);
         if html.contains("Expunged") {
             None

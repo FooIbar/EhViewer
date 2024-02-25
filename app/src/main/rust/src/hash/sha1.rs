@@ -8,7 +8,7 @@ use jni_throwing;
 use sha1::{Digest, Sha1};
 use std::{fs::File, io::copy, os::fd::BorrowedFd};
 
-pub fn file_sha1(mut file: File, digest: &mut [u8; 40]) -> Result<&str> {
+fn file_sha1(mut file: File, digest: &mut [u8; 40]) -> Result<&str> {
     let mut sha = Sha1::new();
     copy(&mut file, &mut sha)?;
     Ok(encode_str(&sha.finalize(), digest)?)
