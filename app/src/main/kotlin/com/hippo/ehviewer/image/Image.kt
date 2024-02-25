@@ -68,7 +68,7 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
         intrinsicRect
     }
 
-    var innerImage: CoilImage? = if (image is BitmapImage && isAtLeastQ) {
+    var innerImage: CoilImage? = if (image is BitmapImage && isAtLeastQ && Settings.cropBorder.value) {
         val bitmap = image.bitmap
 
         // Upload to Graphical Buffer to accelerate render
