@@ -75,7 +75,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(libarchive)
 include_directories(${libarchive_SOURCE_DIR}/libarchive)
 
-SET(AR "llvm-ar")
 FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
@@ -84,6 +83,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Corrosion)
 corrosion_import_crate(MANIFEST_PATH ../rust/Cargo.toml)
+corrosion_set_env_vars(ehviewer_rust AR=llvm-ar)
 
 # Build and link our app's native lib
 add_library(${PROJECT_NAME} SHARED archive.c border.c gifutils.c natsort/strnatcmp.c)
