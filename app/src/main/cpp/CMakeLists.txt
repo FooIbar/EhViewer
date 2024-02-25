@@ -78,12 +78,11 @@ include_directories(${libarchive_SOURCE_DIR}/libarchive)
 FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG v0.4.7
+        GIT_TAG 0a3bdf452995803c334d79dc9a2affbfad51b720
 )
 
 FetchContent_MakeAvailable(Corrosion)
 corrosion_import_crate(MANIFEST_PATH ../rust/Cargo.toml)
-corrosion_set_env_vars(ehviewer_rust AR=llvm-ar)
 
 # Build and link our app's native lib
 add_library(${PROJECT_NAME} SHARED archive.c border.c gifutils.c natsort/strnatcmp.c)
