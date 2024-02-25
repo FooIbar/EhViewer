@@ -1,6 +1,8 @@
+mod hash;
 mod parser;
 
 extern crate android_logger;
+extern crate anyhow;
 extern crate base16ct;
 extern crate jni;
 extern crate jni_fn;
@@ -13,18 +15,13 @@ extern crate sha1;
 extern crate tl;
 
 use android_logger::Config;
-use base16ct::lower::encode_str;
-use jni::objects::{JByteBuffer, JClass};
-use jni::sys::{jint, jstring, JavaVM, JNI_VERSION_1_6};
+use jni::objects::JByteBuffer;
+use jni::sys::{jint, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
-use jni_fn::jni_fn;
 use log::LevelFilter;
 use serde::Serialize;
-use sha1::{Digest, Sha1};
 use std::ffi::c_void;
-use std::fs::File;
-use std::io::{copy, Cursor};
-use std::os::fd::BorrowedFd;
+use std::io::Cursor;
 use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
@@ -128,29 +125,4 @@ fn query_childs_first_match_attr<'a>(
 pub extern "system" fn JNI_OnLoad(_: JavaVM, _: *mut c_void) -> jint {
     android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
     JNI_VERSION_1_6
-}
-
-#[no_mangle]
-#[allow(non_snake_case)]
-#[jni_fn("com.hippo.ehviewer.jni.HashKt")]
-pub fn sha1(mut env: JNIEnv, _class: JClass, fd: jint) -> jstring {
-    let mut sha = Sha1::new();
-    let borrowed_fd = unsafe { BorrowedFd::borrow_raw(fd) };
-    let owned_fd = match borrowed_fd.try_clone_to_owned() {
-        Ok(fd) => fd,
-        Err(err) => return throw_msg(&mut env, &format!("{err}")) as jstring,
-    };
-    if let Err(err) = copy(&mut File::from(owned_fd), &mut sha) {
-        return throw_msg(&mut env, &format!("{err}")) as jstring;
-    };
-    let digest = sha.finalize();
-    let mut hex_digest = [0u8; 40];
-    let hex = match encode_str(&digest, &mut hex_digest) {
-        Ok(str) => str,
-        Err(err) => return throw_msg(&mut env, &format!("{err}")) as jstring,
-    };
-    match env.new_string(hex) {
-        Ok(obj) => obj.into_raw(),
-        Err(err) => throw_msg(&mut env, &format!("{err}")) as jstring,
-    }
 }
