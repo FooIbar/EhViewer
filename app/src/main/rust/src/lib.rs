@@ -23,7 +23,7 @@ use serde::Serialize;
 use sha1::{Digest, Sha1};
 use std::ffi::c_void;
 use std::fs::File;
-use std::io::{copy, BufReader, Cursor};
+use std::io::{copy, Cursor};
 use std::os::fd::BorrowedFd;
 use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
@@ -138,20 +138,19 @@ pub fn sha1(mut env: JNIEnv, _class: JClass, fd: jint) -> jstring {
     let borrowed_fd = unsafe { BorrowedFd::borrow_raw(fd) };
     let owned_fd = match borrowed_fd.try_clone_to_owned() {
         Ok(fd) => fd,
-        Err(err) => return throw_msg(&mut env, &format!("{}", err)) as jstring,
+        Err(err) => return throw_msg(&mut env, &format!("{err}")) as jstring,
     };
-    let mut reader = BufReader::new(File::from(owned_fd));
-    if let Err(err) = copy(&mut reader, &mut sha) {
-        return throw_msg(&mut env, &format!("{}", err)) as jstring;
+    if let Err(err) = copy(&mut File::from(owned_fd), &mut sha) {
+        return throw_msg(&mut env, &format!("{err}")) as jstring;
     };
     let digest = sha.finalize();
     let mut hex_digest = [0u8; 40];
     let hex = match encode_str(&digest, &mut hex_digest) {
         Ok(str) => str,
-        Err(err) => return throw_msg(&mut env, &format!("{}", err)) as jstring,
+        Err(err) => return throw_msg(&mut env, &format!("{err}")) as jstring,
     };
     match env.new_string(hex) {
         Ok(obj) => obj.into_raw(),
-        Err(err) => throw_msg(&mut env, &format!("{}", err)) as jstring,
+        Err(err) => throw_msg(&mut env, &format!("{err}")) as jstring,
     }
 }
