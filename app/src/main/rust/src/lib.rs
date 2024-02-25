@@ -15,7 +15,7 @@ extern crate sha1;
 extern crate tl;
 
 use android_logger::Config;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use jni::objects::JByteBuffer;
 use jni::sys::{jint, jobject, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
@@ -25,6 +25,7 @@ use std::ffi::c_void;
 use std::io::Cursor;
 use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
+use tl::ParserOptions;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
 
 #[macro_export]
@@ -67,10 +68,10 @@ where
     handle.get(parser)
 }
 
-fn deref_mut_direct_bytebuffer<'a>(env: &JNIEnv, buffer: JByteBuffer) -> &'a mut [u8] {
-    let ptr = env.get_direct_buffer_address(&buffer).unwrap();
-    let cap = env.get_direct_buffer_capacity(&buffer).unwrap();
-    unsafe { &mut *slice_from_raw_parts_mut(ptr, cap) }
+fn deref_mut_direct_bytebuffer(env: &JNIEnv, buffer: JByteBuffer) -> Result<&'static mut [u8]> {
+    let ptr = env.get_direct_buffer_address(&buffer)?;
+    let cap = env.get_direct_buffer_capacity(&buffer)?;
+    Ok(unsafe { &mut *slice_from_raw_parts_mut(ptr, cap) })
 }
 
 fn throw_msg(env: &mut JNIEnv, msg: &str) -> i32 {
@@ -85,6 +86,12 @@ trait ThrowingHasDefault {
 impl ThrowingHasDefault for jobject {
     fn default() -> Self {
         0 as jobject
+    }
+}
+
+impl ThrowingHasDefault for i32 {
+    fn default() -> Self {
+        0
     }
 }
 
@@ -104,23 +111,20 @@ where
 
 fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, f: F) -> i32
 where
-    F: Fn(&VDom, &str) -> Result<R, &'static str>,
+    F: Fn(&VDom, &str) -> Result<R>,
     R: Serialize,
 {
-    let buffer = deref_mut_direct_bytebuffer(env, str);
-    let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
-    let value = match tl::parse(html, tl::ParserOptions::default()) {
-        Ok(dom) => match f(&dom, html) {
-            Err(err) => return throw_msg(env, err),
-            Ok(value) => value,
-        },
-        Err(_) => return throw_msg(env, html),
-    };
-    let mut cursor = Cursor::new(buffer);
-    match serde_cbor::to_writer(&mut cursor, &value) {
-        Ok(_) => cursor.position() as i32,
-        Err(err) => throw_msg(env, &format!("{}", err)),
-    }
+    jni_throwing(env, |env| {
+        let buffer = deref_mut_direct_bytebuffer(env, str)?;
+        let value = {
+            let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
+            let dom = tl::parse(html, ParserOptions::default()).map_err(|_| anyhow!("{html}"))?;
+            f(&dom, html)?
+        };
+        let mut cursor = Cursor::new(buffer);
+        serde_cbor::to_writer(&mut cursor, &value)?;
+        Ok(cursor.position() as i32)
+    })
 }
 
 fn get_node_handle_attr<'a>(

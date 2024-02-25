@@ -1,3 +1,4 @@
+use anyhow::{bail, Result};
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
@@ -17,9 +18,9 @@ struct FavResult {
     galleryListResult: GalleryListResult,
 }
 
-fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult, &'static str> {
+fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult> {
     if html.contains("This page requires you to log on.</p>") {
-        return Err("Not logged in!");
+        bail!("Not logged in!")
     }
     let vec: Vec<(String, i32)> = dom
         .get_elements_by_class_name("fp")
@@ -49,7 +50,7 @@ fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult, &'sta
             galleryListResult: list,
         })
     } else {
-        Err("Illegal fav cat count!")
+        bail!("Illegal fav cat count!")
     }
 }
 

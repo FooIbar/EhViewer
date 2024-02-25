@@ -1,3 +1,4 @@
+use anyhow::{anyhow, bail, Result};
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
@@ -189,16 +190,12 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
     })
 }
 
-pub fn parse_info_list(
-    dom: &VDom,
-    parser: &Parser,
-    str: &str,
-) -> Result<GalleryListResult, &'static str> {
+pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Result<GalleryListResult> {
     if str.contains("<p>You do not have any watched tags") {
-        return Err("No watched tags!");
+        bail!("No watched tags!")
     }
     if str.contains("No hits found</p>") || str.contains("No unfiltered results found") {
-        return Err("No hits found!");
+        bail!("No hits found!")
     }
     let f = || {
         let itg = get_vdom_first_element_by_class_name(dom, "itg")?;
@@ -231,7 +228,7 @@ pub fn parse_info_list(
             galleryInfoList: info,
         })
     };
-    f().ok_or("No content")
+    f().ok_or(anyhow!("No content"))
 }
 
 #[no_mangle]
