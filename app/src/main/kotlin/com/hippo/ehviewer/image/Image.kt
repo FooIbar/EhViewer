@@ -72,9 +72,11 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
         val bitmap = image.bitmap
 
         // Upload to Graphical Buffer to accelerate render
-        bitmap.copy(Bitmap.Config.HARDWARE, false).apply {
+        // May fail if the image is too large
+        bitmap.copy(Bitmap.Config.HARDWARE, false)?.run {
             bitmap.recycle()
-        }.asCoilImage()
+            asCoilImage()
+        } ?: image
     } else {
         image
     }
