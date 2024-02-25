@@ -75,6 +75,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(libarchive)
 include_directories(${libarchive_SOURCE_DIR}/libarchive)
 
+SET(CMAKE_AR "llvm-ar")
 FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
