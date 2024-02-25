@@ -116,17 +116,22 @@ object DownloadManager : OnSpiderListener {
             // Get download from wait list
             if (!mWaitList.isEmpty()) {
                 val info = mWaitList.removeFirst()
-                val spider = SpiderQueen.obtainSpiderQueen(info, SpiderQueen.MODE_DOWNLOAD)
                 mCurrentTask = info
+                with(info) {
+                    archiveFile?.let {
+                        return onFinish(pages, pages, pages)
+                    }
+                    state = DownloadInfo.STATE_DOWNLOAD
+                    speed = -1
+                    remaining = -1
+                    total = -1
+                    finished = 0
+                    downloaded = 0
+                    legacy = -1
+                }
+                val spider = SpiderQueen.obtainSpiderQueen(info, SpiderQueen.MODE_DOWNLOAD)
                 mCurrentSpider = spider
                 spider.addOnSpiderListener(this)
-                info.state = DownloadInfo.STATE_DOWNLOAD
-                info.speed = -1
-                info.remaining = -1
-                info.total = -1
-                info.finished = 0
-                info.downloaded = 0
-                info.legacy = -1
                 // Update in DB
                 EhDB.putDownloadInfo(info)
                 // Start speed count
@@ -766,7 +771,7 @@ object DownloadManager : OnSpiderListener {
                         SpiderQueen.releaseSpiderQueen(spider, SpiderQueen.MODE_DOWNLOAD)
                     }
                     // Check null
-                    if (info == null || spider == null) {
+                    if (info == null) {
                         logcat(TAG, LogPriority.ERROR) { "Current stuff is null, but it should not be" }
                     } else {
                         // Stop speed count
@@ -918,3 +923,4 @@ var downloadLocation: UniFile
     }
 
 val DownloadInfo.downloadDir get() = dirname?.let { downloadLocation / it }
+val DownloadInfo.archiveFile get() = downloadDir?.findFile("$gid.cbz")
