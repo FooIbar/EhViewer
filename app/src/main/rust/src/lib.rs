@@ -74,11 +74,6 @@ fn deref_mut_direct_bytebuffer(env: &JNIEnv, buffer: JByteBuffer) -> Result<&'st
     Ok(unsafe { &mut *slice_from_raw_parts_mut(ptr, cap) })
 }
 
-fn throw_msg(env: &mut JNIEnv, msg: &str) -> i32 {
-    env.throw_new("java/lang/RuntimeException", msg).ok();
-    0
-}
-
 trait ThrowingHasDefault {
     fn default() -> Self;
 }
@@ -103,7 +98,8 @@ where
     match f(env) {
         Ok(value) => value,
         Err(err) => {
-            throw_msg(env, &format!("{err}"));
+            let msg = format!("{err}");
+            env.throw_new("java/lang/RuntimeException", msg).ok();
             R::default()
         }
     }
