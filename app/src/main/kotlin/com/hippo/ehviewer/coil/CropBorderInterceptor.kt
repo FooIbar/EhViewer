@@ -53,7 +53,7 @@ object CropBorderInterceptor : Interceptor {
                     val minHeight = image.height * CROP_THRESHOLD
                     val maybeHwBitmap = if (hw) {
                         // Upload to Graphical Buffer to accelerate render
-                        // May fail if the image is too large
+                        // May fail if the image is too long
                         bitmap.copy(Bitmap.Config.HARDWARE, false)?.apply {
                             bitmap.recycle()
                         } ?: bitmap
