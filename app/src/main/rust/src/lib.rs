@@ -15,8 +15,9 @@ extern crate sha1;
 extern crate tl;
 
 use android_logger::Config;
+use anyhow::Result;
 use jni::objects::JByteBuffer;
-use jni::sys::{jint, JavaVM, JNI_VERSION_1_6};
+use jni::sys::{jint, jobject, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
 use log::LevelFilter;
 use serde::Serialize;
@@ -75,6 +76,30 @@ fn deref_mut_direct_bytebuffer<'a>(env: &JNIEnv, buffer: JByteBuffer) -> &'a mut
 fn throw_msg(env: &mut JNIEnv, msg: &str) -> i32 {
     env.throw_new("java/lang/RuntimeException", msg).ok();
     0
+}
+
+trait ThrowingHasDefault {
+    fn default() -> Self;
+}
+
+impl ThrowingHasDefault for jobject {
+    fn default() -> Self {
+        0 as jobject
+    }
+}
+
+fn jni_throwing<F, R>(env: &mut JNIEnv, f: F) -> R
+where
+    F: FnOnce(&mut JNIEnv) -> Result<R>,
+    R: ThrowingHasDefault,
+{
+    match f(env) {
+        Ok(value) => value,
+        Err(err) => {
+            throw_msg(env, &format!("{err}"));
+            R::default()
+        }
+    }
 }
 
 fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, f: F) -> i32
