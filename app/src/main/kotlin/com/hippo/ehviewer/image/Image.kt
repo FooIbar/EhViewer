@@ -57,28 +57,34 @@ private const val CROP_THRESHOLD = 0.75f
 
 class Image private constructor(image: CoilImage, private val src: AutoCloseable) {
     val size = image.size
-    private val intrinsicRect = image.run { Rect(0, 0, width, height) }
-    val rect: Rect = if (Settings.cropBorder.value && image is BitmapImage) {
-        val array = detectBorder(image.bitmap)
-        val r = Rect(array[0], array[1], array[2], array[3])
-        val minWidth = image.width * CROP_THRESHOLD
-        val minHeight = image.height * CROP_THRESHOLD
-        if (r.width() > minWidth && r.height() > minHeight) r else intrinsicRect
-    } else {
-        intrinsicRect
-    }
+    val rect: Rect
+    var innerImage: CoilImage?
 
-    var innerImage: CoilImage? = if (image is BitmapImage && isAtLeastQ) {
-        val bitmap = image.bitmap
+    init {
+        val canCrop = Settings.cropBorder.value && image is BitmapImage
+        val intrinsicRect = image.run { Rect(0, 0, width, height) }
+        rect = if (canCrop) {
+            val array = detectBorder(image.bitmap)
+            val r = Rect(array[0], array[1], array[2], array[3])
+            val minWidth = image.width * CROP_THRESHOLD
+            val minHeight = image.height * CROP_THRESHOLD
+            if (r.width() > minWidth && r.height() > minHeight) r else intrinsicRect
+        } else {
+            intrinsicRect
+        }
 
-        // Upload to Graphical Buffer to accelerate render
-        // May fail if the image is too long
-        bitmap.copy(Bitmap.Config.HARDWARE, false)?.run {
-            bitmap.recycle()
-            asCoilImage()
-        } ?: image
-    } else {
-        image
+        innerImage = if (canCrop && isAtLeastQ) {
+            val bitmap = image.bitmap
+
+            // Upload to Graphical Buffer to accelerate render
+            // May fail if the image is too long
+            bitmap.copy(Bitmap.Config.HARDWARE, false)?.run {
+                bitmap.recycle()
+                asCoilImage()
+            } ?: image
+        } else {
+            image
+        }
     }
 
     @Synchronized
