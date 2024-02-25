@@ -114,7 +114,9 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
                 if (isAtLeastO) {
                     colorSpace(colorSpace)
                 }
-                allowHardware(false)
+                if (Settings.cropBorder.value) {
+                    allowHardware(false)
+                }
                 memoryCachePolicy(CachePolicy.DISABLED)
             }
             return when (val result = appCtx.imageLoader.execute(req)) {
