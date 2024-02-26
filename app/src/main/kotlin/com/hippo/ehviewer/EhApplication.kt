@@ -183,8 +183,8 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
             add(KtorNetworkFetcherFactory { ktorClient })
             add(MergeInterceptor)
             add(DownloadThumbInterceptor)
-            add(HardwareBitmapInterceptor)
             add(CropBorderInterceptor)
+            add(HardwareBitmapInterceptor)
             if (isAtLeastP) {
                 add(AnimatedImageDecoder.Factory(false))
             } else {
