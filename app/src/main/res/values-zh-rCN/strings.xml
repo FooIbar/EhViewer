@@ -463,6 +463,8 @@
     <string name="title_desc">标题（降序）</string>
     <string name="download_label_asc">下载标签（升序）</string>
     <string name="download_label_desc">下载标签（降序）</string>
+    <string name="page_count_asc">页数（升序）</string>
+    <string name="page_count_desc">页数（降序）</string>
     <string name="download_filter">过滤</string>
     <string name="download_all">全部</string>
     <string name="download_start_all_reversed">全部开始（倒序）</string>

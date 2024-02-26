@@ -12,6 +12,7 @@ data class SortMode(val field: Field, val order: Order) {
         TITLE(1),
         TIME(2),
         LABEL(3),
+        PAGES(4),
     }
 
     enum class Order(val value: Int) {
@@ -25,6 +26,7 @@ data class SortMode(val field: Field, val order: Order) {
             Field.TITLE -> compareBy { EhUtils.getSuitableTitle(it) }
             Field.TIME -> compareBy { it.time }
             Field.LABEL -> compareBy<DownloadInfo> { it.label }.thenBy { EhUtils.getSuitableTitle(it) }
+            Field.PAGES -> compareBy<DownloadInfo> { it.pages }.thenBy { EhUtils.getSuitableTitle(it) }
         }
         return if (order == Order.ASC) comparator else comparator.reversed()
     }
@@ -46,6 +48,8 @@ data class SortMode(val field: Field, val order: Order) {
             SortMode(Field.TITLE, Order.DESC),
             SortMode(Field.LABEL, Order.ASC),
             SortMode(Field.LABEL, Order.DESC),
+            SortMode(Field.PAGES, Order.ASC),
+            SortMode(Field.PAGES, Order.DESC),
         )
     }
 }
