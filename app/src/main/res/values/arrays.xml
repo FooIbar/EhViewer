@@ -237,6 +237,8 @@
         <item>@string/title_desc</item>
         <item>@string/download_label_asc</item>
         <item>@string/download_label_desc</item>
+        <item>@string/page_count_asc</item>
+        <item>@string/page_count_desc</item>
     </string-array>
 
     <string-array name="download_state">
