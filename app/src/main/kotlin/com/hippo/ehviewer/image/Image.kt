@@ -29,16 +29,16 @@ import arrow.core.right
 import coil3.BitmapImage
 import coil3.DrawableImage
 import coil3.Image as CoilImage
-import coil3.asCoilImage
 import coil3.imageLoader
 import coil3.request.CachePolicy
 import coil3.request.ErrorResult
 import coil3.request.SuccessResult
-import coil3.request.allowHardware
 import coil3.request.colorSpace
 import coil3.size.Precision
 import coil3.size.Scale
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.coil.BitmapImageWithRect
+import com.hippo.ehviewer.coil.maybeCropBorder
 import com.hippo.ehviewer.jni.isGif
 import com.hippo.ehviewer.jni.mmap
 import com.hippo.ehviewer.jni.munmap
@@ -46,37 +46,22 @@ import com.hippo.ehviewer.jni.rewriteGifSource
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
-import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import splitties.init.appCtx
 
-private const val CROP_THRESHOLD = 0.75f
-
 class Image private constructor(image: CoilImage, private val src: AutoCloseable) {
     val size = image.size
-    private val intrinsicRect = image.run { Rect(0, 0, width, height) }
-    val rect: Rect = if (Settings.cropBorder.value && image is BitmapImage) {
-        val array = detectBorder(image.bitmap)
-        val r = Rect(array[0], array[1], array[2], array[3])
-        val minWidth = image.width * CROP_THRESHOLD
-        val minHeight = image.height * CROP_THRESHOLD
-        if (r.width() > minWidth && r.height() > minHeight) r else intrinsicRect
-    } else {
-        intrinsicRect
+    val rect = when (image) {
+        is BitmapImageWithRect -> image.rect
+        else -> image.run { Rect(0, 0, width, height) }
     }
 
-    var innerImage: CoilImage? = if (image is BitmapImage && isAtLeastQ) {
-        val bitmap = image.bitmap
-
-        // Upload to Graphical Buffer to accelerate render
-        bitmap.copy(Bitmap.Config.HARDWARE, false).apply {
-            bitmap.recycle()
-        }.asCoilImage()
-    } else {
-        image
+    var innerImage: CoilImage? = when (image) {
+        is BitmapImageWithRect -> image.image
+        else -> image
     }
 
     @Synchronized
@@ -112,9 +97,7 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
                 if (isAtLeastO) {
                     colorSpace(colorSpace)
                 }
-                if (Settings.cropBorder.value) {
-                    allowHardware(false)
-                }
+                maybeCropBorder(Settings.cropBorder.value)
                 memoryCachePolicy(CachePolicy.DISABLED)
             }
             return when (val result = appCtx.imageLoader.execute(req)) {
@@ -176,4 +159,4 @@ interface ByteBufferSource : ImageSource {
     val source: ByteBuffer
 }
 
-private external fun detectBorder(bitmap: Bitmap): IntArray
+external fun detectBorder(bitmap: Bitmap): IntArray
