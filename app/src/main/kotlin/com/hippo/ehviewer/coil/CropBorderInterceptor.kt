@@ -70,7 +70,7 @@ object CropBorderInterceptor : Interceptor {
                     } else {
                         maybeHwImage
                     }
-                    return result.copy(image = new, request = req, dataSource = result.dataSource)
+                    return result.copy(image = new, request = result.request, dataSource = result.dataSource)
                 }
             }
             return result
