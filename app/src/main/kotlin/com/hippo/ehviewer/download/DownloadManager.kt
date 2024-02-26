@@ -24,6 +24,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
+import arrow.fx.coroutines.parMapNotNull
 import com.google.android.material.math.MathUtils
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
@@ -31,9 +32,13 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
 import com.hippo.ehviewer.image.Image
+import com.hippo.ehviewer.spider.COMIC_INFO_FILE
 import com.hippo.ehviewer.spider.SpiderQueen
+import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
 import com.hippo.ehviewer.spider.putToDownloadDir
+import com.hippo.ehviewer.spider.readComicInfo
+import com.hippo.ehviewer.spider.readCompatFromUniFile
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ConcurrentPool
 import com.hippo.ehviewer.util.SimpleHandler
@@ -524,6 +529,23 @@ object DownloadManager : OnSpiderListener {
                 it.label = null
             }
         }
+    }
+
+    suspend fun readPagesFromLocal() {
+        val list = allInfoList.filter { it.pages == 0 }.parMapNotNull(concurrency = 5) { info ->
+            info.downloadDir?.run {
+                val pages = findFile(SPIDER_INFO_FILENAME)?.let {
+                    readCompatFromUniFile(it)?.pages
+                } ?: findFile(COMIC_INFO_FILE)?.let {
+                    readComicInfo(it)?.pageCount
+                }
+                pages?.let {
+                    info.pages = it
+                    info.galleryInfo
+                }
+            }
+        }
+        EhDB.updateGalleryInfo(list)
     }
 
     val isIdle: Boolean

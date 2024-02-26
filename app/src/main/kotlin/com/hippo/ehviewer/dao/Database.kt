@@ -115,7 +115,7 @@ class DownloadsMigration : AutoMigrationSpec
         BaseGalleryInfo::class, DownloadLabel::class, DownloadEntity::class, DownloadDirname::class,
         Filter::class, HistoryInfo::class, LocalFavoriteInfo::class, ProgressInfo::class, QuickSearch::class,
     ],
-    version = 19,
+    version = 20,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(
@@ -185,6 +185,10 @@ class DownloadsMigration : AutoMigrationSpec
             from = 18,
             to = 19,
             spec = DownloadsMigration::class,
+        ),
+        AutoMigration(
+            from = 19,
+            to = 20,
         ),
     ],
 )

@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
@@ -195,6 +195,7 @@ fun GalleryInfoGridItem(
     onLongClick: () -> Unit,
     info: GalleryInfo,
     modifier: Modifier = Modifier,
+    badgeText: String? = info.simpleLanguage,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) = ElevatedCard(
     modifier = modifier,
@@ -219,13 +220,12 @@ fun GalleryInfoGridItem(
         )
         val categoryColor = EhUtils.getCategoryColor(info.category)
         Badge(
-            modifier = Modifier.align(Alignment.TopEnd).width(32.dp).height(24.dp),
+            modifier = Modifier.align(Alignment.TopEnd).widthIn(min = 32.dp).height(24.dp),
             containerColor = categoryColor,
             contentColor = if (Settings.harmonizeCategoryColor) contentColorFor(categoryColor) else EhUtils.categoryTextColor,
         ) {
-            val simpleLang = info.simpleLanguage
-            if (simpleLang != null) {
-                Text(text = simpleLang.uppercase())
+            if (badgeText != null) {
+                Text(text = badgeText)
             }
         }
     }

@@ -117,7 +117,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
                 EhDB
             }
             launchIO {
-                DownloadManager.isIdle
+                DownloadManager.readPagesFromLocal()
             }
             launchIO {
                 runSuspendCatching {

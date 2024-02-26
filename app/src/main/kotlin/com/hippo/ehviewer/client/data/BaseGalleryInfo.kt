@@ -65,7 +65,7 @@ data class BaseGalleryInfo(
     @Ignore
     override var simpleTags: ArrayList<String>? = null,
 
-    @Ignore
+    @ColumnInfo(name = "PAGES", defaultValue = "0")
     override var pages: Int = 0,
 
     @Ignore
