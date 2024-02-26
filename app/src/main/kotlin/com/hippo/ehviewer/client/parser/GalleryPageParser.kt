@@ -20,7 +20,7 @@ import com.hippo.ehviewer.util.unescapeXml
 
 object GalleryPageParser {
     private val PATTERN_IMAGE_URL = Regex("<img[^>]*src=\"([^\"]+)\" style")
-    private val PATTERN_SKIP_HATH_KEY = Regex("onclick=\"return nl\\('([\\d-]+)'\\)")
+    private val PATTERN_SKIP_HATH_KEY = Regex("onclick=\"return nl\\('([^)]+)'\\)")
     private val PATTERN_ORIGIN_IMAGE_URL = Regex("<a href=\"([^\"]+/fullimg/[^\"]+)\">")
 
     // TODO Not sure about the size of show keys
