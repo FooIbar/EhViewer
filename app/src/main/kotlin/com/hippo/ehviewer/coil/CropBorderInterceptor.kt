@@ -63,10 +63,7 @@ object CropBorderInterceptor : Interceptor {
                     val shouldOverride = r.width() > minWidth && r.height() > minHeight
                     val maybeHwImage = maybeHwBitmap.asCoilImage()
                     val new = if (shouldOverride) {
-                        BitmapImageWithRect(
-                            rect = r,
-                            image = maybeHwImage,
-                        )
+                        BitmapImageWithRect(r, maybeHwImage)
                     } else {
                         maybeHwImage
                     }
