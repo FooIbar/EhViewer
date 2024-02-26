@@ -479,12 +479,13 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
                     contentPadding = realPadding,
                 ) {
-                    items(list) {
+                    items(list) { info ->
                         GalleryInfoGridItem(
-                            onClick = ::onItemClick.partially1(it),
-                            onLongClick = { navigator.navigate(it.galleryInfo.asDst()) },
-                            info = it,
+                            onClick = ::onItemClick.partially1(info),
+                            onLongClick = { navigator.navigate(info.galleryInfo.asDst()) },
+                            info = info,
                             modifier = Modifier.animateItemPlacement(),
+                            badgeText = info.pages.takeIf { it > 0 }?.toString(),
                         )
                     }
                 }

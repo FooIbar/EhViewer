@@ -23,6 +23,9 @@ interface GalleryDao {
     @Update
     suspend fun update(galleryInfo: BaseGalleryInfo)
 
+    @Update
+    suspend fun update(galleryInfoList: List<BaseGalleryInfo>)
+
     @Upsert
     suspend fun upsert(galleryInfo: BaseGalleryInfo)
 

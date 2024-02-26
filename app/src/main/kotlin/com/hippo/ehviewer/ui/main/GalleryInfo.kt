@@ -195,6 +195,7 @@ fun GalleryInfoGridItem(
     onLongClick: () -> Unit,
     info: GalleryInfo,
     modifier: Modifier = Modifier,
+    badgeText: String? = info.simpleLanguage,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) = ElevatedCard(
     modifier = modifier,
@@ -223,9 +224,8 @@ fun GalleryInfoGridItem(
             containerColor = categoryColor,
             contentColor = if (Settings.harmonizeCategoryColor) contentColorFor(categoryColor) else EhUtils.categoryTextColor,
         ) {
-            val simpleLang = info.simpleLanguage
-            if (simpleLang != null) {
-                Text(text = simpleLang.uppercase())
+            if (badgeText != null) {
+                Text(text = badgeText)
             }
         }
     }
