@@ -27,10 +27,10 @@ fun ImageRequest.Builder.maybeCropBorder(enable: Boolean) = apply {
 val ImageRequest.maybeCropBorder: Boolean
     get() = getExtra(maybeCropBorderKey)
 
-interface BitmapImageWithRect : Image {
-    val rect: Rect
-    val image: Image
-}
+class BitmapImageWithRect(
+    val rect: Rect,
+    val image: Image,
+) : Image by image
 
 object CropBorderInterceptor : Interceptor {
     override suspend fun intercept(chain: Chain): ImageResult {
@@ -63,10 +63,10 @@ object CropBorderInterceptor : Interceptor {
                     val shouldOverride = r.width() > minWidth && r.height() > minHeight
                     val maybeHwImage = maybeHwBitmap.asCoilImage()
                     val new = if (shouldOverride) {
-                        object : BitmapImageWithRect, Image by maybeHwImage {
-                            override val rect = r
-                            override val image = maybeHwImage
-                        }
+                        BitmapImageWithRect(
+                            rect = r,
+                            image = maybeHwImage,
+                        )
                     } else {
                         maybeHwImage
                     }
