@@ -60,8 +60,8 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
     }
 
     var innerImage: CoilImage? = when (image) {
-        !is BitmapImageWithRect -> image
-        else -> image.image
+        is BitmapImageWithRect -> image.image
+        else -> image
     }
 
     @Synchronized
