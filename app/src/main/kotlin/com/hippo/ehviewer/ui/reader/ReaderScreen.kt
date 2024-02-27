@@ -81,7 +81,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 showSeekBar = showSeekbar,
                 currentPage = sync.sliderValue,
                 totalPages = pageLoader.size,
-                onSliderValueChange = { sync.sliderScrollTo(it) },
+                onSliderValueChange = { sync.sliderScrollTo(it + 1) },
                 onClickSettings = { },
                 modifier = Modifier.zIndex(1f),
             )
