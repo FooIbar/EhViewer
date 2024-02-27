@@ -144,6 +144,7 @@ import com.hippo.ehviewer.ui.tools.GalleryRatingBar
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.rememberLambda
+import com.hippo.ehviewer.ui.with
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.AppHelper
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -243,7 +244,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     true,
                 )
                 if (result == SnackbarResult.ActionPerformed) {
-                    context.navToReader(gi.findBaseInfo(), page)
+                    with(context, navigator) { navToReader(gi.findBaseInfo(), page) }
                 }
             }
         }
@@ -407,7 +408,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             EhPreviewItem(
                 galleryPreview = it,
                 position = it.position,
-                onClick = { context.navToReader(gd.galleryInfo, it.position) },
+                onClick = { with(context, navigator) { navToReader(gd.galleryInfo, it.position) } },
             )
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -460,9 +461,11 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         onCardClick = ::onNavigateToCommentScene,
                         onUserClick = ::onNavigateToCommentScene,
                         onUrlClick = {
-                            if (!activity.jumpToReaderByPage(it, galleryDetail)) {
-                                if (!navigator.navWithUrl(it)) {
-                                    activity.openBrowser(it)
+                            with(activity, navigator) {
+                                if (!jumpToReaderByPage(it, galleryDetail)) {
+                                    if (!navWithUrl(it)) {
+                                        openBrowser(it)
+                                    }
                                 }
                             }
                         },
@@ -811,7 +814,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             DownloadInfo.STATE_FAILED -> stringResource(R.string.download_state_failed)
             else -> error("Invalid DownloadState!!!")
         }
-        fun onReadButtonClick() = context.navToReader(galleryInfo.findBaseInfo(), startPage)
+        fun onReadButtonClick() = with(context, navigator) { navToReader(galleryInfo.findBaseInfo(), startPage) }
         fun onCategoryChipClick() {
             val category = galleryInfo.category
             if (category == EhUtils.NONE || category == EhUtils.PRIVATE || category == EhUtils.UNKNOWN) {

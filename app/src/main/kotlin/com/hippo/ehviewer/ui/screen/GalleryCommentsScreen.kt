@@ -97,6 +97,7 @@ import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.ui.tools.toBBCode
 import com.hippo.ehviewer.ui.tools.updateSpan
+import com.hippo.ehviewer.ui.with
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
@@ -384,7 +385,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
                             }
                         },
                         onUrlClick = {
-                            if (!activity.jumpToReaderByPage(it, galleryDetail)) {
+                            if (!with(activity, navigator) { jumpToReaderByPage(it, galleryDetail) }) {
                                 if (!navigator.navWithUrl(it)) {
                                     activity.openBrowser(it)
                                 }

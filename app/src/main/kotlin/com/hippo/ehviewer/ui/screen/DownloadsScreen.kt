@@ -110,6 +110,7 @@ import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.with
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
@@ -466,7 +467,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             coroutineScope.launchIO {
                 EhDB.putHistoryInfo(info.galleryInfo)
             }
-            context.navToReader(info.galleryInfo)
+            with(context, navigator) { navToReader(info.galleryInfo) }
         }
         Crossfade(targetState = gridView, label = "Downloads") { showGridView ->
             if (showGridView) {
@@ -580,7 +581,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     ) {
         if (!selectMode) {
             onClick(Icons.Default.Shuffle) {
-                context.navToReader(list.random().galleryInfo)
+                with(context, navigator) { navToReader(list.random().galleryInfo) }
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
                 val selected = dialogState.showSingleChoice(

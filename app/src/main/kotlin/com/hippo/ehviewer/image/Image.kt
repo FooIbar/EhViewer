@@ -94,7 +94,7 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
                 size(targetWidth, targetHeight)
                 scale(Scale.FILL)
                 precision(Precision.INEXACT)
-                if (isAtLeastO) {
+                if (isAtLeastO && !Settings.newReader) {
                     colorSpace(colorSpace)
                 }
                 maybeCropBorder(Settings.cropBorder.value)
