@@ -11,8 +11,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,6 +52,7 @@ import eu.kanade.tachiyomi.source.model.Page.State.ERROR
 import eu.kanade.tachiyomi.source.model.Page.State.LOAD_PAGE
 import eu.kanade.tachiyomi.source.model.Page.State.QUEUE
 import eu.kanade.tachiyomi.source.model.Page.State.READY
+import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
@@ -88,6 +92,13 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 onClickSettings = { },
                 modifier = Modifier.zIndex(1f),
             )
+            CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
+                PageIndicatorText(
+                    currentPage = sync.sliderValue,
+                    totalPages = pageLoader.size,
+                    modifier = Modifier.align(Alignment.BottomCenter).zIndex(0.5f),
+                )
+            }
             LazyColumn(
                 modifier = Modifier.fillMaxSize().zoomable(
                     state = zoomableState,
