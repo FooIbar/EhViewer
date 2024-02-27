@@ -28,7 +28,8 @@ class SliderPagerDoubleSync(
     @Composable
     fun Sync() {
         val fling by lazyListState.interactionSource.collectIsDraggedAsState()
-        if (fling) sliderFollowPager = true
+        val pagerFling by pagerState.interactionSource.collectIsDraggedAsState()
+        if (fling || pagerFling) sliderFollowPager = true
         if (sliderFollowPager) {
             LaunchedEffect(Unit) {
                 snapshotFlow {
