@@ -48,6 +48,7 @@ import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.with
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -131,7 +132,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
                             },
                             onLongClick = {
                                 coroutineScope.launchIO {
-                                    dialogState.doGalleryInfoAction(info, context)
+                                    with(dialogState, context, navigator) { doGalleryInfoAction(info) }
                                 }
                             },
                             info = info,

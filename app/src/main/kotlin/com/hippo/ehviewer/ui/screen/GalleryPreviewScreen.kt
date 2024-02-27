@@ -21,7 +21,6 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
@@ -51,13 +50,15 @@ import com.hippo.ehviewer.ui.tools.getLimit
 import com.hippo.ehviewer.ui.tools.getOffset
 import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.with
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination
 @Composable
-fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navigator: NavController) {
+fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navigator: DestinationsNavigator) {
     LockDrawer(true)
     val context = LocalContext.current
     val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
@@ -139,7 +140,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navi
             ) { index ->
                 val item = data[index]
                 EhPreviewItem(item, index) {
-                    context.navToReader(galleryDetail.galleryInfo, index)
+                    with(context, navigator) { navToReader(galleryDetail.galleryInfo, index) }
                 }
             }
         }

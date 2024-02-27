@@ -132,6 +132,7 @@ import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.with
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.pickVisualMedia
@@ -668,7 +669,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     },
                     onLongClick = {
                         coroutineScope.launch {
-                            dialogState.doGalleryInfoAction(info, context)
+                            with(dialogState, context, navigator) { doGalleryInfoAction(info) }
                         }
                     },
                     info = info,
@@ -685,7 +686,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     },
                     onLongClick = {
                         coroutineScope.launch {
-                            dialogState.doGalleryInfoAction(info, context)
+                            with(dialogState, context, navigator) { doGalleryInfoAction(info) }
                         }
                     },
                     info = info,
