@@ -24,7 +24,8 @@ fun ReaderAppBars(
     totalPages: Int,
     onSliderValueChange: (Int) -> Unit,
     onClickSettings: () -> Unit,
-) = Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
+    modifier: Modifier = Modifier,
+) = Column(modifier = modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
     Spacer(modifier = Modifier.weight(1f))
 
     AnimatedVisibility(

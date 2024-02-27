@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -22,11 +23,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection.Rtl
+import androidx.compose.ui.zIndex
 import coil3.BitmapImage
+import coil3.DrawableImage
 import coil3.Image as CoilImage
+import com.google.accompanist.drawablepainter.DrawablePainter
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
 import com.hippo.ehviewer.gallery.ArchivePageLoader
@@ -39,6 +47,11 @@ import eu.kanade.tachiyomi.source.model.Page.State.ERROR
 import eu.kanade.tachiyomi.source.model.Page.State.LOAD_PAGE
 import eu.kanade.tachiyomi.source.model.Page.State.QUEUE
 import eu.kanade.tachiyomi.source.model.Page.State.READY
+import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
+import me.saket.telephoto.zoomable.ZoomSpec
+import me.saket.telephoto.zoomable.rememberZoomableState
+import me.saket.telephoto.zoomable.zoomable
+import moe.tarsin.kt.unreachable
 
 @Destination
 @Composable
@@ -54,45 +67,63 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
             pageLoader.stop()
         }
     }
+    val showSeekbar by Settings.showReaderSeekbar.collectAsState()
+    val lazyListState = rememberLazyListState()
+    val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 3f))
+    val sync = remember { SliderPagerDoubleSync(lazyListState) }
+    sync.Sync()
+    val isRtl = LocalLayoutDirection.current == Rtl
     Deferred({ pageLoader.awaitReady() }) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(pageLoader.mPages) { page ->
-                pageLoader.request(page.index)
-                val state by page.status.collectAsState()
-                when (state) {
-                    QUEUE, LOAD_PAGE -> {
-                        Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
-                            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        Box {
+            ReaderAppBars(
+                visible = true,
+                isRtl = isRtl,
+                showSeekBar = showSeekbar,
+                currentPage = sync.sliderValue,
+                totalPages = pageLoader.size,
+                onSliderValueChange = { sync.sliderScrollTo(it + 1) },
+                onClickSettings = { },
+                modifier = Modifier.zIndex(1f),
+            )
+            LazyColumn(modifier = Modifier.fillMaxSize().zoomable(zoomableState), state = lazyListState) {
+                items(pageLoader.mPages) { page ->
+                    pageLoader.request(page.index)
+                    val state by page.status.collectAsState()
+                    when (state) {
+                        QUEUE, LOAD_PAGE -> {
+                            Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
+                                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                            }
                         }
-                    }
-                    DOWNLOAD_IMAGE -> {
-                        Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
-                            val progress by page.progressFlow.collectAsState()
-                            CircularProgressIndicator(
-                                progress = { progress / 100f },
-                                modifier = Modifier.align(Alignment.Center),
+                        DOWNLOAD_IMAGE -> {
+                            Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
+                                val progress by page.progressFlow.collectAsState()
+                                CircularProgressIndicator(
+                                    progress = { progress / 100f },
+                                    modifier = Modifier.align(Alignment.Center),
+                                )
+                            }
+                        }
+                        READY -> {
+                            val image = page.image!!.innerImage!!
+                            val painter = remember(image) { image.toPainter() }
+                            Image(
+                                painter = painter,
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxWidth(),
+                                contentScale = ContentScale.FillWidth,
                             )
                         }
-                    }
-                    READY -> {
-                        val image = page.image!!.innerImage!!
-                        val painter = remember(image) { image.toPainter() }
-                        Image(
-                            painter = painter,
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxWidth(),
-                            contentScale = ContentScale.FillWidth,
-                        )
-                    }
-                    ERROR -> {
-                        Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
-                            Column(
-                                modifier = Modifier.align(Companion.Center),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Text(text = page.errorMsg.orEmpty())
-                                Button(onClick = { }) {
-                                    Text(text = stringResource(id = R.string.action_retry))
+                        ERROR -> {
+                            Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
+                                Column(
+                                    modifier = Modifier.align(Companion.Center),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    Text(text = page.errorMsg.orEmpty())
+                                    Button(onClick = { }) {
+                                        Text(text = stringResource(id = R.string.action_retry))
+                                    }
                                 }
                             }
                         }
@@ -105,7 +136,8 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
 
 private fun CoilImage.toPainter() = when (this) {
     is BitmapImage -> BitmapPainter(image = bitmap.asImageBitmap())
-    else -> TODO()
+    is DrawableImage -> DrawablePainter(drawable)
+    else -> unreachable()
 }
 
 private const val DEFAULT_ASPECT = 1 / 1.4125f
