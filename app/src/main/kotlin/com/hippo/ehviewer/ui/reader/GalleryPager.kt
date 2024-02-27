@@ -1,6 +1,8 @@
 package com.hippo.ehviewer.ui.reader
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -8,6 +10,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.gallery.PageLoader2
@@ -47,7 +50,9 @@ fun GalleryPager(
                 modifier = modifier,
                 key = { it },
             ) { index ->
-                item(items[index])
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    item(items[index])
+                }
             }
         }
         WEBTOON, CONTINUOUS_VERTICAL -> {
