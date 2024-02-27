@@ -53,6 +53,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
+import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
 import moe.tarsin.kt.unreachable
@@ -74,7 +75,9 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
     val sliderValueFlow = remember { MutableStateFlow(-1) }
     val lazyListState = rememberLazyListState()
-    val zoomableState = rememberZoomableState()
+    val zoomableState = rememberZoomableState(
+        zoomSpec = ZoomSpec(maxZoomFactor = 3f),
+    )
     LaunchedEffect(sliderValueFlow) {
         sliderValueFlow.drop(1).debounce(200).collect {
             lazyListState.scrollToItem(it)
