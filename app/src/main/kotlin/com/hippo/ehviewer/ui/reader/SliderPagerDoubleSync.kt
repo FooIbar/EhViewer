@@ -27,7 +27,7 @@ class SliderPagerDoubleSync(private val lazyListState: LazyListState) {
         if (sliderFollowPager) {
             LaunchedEffect(Unit) {
                 snapshotFlow { lazyListState.layoutInfo }.collect { info ->
-                    sliderValue = info.visibleItemsInfo.last().index
+                    sliderValue = info.visibleItemsInfo.last().index + 1
                 }
             }
         } else {
