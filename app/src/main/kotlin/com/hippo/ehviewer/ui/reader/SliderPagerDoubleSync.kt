@@ -10,10 +10,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.mapNotNull
 
 class SliderPagerDoubleSync(private val lazyListState: LazyListState) {
     private var sliderFollowPager by mutableStateOf(true)
-    var sliderValue by mutableIntStateOf(0)
+    var sliderValue by mutableIntStateOf(1)
 
     fun sliderScrollTo(index: Int) {
         sliderFollowPager = false
@@ -26,8 +27,12 @@ class SliderPagerDoubleSync(private val lazyListState: LazyListState) {
         if (fling) sliderFollowPager = true
         if (sliderFollowPager) {
             LaunchedEffect(Unit) {
-                snapshotFlow { lazyListState.layoutInfo }.collect { info ->
-                    sliderValue = info.visibleItemsInfo.last().index + 1
+                snapshotFlow {
+                    lazyListState.layoutInfo
+                }.mapNotNull { info ->
+                    info.visibleItemsInfo.lastOrNull()
+                }.collect { info ->
+                    sliderValue = info.index + 1
                 }
             }
         } else {
