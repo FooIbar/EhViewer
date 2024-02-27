@@ -16,9 +16,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion
 import androidx.compose.ui.Modifier
@@ -50,8 +53,6 @@ import eu.kanade.tachiyomi.source.model.Page.State.LOAD_PAGE
 import eu.kanade.tachiyomi.source.model.Page.State.QUEUE
 import eu.kanade.tachiyomi.source.model.Page.State.READY
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
@@ -73,18 +74,24 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
         }
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
-    val sliderValueFlow = remember { MutableStateFlow(-1) }
+    var controlledLazyList by remember { mutableStateOf(false) }
+    var currentPage by remember { mutableIntStateOf(-1) }
     val lazyListState = rememberLazyListState()
-    val zoomableState = rememberZoomableState(
-        zoomSpec = ZoomSpec(maxZoomFactor = 3f),
-    )
-    LaunchedEffect(sliderValueFlow) {
-        sliderValueFlow.drop(1).debounce(200).collect {
-            lazyListState.scrollToItem(it)
+    val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 3f))
+    if (controlledLazyList) {
+        LaunchedEffect(Unit) {
+            snapshotFlow { currentPage }.drop(1).collect { index ->
+                lazyListState.scrollToItem(index)
+            }
+        }
+    } else {
+        LaunchedEffect(Unit) {
+            snapshotFlow { lazyListState.layoutInfo }.drop(1).collect { info ->
+                currentPage = info.visibleItemsInfo.last().index
+            }
         }
     }
     val isRtl = LocalLayoutDirection.current == Rtl
-    val currentPage by remember { derivedStateOf { lazyListState.firstVisibleItemIndex } }
     Deferred({ pageLoader.awaitReady() }) {
         Box {
             ReaderAppBars(
@@ -93,8 +100,14 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 showSeekBar = showSeekbar,
                 currentPage = currentPage,
                 totalPages = pageLoader.size,
-                onSliderValueChange = { sliderValueFlow.value = it },
+                onSliderValueChange = {
+                    controlledLazyList = true
+                    currentPage = it + 1
+                },
                 onClickSettings = { },
+                onSliderValueChangeFinished = {
+                    controlledLazyList = false
+                },
                 modifier = Modifier.zIndex(1f),
             )
             LazyColumn(modifier = Modifier.fillMaxSize().zoomable(zoomableState), state = lazyListState) {
