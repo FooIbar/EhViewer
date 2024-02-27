@@ -24,8 +24,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.util.lerp
 import arrow.fx.coroutines.parMapNotNull
-import com.google.android.material.math.MathUtils
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -40,25 +40,29 @@ import com.hippo.ehviewer.spider.putToDownloadDir
 import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromUniFile
 import com.hippo.ehviewer.util.AppConfig
-import com.hippo.ehviewer.util.ConcurrentPool
-import com.hippo.ehviewer.util.SimpleHandler
 import com.hippo.ehviewer.util.insertWith
 import com.hippo.ehviewer.util.mapNotNull
 import com.hippo.ehviewer.util.runAssertingNotMainThread
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.asUniFileOrNull
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.logcat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import logcat.LogPriority
 import splitties.preferences.edit
 
-object DownloadManager : OnSpiderListener {
+object DownloadManager : OnSpiderListener, CoroutineScope {
+    override val coroutineContext = Dispatchers.IO + Job()
+
     // All download info list
     private val allInfoList = runAssertingNotMainThread {
         (EhDB.getAllDownloadInfo() as MutableList).apply { sortWith(comparator()) }
@@ -75,8 +79,6 @@ object DownloadManager : OnSpiderListener {
 
     // Store download info wait to start
     private val mWaitList = ArrayDeque<DownloadInfo>()
-    private val mSpeedReminder = SpeedReminder()
-    private val mNotifyTaskPool = ConcurrentPool<NotifyTask?>(5)
     private var mDownloadListener: DownloadListener? = null
     private var mCurrentTask: DownloadInfo? = null
     private var mCurrentSpider: SpiderQueen? = null
@@ -142,9 +144,7 @@ object DownloadManager : OnSpiderListener {
                 // Start speed count
                 mSpeedReminder.start()
                 // Notify start downloading
-                if (mDownloadListener != null) {
-                    mDownloadListener!!.onStart(info)
-                }
+                mDownloadListener?.onStart(info)
                 // Notify state update
                 mutableNotifyFlow.emit(info)
             }
@@ -152,7 +152,7 @@ object DownloadManager : OnSpiderListener {
     }
 
     suspend fun startDownload(galleryInfo: BaseGalleryInfo, label: String?) {
-        if (mCurrentTask != null && mCurrentTask!!.gid == galleryInfo.gid) {
+        if (mCurrentTask?.gid == galleryInfo.gid) {
             // It is current task
             return
         }
@@ -400,7 +400,7 @@ object DownloadManager : OnSpiderListener {
     // No ensureDownload
     private suspend fun stopDownloadInternal(gid: Long): DownloadInfo? {
         // Check current task
-        if (mCurrentTask != null && mCurrentTask!!.gid == gid) {
+        if (mCurrentTask?.gid == gid) {
             // Stop current
             return stopCurrentDownloadInternal()
         }
@@ -443,9 +443,7 @@ object DownloadManager : OnSpiderListener {
         // Update in DB
         EhDB.putDownloadInfo(info)
         // Listener
-        if (mDownloadListener != null) {
-            mDownloadListener!!.onCancel(info)
-        }
+        mDownloadListener?.onCancel(info)
         return info
     }
 
@@ -552,21 +550,18 @@ object DownloadManager : OnSpiderListener {
         get() = mCurrentTask == null && mWaitList.isEmpty()
 
     override fun onGetPages(pages: Int) {
-        var task = mNotifyTaskPool.pop()
-        if (task == null) {
-            task = NotifyTask()
+        launch {
+            mCurrentTask?.let { info ->
+                info.total = pages
+                mutableNotifyFlow.emit(info)
+            } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
         }
-        task.setOnGetPagesData(pages)
-        SimpleHandler.post(task)
     }
 
     override fun onGet509(index: Int) {
-        var task = mNotifyTaskPool.pop()
-        if (task == null) {
-            task = NotifyTask()
+        launch {
+            mDownloadListener?.onGet509()
         }
-        task.setOnGet509Data(index)
-        SimpleHandler.post(task)
     }
 
     override fun onPageDownload(
@@ -575,21 +570,22 @@ object DownloadManager : OnSpiderListener {
         receivedSize: Long,
         bytesRead: Int,
     ) {
-        var task = mNotifyTaskPool.pop()
-        if (task == null) {
-            task = NotifyTask()
+        launch {
+            mSpeedReminder.onDownload(index, contentLength, receivedSize, bytesRead)
         }
-        task.setOnPageDownloadData(index, contentLength, receivedSize, bytesRead)
-        SimpleHandler.post(task)
     }
 
     override fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {
-        var task = mNotifyTaskPool.pop()
-        if (task == null) {
-            task = NotifyTask()
+        launch {
+            mSpeedReminder.onDone(index)
+            mCurrentTask?.let { info ->
+                info.finished = finished
+                info.downloaded = downloaded
+                info.total = total
+                mDownloadListener?.onGetPage(info)
+                mutableNotifyFlow.emit(info)
+            } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
         }
-        task.setOnPageSuccessData(index, finished, downloaded, total)
-        SimpleHandler.post(task)
     }
 
     override fun onPageFailure(
@@ -599,21 +595,43 @@ object DownloadManager : OnSpiderListener {
         downloaded: Int,
         total: Int,
     ) {
-        var task = mNotifyTaskPool.pop()
-        if (task == null) {
-            task = NotifyTask()
+        launch {
+            mSpeedReminder.onDone(index)
+            mCurrentTask?.let { info ->
+                info.finished = finished
+                info.downloaded = downloaded
+                info.total = total
+                mutableNotifyFlow.emit(info)
+            } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
         }
-        task.setOnPageFailureDate(index, error, finished, downloaded, total)
-        SimpleHandler.post(task)
     }
 
     override fun onFinish(finished: Int, downloaded: Int, total: Int) {
-        var task = mNotifyTaskPool.pop()
-        if (task == null) {
-            task = NotifyTask()
+        launch {
+            mSpeedReminder.onFinish()
+            mCurrentSpider?.let { spider ->
+                mCurrentSpider = null
+                spider.removeOnSpiderListener(DownloadManager)
+                SpiderQueen.releaseSpiderQueen(spider, SpiderQueen.MODE_DOWNLOAD)
+            }
+            mCurrentTask?.let { info ->
+                mCurrentTask = null
+                mSpeedReminder.stop()
+                info.finished = finished
+                info.downloaded = downloaded
+                info.total = total
+                info.legacy = total - finished
+                if (info.legacy == 0) {
+                    info.state = DownloadInfo.STATE_FINISH
+                } else {
+                    info.state = DownloadInfo.STATE_FAILED
+                }
+                EhDB.putDownloadInfo(info)
+                mDownloadListener?.onFinish(info)
+                mutableNotifyFlow.emit(info)
+                ensureDownload()
+            } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
         }
-        task.setOnFinishDate(finished, downloaded, total)
-        SimpleHandler.post(task)
     }
 
     override fun onGetImageSuccess(index: Int, image: Image?) {
@@ -656,198 +674,29 @@ object DownloadManager : OnSpiderListener {
         fun onCancel(info: DownloadInfo)
     }
 
-    private class NotifyTask : Runnable {
-        private var mType = 0
-        private var mPages = 0
-        private var mIndex = 0
-        private var mContentLength: Long = 0
-        private var mReceivedSize: Long = 0
-        private var mBytesRead = 0
-        private var mError: String? = null
-        private var mFinished = 0
-        private var mDownloaded = 0
-        private var mTotal = 0
-        fun setOnGetPagesData(pages: Int) {
-            mType = TYPE_ON_GET_PAGES
-            mPages = pages
-        }
-
-        fun setOnGet509Data(index: Int) {
-            mType = TYPE_ON_GET_509
-            mIndex = index
-        }
-
-        fun setOnPageDownloadData(
-            index: Int,
-            contentLength: Long,
-            receivedSize: Long,
-            bytesRead: Int,
-        ) {
-            mType = TYPE_ON_PAGE_DOWNLOAD
-            mIndex = index
-            mContentLength = contentLength
-            mReceivedSize = receivedSize
-            mBytesRead = bytesRead
-        }
-
-        fun setOnPageSuccessData(index: Int, finished: Int, downloaded: Int, total: Int) {
-            mType = TYPE_ON_PAGE_SUCCESS
-            mIndex = index
-            mFinished = finished
-            mDownloaded = downloaded
-            mTotal = total
-        }
-
-        fun setOnPageFailureDate(
-            index: Int,
-            error: String?,
-            finished: Int,
-            downloaded: Int,
-            total: Int,
-        ) {
-            mType = TYPE_ON_PAGE_FAILURE
-            mIndex = index
-            mError = error
-            mFinished = finished
-            mDownloaded = downloaded
-            mTotal = total
-        }
-
-        fun setOnFinishDate(finished: Int, downloaded: Int, total: Int) {
-            mType = TYPE_ON_FINISH
-            mFinished = finished
-            mDownloaded = downloaded
-            mTotal = total
-        }
-
-        override fun run() {
-            when (mType) {
-                TYPE_ON_GET_PAGES -> {
-                    val info = mCurrentTask
-                    if (info == null) {
-                        logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
-                    } else {
-                        info.total = mPages
-                        launchIO {
-                            mutableNotifyFlow.emit(info)
-                        }
-                    }
-                }
-
-                TYPE_ON_GET_509 -> {
-                    if (mDownloadListener != null) {
-                        mDownloadListener!!.onGet509()
-                    }
-                }
-
-                TYPE_ON_PAGE_DOWNLOAD -> mSpeedReminder.onDownload(
-                    mIndex,
-                    mContentLength,
-                    mReceivedSize,
-                    mBytesRead,
-                )
-
-                TYPE_ON_PAGE_SUCCESS -> {
-                    mSpeedReminder.onDone(mIndex)
-                    val info = mCurrentTask
-                    if (info == null) {
-                        logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
-                    } else {
-                        info.finished = mFinished
-                        info.downloaded = mDownloaded
-                        info.total = mTotal
-                        if (mDownloadListener != null) {
-                            mDownloadListener!!.onGetPage(info)
-                        }
-                        launchIO {
-                            mutableNotifyFlow.emit(info)
-                        }
-                    }
-                }
-
-                TYPE_ON_PAGE_FAILURE -> {
-                    mSpeedReminder.onDone(mIndex)
-                    val info = mCurrentTask
-                    if (info == null) {
-                        logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
-                    } else {
-                        info.finished = mFinished
-                        info.downloaded = mDownloaded
-                        info.total = mTotal
-                        launchIO {
-                            mutableNotifyFlow.emit(info)
-                        }
-                    }
-                }
-
-                TYPE_ON_FINISH -> {
-                    mSpeedReminder.onFinish()
-                    // Download done
-                    val info = mCurrentTask
-                    mCurrentTask = null
-                    val spider = mCurrentSpider
-                    mCurrentSpider = null
-                    // Release spider
-                    if (spider != null) {
-                        spider.removeOnSpiderListener(DownloadManager)
-                        SpiderQueen.releaseSpiderQueen(spider, SpiderQueen.MODE_DOWNLOAD)
-                    }
-                    // Check null
-                    if (info == null) {
-                        logcat(TAG, LogPriority.ERROR) { "Current stuff is null, but it should not be" }
-                    } else {
-                        // Stop speed count
-                        mSpeedReminder.stop()
-                        // Update state
-                        info.finished = mFinished
-                        info.downloaded = mDownloaded
-                        info.total = mTotal
-                        info.legacy = mTotal - mFinished
-                        if (info.legacy == 0) {
-                            info.state = DownloadInfo.STATE_FINISH
-                        } else {
-                            info.state = DownloadInfo.STATE_FAILED
-                        }
-                        launchIO {
-                            // Update in DB
-                            EhDB.putDownloadInfo(info)
-                            // Notify
-                            if (mDownloadListener != null) {
-                                mDownloadListener!!.onFinish(info)
-                            }
-                            mutableNotifyFlow.emit(info)
-                            // Start next download
-                            ensureDownload()
-                        }
-                    }
-                }
-            }
-            mNotifyTaskPool.push(this)
-        }
-    }
-
-    internal class SpeedReminder : Runnable {
+    private val mSpeedReminder = object {
         private val mContentLengthMap = SparseLongArray()
         private val mReceivedSizeMap = SparseLongArray()
-        private var mStop = true
-        private var mBytesRead: Long = 0
-        private var oldSpeed: Long = -1
+        private var mBytesRead = 0L
+        private var oldSpeed = -1L
+        private var currentJob: Job? = null
         fun start() {
-            if (mStop) {
-                mStop = false
-                SimpleHandler.post(this)
+            if (currentJob == null) {
+                currentJob = launch {
+                    while (true) {
+                        runInternal()
+                    }
+                }
             }
         }
 
         fun stop() {
-            if (!mStop) {
-                mStop = true
-                mBytesRead = 0
-                oldSpeed = -1
-                mContentLengthMap.clear()
-                mReceivedSizeMap.clear()
-                SimpleHandler.removeCallbacks(this)
-            }
+            mBytesRead = 0
+            oldSpeed = -1
+            mContentLengthMap.clear()
+            mReceivedSizeMap.clear()
+            currentJob?.cancel()
+            currentJob = null
         }
 
         fun onDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {
@@ -866,13 +715,11 @@ object DownloadManager : OnSpiderListener {
             mReceivedSizeMap.clear()
         }
 
-        override fun run() {
-            val info = mCurrentTask
-            if (info != null) {
+        private suspend fun runInternal() {
+            mCurrentTask?.let { info ->
                 var newSpeed = mBytesRead / 2
                 if (oldSpeed != -1L) {
-                    newSpeed =
-                        MathUtils.lerp(oldSpeed.toFloat(), newSpeed.toFloat(), 0.75f).toLong()
+                    newSpeed = lerp(oldSpeed, newSpeed, 0.75f)
                 }
                 oldSpeed = newSpeed
                 info.speed = newSpeed
@@ -884,9 +731,9 @@ object DownloadManager : OnSpiderListener {
                     info.remaining = 300L * 24L * 60L * 60L * 1000L // 300 days
                 } else {
                     var downloadingCount = 0
-                    var downloadingContentLengthSum: Long = 0
-                    var totalSize: Long = 0
-                    for (i in 0 until maxOf(mContentLengthMap.size(), mReceivedSizeMap.size())) {
+                    var downloadingContentLengthSum = 0L
+                    var totalSize = 0L
+                    for (i in 0..<mContentLengthMap.size()) {
                         val contentLength = mContentLengthMap.valueAt(i)
                         val receivedSize = mReceivedSizeMap.valueAt(i)
                         downloadingCount++
@@ -898,27 +745,15 @@ object DownloadManager : OnSpiderListener {
                         info.remaining = totalSize / newSpeed * 1000
                     }
                 }
-                if (mDownloadListener != null) {
-                    mDownloadListener!!.onDownload(info)
-                }
-                launchIO {
-                    mutableNotifyFlow.emit(info)
-                }
+                mDownloadListener?.onDownload(info)
+                mutableNotifyFlow.emit(info)
             }
             mBytesRead = 0
-            if (!mStop) {
-                SimpleHandler.postDelayed(this, 2000)
-            }
+            delay(2000)
         }
     }
 
     private const val TAG = "DownloadManager"
-    private const val TYPE_ON_GET_PAGES = 0
-    private const val TYPE_ON_GET_509 = 1
-    private const val TYPE_ON_PAGE_DOWNLOAD = 2
-    private const val TYPE_ON_PAGE_SUCCESS = 3
-    private const val TYPE_ON_PAGE_FAILURE = 4
-    private const val TYPE_ON_FINISH = 5
 
     private fun comparator() = SortMode.from(Settings.downloadSortMode.value).comparator()
 }
