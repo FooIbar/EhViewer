@@ -30,6 +30,7 @@ ktor = "3.0.0-beta-1"
 okhttp3 = "5.0.0-alpha.12"
 okio = "3.8.0"
 splitties = "3.0.0"
+telephoto = "0.8.0"
 xmlutil = "0.86.3"
 
 [libraries]
@@ -118,6 +119,8 @@ splitties-appctx = { module = "com.louiscad.splitties:splitties-appctx", version
 splitties-arch-room = { module = "com.louiscad.splitties:splitties-arch-room", version.ref = "splitties" }
 splitties-preferences = { module = "com.louiscad.splitties:splitties-preferences", version.ref = "splitties" }
 splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemservices", version.ref = "splitties" }
+
+telephoto-zoomable = { module = "me.saket.telephoto:zoomable", version.ref = "telephoto" }
 
 [bundles]
 coil = ["coil-compose", "coil-gif", "coil-network"]

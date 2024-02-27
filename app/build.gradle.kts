@@ -258,6 +258,8 @@ dependencies {
     implementation(platform(libs.coil.bom))
     implementation(libs.bundles.coil)
 
+    implementation(libs.telephoto.zoomable)
+
     implementation(libs.bundles.ktor)
 
     implementation(libs.bundles.kotlinx.serialization)
