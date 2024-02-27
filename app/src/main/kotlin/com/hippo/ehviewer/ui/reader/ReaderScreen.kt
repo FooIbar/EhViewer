@@ -6,9 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalTextStyle
@@ -28,9 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.LayoutDirection.Rtl
 import androidx.compose.ui.zIndex
 import coil3.BitmapImage
 import coil3.DrawableImage
@@ -54,6 +51,7 @@ import eu.kanade.tachiyomi.source.model.Page.State.QUEUE
 import eu.kanade.tachiyomi.source.model.Page.State.READY
 import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
@@ -74,17 +72,18 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
         }
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
-    val lazyListState = rememberLazyListState()
-    val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 3f))
-    val sync = remember { SliderPagerDoubleSync(lazyListState) }
-    sync.Sync()
-    val isRtl = LocalLayoutDirection.current == Rtl
+    val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
     Deferred({ pageLoader.awaitReady() }) {
+        val lazyListState = rememberLazyListState()
+        val pagerState = rememberPagerState { pageLoader.size }
+        val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 3f))
+        val sync = remember { SliderPagerDoubleSync(lazyListState) }
+        sync.Sync()
         Box {
             var appbarVisible by remember { mutableStateOf(false) }
             ReaderAppBars(
                 visible = appbarVisible,
-                isRtl = isRtl,
+                isRtl = readingMode == ReadingModeType.RIGHT_TO_LEFT,
                 showSeekBar = showSeekbar,
                 currentPage = sync.sliderValue,
                 totalPages = pageLoader.size,
@@ -99,14 +98,12 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                     modifier = Modifier.align(Alignment.BottomCenter).zIndex(0.5f),
                 )
             }
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().zoomable(
-                    state = zoomableState,
-                    onClick = { appbarVisible = !appbarVisible },
-                ),
-                state = lazyListState,
-            ) {
-                items(pageLoader.mPages) { page ->
+            GalleryPager(
+                type = readingMode,
+                pagerState = pagerState,
+                lazyListState = lazyListState,
+                pageLoader = pageLoader,
+                item = { page ->
                     pageLoader.request(page.index)
                     val state by page.status.collectAsState()
                     when (state) {
@@ -148,8 +145,12 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                             }
                         }
                     }
-                }
-            }
+                },
+                modifier = Modifier.fillMaxSize().zoomable(
+                    state = zoomableState,
+                    onClick = { appbarVisible = !appbarVisible },
+                ),
+            )
         }
     }
 }
