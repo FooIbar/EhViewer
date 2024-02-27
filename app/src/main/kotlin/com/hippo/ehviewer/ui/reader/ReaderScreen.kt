@@ -45,8 +45,8 @@ import eu.kanade.tachiyomi.source.model.Page.State.READY
 fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
     LockDrawer(true)
     val pageLoader = remember {
-        val dir = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
-        dir?.let { ArchivePageLoader(it, info.gid, page) } ?: EhPageLoader(info, page)
+        val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
+        archive?.let { ArchivePageLoader(it, info.gid, page) } ?: EhPageLoader(info, page)
     }
     DisposableEffect(Unit) {
         pageLoader.start()
