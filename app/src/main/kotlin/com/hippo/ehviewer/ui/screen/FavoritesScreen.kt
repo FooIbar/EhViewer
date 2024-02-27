@@ -254,7 +254,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
     ) { contentPadding ->
         val listMode by Settings.listMode.collectAsState()
         val height by collectListThumbSizeAsState()
-        val showPages = Settings.showGalleryPages
+        val showPages by Settings.showGalleryPages.collectAsState()
         val searchBarConnection = remember {
             val slop = ViewConfiguration.get(context).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
@@ -295,9 +295,9 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                             checkedInfoMap[info.gid] = info
                         },
                         info = info,
-                        isInFavScene = true,
                         showPages = showPages,
                         modifier = Modifier.height(height),
+                        isInFavScene = true,
                         interactionSource = interactionSource,
                     )
                 }

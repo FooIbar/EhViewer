@@ -93,9 +93,9 @@ fun GalleryInfoListItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     info: GalleryInfo,
+    showPages: Boolean,
     modifier: Modifier = Modifier,
     isInFavScene: Boolean = false,
-    showPages: Boolean = false,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) = CrystalCard(
     modifier = modifier,

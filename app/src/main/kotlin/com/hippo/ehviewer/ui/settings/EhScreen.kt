@@ -58,6 +58,7 @@ import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.util.copyTextToClipboard
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastT
+import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -302,10 +303,12 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 summary = stringResource(id = R.string.settings_eh_force_eh_thumb_summary),
                 value = Settings::forceEhThumb,
             )
-            SwitchPreference(
+            var showGalleryPages by Settings.showGalleryPages.asMutableState()
+            SwitchPref(
+                checked = showGalleryPages,
+                onMutate = { showGalleryPages = !showGalleryPages },
                 title = stringResource(id = R.string.settings_eh_show_gallery_pages),
                 summary = stringResource(id = R.string.settings_eh_show_gallery_pages_summary),
-                value = Settings::showGalleryPages,
             )
             val showComments = Settings::showComments.observed
             SwitchPreference(

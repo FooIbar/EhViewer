@@ -633,7 +633,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         }
 
         val height by collectListThumbSizeAsState()
-        val showPages = Settings.showGalleryPages
+        val showPages by Settings.showGalleryPages.collectAsState()
         val searchBarConnection = remember {
             val slop = ViewConfiguration.get(context).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
@@ -672,7 +672,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         }
                     },
                     info = info,
-                    isInFavScene = false,
                     showPages = showPages,
                     modifier = Modifier.height(height),
                 )
