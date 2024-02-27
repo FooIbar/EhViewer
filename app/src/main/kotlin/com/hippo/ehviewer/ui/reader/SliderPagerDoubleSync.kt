@@ -12,7 +12,7 @@ import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.collectLatest
 
 class SliderPagerDoubleSync(private val lazyListState: LazyListState) {
-    private var sliderFollowPager by mutableStateOf(false)
+    private var sliderFollowPager by mutableStateOf(true)
     var sliderValue by mutableIntStateOf(0)
 
     fun sliderScrollTo(index: Int) {
