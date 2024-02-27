@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.reader
 
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -12,7 +13,10 @@ import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapNotNull
 
-class SliderPagerDoubleSync(private val lazyListState: LazyListState) {
+class SliderPagerDoubleSync(
+    private val lazyListState: LazyListState,
+    private val pagerState: PagerState,
+) {
     private var sliderFollowPager by mutableStateOf(true)
     var sliderValue by mutableIntStateOf(1)
 
@@ -35,7 +39,21 @@ class SliderPagerDoubleSync(private val lazyListState: LazyListState) {
                     sliderValue = info.index + 1
                 }
             }
+            LaunchedEffect(Unit) {
+                snapshotFlow {
+                    pagerState.layoutInfo
+                }.mapNotNull { info ->
+                    info.visiblePagesInfo.lastOrNull()
+                }.collect { info ->
+                    sliderValue = info.index + 1
+                }
+            }
         } else {
+            LaunchedEffect(Unit) {
+                snapshotFlow { sliderValue - 1 }.collectLatest { index ->
+                    pagerState.animateScrollToPage(index)
+                }
+            }
             LaunchedEffect(Unit) {
                 snapshotFlow { sliderValue - 1 }.collectLatest { index ->
                     lazyListState.animateScrollToItem(index)

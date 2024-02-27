@@ -77,7 +77,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
         val lazyListState = rememberLazyListState()
         val pagerState = rememberPagerState { pageLoader.size }
         val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 3f))
-        val sync = remember { SliderPagerDoubleSync(lazyListState) }
+        val sync = remember { SliderPagerDoubleSync(lazyListState, pagerState) }
         sync.Sync()
         Box {
             var appbarVisible by remember { mutableStateOf(false) }
