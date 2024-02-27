@@ -1,5 +1,6 @@
 [versions]
 aboutlibraries = "10.10.0"
+accompanist = "0.34.0"
 agp = "8.4.0-alpha11"
 androidx-activity = "1.8.2"
 androidx-appcompat = "1.6.1"
@@ -34,6 +35,7 @@ xmlutil = "0.86.3"
 [libraries]
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutlibraries" }
+accompanist-drawable-painter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanist" }
 
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }

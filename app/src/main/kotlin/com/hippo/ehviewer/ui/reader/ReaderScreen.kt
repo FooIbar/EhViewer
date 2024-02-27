@@ -24,7 +24,9 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import coil3.BitmapImage
+import coil3.DrawableImage
 import coil3.Image as CoilImage
+import com.google.accompanist.drawablepainter.DrawablePainter
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.download.DownloadManager
@@ -39,6 +41,7 @@ import eu.kanade.tachiyomi.source.model.Page.State.ERROR
 import eu.kanade.tachiyomi.source.model.Page.State.LOAD_PAGE
 import eu.kanade.tachiyomi.source.model.Page.State.QUEUE
 import eu.kanade.tachiyomi.source.model.Page.State.READY
+import moe.tarsin.kt.unreachable
 
 @Destination
 @Composable
@@ -105,7 +108,8 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
 
 private fun CoilImage.toPainter() = when (this) {
     is BitmapImage -> BitmapPainter(image = bitmap.asImageBitmap())
-    else -> TODO()
+    is DrawableImage -> DrawablePainter(drawable)
+    else -> unreachable()
 }
 
 private const val DEFAULT_ASPECT = 1 / 1.4125f
