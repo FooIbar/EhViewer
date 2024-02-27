@@ -24,7 +24,6 @@ fun ReaderAppBars(
     totalPages: Int,
     onSliderValueChange: (Int) -> Unit,
     onClickSettings: () -> Unit,
-    onSliderValueChangeFinished: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) = Column(modifier = modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
     Spacer(modifier = Modifier.weight(1f))
@@ -41,7 +40,6 @@ fun ReaderAppBars(
                     currentPage = currentPage,
                     totalPages = totalPages,
                     onSliderValueChange = onSliderValueChange,
-                    onValueChangeFinished = onSliderValueChangeFinished,
                 )
             }
             BottomReaderBar(onClickSettings = onClickSettings)

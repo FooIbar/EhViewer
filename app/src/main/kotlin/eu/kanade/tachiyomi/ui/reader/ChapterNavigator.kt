@@ -37,7 +37,6 @@ fun ChapterNavigator(
     currentPage: Int,
     totalPages: Int,
     onSliderValueChange: (Int) -> Unit,
-    onValueChangeFinished: (() -> Unit)? = null,
 ) {
     val isTabletUi = LocalConfiguration.current.isTabletUi()
     val horizontalPadding = if (isTabletUi) 24.dp else 16.dp
@@ -83,7 +82,6 @@ fun ChapterNavigator(
                             onValueChange = {
                                 onSliderValueChange(it.roundToInt() - 1)
                             },
-                            onValueChangeFinished = onValueChangeFinished,
                             interactionSource = interactionSource,
                             colors = if (showTicks) {
                                 SliderDefaults.colors()
