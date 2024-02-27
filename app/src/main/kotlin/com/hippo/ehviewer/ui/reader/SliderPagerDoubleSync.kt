@@ -32,7 +32,7 @@ class SliderPagerDoubleSync(private val lazyListState: LazyListState) {
             }
         } else {
             LaunchedEffect(Unit) {
-                snapshotFlow { sliderValue }.collectLatest { index ->
+                snapshotFlow { sliderValue - 1 }.collectLatest { index ->
                     lazyListState.animateScrollToItem(index)
                 }
             }
