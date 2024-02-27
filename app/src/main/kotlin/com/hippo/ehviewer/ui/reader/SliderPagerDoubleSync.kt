@@ -7,7 +7,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -24,7 +23,6 @@ class SliderPagerDoubleSync(private val lazyListState: LazyListState) {
     @Composable
     fun Sync() {
         val fling by lazyListState.interactionSource.collectIsDraggedAsState()
-        val coroutineScope = rememberCoroutineScope()
         if (fling) sliderFollowPager = true
         if (sliderFollowPager) {
             LaunchedEffect(Unit) {
