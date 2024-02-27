@@ -16,7 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion
 import androidx.compose.ui.Modifier
@@ -75,8 +77,9 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
     val isRtl = LocalLayoutDirection.current == Rtl
     Deferred({ pageLoader.awaitReady() }) {
         Box {
+            var appbarVisible by remember { mutableStateOf(false) }
             ReaderAppBars(
-                visible = true,
+                visible = appbarVisible,
                 isRtl = isRtl,
                 showSeekBar = showSeekbar,
                 currentPage = sync.sliderValue,
@@ -85,7 +88,13 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 onClickSettings = { },
                 modifier = Modifier.zIndex(1f),
             )
-            LazyColumn(modifier = Modifier.fillMaxSize().zoomable(zoomableState), state = lazyListState) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().zoomable(
+                    state = zoomableState,
+                    onClick = { appbarVisible = !appbarVisible },
+                ),
+                state = lazyListState,
+            ) {
                 items(pageLoader.mPages) { page ->
                     pageLoader.request(page.index)
                     val state by page.status.collectAsState()
