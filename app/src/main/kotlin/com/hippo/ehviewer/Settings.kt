@@ -113,6 +113,7 @@ object Settings : DataStorePreferences(null) {
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
     val blackDarkTheme = boolPref("black_dark_theme", false)
     val gridView = boolPref("grid_view", false)
+    val showGalleryPages = boolPref("show_gallery_pages", true)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
@@ -136,7 +137,6 @@ object Settings : DataStorePreferences(null) {
     var requestNews by boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
     var hideHvEvents by boolPref("hide_hv_events", false)
     var showJpnTitle by boolPref("show_jpn_title", false)
-    var showGalleryPages by boolPref("show_gallery_pages", true)
     var showTagTranslations by boolPref(KEY_SHOW_TAG_TRANSLATIONS, false).observed { updateWhenTagTranslationChanges() }
     var appLinkVerifyTip by boolPref("app_link_verify_tip", false)
     var enabledSecurity by boolPref("enable_secure", false)

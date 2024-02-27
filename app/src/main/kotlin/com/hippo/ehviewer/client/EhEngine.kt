@@ -433,7 +433,7 @@ object EhEngine {
         val hasTags = any { !it.simpleTags.isNullOrEmpty() }
         val hasPages = any { it.pages != 0 }
         val hasRated = any { it.rated }
-        val needApi = filter && needTags() && !hasTags || Settings.showGalleryPages && !hasPages || hasRated
+        val needApi = filter && needTags() && !hasTags || Settings.showGalleryPages.value && !hasPages || hasRated
         if (needApi) fillGalleryListByApi(this@fillInfo, url)
         if (filter) removeAllSuspend { filterUploader(it) || filterTag(it) || filterTagNamespace(it) }
     }

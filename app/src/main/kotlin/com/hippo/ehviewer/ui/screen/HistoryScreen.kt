@@ -38,6 +38,8 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.History
 import com.hippo.ehviewer.ui.LocalNavDrawerState
@@ -98,6 +100,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
     ) { paddingValues ->
         val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
         val cardHeight by collectListThumbSizeAsState()
+        val showPages by Settings.showGalleryPages.collectAsState()
         FastScrollLazyColumn(
             modifier = Modifier.padding(horizontal = marginH).fillMaxSize(),
             contentPadding = paddingValues,
@@ -135,6 +138,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
                                 }
                             },
                             info = info,
+                            showPages = showPages,
                             modifier = Modifier.height(cardHeight),
                         )
                     }
