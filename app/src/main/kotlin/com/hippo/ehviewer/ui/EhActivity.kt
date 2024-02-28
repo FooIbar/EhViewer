@@ -26,6 +26,11 @@ abstract class EhActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window?.decorView?.post {
+                window.navigationBarColor = Color.TRANSPARENT
+            }
+        }
     }
 
     override fun onResume() {
