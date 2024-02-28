@@ -387,15 +387,31 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
         int ret;
         ret = archive_get_ctx(&ctx, index);
         if (ret) return 0;
-        ret = archive_read_data(ctx->arc, addr, size);
-        ctx->using = 0;
-        if (ret == size)
-            return (*env)->NewDirectByteBuffer(env, addr, size);
-        if (ret != size)
-            LOGE("%s", "No enough data read, WTF?");
-        if (ret < 0)
-            LOGE("%s%s", "Archive read failed:", archive_error_string(ctx->arc));
-        mempool_release_pages(addr, size);
+        void *inner_buff = NULL;
+        size_t inner_buff_len = 0;
+        la_int64_t output_ofs = 0;
+        archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
+        bool zero_copy = !output_ofs && inner_buff_len == size;
+        if (zero_copy) {
+            ctx->using = 0;
+            return (*env)->NewDirectByteBuffer(env, inner_buff, inner_buff_len);
+        } else {
+            size_t bytes = 0;
+            do {
+                memcpy(addr + output_ofs, inner_buff, inner_buff_len);
+                bytes += inner_buff_len;
+                ret = archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
+            } while (inner_buff_len && !ret);
+            ctx->using = 0;
+            if (bytes == size) {
+                return (*env)->NewDirectByteBuffer(env, addr, size);
+            } else {
+                LOGE("%s", "No enough data read, WTF?");
+            }
+            if (ret < 0)
+                LOGE("%s%s", "Archive read failed:", archive_error_string(ctx->arc));
+            mempool_release_pages(addr, size);
+        }
     } else {
         return (*env)->NewDirectByteBuffer(env, addr, size);
     }
