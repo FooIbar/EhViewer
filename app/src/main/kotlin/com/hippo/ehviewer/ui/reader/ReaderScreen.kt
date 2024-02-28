@@ -82,23 +82,23 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
         val lazyListState = rememberLazyListState()
         val pagerState = rememberPagerState { pageLoader.size }
         val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 3f))
-        val sync = remember { SliderPagerDoubleSync(lazyListState, pagerState) }
-        sync.Sync()
+        val syncState = rememberSliderPagerDoubleSyncState(lazyListState, pagerState, pageLoader)
+        syncState.Sync()
         Box {
             var appbarVisible by remember { mutableStateOf(false) }
             ReaderAppBars(
                 visible = appbarVisible,
                 isRtl = readingMode == ReadingModeType.RIGHT_TO_LEFT,
                 showSeekBar = showSeekbar,
-                currentPage = sync.sliderValue,
+                currentPage = syncState.sliderValue,
                 totalPages = pageLoader.size,
-                onSliderValueChange = { sync.sliderScrollTo(it + 1) },
+                onSliderValueChange = { syncState.sliderScrollTo(it + 1) },
                 onClickSettings = { },
                 modifier = Modifier.zIndex(1f),
             )
             CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
                 PageIndicatorText(
-                    currentPage = sync.sliderValue,
+                    currentPage = syncState.sliderValue,
                     totalPages = pageLoader.size,
                     modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().zIndex(0.5f),
                 )
