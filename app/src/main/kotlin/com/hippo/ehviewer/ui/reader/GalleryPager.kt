@@ -59,7 +59,7 @@ fun GalleryPager(
             LazyColumn(
                 modifier = modifier,
                 state = lazyListState,
-                verticalArrangement = Arrangement.spacedBy(if (type == WEBTOON) 15.dp else 0.dp),
+                verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
             ) {
                 items(items, key = { it.index }) { page ->
                     item(page)
