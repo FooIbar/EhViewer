@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.reader
 
+import android.graphics.Rect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
 import coil3.BitmapImage
 import coil3.DrawableImage
@@ -62,11 +65,12 @@ import moe.tarsin.kt.unreachable
 @Composable
 fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
     LockDrawer(true)
-    val pageLoader = remember {
+    val cropBorder by Settings.cropBorder.collectAsState()
+    val pageLoader = remember(cropBorder) {
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         archive?.let { ArchivePageLoader(it, info.gid, page) } ?: EhPageLoader(info, page)
     }
-    DisposableEffect(Unit) {
+    DisposableEffect(pageLoader) {
         pageLoader.start()
         onDispose {
             pageLoader.stop()
@@ -124,7 +128,8 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                         }
                         READY -> {
                             val image = page.image!!.innerImage!!
-                            val painter = remember(image) { image.toPainter() }
+                            val rect = page.image!!.rect
+                            val painter = remember(image) { image.toPainter(rect) }
                             Image(
                                 painter = painter,
                                 contentDescription = null,
@@ -156,8 +161,12 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
     }
 }
 
-private fun CoilImage.toPainter() = when (this) {
-    is BitmapImage -> BitmapPainter(image = bitmap.asImageBitmap())
+private fun CoilImage.toPainter(rect: Rect) = when (this) {
+    is BitmapImage -> BitmapPainter(
+        image = bitmap.asImageBitmap(),
+        srcOffset = IntOffset(rect.left, rect.top),
+        srcSize = IntSize(rect.width(), rect.height()),
+    )
     is DrawableImage -> DrawablePainter(drawable)
     else -> unreachable()
 }
