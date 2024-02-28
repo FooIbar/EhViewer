@@ -391,7 +391,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
         size_t inner_buff_len = 0;
         la_int64_t output_ofs = 0;
         archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
-        bool zero_copy = !output_ofs && inner_buff_len == size;
+        bool zero_copy = inner_buff >= archiveAddr && inner_buff < archiveAddr + archiveSize;
         if (zero_copy) {
             ctx->using = 0;
             return (*env)->NewDirectByteBuffer(env, inner_buff, inner_buff_len);
