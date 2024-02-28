@@ -19,6 +19,10 @@
     <style name="Base.AppTheme" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
         <!-- Non-overhead workaround for ROMs enable it by default, MIUI etc. -->
         <item name="android:forceDarkAllowed" tools:targetApi="29">false</item>
+      
+        <!-- Force the status bar and navigation bar to be transparent in all circumstances -->
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
 
         <!-- Apply blur on Android 12 above -->
         <item name="android:dialogTheme">@style/DialogTheme</item>
