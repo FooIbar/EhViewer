@@ -242,7 +242,17 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         launchIO {
             queenScope.cancel()
             runCatching {
-                writeSpiderInfoToLocal()
+                val dir = mSpiderDen.downloadDir
+                if (Settings.saveAsCbz && dir?.findFile("${galleryInfo.gid}.cbz") != null) {
+                    dir.listFiles().forEach {
+                        if (it.name?.matches(filenamePattern) == true) {
+                            it.delete()
+                        }
+                    }
+                    dir.findFile(SPIDER_INFO_FILENAME)?.delete()
+                } else {
+                    writeSpiderInfoToLocal()
+                }
             }.onFailure {
                 logcat(it)
             }
@@ -469,6 +479,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         const val STATE_FAILED = 3
         const val SPIDER_INFO_FILENAME = ".ehviewer"
         private val sQueenMap = LongSparseArray<SpiderQueen>()
+        private val filenamePattern = Regex("^\\d{8}\\.\\w{3,4}")
 
         fun obtainSpiderQueen(galleryInfo: GalleryInfo, @Mode mode: Int): SpiderQueen {
             val gid = galleryInfo.gid
