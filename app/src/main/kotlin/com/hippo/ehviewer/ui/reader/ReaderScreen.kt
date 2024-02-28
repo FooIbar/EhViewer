@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
@@ -95,7 +96,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 PageIndicatorText(
                     currentPage = sync.sliderValue,
                     totalPages = pageLoader.size,
-                    modifier = Modifier.align(Alignment.BottomCenter).zIndex(0.5f),
+                    modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().zIndex(0.5f),
                 )
             }
             GalleryPager(
