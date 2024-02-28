@@ -6,26 +6,29 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.LayoutDirection.Rtl
 import androidx.compose.ui.zIndex
 import coil3.BitmapImage
 import coil3.DrawableImage
@@ -47,7 +50,9 @@ import eu.kanade.tachiyomi.source.model.Page.State.ERROR
 import eu.kanade.tachiyomi.source.model.Page.State.LOAD_PAGE
 import eu.kanade.tachiyomi.source.model.Page.State.QUEUE
 import eu.kanade.tachiyomi.source.model.Page.State.READY
+import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
@@ -68,16 +73,18 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
         }
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
-    val lazyListState = rememberLazyListState()
-    val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 3f))
-    val sync = remember { SliderPagerDoubleSync(lazyListState) }
-    sync.Sync()
-    val isRtl = LocalLayoutDirection.current == Rtl
+    val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
     Deferred({ pageLoader.awaitReady() }) {
+        val lazyListState = rememberLazyListState()
+        val pagerState = rememberPagerState { pageLoader.size }
+        val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 3f))
+        val sync = remember { SliderPagerDoubleSync(lazyListState, pagerState) }
+        sync.Sync()
         Box {
+            var appbarVisible by remember { mutableStateOf(false) }
             ReaderAppBars(
-                visible = true,
-                isRtl = isRtl,
+                visible = appbarVisible,
+                isRtl = readingMode == ReadingModeType.RIGHT_TO_LEFT,
                 showSeekBar = showSeekbar,
                 currentPage = sync.sliderValue,
                 totalPages = pageLoader.size,
@@ -85,8 +92,19 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 onClickSettings = { },
                 modifier = Modifier.zIndex(1f),
             )
-            LazyColumn(modifier = Modifier.fillMaxSize().zoomable(zoomableState), state = lazyListState) {
-                items(pageLoader.mPages) { page ->
+            CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
+                PageIndicatorText(
+                    currentPage = sync.sliderValue,
+                    totalPages = pageLoader.size,
+                    modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().zIndex(0.5f),
+                )
+            }
+            GalleryPager(
+                type = readingMode,
+                pagerState = pagerState,
+                lazyListState = lazyListState,
+                pageLoader = pageLoader,
+                item = { page ->
                     pageLoader.request(page.index)
                     val state by page.status.collectAsState()
                     when (state) {
@@ -128,8 +146,12 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                             }
                         }
                     }
-                }
-            }
+                },
+                modifier = Modifier.fillMaxSize().zoomable(
+                    state = zoomableState,
+                    onClick = { appbarVisible = !appbarVisible },
+                ),
+            )
         }
     }
 }
