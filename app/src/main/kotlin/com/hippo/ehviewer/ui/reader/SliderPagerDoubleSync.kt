@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import com.hippo.ehviewer.gallery.PageLoader2
+import kotlin.math.absoluteValue
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapNotNull
 
@@ -41,7 +42,9 @@ class SliderPagerDoubleSync(
                 snapshotFlow {
                     lazyListState.layoutInfo
                 }.mapNotNull { info ->
-                    info.visibleItemsInfo.lastOrNull()
+                    info.visibleItemsInfo.lastOrNull {
+                        it.offset <= maxOf(info.viewportStartOffset, info.viewportEndOffset - it.size)
+                    }
                 }.collect { info ->
                     sliderValue = info.index + 1
                     pageLoader.startPage = info.index
@@ -49,24 +52,30 @@ class SliderPagerDoubleSync(
             }
             LaunchedEffect(Unit) {
                 snapshotFlow {
-                    pagerState.layoutInfo
-                }.mapNotNull { info ->
-                    info.visiblePagesInfo.lastOrNull()
-                }.collect { info ->
-                    sliderValue = info.index + 1
-                    pageLoader.startPage = info.index
+                    pagerState.currentPage
+                }.collect { index ->
+                    sliderValue = index + 1
+                    pageLoader.startPage = index
                 }
             }
         } else {
             LaunchedEffect(Unit) {
                 snapshotFlow { sliderValue - 1 }.collectLatest { index ->
-                    pagerState.animateScrollToPage(index)
+                    if ((index - pagerState.currentPage).absoluteValue > SMOOTH_SCROLL_THRESHOLD) {
+                        pagerState.scrollToPage(index)
+                    } else {
+                        pagerState.animateScrollToPage(index)
+                    }
                     pageLoader.startPage = index
                 }
             }
             LaunchedEffect(Unit) {
                 snapshotFlow { sliderValue - 1 }.collectLatest { index ->
-                    lazyListState.animateScrollToItem(index)
+                    if ((index - lazyListState.firstVisibleItemIndex).absoluteValue > SMOOTH_SCROLL_THRESHOLD) {
+                        lazyListState.scrollToItem(index)
+                    } else {
+                        lazyListState.animateScrollToItem(index)
+                    }
                     pageLoader.startPage = index
                 }
             }
@@ -91,3 +100,5 @@ fun rememberSliderPagerDoubleSyncState(
         SliderPagerDoubleSync(lazyListState, pagerState, pageLoader)
     }
 }
+
+private const val SMOOTH_SCROLL_THRESHOLD = 50

@@ -78,6 +78,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
     val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
+    val defaultError = stringResource(id = R.string.decode_image_error)
     Deferred({ pageLoader.awaitReady() }) {
         val lazyListState = rememberLazyListState()
         val pagerState = rememberPagerState { pageLoader.size }
@@ -134,7 +135,11 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                                 painter = painter,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxWidth(),
-                                contentScale = ContentScale.FillWidth,
+                                contentScale = if (readingMode == ReadingModeType.VERTICAL) {
+                                    ContentScale.Fit
+                                } else {
+                                    ContentScale.FillWidth
+                                },
                             )
                         }
                         ERROR -> {
@@ -143,7 +148,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                                     modifier = Modifier.align(Companion.Center),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
-                                    Text(text = page.errorMsg.orEmpty())
+                                    Text(text = page.errorMsg ?: defaultError)
                                     Button(onClick = { }) {
                                         Text(text = stringResource(id = R.string.action_retry))
                                     }
