@@ -397,11 +397,11 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
             return (*env)->NewDirectByteBuffer(env, inner_buff, inner_buff_len);
         } else {
             size_t bytes = 0;
-read:
-            memcpy(addr + output_ofs, inner_buff, inner_buff_len);
-            bytes += inner_buff_len;
-            ret = archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
-            if (inner_buff_len && !ret) goto read;
+            do {
+                memcpy(addr + output_ofs, inner_buff, inner_buff_len);
+                bytes += inner_buff_len;
+                ret = archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
+            } while (inner_buff_len && !ret);
             ctx->using = 0;
             if (bytes == size) {
                 return (*env)->NewDirectByteBuffer(env, addr, size);
