@@ -152,6 +152,7 @@ object Settings : DataStorePreferences(null) {
     var harmonizeCategoryColor by boolPref("harmonize_category_color", true)
     var preloadThumbAggressively by boolPref("preload_thumb_aggressively", false)
     var downloadOriginImage by boolPref("download_origin_image", false)
+    var saveAsCbz by boolPref("save_as_cbz", false)
     var archiveMetadata by boolPref("archive_metadata", true)
     var enableCronet by boolPref("enable_cronet", true)
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)

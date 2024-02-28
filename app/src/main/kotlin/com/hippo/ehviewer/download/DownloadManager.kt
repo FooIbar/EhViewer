@@ -612,6 +612,10 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             mCurrentSpider?.let { spider ->
                 mCurrentSpider = null
                 spider.removeOnSpiderListener(DownloadManager)
+                if (finished == total && Settings.saveAsCbz) {
+                    // Delay file deletion to `SpiderQueen.stop` as they may still be in use by reader
+                    spider.mSpiderDen.archive()
+                }
                 SpiderQueen.releaseSpiderQueen(spider, SpiderQueen.MODE_DOWNLOAD)
             }
             mCurrentTask?.let { info ->

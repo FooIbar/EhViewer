@@ -147,6 +147,10 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                 value = Settings::downloadOriginImage,
             )
             SwitchPreference(
+                title = stringResource(id = R.string.settings_download_save_as_cbz),
+                value = Settings::saveAsCbz,
+            )
+            SwitchPreference(
                 title = stringResource(id = R.string.settings_download_archive_metadata),
                 summary = stringResource(id = R.string.settings_download_archive_metadata_summary),
                 value = Settings::archiveMetadata,

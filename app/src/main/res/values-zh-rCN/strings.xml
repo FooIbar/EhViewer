@@ -330,6 +330,7 @@
     <string name="settings_download_preload_image_summary">向后预载 %s 张图片</string>
     <string name="settings_download_download_origin_image">下载原图</string>
     <string name="settings_download_download_origin_image_summary">警告！可能需要 GP</string>
+    <string name="settings_download_save_as_cbz">保存为 CBZ 压缩包</string>
     <string name="settings_download_archive_metadata">压缩包元数据</string>
     <string name="settings_download_archive_metadata_summary">下载压缩包时生成 ComicInfo.xml</string>
     <string name="settings_download_media_scan">允许媒体扫描</string>

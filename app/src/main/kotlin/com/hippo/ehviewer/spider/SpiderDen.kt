@@ -238,6 +238,22 @@ class SpiderDen(val info: GalleryInfo) {
         }
     }
 
+    suspend fun archive() {
+        downloadDir?.run {
+            val filename = "${info.gid}.cbz"
+            findFile(filename) ?: createFile(filename)?.let { file ->
+                runCatching {
+                    val success = exportAsCbz(file)
+                    check(success)
+                }.onFailure {
+                    logcat(it)
+                    file.delete()
+                    throw it
+                }
+            }
+        }
+    }
+
     suspend fun exportAsCbz(file: UniFile) = resourceScope {
         val comicInfo = closeable {
             val f = downloadDir!! / COMIC_INFO_FILE
