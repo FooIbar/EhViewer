@@ -47,7 +47,7 @@ fun LicenseScreen(navigator: DestinationsNavigator) {
             colors = LibraryDefaults.libraryColors(badgeBackgroundColor = MaterialTheme.colorScheme.tertiary),
             padding = LibraryDefaults.libraryPadding(badgeContentPadding = PaddingValues(4.dp)),
             onLibraryClick = { library ->
-                library.library.website?.let { context.openBrowser(it) }
+                library.website?.let { context.openBrowser(it) }
             },
         )
     }
