@@ -16,6 +16,7 @@
 package com.hippo.unifile
 
 import android.net.Uri
+import android.provider.DocumentsContract.Document.MIME_TYPE_DIR
 import android.webkit.MimeTypeMap
 import eu.kanade.tachiyomi.util.system.logcat
 import splitties.init.appCtx
@@ -23,15 +24,15 @@ import splitties.init.appCtx
 class TreeDocumentFile(
     parent: UniFile?,
     override var uri: Uri,
-    val filename: String,
+    override var name: String = getFilenameForUri(uri),
+    mimeType: String? = null,
 ) : UniFile(parent) {
     private var cachePresent = false
     private val allChildren by lazy {
         cachePresent = true
         logcat { "Directory lookup cache created for $name" }
-        DocumentsContractApi21.listFiles(uri).mapTo(mutableListOf()) {
-            val name = getFilenameForUri(it)
-            TreeDocumentFile(this, it, name)
+        DocumentsContractApi21.listFiles(uri).mapTo(mutableListOf()) { (uri, name, mimeType) ->
+            TreeDocumentFile(this, uri, name, mimeType)
         }
     }
 
@@ -43,8 +44,6 @@ class TreeDocumentFile(
         }
     }
 
-    constructor(parent: UniFile?, uri: Uri) : this(parent, uri, getFilenameForUri(uri))
-
     override fun createFile(displayName: String): UniFile? {
         val child = findFile(displayName)
         if (child != null) {
@@ -54,7 +53,7 @@ class TreeDocumentFile(
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
             val result = DocumentsContractApi21.createFile(uri, mimeType, displayName)
             if (result != null) {
-                val f = TreeDocumentFile(this, result, displayName)
+                val f = TreeDocumentFile(this, result, displayName, mimeType)
                 popCacheIfPresent(f)
                 return f
             }
@@ -69,7 +68,7 @@ class TreeDocumentFile(
         } else {
             val result = DocumentsContractApi21.createDirectory(uri, displayName)
             if (result != null) {
-                val d = TreeDocumentFile(this, result, displayName)
+                val d = TreeDocumentFile(this, result, displayName, MIME_TYPE_DIR)
                 popCacheIfPresent(d)
                 return d
             }
@@ -77,14 +76,16 @@ class TreeDocumentFile(
         return null
     }
 
-    override val name: String?
-        get() = DocumentsContractApi19.getName(uri)
+    private val rawType by lazy {
+        mimeType ?: DocumentsContractApi19.getRawType(uri)
+    }
+
     override val type: String?
-        get() = DocumentsContractApi19.getType(uri)
+        get() = rawType.takeUnless { isDirectory }
     override val isDirectory: Boolean
-        get() = DocumentsContractApi19.isDirectory(uri)
+        get() = rawType == MIME_TYPE_DIR
     override val isFile: Boolean
-        get() = DocumentsContractApi19.isFile(uri)
+        get() = !type.isNullOrEmpty()
 
     override fun lastModified() = DocumentsContractApi19.lastModified(uri)
 
@@ -99,7 +100,7 @@ class TreeDocumentFile(
         if (isFile) return false
         val parent = parentFile
         return if (parent != null && parent.ensureDir()) {
-            parent.createDirectory(filename) != null
+            parent.createDirectory(name) != null
         } else {
             false
         }
@@ -110,7 +111,7 @@ class TreeDocumentFile(
         if (isDirectory) return false
         val parent = parentFile
         return if (parent != null && parent.ensureDir()) {
-            parent.createFile(filename) != null
+            parent.createFile(name) != null
         } else {
             false
         }
@@ -130,13 +131,14 @@ class TreeDocumentFile(
     }
 
     override fun findFirst(filter: (String) -> Boolean) = synchronized(allChildren) {
-        allChildren.firstOrNull { filter(it.filename) }
+        allChildren.firstOrNull { filter(it.name) }
     }
 
     override fun renameTo(displayName: String): Boolean {
         val result = DocumentsContractApi21.renameTo(appCtx, uri, displayName)
         if (result != null) {
             uri = result
+            name = displayName
             return true
         }
         return false

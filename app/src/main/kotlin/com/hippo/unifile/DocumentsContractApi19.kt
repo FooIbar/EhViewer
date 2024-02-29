@@ -25,7 +25,7 @@ object DocumentsContractApi19 {
 
     fun getName(self: Uri) = Contracts.queryForString(self, DocumentsContract.Document.COLUMN_DISPLAY_NAME, null)
 
-    private fun getRawType(self: Uri) = Contracts.queryForString(self, DocumentsContract.Document.COLUMN_MIME_TYPE, null)
+    fun getRawType(self: Uri) = Contracts.queryForString(self, DocumentsContract.Document.COLUMN_MIME_TYPE, null)
 
     fun getType(self: Uri) = getRawType(self).takeUnless { it == DocumentsContract.Document.MIME_TYPE_DIR }
 

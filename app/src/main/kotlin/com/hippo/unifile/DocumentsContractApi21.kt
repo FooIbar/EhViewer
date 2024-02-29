@@ -24,6 +24,11 @@ object DocumentsContractApi21 {
     private const val PATH_DOCUMENT = "document"
     private const val PATH_TREE = "tree"
     private val resolver = appCtx.contentResolver
+    private val projection = arrayOf(
+        DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+        DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+        DocumentsContract.Document.COLUMN_MIME_TYPE,
+    )
     fun createFile(self: Uri, mimeType: String, displayName: String) = runCatching {
         DocumentsContract.createDocument(resolver, self, mimeType, displayName)
     }.getOrNull()
@@ -54,15 +59,13 @@ object DocumentsContractApi21 {
 
     fun listFiles(self: Uri) = sequence {
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(self, DocumentsContract.getDocumentId(self))
-        val id = arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID)
-        resolver.query(childrenUri, id, null, null, null, null)?.use {
+        resolver.query(childrenUri, projection, null, null, null, null)?.use {
             while (it.moveToNext()) {
                 val documentId = it.getString(0)
-                val documentUri = DocumentsContract.buildDocumentUriUsingTree(
-                    self,
-                    documentId,
-                )
-                yield(documentUri)
+                val documentUri = DocumentsContract.buildDocumentUriUsingTree(self, documentId)
+                val displayName = it.getString(1)
+                val mimeType = it.getString(2)
+                yield(Triple(documentUri, displayName, mimeType))
             }
         }
     }
