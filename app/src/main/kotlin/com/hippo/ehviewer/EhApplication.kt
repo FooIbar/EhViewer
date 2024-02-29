@@ -53,7 +53,6 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
@@ -105,7 +104,6 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         }
         super.onCreate()
         System.loadLibrary("ehviewer")
-        ReadableTime.initialize(this)
         lifecycleScope.launchIO {
             launch {
                 EhTagDatabase

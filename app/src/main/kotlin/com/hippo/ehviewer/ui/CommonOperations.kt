@@ -62,6 +62,7 @@ import com.hippo.ehviewer.util.isAtLeastT
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.requestPermission
 import com.hippo.ehviewer.util.toEpochMillis
+import com.hippo.ehviewer.util.toLocalDateTime
 import com.hippo.unifile.UniFile
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
@@ -74,7 +75,6 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
-import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
@@ -439,8 +439,6 @@ suspend fun DialogState.showDatePicker(): String? {
             }
         },
     )
-    val date = dateMillis?.let {
-        kotlinx.datetime.Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date.toString()
-    }
+    val date = dateMillis?.run { toLocalDateTime().date.toString() }
     return date
 }
