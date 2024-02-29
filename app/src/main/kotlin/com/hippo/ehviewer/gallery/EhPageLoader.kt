@@ -22,6 +22,7 @@ import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.obtainSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.releaseSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
+import com.hippo.ehviewer.util.FileUtils
 import com.hippo.unifile.UniFile
 
 class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
@@ -42,7 +43,7 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
     }
 
     override val title by lazy {
-        EhUtils.getSuitableTitle(mGalleryInfo)
+        FileUtils.sanitizeFilename(EhUtils.getSuitableTitle(mGalleryInfo))
     }
 
     override fun getImageExtension(index: Int): String {
