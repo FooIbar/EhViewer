@@ -39,7 +39,6 @@ import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.displayString
 import com.hippo.unifile.UniFile
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.system.logcat
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.milliseconds
@@ -47,6 +46,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -223,7 +223,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         check(!(mReadReference < 0 || mDownloadReference < 0)) { "Mode reference < 0" }
     }
 
-    private val prepareJob = launchIO { doPrepare() }
+    private val prepareJob = launch { doPrepare() }
+    private val archiveJob = launch(start = CoroutineStart.LAZY) { mSpiderDen.archive() }
 
     private suspend fun doPrepare() {
         mSpiderDen.initDownloadDirIfExist()
@@ -239,23 +240,18 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     private fun stop() {
         val queenScope = this
-        launchIO {
-            queenScope.cancel()
+        launch {
+            if (archiveJob.isActive) {
+                archiveJob.join()
+            }
             runCatching {
-                val dir = mSpiderDen.downloadDir
-                if (Settings.saveAsCbz && dir?.findFile("${galleryInfo.gid}.cbz") != null) {
-                    dir.listFiles().forEach {
-                        if (it.name?.matches(filenamePattern) == true) {
-                            it.delete()
-                        }
-                    }
-                    dir.findFile(SPIDER_INFO_FILENAME)?.delete()
-                } else {
+                if (!mSpiderDen.postArchive()) {
                     writeSpiderInfoToLocal()
                 }
             }.onFailure {
                 logcat(it)
             }
+            queenScope.cancel()
         }
     }
 
@@ -449,7 +445,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         } else if (state == STATE_FINISHED) {
             notifyPageSuccess(index)
         }
-        if (mDownloadedPages.get() == size) notifyAllPageDownloaded()
+        if (mDownloadedPages.get() == size) {
+            if (mFinishedPages.get() == size) archiveJob.start()
+            notifyAllPageDownloaded()
+        }
     }
 
     @IntDef(MODE_READ, MODE_DOWNLOAD)
@@ -479,13 +478,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         const val STATE_FAILED = 3
         const val SPIDER_INFO_FILENAME = ".ehviewer"
         private val sQueenMap = LongSparseArray<SpiderQueen>()
-        private val filenamePattern = Regex("^\\d{8}\\.\\w{3,4}")
 
         fun obtainSpiderQueen(galleryInfo: GalleryInfo, @Mode mode: Int): SpiderQueen {
             val gid = galleryInfo.gid
             return (sQueenMap[gid] ?: SpiderQueen(galleryInfo).also { sQueenMap[gid] = it }).apply {
                 setMode(mode)
-                launchIO {
+                launch {
                     // Will create download dir if not exists
                     updateMode()
                     if (mode == MODE_DOWNLOAD) {
@@ -502,7 +500,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     stop()
                     sQueenMap.remove(galleryInfo.gid)
                 } else {
-                    launchIO { updateMode() }
+                    launch { updateMode() }
                 }
             }
         }

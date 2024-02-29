@@ -1110,7 +1110,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             onClick = {
                                 dropdown = false
                                 coroutineScope.launchIO {
-                                    val canExport = EhDownloadManager.getDownloadState(gid) == DownloadInfo.STATE_FINISH
+                                    val downloadInfo = EhDownloadManager.getDownloadInfo(gid)
+                                    val canExport = downloadInfo?.state == DownloadInfo.STATE_FINISH
                                     if (!canExport) {
                                         dialogState.awaitPermissionOrCancel(
                                             showCancelButton = false,
@@ -1126,22 +1127,15 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                         }
                                         if (uri != null) {
                                             val file = uri.asUniFile()
-                                            val success = runCatching {
+                                            val msg = runCatching {
                                                 dialogState.bgWork {
                                                     withIOContext {
-                                                        SpiderDen(info).run {
-                                                            initDownloadDirIfExist()
-                                                            exportAsCbz(file)
-                                                        }
+                                                        SpiderDen(info, downloadInfo.dirname!!).exportAsCbz(file)
                                                     }
                                                 }
+                                                exportSuccess
                                             }.getOrElse {
                                                 logcat(it)
-                                                false
-                                            }
-                                            val msg = if (success) {
-                                                exportSuccess
-                                            } else {
                                                 file.delete()
                                                 exportFailed
                                             }

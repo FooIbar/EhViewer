@@ -22,6 +22,7 @@ import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.resourceScope
 import com.hippo.ehviewer.EhApplication.Companion.imageCache as sCache
 import com.hippo.ehviewer.EhDB
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
 import com.hippo.ehviewer.client.data.GalleryInfo
@@ -32,6 +33,7 @@ import com.hippo.ehviewer.coil.suspendEdit
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.image.UniFileSource
 import com.hippo.ehviewer.jni.archiveFdBatch
+import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
@@ -53,6 +55,13 @@ class SpiderDen(val info: GalleryInfo) {
     var downloadDir: UniFile? = null
         private set
 
+    private var tempDownloadDir: UniFile? = null
+    private val saveAsCbz = Settings.saveAsCbz
+    private val archiveName = "$gid.cbz"
+
+    private val imageDir
+        get() = tempDownloadDir.takeIf { saveAsCbz } ?: downloadDir
+
     constructor(info: GalleryInfo, dirname: String) : this(info) {
         downloadDir = downloadLocation / dirname
     }
@@ -64,8 +73,13 @@ class SpiderDen(val info: GalleryInfo) {
 
     suspend fun setMode(value: Int) {
         mode = value
-        if (mode == SpiderQueen.MODE_DOWNLOAD && downloadDir == null) {
-            downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.ensureDir() }
+        if (mode == SpiderQueen.MODE_DOWNLOAD) {
+            if (downloadDir == null) {
+                downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.ensureDir() }
+            }
+            if (saveAsCbz && tempDownloadDir == null) {
+                tempDownloadDir = AppConfig.getTempDir("$gid")?.takeIf { it.ensureDir() }
+            }
         }
     }
 
@@ -74,13 +88,17 @@ class SpiderDen(val info: GalleryInfo) {
         return sCache.read(key) { true } ?: false
     }
 
+    // Search in both directories to maintain compatibility
+    private fun findImageFile(index: Int): UniFile? {
+        return tempDownloadDir?.findImageFile(index) ?: downloadDir?.findImageFile(index)
+    }
+
     private fun containInDownloadDir(index: Int): Boolean {
-        val dir = downloadDir ?: return false
-        return findImageFile(dir, index) != null
+        return findImageFile(index) != null
     }
 
     private fun copyFromCacheToDownloadDir(index: Int): Boolean {
-        val dir = downloadDir ?: return false
+        val dir = imageDir ?: return false
         val key = getImageKey(gid, index)
         return runCatching {
             sCache.read(key) {
@@ -116,7 +134,7 @@ class SpiderDen(val info: GalleryInfo) {
     }
 
     private fun removeFromDownloadDir(index: Int): Boolean {
-        return downloadDir?.let { findImageFile(it, index)?.delete() } ?: false
+        return findImageFile(index)?.delete() ?: false
     }
 
     fun remove(index: Int): Boolean {
@@ -124,8 +142,7 @@ class SpiderDen(val info: GalleryInfo) {
     }
 
     private fun findDownloadFileForIndex(index: Int, extension: String): UniFile? {
-        val dir = downloadDir ?: return null
-        return dir.createFile(perFilename(index, extension))
+        return imageDir?.createFile(perFilename(index, extension))
     }
 
     suspend fun makeHttpCallAndSaveImage(
@@ -194,15 +211,13 @@ class SpiderDen(val info: GalleryInfo) {
         }
 
         // Read from download dir
-        downloadDir?.let { uniFile ->
-            runCatching {
-                requireNotNull(findImageFile(uniFile, index)) sendTo file
-            }.onFailure {
-                logcat(it)
-                return false
-            }.onSuccess {
-                return true
-            }
+        runCatching {
+            requireNotNull(findImageFile(index)) sendTo file
+        }.onFailure {
+            logcat(it)
+            return false
+        }.onSuccess {
+            return true
         }
         return false
     }
@@ -210,7 +225,7 @@ class SpiderDen(val info: GalleryInfo) {
     fun getExtension(index: Int): String? {
         val key = getImageKey(gid, index)
         return sCache.read(key) { metadata.toNioPath().readText() }
-            ?: downloadDir?.let { findImageFile(it, index) }?.name.let { FileUtils.getExtensionFromFilename(it) }
+            ?: findImageFile(index)?.name.let { FileUtils.getExtensionFromFilename(it) }
     }
 
     fun getImageSource(index: Int): UniFileSource? {
@@ -226,8 +241,7 @@ class SpiderDen(val info: GalleryInfo) {
                 }
             }
         }
-        val dir = downloadDir ?: return null
-        val source = findImageFile(dir, index) ?: return null
+        val source = findImageFile(index) ?: return null
         return object : UniFileSource {
             override val source = source
             override val type by lazy {
@@ -239,22 +253,40 @@ class SpiderDen(val info: GalleryInfo) {
     }
 
     suspend fun archive() {
-        downloadDir?.run {
-            val filename = "${info.gid}.cbz"
-            findFile(filename) ?: createFile(filename)?.let { file ->
-                runCatching {
-                    val success = exportAsCbz(file)
-                    check(success)
-                }.onFailure {
-                    logcat(it)
-                    file.delete()
-                    throw it
+        if (saveAsCbz) {
+            downloadDir?.run {
+                findFile(archiveName) ?: createFile(archiveName)?.let { file ->
+                    runCatching {
+                        archiveTo(file)
+                    }.onFailure {
+                        file.delete()
+                        if (it is CancellationException) throw it
+                        logcat(it)
+                    }
                 }
             }
         }
     }
 
-    suspend fun exportAsCbz(file: UniFile) = resourceScope {
+    suspend fun postArchive(): Boolean {
+        val dir = downloadDir
+        val archived = saveAsCbz && dir?.findFile(archiveName) != null
+        if (archived) {
+            dir.listFiles().parMap(concurrency = 10) {
+                if (it.name?.matches(filenamePattern) == true) {
+                    it.delete()
+                }
+            }
+            dir.findFile(SpiderQueen.SPIDER_INFO_FILENAME)?.delete()
+            tempDownloadDir?.delete()
+        }
+        return archived
+    }
+
+    suspend fun exportAsCbz(file: UniFile) =
+        downloadDir!!.findFile(archiveName)?.sendTo(file) ?: archiveTo(file)
+
+    private suspend fun archiveTo(file: UniFile) = resourceScope {
         val comicInfo = closeable {
             val f = downloadDir!! / COMIC_INFO_FILE
             if (!f.exists()) {
@@ -275,6 +307,7 @@ class SpiderDen(val info: GalleryInfo) {
 
     suspend fun initDownloadDirIfExist() {
         downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.isDirectory }
+        tempDownloadDir = AppConfig.getTempDir("$gid")?.takeIf { it.isDirectory }
     }
 
     suspend fun initDownloadDir() {
@@ -300,13 +333,15 @@ class SpiderDen(val info: GalleryInfo) {
     }
 }
 
+private val filenamePattern = Regex("^\\d{8}\\.\\w{3,4}")
+
 fun perFilename(index: Int, extension: String = ""): String {
     return "%08d.%s".format(index + 1, extension)
 }
 
-private fun findImageFile(dir: UniFile, index: Int): UniFile? {
+private fun UniFile.findImageFile(index: Int): UniFile? {
     val head = perFilename(index)
-    return dir.findFirst { name -> name.startsWith(head) }
+    return findFirst { name -> name.startsWith(head) }
 }
 
 suspend fun GalleryInfo.putToDownloadDir(): String {
