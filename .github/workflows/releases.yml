@@ -36,9 +36,6 @@ jobs:
           key: ${{ runner.os }}-cmake-${{ hashFiles('gradle/libs.versions.toml', 'app/build.gradle.kts', 'app/src/main/cpp/CMakeLists.txt') }}
           restore-keys: ${{ runner.os }}-cmake-
 
-      - name: Install Build Tools
-        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;35.0.0-rc1"
-
       - name: Gradle Build
         uses: gradle/actions/setup-gradle@v3
         with:
