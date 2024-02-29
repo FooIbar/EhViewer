@@ -38,15 +38,15 @@ import com.hippo.ehviewer.client.exception.ParseException
 import com.hippo.ehviewer.client.exception.PiningException
 import com.hippo.ehviewer.client.getThumbKey
 import com.hippo.ehviewer.util.ExceptionUtils
+import com.hippo.ehviewer.util.toEpochMillis
 import com.hippo.ehviewer.util.toFloatOrDefault
 import com.hippo.ehviewer.util.toIntOrDefault
 import com.hippo.ehviewer.util.trimAnd
 import com.hippo.ehviewer.util.unescapeXml
 import eu.kanade.tachiyomi.util.system.logcat
-import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.format.MonthNames
+import kotlinx.datetime.format.char
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -78,8 +78,19 @@ object GalleryDetailParser {
     private val PATTERN_FAVORITE_SLOT =
         Regex("/fav.png\\); background-position:0px -(\\d+)px")
     private val EMPTY_GALLERY_COMMENT_LIST = GalleryCommentList(emptyList(), false)
-    private val WEB_COMMENT_DATE_FORMAT = DateTimeFormatter
-        .ofPattern("dd MMMM yyyy, HH:mm", Locale.US).withZone(ZoneOffset.UTC)
+
+    // dd MMMM yyyy, HH:mm
+    private val WEB_COMMENT_DATE_FORMAT = LocalDateTime.Format {
+        dayOfMonth()
+        char(' ')
+        monthName(MonthNames.ENGLISH_FULL)
+        char(' ')
+        year()
+        chars(", ")
+        hour()
+        char(':')
+        minute()
+    }
     private const val OFFENSIVE_STRING =
         "<p>(And if you choose to ignore this warning, you lose all rights to complain about it in the future.)</p>"
     private const val PINING_STRING = "<p>This gallery is pining for the fjords.</p>"
@@ -378,7 +389,7 @@ object GalleryDetailParser {
             } else {
                 temp.substring("Posted on ".length) to null
             }
-            val time = Instant.from(WEB_COMMENT_DATE_FORMAT.parse(timeStr)).toEpochMilli()
+            val time = WEB_COMMENT_DATE_FORMAT.parse(timeStr).toEpochMillis()
             // comment
             val c6 = element.getElementsByClass("c6").first()
             // fix underline support
@@ -397,7 +408,7 @@ object GalleryDetailParser {
             }
             // last edited
             val c8 = element.getElementsByClass("c8").first()
-            val lastEdited = c8?.children()?.first()?.run { Instant.from(WEB_COMMENT_DATE_FORMAT.parse(text())).toEpochMilli() } ?: 0
+            val lastEdited = c8?.children()?.first()?.run { WEB_COMMENT_DATE_FORMAT.parse(text()).toEpochMillis() } ?: 0
             GalleryComment(
                 id, score, editable, voteUpAble, voteUpEd, voteDownAble,
                 voteDownEd, uploader, voteState, time, user, commentHtml, lastEdited,
