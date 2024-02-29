@@ -118,7 +118,7 @@ static inline int compare_entries(const void *a, const void *b) {
     return strnatcmp(fa, fb);
 }
 
-static long archive_map_entries_index(archive_ctx *ctx) {
+static long archive_map_entries_index(archive_ctx *ctx, bool sort) {
     long count = 0;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK) {
         const char *name = archive_entry_pathname2(ctx->entry);
@@ -131,7 +131,8 @@ static long archive_map_entries_index(archive_ctx *ctx) {
     }
     if (!count)
         LOGE("%s", archive_error_string(ctx->arc));
-    qsort(entries, entryCount, sizeof(entry), compare_entries);
+    if (sort)
+        qsort(entries, entryCount, sizeof(entry), compare_entries);
     return count;
 }
 
@@ -296,7 +297,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
 
 JNIEXPORT jint JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint fd,
-                                                  jlong size) {
+                                                  jlong size, jboolean sort_entries) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     archive_ctx *ctx = NULL;
@@ -356,7 +357,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
         LOGE("%s%s", "Archive open failed:", archive_error_string(ctx->arc));
     } else {
         entries = calloc(entryCount, sizeof(entry));
-        r = archive_map_entries_index(ctx);
+        r = archive_map_entries_index(ctx, sort_entries);
         if (!archive_prealloc_mempool()) {
             r = 0;
             for (int i = 0; i < entryCount; ++i) {
@@ -514,6 +515,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz
 JNIEXPORT jboolean JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, jintArray fd_batch,
                                                      jobjectArray names, jint arc_fd, jint size) {
+    EH_UNUSED(clazz);
     struct archive *arc = archive_write_new();
     struct stat st;
     char buff[8192];

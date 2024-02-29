@@ -55,7 +55,7 @@ class ArchivePageLoader(
     private val hostJob = launch(start = CoroutineStart.LAZY) {
         logcat(DEBUG_TAG) { "Open archive ${file.uri.displayPath}" }
         pfd = file.openFileDescriptor("r")
-        size = openArchive(pfd.fd, pfd.statSize)
+        size = openArchive(pfd.fd, pfd.statSize, gid == 0L)
         if (size == 0) {
             return@launch
         }
