@@ -1,9 +1,7 @@
 package com.hippo.ehviewer.legacy
 
-import android.app.Application
-import eu.kanade.tachiyomi.util.lang.launchIO
 import java.io.File
-import kotlinx.coroutines.DelicateCoroutinesApi
+import splitties.init.appCtx
 
 private val OBSOLETE_CACHE_DIRS = arrayOf(
     "image",
@@ -12,16 +10,13 @@ private val OBSOLETE_CACHE_DIRS = arrayOf(
     "spider_info",
 )
 
-@OptIn(DelicateCoroutinesApi::class)
-fun cleanObsoleteCache(application: Application) {
-    launchIO {
-        application.deleteDatabase("hosts.db")
-        val dir = application.cacheDir
-        for (subdir in OBSOLETE_CACHE_DIRS) {
-            val file = File(dir, subdir)
-            if (file.exists()) {
-                file.deleteRecursively()
-            }
+fun cleanObsoleteCache() {
+    appCtx.deleteDatabase("hosts.db")
+    val dir = appCtx.cacheDir
+    for (subdir in OBSOLETE_CACHE_DIRS) {
+        val file = File(dir, subdir)
+        if (file.exists()) {
+            file.deleteRecursively()
         }
     }
 }

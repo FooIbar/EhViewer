@@ -80,6 +80,15 @@ object FileUtils {
         return success
     }
 
+    fun cleanupDirectory(dir: File?, maxFiles: Int = 10) {
+        dir?.listFiles()?.let { files ->
+            files.sortByDescending { it.lastModified() }
+            files.forEachIndexed { index, file ->
+                if (index >= maxFiles) file.delete()
+            }
+        }
+    }
+
     fun sanitizeFilename(rawFilename: String): String {
         // Remove forbidden_filename_characters
         var filename = rawFilename
@@ -157,6 +166,7 @@ object FileUtils {
     }
 }
 
+@Suppress("BlockingMethodInNonBlockingContext")
 suspend fun ByteReadChannel.copyTo(file: File) {
     RandomAccessFile(file, "rw").use {
         copyTo(it.channel)
