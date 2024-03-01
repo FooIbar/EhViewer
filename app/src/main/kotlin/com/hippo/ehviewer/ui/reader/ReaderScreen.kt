@@ -65,8 +65,6 @@ import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
 import kotlinx.coroutines.launch
-import me.saket.telephoto.zoomable.ZoomSpec
-import me.saket.telephoto.zoomable.rememberZoomableState
 import moe.tarsin.kt.unreachable
 
 @Destination
@@ -92,7 +90,6 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
     Deferred({ pageLoader.awaitReady() }) {
         val lazyListState = rememberLazyListState()
         val pagerState = rememberPagerState { pageLoader.size }
-        val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec(maxZoomFactor = 3f))
         val syncState = rememberSliderPagerDoubleSyncState(lazyListState, pagerState, pageLoader)
         syncState.Sync()
         Box {
@@ -118,7 +115,6 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 type = readingMode,
                 pagerState = pagerState,
                 lazyListState = lazyListState,
-                zoomableState = zoomableState,
                 pageLoader = pageLoader,
                 onSelectPage = { page ->
                     scope.launch {

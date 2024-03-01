@@ -22,7 +22,8 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.LEFT_TO_RIGHT
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.RIGHT_TO_LEFT
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.VERTICAL
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.WEBTOON
-import me.saket.telephoto.zoomable.ZoomableState
+import me.saket.telephoto.zoomable.ZoomSpec
+import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
 
 @Composable
@@ -30,7 +31,6 @@ fun GalleryPager(
     type: ReadingModeType,
     pagerState: PagerState,
     lazyListState: LazyListState,
-    zoomableState: ZoomableState,
     pageLoader: PageLoader2,
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
@@ -47,6 +47,7 @@ fun GalleryPager(
                 key = { it },
             ) { index ->
                 val page = items[index]
+                val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
                 Box(
                     modifier = Modifier.fillMaxSize().zoomable(
                         state = zoomableState,
@@ -66,6 +67,7 @@ fun GalleryPager(
                 key = { it },
             ) { index ->
                 val page = items[index]
+                val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
                 Box(
                     modifier = Modifier.fillMaxSize().zoomable(
                         state = zoomableState,
@@ -79,6 +81,7 @@ fun GalleryPager(
             }
         }
         WEBTOON, CONTINUOUS_VERTICAL -> {
+            val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
             LazyColumn(
                 modifier = modifier.zoomable(
                     state = zoomableState,
@@ -105,3 +108,5 @@ fun GalleryPager(
         }
     }
 }
+
+private val zoomSpec = ZoomSpec(maxZoomFactor = 3f)
