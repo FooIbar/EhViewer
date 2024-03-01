@@ -63,7 +63,7 @@ abstract class PageLoader {
         preloadPages(pagesAbsent, (index - 10).coerceAtLeast(0) to (mPreloads + index + 10).coerceAtMost(size))
     }
 
-    fun retryPage(index: Int, orgImg: Boolean) {
+    fun retryPage(index: Int, orgImg: Boolean = false) {
         notifyPageWait(index)
         onForceRequest(index, orgImg)
     }

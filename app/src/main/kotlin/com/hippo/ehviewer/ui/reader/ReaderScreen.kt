@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
@@ -110,10 +111,10 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 lazyListState = lazyListState,
                 pageLoader = pageLoader,
                 item = { page ->
-                    pageLoader.request(page.index)
                     val state by page.status.collectAsState()
                     when (state) {
                         QUEUE, LOAD_PAGE -> {
+                            pageLoader.request(page.index)
                             Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
                                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                             }
@@ -148,8 +149,11 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                                     modifier = Modifier.align(Companion.Center),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
-                                    Text(text = page.errorMsg ?: defaultError)
-                                    Button(onClick = { }) {
+                                    Text(
+                                        text = page.errorMsg ?: defaultError,
+                                        textAlign = TextAlign.Center,
+                                    )
+                                    Button(onClick = { pageLoader.retryPage(page.index) }) {
                                         Text(text = stringResource(id = R.string.action_retry))
                                     }
                                 }
