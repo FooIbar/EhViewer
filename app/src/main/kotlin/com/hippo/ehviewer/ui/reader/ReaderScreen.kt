@@ -185,7 +185,6 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                         }
                     }
                 },
-                modifier = Modifier.fillMaxSize(),
             )
         }
     }
