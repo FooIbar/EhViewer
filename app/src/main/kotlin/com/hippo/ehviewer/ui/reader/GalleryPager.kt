@@ -1,7 +1,9 @@
 package com.hippo.ehviewer.ui.reader
 
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -10,11 +12,14 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.gallery.PageLoader2
+import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.CONTINUOUS_VERTICAL
@@ -52,12 +57,22 @@ fun GalleryPager(
                 key = { it },
             ) { index ->
                 val page = items[index]
-                Box(
-                    modifier = Modifier.zoomable(
+                val status by page.status.collectAsState()
+                val boxModifier = if (status == Page.State.READY) {
+                    Modifier.zoomable(
                         state = zoomableState,
                         onClick = { onMenuRegionClick() },
                         onLongClick = { onSelectPage(page) },
-                    ),
+                    )
+                } else {
+                    Modifier.combinedClickable(
+                        interactionSource = null,
+                        indication = null,
+                        onClick = { onMenuRegionClick() },
+                    ).fillMaxSize()
+                }
+                Box(
+                    modifier = boxModifier,
                     contentAlignment = Alignment.Center,
                 ) {
                     item(page) { size ->
@@ -77,12 +92,22 @@ fun GalleryPager(
                 key = { it },
             ) { index ->
                 val page = items[index]
-                Box(
-                    modifier = Modifier.zoomable(
+                val status by page.status.collectAsState()
+                val boxModifier = if (status == Page.State.READY) {
+                    Modifier.zoomable(
                         state = zoomableState,
                         onClick = { onMenuRegionClick() },
                         onLongClick = { onSelectPage(page) },
-                    ),
+                    )
+                } else {
+                    Modifier.combinedClickable(
+                        interactionSource = null,
+                        indication = null,
+                        onClick = { onMenuRegionClick() },
+                    ).fillMaxSize()
+                }
+                Box(
+                    modifier = boxModifier,
                     contentAlignment = Alignment.Center,
                 ) {
                     item(page) { size ->
