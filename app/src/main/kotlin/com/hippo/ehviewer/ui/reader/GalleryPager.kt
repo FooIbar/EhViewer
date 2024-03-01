@@ -44,6 +44,7 @@ fun GalleryPager(
     val items = pageLoader.mPages
     when (type) {
         DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT -> {
+            val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
             HorizontalPager(
                 state = pagerState,
                 modifier = modifier,
@@ -51,7 +52,6 @@ fun GalleryPager(
                 key = { it },
             ) { index ->
                 val page = items[index]
-                val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
                 Box(
                     modifier = Modifier.zoomable(
                         state = zoomableState,
@@ -70,13 +70,13 @@ fun GalleryPager(
             }
         }
         VERTICAL -> {
+            val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
             VerticalPager(
                 state = pagerState,
                 modifier = modifier,
                 key = { it },
             ) { index ->
                 val page = items[index]
-                val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
                 Box(
                     modifier = Modifier.zoomable(
                         state = zoomableState,
