@@ -111,6 +111,8 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 lazyListState = lazyListState,
                 zoomableState = zoomableState,
                 pageLoader = pageLoader,
+                onSelectPage = { page ->
+                },
                 onMenuRegionClick = { appbarVisible = !appbarVisible },
                 item = { page ->
                     val state by page.status.collectAsState()

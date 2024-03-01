@@ -32,6 +32,7 @@ fun GalleryPager(
     lazyListState: LazyListState,
     zoomableState: ZoomableState,
     pageLoader: PageLoader2,
+    onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
     item: @Composable (ReaderPage) -> Unit,
     modifier: Modifier = Modifier,
@@ -39,33 +40,41 @@ fun GalleryPager(
     val items = pageLoader.mPages
     when (type) {
         DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT -> {
-            val zoomModifier = Modifier.fillMaxSize().zoomable(
-                state = zoomableState,
-                onClick = { onMenuRegionClick() },
-            )
             HorizontalPager(
                 state = pagerState,
                 modifier = modifier,
                 reverseLayout = type == RIGHT_TO_LEFT,
                 key = { it },
             ) { index ->
-                Box(modifier = zoomModifier, contentAlignment = Alignment.Center) {
-                    item(items[index])
+                val page = items[index]
+                Box(
+                    modifier = Modifier.fillMaxSize().zoomable(
+                        state = zoomableState,
+                        onClick = { onMenuRegionClick() },
+                        onLongClick = { onSelectPage(page) },
+                    ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    item(page)
                 }
             }
         }
         VERTICAL -> {
-            val zoomModifier = Modifier.fillMaxSize().zoomable(
-                state = zoomableState,
-                onClick = { onMenuRegionClick() },
-            )
             VerticalPager(
                 state = pagerState,
                 modifier = modifier,
                 key = { it },
             ) { index ->
-                Box(modifier = zoomModifier, contentAlignment = Alignment.Center) {
-                    item(items[index])
+                val page = items[index]
+                Box(
+                    modifier = Modifier.fillMaxSize().zoomable(
+                        state = zoomableState,
+                        onClick = { onMenuRegionClick() },
+                        onLongClick = { onSelectPage(page) },
+                    ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    item(page)
                 }
             }
         }
@@ -74,6 +83,17 @@ fun GalleryPager(
                 modifier = modifier.zoomable(
                     state = zoomableState,
                     onClick = { onMenuRegionClick() },
+                    onLongClick = { ofs ->
+                        val info = lazyListState.layoutInfo.visibleItemsInfo.find { info ->
+                            info.offset <= ofs.y && info.offset + info.size > ofs.y
+                        }
+                        if (info == null && type == CONTINUOUS_VERTICAL) {
+                            // Maybe user long-click on gaps? ¯\_(ツ)_/¯
+                            return@zoomable
+                        }
+                        info ?: error("Internal error finding long click item!!! offset:$ofs")
+                        onSelectPage(items[info.index])
+                    },
                 ),
                 state = lazyListState,
                 verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
