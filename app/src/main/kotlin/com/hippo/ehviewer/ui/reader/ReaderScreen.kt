@@ -60,7 +60,6 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
-import me.saket.telephoto.zoomable.zoomable
 import moe.tarsin.kt.unreachable
 
 @Destination
@@ -110,7 +109,9 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 type = readingMode,
                 pagerState = pagerState,
                 lazyListState = lazyListState,
+                zoomableState = zoomableState,
                 pageLoader = pageLoader,
+                onMenuRegionClick = { appbarVisible = !appbarVisible },
                 item = { page ->
                     val state by page.status.collectAsState()
                     when (state) {
@@ -133,12 +134,8 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                             Image(
                                 painter = painter,
                                 contentDescription = null,
-                                modifier = Modifier.fillMaxWidth(),
-                                contentScale = if (readingMode == ReadingModeType.VERTICAL) {
-                                    ContentScale.Fit
-                                } else {
-                                    ContentScale.FillWidth
-                                },
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = if (ReadingModeType.allowHeightOverScreen(readingMode)) ContentScale.FillWidth else ContentScale.Fit,
                             )
                         }
                         ERROR -> {
@@ -159,10 +156,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                         }
                     }
                 },
-                modifier = Modifier.fillMaxSize().zoomable(
-                    state = zoomableState,
-                    onClick = { appbarVisible = !appbarVisible },
-                ),
+                modifier = Modifier.fillMaxSize(),
             )
         }
     }

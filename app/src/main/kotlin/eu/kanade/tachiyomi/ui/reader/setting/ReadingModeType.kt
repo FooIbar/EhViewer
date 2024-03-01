@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.setting
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.runtime.Stable
 import com.hippo.ehviewer.R
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
@@ -10,6 +11,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 
+@Stable
 enum class ReadingModeType(val prefValue: Int, @StringRes val stringRes: Int, @DrawableRes val iconRes: Int, val flagValue: Int) {
     DEFAULT(0, R.string.label_default, R.drawable.ic_reader_default_24dp, 0x00000000),
     LEFT_TO_RIGHT(1, R.string.left_to_right_viewer, R.drawable.ic_reader_ltr_24dp, 0x00000001),
@@ -20,6 +22,12 @@ enum class ReadingModeType(val prefValue: Int, @StringRes val stringRes: Int, @D
     ;
 
     companion object {
+        @Stable
+        fun allowHeightOverScreen(type: ReadingModeType) = when (type) {
+            DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT, VERTICAL -> false
+            WEBTOON, CONTINUOUS_VERTICAL -> true
+        }
+
         const val MASK = 0x00000007
 
         fun fromPreference(preference: Int?): ReadingModeType = entries.find { it.flagValue == preference } ?: DEFAULT

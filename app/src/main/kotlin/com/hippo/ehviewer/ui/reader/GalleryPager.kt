@@ -22,42 +22,59 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.LEFT_TO_RIGHT
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.RIGHT_TO_LEFT
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.VERTICAL
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.WEBTOON
+import me.saket.telephoto.zoomable.ZoomableState
+import me.saket.telephoto.zoomable.zoomable
 
 @Composable
 fun GalleryPager(
     type: ReadingModeType,
     pagerState: PagerState,
     lazyListState: LazyListState,
+    zoomableState: ZoomableState,
     pageLoader: PageLoader2,
+    onMenuRegionClick: () -> Unit,
     item: @Composable (ReaderPage) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val items = pageLoader.mPages
     when (type) {
         DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT -> {
+            val zoomModifier = Modifier.fillMaxSize().zoomable(
+                state = zoomableState,
+                onClick = { onMenuRegionClick() },
+            )
             HorizontalPager(
                 state = pagerState,
                 modifier = modifier,
                 reverseLayout = type == RIGHT_TO_LEFT,
                 key = { it },
             ) { index ->
-                item(items[index])
+                Box(modifier = zoomModifier, contentAlignment = Alignment.Center) {
+                    item(items[index])
+                }
             }
         }
         VERTICAL -> {
+            val zoomModifier = Modifier.fillMaxSize().zoomable(
+                state = zoomableState,
+                onClick = { onMenuRegionClick() },
+            )
             VerticalPager(
                 state = pagerState,
                 modifier = modifier,
                 key = { it },
             ) { index ->
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(modifier = zoomModifier, contentAlignment = Alignment.Center) {
                     item(items[index])
                 }
             }
         }
         WEBTOON, CONTINUOUS_VERTICAL -> {
             LazyColumn(
-                modifier = modifier,
+                modifier = modifier.zoomable(
+                    state = zoomableState,
+                    onClick = { onMenuRegionClick() },
+                ),
                 state = lazyListState,
                 verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
             ) {
