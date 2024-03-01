@@ -33,7 +33,7 @@ class PagerViewerAdapter(private val viewer: PagerViewer) : ViewPagerAdapter() {
      * has R2L direction.
      */
     fun setChapters(chapters: PageLoader) {
-        items = chapters.mPages
+        items = chapters.pages
         currentChapter = chapters
 
         if (viewer is R2LPagerViewer) {

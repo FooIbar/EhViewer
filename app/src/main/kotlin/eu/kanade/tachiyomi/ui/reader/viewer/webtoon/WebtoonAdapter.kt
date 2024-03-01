@@ -32,7 +32,7 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : RecyclerView.Adapter<RecyclerV
      */
     fun setChapters(chapter: PageLoader) {
         currentChapter = chapter
-        items = chapter.mPages
+        items = chapter.pages
     }
 
     fun refresh() {

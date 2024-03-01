@@ -46,7 +46,7 @@ fun GalleryPager(
     item: @Composable (ReaderPage, EdgeApplier?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val items = pageLoader.mPages
+    val items = pageLoader.pages
     when (type) {
         DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT -> {
             val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
