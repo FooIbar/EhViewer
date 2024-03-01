@@ -4,6 +4,8 @@ import android.graphics.Rect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +15,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -22,6 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion
@@ -48,6 +52,7 @@ import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.source.model.Page.State.DOWNLOAD_IMAGE
 import eu.kanade.tachiyomi.source.model.Page.State.ERROR
@@ -56,8 +61,10 @@ import eu.kanade.tachiyomi.source.model.Page.State.QUEUE
 import eu.kanade.tachiyomi.source.model.Page.State.READY
 import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
+import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
+import kotlinx.coroutines.launch
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
 import moe.tarsin.kt.unreachable
@@ -65,6 +72,8 @@ import moe.tarsin.kt.unreachable
 @Destination
 @Composable
 fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
+    val scope = rememberCoroutineScope()
+    val dialogState = LocalDialogState.current
     LockDrawer(true)
     val cropBorder by Settings.cropBorder.collectAsState()
     val pageLoader = remember(cropBorder) {
@@ -112,6 +121,25 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 zoomableState = zoomableState,
                 pageLoader = pageLoader,
                 onSelectPage = { page ->
+                    scope.launch {
+                        dialogState.dialog {
+                            ModalBottomSheet(
+                                onDismissRequest = { it.cancel() },
+                                windowInsets = WindowInsets(0),
+                            ) {
+                                ReaderPageSheetMeta(
+                                    retry = { pageLoader.retryPage(page.index) },
+                                    retryOrigin = { pageLoader.retryPage(page.index, true) },
+                                    share = {},
+                                    copy = {},
+                                    save = {},
+                                    saveTo = {},
+                                    dismiss = { it.cancel() },
+                                )
+                                Spacer(modifier = Modifier.navigationBarsPadding())
+                            }
+                        }
+                    }
                 },
                 onMenuRegionClick = { appbarVisible = !appbarVisible },
                 item = { page ->
