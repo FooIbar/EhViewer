@@ -11,13 +11,13 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,6 +57,7 @@ import eu.kanade.tachiyomi.source.model.Page.State.READY
 import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
+import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
@@ -113,19 +114,16 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 item = { page ->
                     val state by page.status.collectAsState()
                     when (state) {
-                        QUEUE, LOAD_PAGE -> {
-                            pageLoader.request(page.index)
-                            Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
-                                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        QUEUE, LOAD_PAGE, DOWNLOAD_IMAGE -> {
+                            LaunchedEffect(Unit) {
+                                pageLoader.request(page.index)
                             }
-                        }
-                        DOWNLOAD_IMAGE -> {
-                            Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
+                                contentAlignment = Alignment.Center,
+                            ) {
                                 val progress by page.progressFlow.collectAsState()
-                                CircularProgressIndicator(
-                                    progress = { progress / 100f },
-                                    modifier = Modifier.align(Alignment.Center),
-                                )
+                                CombinedCircularProgressIndicator(progress = progress / 100f)
                             }
                         }
                         READY -> {
