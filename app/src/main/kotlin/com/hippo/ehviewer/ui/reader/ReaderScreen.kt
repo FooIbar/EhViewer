@@ -138,7 +138,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                     }
                 },
                 onMenuRegionClick = { appbarVisible = !appbarVisible },
-                item = { page ->
+                item = { page, edgeApplier ->
                     val state by page.status.collectAsState()
                     when (state) {
                         QUEUE, LOAD_PAGE, DOWNLOAD_IMAGE -> {
@@ -157,12 +157,15 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                             val image = page.image!!.innerImage!!
                             val rect = page.image!!.rect
                             val painter = remember(image) { image.toPainter(rect) }
+                            val heightOverScreen = ReadingModeType.allowHeightOverScreen(readingMode)
+                            val contentScale = if (heightOverScreen) ContentScale.FillWidth else ContentScale.Inside
                             Image(
                                 painter = painter,
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = if (ReadingModeType.allowHeightOverScreen(readingMode)) ContentScale.FillWidth else ContentScale.Fit,
+                                contentScale = contentScale,
                             )
+                            edgeApplier?.invoke(painter.intrinsicSize)
                         }
                         ERROR -> {
                             Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {

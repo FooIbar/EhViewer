@@ -2,7 +2,6 @@ package com.hippo.ehviewer.ui.reader
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -10,8 +9,10 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.gallery.PageLoader2
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -23,8 +24,11 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.RIGHT_TO_LEFT
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.VERTICAL
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.WEBTOON
 import me.saket.telephoto.zoomable.ZoomSpec
+import me.saket.telephoto.zoomable.ZoomableContentLocation
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
+
+typealias EdgeApplier = @Composable (Size) -> Unit
 
 @Composable
 fun GalleryPager(
@@ -34,7 +38,7 @@ fun GalleryPager(
     pageLoader: PageLoader2,
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
-    item: @Composable (ReaderPage) -> Unit,
+    item: @Composable (ReaderPage, EdgeApplier?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val items = pageLoader.mPages
@@ -49,14 +53,19 @@ fun GalleryPager(
                 val page = items[index]
                 val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
                 Box(
-                    modifier = Modifier.fillMaxSize().zoomable(
+                    modifier = Modifier.zoomable(
                         state = zoomableState,
                         onClick = { onMenuRegionClick() },
                         onLongClick = { onSelectPage(page) },
                     ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    item(page)
+                    item(page) { size ->
+                        LaunchedEffect(size) {
+                            val contentLocation = ZoomableContentLocation.scaledInsideAndCenterAligned(size)
+                            zoomableState.setContentLocation(contentLocation)
+                        }
+                    }
                 }
             }
         }
@@ -69,14 +78,19 @@ fun GalleryPager(
                 val page = items[index]
                 val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
                 Box(
-                    modifier = Modifier.fillMaxSize().zoomable(
+                    modifier = Modifier.zoomable(
                         state = zoomableState,
                         onClick = { onMenuRegionClick() },
                         onLongClick = { onSelectPage(page) },
                     ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    item(page)
+                    item(page) { size ->
+                        LaunchedEffect(size) {
+                            val contentLocation = ZoomableContentLocation.scaledInsideAndCenterAligned(size)
+                            zoomableState.setContentLocation(contentLocation)
+                        }
+                    }
                 }
             }
         }
@@ -102,7 +116,7 @@ fun GalleryPager(
                 verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
             ) {
                 items(items, key = { it.index }) { page ->
-                    item(page)
+                    item(page, null)
                 }
             }
         }
