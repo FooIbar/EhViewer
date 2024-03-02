@@ -150,7 +150,7 @@ static bool archive_prealloc_mempool() {
     return true;
 }
 
-#define ADDR_IN_FILE_MAPPING(addr) addr >= archiveAddr && addr < archiveAddr + archiveSize
+#define ADDR_IN_FILE_MAPPING(addr) (addr >= archiveAddr && addr < archiveAddr + archiveSize)
 
 static void mempool_release_pages(void *addr, size_t size) {
     size = PAGE_ALIGN(size);
@@ -470,7 +470,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz
     EH_UNUSED(thiz);
     void *addr = (*env)->GetDirectBufferAddress(env, buffer);
     size_t size = (*env)->GetDirectBufferCapacity(env, buffer);
-    mempool_release_pages(addr, size);
+    if (!ADDR_IN_FILE_MAPPING(addr)) mempool_release_pages(addr, size);
 }
 
 JNIEXPORT jboolean JNICALL
