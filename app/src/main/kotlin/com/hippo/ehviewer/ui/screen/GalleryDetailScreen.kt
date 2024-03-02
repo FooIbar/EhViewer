@@ -65,7 +65,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -74,7 +73,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LocalPinnableContainer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -118,9 +116,9 @@ import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
-import com.hippo.ehviewer.ui.LocalSnackBarHostState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.destinations.GalleryCommentsScreenDestination
 import com.hippo.ehviewer.ui.destinations.GalleryPreviewScreenDestination
@@ -141,10 +139,8 @@ import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
 import com.hippo.ehviewer.ui.tools.GalleryRatingBar
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.rememberLambda
-import com.hippo.ehviewer.ui.with
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.AppHelper
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -215,7 +211,7 @@ private fun List<GalleryTagGroup>.getArtist(): String? {
 
 @Destination
 @Composable
-fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) {
+fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
     LockDrawer(true)
     var galleryInfo by remember {
         val casted = args as? GalleryInfoArgs
@@ -228,9 +224,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         }
     }
     val galleryDetailUrl = remember { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
-    val context = LocalContext.current
-    val activity = remember(context) { context.findActivity<MainActivity>() }
-    val snackbarState = LocalSnackBarHostState.current
+    val activity = remember { findActivity<MainActivity>() }
     var showReadAction by rememberSaveable { mutableStateOf(true) }
     LaunchedEffect(args, galleryInfo) {
         if (showReadAction) {
@@ -238,13 +232,13 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             val gi = galleryInfo
             if (page != 0 && gi != null) {
                 showReadAction = false
-                val result = snackbarState.showSnackbar(
-                    context.getString(R.string.read_from, page),
-                    context.getString(R.string.read),
+                val result = showSnackbar(
+                    getString(R.string.read_from, page),
+                    getString(R.string.read),
                     true,
                 )
                 if (result == SnackbarResult.ActionPerformed) {
-                    with(context, navigator) { navToReader(gi.findBaseInfo(), page) }
+                    navToReader(gi.findBaseInfo(), page)
                 }
             }
         }
@@ -253,9 +247,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         ProvideAssistContent(galleryDetailUrl)
     }
     var getDetailError by rememberSaveable { mutableStateOf("") }
-    val dialogState = LocalDialogState.current
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-    val coroutineScope = rememberCoroutineScope()
 
     val voteSuccess = stringResource(R.string.tag_vote_successfully)
     val voteFailed = stringResource(R.string.vote_failed)
@@ -268,9 +260,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 }.onSuccess { galleryDetail ->
                     galleryDetailCache.put(galleryDetail.gid, galleryDetail)
                     if (Settings.preloadThumbAggressively) {
-                        coroutineScope.launchIO {
+                        launchIO {
                             galleryDetail.previewList.forEach {
-                                context.run { imageLoader.enqueue(imageRequest(it) { justDownload() }) }
+                                imageLoader.enqueue(imageRequest(it) { justDownload() })
                             }
                         }
                     }
@@ -290,12 +282,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
         }.onSuccess { result ->
             if (result != null) {
-                snackbarState.showSnackbar(result)
+                showSnackbar(result)
             } else {
-                snackbarState.showSnackbar(voteSuccess)
+                showSnackbar(voteSuccess)
             }
         }.onFailure {
-            snackbarState.showSnackbar(voteFailed)
+            showSnackbar(voteFailed)
         }
     }
 
@@ -313,13 +305,13 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
     val signInFirst = stringResource(R.string.sign_in_first)
     fun showArchiveDialog() {
         val galleryDetail = galleryInfo as? GalleryDetail ?: return
-        coroutineScope.launchIO {
+        launchIO {
             if (galleryDetail.apiUid < 0) {
-                snackbarState.showSnackbar(signInFirst)
+                showSnackbar(signInFirst)
             } else {
-                runSuspendCatching {
+                Unit.runSuspendCatching {
                     if (mArchiveList == null) {
-                        val result = dialogState.bgWork {
+                        val result = bgWork {
                             withIOContext {
                                 EhEngine.getArchiveList(galleryDetail.archiveUrl!!, gid, token)
                             }
@@ -329,7 +321,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         mCurrentFunds = result.funds
                     }
                     if (mArchiveList!!.isEmpty()) {
-                        snackbarState.showSnackbar(noArchive)
+                        showSnackbar(noArchive)
                     } else {
                         val items = mArchiveList!!.map {
                             it.run {
@@ -348,8 +340,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         if (EhUtils.isExHentai) {
                             fundsGP += "+"
                         }
-                        val title = context.getString(R.string.current_funds, fundsGP, mCurrentFunds!!.fundsC)
-                        val selected = dialogState.showSelectItem(items, title.left())
+                        val title = getString(R.string.current_funds, fundsGP, mCurrentFunds!!.fundsC)
+                        val selected = showSelectItem(items, title.left())
                         val res = mArchiveList!![selected].res
                         val isHAtH = mArchiveList!![selected].isHAtH
                         EhEngine.downloadArchive(gid, token, mArchiveFormParamOr!!, res, isHAtH)?.let {
@@ -361,7 +353,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             val name = "$gid-${EhUtils.getSuitableTitle(galleryDetail)}.zip"
                             try {
                                 activity.startActivity(intent)
-                                withUIContext { context.addTextToClipboard(name, true) }
+                                withUIContext { addTextToClipboard(name, true) }
                             } catch (_: ActivityNotFoundException) {
                                 val r = DownloadManager.Request(uri)
                                 r.setDestinationInExternalPublicDir(
@@ -378,15 +370,15 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                 }
                             }
                         }
-                        snackbarState.showSnackbar(downloadStarted)
+                        showSnackbar(downloadStarted)
                     }
                 }.onFailure {
                     when (it) {
-                        is NoHAtHClientException -> snackbarState.showSnackbar(failureNoHath)
-                        is EhException -> snackbarState.showSnackbar(it.displayString())
+                        is NoHAtHClientException -> showSnackbar(failureNoHath)
+                        is EhException -> showSnackbar(it.displayString())
                         else -> {
                             logcat(it)
-                            snackbarState.showSnackbar(downloadFailed)
+                            showSnackbar(downloadFailed)
                         }
                     }
                 }
@@ -408,7 +400,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             EhPreviewItem(
                 galleryPreview = it,
                 position = it.position,
-                onClick = { with(context, navigator) { navToReader(gd.galleryInfo, it.position) } },
+                onClick = { navToReader(gd.galleryInfo, it.position) },
             )
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -460,15 +452,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         comment = item,
                         onCardClick = ::onNavigateToCommentScene,
                         onUserClick = ::onNavigateToCommentScene,
-                        onUrlClick = {
-                            with(activity, navigator) {
-                                if (!jumpToReaderByPage(it, galleryDetail)) {
-                                    if (!navWithUrl(it)) {
-                                        openBrowser(it)
-                                    }
-                                }
-                            }
-                        },
+                        onUrlClick = { if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it) },
                     ) {
                         maxLines = 5
                         ellipsize = END
@@ -489,9 +473,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         }
         suspend fun showNewerVersionDialog() {
             val items = galleryDetail.newerVersions.map {
-                context.getString(R.string.newer_version_title, it.title, it.posted)
+                getString(R.string.newer_version_title, it.title, it.posted)
             }
-            val selected = dialogState.showSelectItem(items)
+            val selected = showSelectItem(items)
             val info = galleryDetail.newerVersions[selected]
             withUIContext {
                 // Can't use GalleryInfoArgs as thumbKey is null
@@ -502,11 +486,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         if (galleryDetail.newerVersions.isNotEmpty()) {
             Box(contentAlignment = Alignment.Center) {
                 CrystalCard(
-                    onClick = {
-                        coroutineScope.launchIO {
-                            showNewerVersionDialog()
-                        }
-                    },
+                    onClick = { launchIO { showNewerVersionDialog() } },
                     modifier = Modifier.fillMaxWidth().height(32.dp),
                 ) {
                 }
@@ -533,22 +513,22 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 FilledTertiaryIconToggleButton(
                     checked = favSlot != NOT_FAVORITED,
                     onCheckedChange = {
-                        coroutineScope.launchIO {
+                        launchIO {
                             favoritesLock.withLock {
                                 var remove = false
                                 runSuspendCatching {
-                                    remove = !dialogState.modifyFavorites(galleryDetail.galleryInfo)
+                                    remove = !modifyFavorites(galleryDetail.galleryInfo)
                                 }.onSuccess {
                                     if (remove) {
-                                        snackbarState.showSnackbar(removeSucceed)
+                                        showSnackbar(removeSucceed)
                                     } else {
-                                        snackbarState.showSnackbar(addSucceed)
+                                        showSnackbar(addSucceed)
                                     }
                                 }.onFailure {
                                     if (remove) {
-                                        snackbarState.showSnackbar(removeFailed)
+                                        showSnackbar(removeFailed)
                                     } else {
-                                        snackbarState.showSnackbar(addFailed)
+                                        showSnackbar(addFailed)
                                     }
                                 }
                             }
@@ -569,21 +549,21 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     val keyword = EhUtils.extractTitle(galleryDetail.title)
                     val artist = galleryDetail.tags.getArtist()
                     if (null != keyword) {
-                        navigator.navigate(
+                        navigate(
                             ListUrlBuilder(
                                 mode = ListUrlBuilder.MODE_NORMAL,
                                 mKeyword = "\"" + keyword + "\"",
                             ).asDst(),
                         )
                     } else if (artist != null) {
-                        navigator.navigate(
+                        navigate(
                             ListUrlBuilder(
                                 mode = ListUrlBuilder.MODE_TAG,
                                 mKeyword = "artist:$artist",
                             ).asDst(),
                         )
                     } else if (null != galleryDetail.uploader) {
-                        navigator.navigate(
+                        navigate(
                             ListUrlBuilder(
                                 mode = ListUrlBuilder.MODE_UPLOADER,
                                 mKeyword = galleryDetail.uploader,
@@ -613,14 +593,14 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             var mTorrentList by remember { mutableStateOf<TorrentResult?>(null) }
             suspend fun showTorrentDialog() {
                 if (mTorrentList == null) {
-                    mTorrentList = dialogState.bgWork {
+                    mTorrentList = bgWork {
                         withIOContext {
                             EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
                         }
                     }
                 }
                 val items = mTorrentList!!.map { it.format() }
-                val selected = dialogState.showSelectItem(items, R.string.torrents, false)
+                val selected = showSelectItem(items, R.string.torrents, false)
                 val url = mTorrentList!![selected].url
                 val name = "${mTorrentList!![selected].name}.torrent"
                 val r = DownloadManager.Request(Uri.parse(url))
@@ -636,23 +616,23 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 icon = Icons.Default.SwapVerticalCircle,
                 text = torrentText,
                 onClick = {
-                    coroutineScope.launchIO {
+                    launchIO {
                         if (galleryDetail.torrentCount > 0) {
-                            val granted = isAtLeastQ || context.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                            val granted = isAtLeastQ || requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             if (granted) {
                                 runSuspendCatching {
                                     showTorrentDialog()
                                 }.onSuccess {
-                                    snackbarState.showSnackbar(downloadTorrentStarted)
+                                    showSnackbar(downloadTorrentStarted)
                                 }.onFailure {
                                     logcat(it)
-                                    snackbarState.showSnackbar(downloadTorrentFailed)
+                                    showSnackbar(downloadTorrentFailed)
                                 }
                             } else {
-                                snackbarState.showSnackbar(permissionDenied)
+                                showSnackbar(permissionDenied)
                             }
                         } else {
-                            snackbarState.showSnackbar(noTorrents)
+                            showSnackbar(noTorrents)
                         }
                     }
                 },
@@ -660,9 +640,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         }
         Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
         fun getAllRatingText(rating: Float, ratingCount: Int): String {
-            return context.getString(
+            return getString(
                 R.string.rating_text,
-                context.getString(getRatingText(rating)),
+                getString(getRatingText(rating)),
                 rating,
                 ratingCount,
             )
@@ -673,12 +653,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         val rateSucceed = stringResource(R.string.rate_successfully)
         val rateFailed = stringResource(R.string.rate_failed)
         fun showRateDialog() {
-            coroutineScope.launchIO {
+            launchIO {
                 if (galleryDetail.apiUid < 0) {
-                    snackbarState.showSnackbar(signInFirst)
+                    showSnackbar(signInFirst)
                     return@launchIO
                 }
-                dialogState.awaitPermissionOrCancel(title = R.string.rate) {
+                awaitPermissionOrCancel(title = R.string.rate) {
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                         var rating by remember { mutableFloatStateOf(galleryDetail.rating.coerceAtLeast(.5f)) }
                         var text by remember { mutableIntStateOf(getRatingText(rating)) }
@@ -701,10 +681,10 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         ratingCount = result.ratingCount
                     }
                     ratingText = getAllRatingText(result.rating, result.ratingCount)
-                    snackbarState.showSnackbar(rateSucceed)
+                    showSnackbar(rateSucceed)
                 }.onFailure {
                     logcat(it)
-                    snackbarState.showSnackbar(rateFailed)
+                    showSnackbar(rateFailed)
                 }
             }
         }
@@ -741,7 +721,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     val lub = ListUrlBuilder()
                     lub.mode = ListUrlBuilder.MODE_TAG
                     lub.keyword = it
-                    navigator.navigate(lub.asDst())
+                    navigate(lub.asDst())
                 },
                 onTagLongClick = { translated, tag ->
                     val index = tag.indexOf(':')
@@ -750,8 +730,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     } else {
                         tag
                     }
-                    coroutineScope.launchIO {
-                        dialogState.showSelectActions {
+                    launchIO {
+                        showSelectActions {
                             with(activity) {
                                 onSelect(copy) {
                                     addTextToClipboard(tag)
@@ -765,9 +745,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                     openBrowser(EhUrl.getTagDefinitionUrl(temp))
                                 }
                                 onSelect(addFilter) {
-                                    dialogState.awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
+                                    awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
                                     Filter(FilterMode.TAG, tag).remember()
-                                    snackbarState.showSnackbar(filterAdded)
+                                    showSnackbar(filterAdded)
                                 }
                                 if (galleryDetail.apiUid >= 0) {
                                     onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
@@ -814,7 +794,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             DownloadInfo.STATE_FAILED -> stringResource(R.string.download_state_failed)
             else -> error("Invalid DownloadState!!!")
         }
-        fun onReadButtonClick() = with(context, navigator) { navToReader(galleryInfo.findBaseInfo(), startPage) }
+        fun onReadButtonClick() = navToReader(galleryInfo.findBaseInfo(), startPage)
         fun onCategoryChipClick() {
             val category = galleryInfo.category
             if (category == EhUtils.NONE || category == EhUtils.PRIVATE || category == EhUtils.UNKNOWN) {
@@ -857,24 +837,20 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             if (uploader.isNullOrEmpty() || disowned) {
                 return
             }
-            coroutineScope.launchIO {
-                dialogState.awaitPermissionOrCancel {
+            launchIO {
+                awaitPermissionOrCancel {
                     Text(text = stringResource(R.string.filter_the_uploader, uploader))
                 }
                 Filter(FilterMode.UPLOADER, uploader).remember()
-                snackbarState.showSnackbar(filterAdded)
+                showSnackbar(filterAdded)
             }
         }
         val onDownloadButtonClick = rememberLambda(galleryInfo) {
             galleryDetail ?: return@rememberLambda
             if (EhDownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
-                coroutineScope.launchUI {
-                    dialogState.startDownload(activity, false, galleryDetail.galleryInfo)
-                }
+                launchUI { startDownload(activity, false, galleryDetail.galleryInfo) }
             } else {
-                coroutineScope.launch {
-                    dialogState.confirmRemoveDownload(galleryDetail)
-                }
+                launch { confirmRemoveDownload(galleryDetail) }
             }
         }
 
@@ -1050,11 +1026,11 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             onClick = {
                                 dropdown = false
                                 val detail = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
-                                coroutineScope.launchIO {
+                                launchIO {
                                     if (detail.apiUid < 0) {
-                                        snackbarState.showSnackbar(signInFirst)
+                                        showSnackbar(signInFirst)
                                     } else {
-                                        val text = dialogState.awaitInputText(
+                                        val text = awaitInputText(
                                             title = addTag,
                                             hint = addTagTip,
                                         )
@@ -1081,8 +1057,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             onClick = {
                                 dropdown = false
                                 val gd = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
-                                coroutineScope.launchIO {
-                                    dialogState.awaitPermissionOrCancel(
+                                launchIO {
+                                    awaitPermissionOrCancel(
                                         confirmText = R.string.clear_all,
                                         title = R.string.clear_image_cache,
                                     ) {
@@ -1092,7 +1068,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                         val key = getImageKey(gd.gid, it)
                                         imageCache.remove(key)
                                     }
-                                    snackbarState.showSnackbar(imageCacheClear)
+                                    showSnackbar(imageCacheClear)
                                 }
                             },
                         )
@@ -1100,7 +1076,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             text = { Text(text = stringResource(id = R.string.open_in_other_app)) },
                             onClick = {
                                 dropdown = false
-                                context.openBrowser(galleryDetailUrl)
+                                openBrowser(galleryDetailUrl)
                             },
                         )
                         val exportSuccess = stringResource(id = R.string.export_as_archive_success)
@@ -1109,28 +1085,27 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             text = { Text(text = stringResource(id = R.string.export_as_archive)) },
                             onClick = {
                                 dropdown = false
-                                coroutineScope.launchIO {
+                                launchIO {
                                     val downloadInfo = EhDownloadManager.getDownloadInfo(gid)
                                     val canExport = downloadInfo?.state == DownloadInfo.STATE_FINISH
                                     if (!canExport) {
-                                        dialogState.awaitPermissionOrCancel(
+                                        awaitPermissionOrCancel(
                                             showCancelButton = false,
                                             text = { Text(text = stringResource(id = R.string.download_gallery_first)) },
                                         )
                                     } else {
                                         val info = galleryInfo!!
-                                        val uri = with(context) {
-                                            awaitActivityResult(
-                                                CreateDocument("application/x-cbz"),
-                                                EhUtils.getSuitableTitle(info) + ".cbz",
-                                            )
-                                        }
-                                        if (uri != null) {
+                                        val uri = awaitActivityResult(
+                                            CreateDocument("application/x-cbz"),
+                                            EhUtils.getSuitableTitle(info) + ".cbz",
+                                        )
+                                        val dirname = downloadInfo?.dirname
+                                        if (uri != null && dirname != null) {
                                             val file = uri.asUniFile()
                                             val msg = runCatching {
-                                                dialogState.bgWork {
+                                                bgWork {
                                                     withIOContext {
-                                                        SpiderDen(info, downloadInfo.dirname!!).exportAsCbz(file)
+                                                        SpiderDen(info, dirname).exportAsCbz(file)
                                                     }
                                                 }
                                                 exportSuccess
@@ -1139,7 +1114,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                                 file.delete()
                                                 exportFailed
                                             }
-                                            snackbarState.showSnackbar(message = msg)
+                                            showSnackbar(message = msg)
                                         }
                                     }
                                 }

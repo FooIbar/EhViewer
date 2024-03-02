@@ -94,7 +94,6 @@ import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.ui.tools.toBBCode
 import com.hippo.ehviewer.ui.tools.updateSpan
-import com.hippo.ehviewer.ui.with
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
