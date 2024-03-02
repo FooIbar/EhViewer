@@ -150,6 +150,8 @@ static bool archive_prealloc_mempool() {
     return true;
 }
 
+#define ADDR_IN_FILE_MAPPING(addr) addr >= archiveAddr && addr < archiveAddr + archiveSize
+
 static void mempool_release_pages(void *addr, size_t size) {
     size = PAGE_ALIGN(size);
     madvise_log_if_error(addr, size, MADV_DONTNEED);
@@ -354,21 +356,21 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
     archive_ctx *ctx = NULL;
     int ret = archive_get_ctx(&ctx, index);
     if (ret) return 0;
-    void *inner_buff = NULL;
-    size_t inner_buff_len = 0;
+    void *buffer = NULL;
+    size_t buffer_size = 0;
     la_int64_t output_ofs = 0;
-    archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
-    bool zero_copy = inner_buff >= archiveAddr && inner_buff < archiveAddr + archiveSize;
+    archive_read_data_block(ctx->arc, (const void **) &buffer, &buffer_size, &output_ofs);
+    bool zero_copy = ADDR_IN_FILE_MAPPING(buffer) && !output_ofs && buffer_size == size;
     if (zero_copy) {
         ctx->using = 0;
-        return (*env)->NewDirectByteBuffer(env, inner_buff, inner_buff_len);
+        return (*env)->NewDirectByteBuffer(env, buffer, buffer_size);
     } else {
         size_t bytes = 0;
         do {
-            memcpy(addr + output_ofs, inner_buff, inner_buff_len);
-            bytes += inner_buff_len;
-            ret = archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len,&output_ofs);
-        } while (inner_buff_len && !ret);
+            memcpy(addr + output_ofs, buffer, buffer_size);
+            bytes += buffer_size;
+            ret = archive_read_data_block(ctx->arc, (const void **) &buffer, &buffer_size, &output_ofs);
+        } while (buffer_size && !ret);
         ctx->using = 0;
         if (bytes == size) {
             return (*env)->NewDirectByteBuffer(env, addr, size);
