@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.util.VelocityTrackerAddPointsFix
 import androidx.compose.ui.zIndex
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -43,6 +44,15 @@ import kotlinx.coroutines.launch
 @Destination
 @Composable
 fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsNavigator) = composing(navigator) {
+    // Workaround for incorrect fling velocity on zoom gesture end
+    // https://github.com/saket/telephoto/issues/71
+    DisposableEffect(Unit) {
+        VelocityTrackerAddPointsFix = false
+        onDispose {
+            VelocityTrackerAddPointsFix = true
+        }
+    }
+
     LockDrawer(true)
     val pageLoader = remember {
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
