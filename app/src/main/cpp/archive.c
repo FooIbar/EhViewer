@@ -157,6 +157,16 @@ static void mempool_release_pages(void *addr, size_t size) {
     madvise_log_if_error(addr, size, MADV_DONTNEED);
 }
 
+static bool kernel_can_prefault = true;
+
+static void mempool_prefault_pages(void *addr, size_t size) {
+    size = PAGE_ALIGN(size);
+    if (kernel_can_prefault) {
+        int ret = madvise(addr, size, MADV_POPULATE_WRITE);
+        if (ret == -EINVAL) kernel_can_prefault = false;
+    }
+}
+
 static long archive_list_all_entries(archive_ctx *ctx) {
     long count = 0;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK)
@@ -366,6 +376,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
         return (*env)->NewDirectByteBuffer(env, buffer, buffer_size);
     } else {
         size_t bytes = 0;
+        mempool_prefault_pages(addr, size);
         do {
             memcpy(addr + output_ofs, buffer, buffer_size);
             bytes += buffer_size;
