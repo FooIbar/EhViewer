@@ -104,8 +104,7 @@ class ArchivePageLoader(
     }
 
     private suspend fun doRealWork(index: Int) {
-        val buffer = extractToByteBuffer(index)
-        buffer ?: return
+        val buffer = extractToByteBuffer(index) ?: return notifyPageFailed(index, null)
         check(buffer.isDirect)
         val src = object : ByteBufferSource {
             override val source: ByteBuffer = buffer
