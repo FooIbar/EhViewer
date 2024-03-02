@@ -94,6 +94,7 @@ import com.hippo.ehviewer.icons.big.Download
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.main.DownloadCard
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
@@ -105,12 +106,10 @@ import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.with
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
@@ -127,12 +126,10 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
 @Destination
 @Composable
-fun DownloadsScreen(navigator: DestinationsNavigator) {
+fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
-    var filterState by rememberSaveable {
-        mutableStateOf(DownloadsFilterState(Settings.recentDownloadLabel.value))
-    }
+    var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember(filterState.label) { mutableIntStateOf(0) }
     val searchFieldState = rememberTextFieldState()
@@ -144,10 +141,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     LockDrawer(selectMode)
 
     val context = LocalContext.current
-    val activity = remember(context) { context.findActivity<MainActivity>() }
+    val activity = remember { findActivity<MainActivity>() }
     val coroutineScope = rememberCoroutineScope()
     val density = LocalDensity.current
-    val dialogState = LocalDialogState.current
     val view = LocalView.current
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
@@ -188,7 +184,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                     IconButton(
                         onClick = {
                             coroutineScope.launch {
-                                val text = dialogState.awaitInputText(title = newLabel, hint = labelsStr) { text ->
+                                val text = awaitInputText(title = newLabel, hint = labelsStr) { text ->
                                     when {
                                         text.isBlank() -> labelEmpty
                                         text == defaultName -> defaultInvalid
@@ -206,7 +202,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                     IconButton(
                         onClick = {
                             coroutineScope.launch {
-                                dialogState.showSelectActions(R.string.default_download_label) {
+                                showSelectActions(R.string.default_download_label) {
                                     onSelect(letMeSelect) {
                                         Settings.hasDefaultDownloadLabel = false
                                     }
@@ -311,7 +307,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                                         IconButton(
                                             onClick = {
                                                 coroutineScope.launch {
-                                                    val new = dialogState.awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
+                                                    val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
                                                         when {
                                                             text.isBlank() -> labelEmpty
                                                             text == defaultName -> defaultInvalid
@@ -410,7 +406,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                     onClick = {
                         expanded = false
                         coroutineScope.launchIO {
-                            dialogState.awaitPermissionOrCancel(
+                            awaitPermissionOrCancel(
                                 confirmText = android.R.string.ok,
                                 dismissText = android.R.string.cancel,
                             ) {
@@ -467,7 +463,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             coroutineScope.launchIO {
                 EhDB.putHistoryInfo(info.galleryInfo)
             }
-            with(context, navigator) { navToReader(info.galleryInfo) }
+            navToReader(info.galleryInfo)
         }
         Crossfade(targetState = gridView, label = "Downloads") { showGridView ->
             if (showGridView) {
@@ -581,10 +577,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
     ) {
         if (!selectMode) {
             onClick(Icons.Default.Shuffle) {
-                with(context, navigator) { navToReader(list.random().galleryInfo) }
+                navToReader(list.random().galleryInfo)
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
-                val selected = dialogState.showSingleChoice(
+                val selected = showSingleChoice(
                     sortModes.toList(),
                     SortMode.All.indexOfFirst { it.flag == sortMode },
                     R.string.sort_by,
@@ -595,7 +591,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
                 invalidateKey = !invalidateKey
             }
             onClick(Icons.Default.FilterList) {
-                val state = dialogState.showSingleChoice(
+                val state = showSingleChoice(
                     downloadStates.toList(),
                     filterState.state + 1,
                     R.string.download_filter,
@@ -623,12 +619,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) {
             }
             onClick(Icons.Default.Delete) {
                 val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
-                dialogState.confirmRemoveDownloadRange(infoList)
+                confirmRemoveDownloadRange(infoList)
                 list.removeAll(infoList)
             }
             onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
-                val toLabel = dialogState.showMoveDownloadLabelList(infoList)
+                val toLabel = showMoveDownloadLabelList(infoList)
                 with(filterState) {
                     if (label != "" && label != toLabel) {
                         list.removeAll(infoList)
