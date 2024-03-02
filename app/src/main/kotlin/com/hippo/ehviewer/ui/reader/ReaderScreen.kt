@@ -9,6 +9,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -98,9 +99,12 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 pageLoader = pageLoader,
                 onSelectPage = { page ->
                     scope.launch {
-                        dialogState.dialog {
+                        dialogState.dialog { cont ->
+                            fun dispose() = cont.cancel()
+                            val state = rememberModalBottomSheetState()
                             ModalBottomSheet(
-                                onDismissRequest = { it.cancel() },
+                                onDismissRequest = { dispose() },
+                                sheetState = state,
                                 windowInsets = WindowInsets(0),
                             ) {
                                 ReaderPageSheetMeta(
@@ -110,7 +114,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                                     copy = {},
                                     save = {},
                                     saveTo = {},
-                                    dismiss = { it.cancel() },
+                                    dismiss = { scope.launch { state.hide().also { dispose() } } },
                                 )
                                 Spacer(modifier = Modifier.navigationBarsPadding())
                             }
