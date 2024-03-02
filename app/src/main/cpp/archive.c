@@ -152,30 +152,9 @@ static bool archive_prealloc_mempool() {
     return true;
 }
 
-
-// Mincore does not support anon mapping yet
-// Now that we use MADV_FREE, how can we detect whether pages is reclaimed?
-static bool is_mempool_pages_present_and_lock(int index) {
-    void *addr = MEMPOOL_ADDR_BY_SORTED_IDX(index);
-    size_t size = MEMPOOL_ENTITY_SIZE(index);
-    mlock(addr, size);
-#if 0
-    unsigned char vec[size / PAGE_SIZE];
-    unsigned char r = 1;
-    mincore(addr, size, vec);
-    for (int i = 0; i < size / PAGE_SIZE; ++i) r &= vec[i];
-    return r;
-#endif
-    return false;
-}
-
-#define MEMPOOL_IN_CORE_AND_LOCK(x) is_mempool_pages_present_and_lock(x)
-
 static void mempool_release_pages(void *addr, size_t size) {
     size = PAGE_ALIGN(size);
-    munlock(addr, size);
-    int ret = madvise(addr, size, MADV_FREE);
-    if (ret == -EINVAL) madvise(addr, size, MADV_DONTNEED);
+    madvise(addr, size, MADV_DONTNEED);
 }
 
 static long archive_list_all_entries(archive_ctx *ctx) {
@@ -371,55 +350,45 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
     return r;
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantConditionsOC"
-#pragma ide diagnostic ignored "UnreachableCode"
-
 JNIEXPORT jobject JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass thiz,
-                                                          jint index) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass thiz, jint index) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     void *addr = MEMPOOL_ADDR_BY_SORTED_IDX(index);
     size_t size = entries[index].size;
-    if (!MEMPOOL_IN_CORE_AND_LOCK(index)) {
-        index = entries[index].index;
-        archive_ctx *ctx = NULL;
-        int ret;
-        ret = archive_get_ctx(&ctx, index);
-        if (ret) return 0;
-        void *inner_buff = NULL;
-        size_t inner_buff_len = 0;
-        la_int64_t output_ofs = 0;
-        archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
-        bool zero_copy = inner_buff >= archiveAddr && inner_buff < archiveAddr + archiveSize;
-        if (zero_copy) {
-            ctx->using = 0;
-            return (*env)->NewDirectByteBuffer(env, inner_buff, inner_buff_len);
+    index = entries[index].index;
+    archive_ctx *ctx = NULL;
+    int ret = archive_get_ctx(&ctx, index);
+    if (ret) return 0;
+    void *inner_buff = NULL;
+    size_t inner_buff_len = 0;
+    la_int64_t output_ofs = 0;
+    archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
+    bool zero_copy = inner_buff >= archiveAddr && inner_buff < archiveAddr + archiveSize;
+    if (zero_copy) {
+        ctx->using = 0;
+        return (*env)->NewDirectByteBuffer(env, inner_buff, inner_buff_len);
+    } else {
+        size_t bytes = 0;
+        do {
+            memcpy(addr + output_ofs, inner_buff, inner_buff_len);
+            bytes += inner_buff_len;
+            ret = archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len,&output_ofs);
+        } while (inner_buff_len && !ret);
+        ctx->using = 0;
+        if (bytes == size) {
+            return (*env)->NewDirectByteBuffer(env, addr, size);
         } else {
-            size_t bytes = 0;
-            do {
-                memcpy(addr + output_ofs, inner_buff, inner_buff_len);
-                bytes += inner_buff_len;
-                ret = archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
-            } while (inner_buff_len && !ret);
-            ctx->using = 0;
-            if (bytes == size) {
-                return (*env)->NewDirectByteBuffer(env, addr, size);
+            if (ret < 0) {
+                LOGE("%s%s", "Archive read failed:", archive_error_string(ctx->arc));
             } else {
                 LOGE("%s", "No enough data read, WTF?");
             }
-            if (ret < 0)
-                LOGE("%s%s", "Archive read failed:", archive_error_string(ctx->arc));
-            mempool_release_pages(addr, size);
         }
-    } else {
-        return (*env)->NewDirectByteBuffer(env, addr, size);
+        mempool_release_pages(addr, size);
     }
     return 0;
 }
-
-#pragma clang diagnostic pop
 
 JNIEXPORT void JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_closeArchive(JNIEnv *env, jclass thiz) {
