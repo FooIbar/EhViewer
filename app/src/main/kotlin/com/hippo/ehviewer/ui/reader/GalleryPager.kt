@@ -11,7 +11,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,7 +28,6 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.RIGHT_TO_LEFT
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.VERTICAL
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.WEBTOON
 import me.saket.telephoto.zoomable.ZoomSpec
-import me.saket.telephoto.zoomable.ZoomableContentLocation
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
 
@@ -43,7 +41,6 @@ fun GalleryPager(
     pageLoader: PageLoader2,
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
-    item: @Composable (ReaderPage, EdgeApplier?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val items = pageLoader.pages
@@ -75,12 +72,12 @@ fun GalleryPager(
                     modifier = boxModifier,
                     contentAlignment = Alignment.Center,
                 ) {
-                    item(page) { size ->
-                        LaunchedEffect(size) {
-                            val contentLocation = ZoomableContentLocation.scaledInsideAndCenterAligned(size)
-                            zoomableState.setContentLocation(contentLocation)
-                        }
-                    }
+                    PagerItem(
+                        page = page,
+                        pageLoader = pageLoader,
+                        zoomableState = zoomableState,
+                        webtoon = false,
+                    )
                 }
             }
         }
@@ -110,12 +107,12 @@ fun GalleryPager(
                     modifier = boxModifier,
                     contentAlignment = Alignment.Center,
                 ) {
-                    item(page) { size ->
-                        LaunchedEffect(size) {
-                            val contentLocation = ZoomableContentLocation.scaledInsideAndCenterAligned(size)
-                            zoomableState.setContentLocation(contentLocation)
-                        }
-                    }
+                    PagerItem(
+                        page = page,
+                        pageLoader = pageLoader,
+                        zoomableState = zoomableState,
+                        webtoon = false,
+                    )
                 }
             }
         }
@@ -141,7 +138,12 @@ fun GalleryPager(
                 verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
             ) {
                 items(items, key = { it.index }) { page ->
-                    item(page, null)
+                    PagerItem(
+                        page = page,
+                        pageLoader = pageLoader,
+                        zoomableState = zoomableState,
+                        webtoon = true,
+                    )
                 }
             }
         }
