@@ -56,7 +56,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -109,8 +108,8 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.LocalSideSheetState
-import com.hippo.ehviewer.ui.LocalSnackBarHostState
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.AdvancedSearchOption
@@ -124,7 +123,6 @@ import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
@@ -132,7 +130,6 @@ import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.with
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.pickVisualMedia
@@ -175,7 +172,7 @@ fun ToplistScreen(navigator: DestinationsNavigator) =
 
 @Destination
 @Composable
-fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
+fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = composing(navigator) {
     val searchFieldState = rememberTextFieldState()
     var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
@@ -204,12 +201,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         enable = showSearchLayout,
         animationSpec = tween(FAB_ANIMATE_TIME * 2),
     ) { showSearchLayout = false }
-    val context = LocalContext.current
-    val snackbarState = LocalSnackBarHostState.current
-    val activity = remember { context.findActivity<MainActivity>() }
+    val activity = remember { findActivity<MainActivity>() }
     val density = LocalDensity.current
-    val dialogState = LocalDialogState.current
-    val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyGridState()
     val gridState = rememberLazyStaggeredGridState()
     val isTopList = remember(urlBuilder) { urlBuilder.mode == MODE_TOPLIST }
@@ -293,7 +286,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                             urlBuilder = ListUrlBuilder(MODE_TOPLIST, mKeyword = keyword)
                             data.refresh()
                             showSearchLayout = false
-                            coroutineScope.launch { sheetState.close() }
+                            launch { sheetState.close() }
                         },
                         headlineContent = {
                             Text(text = name)
@@ -307,8 +300,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     title = { Text(text = stringResource(id = R.string.quick_search)) },
                     actions = {
                         IconButton(onClick = {
-                            coroutineScope.launch {
-                                dialogState.awaitPermissionOrCancel(
+                            launch {
+                                awaitPermissionOrCancel(
                                     title = R.string.quick_search,
                                     showCancelButton = false,
                                 ) {
@@ -324,10 +317,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                         val invalidImageQuickSearch = stringResource(R.string.image_search_not_quick_search)
                         IconButton(onClick = {
                             if (data.itemCount == 0) return@IconButton
-
-                            coroutineScope.launch {
+                            launch {
                                 if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
-                                    snackbarState.showSnackbar(invalidImageQuickSearch)
+                                    showSnackbar(invalidImageQuickSearch)
                                 } else {
                                     val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
                                     val next = firstItem.gid + 1
@@ -335,12 +327,12 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                         if (urlBuilder.equalsQuickSearch(q)) {
                                             val nextStr = q.name.substringAfterLast('@', "")
                                             if (nextStr.toLongOrNull() == next) {
-                                                snackbarState.showSnackbar(context.getString(R.string.duplicate_quick_search, q.name))
+                                                showSnackbar(getString(R.string.duplicate_quick_search, q.name))
                                                 return@launch
                                             }
                                         }
                                     }
-                                    dialogState.awaitInputTextWithCheckBox(
+                                    awaitInputTextWithCheckBox(
                                         initial = quickSearchName ?: urlBuilder.keyword.orEmpty(),
                                         title = R.string.add_quick_search_dialog_title,
                                         hint = R.string.quick_search,
@@ -349,14 +341,14 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                     ) { input, checked ->
                                         var text = input.trim()
                                         if (text.isEmpty()) {
-                                            return@awaitInputTextWithCheckBox context.getString(R.string.name_is_empty)
+                                            return@awaitInputTextWithCheckBox getString(R.string.name_is_empty)
                                         }
 
                                         if (checked) {
                                             text += "@$next"
                                         }
                                         if (quickSearchList.fastAny { it.name == text }) {
-                                            return@awaitInputTextWithCheckBox context.getString(R.string.duplicate_name)
+                                            return@awaitInputTextWithCheckBox getString(R.string.duplicate_name)
                                         }
 
                                         val quickSearch = urlBuilder.toQuickSearch(text)
@@ -411,9 +403,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                                 }
                                                 removeAt(removeIndex)
                                             }
-                                            coroutineScope.launchIO {
-                                                EhDB.deleteQuickSearch(item)
-                                            }
+                                            launchIO { EhDB.deleteQuickSearch(item) }
                                         }
                                         true
                                     },
@@ -440,7 +430,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                                 data.refresh()
                                             }
                                             showSearchLayout = false
-                                            coroutineScope.launch { sheetState.close() }
+                                            launch { sheetState.close() }
                                         },
                                         tonalElevation = 1.dp,
                                         shadowElevation = elevation,
@@ -458,9 +448,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                                                             val range = if (fromIndex < index) fromIndex..index else index..fromIndex
                                                             val toUpdate = quickSearchList.slice(range)
                                                             toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                            coroutineScope.launchIO {
-                                                                EhDB.updateQuickSearch(toUpdate)
-                                                            }
+                                                            launchIO { EhDB.updateQuickSearch(toUpdate) }
                                                         }
                                                         fromIndex = -1
                                                     }
@@ -532,11 +520,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                 builder.pageTo = advancedSearchOption.toPage
             } else {
                 if (imageUri == null) {
-                    snackbarState.showSnackbar(selectImageFirst)
+                    showSnackbar(selectImageFirst)
                     return@ret
                 }
                 builder.mode = MODE_IMAGE_SEARCH
-                builder.hash = imageUri!!.asUniFile().sha1() ?: return@ret
+                builder.hash = imageUri!!.asUniFile().sha1()
             }
             when (oldMode) {
                 MODE_TOPLIST, MODE_WHATS_HOT -> {
@@ -564,7 +552,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
-            IconButton(onClick = { coroutineScope.launch { sheetState.open() } }) {
+            IconButton(onClick = { launch { sheetState.open() } }) {
                 Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
             }
             IconButton(onClick = { showSearchLayout = !showSearchLayout }) {
@@ -624,9 +612,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     ImageSearch(
                         image = imageUri,
                         onSelectImage = {
-                            coroutineScope.launch {
-                                imageUri = context.pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                            }
+                            launch { imageUri = pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly) }
                         },
                     )
                 }
@@ -635,6 +621,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
 
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
+        val context = LocalContext.current
         val searchBarConnection = remember {
             val slop = ViewConfiguration.get(context).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
@@ -664,14 +651,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             detailListState = listState,
             detailItemContent = { info ->
                 GalleryInfoListItem(
-                    onClick = {
-                        navigator.navigate(info.asDst())
-                    },
-                    onLongClick = {
-                        coroutineScope.launch {
-                            with(dialogState, context, navigator) { doGalleryInfoAction(info) }
-                        }
-                    },
+                    onClick = { navigate(info.asDst()) },
+                    onLongClick = { launch { doGalleryInfoAction(info) } },
                     info = info,
                     showPages = showPages,
                     modifier = Modifier.height(height),
@@ -680,14 +661,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             thumbListState = gridState,
             thumbItemContent = { info ->
                 GalleryInfoGridItem(
-                    onClick = {
-                        navigator.navigate(info.asDst())
-                    },
-                    onLongClick = {
-                        coroutineScope.launch {
-                            with(dialogState, context, navigator) { doGalleryInfoAction(info) }
-                        }
-                    },
+                    onClick = { navigate(info.asDst()) },
+                    onLongClick = { launch { doGalleryInfoAction(info) } },
                     info = info,
                 )
             },
@@ -734,8 +709,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
             onClick(EhIcons.Default.GoTo) {
                 if (isTopList) {
                     val page = urlBuilder.mJumpTo?.toIntOrNull() ?: 0
-                    val hint = context.getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
-                    val text = dialogState.awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
+                    val hint = getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
+                    val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
                         val text = oriText.trim()
                         val goTo = runCatching {
                             text.toInt() - 1
@@ -747,8 +722,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) {
                     urlBuilder.setJumpTo(text)
                     data.refresh()
                 } else {
-                    coroutineScope.launch {
-                        val date = dialogState.showDatePicker()
+                    launch {
+                        val date = showDatePicker()
                         urlBuilder.mJumpTo = date
                         data.refresh()
                     }
