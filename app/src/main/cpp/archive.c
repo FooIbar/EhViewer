@@ -162,8 +162,7 @@ static bool kernel_can_prefault = true;
 static void mempool_prefault_pages(void *addr, size_t size) {
     size = PAGE_ALIGN(size);
     if (kernel_can_prefault) {
-        int ret = madvise(addr, size, MADV_POPULATE_WRITE);
-        if (ret == -EINVAL) kernel_can_prefault = false;
+        if (!madvise(addr, size, MADV_POPULATE_WRITE)) kernel_can_prefault = false;
     }
 }
 
