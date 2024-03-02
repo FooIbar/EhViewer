@@ -277,9 +277,9 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
     EH_UNUSED(thiz);
     archive_ctx *ctx = NULL;
     int mmap_flags = MAP_PRIVATE;
-    archiveAddr = mmap64(0, size, PROT_READ, mmap_flags, fd, 0);
+    archiveAddr = mmap(0, size, PROT_READ, mmap_flags, fd, 0);
     if (archiveAddr == MAP_FAILED) {
-        LOGE("%s%s", "mmap64 failed with error ", strerror(errno));
+        LOGE("%s%s", "mmap failed with error ", strerror(errno));
         return 0;
     }
     archiveSize = size;
