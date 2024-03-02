@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.coil
 
 import android.graphics.Bitmap
-import android.graphics.Rect
+import androidx.compose.ui.unit.IntRect
 import coil3.BitmapImage
 import coil3.Extras
 import coil3.Image
@@ -28,7 +28,7 @@ val ImageRequest.maybeCropBorder: Boolean
     get() = getExtra(maybeCropBorderKey)
 
 class BitmapImageWithRect(
-    val rect: Rect,
+    val rect: IntRect,
     val image: Image,
 ) : Image by image
 
@@ -48,7 +48,7 @@ object CropBorderInterceptor : Interceptor {
                 if (image is BitmapImage) {
                     val bitmap = image.bitmap
                     val array = detectBorder(bitmap)
-                    val r = Rect(array[0], array[1], array[2], array[3])
+                    val r = IntRect(array[0], array[1], array[2], array[3])
                     val minWidth = image.width * CROP_THRESHOLD
                     val minHeight = image.height * CROP_THRESHOLD
                     val maybeHwBitmap = if (hw) {
@@ -60,7 +60,7 @@ object CropBorderInterceptor : Interceptor {
                     } else {
                         bitmap
                     }
-                    val shouldOverride = r.width() > minWidth && r.height() > minHeight
+                    val shouldOverride = r.width > minWidth && r.height > minHeight
                     val maybeHwImage = maybeHwBitmap.asCoilImage()
                     val new = if (shouldOverride) {
                         BitmapImageWithRect(r, maybeHwImage)

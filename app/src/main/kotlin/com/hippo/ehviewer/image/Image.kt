@@ -19,10 +19,10 @@ package com.hippo.ehviewer.image
 
 import android.graphics.Bitmap
 import android.graphics.ColorSpace
-import android.graphics.Rect
 import android.graphics.drawable.Animatable
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.unit.IntRect
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
@@ -56,7 +56,7 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
     val size = image.size
     val rect = when (image) {
         is BitmapImageWithRect -> image.rect
-        else -> image.run { Rect(0, 0, width, height) }
+        else -> image.run { IntRect(0, 0, width, height) }
     }
 
     var innerImage: CoilImage? = when (image) {
