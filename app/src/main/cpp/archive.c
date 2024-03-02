@@ -283,7 +283,6 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
         return 0;
     }
     archiveSize = size;
-    madvise_log_if_error(archiveAddr, archiveSize, MADV_WILLNEED);
     pthread_spin_init(&spinlock, PTHREAD_PROCESS_PRIVATE);
     ctx_pool = calloc(CTX_POOL_SIZE, sizeof(archive_ctx **));
     if (!ctx_pool) {
