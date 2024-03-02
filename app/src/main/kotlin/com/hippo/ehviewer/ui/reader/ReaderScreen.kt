@@ -21,7 +21,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -30,12 +29,11 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
 import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
-import com.hippo.ehviewer.ui.LocalSnackBarHostState
 import com.hippo.ehviewer.ui.LockDrawer
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.tools.Deferred
-import com.hippo.ehviewer.ui.tools.LocalDialogState
-import com.hippo.ehviewer.ui.with
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
 import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
@@ -45,11 +43,8 @@ import kotlinx.coroutines.launch
 
 @Destination
 @Composable
-fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
+fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsNavigator) = composing(navigator) {
     val scope = rememberCoroutineScope()
-    val dialogState = LocalDialogState.current
-    val snackbarHostState = LocalSnackBarHostState.current
-    val context = LocalContext.current
     LockDrawer(true)
     val pageLoader = remember {
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
@@ -99,7 +94,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                 pageLoader = pageLoader,
                 onSelectPage = { page ->
                     scope.launch {
-                        dialogState.dialog { cont ->
+                        dialog { cont ->
                             fun dispose() = cont.cancel()
                             val state = rememberModalBottomSheetState()
                             ModalBottomSheet(
@@ -110,8 +105,8 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                                 ReaderPageSheetMeta(
                                     retry = { pageLoader.retryPage(page.index) },
                                     retryOrigin = { pageLoader.retryPage(page.index, true) },
-                                    share = { scope.launchIO { with(snackbarHostState, pageLoader, context) { shareImage(page, info) } } },
-                                    copy = { scope.launchIO { with(snackbarHostState, pageLoader, context) { copy(page) } } },
+                                    share = { scope.launchIO { with(pageLoader) { shareImage(page, info) } } },
+                                    copy = { scope.launchIO { with(pageLoader) { copy(page) } } },
                                     save = {},
                                     saveTo = {},
                                     dismiss = { scope.launch { state.hide().also { dispose() } } },
