@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(ehviewer C ASM)
+project(ehviewer C)
 include(FetchContent)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")

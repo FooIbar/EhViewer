@@ -65,13 +65,10 @@ import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.cookies.HttpCookies
-import java.io.File
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogcatLogger
-import moe.tarsin.coroutines.runSuspendCatching
 import okhttp3.AsyncDns
 import okhttp3.android.AndroidAsyncDns
 import okio.Path.Companion.toOkioPath
@@ -110,41 +107,31 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         System.loadLibrary("ehviewer")
         ReadableTime.initialize(this)
         lifecycleScope.launchIO {
-            launchIO {
+            launch {
                 EhTagDatabase
             }
-            launchIO {
+            launch {
                 EhDB
             }
-            launchIO {
+            launch {
                 DownloadManager.readPagesFromLocal()
             }
-            launchIO {
-                runSuspendCatching {
-                    val files = mutableListOf<File>()
-                    AppConfig.externalCrashDir?.listFiles()?.let { files.addAll(it) }
-                    AppConfig.externalParseErrorDir?.listFiles()?.let { files.addAll(it) }
-                    files.sortByDescending { it.lastModified() }
-                    files.forEachIndexed { index, file ->
-                        ensureActive()
-                        if (index > 9) {
-                            file.delete()
-                        }
-                    }
-                }.onFailure {
-                    logcat(it)
-                }
+            launch {
+                FileUtils.cleanupDirectory(AppConfig.externalCrashDir)
+                FileUtils.cleanupDirectory(AppConfig.externalParseErrorDir)
             }
-            launchIO {
+            launch {
                 cleanupDownload()
             }
             if (Settings.requestNews) {
-                launchIO {
+                launch {
                     checkDawn()
                 }
             }
+            launch {
+                cleanObsoleteCache()
+            }
         }
-        cleanObsoleteCache(this)
         if (BuildConfig.DEBUG) {
             StrictMode.enableDefaults()
             Snapshot.registerApplyObserver { anies, _ ->

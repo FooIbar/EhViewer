@@ -34,7 +34,6 @@
 
 #include "natsort/strnatcmp.h"
 #include "ehviewer.h"
-#include "spinlock.h"
 
 typedef struct {
     int using;
@@ -49,7 +48,7 @@ typedef struct {
     size_t size;
 } entry;
 
-_Atomic mcs_lock ctx_lock;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static archive_ctx **ctx_pool;
 #define CTX_POOL_SIZE 20
 
@@ -60,7 +59,6 @@ static size_t *mempoolofs = NULL;
 
 #define MEMPOOL_ADDR_BY_SORTED_IDX(x) (mempool + (index ? mempoolofs[index - 1] : 0))
 #define MEMPOOL_SIZE (mempoolofs[entryCount - 1])
-#define MEMPOOL_ENTITY_SIZE(x) PAGE_ALIGN(entries[x].size)
 
 #define PROT_RW (PROT_WRITE | PROT_READ)
 #define MAP_ANON_POOL (MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE | MAP_UNINITIALIZED)
@@ -152,30 +150,20 @@ static bool archive_prealloc_mempool() {
     return true;
 }
 
-
-// Mincore does not support anon mapping yet
-// Now that we use MADV_FREE, how can we detect whether pages is reclaimed?
-static bool is_mempool_pages_present_and_lock(int index) {
-    void *addr = MEMPOOL_ADDR_BY_SORTED_IDX(index);
-    size_t size = MEMPOOL_ENTITY_SIZE(index);
-    mlock(addr, size);
-#if 0
-    unsigned char vec[size / PAGE_SIZE];
-    unsigned char r = 1;
-    mincore(addr, size, vec);
-    for (int i = 0; i < size / PAGE_SIZE; ++i) r &= vec[i];
-    return r;
-#endif
-    return false;
-}
-
-#define MEMPOOL_IN_CORE_AND_LOCK(x) is_mempool_pages_present_and_lock(x)
+#define ADDR_IN_FILE_MAPPING(addr) (addr >= archiveAddr && addr < archiveAddr + archiveSize)
 
 static void mempool_release_pages(void *addr, size_t size) {
     size = PAGE_ALIGN(size);
-    munlock(addr, size);
-    int ret = madvise(addr, size, MADV_FREE);
-    if (ret == -EINVAL) madvise(addr, size, MADV_DONTNEED);
+    madvise_log_if_error(addr, size, MADV_DONTNEED);
+}
+
+static bool kernel_can_prefault = true;
+
+static void mempool_prefault_pages(void *addr, size_t size) {
+    size = PAGE_ALIGN(size);
+    if (kernel_can_prefault) {
+        if (madvise(addr, size, MADV_POPULATE_WRITE)) kernel_can_prefault = false;
+    }
 }
 
 static long archive_list_all_entries(archive_ctx *ctx) {
@@ -241,8 +229,7 @@ static int archive_skip_to_index(archive_ctx *ctx, int index) {
 static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
     int ret;
     archive_ctx *ctx = NULL;
-    mcs_lock_t local_lock;
-    lock_mcs(&ctx_lock, &local_lock);
+    pthread_mutex_lock(&mutex);
     for (int i = 0; i < CTX_POOL_SIZE; i++) {
         if (!ctx_pool[i])
             continue;
@@ -257,7 +244,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
     }
     if (ctx)
         ctx->using = 1;
-    unlock_mcs(&ctx_lock, &local_lock);
+    pthread_mutex_unlock(&mutex);
 
     if (!ctx) {
         archive_ctx *victimCtx = NULL;
@@ -266,7 +253,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
         ret = archive_alloc_ctx(&ctx);
         if (ret)
             return ret;
-        lock_mcs(&ctx_lock, &local_lock);
+        pthread_mutex_lock(&mutex);
         for (int i = 0; i < CTX_POOL_SIZE; i++) {
             if (!ctx_pool[i]) {
                 ctx_pool[i] = ctx;
@@ -281,7 +268,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
             }
         }
         if (replace) ctx_pool[victimIdx] = ctx;
-        unlock_mcs(&ctx_lock, &local_lock);
+        pthread_mutex_unlock(&mutex);
         if (replace) archive_release_ctx(victimCtx);
     }
     ret = archive_skip_to_index(ctx, idx);
@@ -296,19 +283,16 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
 }
 
 JNIEXPORT jint JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint fd,
-                                                  jlong size, jboolean sort_entries) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint fd, jlong size, jboolean sort_entries) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     archive_ctx *ctx = NULL;
-    int mmap_flags = MAP_PRIVATE;
-    archiveAddr = mmap64(0, size, PROT_READ, mmap_flags, fd, 0);
+    archiveAddr = mmap(0, size, PROT_READ, MAP_PRIVATE, fd, 0);
     if (archiveAddr == MAP_FAILED) {
-        LOGE("%s%s", "mmap64 failed with error ", strerror(errno));
+        LOGE("%s%s", "mmap failed with error ", strerror(errno));
         return 0;
     }
     archiveSize = size;
-    madvise_log_if_error(archiveAddr, archiveSize, MADV_WILLNEED);
     ctx_pool = calloc(CTX_POOL_SIZE, sizeof(archive_ctx **));
     if (!ctx_pool) {
         LOGE("Allocate archive ctx pool failed:ENOMEM");
@@ -371,55 +355,46 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
     return r;
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantConditionsOC"
-#pragma ide diagnostic ignored "UnreachableCode"
-
 JNIEXPORT jobject JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass thiz,
-                                                          jint index) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass thiz, jint index) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     void *addr = MEMPOOL_ADDR_BY_SORTED_IDX(index);
     size_t size = entries[index].size;
-    if (!MEMPOOL_IN_CORE_AND_LOCK(index)) {
-        index = entries[index].index;
-        archive_ctx *ctx = NULL;
-        int ret;
-        ret = archive_get_ctx(&ctx, index);
-        if (ret) return 0;
-        void *inner_buff = NULL;
-        size_t inner_buff_len = 0;
-        la_int64_t output_ofs = 0;
-        archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
-        bool zero_copy = inner_buff >= archiveAddr && inner_buff < archiveAddr + archiveSize;
-        if (zero_copy) {
-            ctx->using = 0;
-            return (*env)->NewDirectByteBuffer(env, inner_buff, inner_buff_len);
+    index = entries[index].index;
+    archive_ctx *ctx = NULL;
+    int ret = archive_get_ctx(&ctx, index);
+    if (ret) return 0;
+    void *buffer = NULL;
+    size_t buffer_size = 0;
+    la_int64_t output_ofs = 0;
+    archive_read_data_block(ctx->arc, (const void **) &buffer, &buffer_size, &output_ofs);
+    bool zero_copy = ADDR_IN_FILE_MAPPING(buffer) && !output_ofs && buffer_size == size;
+    if (zero_copy) {
+        ctx->using = 0;
+        return (*env)->NewDirectByteBuffer(env, buffer, buffer_size);
+    } else {
+        size_t bytes = 0;
+        mempool_prefault_pages(addr, size);
+        do {
+            memcpy(addr + output_ofs, buffer, buffer_size);
+            bytes += buffer_size;
+            ret = archive_read_data_block(ctx->arc, (const void **) &buffer, &buffer_size, &output_ofs);
+        } while (bytes != size && !ret);
+        ctx->using = 0;
+        if (bytes == size) {
+            return (*env)->NewDirectByteBuffer(env, addr, size);
         } else {
-            size_t bytes = 0;
-            do {
-                memcpy(addr + output_ofs, inner_buff, inner_buff_len);
-                bytes += inner_buff_len;
-                ret = archive_read_data_block(ctx->arc, (const void **) &inner_buff, &inner_buff_len, &output_ofs);
-            } while (inner_buff_len && !ret);
-            ctx->using = 0;
-            if (bytes == size) {
-                return (*env)->NewDirectByteBuffer(env, addr, size);
+            if (ret < 0) {
+                LOGE("%s%s", "Archive read failed:", archive_error_string(ctx->arc));
             } else {
                 LOGE("%s", "No enough data read, WTF?");
             }
-            if (ret < 0)
-                LOGE("%s%s", "Archive read failed:", archive_error_string(ctx->arc));
-            mempool_release_pages(addr, size);
         }
-    } else {
-        return (*env)->NewDirectByteBuffer(env, addr, size);
+        mempool_release_pages(addr, size);
     }
     return 0;
 }
-
-#pragma clang diagnostic pop
 
 JNIEXPORT void JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_closeArchive(JNIEnv *env, jclass thiz) {
@@ -448,8 +423,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_needPassword(JNIEnv *env, jclass thiz) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz,
-                                                      jstring str) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz, jstring str) {
     EH_UNUSED(thiz);
     struct archive_entry *entry;
     archive_ctx *ctx;
@@ -479,8 +453,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz,
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_getExtension(JNIEnv *env, jclass thiz,
-                                                   jint index) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_getExtension(JNIEnv *env, jclass thiz, jint index) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     const char *ext = strrchr(entries[index].filename, '.') + 1;
@@ -488,8 +461,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_getExtension(JNIEnv *env, jclass thiz,
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_extractToFd(JNIEnv *env, jclass thiz,
-                                                  jint index, jint fd) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_extractToFd(JNIEnv *env, jclass thiz, jint index, jint fd) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     index = entries[index].index;
@@ -504,17 +476,15 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToFd(JNIEnv *env, jclass thiz,
 }
 
 JNIEXPORT void JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz,
-                                                        jobject buffer) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz, jobject buffer) {
     EH_UNUSED(thiz);
     void *addr = (*env)->GetDirectBufferAddress(env, buffer);
     size_t size = (*env)->GetDirectBufferCapacity(env, buffer);
-    mempool_release_pages(addr, size);
+    if (!ADDR_IN_FILE_MAPPING(addr)) mempool_release_pages(addr, size);
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, jintArray fd_batch,
-                                                     jobjectArray names, jint arc_fd, jint size) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, jintArray fd_batch, jobjectArray names, jint arc_fd, jint size) {
     EH_UNUSED(clazz);
     struct archive *arc = archive_write_new();
     struct stat st;
