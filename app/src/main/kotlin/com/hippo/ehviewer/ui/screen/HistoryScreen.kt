@@ -21,7 +21,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -59,7 +58,6 @@ import kotlinx.coroutines.launch
 @Destination
 @Composable
 fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
-    val coroutineScope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val historyData = rememberInVM {
         Pager(config = PagingConfig(pageSize = 20, jumpThreshold = 40)) {
@@ -74,13 +72,13 @@ fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 title = { Text(text = stringResource(id = R.string.history)) },
                 navigationIcon = {
                     val drawerState = LocalNavDrawerState.current
-                    IconButton(onClick = { coroutineScope.launch { drawerState.open() } }) {
+                    IconButton(onClick = { launch { drawerState.open() } }) {
                         Icon(imageVector = Icons.Default.Menu, contentDescription = null)
                     }
                 },
                 actions = {
                     IconButton(onClick = {
-                        coroutineScope.launchIO {
+                        launchIO {
                             awaitPermissionOrCancel(
                                 confirmText = R.string.clear_all,
                                 text = { Text(text = stringResource(id = R.string.clear_all_history)) },
@@ -113,9 +111,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
-                                coroutineScope.launchIO {
-                                    EhDB.deleteHistoryInfo(info)
-                                }
+                                launchIO { EhDB.deleteHistoryInfo(info) }
                             }
                             true
                         },
@@ -126,14 +122,8 @@ fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         modifier = Modifier.animateItemPlacement(),
                     ) {
                         GalleryInfoListItem(
-                            onClick = {
-                                navigate(info.asDst())
-                            },
-                            onLongClick = {
-                                coroutineScope.launchIO {
-                                    doGalleryInfoAction(info)
-                                }
-                            },
+                            onClick = { navigate(info.asDst()) },
+                            onLongClick = { launchIO { doGalleryInfoAction(info) } },
                             info = info,
                             showPages = showPages,
                             modifier = Modifier.height(cardHeight),
