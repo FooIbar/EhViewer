@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -41,6 +40,7 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ktbuilder.launchIn
 import com.hippo.ehviewer.ui.LockDrawer
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
@@ -50,7 +50,6 @@ import com.hippo.ehviewer.ui.tools.getLimit
 import com.hippo.ehviewer.ui.tools.getOffset
 import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.with
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -58,15 +57,13 @@ import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination
 @Composable
-fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navigator: DestinationsNavigator) {
+fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navigator: DestinationsNavigator) = composing(navigator) {
     LockDrawer(true)
-    val context = LocalContext.current
     val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
     val state = rememberLazyGridState()
     val pages = galleryDetail.pages
     val pgSize = galleryDetail.previewList.size
     val thumbColumns by Settings.thumbColumns.collectAsState()
-
     if (toNextPage) {
         launchInVM { state.scrollToItem(pgSize) }
     }
@@ -95,9 +92,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navi
                             }.flatten().forEach {
                                 previewPagesMap[it.position] = it
                                 if (Settings.preloadThumbAggressively) {
-                                    with(context) {
-                                        imageRequest(it) { justDownload() }.launchIn(viewModelScope)
-                                    }
+                                    imageRequest(it) { justDownload() }.launchIn(viewModelScope)
                                 }
                             }
                     }.foldToLoadResult {
@@ -117,7 +112,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navi
             TopAppBar(
                 title = { Text(stringResource(R.string.gallery_previews)) },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.popBackStack() }) {
+                    IconButton(onClick = { popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },
@@ -139,9 +134,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navi
                 contentType = data.itemContentType(),
             ) { index ->
                 val item = data[index]
-                EhPreviewItem(item, index) {
-                    with(context, navigator) { navToReader(galleryDetail.galleryInfo, index) }
-                }
+                EhPreviewItem(item, index) { navToReader(galleryDetail.galleryInfo, index) }
             }
         }
     }
