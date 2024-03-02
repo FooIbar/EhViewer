@@ -59,7 +59,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -142,7 +141,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
 
     val context = LocalContext.current
     val activity = remember { findActivity<MainActivity>() }
-    val coroutineScope = rememberCoroutineScope()
     val density = LocalDensity.current
     val view = LocalView.current
     val allName = stringResource(R.string.download_all)
@@ -176,14 +174,14 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
 
     with(activity) {
         ProvideSideSheetContent { drawerState ->
-            fun closeSheet() = coroutineScope.launch { drawerState.close() }
+            fun closeSheet() = launch { drawerState.close() }
             TopAppBar(
                 title = { Text(text = labelsStr) },
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 actions = {
                     IconButton(
                         onClick = {
-                            coroutineScope.launch {
+                            launch {
                                 val text = awaitInputText(title = newLabel, hint = labelsStr) { text ->
                                     when {
                                         text.isBlank() -> labelEmpty
@@ -201,7 +199,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     val letMeSelect = stringResource(R.string.let_me_select)
                     IconButton(
                         onClick = {
-                            coroutineScope.launch {
+                            launch {
                                 showSelectActions(R.string.default_download_label) {
                                     onSelect(letMeSelect) {
                                         Settings.hasDefaultDownloadLabel = false
@@ -268,7 +266,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
-                                coroutineScope.launch {
+                                launch {
                                     DownloadManager.deleteLabel(item)
                                     when (filterState.label) {
                                         item -> switchLabel("")
@@ -306,7 +304,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                     Row {
                                         IconButton(
                                             onClick = {
-                                                coroutineScope.launch {
+                                                launch {
                                                     val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
                                                         when {
                                                             text.isBlank() -> labelEmpty
@@ -334,9 +332,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                                         val range = if (fromIndex < index) fromIndex..index else index..fromIndex
                                                         val toUpdate = labelList.slice(range)
                                                         toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                        coroutineScope.launchIO {
-                                                            EhDB.updateDownloadLabel(toUpdate)
-                                                        }
+                                                        launchIO { EhDB.updateDownloadLabel(toUpdate) }
                                                     }
                                                     fromIndex = -1
                                                 }
@@ -378,9 +374,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     text = { Text(text = stringResource(id = R.string.download_labels)) },
                     onClick = {
                         expanded = false
-                        coroutineScope.launch {
-                            sideSheetState.open()
-                        }
+                        launch { sideSheetState.open() }
                     },
                 )
                 DropdownMenuItem(
@@ -396,16 +390,14 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     text = { Text(text = stringResource(id = R.string.download_stop_all)) },
                     onClick = {
                         expanded = false
-                        coroutineScope.launchIO {
-                            DownloadManager.stopAllDownload()
-                        }
+                        launchIO { DownloadManager.stopAllDownload() }
                     },
                 )
                 DropdownMenuItem(
                     text = { Text(text = stringResource(id = R.string.download_reset_reading_progress)) },
                     onClick = {
                         expanded = false
-                        coroutineScope.launchIO {
+                        launchIO {
                             awaitPermissionOrCancel(
                                 confirmText = android.R.string.ok,
                                 dismissText = android.R.string.cancel,
@@ -460,9 +452,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         }
 
         fun onItemClick(info: DownloadInfo) {
-            coroutineScope.launchIO {
-                EhDB.putHistoryInfo(info.galleryInfo)
-            }
+            launchIO { EhDB.putHistoryInfo(info.galleryInfo) }
             navToReader(info.galleryInfo)
         }
         Crossfade(targetState = gridView, label = "Downloads") { showGridView ->
@@ -519,11 +509,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                     intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
                                     ContextCompat.startForegroundService(activity, intent)
                                 },
-                                onStop = {
-                                    coroutineScope.launchIO {
-                                        DownloadManager.stopDownload(info.gid)
-                                    }
-                                },
+                                onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
                                 info = info,
                                 modifier = Modifier.height(height),
                                 interactionSource = interactionSource,

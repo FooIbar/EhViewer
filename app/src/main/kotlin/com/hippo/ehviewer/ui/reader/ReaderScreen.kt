@@ -17,7 +17,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +43,6 @@ import kotlinx.coroutines.launch
 @Destination
 @Composable
 fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsNavigator) = composing(navigator) {
-    val scope = rememberCoroutineScope()
     LockDrawer(true)
     val pageLoader = remember {
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
@@ -93,7 +91,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                 lazyListState = lazyListState,
                 pageLoader = pageLoader,
                 onSelectPage = { page ->
-                    scope.launch {
+                    launch {
                         dialog { cont ->
                             fun dispose() = cont.cancel()
                             val state = rememberModalBottomSheetState()
@@ -105,11 +103,11 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                                 ReaderPageSheetMeta(
                                     retry = { pageLoader.retryPage(page.index) },
                                     retryOrigin = { pageLoader.retryPage(page.index, true) },
-                                    share = { scope.launchIO { with(pageLoader) { shareImage(page, info) } } },
-                                    copy = { scope.launchIO { with(pageLoader) { copy(page) } } },
+                                    share = { launchIO { with(pageLoader) { shareImage(page, info) } } },
+                                    copy = { launchIO { with(pageLoader) { copy(page) } } },
                                     save = {},
                                     saveTo = {},
-                                    dismiss = { scope.launch { state.hide().also { dispose() } } },
+                                    dismiss = { launch { state.hide().also { dispose() } } },
                                 )
                                 Spacer(modifier = Modifier.navigationBarsPadding())
                             }
