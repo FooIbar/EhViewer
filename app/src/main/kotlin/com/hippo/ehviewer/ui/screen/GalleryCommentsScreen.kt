@@ -49,7 +49,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -59,7 +58,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalTextToolbar
@@ -82,14 +80,13 @@ import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
-import com.hippo.ehviewer.ui.LocalSnackBarHostState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.openBrowser
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.normalizeSpan
 import com.hippo.ehviewer.ui.tools.rememberBBCodeTextToolbar
@@ -151,13 +148,9 @@ private val MinimumContentPaddingEditText = 88.dp
 
 @Destination
 @Composable
-fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
+fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composing(navigator) {
     LockDrawer(true)
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val dialogState = LocalDialogState.current
-    val snackbarState = LocalSnackBarHostState.current
-    val coroutineScope = rememberCoroutineScope()
-
     var commenting by rememberSaveable { mutableStateOf(false) }
     val animationProgress by animateFloatMergePredictiveBackAsState(enable = commenting) { commenting = false }
 
@@ -170,9 +163,8 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
         galleryDetail.comments = comments
     }
     var refreshing by remember { mutableStateOf(false) }
-    val context = LocalContext.current
     val density = LocalDensity.current
-    val activity = remember { context.findActivity<MainActivity>() }
+    val activity = remember { findActivity<MainActivity>() }
 
     suspend fun refreshComment(showAll: Boolean) {
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
@@ -199,8 +191,8 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
         commenting = false
         withUIContext { focusManager.clearFocus() }
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, false)
-        runSuspendCatching {
-            val bbcode = userComment.annotatedString.normalizeSpan().toBBCode()
+        userComment.runSuspendCatching {
+            val bbcode = annotatedString.normalizeSpan().toBBCode()
             logcat("sendComment") { bbcode }
             EhEngine.commentGallery(url, bbcode, commentId)
         }.onSuccess {
@@ -208,20 +200,20 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
             userComment = TextFieldValue()
             commentId = -1L
             comments = it
-            snackbarState.showSnackbar(msg)
+            showSnackbar(msg)
         }.onFailure {
             val text = if (commentId != -1L) editCommentFail else commentFail
-            snackbarState.showSnackbar(text + "\n" + it.displayString())
+            showSnackbar(text + "\n" + it.displayString())
         }
     }
 
     val filterAdded = stringResource(R.string.filter_added)
     suspend fun showFilterCommenter(comment: GalleryComment) {
         val commenter = comment.user ?: return
-        dialogState.awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_commenter, commenter)) }
+        awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_commenter, commenter)) }
         Filter(FilterMode.COMMENTER, commenter).remember()
         comments = comments.copy(comments = comments.comments.filterNot { it.user == commenter })
-        snackbarState.showSnackbar(filterAdded)
+        showSnackbar(filterAdded)
     }
 
     suspend fun showCommentVoteStatus(comment: GalleryComment) {
@@ -236,7 +228,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
             }
         }
         // Wait cancellation
-        dialogState.showNoButton<Unit> {
+        showNoButton<Unit> {
             Column {
                 data.forEach { (name, vote) ->
                     ListItem(
@@ -326,7 +318,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
                                 refreshComment(true)
                             }
                         }.onSuccess { result ->
-                            snackbarState.showSnackbar(
+                            showSnackbar(
                                 if (isUp) {
                                     if (0 != result.vote) voteUpSucceed else cancelVoteUpSucceed
                                 } else {
@@ -334,11 +326,11 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
                                 },
                             )
                         }.onFailure {
-                            snackbarState.showSnackbar(voteFailed)
+                            showSnackbar(voteFailed)
                         }
                     }
 
-                    suspend fun doCommentAction(comment: GalleryComment) = dialogState.showSelectActions {
+                    suspend fun doCommentAction(comment: GalleryComment) = showSelectActions {
                         onSelect(copyComment) {
                             activity.addTextToClipboard(comment.comment.parseAsHtml())
                         }
@@ -373,26 +365,17 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
                         modifier = Modifier.animateItemPlacement(),
                         comment = item,
                         onUserClick = {
-                            val lub = ListUrlBuilder(
-                                mode = ListUrlBuilder.MODE_UPLOADER,
-                                mKeyword = item.user,
+                            navigate(
+                                ListUrlBuilder(
+                                    mode = ListUrlBuilder.MODE_UPLOADER,
+                                    mKeyword = item.user,
+                                ).asDst(),
                             )
-                            navigator.navigate(lub.asDst())
                         },
-                        onCardClick = {
-                            coroutineScope.launch {
-                                doCommentAction(item)
-                            }
-                        },
-                        onUrlClick = {
-                            if (!with(activity, navigator) { jumpToReaderByPage(it, galleryDetail) }) {
-                                if (!navigator.navWithUrl(it)) {
-                                    activity.openBrowser(it)
-                                }
-                            }
-                        },
+                        onCardClick = { launch { doCommentAction(item) } },
+                        onUrlClick = { if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it) },
                     ) {
-                        text = context.generateComment(this, item)
+                        text = generateComment(this, item)
                     }
                 }
                 if (comments.hasMore) {
@@ -407,11 +390,9 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
                         AnimatedVisibility(!refreshing) {
                             TextButton(
                                 onClick = {
-                                    coroutineScope.launchIO {
+                                    launchIO {
                                         refreshing = true
-                                        runSuspendCatching {
-                                            refreshComment(true)
-                                        }
+                                        runSuspendCatching { refreshComment(true) }
                                         refreshing = false
                                     }
                                 },
@@ -461,11 +442,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) {
                         )
                     }
                     IconButton(
-                        onClick = {
-                            coroutineScope.launchIO {
-                                sendComment()
-                            }
-                        },
+                        onClick = { launchIO { sendComment() } },
                         modifier = Modifier.align(Alignment.CenterVertically).padding(16.dp),
                     ) {
                         Icon(
