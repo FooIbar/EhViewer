@@ -616,7 +616,7 @@ class ReaderActivity : EhActivity() {
      */
     private fun moveToPageIndex(index: Int) {
         val viewer = viewer ?: return
-        val page = mGalleryProvider?.mPages?.getOrNull(index) ?: return
+        val page = mGalleryProvider?.pages?.getOrNull(index) ?: return
         viewer.moveToPage(page)
     }
 

@@ -29,35 +29,42 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import moe.tarsin.kt.andThen
 
 @Composable
-fun ReaderPageSheet(page: ReaderPage, dismiss: () -> Unit) {
-    val activity = LocalContext.current.run { remember { findActivity<ReaderActivity>() } }
-
+fun ReaderPageSheetMeta(
+    retry: () -> Unit,
+    retryOrigin: () -> Unit,
+    share: () -> Unit,
+    copy: () -> Unit,
+    save: () -> Unit,
+    saveTo: () -> Unit,
+    dismiss: () -> Unit,
+) {
     @Composable
     fun Item(icon: ImageVector, @StringRes text: Int, onClick: () -> Unit) = Row(
-        modifier = Modifier.fillMaxWidth().height(56.dp)
-            .clickable(onClick = onClick andThen dismiss).padding(horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().height(56.dp).clickable(onClick = onClick andThen dismiss).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(imageVector = icon, contentDescription = null)
         Spacer(modifier = Modifier.size(32.dp))
         Text(text = stringResource(id = text))
     }
-    Item(icon = Icons.Default.Refresh, text = R.string.refresh) {
-        activity.retryPage(page.index)
-    }
-    Item(icon = Icons.Default.Refresh, text = R.string.refresh_original) {
-        activity.retryPage(page.index, true)
-    }
-    Item(icon = Icons.Default.Share, text = R.string.action_share) {
-        activity.shareImage(page.index)
-    }
-    Item(icon = Icons.Default.FileCopy, text = R.string.action_copy) {
-        activity.copyImage(page.index)
-    }
-    Item(icon = Icons.Default.Save, text = R.string.action_save) {
-        activity.saveImage(page.index)
-    }
-    Item(icon = Icons.Default.Save, text = R.string.action_save_to) {
-        activity.saveImageTo(page.index)
-    }
+    Item(icon = Icons.Default.Refresh, text = R.string.refresh, onClick = retry)
+    Item(icon = Icons.Default.Refresh, text = R.string.refresh_original, onClick = retryOrigin)
+    Item(icon = Icons.Default.Share, text = R.string.action_share, onClick = share)
+    Item(icon = Icons.Default.FileCopy, text = R.string.action_copy, onClick = copy)
+    Item(icon = Icons.Default.Save, text = R.string.action_save, onClick = save)
+    Item(icon = Icons.Default.Save, text = R.string.action_save_to, onClick = saveTo)
+}
+
+@Composable
+fun ReaderPageSheet(page: ReaderPage, dismiss: () -> Unit) {
+    val activity = LocalContext.current.run { remember { findActivity<ReaderActivity>() } }
+    ReaderPageSheetMeta(
+        retry = { activity.retryPage(page.index) },
+        retryOrigin = { activity.retryPage(page.index, true) },
+        share = { activity.shareImage(page.index) },
+        copy = { activity.copyImage(page.index) },
+        save = { activity.saveImage(page.index) },
+        saveTo = { activity.saveImageTo(page.index) },
+        dismiss = dismiss,
+    )
 }

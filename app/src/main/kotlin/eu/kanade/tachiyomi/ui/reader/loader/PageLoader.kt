@@ -13,45 +13,48 @@ private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
 abstract class PageLoader {
 
-    private val mImageCache by lazy {
-        lruCache<Int, Image>(
+    private val cache by lazy {
+        lruCache<ReaderPage, Image>(
             maxSize = if (isAtLeastO) {
                 (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
             } else {
                 (OSUtils.appMaxMemory / 3 * 2).toInt()
             },
             sizeOf = { _, v -> v.size.toInt() },
-            onEntryRemoved = { _, _, o, _ -> o.recycle() },
+            onEntryRemoved = { _, k, o, _ ->
+                k.status.value = Page.State.QUEUE
+                o.recycle()
+            },
         )
     }
-    val mPages by lazy {
+    val pages by lazy {
         check(size > 0)
         (0 until size).map { ReaderPage(it) }
     }
 
-    private val mPreloads = com.hippo.ehviewer.Settings.preloadImage.coerceIn(0, 100)
+    private val preloads = com.hippo.ehviewer.Settings.preloadImage.coerceIn(0, 100)
 
     abstract suspend fun awaitReady(): Boolean
     abstract val isReady: Boolean
 
     @CallSuper
     open fun start() {
-        mImageCache
+        cache
     }
 
     @CallSuper
     open fun stop() {
-        mImageCache.evictAll()
+        cache.evictAll()
     }
 
     fun restart() {
-        mImageCache.evictAll()
+        cache.evictAll()
     }
 
     abstract val size: Int
 
     fun request(index: Int) {
-        val image = mImageCache[index]
+        val image = cache[pages[index]]
         if (image != null) {
             notifyPageSucceed(index, image)
         } else {
@@ -59,11 +62,11 @@ abstract class PageLoader {
             onRequest(index)
         }
 
-        val pagesAbsent = ((index - 5).coerceAtLeast(0) until (mPreloads + index).coerceAtMost(size)).mapNotNull { it.takeIf { mImageCache[it] == null } }
-        preloadPages(pagesAbsent, (index - 10).coerceAtLeast(0) to (mPreloads + index + 10).coerceAtMost(size))
+        val pagesAbsent = ((index - 5).coerceAtLeast(0) until (preloads + index).coerceAtMost(size)).mapNotNull { it.takeIf { cache[pages[it]] == null } }
+        preloadPages(pagesAbsent, (index - 10).coerceAtLeast(0) to (preloads + index + 10).coerceAtMost(size))
     }
 
-    fun retryPage(index: Int, orgImg: Boolean) {
+    fun retryPage(index: Int, orgImg: Boolean = false) {
         notifyPageWait(index)
         onForceRequest(index, orgImg)
     }
@@ -81,24 +84,24 @@ abstract class PageLoader {
     protected abstract fun onCancelRequest(index: Int)
 
     fun notifyPageWait(index: Int) {
-        mPages[index].status.value = Page.State.QUEUE
+        pages[index].status.value = Page.State.QUEUE
     }
 
     fun notifyPagePercent(index: Int, percent: Float) {
-        mPages[index].status.compareAndSet(Page.State.QUEUE, Page.State.DOWNLOAD_IMAGE)
-        mPages[index].progress = (percent * 100).toInt()
+        pages[index].status.compareAndSet(Page.State.QUEUE, Page.State.DOWNLOAD_IMAGE)
+        pages[index].progress = (percent * 100).toInt()
     }
 
     fun notifyPageSucceed(index: Int, image: Image) {
-        if (mImageCache[index] != image) {
-            mImageCache.put(index, image)
+        if (cache[pages[index]] != image) {
+            cache.put(pages[index], image)
         }
-        mPages[index].image = image
-        mPages[index].status.value = Page.State.READY
+        pages[index].image = image
+        pages[index].status.value = Page.State.READY
     }
 
     fun notifyPageFailed(index: Int, error: String?) {
-        mPages[index].errorMsg = error
-        mPages[index].status.value = Page.State.ERROR
+        pages[index].errorMsg = error
+        pages[index].status.value = Page.State.ERROR
     }
 }
