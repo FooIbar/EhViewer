@@ -20,6 +20,7 @@ import arrow.core.left
 import arrow.core.right
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -436,6 +437,12 @@ object EhEngine {
         val needApi = filter && needTags() && !hasTags || Settings.showGalleryPages.value && !hasPages || hasRated
         if (needApi) fillGalleryListByApi(this@fillInfo, url)
         if (filter) removeAllSuspend { filterUploader(it) || filterTag(it) || filterTagNamespace(it) }
+        forEach {
+            if (it.favoriteSlot == GalleryInfo.NOT_FAVORITED && EhDB.containLocalFavorites(it.gid)) {
+                it.favoriteSlot = GalleryInfo.LOCAL_FAVORITED
+            }
+            it.generateSLang()
+        }
     }
 
     suspend fun addFavorites(galleryList: List<Pair<Long, String>>, dstCat: Int) {
