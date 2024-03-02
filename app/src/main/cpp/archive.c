@@ -60,7 +60,6 @@ static size_t *mempoolofs = NULL;
 
 #define MEMPOOL_ADDR_BY_SORTED_IDX(x) (mempool + (index ? mempoolofs[index - 1] : 0))
 #define MEMPOOL_SIZE (mempoolofs[entryCount - 1])
-#define MEMPOOL_ENTITY_SIZE(x) PAGE_ALIGN(entries[x].size)
 
 #define PROT_RW (PROT_WRITE | PROT_READ)
 #define MAP_ANON_POOL (MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE | MAP_UNINITIALIZED)
@@ -154,7 +153,7 @@ static bool archive_prealloc_mempool() {
 
 static void mempool_release_pages(void *addr, size_t size) {
     size = PAGE_ALIGN(size);
-    madvise(addr, size, MADV_DONTNEED);
+    madvise_log_if_error(addr, size, MADV_DONTNEED);
 }
 
 static long archive_list_all_entries(archive_ctx *ctx) {
@@ -275,8 +274,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
 }
 
 JNIEXPORT jint JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint fd,
-                                                  jlong size, jboolean sort_entries) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint fd, jlong size, jboolean sort_entries) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     archive_ctx *ctx = NULL;
@@ -417,8 +415,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_needPassword(JNIEnv *env, jclass thiz) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz,
-                                                      jstring str) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz, jstring str) {
     EH_UNUSED(thiz);
     struct archive_entry *entry;
     archive_ctx *ctx;
@@ -448,8 +445,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz,
 }
 
 JNIEXPORT jstring JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_getExtension(JNIEnv *env, jclass thiz,
-                                                   jint index) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_getExtension(JNIEnv *env, jclass thiz, jint index) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     const char *ext = strrchr(entries[index].filename, '.') + 1;
@@ -457,8 +453,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_getExtension(JNIEnv *env, jclass thiz,
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_extractToFd(JNIEnv *env, jclass thiz,
-                                                  jint index, jint fd) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_extractToFd(JNIEnv *env, jclass thiz, jint index, jint fd) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     index = entries[index].index;
@@ -473,8 +468,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToFd(JNIEnv *env, jclass thiz,
 }
 
 JNIEXPORT void JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz,
-                                                        jobject buffer) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz, jobject buffer) {
     EH_UNUSED(thiz);
     void *addr = (*env)->GetDirectBufferAddress(env, buffer);
     size_t size = (*env)->GetDirectBufferCapacity(env, buffer);
@@ -482,8 +476,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, jintArray fd_batch,
-                                                     jobjectArray names, jint arc_fd, jint size) {
+Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, jintArray fd_batch, jobjectArray names, jint arc_fd, jint size) {
     EH_UNUSED(clazz);
     struct archive *arc = archive_write_new();
     struct stat st;
