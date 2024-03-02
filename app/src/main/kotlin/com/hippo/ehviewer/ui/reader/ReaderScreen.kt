@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -28,14 +29,17 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
 import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
+import com.hippo.ehviewer.ui.LocalSnackBarHostState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.with
 import com.ramcosta.composedestinations.annotation.Destination
 import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
 import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
+import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.launch
 
 @Destination
@@ -43,6 +47,8 @@ import kotlinx.coroutines.launch
 fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
     val scope = rememberCoroutineScope()
     val dialogState = LocalDialogState.current
+    val snackbarHostState = LocalSnackBarHostState.current
+    val context = LocalContext.current
     LockDrawer(true)
     val pageLoader = remember {
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
@@ -100,7 +106,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
                                 ReaderPageSheetMeta(
                                     retry = { pageLoader.retryPage(page.index) },
                                     retryOrigin = { pageLoader.retryPage(page.index, true) },
-                                    share = {},
+                                    share = { scope.launchIO { with(snackbarHostState, pageLoader, context) { shareImage(page, info) } } },
                                     copy = {},
                                     save = {},
                                     saveTo = {},
