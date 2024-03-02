@@ -25,7 +25,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,14 +42,13 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.History
 import com.hippo.ehviewer.ui.LocalNavDrawerState
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.with
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -60,9 +58,7 @@ import kotlinx.coroutines.launch
 
 @Destination
 @Composable
-fun HistoryScreen(navigator: DestinationsNavigator) {
-    val context = LocalContext.current
-    val dialogState = LocalDialogState.current
+fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val coroutineScope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val historyData = rememberInVM {
@@ -85,7 +81,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
                 actions = {
                     IconButton(onClick = {
                         coroutineScope.launchIO {
-                            dialogState.awaitPermissionOrCancel(
+                            awaitPermissionOrCancel(
                                 confirmText = R.string.clear_all,
                                 text = { Text(text = stringResource(id = R.string.clear_all_history)) },
                             )
@@ -131,11 +127,11 @@ fun HistoryScreen(navigator: DestinationsNavigator) {
                     ) {
                         GalleryInfoListItem(
                             onClick = {
-                                navigator.navigate(info.asDst())
+                                navigate(info.asDst())
                             },
                             onLongClick = {
                                 coroutineScope.launchIO {
-                                    with(dialogState, context, navigator) { doGalleryInfoAction(info) }
+                                    doGalleryInfoAction(info)
                                 }
                             },
                             info = info,
