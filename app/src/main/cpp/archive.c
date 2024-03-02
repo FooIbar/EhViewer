@@ -380,7 +380,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
             memcpy(addr + output_ofs, buffer, buffer_size);
             bytes += buffer_size;
             ret = archive_read_data_block(ctx->arc, (const void **) &buffer, &buffer_size, &output_ofs);
-        } while (buffer_size && !ret);
+        } while (bytes != size && !ret);
         ctx->using = 0;
         if (bytes == size) {
             return (*env)->NewDirectByteBuffer(env, addr, size);
