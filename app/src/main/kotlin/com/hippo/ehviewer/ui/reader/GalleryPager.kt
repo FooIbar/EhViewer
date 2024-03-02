@@ -15,7 +15,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.gallery.PageLoader2
 import eu.kanade.tachiyomi.source.model.Page
@@ -30,8 +29,6 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.WEBTOON
 import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
-
-typealias EdgeApplier = @Composable (Size) -> Unit
 
 @Composable
 fun GalleryPager(

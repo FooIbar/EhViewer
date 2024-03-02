@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.reader
 
-import android.graphics.Rect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,8 +20,7 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.IntRect
 import coil3.BitmapImage
 import coil3.DrawableImage
 import coil3.Image
@@ -96,11 +94,11 @@ fun PagerItem(
     }
 }
 
-private fun Image.toPainter(rect: Rect) = when (this) {
+private fun Image.toPainter(rect: IntRect) = when (this) {
     is BitmapImage -> BitmapPainter(
         image = bitmap.asImageBitmap(),
-        srcOffset = IntOffset(rect.left, rect.top),
-        srcSize = IntSize(rect.width(), rect.height()),
+        srcOffset = rect.topLeft,
+        srcSize = rect.size,
     )
     is DrawableImage -> DrawablePainter(drawable)
     else -> unreachable()
