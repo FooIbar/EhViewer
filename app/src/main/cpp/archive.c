@@ -48,7 +48,7 @@ typedef struct {
     size_t size;
 } entry;
 
-pthread_spinlock_t spinlock;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 static archive_ctx **ctx_pool;
 #define CTX_POOL_SIZE 20
 
@@ -218,7 +218,7 @@ static int archive_skip_to_index(archive_ctx *ctx, int index) {
 static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
     int ret;
     archive_ctx *ctx = NULL;
-    pthread_spin_lock(&spinlock);
+    pthread_mutex_lock(&mutex);
     for (int i = 0; i < CTX_POOL_SIZE; i++) {
         if (!ctx_pool[i])
             continue;
@@ -233,7 +233,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
     }
     if (ctx)
         ctx->using = 1;
-    pthread_spin_unlock(&spinlock);
+    pthread_mutex_unlock(&mutex);
 
     if (!ctx) {
         archive_ctx *victimCtx = NULL;
@@ -242,7 +242,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
         ret = archive_alloc_ctx(&ctx);
         if (ret)
             return ret;
-        pthread_spin_lock(&spinlock);
+        pthread_mutex_lock(&mutex);
         for (int i = 0; i < CTX_POOL_SIZE; i++) {
             if (!ctx_pool[i]) {
                 ctx_pool[i] = ctx;
@@ -257,7 +257,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
             }
         }
         if (replace) ctx_pool[victimIdx] = ctx;
-        pthread_spin_unlock(&spinlock);
+        pthread_mutex_unlock(&mutex);
         if (replace) archive_release_ctx(victimCtx);
     }
     ret = archive_skip_to_index(ctx, idx);
@@ -283,7 +283,6 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
         return 0;
     }
     archiveSize = size;
-    pthread_spin_init(&spinlock, PTHREAD_PROCESS_PRIVATE);
     ctx_pool = calloc(CTX_POOL_SIZE, sizeof(archive_ctx **));
     if (!ctx_pool) {
         LOGE("Allocate archive ctx pool failed:ENOMEM");
@@ -394,7 +393,6 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_closeArchive(JNIEnv *env, jclass thiz) {
         archive_release_ctx(ctx_pool[i]);
     free(passwd);
     free(ctx_pool);
-    pthread_spin_destroy(&spinlock);
     passwd = NULL;
     need_encrypt = false;
     munmap(archiveAddr, archiveSize);
