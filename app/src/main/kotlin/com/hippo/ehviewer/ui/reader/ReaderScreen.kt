@@ -73,10 +73,14 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1) {
     val scope = rememberCoroutineScope()
     val dialogState = LocalDialogState.current
     LockDrawer(true)
-    val cropBorder by Settings.cropBorder.collectAsState()
-    val pageLoader = remember(cropBorder) {
+    val pageLoader = remember {
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         archive?.let { ArchivePageLoader(it, info.gid, page) } ?: EhPageLoader(info, page)
+    }
+    LaunchedEffect(Unit) {
+        Settings.cropBorder.changesFlow().collect {
+            pageLoader.restart()
+        }
     }
     DisposableEffect(pageLoader) {
         pageLoader.start()
