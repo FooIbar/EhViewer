@@ -81,7 +81,6 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.ui.LockDrawer
-import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
@@ -98,7 +97,6 @@ import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.displayString
-import com.hippo.ehviewer.util.findActivity
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -163,7 +161,6 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
     }
     var refreshing by remember { mutableStateOf(false) }
     val density = LocalDensity.current
-    val activity = remember { findActivity<MainActivity>() }
 
     suspend fun refreshComment(showAll: Boolean) {
         val url = EhUrl.getGalleryDetailUrl(galleryDetail.gid, galleryDetail.token, 0, showAll)
@@ -331,7 +328,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
 
                     suspend fun doCommentAction(comment: GalleryComment) = showSelectActions {
                         onSelect(copyComment) {
-                            activity.addTextToClipboard(comment.comment.parseAsHtml())
+                            addTextToClipboard(comment.comment.parseAsHtml())
                         }
                         if (!comment.uploader && !comment.editable) {
                             onSelect(blockCommenter) { showFilterCommenter(comment) }
