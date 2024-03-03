@@ -4,6 +4,7 @@ import android.net.Uri
 import android.view.ViewConfiguration
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -35,9 +36,11 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -130,6 +133,7 @@ import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.pickVisualMedia
@@ -500,45 +504,46 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     }
 
     val selectImageFirst = stringResource(R.string.select_image_first)
+    fun onApplySearch(query: String) = launchIO {
+        val builder = ListUrlBuilder()
+        val oldMode = urlBuilder.mode
+        if (!showSearchLayout) {
+            // If it's MODE_SUBSCRIPTION, keep it
+            val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
+            builder.mode = newMode
+            builder.keyword = query
+            builder.category = category
+            builder.advanceSearch = advancedSearchOption.advanceSearch
+            builder.minRating = advancedSearchOption.minRating
+            builder.pageFrom = advancedSearchOption.fromPage
+            builder.pageTo = advancedSearchOption.toPage
+        } else {
+            if (imageUri == null) {
+                showSnackbar(selectImageFirst)
+                return@launchIO
+            }
+            builder.mode = MODE_IMAGE_SEARCH
+            builder.hash = imageUri!!.asUniFile().sha1()
+        }
+        when (oldMode) {
+            MODE_TOPLIST, MODE_WHATS_HOT -> {
+                // Wait for search view to hide
+                delay(300)
+                withUIContext { navigator.navigate(builder.asDst()) }
+            }
+            else -> {
+                urlBuilder = builder
+                data.refresh()
+            }
+        }
+        showSearchLayout = false
+    }
+
     SearchBarScreen(
         title = suitableTitle,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
-        showSearchFab = showSearchLayout,
-        onApplySearch = ret@{ query ->
-            val builder = ListUrlBuilder()
-            val oldMode = urlBuilder.mode
-            if (!showSearchLayout) {
-                // If it's MODE_SUBSCRIPTION, keep it
-                val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
-                builder.mode = newMode
-                builder.keyword = query
-                builder.category = category
-                builder.advanceSearch = advancedSearchOption.advanceSearch
-                builder.minRating = advancedSearchOption.minRating
-                builder.pageFrom = advancedSearchOption.fromPage
-                builder.pageTo = advancedSearchOption.toPage
-            } else {
-                if (imageUri == null) {
-                    showSnackbar(selectImageFirst)
-                    return@ret
-                }
-                builder.mode = MODE_IMAGE_SEARCH
-                builder.hash = imageUri!!.asUniFile().sha1()
-            }
-            when (oldMode) {
-                MODE_TOPLIST, MODE_WHATS_HOT -> {
-                    // Wait for search view to hide
-                    delay(300)
-                    withUIContext { navigator.navigate(builder.asDst()) }
-                }
-                else -> {
-                    urlBuilder = builder
-                    data.refresh()
-                }
-            }
-            showSearchLayout = false
-        },
+        onApplySearch = ::onApplySearch,
         onSearchExpanded = { fabHidden = true },
         onSearchHidden = { fabHidden = false },
         refreshState = refreshState,
@@ -575,6 +580,26 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 advancedOption = advancedSearchOption,
                 onAdvancedOptionChanged = { advancedSearchOption = it },
             )
+        },
+        floatingActionButton = {
+            val hiddenState by animateFloatAsState(
+                targetValue = if (showSearchLayout && !fabHidden) 1f else 0f,
+                animationSpec = tween(
+                    FAB_ANIMATE_TIME,
+                    if (showSearchLayout && !fabHidden) FAB_ANIMATE_TIME else 0,
+                ),
+                label = "hiddenState",
+            )
+            FloatingActionButton(
+                onClick = { onApplySearch("") },
+                modifier = Modifier.snackBarPadding().graphicsLayer {
+                    rotationZ = lerp(90f, 0f, hiddenState)
+                    scaleX = hiddenState
+                    scaleY = hiddenState
+                },
+            ) {
+                Icon(imageVector = Icons.Default.Search, contentDescription = null)
+            }
         },
     ) { contentPadding ->
         val layoutDirection = LocalLayoutDirection.current
