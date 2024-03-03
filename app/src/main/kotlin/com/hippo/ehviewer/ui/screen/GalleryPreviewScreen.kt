@@ -48,8 +48,8 @@ import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.getClippedRefreshKey
 import com.hippo.ehviewer.ui.tools.getLimit
 import com.hippo.ehviewer.ui.tools.getOffset
-import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.util.flattenForEach
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -57,19 +57,15 @@ import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination
 @Composable
-fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navigator: DestinationsNavigator) = composing(navigator) {
+fun GalleryPreviewScreen(detail: GalleryDetail, toNextPage: Boolean, navigator: DestinationsNavigator) = composing(navigator) {
     LockDrawer(true)
     val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
-    val state = rememberLazyGridState()
-    val pages = galleryDetail.pages
-    val pgSize = galleryDetail.previewList.size
+    val pgSize = detail.previewList.size
+    val state = rememberLazyGridState(initialFirstVisibleItemIndex = if (toNextPage) pgSize else 0)
     val thumbColumns by Settings.thumbColumns.collectAsState()
-    if (toNextPage) {
-        launchInVM { state.scrollToItem(pgSize) }
-    }
-
     val data = rememberInVM {
-        val previewPagesMap = galleryDetail.previewList.associateBy { it.position } as MutableMap
+        val pages = detail.pages
+        val previewPagesMap = detail.previewList.associateBy { it.position } as MutableMap
         Pager(
             PagingConfig(
                 pageSize = pgSize,
@@ -84,12 +80,12 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navi
                     val key = params.key ?: 0
                     val up = getOffset(params, key, pages)
                     val end = (up + getLimit(params, key) - 1).coerceAtMost(pages - 1)
-                    galleryDetail.runSuspendCatching {
+                    detail.runSuspendCatching {
                         (up..end).filterNot { it in previewPagesMap }.map { it / pgSize }.toSet()
                             .parMap(concurrency = Settings.multiThreadDownload) { page ->
                                 val url = EhUrl.getGalleryDetailUrl(gid, token, page, false)
                                 EhEngine.getPreviewList(url).first
-                            }.flatten().forEach {
+                            }.flattenForEach {
                                 previewPagesMap[it.position] = it
                                 if (Settings.preloadThumbAggressively) {
                                     imageRequest(it) { justDownload() }.launchIn(viewModelScope)
@@ -134,7 +130,7 @@ fun GalleryPreviewScreen(galleryDetail: GalleryDetail, toNextPage: Boolean, navi
                 contentType = data.itemContentType(),
             ) { index ->
                 val item = data[index]
-                EhPreviewItem(item, index) { navToReader(galleryDetail.galleryInfo, index) }
+                EhPreviewItem(item, index) { navToReader(detail.galleryInfo, index) }
             }
         }
     }
