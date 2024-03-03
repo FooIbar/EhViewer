@@ -5,7 +5,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Upsert
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import kotlinx.coroutines.flow.Flow
@@ -18,16 +17,16 @@ interface LocalFavoritesDao {
     @Query("SELECT * FROM LOCAL_FAVORITES ORDER BY TIME")
     suspend fun list(): List<LocalFavoriteInfo>
 
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID) ORDER BY TIME DESC")
+    @Query("SELECT GALLERIES.* FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID) ORDER BY TIME DESC")
     fun joinListLazy(): PagingSource<Int, BaseGalleryInfo>
 
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID) WHERE TITLE LIKE :title OR TITLE_JPN LIKE :title ORDER BY TIME DESC")
+    @Query(
+        """SELECT GALLERIES.* FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID)
+        JOIN GalleryFts ON GALLERIES.rowid = docid WHERE GalleryFts MATCH :title ORDER BY TIME DESC""",
+    )
     fun joinListLazy(title: String): PagingSource<Int, BaseGalleryInfo>
 
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID) ORDER BY RANDOM() LIMIT 1")
+    @Query("SELECT GALLERIES.* FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID) ORDER BY RANDOM() LIMIT 1")
     suspend fun random(): BaseGalleryInfo
 
     @Query("SELECT EXISTS(SELECT * FROM LOCAL_FAVORITES WHERE GID = :gid)")

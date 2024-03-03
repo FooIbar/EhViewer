@@ -5,7 +5,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Upsert
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 
@@ -14,12 +13,13 @@ interface HistoryDao {
     @Query("SELECT * FROM HISTORY ORDER BY TIME")
     suspend fun list(): List<HistoryInfo>
 
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM HISTORY JOIN GALLERIES USING(GID) ORDER BY TIME DESC")
+    @Query("SELECT GALLERIES.* FROM HISTORY JOIN GALLERIES USING(GID) ORDER BY TIME DESC")
     fun joinListLazy(): PagingSource<Int, BaseGalleryInfo>
 
-    @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM HISTORY JOIN GALLERIES USING(GID) WHERE TITLE LIKE :title OR TITLE_JPN LIKE :title ORDER BY TIME DESC")
+    @Query(
+        """SELECT GALLERIES.* FROM HISTORY JOIN GALLERIES USING(GID)
+        JOIN GalleryFts ON GALLERIES.rowid = docid WHERE GalleryFts MATCH :title ORDER BY TIME DESC""",
+    )
     fun joinListLazy(title: String): PagingSource<Int, BaseGalleryInfo>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
