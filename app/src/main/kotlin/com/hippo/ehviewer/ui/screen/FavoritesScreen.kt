@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
@@ -221,8 +220,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    val searchFieldState = rememberTextFieldState()
-
     val refreshState = rememberPullToRefreshState {
         data.loadState.refresh is LoadState.NotLoading
     }
@@ -235,7 +232,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
 
     SearchBarScreen(
         title = title,
-        searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
         onApplySearch = { refresh(FavListUrlBuilder(urlBuilder.favCat, it)) },
         onSearchExpanded = {

@@ -194,6 +194,8 @@ object EhDB {
     val historyLazyList
         get() = db.historyDao().joinListLazy()
 
+    fun searchHistory(keyword: String) = db.historyDao().joinListLazy("%$keyword%")
+
     val localFavLazyList
         get() = db.localFavoritesDao().joinListLazy()
 

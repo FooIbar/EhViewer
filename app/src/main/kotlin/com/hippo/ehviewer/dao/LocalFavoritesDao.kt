@@ -23,7 +23,7 @@ interface LocalFavoritesDao {
     fun joinListLazy(): PagingSource<Int, BaseGalleryInfo>
 
     @RewriteQueriesToDropUnusedColumns
-    @Query("SELECT * FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID) WHERE TITLE LIKE :title ORDER BY TIME DESC")
+    @Query("SELECT * FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID) WHERE TITLE LIKE :title OR TITLE_JPN LIKE :title ORDER BY TIME DESC")
     fun joinListLazy(title: String): PagingSource<Int, BaseGalleryInfo>
 
     @RewriteQueriesToDropUnusedColumns

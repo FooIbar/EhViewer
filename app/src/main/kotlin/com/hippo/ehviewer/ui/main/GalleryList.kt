@@ -57,7 +57,7 @@ import com.hippo.ehviewer.util.displayString
 import kotlinx.coroutines.flow.drop
 
 @Stable
-private operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
+operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
     val l = this@plus
     override fun calculateBottomPadding() = l.calculateBottomPadding() + r.calculateBottomPadding()
     override fun calculateLeftPadding(layoutDirection: LayoutDirection) = l.calculateLeftPadding(layoutDirection) + r.calculateLeftPadding(layoutDirection)

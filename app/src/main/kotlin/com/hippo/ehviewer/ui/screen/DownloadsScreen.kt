@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -131,7 +130,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember(filterState.label) { mutableIntStateOf(0) }
-    val searchFieldState = rememberTextFieldState()
 
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
@@ -350,7 +348,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
 
     SearchBarScreen(
         title = title,
-        searchFieldState = searchFieldState,
         searchFieldHint = hint,
         onApplySearch = { filterState = filterState.copy(keyword = it) },
         onSearchExpanded = {
