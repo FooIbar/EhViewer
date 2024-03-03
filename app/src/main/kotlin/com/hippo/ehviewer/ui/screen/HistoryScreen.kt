@@ -57,9 +57,9 @@ import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Destination
 @Composable
@@ -93,7 +93,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             IconButton(onClick = {
-                launchIO {
+                launch {
                     awaitPermissionOrCancel(
                         confirmText = R.string.clear_all,
                         text = { Text(text = stringResource(id = R.string.clear_all_history)) },
@@ -133,7 +133,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
-                                launchIO { EhDB.deleteHistoryInfo(info) }
+                                launch { EhDB.deleteHistoryInfo(info) }
                             }
                             true
                         },
@@ -145,7 +145,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     ) {
                         GalleryInfoListItem(
                             onClick = { navigate(info.asDst()) },
-                            onLongClick = { launchIO { doGalleryInfoAction(info) } },
+                            onLongClick = { launch { doGalleryInfoAction(info) } },
                             info = info,
                             showPages = showPages,
                             modifier = Modifier.height(cardHeight),
