@@ -156,7 +156,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 }
             }
         }
-        Deferred({ delay(200) }) {
+        Deferred(keyword, { delay(200) }) {
             if (historyData.itemCount == 0) {
                 Column(
                     modifier = Modifier.padding(paddingValues).padding(horizontal = marginH).fillMaxSize(),
@@ -169,8 +169,13 @@ fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         modifier = Modifier.padding(16.dp),
                         tint = MaterialTheme.colorScheme.primary,
                     )
+                    val emptyHint = if (keyword.isEmpty()) {
+                        stringResource(id = R.string.no_history)
+                    } else {
+                        stringResource(id = R.string.gallery_list_empty_hit)
+                    }
                     Text(
-                        text = stringResource(id = R.string.no_history),
+                        text = emptyHint,
                         style = MaterialTheme.typography.headlineMedium,
                     )
                 }
