@@ -114,6 +114,7 @@ object Settings : DataStorePreferences(null) {
     val blackDarkTheme = boolPref("black_dark_theme", false)
     val gridView = boolPref("grid_view", false)
     val showGalleryPages = boolPref("show_gallery_pages", true)
+    val qSSaveProgress = boolPref("qs_save_progress", true)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
@@ -143,7 +144,6 @@ object Settings : DataStorePreferences(null) {
     var useCIUpdateChannel by boolPref("ci_update_channel", false)
     var mediaScan by boolPref("media_scan", false).observed { updateWhenKeepMediaStatusChanges() }
     var hasDefaultDownloadLabel by boolPref("has_default_download_label", false)
-    var qSSaveProgress by boolPref("qs_save_progress", true)
     var saveParseErrorBody by boolPref("save_parse_error_body", true)
     var saveCrashLog by boolPref("save_crash_log", true)
     var security by boolPref("require_unlock", false)

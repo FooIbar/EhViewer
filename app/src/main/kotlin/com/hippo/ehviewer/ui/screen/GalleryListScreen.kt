@@ -92,6 +92,7 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
@@ -111,7 +112,6 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.LocalSideSheetState
-import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
@@ -131,11 +131,9 @@ import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
-import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.util.FavouriteStatusRouter
-import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.pickVisualMedia
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.sha1
@@ -156,23 +154,19 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
 @Destination
 @Composable
-fun HomePageScreen(navigator: DestinationsNavigator) =
-    GalleryListScreen(ListUrlBuilder(), navigator)
+fun HomePageScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(), navigator)
 
 @Destination
 @Composable
-fun SubscriptionScreen(navigator: DestinationsNavigator) =
-    GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator)
+fun SubscriptionScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator)
 
 @Destination
 @Composable
-fun WhatshotScreen(navigator: DestinationsNavigator) =
-    GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator)
+fun WhatshotScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator)
 
 @Destination
 @Composable
-fun ToplistScreen(navigator: DestinationsNavigator) =
-    GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator)
+fun ToplistScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator)
 
 @Destination
 @Composable
@@ -204,8 +198,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     val animatedSearchLayout by animateFloatMergePredictiveBackAsState(
         enable = showSearchLayout,
         animationSpec = tween(FAB_ANIMATE_TIME * 2),
-    ) { showSearchLayout = false }
-    val activity = remember { findActivity<MainActivity>() }
+        onBack = { showSearchLayout = false },
+    )
     val density = LocalDensity.current
     val listState = rememberLazyGridState()
     val gridState = rememberLazyStaggeredGridState()
@@ -261,9 +255,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     val listMode by Settings.listMode.collectAsState()
 
     val quickSearchList = remember { mutableStateListOf<QuickSearch>() }
-    val toplists = (stringArrayResource(id = R.array.toplist_entries) zip stringArrayResource(id = R.array.toplist_values)).toMap()
+    val entries = stringArrayResource(id = R.array.toplist_entries)
+    val values = stringArrayResource(id = R.array.toplist_values)
+    val toplists = remember { entries zip values }
     val quickSearchName = getSuitableTitleForUrlBuilder(urlBuilder, false)
-    var saveProgress by Settings::qSSaveProgress.observed
+    var saveProgress by Settings.qSSaveProgress.asMutableState()
 
     fun getFirstVisibleItemIndex() = if (listMode == 0) {
         listState.firstVisibleItemIndex
@@ -272,205 +268,196 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     }
 
     LaunchedEffect(Unit) {
-        val list = withIOContext { EhDB.getAllQuickSearch() }
+        val list = EhDB.getAllQuickSearch()
         quickSearchList.addAll(list)
     }
 
-    with(activity) {
-        if (isTopList) {
-            ProvideSideSheetContent { sheetState ->
-                TopAppBar(
-                    title = { Text(text = stringResource(id = R.string.toplist)) },
-                    windowInsets = WindowInsets(0),
+    if (isTopList) {
+        ProvideSideSheetContent { sheetState ->
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.toplist)) },
+                windowInsets = WindowInsets(0),
+            )
+            toplists.forEach { (name, keyword) ->
+                ListItem(
+                    modifier = Modifier.clickable {
+                        Settings.recentToplist = keyword
+                        urlBuilder = ListUrlBuilder(MODE_TOPLIST, mKeyword = keyword)
+                        data.refresh()
+                        showSearchLayout = false
+                        launch { sheetState.close() }
+                    },
+                    headlineContent = {
+                        Text(text = name)
+                    },
                 )
-                toplists.forEach { (name, keyword) ->
-                    ListItem(
-                        modifier = Modifier.clickable {
-                            Settings.recentToplist = keyword
-                            urlBuilder = ListUrlBuilder(MODE_TOPLIST, mKeyword = keyword)
-                            data.refresh()
-                            showSearchLayout = false
-                            launch { sheetState.close() }
-                        },
-                        headlineContent = {
-                            Text(text = name)
-                        },
-                    )
-                }
             }
-        } else {
-            ProvideSideSheetContent { sheetState ->
-                TopAppBar(
-                    title = { Text(text = stringResource(id = R.string.quick_search)) },
-                    actions = {
-                        IconButton(onClick = {
-                            launch {
-                                awaitPermissionOrCancel(
-                                    title = R.string.quick_search,
-                                    showCancelButton = false,
-                                ) {
-                                    Text(text = stringResource(id = R.string.add_quick_search_tip))
-                                }
+        }
+    } else {
+        ProvideSideSheetContent { sheetState ->
+            TopAppBar(
+                title = { Text(text = stringResource(id = R.string.quick_search)) },
+                actions = {
+                    IconButton(onClick = {
+                        launch {
+                            awaitPermissionOrCancel(title = R.string.quick_search, showCancelButton = false) {
+                                Text(text = stringResource(id = R.string.add_quick_search_tip))
                             }
-                        }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Default.Help,
-                                contentDescription = stringResource(id = R.string.readme),
-                            )
                         }
-                        val invalidImageQuickSearch = stringResource(R.string.image_search_not_quick_search)
-                        IconButton(onClick = {
-                            if (data.itemCount == 0) return@IconButton
-                            launch {
-                                if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
-                                    showSnackbar(invalidImageQuickSearch)
-                                } else {
-                                    val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
-                                    val next = firstItem.gid + 1
-                                    quickSearchList.fastForEach { q ->
-                                        if (urlBuilder.equalsQuickSearch(q)) {
-                                            val nextStr = q.name.substringAfterLast('@', "")
-                                            if (nextStr.toLongOrNull() == next) {
-                                                showSnackbar(getString(R.string.duplicate_quick_search, q.name))
-                                                return@launch
-                                            }
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.Help,
+                            contentDescription = stringResource(id = R.string.readme),
+                        )
+                    }
+                    val invalidImageQuickSearch = stringResource(R.string.image_search_not_quick_search)
+                    val nameEmpty = stringResource(R.string.name_is_empty)
+                    val dupName = stringResource(R.string.duplicate_name)
+                    IconButton(onClick = {
+                        if (data.itemCount == 0) return@IconButton
+                        launch {
+                            if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
+                                showSnackbar(invalidImageQuickSearch)
+                            } else {
+                                val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
+                                val next = firstItem.gid + 1
+                                quickSearchList.fastForEach { q ->
+                                    if (urlBuilder.equalsQuickSearch(q)) {
+                                        val nextStr = q.name.substringAfterLast('@', "")
+                                        if (nextStr.toLongOrNull() == next) {
+                                            showSnackbar(getString(R.string.duplicate_quick_search, q.name))
+                                            return@launch
                                         }
                                     }
-                                    awaitInputTextWithCheckBox(
-                                        initial = quickSearchName ?: urlBuilder.keyword.orEmpty(),
-                                        title = R.string.add_quick_search_dialog_title,
-                                        hint = R.string.quick_search,
-                                        checked = saveProgress,
-                                        checkBoxText = R.string.save_progress,
-                                    ) { input, checked ->
-                                        var text = input.trim()
-                                        if (text.isEmpty()) {
-                                            return@awaitInputTextWithCheckBox getString(R.string.name_is_empty)
-                                        }
-
-                                        if (checked) {
-                                            text += "@$next"
-                                        }
-                                        if (quickSearchList.fastAny { it.name == text }) {
-                                            return@awaitInputTextWithCheckBox getString(R.string.duplicate_name)
-                                        }
-
+                                }
+                                awaitInputTextWithCheckBox(
+                                    initial = quickSearchName ?: urlBuilder.keyword.orEmpty(),
+                                    title = R.string.add_quick_search_dialog_title,
+                                    hint = R.string.quick_search,
+                                    checked = saveProgress,
+                                    checkBoxText = R.string.save_progress,
+                                ) { input, checked ->
+                                    var text = input.trim()
+                                    nameEmpty.takeIf {
+                                        text.isEmpty()
+                                    } ?: dupName.takeIf {
+                                        if (checked) text += "@$next"
+                                        quickSearchList.fastAny { it.name == text }
+                                    } ?: run {
                                         val quickSearch = urlBuilder.toQuickSearch(text)
                                         quickSearch.position = quickSearchList.size
                                         // Insert to DB first to update the id
-                                        withIOContext {
-                                            EhDB.insertQuickSearch(quickSearch)
-                                        }
+                                        EhDB.insertQuickSearch(quickSearch)
                                         quickSearchList.add(quickSearch)
                                         saveProgress = checked
-                                        return@awaitInputTextWithCheckBox null
+                                        null
                                     }
                                 }
                             }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = stringResource(id = R.string.add),
-                            )
                         }
-                    },
-                    windowInsets = WindowInsets(0),
-                )
-                val view = LocalView.current
-                Box(modifier = Modifier.fillMaxSize()) {
-                    val quickSearchListState = rememberLazyListState()
-                    val reorderableLazyListState = rememberReorderableLazyColumnState(quickSearchListState) { from, to ->
-                        val fromIndex = from.index - 1
-                        val toIndex = to.index - 1
-                        quickSearchList.apply { add(toIndex, removeAt(fromIndex)) }
-                        view.performHapticFeedback(draggingHapticFeedback)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(id = R.string.add),
+                        )
                     }
-                    var fromIndex by remember { mutableIntStateOf(-1) }
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        state = quickSearchListState,
-                        contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
-                    ) {
-                        // Fix the first item's reorder animation
-                        stickyHeader {
-                            HorizontalDivider()
-                        }
-                        itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { index, item ->
-                            ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
-                                val dismissState = rememberSwipeToDismissBoxState(
-                                    confirmValueChange = { value ->
-                                        if (value == SwipeToDismissBoxValue.EndToStart) {
-                                            quickSearchList.run {
-                                                val removeIndex = indexOf(item)
-                                                subList(removeIndex + 1, size).forEach {
-                                                    it.position--
-                                                }
-                                                removeAt(removeIndex)
+                },
+                windowInsets = WindowInsets(0),
+            )
+            val view = LocalView.current
+            Box(modifier = Modifier.fillMaxSize()) {
+                val quickSearchListState = rememberLazyListState()
+                val reorderableLazyListState = rememberReorderableLazyColumnState(quickSearchListState) { from, to ->
+                    val fromIndex = from.index - 1
+                    val toIndex = to.index - 1
+                    quickSearchList.apply { add(toIndex, removeAt(fromIndex)) }
+                    view.performHapticFeedback(draggingHapticFeedback)
+                }
+                var fromIndex by remember { mutableIntStateOf(-1) }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    state = quickSearchListState,
+                    contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
+                ) {
+                    // Fix the first item's reorder animation
+                    stickyHeader {
+                        HorizontalDivider()
+                    }
+                    itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { index, item ->
+                        ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
+                            val dismissState = rememberSwipeToDismissBoxState(
+                                confirmValueChange = { value ->
+                                    if (value == SwipeToDismissBoxValue.EndToStart) {
+                                        with(quickSearchList) {
+                                            val removeIndex = indexOf(item)
+                                            subList(removeIndex + 1, size).forEach {
+                                                it.position--
                                             }
-                                            launchIO { EhDB.deleteQuickSearch(item) }
+                                            removeAt(removeIndex)
                                         }
-                                        true
+                                        launchIO { EhDB.deleteQuickSearch(item) }
+                                    }
+                                    true
+                                },
+                            )
+                            SwipeToDismissBox2(
+                                state = dismissState,
+                                backgroundContent = {},
+                            ) {
+                                val elevation by animateDpAsState(
+                                    if (isDragging) {
+                                        8.dp // md.sys.elevation.level4
+                                    } else {
+                                        1.dp // md.sys.elevation.level1
+                                    },
+                                    label = "elevation",
+                                )
+                                ListItem(
+                                    modifier = Modifier.clickable {
+                                        if (urlBuilder.mode == MODE_WHATS_HOT) {
+                                            val builder = ListUrlBuilder(item)
+                                            navigator.navigate(builder.asDst())
+                                        } else {
+                                            urlBuilder = ListUrlBuilder(item)
+                                            data.refresh()
+                                        }
+                                        showSearchLayout = false
+                                        launch { sheetState.close() }
+                                    },
+                                    tonalElevation = 1.dp,
+                                    shadowElevation = elevation,
+                                    headlineContent = {
+                                        Text(text = item.name)
+                                    },
+                                    trailingContent = {
+                                        DragHandle(
+                                            onDragStarted = {
+                                                fromIndex = index
+                                            },
+                                            onDragStopped = {
+                                                if (fromIndex != -1) {
+                                                    if (fromIndex != index) {
+                                                        val range = if (fromIndex < index) fromIndex..index else index..fromIndex
+                                                        val toUpdate = quickSearchList.slice(range)
+                                                        toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                        launchIO { EhDB.updateQuickSearch(toUpdate) }
+                                                    }
+                                                    fromIndex = -1
+                                                }
+                                            },
+                                        )
                                     },
                                 )
-                                SwipeToDismissBox2(
-                                    state = dismissState,
-                                    backgroundContent = {},
-                                ) {
-                                    val elevation by animateDpAsState(
-                                        if (isDragging) {
-                                            8.dp // md.sys.elevation.level4
-                                        } else {
-                                            1.dp // md.sys.elevation.level1
-                                        },
-                                        label = "elevation",
-                                    )
-                                    ListItem(
-                                        modifier = Modifier.clickable {
-                                            if (urlBuilder.mode == MODE_WHATS_HOT) {
-                                                val builder = ListUrlBuilder(item)
-                                                navigator.navigate(builder.asDst())
-                                            } else {
-                                                urlBuilder = ListUrlBuilder(item)
-                                                data.refresh()
-                                            }
-                                            showSearchLayout = false
-                                            launch { sheetState.close() }
-                                        },
-                                        tonalElevation = 1.dp,
-                                        shadowElevation = elevation,
-                                        headlineContent = {
-                                            Text(text = item.name)
-                                        },
-                                        trailingContent = {
-                                            DragHandle(
-                                                onDragStarted = {
-                                                    fromIndex = index
-                                                },
-                                                onDragStopped = {
-                                                    if (fromIndex != -1) {
-                                                        if (fromIndex != index) {
-                                                            val range = if (fromIndex < index) fromIndex..index else index..fromIndex
-                                                            val toUpdate = quickSearchList.slice(range)
-                                                            toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                            launchIO { EhDB.updateQuickSearch(toUpdate) }
-                                                        }
-                                                        fromIndex = -1
-                                                    }
-                                                },
-                                            )
-                                        },
-                                    )
-                                }
                             }
                         }
                     }
-                    Deferred({ delay(200) }) {
-                        if (quickSearchList.isEmpty()) {
-                            Text(
-                                text = stringResource(id = R.string.quick_search_tip),
-                                modifier = Modifier.align(Alignment.Center),
-                            )
-                        }
+                }
+                Deferred({ delay(200) }) {
+                    if (quickSearchList.isEmpty()) {
+                        Text(
+                            text = stringResource(id = R.string.quick_search_tip),
+                            modifier = Modifier.align(Alignment.Center),
+                        )
                     }
                 }
             }
