@@ -36,7 +36,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -66,9 +65,8 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.LocalSideSheetState
-import com.hippo.ehviewer.ui.LocalSnackBarHostState
 import com.hippo.ehviewer.ui.LockDrawer
-import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
@@ -76,12 +74,10 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.startDownload
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.displayString
-import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -96,7 +92,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination
 @Composable
-fun FavouritesScreen(navigator: DestinationsNavigator) {
+fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
     // Immutables
     val localFavName = stringResource(R.string.local_favorites)
     val cloudFavName = stringResource(R.string.cloud_favorites)
@@ -122,10 +118,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
     }
     val context = LocalContext.current
     val density = LocalDensity.current
-    val snackbarState = LocalSnackBarHostState.current
-    val dialogState = LocalDialogState.current
-    val activity = remember(context) { context.findActivity<MainActivity>() }
-    val coroutineScope = rememberCoroutineScope()
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
     val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
     val data = rememberInVM(isLocalFav) {
@@ -177,45 +169,43 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         data.refresh()
     }
 
-    with(activity) {
-        ProvideSideSheetContent { sheetState ->
-            val localFavCount by localFavCountFlow.collectAsState(0)
-            TopAppBar(
-                title = { Text(text = stringResource(id = R.string.collections)) },
-                windowInsets = WindowInsets(0, 0, 0, 0),
+    ProvideSideSheetContent { sheetState ->
+        val localFavCount by localFavCountFlow.collectAsState(0)
+        TopAppBar(
+            title = { Text(text = stringResource(id = R.string.collections)) },
+            windowInsets = WindowInsets(0, 0, 0, 0),
+        )
+        val scope = currentRecomposeScope
+        LaunchedEffect(Unit) {
+            Settings.favChangesFlow.collect {
+                scope.invalidate()
+            }
+        }
+        val localFav = stringResource(id = R.string.local_favorites) to localFavCount
+        val faves = if (EhCookieStore.hasSignedIn()) {
+            arrayOf(
+                localFav,
+                stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
+                *Settings.favCat.zip(Settings.favCount.toTypedArray()).toTypedArray(),
             )
-            val scope = currentRecomposeScope
-            LaunchedEffect(Unit) {
-                Settings.favChangesFlow.collect {
-                    scope.invalidate()
-                }
-            }
-            val localFav = stringResource(id = R.string.local_favorites) to localFavCount
-            val faves = if (EhCookieStore.hasSignedIn()) {
-                arrayOf(
-                    localFav,
-                    stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
-                    *Settings.favCat.zip(Settings.favCount.toTypedArray()).toTypedArray(),
+        } else {
+            arrayOf(localFav)
+        }
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState())
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
+        ) {
+            faves.forEachIndexed { index, (name, count) ->
+                ListItem(
+                    headlineContent = { Text(text = name) },
+                    trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
+                    modifier = Modifier.clickable {
+                        val newCat = index - 2
+                        refresh(FavListUrlBuilder(newCat))
+                        Settings.recentFavCat = newCat
+                        launch { sheetState.close() }
+                    },
                 )
-            } else {
-                arrayOf(localFav)
-            }
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState())
-                    .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
-            ) {
-                faves.forEachIndexed { index, (name, count) ->
-                    ListItem(
-                        headlineContent = { Text(text = name) },
-                        trailingContent = { Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge) },
-                        modifier = Modifier.clickable {
-                            val newCat = index - 2
-                            refresh(FavListUrlBuilder(newCat))
-                            Settings.recentFavCat = newCat
-                            coroutineScope.launch { sheetState.close() }
-                        },
-                    )
-                }
             }
         }
     }
@@ -243,7 +233,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
-            IconButton(onClick = { coroutineScope.launch { sheetState.open() } }) {
+            IconButton(onClick = { launch { sheetState.open() } }) {
                 Icon(imageVector = Icons.Outlined.FolderSpecial, contentDescription = null)
             }
         },
@@ -357,8 +347,8 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                 }
             }
             onClick(EhIcons.Default.GoTo) {
-                coroutineScope.launch {
-                    val date = dialogState.showDatePicker()
+                launch {
+                    val date = showDatePicker()
                     refresh(urlBuilder.copy(jumpTo = date))
                 }
             }
@@ -376,11 +366,11 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
             }
             onClick(Icons.Default.Download) {
                 val info = checkedInfoMap.run { toMap().values.also { clear() } }
-                dialogState.startDownload(context, false, *info.toTypedArray())
+                startDownload(context, false, *info.toTypedArray())
             }
             onClick(Icons.Default.Delete) {
                 val info = checkedInfoMap.run { toMap().values.also { clear() } }
-                dialogState.awaitPermissionOrCancel(title = R.string.delete_favorites_dialog_title) {
+                awaitPermissionOrCancel(title = R.string.delete_favorites_dialog_title) {
                     Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
                 }
                 val srcCat = urlBuilder.favCat
@@ -400,7 +390,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                         addAll(Settings.favCat)
                     }
                 }
-                val index = dialogState.showSelectItem(items, R.string.move_favorites_dialog_title)
+                val index = showSelectItem(items, R.string.move_favorites_dialog_title)
                 val srcCat = urlBuilder.favCat
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
                 val info = checkedInfoMap.run { toMap().values.also { clear() } }
@@ -422,7 +412,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) {
                     }.onSuccess {
                         data.refresh()
                     }.onFailure {
-                        snackbarState.showSnackbar(it.displayString())
+                        showSnackbar(it.displayString())
                     }
                 }
             }
