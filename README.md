@@ -95,7 +95,6 @@ Here is the libraries
 - [Kotlin & KotlinX](https://kotlinlang.org/)
 - [MDC-Android](https://github.com/material-components/material-components-android)
 - [Material Icons](https://github.com/google/material-design-icons)
-- [OkHttp](https://square.github.io/okhttp/)
 - [Ktor](https://ktor.io/)
 - [Coil](https://coil-kt.github.io/coil/)
 - [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
