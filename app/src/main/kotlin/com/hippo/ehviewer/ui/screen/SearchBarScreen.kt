@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.forEachTextValue
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -95,7 +96,7 @@ suspend fun SearchDao.suggestions(prefix: String, limit: Int) =
 @Composable
 fun SearchBarScreen(
     title: String? = null,
-    searchFieldState: TextFieldState,
+    searchFieldState: TextFieldState = rememberTextFieldState(),
     searchFieldHint: String? = null,
     onApplySearch: (String) -> Unit,
     onSearchExpanded: () -> Unit,

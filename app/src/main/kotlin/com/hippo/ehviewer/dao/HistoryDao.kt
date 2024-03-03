@@ -18,6 +18,10 @@ interface HistoryDao {
     @Query("SELECT * FROM HISTORY JOIN GALLERIES USING(GID) ORDER BY TIME DESC")
     fun joinListLazy(): PagingSource<Int, BaseGalleryInfo>
 
+    @RewriteQueriesToDropUnusedColumns
+    @Query("SELECT * FROM HISTORY JOIN GALLERIES USING(GID) WHERE TITLE LIKE :title OR TITLE_JPN LIKE :title ORDER BY TIME DESC")
+    fun joinListLazy(title: String): PagingSource<Int, BaseGalleryInfo>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnore(historyInfoList: List<HistoryInfo>)
 
