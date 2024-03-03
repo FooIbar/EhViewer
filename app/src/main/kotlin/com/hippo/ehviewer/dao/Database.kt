@@ -110,12 +110,19 @@ class ThumbKeyMigration : AutoMigrationSpec {
 @RenameColumn(tableName = "DOWNLOADS", fromColumnName = "POSITION", toColumnName = "TIME")
 class DownloadsMigration : AutoMigrationSpec
 
+class GalleryFtsMigration : AutoMigrationSpec {
+    override fun onPostMigrate(db: SupportSQLiteDatabase) {
+        db.execSQL("INSERT INTO GalleryFts(GalleryFts) VALUES('rebuild')")
+    }
+}
+
 @Database(
     entities = [
         BaseGalleryInfo::class, DownloadLabel::class, DownloadEntity::class, DownloadDirname::class,
         Filter::class, HistoryInfo::class, LocalFavoriteInfo::class, ProgressInfo::class, QuickSearch::class,
+        GalleryFts::class,
     ],
-    version = 20,
+    version = 21,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(
@@ -189,6 +196,11 @@ class DownloadsMigration : AutoMigrationSpec
         AutoMigration(
             from = 19,
             to = 20,
+        ),
+        AutoMigration(
+            from = 20,
+            to = 21,
+            spec = GalleryFtsMigration::class,
         ),
     ],
 )
