@@ -1,7 +1,5 @@
 package com.hippo.ehviewer.ui.screen
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,8 +32,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -56,15 +52,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.lerp
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -73,9 +66,7 @@ import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.LockDrawer
-import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.tools.LocalDialogState
-import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -106,8 +97,7 @@ fun SearchBarScreen(
     title: String? = null,
     searchFieldState: TextFieldState,
     searchFieldHint: String? = null,
-    showSearchFab: Boolean = false,
-    onApplySearch: suspend (String) -> Unit,
+    onApplySearch: (String) -> Unit,
     onSearchExpanded: () -> Unit,
     onSearchHidden: () -> Unit,
     refreshState: PullToRefreshState? = null,
@@ -115,6 +105,7 @@ fun SearchBarScreen(
     searchBarOffsetY: () -> Int,
     trailingIcon: @Composable () -> Unit,
     filter: @Composable (() -> Unit)? = null,
+    floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     var mSuggestionList by remember { mutableStateOf(emptyList<Suggestion>()) }
@@ -204,9 +195,7 @@ fun SearchBarScreen(
                 mSearchDatabase.insert(search)
             }
         }
-        scope.launchIO {
-            onApplySearch(query)
-        }
+        onApplySearch(query)
     }
 
     fun deleteKeyword(keyword: String) {
@@ -236,19 +225,7 @@ fun SearchBarScreen(
                         .height(SearchBarDefaults.InputFieldHeight + 16.dp),
                 )
             },
-            floatingActionButton = {
-                val hiddenState by animateFloatAsState(
-                    targetValue = if (showSearchFab && !active) 1f else 0f,
-                    animationSpec = tween(FAB_ANIMATE_TIME, if (showSearchFab && !active) FAB_ANIMATE_TIME else 0),
-                    label = "hiddenState",
-                )
-                FloatingActionButton(
-                    onClick = { onApplySearch() },
-                    modifier = Modifier.snackBarPadding().rotate(lerp(90f, 0f, hiddenState)).scale(hiddenState),
-                ) {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = null)
-                }
-            },
+            floatingActionButton = floatingActionButton,
             content = content,
         )
         if (refreshState != null) {
