@@ -63,6 +63,7 @@ import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
+import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
@@ -323,7 +324,7 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String {
         val tag = keyword.substringAfter(':')
         val prefix = keyword.dropLast(tag.length + 1)
         if (translate) {
-            val namespacePrefix = EhTagDatabase.namespaceToPrefix(prefix)
+            val namespacePrefix = TagNamespace(prefix).toPrefix()
             val newPrefix = EhTagDatabase.getTranslation(tag = prefix) ?: prefix
             val newTag = EhTagDatabase.getTranslation(namespacePrefix, tag) ?: tag
             "$newPrefix：$newTag"

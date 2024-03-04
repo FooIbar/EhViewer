@@ -98,6 +98,7 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
 import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.ListUrlBuilder
+import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.client.data.asGalleryDetail
 import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
@@ -200,10 +201,11 @@ private fun getRatingText(rating: Float): Int {
     }
 }
 
-private fun List<GalleryTagGroup>.getArtist(): String? {
+private fun List<GalleryTagGroup>.getArtistTag(): String? {
+    val namespace = TagNamespace.Artist.value
     for (tagGroup in this) {
-        if ("artist" == tagGroup.groupName && tagGroup.size > 0) {
-            return tagGroup[0].removePrefix("_")
+        if (tagGroup.groupName == namespace && tagGroup.size > 0) {
+            return "$namespace:${tagGroup[0].removePrefix("_")}"
         }
     }
     return null
@@ -547,7 +549,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 text = stringResource(id = R.string.similar_gallery),
                 onClick = {
                     val keyword = EhUtils.extractTitle(galleryDetail.title)
-                    val artist = galleryDetail.tags.getArtist()
+                    val artistTag = galleryDetail.tags.getArtistTag()
                     if (null != keyword) {
                         navigate(
                             ListUrlBuilder(
@@ -555,11 +557,11 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                 mKeyword = "\"" + keyword + "\"",
                             ).asDst(),
                         )
-                    } else if (artist != null) {
+                    } else if (artistTag != null) {
                         navigate(
                             ListUrlBuilder(
                                 mode = ListUrlBuilder.MODE_TAG,
-                                mKeyword = "artist:$artist",
+                                mKeyword = artistTag,
                             ).asDst(),
                         )
                     } else if (null != galleryDetail.uploader) {

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.GalleryTagGroup
+import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.ui.tools.includeFontPadding
 
 @Composable
@@ -41,7 +42,7 @@ fun GalleryTags(
                     text = tagGroup.groupName.translate(),
                     isGroup = true,
                 )
-                val prefix = EhTagDatabase.namespaceToPrefix(tagGroup.groupName)
+                val prefix = TagNamespace(tagGroup.groupName).toPrefix()
                 FlowRow {
                     tagGroup.forEach {
                         val weak = it.startsWith('_')
