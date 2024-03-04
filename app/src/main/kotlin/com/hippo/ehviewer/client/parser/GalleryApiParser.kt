@@ -38,6 +38,7 @@ object GalleryApiParser {
                 rating = item.rating
                 simpleTags = item.tags
                 pages = item.pages
+                generateSLang()
             }
         }
     }
