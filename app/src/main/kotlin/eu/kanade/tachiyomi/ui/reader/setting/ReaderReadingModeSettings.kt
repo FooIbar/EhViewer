@@ -49,8 +49,7 @@ class ReaderReadingModeSettings @JvmOverloads constructor(
             val readingModeType = ReadingModeType.fromSpinner(position)
             ReaderPreferences.defaultReadingMode().set(readingModeType.flagValue)
 
-            val mangaViewer = ReaderPreferences.defaultReadingMode().get()
-            if (mangaViewer == ReadingModeType.WEBTOON.flagValue || mangaViewer == ReadingModeType.CONTINUOUS_VERTICAL.flagValue) {
+            if (readingModeType == ReadingModeType.WEBTOON || readingModeType == ReadingModeType.CONTINUOUS_VERTICAL) {
                 initWebtoonPreferences()
             } else {
                 initPagerPreferences()
