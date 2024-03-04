@@ -441,7 +441,7 @@ object EhEngine {
             if (it.favoriteSlot == GalleryInfo.NOT_FAVORITED && EhDB.containLocalFavorites(it.gid)) {
                 it.favoriteSlot = GalleryInfo.LOCAL_FAVORITED
             }
-            it.generateSLang()
+            if (!needApi) it.generateSLang()
         }
     }
 
