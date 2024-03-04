@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarHostState
 import androidx.core.content.FileProvider
 import com.hippo.ehviewer.BuildConfig.APPLICATION_ID
@@ -18,14 +19,17 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
+import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastT
 import com.hippo.ehviewer.util.requestPermission
 import com.hippo.unifile.asUniFile
+import com.hippo.unifile.displayPath
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import kotlinx.datetime.Clock
+import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.clipboardManager
 
 context(PageLoader2)
@@ -123,5 +127,22 @@ suspend fun save(page: ReaderPage) {
         }
     } else {
         showSnackbar(getString(R.string.permission_denied))
+    }
+}
+
+context(SnackbarHostState, Context, PageLoader2)
+suspend fun saveTo(page: ReaderPage) {
+    val filename = getImageFilename(page.index)
+    val extension = FileUtils.getExtensionFromFilename(filename)
+    val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
+    page.runSuspendCatching {
+        val uri = awaitActivityResult(ActivityResultContracts.CreateDocument(mimeType), filename)
+        if (uri != null) {
+            save(index, uri.asUniFile())
+            showSnackbar(getString(R.string.image_saved, uri.displayPath))
+        }
+    }.onFailure {
+        it.logcat(it)
+        showSnackbar(getString(R.string.error_cant_find_activity))
     }
 }
