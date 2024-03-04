@@ -287,6 +287,8 @@ fun SearchBarScreen(
                 contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime)
                     .only(WindowInsetsSides.Bottom).asPaddingValues(),
             ) {
+                // Workaround for prepending before the first item
+                item {}
                 items(mSuggestionList, key = { it.keyword.hashCode() * 31 + it.canDelete.hashCode() }) {
                     ListItem(
                         headlineContent = { Text(text = it.keyword) },
