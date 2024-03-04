@@ -39,6 +39,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
 import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
+import kotlin.coroutines.resume
 import kotlinx.coroutines.launch
 
 @Destination
@@ -103,7 +104,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                 onSelectPage = { page ->
                     launch {
                         dialog { cont ->
-                            fun dispose() = cont.cancel()
+                            fun dispose() = cont.resume(Unit)
                             val state = rememberModalBottomSheetState()
                             ModalBottomSheet(
                                 onDismissRequest = { dispose() },
@@ -115,7 +116,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                                     retryOrigin = { pageLoader.retryPage(page.index, true) },
                                     share = { launchIO { with(pageLoader) { shareImage(page, info) } } },
                                     copy = { launchIO { with(pageLoader) { copy(page) } } },
-                                    save = {},
+                                    save = { launchIO { with(pageLoader) { save(page) } } },
                                     saveTo = {},
                                     dismiss = { launch { state.hide().also { dispose() } } },
                                 )
