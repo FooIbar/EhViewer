@@ -117,7 +117,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                                     share = { launchIO { with(pageLoader) { shareImage(page, info) } } },
                                     copy = { launchIO { with(pageLoader) { copy(page) } } },
                                     save = { launchIO { with(pageLoader) { save(page) } } },
-                                    saveTo = {},
+                                    saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
                                     dismiss = { launch { state.hide().also { dispose() } } },
                                 )
                                 Spacer(modifier = Modifier.navigationBarsPadding())
