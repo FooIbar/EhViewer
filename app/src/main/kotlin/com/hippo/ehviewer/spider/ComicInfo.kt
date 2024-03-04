@@ -1,8 +1,8 @@
 package com.hippo.ehviewer.spider
 
-import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
 import com.hippo.unifile.openOutputStream
@@ -34,15 +34,18 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
     val characters = mutableListOf<String>()
     val parodies = mutableListOf<String>()
     val tags = mutableListOf<String>()
-    simpleTags?.forEach {
-        val (namespace, tag) = it.split(':', limit = 2)
-        when (namespace) {
-            "artist", "cosplayer" -> artists.add(tag)
-            "group" -> groups.add(tag)
-            "character" -> characters.add(tag)
-            "parody" -> if (tag != "original") parodies.add(tag)
-            "language", "reclass" -> Unit
-            else -> tags.add("${EhTagDatabase.namespaceToPrefix(namespace)}:$tag")
+    simpleTags?.forEach { tagString ->
+        val (namespace, tag) = tagString.split(':', limit = 2)
+        with(TagNamespace) {
+            when (val ns = TagNamespace(namespace)) {
+                Artist, Cosplayer -> artists.add(tag)
+                Group -> groups.add(tag)
+                Character -> characters.add(tag)
+                Parody -> if (tag != "original") parodies.add(tag)
+                Other -> tags.add(tag)
+                Female, Male, Mixed -> ns.toPrefix()?.let { tags.add("$it:$tag") }
+                else -> Unit
+            }
         }
     }
     return ComicInfo(

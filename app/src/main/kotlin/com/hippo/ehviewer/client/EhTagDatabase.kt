@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.StatusCodeException
@@ -106,7 +107,7 @@ object EhTagDatabase : CoroutineScope {
         val prefix = keyword.dropLast(mKeyword.length)
         val namespace = mKeyword.substringBefore(':')
         val tagKeyword = mKeyword.drop(namespace.length + 1)
-        val namespacePrefix = namespaceToPrefix(namespace) ?: namespace
+        val namespacePrefix = TagNamespace(namespace).toPrefix() ?: namespace
         val tags = tagGroups[namespacePrefix.takeIf { tagKeyword.isNotEmpty() && it != NAMESPACE_PREFIX }]
         tags?.let {
             internalSuggestFlow(it, tagKeyword, translate, exactly).collect { (hint, tag) ->
@@ -129,24 +130,6 @@ object EhTagDatabase : CoroutineScope {
 
     private fun String.containsIgnoreSpace(other: String, ignoreCase: Boolean = true): Boolean =
         removeSpace().contains(other.removeSpace(), ignoreCase)
-
-    private val NAMESPACE_TO_PREFIX = HashMap<String, String>().also {
-        it["artist"] = "a"
-        it["cosplayer"] = "cos"
-        it["character"] = "c"
-        it["female"] = "f"
-        it["group"] = "g"
-        it["language"] = "l"
-        it["male"] = "m"
-        it["mixed"] = "x"
-        it["other"] = "o"
-        it["parody"] = "p"
-        it["reclass"] = "r"
-    }
-
-    fun namespaceToPrefix(namespace: String): String? {
-        return NAMESPACE_TO_PREFIX[namespace]
-    }
 
     private fun getMetadata(context: Context): Array<String>? {
         return context.resources.getStringArray(R.array.tag_translation_metadata)
