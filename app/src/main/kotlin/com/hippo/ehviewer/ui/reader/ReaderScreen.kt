@@ -86,7 +86,21 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                 currentPage = syncState.sliderValue,
                 totalPages = pageLoader.size,
                 onSliderValueChange = { syncState.sliderScrollTo(it + 1) },
-                onClickSettings = { },
+                onClickSettings = {
+                    launch {
+                        dialog { cont ->
+                            fun dispose() = cont.resume(Unit)
+                            val state = rememberModalBottomSheetState()
+                            ModalBottomSheet(
+                                onDismissRequest = { dispose() },
+                                sheetState = state,
+                                windowInsets = WindowInsets(0),
+                            ) {
+                                Spacer(modifier = Modifier.navigationBarsPadding())
+                            }
+                        }
+                    }
+                },
                 modifier = Modifier.zIndex(1f),
             )
             CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
