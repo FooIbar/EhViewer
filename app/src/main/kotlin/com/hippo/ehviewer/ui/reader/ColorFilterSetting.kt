@@ -7,8 +7,8 @@ import androidx.compose.material.icons.filled.Brightness5
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringArrayResource
@@ -20,7 +20,6 @@ import androidx.core.graphics.red
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
-import moe.tarsin.kt.unreachable
 
 @Composable
 fun ColorFilterSetting() = Column {
@@ -45,70 +44,39 @@ fun ColorFilterSetting() = Column {
     )
     AnimatedVisibility(visible = colorFilter.value) {
         var color by Settings.colorFilterValue.asMutableState()
+        val rf = remember { mutableIntStateOf(color.red) }
+        val r by rf
+        val gf = remember { mutableIntStateOf(color.green) }
+        val g by gf
+        val bf = remember { mutableIntStateOf(color.blue) }
+        val b by bf
+        val af = remember { mutableIntStateOf(color.alpha) }
+        val a by af
+        color = (a shl 24) or (r shl 16) or (g shl 8) or (b)
         Column {
             SliderChoice(
                 startSlot = { Text(text = "R") },
-                endSlot = { Text(text = "${color.red}") },
+                endSlot = { Text(text = "$r") },
                 range = 0..255,
-                field = remember {
-                    object : MutableState<Int> {
-                        override var value: Int
-                            get() = color.red
-                            set(value) {
-                                color = color.convert(value, RED_MASK, 16)
-                            }
-                        override fun component1() = unreachable()
-                        override fun component2() = unreachable()
-                    }
-                },
+                field = rf,
             )
             SliderChoice(
                 startSlot = { Text(text = "G") },
-                endSlot = { Text(text = "${color.green}") },
+                endSlot = { Text(text = "$g") },
                 range = 0..255,
-                field = remember {
-                    object : MutableState<Int> {
-                        override var value: Int
-                            get() = color.green
-                            set(value) {
-                                color = color.convert(value, GREEN_MASK, 8)
-                            }
-                        override fun component1() = unreachable()
-                        override fun component2() = unreachable()
-                    }
-                },
+                field = gf,
             )
             SliderChoice(
                 startSlot = { Text(text = "B") },
-                endSlot = { Text(text = "${color.blue}") },
+                endSlot = { Text(text = "$b") },
                 range = 0..255,
-                field = remember {
-                    object : MutableState<Int> {
-                        override var value: Int
-                            get() = color.blue
-                            set(value) {
-                                color = color.convert(value, BLUE_MASK, 0)
-                            }
-                        override fun component1() = unreachable()
-                        override fun component2() = unreachable()
-                    }
-                },
+                field = bf,
             )
             SliderChoice(
                 startSlot = { Text(text = "A") },
-                endSlot = { Text(text = "${color.alpha}") },
+                endSlot = { Text(text = "$a") },
                 range = 0..255,
-                field = remember {
-                    object : MutableState<Int> {
-                        override var value: Int
-                            get() = color.alpha
-                            set(value) {
-                                color = color.convert(value, ALPHA_MASK, 24)
-                            }
-                        override fun component1() = unreachable()
-                        override fun component2() = unreachable()
-                    }
-                },
+                field = af,
             )
         }
     }
@@ -119,12 +87,5 @@ fun ColorFilterSetting() = Column {
         field = Settings.colorFilterMode.asMutableState(),
     )
 }
-
-private const val ALPHA_MASK: Long = 0xFF000000
-private const val RED_MASK: Long = 0x00FF0000
-private const val GREEN_MASK: Long = 0x0000FF00
-private const val BLUE_MASK: Long = 0x000000FF
-
-private fun Int.convert(color: Int, mask: Long, bitShift: Int) = (color shl bitShift) or (this and mask.inv().toInt())
 
 private val colorFilterValues = arrayOf("0", "1", "2", "3", "4", "5")
