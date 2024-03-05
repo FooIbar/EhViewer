@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,5 +76,29 @@ fun SwitchChoice(title: String, field: MutableState<Boolean>) {
             checked = value,
             onCheckedChange = { value = !value },
         )
+    }
+}
+
+@Composable
+fun SliderChoice(
+    startSlot: @Composable () -> Unit,
+    endSlot: @Composable () -> Unit,
+    range: IntRange,
+    field: MutableState<Int>,
+) {
+    var value by field
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        startSlot()
+        Slider(
+            value = value.toFloat(),
+            onValueChange = { value = it.toInt() },
+            modifier = Modifier.weight(1f).padding(8.dp),
+            valueRange = (range.first.toFloat())..(range.last.toFloat()),
+            steps = range.last - range.first,
+        )
+        endSlot()
     }
 }

@@ -2,19 +2,10 @@ package com.hippo.ehviewer.ui.reader
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
@@ -66,21 +57,12 @@ fun ReaderGeneralSetting() = Column {
     )
     AnimatedVisibility(visible = volume.value) {
         Column {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(text = stringResource(id = R.string.settings_read_volume_page_fast))
-                var interval by Settings.readWithVolumeKeysInterval.asMutableState()
-                Slider(
-                    value = interval.toFloat(),
-                    onValueChange = { interval = it.toInt() },
-                    modifier = Modifier.weight(1f).padding(8.dp),
-                    valueRange = 0f..9f,
-                    steps = 10,
-                )
-                Text(text = stringResource(id = R.string.settings_read_volume_page_slow))
-            }
+            SliderChoice(
+                startSlot = { Text(text = stringResource(id = R.string.settings_read_volume_page_fast)) },
+                endSlot = { Text(text = stringResource(id = R.string.settings_read_volume_page_slow)) },
+                range = 0..9,
+                field = Settings.readWithVolumeKeysInterval.asMutableState(),
+            )
             SwitchChoice(
                 title = stringResource(id = R.string.settings_read_reverse_volume),
                 field = Settings.readWithVolumeKeysInverted.asMutableState(),
