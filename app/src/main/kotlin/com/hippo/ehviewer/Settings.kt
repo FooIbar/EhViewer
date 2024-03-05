@@ -186,6 +186,7 @@ object Settings : DataStorePreferences(null) {
     val orientationMode = intPref("pref_default_orientation_type_key", OrientationType.FREE.flagValue)
     val showReaderSeekbar = boolPref("pref_show_reader_seekbar", true)
     var newReader by boolPref("new_compose_reader", false)
+    val readerTheme = intPref("pref_reader_theme_key", 1)
 
     init {
         if ("CN" == Locale.getDefault().country) {
