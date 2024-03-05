@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.gallery.PageLoader2
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.flow.collectLatest
@@ -61,7 +62,8 @@ class SliderPagerDoubleSync(
         } else {
             LaunchedEffect(Unit) {
                 snapshotFlow { sliderValue - 1 }.collectLatest { index ->
-                    if ((index - pagerState.currentPage).absoluteValue > SMOOTH_SCROLL_THRESHOLD) {
+                    val noAnim = (index - pagerState.currentPage).absoluteValue > SMOOTH_SCROLL_THRESHOLD || !Settings.pageTransitions.value
+                    if (noAnim) {
                         pagerState.scrollToPage(index)
                     } else {
                         pagerState.animateScrollToPage(index)
@@ -71,7 +73,8 @@ class SliderPagerDoubleSync(
             }
             LaunchedEffect(Unit) {
                 snapshotFlow { sliderValue - 1 }.collectLatest { index ->
-                    if ((index - lazyListState.firstVisibleItemIndex).absoluteValue > SMOOTH_SCROLL_THRESHOLD) {
+                    val noAnim = (index - lazyListState.firstVisibleItemIndex).absoluteValue > SMOOTH_SCROLL_THRESHOLD || !Settings.pageTransitions.value
+                    if (noAnim) {
                         lazyListState.scrollToItem(index)
                     } else {
                         lazyListState.animateScrollToItem(index)
