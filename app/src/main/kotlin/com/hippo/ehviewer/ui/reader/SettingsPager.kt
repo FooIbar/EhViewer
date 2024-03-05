@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.reader
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -11,7 +10,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
@@ -27,7 +25,7 @@ private val tabs = arrayOf(
 fun SettingsPager(modifier: Modifier = Modifier) {
     val pagerState = rememberPagerState { tabs.size }
     val scope = rememberCoroutineScope()
-    PrimaryTabRow(selectedTabIndex = pagerState.currentPage, modifier = Modifier.background(Color.Transparent)) {
+    PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
         tabs.forEachIndexed { index, res ->
             Tab(
                 selected = pagerState.currentPage == index,
