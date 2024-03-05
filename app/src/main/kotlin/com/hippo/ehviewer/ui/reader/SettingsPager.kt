@@ -49,7 +49,7 @@ fun SettingsPager(modifier: Modifier = Modifier) {
         when (page) {
             0 -> Spacer(modifier = Modifier.size(200.dp))
             1 -> ReaderGeneralSetting()
-            2 -> Spacer(modifier = Modifier.size(200.dp))
+            2 -> ColorFilterSetting()
         }
     }
 }
