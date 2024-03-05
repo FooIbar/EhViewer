@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.reader
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -94,8 +95,10 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                             ModalBottomSheet(
                                 onDismissRequest = { dispose() },
                                 sheetState = state,
+                                dragHandle = null,
                                 windowInsets = WindowInsets(0),
                             ) {
+                                SettingsPager(modifier = Modifier.fillMaxWidth())
                                 Spacer(modifier = Modifier.navigationBarsPadding())
                             }
                         }
