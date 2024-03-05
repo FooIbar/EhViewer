@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.util.VelocityTrackerAddPointsFix
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.zIndex
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -87,40 +86,6 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
         syncState.Sync()
         Box {
             var appbarVisible by remember { mutableStateOf(false) }
-            ReaderAppBars(
-                visible = appbarVisible,
-                isRtl = readingMode == ReadingModeType.RIGHT_TO_LEFT,
-                showSeekBar = showSeekbar,
-                currentPage = syncState.sliderValue,
-                totalPages = pageLoader.size,
-                onSliderValueChange = { syncState.sliderScrollTo(it + 1) },
-                onClickSettings = {
-                    launch {
-                        dialog { cont ->
-                            fun dispose() = cont.resume(Unit)
-                            ModalBottomSheet(
-                                onDismissRequest = { dispose() },
-                                dragHandle = null,
-                                windowInsets = WindowInsets(0),
-                            ) {
-                                SettingsPager(modifier = Modifier.fillMaxSize())
-                                Spacer(modifier = Modifier.navigationBarsPadding())
-                            }
-                        }
-                    }
-                },
-                modifier = Modifier.zIndex(1f),
-            )
-            val showPageNumber by Settings.showPageNumber.collectAsState()
-            if (showPageNumber) {
-                CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
-                    PageIndicatorText(
-                        currentPage = syncState.sliderValue,
-                        totalPages = pageLoader.size,
-                        modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().zIndex(0.5f),
-                    )
-                }
-            }
             val bgColor by collectBackgroundColorAsState()
             GalleryPager(
                 type = readingMode,
@@ -155,6 +120,39 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                 },
                 onMenuRegionClick = { appbarVisible = !appbarVisible },
                 modifier = Modifier.background(bgColor),
+            )
+            val showPageNumber by Settings.showPageNumber.collectAsState()
+            if (showPageNumber) {
+                CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
+                    PageIndicatorText(
+                        currentPage = syncState.sliderValue,
+                        totalPages = pageLoader.size,
+                        modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding(),
+                    )
+                }
+            }
+            ReaderAppBars(
+                visible = appbarVisible,
+                isRtl = readingMode == ReadingModeType.RIGHT_TO_LEFT,
+                showSeekBar = showSeekbar,
+                currentPage = syncState.sliderValue,
+                totalPages = pageLoader.size,
+                onSliderValueChange = { syncState.sliderScrollTo(it + 1) },
+                onClickSettings = {
+                    launch {
+                        dialog { cont ->
+                            fun dispose() = cont.resume(Unit)
+                            ModalBottomSheet(
+                                onDismissRequest = { dispose() },
+                                dragHandle = null,
+                                windowInsets = WindowInsets(0),
+                            ) {
+                                SettingsPager(modifier = Modifier.fillMaxSize())
+                                Spacer(modifier = Modifier.navigationBarsPadding())
+                            }
+                        }
+                    }
+                },
             )
         }
     }
