@@ -112,12 +112,15 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                 },
                 modifier = Modifier.zIndex(1f),
             )
-            CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
-                PageIndicatorText(
-                    currentPage = syncState.sliderValue,
-                    totalPages = pageLoader.size,
-                    modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().zIndex(0.5f),
-                )
+            val showPageNumber by Settings.showPageNumber.collectAsState()
+            if (showPageNumber) {
+                CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
+                    PageIndicatorText(
+                        currentPage = syncState.sliderValue,
+                        totalPages = pageLoader.size,
+                        modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding().zIndex(0.5f),
+                    )
+                }
             }
             val bgColor by collectBackgroundColorAsState()
             GalleryPager(

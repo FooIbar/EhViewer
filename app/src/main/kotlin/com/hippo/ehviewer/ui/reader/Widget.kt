@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -59,5 +60,20 @@ fun SpinnerChoice(title: String, entries: Array<String>, values: Array<String>, 
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SwitchChoice(title: String, field: MutableState<Boolean>) {
+    var value by field
+    Row(
+        modifier = Modifier.fillMaxWidth().height(48.dp).clickable { value = !value }.padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = title, modifier = Modifier.weight(1f))
+        Switch(
+            checked = value,
+            onCheckedChange = { value = !value },
+        )
     }
 }

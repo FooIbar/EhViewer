@@ -185,6 +185,7 @@ object Settings : DataStorePreferences(null) {
     val readingMode = intPref("pref_default_reading_mode_key", ReadingModeType.LEFT_TO_RIGHT.flagValue)
     val orientationMode = intPref("pref_default_orientation_type_key", OrientationType.FREE.flagValue)
     val showReaderSeekbar = boolPref("pref_show_reader_seekbar", true)
+    val showPageNumber = boolPref("pref_show_page_number_key", true)
     var newReader by boolPref("new_compose_reader", false)
     val readerTheme = intPref("pref_reader_theme_key", 1)
 
