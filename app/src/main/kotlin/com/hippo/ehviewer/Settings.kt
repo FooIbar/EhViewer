@@ -196,6 +196,8 @@ object Settings : DataStorePreferences(null) {
     val readWithLongTap = boolPref("reader_long_tap", true)
     val pageTransitions = boolPref("pref_enable_transitions_key", true)
     val readWithVolumeKeys = boolPref("reader_volume_keys", false)
+    val readWithVolumeKeysInterval = intPref("reader_volume_keys_interval", 0)
+    val readWithVolumeKeysInverted = boolPref("reader_volume_keys_inverted", false)
 
     init {
         if ("CN" == Locale.getDefault().country) {
