@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
@@ -26,7 +27,10 @@ private val tabs = arrayOf(
 fun SettingsPager(modifier: Modifier = Modifier) {
     val pagerState = rememberPagerState { tabs.size }
     val scope = rememberCoroutineScope()
-    PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
+    PrimaryTabRow(
+        selectedTabIndex = pagerState.currentPage,
+        containerColor = BottomSheetDefaults.ContainerColor,
+    ) {
         tabs.forEachIndexed { index, res ->
             Tab(
                 selected = pagerState.currentPage == index,
