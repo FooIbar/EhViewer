@@ -25,6 +25,7 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
+import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.client.getImageKey
@@ -319,7 +320,7 @@ class SpiderDen(val info: GalleryInfo) {
         downloadDir?.run {
             createFile(COMIC_INFO_FILE)?.also {
                 runCatching {
-                    if (fetchMetadata) {
+                    if (info !is GalleryDetail && fetchMetadata) {
                         withNonCancellableContext {
                             EhEngine.fillGalleryListByApi(listOf(info))
                         }
