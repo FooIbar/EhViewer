@@ -24,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.util.VelocityTrackerAddPointsFix
 import androidx.compose.ui.res.colorResource
@@ -42,6 +43,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
+import eu.kanade.tachiyomi.ui.reader.ReaderContentOverlay
 import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -120,6 +122,25 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                 },
                 onMenuRegionClick = { appbarVisible = !appbarVisible },
                 modifier = Modifier.background(bgColor),
+            )
+            val brightness by Settings.customBrightness.collectAsState()
+            val brightnessValue by Settings.customBrightnessValue.collectAsState()
+            val colorOverlayEnabled by Settings.colorFilter.collectAsState()
+            val colorOverlay by Settings.colorFilterValue.collectAsState()
+            val colorOverlayMode by Settings.colorFilterMode.collectAsState {
+                when (it) {
+                    1 -> BlendMode.Multiply
+                    2 -> BlendMode.Screen
+                    3 -> BlendMode.Overlay
+                    4 -> BlendMode.Lighten
+                    5 -> BlendMode.Darken
+                    else -> BlendMode.SrcOver
+                }
+            }
+            ReaderContentOverlay(
+                brightness = { brightnessValue }.takeIf { brightness && brightnessValue < 0 },
+                color = { colorOverlay }.takeIf { colorOverlayEnabled },
+                colorBlendMode = colorOverlayMode,
             )
             val showPageNumber by Settings.showPageNumber.collectAsState()
             if (showPageNumber) {
