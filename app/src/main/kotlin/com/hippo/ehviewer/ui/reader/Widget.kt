@@ -97,7 +97,7 @@ fun SliderChoice(
             onValueChange = { value = it.toInt() },
             modifier = Modifier.weight(1f).padding(8.dp),
             valueRange = (range.first.toFloat())..(range.last.toFloat()),
-            steps = range.last - range.first,
+            steps = range.last - range.first - 1,
         )
         endSlot()
     }
