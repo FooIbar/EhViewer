@@ -62,6 +62,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
     }
 
     LockDrawer(true)
+    ConfigureKeepScreenOn()
     val pageLoader = remember {
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         archive?.let { ArchivePageLoader(it, info.gid, page) } ?: EhPageLoader(info, page)
