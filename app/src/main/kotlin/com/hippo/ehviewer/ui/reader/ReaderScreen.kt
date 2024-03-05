@@ -97,10 +97,8 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                     launch {
                         dialog { cont ->
                             fun dispose() = cont.resume(Unit)
-                            val state = rememberModalBottomSheetState()
                             ModalBottomSheet(
                                 onDismissRequest = { dispose() },
-                                sheetState = state,
                                 dragHandle = null,
                                 windowInsets = WindowInsets(0),
                             ) {
@@ -129,25 +127,27 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                 lazyListState = lazyListState,
                 pageLoader = pageLoader,
                 onSelectPage = { page ->
-                    launch {
-                        dialog { cont ->
-                            fun dispose() = cont.resume(Unit)
-                            val state = rememberModalBottomSheetState()
-                            ModalBottomSheet(
-                                onDismissRequest = { dispose() },
-                                sheetState = state,
-                                windowInsets = WindowInsets(0),
-                            ) {
-                                ReaderPageSheetMeta(
-                                    retry = { pageLoader.retryPage(page.index) },
-                                    retryOrigin = { pageLoader.retryPage(page.index, true) },
-                                    share = { launchIO { with(pageLoader) { shareImage(page, info) } } },
-                                    copy = { launchIO { with(pageLoader) { copy(page) } } },
-                                    save = { launchIO { with(pageLoader) { save(page) } } },
-                                    saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
-                                    dismiss = { launch { state.hide().also { dispose() } } },
-                                )
-                                Spacer(modifier = Modifier.navigationBarsPadding())
+                    if (Settings.readWithLongTap.value) {
+                        launch {
+                            dialog { cont ->
+                                fun dispose() = cont.resume(Unit)
+                                val state = rememberModalBottomSheetState()
+                                ModalBottomSheet(
+                                    onDismissRequest = { dispose() },
+                                    sheetState = state,
+                                    windowInsets = WindowInsets(0),
+                                ) {
+                                    ReaderPageSheetMeta(
+                                        retry = { pageLoader.retryPage(page.index) },
+                                        retryOrigin = { pageLoader.retryPage(page.index, true) },
+                                        share = { launchIO { with(pageLoader) { shareImage(page, info) } } },
+                                        copy = { launchIO { with(pageLoader) { copy(page) } } },
+                                        save = { launchIO { with(pageLoader) { save(page) } } },
+                                        saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
+                                        dismiss = { launch { state.hide().also { dispose() } } },
+                                    )
+                                    Spacer(modifier = Modifier.navigationBarsPadding())
+                                }
                             }
                         }
                     }
