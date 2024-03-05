@@ -176,6 +176,8 @@ object Settings : DataStorePreferences(null) {
     var touchSlopFactor by intPref("touch_slop", 3)
 
     // Tachiyomi Reader
+    var newReader by boolPref("new_compose_reader", false)
+
     val cropBorder = boolPref("crop_borders", false)
     val colorFilter = boolPref("pref_color_filter_key", false)
     val colorFilterValue = intPref("color_filter_value", 0)
@@ -186,8 +188,16 @@ object Settings : DataStorePreferences(null) {
     val orientationMode = intPref("pref_default_orientation_type_key", OrientationType.FREE.flagValue)
     val showReaderSeekbar = boolPref("pref_show_reader_seekbar", true)
     val showPageNumber = boolPref("pref_show_page_number_key", true)
-    var newReader by boolPref("new_compose_reader", false)
     val readerTheme = intPref("pref_reader_theme_key", 1)
+    val doubleTapToZoom = boolPref("pref_double_tap_to_zoom", true)
+    val fullscreen = boolPref("fullscreen", true)
+    val cutoutShort = boolPref("cutout_short", true)
+    val keepScreenOn = boolPref("pref_keep_screen_on_key", true)
+    val readerLongTapAction = boolPref("reader_long_tap", true)
+    val pageTransitions = boolPref("pref_enable_transitions_key", true)
+    val readWithVolumeKeys = boolPref("reader_volume_keys", false)
+    val readWithVolumeKeysInterval = intPref("reader_volume_keys_interval", 0)
+    val readWithVolumeKeysInverted = boolPref("reader_volume_keys_inverted", false)
 
     init {
         if ("CN" == Locale.getDefault().country) {
