@@ -49,6 +49,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlin.coroutines.resume
 import kotlinx.coroutines.launch
+import moe.tarsin.kt.unreachable
 
 @Destination
 @Composable
@@ -129,12 +130,13 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
             val colorOverlay by Settings.colorFilterValue.collectAsState()
             val colorOverlayMode by Settings.colorFilterMode.collectAsState {
                 when (it) {
+                    0 -> BlendMode.SrcOver
                     1 -> BlendMode.Multiply
                     2 -> BlendMode.Screen
                     3 -> BlendMode.Overlay
                     4 -> BlendMode.Lighten
                     5 -> BlendMode.Darken
-                    else -> BlendMode.SrcOver
+                    else -> unreachable()
                 }
             }
             ReaderContentOverlay(
