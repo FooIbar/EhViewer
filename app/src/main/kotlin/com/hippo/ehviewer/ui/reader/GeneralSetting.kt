@@ -44,7 +44,7 @@ fun ReaderGeneralSetting() = Column {
     )
     SwitchChoice(
         title = stringResource(id = R.string.pref_read_with_long_tap),
-        field = Settings.readWithLongTap.asMutableState(),
+        field = Settings.readerLongTapAction.asMutableState(),
     )
     SwitchChoice(
         title = stringResource(id = R.string.pref_page_transitions),

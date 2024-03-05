@@ -193,7 +193,7 @@ object Settings : DataStorePreferences(null) {
     val fullscreen = boolPref("fullscreen", true)
     val cutoutShort = boolPref("cutout_short", true)
     val keepScreenOn = boolPref("pref_keep_screen_on_key", true)
-    val readWithLongTap = boolPref("reader_long_tap", true)
+    val readerLongTapAction = boolPref("reader_long_tap", true)
     val pageTransitions = boolPref("pref_enable_transitions_key", true)
     val readWithVolumeKeys = boolPref("reader_volume_keys", false)
     val readWithVolumeKeysInterval = intPref("reader_volume_keys_interval", 0)

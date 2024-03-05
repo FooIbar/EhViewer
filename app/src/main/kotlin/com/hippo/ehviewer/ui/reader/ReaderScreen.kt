@@ -96,7 +96,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                 lazyListState = lazyListState,
                 pageLoader = pageLoader,
                 onSelectPage = { page ->
-                    if (Settings.readWithLongTap.value) {
+                    if (Settings.readerLongTapAction.value) {
                         launch {
                             dialog { cont ->
                                 fun dispose() = cont.resume(Unit)
