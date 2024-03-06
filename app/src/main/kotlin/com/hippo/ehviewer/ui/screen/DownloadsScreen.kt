@@ -114,6 +114,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -560,7 +561,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     ) {
         if (!selectMode) {
             onClick(Icons.Default.Shuffle) {
-                navToReader(list.random().galleryInfo)
+                withUIContext { navToReader(list.random().galleryInfo) }
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
                 val selected = showSingleChoice(
