@@ -188,7 +188,7 @@ class SpiderDen(val info: GalleryInfo) {
 
     private suspend fun saveFromHttpResponse(index: Int, response: HttpResponse): Boolean {
         val url = response.request.url.toString()
-        val extension = MimeTypeMap.getFileExtensionFromUrl(url).takeUnless { it.isEmpty() } ?: "jpg"
+        val extension = MimeTypeMap.getFileExtensionFromUrl(url).ifEmpty { "jpg" }
         return saveResponseMeta(index, extension) { outFile ->
             outFile.openOutputStream().use {
                 val chan = it.channel.apply { truncate(0) }

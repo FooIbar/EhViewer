@@ -45,7 +45,7 @@ data class GalleryDetail(
     var torrentUrl: String? = null,
     var archiveUrl: String? = null,
     var parent: String? = null,
-    var newerVersions: ArrayList<BaseGalleryInfo> = ArrayList(),
+    var newerVersions: List<BaseGalleryInfo> = emptyList(),
     var visible: String? = null,
     var language: String? = null,
     var size: String? = null,
@@ -56,8 +56,9 @@ data class GalleryDetail(
     val previewPages: Int,
     val previewList: List<GalleryPreview>,
 ) : GalleryInfo by galleryInfo, Parcelable {
-    override fun generateSLang() {
+    fun fillInfo() {
         val index = LANGUAGES.indexOf(language)
         if (index != -1) simpleLanguage = S_LANGS[index]
+        simpleTags = tags.flatten()
     }
 }

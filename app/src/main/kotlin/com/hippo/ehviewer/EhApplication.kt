@@ -112,7 +112,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
                 EhDB
             }
             launch {
-                DownloadManager.readPagesFromLocal()
+                DownloadManager.readMetadataFromLocal()
             }
             launch {
                 FileUtils.cleanupDirectory(AppConfig.externalCrashDir)

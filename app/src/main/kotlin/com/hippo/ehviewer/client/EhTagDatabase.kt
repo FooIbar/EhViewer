@@ -64,7 +64,7 @@ object EhTagDatabase : CoroutineScope {
     var initialized by mutableStateOf(false)
 
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? {
-        return tagGroups[prefix]?.get(tag)?.trim()?.takeIf { it.isNotEmpty() }
+        return tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
     }
 
     private fun internalSuggestFlow(
