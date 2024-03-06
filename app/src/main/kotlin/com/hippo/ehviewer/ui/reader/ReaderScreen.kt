@@ -82,6 +82,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
     val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
+    val volumeKeysEnabled by Settings.readWithVolumeKeys.collectAsState()
     Deferred({ pageLoader.awaitReady() }) {
         val lazyListState = rememberLazyListState()
         val pagerState = rememberPagerState { pageLoader.size }
@@ -90,6 +91,11 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
         Box {
             var appbarVisible by remember { mutableStateOf(false) }
             val bgColor by collectBackgroundColorAsState()
+            VolumeKeysHandler(
+                enabled = { volumeKeysEnabled && !appbarVisible },
+                movePrevious = { syncState.sliderScrollTo(syncState.sliderValue - 1) },
+                moveNext = { syncState.sliderScrollTo(syncState.sliderValue + 1) },
+            )
             GalleryPager(
                 type = readingMode,
                 pagerState = pagerState,
