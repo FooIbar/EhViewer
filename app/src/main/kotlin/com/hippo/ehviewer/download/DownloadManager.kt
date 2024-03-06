@@ -39,6 +39,7 @@ import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
 import com.hippo.ehviewer.spider.putToDownloadDir
 import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromUniFile
+import com.hippo.ehviewer.spider.toSimpleTags
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.insertWith
 import com.hippo.ehviewer.util.mapNotNull
@@ -529,17 +530,23 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         }
     }
 
-    suspend fun readPagesFromLocal() {
-        val list = allInfoList.filter { it.pages == 0 }.parMapNotNull(concurrency = 5) { info ->
+    suspend fun readMetadataFromLocal() {
+        val list = allInfoList.filter { it.pages == 0 || it.simpleTags == null }.parMapNotNull(concurrency = 5) { info ->
             info.downloadDir?.run {
-                val pages = findFile(SPIDER_INFO_FILENAME)?.let {
-                    readCompatFromUniFile(it)?.pages
-                } ?: findFile(COMIC_INFO_FILE)?.let {
-                    readComicInfo(it)?.pageCount
-                }
-                pages?.let {
-                    info.pages = it
+                val comicInfo = findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }
+                if (comicInfo != null) {
+                    info.pages = comicInfo.pageCount
+                    info.simpleTags = comicInfo.toSimpleTags()
                     info.galleryInfo
+                } else if (info.pages == 0) {
+                    findFile(SPIDER_INFO_FILENAME)?.let {
+                        readCompatFromUniFile(it)?.run {
+                            info.pages = pages
+                            info.galleryInfo
+                        }
+                    }
+                } else {
+                    null
                 }
             }
         }

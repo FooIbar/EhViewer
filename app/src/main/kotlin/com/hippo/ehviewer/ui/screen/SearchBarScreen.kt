@@ -104,6 +104,7 @@ fun SearchBarScreen(
     onSearchHidden: () -> Unit,
     refreshState: PullToRefreshState? = null,
     suggestionProvider: SuggestionProvider? = null,
+    tagNamespace: Boolean = false,
     searchBarOffsetY: () -> Int,
     trailingIcon: @Composable () -> Unit,
     filter: @Composable (() -> Unit)? = null,
@@ -125,7 +126,7 @@ fun SearchBarScreen(
             val query = searchFieldState.text.toString()
             var keywords = query.substringBeforeLast(' ', "")
             if (keywords.isNotEmpty()) keywords += ' '
-            keywords += wrapTagKeyword(keyword)
+            keywords += if (tagNamespace) wrapTagKeyword(keyword) else keyword.substringAfter(':')
             if (!keywords.endsWith(':')) keywords += ' '
             searchFieldState.setTextAndPlaceCursorAtEnd(keywords)
         }

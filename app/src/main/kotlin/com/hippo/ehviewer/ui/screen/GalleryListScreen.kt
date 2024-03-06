@@ -541,6 +541,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 GalleryPageUrlSuggestion(gid, pToken, page)
             }
         },
+        tagNamespace = true,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current

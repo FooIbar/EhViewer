@@ -60,6 +60,6 @@ object GalleryApiParser {
         @SerialName("filecount")
         val pages: Int,
         val rating: Float,
-        val tags: ArrayList<String>,
+        val tags: List<String>,
     )
 }

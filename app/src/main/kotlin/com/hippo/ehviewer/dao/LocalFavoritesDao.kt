@@ -22,7 +22,7 @@ interface LocalFavoritesDao {
 
     @Query(
         """SELECT GALLERIES.* FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID)
-        JOIN GalleryFts ON GALLERIES.rowid = docid WHERE GalleryFts MATCH :title ORDER BY TIME DESC""",
+        JOIN GALLERIES_FTS ON GALLERIES.rowid = docid WHERE GALLERIES_FTS MATCH :title ORDER BY TIME DESC""",
     )
     fun joinListLazy(title: String): PagingSource<Int, BaseGalleryInfo>
 

@@ -114,8 +114,8 @@ object GalleryDetailParser {
         )
         parseDetail(galleryDetail, document, body)
 
-        // Generate simpleLanguage for local favorites
-        galleryDetail.generateSLang()
+        // Fill info for database
+        galleryDetail.fillInfo()
         return galleryDetail
     }
 
@@ -231,16 +231,10 @@ object GalleryDetailParser {
         // newer version
         d.getElementById("gnd")?.run {
             val dates = PATTERN_NEWER_DATE.findAll(body).map { it.groupValues[1] }.toList()
-            select("a").forEachIndexed { index, element ->
+            gd.newerVersions = select("a").mapIndexedNotNull { index, element ->
                 val result = GalleryDetailUrlParser.parse(element.attr("href"))
-                if (result != null) {
-                    val gi = BaseGalleryInfo(
-                        result.gid,
-                        result.token,
-                        element.text().trim(),
-                        posted = dates[index],
-                    )
-                    gd.newerVersions.add(gi)
+                result?.run {
+                    BaseGalleryInfo(gid, token, element.text().trim(), posted = dates[index])
                 }
             }
         }

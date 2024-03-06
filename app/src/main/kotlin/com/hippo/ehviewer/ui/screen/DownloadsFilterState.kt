@@ -14,4 +14,7 @@ data class DownloadsFilterState(
 
 fun DownloadsFilterState.take(info: DownloadInfo) =
     (label == "" || info.label == label) && (state == -1 || info.state == state) &&
-        with(info) { title.containsIgnoreCase(keyword) || titleJpn.containsIgnoreCase(keyword) }
+        with(info) {
+            title.containsIgnoreCase(keyword) || titleJpn.containsIgnoreCase(keyword) ||
+                simpleTags?.any { it.containsIgnoreCase(keyword) } ?: false
+        }

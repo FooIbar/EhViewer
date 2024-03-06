@@ -80,7 +80,7 @@ data class ListUrlBuilder(
         minRating = q.minRating
         pageFrom = q.pageFrom
         pageTo = q.pageTo
-        mNext = q.name.substringAfterLast('@', "").takeIf { it.isNotEmpty() }
+        mNext = q.name.substringAfterLast('@', "").ifEmpty { null }
     }
 
     fun toQuickSearch(name: String): QuickSearch {

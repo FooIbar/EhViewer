@@ -3,14 +3,20 @@ package com.hippo.ehviewer.spider
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.data.SimpleTagsConverter
 import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
 import com.hippo.unifile.openOutputStream
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
 import nl.adaptivity.xmlutil.newGenericWriter
@@ -39,14 +45,15 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
     with(TagNamespace) {
         when (this@getComicInfo) {
             is GalleryDetail -> tags.forEach { tagList ->
+                val list = tagList.filterNot { it == TAG_ORIGINAL || it.startsWith('_') }
                 when (val ns = TagNamespace(tagList.groupName)) {
-                    Artist, Cosplayer -> artists.addAll(tagList)
-                    Group -> groups.addAll(tagList)
-                    Character -> characters.addAll(tagList)
-                    Parody -> tagList.forEach { tag -> if (tag != TAG_ORIGINAL) parodies.add(tag) }
-                    Other -> otherTags.addAll(tagList)
+                    Artist, Cosplayer -> artists.addAll(list)
+                    Group -> groups.addAll(list)
+                    Character -> characters.addAll(list)
+                    Parody -> parodies.addAll(list)
+                    Other -> otherTags.addAll(list)
                     Female, Male, Mixed -> ns.toPrefix()?.let { prefix ->
-                        tagList.forEach { tag -> otherTags.add("$prefix:$tag") }
+                        list.forEach { tag -> otherTags.add("$prefix:$tag") }
                     }
 
                     else -> Unit
@@ -70,17 +77,25 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
     return ComicInfo(
         series = title,
         alternateSeries = titleJpn.takeUnless { it.isNullOrBlank() },
-        writer = groups.takeUnless { it.isEmpty() }?.joinToString(),
-        penciller = artists.takeUnless { it.isEmpty() }?.joinToString(),
-        genre = otherTags.takeUnless { it.isEmpty() }?.joinToString(),
+        writer = groups.ifEmpty { null },
+        penciller = artists.ifEmpty { null },
+        genre = otherTags.ifEmpty { null },
         web = EhUrl.getGalleryDetailUrl(gid, token),
         pageCount = pages,
         languageISO = simpleLanguage?.lowercase(),
-        characters = characters.takeUnless { it.isEmpty() }?.joinToString(),
-        teams = parodies.takeUnless { it.isEmpty() }?.joinToString(),
+        characters = characters.ifEmpty { null },
+        teams = parodies.ifEmpty { null },
         communityRating = "%.1f".format(rating),
     )
 }
+
+fun ComicInfo.toSimpleTags() = listOfNotNull(
+    writer,
+    penciller,
+    genre,
+    characters,
+    teams,
+).flatten().ifEmpty { null }
 
 fun ComicInfo.write(file: UniFile) {
     file.openOutputStream().use {
@@ -103,6 +118,16 @@ fun readComicInfo(file: UniFile): ComicInfo? = runCatching {
     }
 }.getOrNull()
 
+@Suppress("ktlint:standard:annotation")
+typealias SimpleTags = @Serializable(SimpleTagsSerializer::class) List<String>
+
+object SimpleTagsSerializer : KSerializer<SimpleTags> {
+    private val converter = SimpleTagsConverter()
+    override val descriptor = PrimitiveSerialDescriptor("SimpleTags", PrimitiveKind.STRING)
+    override fun deserialize(decoder: Decoder) = converter.fromString(decoder.decodeString())
+    override fun serialize(encoder: Encoder, value: SimpleTags) = encoder.encodeString(converter.toString(value))
+}
+
 @Serializable
 data class ComicInfo(
     @XmlElement
@@ -115,15 +140,15 @@ data class ComicInfo(
 
     @XmlElement
     @SerialName("Writer")
-    val writer: String?,
+    val writer: SimpleTags?,
 
     @XmlElement
     @SerialName("Penciller")
-    val penciller: String?,
+    val penciller: SimpleTags?,
 
     @XmlElement
     @SerialName("Genre")
-    val genre: String?,
+    val genre: SimpleTags?,
 
     @XmlElement
     @SerialName("Web")
@@ -139,11 +164,11 @@ data class ComicInfo(
 
     @XmlElement
     @SerialName("Characters")
-    val characters: String?,
+    val characters: SimpleTags?,
 
     @XmlElement
     @SerialName("Teams")
-    val teams: String?,
+    val teams: SimpleTags?,
 
     @XmlElement
     @SerialName("CommunityRating")

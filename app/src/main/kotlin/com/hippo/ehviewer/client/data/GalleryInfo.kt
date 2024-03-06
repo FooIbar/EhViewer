@@ -30,7 +30,7 @@ interface GalleryInfo {
     var disowned: Boolean
     var rating: Float
     var rated: Boolean
-    var simpleTags: ArrayList<String>?
+    var simpleTags: List<String>?
     var pages: Int
     var thumbWidth: Int
     var thumbHeight: Int
