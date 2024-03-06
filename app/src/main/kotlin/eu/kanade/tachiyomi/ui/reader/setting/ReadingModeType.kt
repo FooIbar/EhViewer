@@ -23,7 +23,7 @@ enum class ReadingModeType(val prefValue: Int, @StringRes val stringRes: Int, @D
 
     companion object {
         @Stable
-        fun allowHeightOverScreen(type: ReadingModeType) = when (type) {
+        fun isWebtoon(type: ReadingModeType) = when (type) {
             DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT, VERTICAL -> false
             WEBTOON, CONTINUOUS_VERTICAL -> true
         }
