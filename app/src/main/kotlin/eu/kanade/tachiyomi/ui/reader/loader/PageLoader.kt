@@ -14,15 +14,15 @@ private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 abstract class PageLoader {
 
     private val cache by lazy {
-        lruCache<ReaderPage, Image>(
+        lruCache<Int, Image>(
             maxSize = if (isAtLeastO) {
                 (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
             } else {
                 (OSUtils.appMaxMemory / 3 * 2).toInt()
             },
             sizeOf = { _, v -> v.size.toInt() },
-            onEntryRemoved = { _, k, o, _ ->
-                k.status.value = Page.State.QUEUE
+            onEntryRemoved = { _, k, o, n ->
+                n ?: notifyPageWait(k)
                 o.recycle()
             },
         )
@@ -54,7 +54,7 @@ abstract class PageLoader {
     abstract val size: Int
 
     fun request(index: Int) {
-        val image = cache[pages[index]]
+        val image = cache[index]
         if (image != null) {
             notifyPageSucceed(index, image)
         } else {
@@ -62,7 +62,7 @@ abstract class PageLoader {
             onRequest(index)
         }
 
-        val pagesAbsent = ((index - 5).coerceAtLeast(0) until (preloads + index).coerceAtMost(size)).mapNotNull { it.takeIf { cache[pages[it]] == null } }
+        val pagesAbsent = ((index - 5).coerceAtLeast(0) until (preloads + index).coerceAtMost(size)).mapNotNull { it.takeIf { cache[it] == null } }
         preloadPages(pagesAbsent, (index - 10).coerceAtLeast(0) to (preloads + index + 10).coerceAtMost(size))
     }
 
@@ -93,8 +93,8 @@ abstract class PageLoader {
     }
 
     fun notifyPageSucceed(index: Int, image: Image) {
-        if (cache[pages[index]] != image) {
-            cache.put(pages[index], image)
+        if (cache[index] != image) {
+            cache.put(index, image)
         }
         pages[index].image = image
         pages[index].status.value = Page.State.READY
