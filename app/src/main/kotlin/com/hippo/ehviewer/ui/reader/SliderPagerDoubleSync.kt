@@ -33,61 +33,57 @@ class SliderPagerDoubleSync(
     }
 
     @Composable
-    fun Sync() {
+    fun Sync(webtoon: Boolean) {
         val fling by lazyListState.interactionSource.collectIsDraggedAsState()
         val pagerFling by pagerState.interactionSource.collectIsDraggedAsState()
         if (fling || pagerFling) sliderFollowPager = true
         val startPage = remember { pageLoader.startPage }
-        if (sliderFollowPager) {
-            LaunchedEffect(Unit) {
-                snapshotFlow {
-                    lazyListState.layoutInfo
-                }.mapNotNull { info ->
+        val currentIndexFlow = remember(webtoon) {
+            if (webtoon) {
+                snapshotFlow { lazyListState.layoutInfo }.mapNotNull { info ->
                     info.visibleItemsInfo.lastOrNull {
                         it.offset <= maxOf(info.viewportStartOffset, info.viewportEndOffset - it.size)
-                    }
-                }.collect { info ->
-                    sliderValue = info.index + 1
-                    pageLoader.startPage = info.index
+                    }?.index
                 }
+            } else {
+                snapshotFlow { pagerState.currentPage }
             }
-            LaunchedEffect(Unit) {
-                snapshotFlow {
-                    pagerState.currentPage
-                }.collect { index ->
+        }
+        if (sliderFollowPager) {
+            LaunchedEffect(currentIndexFlow) {
+                currentIndexFlow.collect { index ->
                     sliderValue = index + 1
                     pageLoader.startPage = index
                 }
             }
         } else {
-            LaunchedEffect(Unit) {
+            LaunchedEffect(webtoon) {
                 snapshotFlow { sliderValue - 1 }.collectLatest { index ->
-                    val noAnim = (index - pagerState.currentPage).absoluteValue > SMOOTH_SCROLL_THRESHOLD || !Settings.pageTransitions.value
-                    if (noAnim) {
-                        pagerState.scrollToPage(index)
+                    if (webtoon) {
+                        val noAnim = (index - lazyListState.firstVisibleItemIndex).absoluteValue > SMOOTH_SCROLL_THRESHOLD || !Settings.pageTransitions.value
+                        if (noAnim) {
+                            lazyListState.scrollToItem(index)
+                        } else {
+                            lazyListState.animateScrollToItem(index)
+                        }
                     } else {
-                        pagerState.animateScrollToPage(index)
-                    }
-                    pageLoader.startPage = index
-                }
-            }
-            LaunchedEffect(Unit) {
-                snapshotFlow { sliderValue - 1 }.collectLatest { index ->
-                    val noAnim = (index - lazyListState.firstVisibleItemIndex).absoluteValue > SMOOTH_SCROLL_THRESHOLD || !Settings.pageTransitions.value
-                    if (noAnim) {
-                        lazyListState.scrollToItem(index)
-                    } else {
-                        lazyListState.animateScrollToItem(index)
+                        val noAnim = (index - pagerState.currentPage).absoluteValue > SMOOTH_SCROLL_THRESHOLD || !Settings.pageTransitions.value
+                        if (noAnim) {
+                            pagerState.scrollToPage(index)
+                        } else {
+                            pagerState.animateScrollToPage(index)
+                        }
                     }
                     pageLoader.startPage = index
                 }
             }
         }
         LaunchedEffect(Unit) {
-            pagerState.scrollToPage(startPage)
-        }
-        LaunchedEffect(Unit) {
-            lazyListState.scrollToItem(startPage)
+            if (webtoon) {
+                lazyListState.scrollToItem(startPage)
+            } else {
+                pagerState.scrollToPage(startPage)
+            }
         }
     }
 }

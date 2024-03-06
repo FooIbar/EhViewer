@@ -87,7 +87,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
         val lazyListState = rememberLazyListState()
         val pagerState = rememberPagerState { pageLoader.size }
         val syncState = rememberSliderPagerDoubleSyncState(lazyListState, pagerState, pageLoader)
-        syncState.Sync()
+        syncState.Sync(ReadingModeType.isWebtoon(readingMode))
         Box {
             var appbarVisible by remember { mutableStateOf(false) }
             val bgColor by collectBackgroundColorAsState()
