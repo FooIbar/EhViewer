@@ -31,7 +31,7 @@
     <string name="text_is_empty">文字是空的</string>
     <string name="waring">警告</string>
     <string name="invalid_download_location">看來下載路徑似乎沒辦法使用。請至設定重新設定下載路徑。</string>
-    <string name="clipboard_gallery_url_snack_message">剪下板裡有圖庫連結</string>
+    <string name="clipboard_gallery_url_snack_message">剪貼簿裡有圖庫連結</string>
     <string name="clipboard_gallery_url_snack_action">檢視</string>
     <string name="error_bad_status_code">錯誤狀態碼：%d</string>
     <string name="error_timeout">逾時</string>
@@ -91,7 +91,7 @@
     <string name="readme">ReadMe</string>
     <string name="image_search_not_quick_search">無法將圖片搜尋加入快速搜尋</string>
     <string name="duplicate_quick_search">已存在相同的快速搜尋，名稱為“%s”。</string>
-    <string name="duplicate_name">已經由重複的名稱了</string>
+    <string name="duplicate_name">名稱重複</string>
     <string name="save_progress">儲存進度</string>
     <string name="go_to_hint">第 %1$d 頁，共 %2$d 頁</string>
     <!-- search_min_rating -->
@@ -111,7 +111,7 @@
     <string name="torrent_count">種子 (%d)</string>
     <string name="share">分享</string>
     <string name="rate">評分</string>
-    <string name="similar_gallery">類似的圖庫</string>
+    <string name="similar_gallery">類似圖庫</string>
     <string name="search_cover">以封面搜尋</string>
     <string name="no_tags">還沒有標籤</string>
     <string name="no_comments">沒有留言</string>
@@ -142,9 +142,9 @@
     <string name="filter_the_tag">隱藏標籤“%s”？</string>
     <string name="filter_added">已經新增篩選條件</string>
     <string name="newer_version_available">此圖庫有新版本可以使用。</string>
-    <string name="newer_version_title">%1$s, 增加於 %2$s</string>
+    <string name="newer_version_title">%1$s, 於 %2$s 加入</string>
     <!-- Rating -->
-    <string name="rating10">太神啦!</string>
+    <string name="rating10">太神啦！</string>
     <string name="rating9">根本把持不住</string>
     <string name="rating8">很棒</string>
     <string name="rating7">不錯</string>
@@ -154,11 +154,11 @@
     <string name="rating3">超爛</string>
     <string name="rating2">快瞎了</string>
     <string name="rating1">快要窒息了</string>
-    <string name="rating0">下去 !</string>
+    <string name="rating0">下去！</string>
     <!-- Gallery Info -->
     <string name="gallery_info">圖庫資訊</string>
     <string name="copied_to_clipboard">已複製到剪貼簿</string>
-    <string name="key_gid">Gid</string>
+    <string name="key_gid">GID</string>
     <string name="key_token">Token</string>
     <string name="key_url">網址</string>
     <string name="key_title">標題</string>
@@ -211,13 +211,13 @@
     <string name="go_to">跳到</string>
     <!-- Download -->
     <string name="scene_download_title">正在下載 - %s</string>
-    <string name="no_download_info">下載的物件將會顯示在此</string>
+    <string name="no_download_info">下載項目將顯示在此</string>
     <string name="download_state_none">閒置中</string>
     <string name="download_state_wait">等待中</string>
     <string name="download_state_downloading">下載中</string>
     <string name="download_state_downloaded">已下載</string>
     <string name="download_state_failed">下載失敗</string>
-    <string name="download_state_failed_2">還有 %d 尚未完成</string>
+    <string name="download_state_failed_2">還有 %d 未完成</string>
     <string name="download_state_finish">大功告成</string>
     <string name="stat_509_alert_title">509 警告</string>
     <string name="stat_509_alert_text">圖片流量已用盡。請停止下載，休息一下。</string>
@@ -309,6 +309,8 @@
     <string name="settings_eh_show_gallery_pages_summary">在圖庫列表中顯示頁數</string>
     <string name="settings_eh_show_gallery_comments">顯示畫廊評論</string>
     <string name="settings_eh_show_gallery_comments_summary">在畫廊詳情頁中顯示評論</string>
+     <string name="settings_eh_show_gallery_comment_threshold">評論分數閥值</string>
+    <string name="settings_eh_show_gallery_comment_threshold_summary">隱藏小於或等於設定分數的評論（-101 為停用）</string>
     <string name="settings_eh_show_tag_translations">顯示標籤翻譯</string>
     <string name="settings_eh_show_tag_translations_summary">顯示翻譯後的標籤而非原始文字（需花費時間來下載資料檔案）</string>
     <string name="settings_eh_tag_translations_source">補充翻譯（由 EhTagTranslation 提供）</string>
@@ -328,6 +330,9 @@
     <string name="settings_download_preload_image_summary">向後預載 %s 張圖片</string>
     <string name="settings_download_download_origin_image">下載原圖</string>
     <string name="settings_download_download_origin_image_summary">這很危險！勾選這個選項會導致圖片流量配額快速耗用</string>
+    <string name="settings_download_save_as_cbz">儲存為 CBZ 壓縮檔</string>
+    <string name="settings_download_archive_metadata">壓縮檔中繼資料</string>
+    <string name="settings_download_archive_metadata_summary">下載壓縮檔時產生 ComicInfo.xml</string>
     <string name="settings_download_media_scan">允許其他程式進行媒體掃描</string>
     <string name="settings_download_media_scan_summary_on">請別讓別人看到你的相簿</string>
     <string name="settings_download_media_scan_summary_off">大部分相簿軟體將會忽略顯示下載路徑中的影像</string>
@@ -350,6 +355,9 @@
     <string name="settings_advanced_dump_logcat_to">已將紀錄檔儲存至 %s</string>
     <string name="settings_advanced_read_cache_size">閱讀快取大小</string>
     <string name="settings_advanced_app_language_title">應用程式介面語言</string>
+     <string name="settings_advanced_http_engine">Http 引擎 (需重新啟動)</string>
+    <string name="settings_advanced_touch_slop">[測試] 觸控溢出係數</string>
+    <string name="settings_advanced_touch_slop_summary">提高係數將降低滑動手勢敏感度</string>
     <string name="settings_advanced_export_data">匯出檔案</string>
     <string name="settings_advanced_export_data_summary">儲存資料至外接儲存設備，例如下載列表，快速搜尋列表</string>
     <string name="settings_advanced_export_data_to">已匯出資料至 %s</string>
@@ -371,7 +379,7 @@
     <string name="settings_about_version">版本號碼</string>
     <string name="settings_about_build_time">於 %s 建置</string>
     <string name="settings_about_check_for_updates">檢查更新</string>
-    <string name="license">License</string>
+    <string name="license">授權條款</string>
     <!-- ExcludedLanguagesScene -->
     <string name="please_wait">請稍候</string>
     <string name="cant_read_the_file">無法讀取檔案</string>
@@ -447,6 +455,17 @@
     <string name="black_dark_theme">純黑深色主題</string>
     <string name="harmonize_category_color">以動態顏色為分類顏色配色</string>
     <string name="use_ci_update_channel">使用 CI 更新頻道</string>
+    <string name="sort_by">排序方式</string>
+    <string name="added_time_desc">加入時間 (遞減)</string>
+    <string name="added_time_asc">加入時間 (遞增)</string>
+    <string name="uploaded_time_desc">上傳時間 (遞減)</string>
+    <string name="uploaded_time_asc">上傳時間 (遞增)</string>
+    <string name="title_asc">標題 (遞減)</string>
+    <string name="title_desc">標題 (遞增)</string>
+    <string name="download_label_asc">下載標籤 (遞減)</string>
+    <string name="download_label_desc">下載標籤 (遞增)</string>
+    <string name="page_count_asc">頁數 (遞減)</string>
+    <string name="page_count_desc">頁數 (遞增)</string>
     <string name="download_filter">過濾</string>
     <string name="download_all">全部</string>
     <string name="download_start_all_reversed">全部開始（倒序）</string>
@@ -475,7 +494,7 @@
     <string name="dont_show_again">不再顯示</string>
     <string name="open_settings">打開設定</string>
     <string name="app_link_not_verified_message">對於 Android 12 及更新的版本，您需要手動增加連結到已驗證連結才能在 EhViewer 中打開 E-Hentai 連結。</string>
-    <string name="app_link_not_verified_title">應用連結未驗證</string>
+    <string name="app_link_not_verified_title">應用程式連結未驗證</string>
     <string name="open_by_default">預設打開</string>
     <string name="settings_privacy_require_unlock">需要解鎖</string>
     <string name="settings_privacy_require_unlock_delay">鎖定延遲</string>
@@ -492,12 +511,18 @@
     <string name="auto_updates">自動檢查更新</string>
     <string name="update_frequency_never">從不</string>
     <string name="update_frequency_daily">每天</string>
-    <string name="update_frequency_3days">每3天</string>
+    <string name="update_frequency_3days">每 3 天</string>
     <string name="update_frequency_weekly">每週</string>
     <string name="update_frequency_biweekly">每兩週</string>
     <string name="update_frequency_monthly">每月</string>
+     <string name="update_failed">更新失败：%s</string>
     <string name="new_version_available">有新版本可用！</string>
     <string name="already_latest_version">已是最新版本</string>
+    <string name="permission_denied">沒有權限</string>
+    <string name="download_gallery_first">請先下載圖庫！</string>
+    <string name="export_as_archive">匯出成壓縮檔</string>
+    <string name="export_as_archive_success">匯出成功</string>
+    <string name="export_as_archive_failed">匯出失敗</string>
     <!-- Tachiyomi Reader Start-->
     <string name="action_settings">設定</string>
     <string name="action_retry">重試</string>
