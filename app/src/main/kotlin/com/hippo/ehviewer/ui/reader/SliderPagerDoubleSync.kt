@@ -29,7 +29,7 @@ class SliderPagerDoubleSync(
 
     fun sliderScrollTo(index: Int) {
         sliderFollowPager = false
-        sliderValue = index
+        sliderValue = index.coerceIn(1, pageLoader.size)
     }
 
     @Composable
