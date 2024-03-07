@@ -28,6 +28,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.forEachTextValue
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.foundation.text.input.textAsFlow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -45,6 +46,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +61,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import arrow.fx.coroutines.mapIndexed
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -74,6 +77,7 @@ import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
@@ -271,7 +275,12 @@ fun SearchBarScreen(
             },
             trailingIcon = {
                 if (active) {
-                    if (searchFieldState.text.isNotEmpty()) {
+                    val hasText by searchFieldState.textAsFlow().mapIndexed { index, text ->
+                        // Workaround for https://github.com/FooIbar/EhViewer/issues/715
+                        if (index == 0) delay(500)
+                        text.isNotEmpty()
+                    }.collectAsState(false)
+                    if (hasText) {
                         IconButton(onClick = { searchFieldState.clearText() }) {
                             Icon(Icons.Default.Close, contentDescription = null)
                         }
