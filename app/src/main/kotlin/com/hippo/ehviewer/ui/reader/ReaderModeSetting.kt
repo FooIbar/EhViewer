@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.reader
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -53,32 +54,40 @@ private fun PagerSetting() = Column {
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+    val pagerNav = Settings.readerPagerNav.asMutableState()
     SpinnerChoice(
         title = stringResource(id = R.string.pref_viewer_nav),
         entries = stringArrayResource(id = R.array.pager_nav),
         values = arrayOf("0", "1", "2", "3", "4", "5"),
-        field = Settings.readerPagerNav.asMutableState(),
+        field = pagerNav,
     )
-    SpinnerChoice(
-        title = stringResource(id = R.string.pref_read_with_tapping_inverted),
-        entries = stringArrayResource(id = R.array.invert_tapping_mode),
-        values = arrayOf("0", "1", "2", "3"),
-        field = Settings.readerWebtoonNavInverted.asMutableState(),
-    )
-    SwitchChoice(
-        title = stringResource(id = R.string.pref_navigate_pan),
-        field = Settings.navigateToPan.asMutableState(),
-    )
+    AnimatedVisibility(visible = pagerNav.value != 5) {
+        Column {
+            SpinnerChoice(
+                title = stringResource(id = R.string.pref_read_with_tapping_inverted),
+                entries = stringArrayResource(id = R.array.invert_tapping_mode),
+                values = arrayOf("0", "1", "2", "3"),
+                field = Settings.readerWebtoonNavInverted.asMutableState(),
+            )
+            SwitchChoice(
+                title = stringResource(id = R.string.pref_navigate_pan),
+                field = Settings.navigateToPan.asMutableState(),
+            )
+        }
+    }
+    val scaleType = Settings.imageScaleType.asMutableState()
     SpinnerChoice(
         title = stringResource(id = R.string.pref_image_scale_type),
         entries = stringArrayResource(id = R.array.image_scale_type),
         values = arrayOf("1", "2", "3", "4", "5", "6"),
-        field = Settings.imageScaleType.asMutableState(),
+        field = scaleType,
     )
-    SwitchChoice(
-        title = stringResource(id = R.string.pref_landscape_zoom),
-        field = Settings.landscapeZoom.asMutableState(),
-    )
+    AnimatedVisibility(visible = scaleType.value == 1) {
+        SwitchChoice(
+            title = stringResource(id = R.string.pref_landscape_zoom),
+            field = Settings.landscapeZoom.asMutableState(),
+        )
+    }
     SpinnerChoice(
         title = stringResource(id = R.string.pref_zoom_start),
         entries = stringArrayResource(id = R.array.zoom_start),
@@ -98,18 +107,21 @@ private fun WebtoonSetting() = Column {
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+    val webtoonNav = Settings.readerWebtoonNav.asMutableState()
     SpinnerChoice(
         title = stringResource(id = R.string.pref_viewer_nav),
         entries = stringArrayResource(id = R.array.webtoon_nav),
         values = arrayOf("0", "1", "2", "3", "4", "5"),
-        field = Settings.readerWebtoonNav.asMutableState(),
+        field = webtoonNav,
     )
-    SpinnerChoice(
-        title = stringResource(id = R.string.pref_read_with_tapping_inverted),
-        entries = stringArrayResource(id = R.array.invert_tapping_mode),
-        values = arrayOf("0", "1", "2", "3"),
-        field = Settings.readerWebtoonNavInverted.asMutableState(),
-    )
+    AnimatedVisibility(visible = webtoonNav.value != 5) {
+        SpinnerChoice(
+            title = stringResource(id = R.string.pref_read_with_tapping_inverted),
+            entries = stringArrayResource(id = R.array.invert_tapping_mode),
+            values = arrayOf("0", "1", "2", "3"),
+            field = Settings.readerWebtoonNavInverted.asMutableState(),
+        )
+    }
     SpinnerChoice(
         title = stringResource(id = R.string.pref_webtoon_side_padding),
         entries = stringArrayResource(id = R.array.webtoon_side_padding),
