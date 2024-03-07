@@ -24,13 +24,13 @@ fun ReadModeSetting() = Column {
     SpinnerChoice(
         title = stringResource(id = R.string.pref_category_reading_mode),
         entries = stringArrayResource(id = R.array.viewers_selector),
-        values = viewerValues,
+        values = arrayOf("0", "1", "2", "3", "4", "5"),
         field = Settings.readingMode.asMutableState(),
     )
     SpinnerChoice(
         title = stringResource(id = R.string.rotation_type),
         entries = stringArrayResource(id = R.array.rotation_type),
-        values = rotationValues,
+        values = arrayOf("0", "8", "16", "24", "32", "40", "48"),
         field = Settings.orientationMode.asMutableState(),
     )
     Spacer(modifier = Modifier.size(24.dp))
@@ -62,7 +62,26 @@ private fun WebtoonSetting() = Column {
         modifier = Modifier.padding(horizontal = 16.dp),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+    SpinnerChoice(
+        title = stringResource(id = R.string.pref_viewer_nav),
+        entries = stringArrayResource(id = R.array.webtoon_nav),
+        values = arrayOf("0", "1", "2", "3", "4", "5"),
+        field = Settings.readerWebtoonNav.asMutableState(),
+    )
+    SpinnerChoice(
+        title = stringResource(id = R.string.pref_read_with_tapping_inverted),
+        entries = stringArrayResource(id = R.array.invert_tapping_mode),
+        values = arrayOf("0", "1", "2", "3"),
+        field = Settings.readerWebtoonNavInverted.asMutableState(),
+    )
+    SpinnerChoice(
+        title = stringResource(id = R.string.pref_webtoon_side_padding),
+        entries = stringArrayResource(id = R.array.webtoon_side_padding),
+        values = arrayOf("0", "1", "2", "3", "4", "5"),
+        field = Settings.webtoonSidePadding.asMutableState(),
+    )
+    SwitchChoice(
+        title = stringResource(id = R.string.pref_crop_borders),
+        field = Settings.cropBorder.asMutableState(),
+    )
 }
-
-private val viewerValues = arrayOf("0", "1", "2", "3", "4", "5")
-private val rotationValues = arrayOf("0", "1", "2", "3", "4", "5", "6")
