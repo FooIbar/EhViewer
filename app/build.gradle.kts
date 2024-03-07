@@ -227,7 +227,6 @@ dependencies {
     implementation(libs.androidx.work.runtime)
     implementation(libs.photoview) // Dead Dependency
     implementation(libs.directionalviewpager) // Dead Dependency
-    implementation(libs.material)
     implementation(libs.material.motion.core)
 
     implementation(libs.bundles.splitties)
