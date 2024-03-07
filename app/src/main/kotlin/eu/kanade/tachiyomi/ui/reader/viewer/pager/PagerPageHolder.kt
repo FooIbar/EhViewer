@@ -2,13 +2,11 @@ package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.view.LayoutInflater
-import androidx.core.view.isVisible
 import coil3.BitmapImage
-import com.hippo.ehviewer.databinding.ReaderErrorBinding
 import com.hippo.ehviewer.image.Image
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
+import eu.kanade.tachiyomi.ui.reader.viewer.ReaderErrorLayout
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
 import eu.kanade.tachiyomi.widget.ViewPagerAdapter
@@ -42,7 +40,7 @@ class PagerPageHolder(
     /**
      * Error layout to show when the image fails to load.
      */
-    private var errorLayout: ReaderErrorBinding? = null
+    private var errorLayout: ReaderErrorLayout? = null
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -126,7 +124,7 @@ class PagerPageHolder(
     private fun setQueued() {
         progressIndicator.setProgress(0)
         progressIndicator.show()
-        errorLayout?.root?.isVisible = false
+        removeErrorLayout()
         recycle()
     }
 
@@ -135,7 +133,7 @@ class PagerPageHolder(
      */
     private fun setLoading() {
         progressIndicator.show()
-        errorLayout?.root?.isVisible = false
+        removeErrorLayout()
     }
 
     /**
@@ -143,7 +141,7 @@ class PagerPageHolder(
      */
     private fun setDownloading() {
         progressIndicator.show()
-        errorLayout?.root?.isVisible = false
+        removeErrorLayout()
     }
 
     /**
@@ -152,7 +150,7 @@ class PagerPageHolder(
     private fun setImage(image: Image) {
         progressIndicator.setProgress(0)
         progressIndicator.hide()
-        errorLayout?.root?.isVisible = false
+        removeErrorLayout()
         setImage(
             image,
             Config(
@@ -198,16 +196,20 @@ class PagerPageHolder(
         viewer.activity.hideMenu()
     }
 
-    private fun showErrorLayout(): ReaderErrorBinding {
+    private fun showErrorLayout() {
         if (errorLayout == null) {
-            errorLayout = ReaderErrorBinding.inflate(LayoutInflater.from(context), this, true)
-            errorLayout?.actionRetry?.viewer = viewer
-            errorLayout?.actionRetry?.setOnClickListener {
+            errorLayout = ReaderErrorLayout(context, page.errorMsg) {
                 viewer.activity.retryPage(page.index)
+            }.also {
+                addView(it)
             }
         }
-        page.errorMsg?.let { errorLayout!!.errorMessage.text = it }
-        errorLayout?.root?.isVisible = true
-        return errorLayout!!
+    }
+
+    private fun removeErrorLayout() {
+        errorLayout?.let {
+            removeView(it)
+            errorLayout = null
+        }
     }
 }

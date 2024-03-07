@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.dp
 import coil3.BitmapImage
 import coil3.DrawableImage
 import coil3.Image
@@ -95,9 +98,11 @@ fun PagerItem(
                 ) {
                     Text(
                         text = page.errorMsg ?: defaultError,
+                        modifier = Modifier.padding(8.dp),
                         textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
-                    Button(onClick = { pageLoader.retryPage(page.index) }) {
+                    Button(onClick = { pageLoader.retryPage(page.index) }, modifier = Modifier.padding(8.dp)) {
                         Text(text = stringResource(id = R.string.action_retry))
                     }
                 }
