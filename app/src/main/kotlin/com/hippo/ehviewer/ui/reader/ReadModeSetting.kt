@@ -33,7 +33,7 @@ fun ReadModeSetting() = Column {
         values = arrayOf("0", "8", "16", "24", "32", "40", "48"),
         field = Settings.orientationMode.asMutableState(),
     )
-    Spacer(modifier = Modifier.size(24.dp))
+    Spacer(modifier = Modifier.size(16.dp))
     val isPager by Settings.readingMode.collectAsState { value ->
         ReadingModeType.isPagerType(value)
     }
@@ -50,7 +50,7 @@ fun ReadModeSetting() = Column {
 private fun PagerSetting() = Column {
     Text(
         text = stringResource(id = R.string.pager_viewer),
-        modifier = Modifier.padding(horizontal = 16.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
@@ -59,7 +59,7 @@ private fun PagerSetting() = Column {
 private fun WebtoonSetting() = Column {
     Text(
         text = stringResource(id = R.string.webtoon_viewer),
-        modifier = Modifier.padding(horizontal = 16.dp),
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
     SpinnerChoice(
