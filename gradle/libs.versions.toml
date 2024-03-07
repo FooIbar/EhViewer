@@ -20,7 +20,6 @@ coil = "3.0.0-alpha06"
 compose-bom = "2024.01.00-alpha03"
 compose-compiler = "1.5.11-dev-k2.0.0-Beta4-21f5e479a96"
 compose-destinations = "1.10.2"
-google-android-material = "1.12.0-alpha03"
 kotlin = "2.0.0-Beta4"
 kotlinx-coroutines = "1.8.0"
 kotlinx-datetime = "0.6.0-RC.2"
@@ -97,8 +96,6 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 
 logcat = "com.squareup.logcat:logcat:0.1"
-
-material = { module = "com.google.android.material:material", version.ref = "google-android-material" }
 
 okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp3" }
