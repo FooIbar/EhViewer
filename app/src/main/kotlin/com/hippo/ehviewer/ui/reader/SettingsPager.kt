@@ -9,7 +9,9 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -23,8 +25,13 @@ private val tabs = arrayOf(
 )
 
 @Composable
-fun SettingsPager(modifier: Modifier = Modifier) {
+fun SettingsPager(modifier: Modifier = Modifier, onPageSelected: (Int) -> Unit) {
     val pagerState = rememberPagerState { tabs.size }
+    LaunchedEffect(onPageSelected) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+            onPageSelected(page)
+        }
+    }
     val scope = rememberCoroutineScope()
     PrimaryTabRow(
         selectedTabIndex = pagerState.currentPage,
