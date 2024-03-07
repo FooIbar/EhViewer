@@ -92,7 +92,6 @@
 - [Arrow](https://arrow-kt.io/)
 - [AOSP & AndroidX](http://source.android.com/)
 - [Kotlin & KotlinX](https://kotlinlang.org/)
-- [MDC-Android](https://github.com/material-components/material-components-android)
 - [Material Icons](https://github.com/google/material-design-icons)
 - [Ktor](https://ktor.io/)
 - [Coil](https://coil-kt.github.io/coil/)
