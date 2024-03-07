@@ -661,10 +661,6 @@
     <string name="zoom_start_right">Right</string>
     <string name="zoom_start_center">Center</string>
     <string name="rotation_type">Rotation type</string>
-    <string name="color_filter_r_value">R</string>
-    <string name="color_filter_g_value">G</string>
-    <string name="color_filter_b_value">B</string>
-    <string name="color_filter_a_value">A</string>
     <string name="pref_category_reading_mode">Reading mode</string>
     <string name="pref_webtoon_side_padding">Side padding</string>
     <string name="webtoon_side_padding_0">None</string>
