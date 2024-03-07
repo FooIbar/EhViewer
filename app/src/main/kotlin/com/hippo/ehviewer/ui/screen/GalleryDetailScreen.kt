@@ -601,18 +601,23 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         }
                     }
                 }
-                val items = mTorrentList!!.map { it.format() }
-                val selected = showSelectItem(items, R.string.torrents, false)
-                val url = mTorrentList!![selected].url
-                val name = "${mTorrentList!![selected].name}.torrent"
-                val r = DownloadManager.Request(Uri.parse(url))
-                r.setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS,
-                    AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
-                )
-                r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(url))
-                downloadManager.enqueue(r)
+                if (mTorrentList!!.isEmpty()) {
+                    showSnackbar(noTorrents)
+                } else {
+                    val items = mTorrentList!!.map { it.format() }
+                    val selected = showSelectItem(items, R.string.torrents, false)
+                    val url = mTorrentList!![selected].url
+                    val name = "${mTorrentList!![selected].name}.torrent"
+                    val r = DownloadManager.Request(Uri.parse(url))
+                    r.setDestinationInExternalPublicDir(
+                        Environment.DIRECTORY_DOWNLOADS,
+                        AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
+                    )
+                    r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(url))
+                    downloadManager.enqueue(r)
+                    showSnackbar(downloadTorrentStarted)
+                }
             }
             EhIconButton(
                 icon = Icons.Default.SwapVerticalCircle,
@@ -624,8 +629,6 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             if (granted) {
                                 runSuspendCatching {
                                     showTorrentDialog()
-                                }.onSuccess {
-                                    showSnackbar(downloadTorrentStarted)
                                 }.onFailure {
                                     logcat(it)
                                     showSnackbar(downloadTorrentFailed)
