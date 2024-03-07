@@ -15,19 +15,18 @@
  */
 package com.hippo.ehviewer.client
 
-import android.annotation.SuppressLint
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.ColorUtils
 import arrow.core.memoize
-import com.google.android.material.color.utilities.Hct
-import com.google.android.material.color.utilities.MathUtils
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.GalleryInfo
 import java.util.regex.Pattern
+import kotlin.math.abs
 
 object EhUtils {
     const val NONE = -1 // Use it for homepage
@@ -102,14 +101,27 @@ object EhUtils {
         return CATEGORY_VALUES.getOrDefault(type, CATEGORY_VALUES[UNKNOWN])!![0]
     }
 
-    @SuppressLint("RestrictedApi")
+    private fun differenceDegrees(a: Float, b: Float): Float {
+        return 180.0f - abs(abs(a - b) - 180.0f)
+    }
+
+    private fun sanitizeDegreesDouble(degrees: Float): Float {
+        val deg = degrees % 360.0f
+        return if (deg < 0) deg + 360.0f else deg
+    }
+
+    private fun rotationDirection(from: Float, to: Float): Float {
+        val increasingDifference = sanitizeDegreesDouble(to - from)
+        return if (increasingDifference <= 180.0) 1.0f else -1.0f
+    }
+
     val harmonizeWithRole = { primaryContainer: Int, src: Int ->
-        val fromHct = Hct.fromInt(src)
-        val toHct = Hct.fromInt(primaryContainer)
-        val differenceDegrees = MathUtils.differenceDegrees(fromHct.hue, toHct.hue)
-        val rotationDegrees = minOf(differenceDegrees * 0.5, 15.0)
-        val outputHue = MathUtils.sanitizeDegreesDouble(fromHct.hue + rotationDegrees * MathUtils.rotationDirection(fromHct.hue, toHct.hue))
-        Hct.from(outputHue, toHct.chroma, toHct.tone).toInt()
+        val fromHct = FloatArray(3).apply { ColorUtils.colorToM3HCT(src, this) }
+        val toHct = FloatArray(3).apply { ColorUtils.colorToM3HCT(primaryContainer, this) }
+        val differenceDegrees = differenceDegrees(fromHct[0], toHct[0])
+        val rotationDegrees = minOf(differenceDegrees * 0.5f, 15.0f)
+        val outputHue = sanitizeDegreesDouble(fromHct[0] + rotationDegrees * rotationDirection(fromHct[0], toHct[0]))
+        ColorUtils.M3HCTToColor(outputHue, toHct[1], toHct[2])
     }.memoize()
 
     @Stable
