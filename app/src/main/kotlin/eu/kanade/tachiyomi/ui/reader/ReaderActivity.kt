@@ -22,7 +22,6 @@ import android.app.assist.AssistContent
 import android.content.ClipData
 import android.content.ContentValues
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
@@ -44,6 +43,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -78,8 +78,8 @@ import com.hippo.ehviewer.download.archiveFile
 import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.PageLoader2
-import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.ui.EhActivity
+import com.hippo.ehviewer.ui.reader.SettingsPager
 import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.AppConfig
@@ -88,7 +88,6 @@ import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getValue
-import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.lazyMut
@@ -100,7 +99,6 @@ import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
-import eu.kanade.tachiyomi.ui.reader.setting.ReaderSettingsSheet
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
@@ -109,6 +107,7 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.isNightMode
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
+import kotlin.coroutines.resume
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
@@ -252,13 +251,6 @@ class ReaderActivity : EhActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (isAtLeastO) {
-            window.colorMode = if (Image.isWideColorGamut && ReaderPreferences.wideColorGamut().get()) {
-                ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
-            } else {
-                ActivityInfo.COLOR_MODE_DEFAULT
-            }
-        }
         if (savedInstanceState == null) {
             onInit()
         } else {
@@ -300,7 +292,21 @@ class ReaderActivity : EhActivity() {
                     sliderValueFlow.value = it
                     currentPage = it + 1
                 },
-                onClickSettings = { readerSettingSheetDialog?.show() },
+                onClickSettings = {
+                    lifecycleScope.launch {
+                        dialogState.dialog { cont ->
+                            fun dispose() = cont.resume(Unit)
+                            ModalBottomSheet(
+                                onDismissRequest = { dispose() },
+                                dragHandle = null,
+                                windowInsets = WindowInsets(0),
+                            ) {
+                                SettingsPager(modifier = Modifier.fillMaxSize())
+                                Spacer(modifier = Modifier.navigationBarsPadding())
+                            }
+                        }
+                    }
+                },
             )
 
             ReaderContentOverlay(
@@ -358,8 +364,6 @@ class ReaderActivity : EhActivity() {
         config = null
         viewer?.destroy()
         viewer = null
-        readerSettingSheetDialog?.dismiss()
-        readerSettingSheetDialog = null
     }
 
     private suspend fun makeToast(text: String) = withUIContext {
@@ -521,8 +525,6 @@ class ReaderActivity : EhActivity() {
         )
     }
 
-    private var readerSettingSheetDialog: ReaderSettingsSheet? = null
-
     /**
      * Sets the visibility of the menu according to [visible] and with an optional parameter to
      * [animate] the views.
@@ -573,8 +575,6 @@ class ReaderActivity : EhActivity() {
                 )
             }
         }
-
-        readerSettingSheetDialog = ReaderSettingsSheet(this@ReaderActivity)
 
         val toolbarBackground = MaterialShapeDrawable.createWithElevationOverlay(this).apply {
             elevation = resources.getDimension(com.google.android.material.R.dimen.m3_sys_elevation_level2)
@@ -758,7 +758,6 @@ class ReaderActivity : EhActivity() {
                 ReaderPreferences.cutoutShort().changes()
                     .drop(1)
                     .onEach {
-                        readerSettingSheetDialog?.hide()
                         setCutoutShort(it)
                         recreate()
                     }
