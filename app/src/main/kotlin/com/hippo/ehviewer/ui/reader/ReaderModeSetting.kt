@@ -113,7 +113,7 @@ private fun WebtoonSetting() = Column {
     SpinnerChoice(
         title = stringResource(id = R.string.pref_webtoon_side_padding),
         entries = stringArrayResource(id = R.array.webtoon_side_padding),
-        values = arrayOf("0", "1", "2", "3", "4", "5"),
+        values = stringArrayResource(id = R.array.webtoon_side_padding_values),
         field = Settings.webtoonSidePadding.asMutableState(),
     )
     SwitchChoice(
