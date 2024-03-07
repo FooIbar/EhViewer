@@ -46,7 +46,7 @@ fun SettingsPager(modifier: Modifier = Modifier) {
     ) { page ->
         ProvideTextStyle(value = MaterialTheme.typography.labelLarge) {
             when (page) {
-                0 -> ReadModeSetting()
+                0 -> ReaderModeSetting()
                 1 -> ReaderGeneralSetting()
                 2 -> ColorFilterSetting()
             }

@@ -20,7 +20,7 @@ import com.hippo.ehviewer.collectAsState
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 
 @Composable
-fun ReadModeSetting() = Column {
+fun ReaderModeSetting() = Column {
     SpinnerChoice(
         title = stringResource(id = R.string.pref_category_reading_mode),
         entries = stringArrayResource(id = R.array.viewers_selector),
