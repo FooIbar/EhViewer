@@ -18,10 +18,7 @@
 package com.hippo.ehviewer.image
 
 import android.graphics.Bitmap
-import android.graphics.ColorSpace
 import android.graphics.drawable.Animatable
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.ui.unit.IntRect
 import arrow.core.Either
 import arrow.core.left
@@ -33,7 +30,6 @@ import coil3.imageLoader
 import coil3.request.CachePolicy
 import coil3.request.ErrorResult
 import coil3.request.SuccessResult
-import coil3.request.colorSpace
 import coil3.size.Precision
 import coil3.size.Scale
 import com.hippo.ehviewer.Settings
@@ -44,7 +40,6 @@ import com.hippo.ehviewer.jni.mmap
 import com.hippo.ehviewer.jni.munmap
 import com.hippo.ehviewer.jni.rewriteGifSource
 import com.hippo.ehviewer.ktbuilder.imageRequest
-import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.unifile.UniFile
@@ -81,12 +76,6 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
         private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 2
         private val targetHeight = appCtx.resources.displayMetrics.heightPixels * 2
 
-        @delegate:RequiresApi(Build.VERSION_CODES.O)
-        val isWideColorGamut by lazy { appCtx.resources.configuration.isScreenWideColorGamut }
-
-        @RequiresApi(Build.VERSION_CODES.O)
-        lateinit var colorSpace: ColorSpace
-
         private suspend fun Either<ByteBufferSource, UniFileSource>.decodeCoil(): CoilImage {
             val req = appCtx.imageRequest {
                 onLeft { data(it.source) }
@@ -94,9 +83,6 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
                 size(targetWidth, targetHeight)
                 scale(Scale.FILL)
                 precision(Precision.INEXACT)
-                if (isAtLeastO && !Settings.newReader) {
-                    colorSpace(colorSpace)
-                }
                 maybeCropBorder(Settings.cropBorder.value)
                 memoryCachePolicy(CachePolicy.DISABLED)
             }

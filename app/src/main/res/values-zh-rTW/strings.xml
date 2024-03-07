@@ -563,10 +563,6 @@
     <string name="rotation_free">自動</string>
     <string name="rotation_force_portrait">鎖定直向</string>
     <string name="rotation_force_landscape">鎖定橫向</string>
-    <string name="color_filter_r_value">R</string>
-    <string name="color_filter_g_value">G</string>
-    <string name="color_filter_b_value">B</string>
-    <string name="color_filter_a_value">A</string>
     <string name="custom_filter">濾鏡</string>
     <string name="decode_image_error">無法載入該圖片</string>
     <string name="pref_read_with_long_tap">長按顯示</string>
