@@ -83,7 +83,7 @@ fun ColorFilterSetting() = Column {
     SpinnerChoice(
         title = stringResource(id = R.string.pref_color_filter_mode),
         entries = stringArrayResource(id = R.array.color_filter_modes),
-        values = colorFilterValues,
+        values = arrayOf("0", "1", "2", "3", "4", "5"),
         field = Settings.colorFilterMode.asMutableState(),
     )
     SwitchChoice(
@@ -95,5 +95,3 @@ fun ColorFilterSetting() = Column {
         field = Settings.invertedColors.asMutableState(),
     )
 }
-
-private val colorFilterValues = arrayOf("0", "1", "2", "3", "4", "5")
