@@ -563,10 +563,6 @@
     <string name="rotation_free">跟随系统</string>
     <string name="rotation_force_portrait">锁定竖屏</string>
     <string name="rotation_force_landscape">锁定横屏</string>
-    <string name="color_filter_r_value">R</string>
-    <string name="color_filter_g_value">G</string>
-    <string name="color_filter_b_value">B</string>
-    <string name="color_filter_a_value">A</string>
     <string name="custom_filter">滤镜</string>
     <string name="decode_image_error">无法加载该图片</string>
     <string name="pref_read_with_long_tap">长按显示操作菜单</string>

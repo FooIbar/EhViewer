@@ -455,10 +455,6 @@
     <string name="rotation_free">自動</string>
     <string name="rotation_force_portrait">鎖定直向</string>
     <string name="rotation_force_landscape">鎖定橫向</string>
-    <string name="color_filter_r_value">R</string>
-    <string name="color_filter_g_value">G</string>
-    <string name="color_filter_b_value">B</string>
-    <string name="color_filter_a_value">A</string>
     <string name="pref_page_transitions">翻頁轉場動畫</string>
     <string name="pref_color_filter_mode">濾鏡融合機制</string>
     <string name="filter_mode_multiply">色彩增值</string>
