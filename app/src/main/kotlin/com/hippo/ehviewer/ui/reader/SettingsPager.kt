@@ -5,6 +5,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,10 +44,12 @@ fun SettingsPager(modifier: Modifier = Modifier) {
         state = pagerState,
         verticalAlignment = Alignment.Top,
     ) { page ->
-        when (page) {
-            0 -> ReadModeSetting()
-            1 -> ReaderGeneralSetting()
-            2 -> ColorFilterSetting()
+        ProvideTextStyle(value = MaterialTheme.typography.labelLarge) {
+            when (page) {
+                0 -> ReadModeSetting()
+                1 -> ReaderGeneralSetting()
+                2 -> ColorFilterSetting()
+            }
         }
     }
 }

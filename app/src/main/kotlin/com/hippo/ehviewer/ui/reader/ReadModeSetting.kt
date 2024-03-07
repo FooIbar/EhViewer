@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.reader
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,12 +47,18 @@ fun ReadModeSetting() = Column {
 
 @Composable
 private fun PagerSetting() = Column {
-    Text(text = stringResource(id = R.string.pager_viewer))
+    Text(
+        text = stringResource(id = R.string.pager_viewer),
+        modifier = Modifier.padding(horizontal = 16.dp),
+    )
 }
 
 @Composable
 private fun WebtoonSetting() = Column {
-    Text(text = stringResource(id = R.string.webtoon_viewer))
+    Text(
+        text = stringResource(id = R.string.webtoon_viewer),
+        modifier = Modifier.padding(horizontal = 16.dp),
+    )
 }
 
 private val viewerValues = arrayOf("0", "1", "2", "3", "4", "5")
