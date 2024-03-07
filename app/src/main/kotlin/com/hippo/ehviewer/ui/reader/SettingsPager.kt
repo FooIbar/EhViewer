@@ -1,12 +1,11 @@
 package com.hippo.ehviewer.ui.reader
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,7 +13,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import kotlinx.coroutines.launch
 
@@ -46,10 +44,12 @@ fun SettingsPager(modifier: Modifier = Modifier) {
         state = pagerState,
         verticalAlignment = Alignment.Top,
     ) { page ->
-        when (page) {
-            0 -> Spacer(modifier = Modifier.size(200.dp))
-            1 -> ReaderGeneralSetting()
-            2 -> ColorFilterSetting()
+        ProvideTextStyle(value = MaterialTheme.typography.labelLarge) {
+            when (page) {
+                0 -> ReaderModeSetting()
+                1 -> ReaderGeneralSetting()
+                2 -> ColorFilterSetting()
+            }
         }
     }
 }

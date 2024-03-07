@@ -200,6 +200,14 @@ object Settings : DataStorePreferences(null) {
     val readWithVolumeKeysInverted = boolPref("reader_volume_keys_inverted", false)
     val grayScale = boolPref("pref_grayscale", false)
     val invertedColors = boolPref("pref_inverted_colors", false)
+    val readerWebtoonNav = intPref("reader_navigation_mode_webtoon", 0)
+    val readerPagerNav = intPref("reader_navigation_mode_pager", 0)
+    val readerWebtoonNavInverted = intPref("reader_tapping_inverted_webtoon", 0)
+    val webtoonSidePadding = intPref("webtoon_side_padding", 0)
+    val navigateToPan = boolPref("navigate_pan", true)
+    val imageScaleType = intPref("pref_image_scale_type_key", 1)
+    val landscapeZoom = boolPref("landscape_zoom", false)
+    val zoomStart = intPref("pref_zoom_start_key", 1)
 
     init {
         if ("CN" == Locale.getDefault().country) {
