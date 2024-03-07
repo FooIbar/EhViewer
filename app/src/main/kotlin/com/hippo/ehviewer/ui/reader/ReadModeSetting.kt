@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,6 +51,7 @@ private fun PagerSetting() = Column {
     Text(
         text = stringResource(id = R.string.pager_viewer),
         modifier = Modifier.padding(horizontal = 16.dp),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
 
@@ -58,6 +60,7 @@ private fun WebtoonSetting() = Column {
     Text(
         text = stringResource(id = R.string.webtoon_viewer),
         modifier = Modifier.padding(horizontal = 16.dp),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 }
 
