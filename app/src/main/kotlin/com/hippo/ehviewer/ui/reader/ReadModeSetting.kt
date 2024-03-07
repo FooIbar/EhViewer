@@ -53,6 +53,42 @@ private fun PagerSetting() = Column {
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+    SpinnerChoice(
+        title = stringResource(id = R.string.pref_viewer_nav),
+        entries = stringArrayResource(id = R.array.pager_nav),
+        values = arrayOf("0", "1", "2", "3", "4", "5"),
+        field = Settings.readerPagerNav.asMutableState(),
+    )
+    SpinnerChoice(
+        title = stringResource(id = R.string.pref_read_with_tapping_inverted),
+        entries = stringArrayResource(id = R.array.invert_tapping_mode),
+        values = arrayOf("0", "1", "2", "3"),
+        field = Settings.readerWebtoonNavInverted.asMutableState(),
+    )
+    SwitchChoice(
+        title = stringResource(id = R.string.pref_navigate_pan),
+        field = Settings.navigateToPan.asMutableState(),
+    )
+    SpinnerChoice(
+        title = stringResource(id = R.string.pref_image_scale_type),
+        entries = stringArrayResource(id = R.array.image_scale_type),
+        values = arrayOf("1", "2", "3", "4", "5", "6"),
+        field = Settings.imageScaleType.asMutableState(),
+    )
+    SwitchChoice(
+        title = stringResource(id = R.string.pref_landscape_zoom),
+        field = Settings.landscapeZoom.asMutableState(),
+    )
+    SpinnerChoice(
+        title = stringResource(id = R.string.pref_zoom_start),
+        entries = stringArrayResource(id = R.array.zoom_start),
+        values = arrayOf("1", "2", "3", "4"),
+        field = Settings.zoomStart.asMutableState(),
+    )
+    SwitchChoice(
+        title = stringResource(id = R.string.pref_crop_borders),
+        field = Settings.cropBorder.asMutableState(),
+    )
 }
 
 @Composable
