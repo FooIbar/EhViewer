@@ -41,6 +41,7 @@ import androidx.activity.viewModels
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,6 +49,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,15 +59,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.shape.MaterialShapeDrawable
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -258,6 +260,14 @@ class ReaderActivity : EhActivity() {
         }
         binding = ReaderActivityBinding.inflate(layoutInflater)
         binding.dialogStub.setMD3Content {
+            val surfaceElevation = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+            val alpha = if (isSystemInDarkTheme()) 230 else 242 // 90% dark 95% light
+            LaunchedEffect(surfaceElevation, alpha) {
+                val toolbarColor = surfaceElevation.copy(alpha = alpha / 255f).toArgb()
+                window.statusBarColor = toolbarColor
+                window.navigationBarColor = toolbarColor
+            }
+
             val brightness by Settings.customBrightness.collectAsState()
             val brightnessValue by Settings.customBrightnessValue.collectAsState()
             val colorOverlayEnabled by Settings.colorFilter.collectAsState()
@@ -575,19 +585,6 @@ class ReaderActivity : EhActivity() {
                 )
             }
         }
-
-        val toolbarBackground = MaterialShapeDrawable.createWithElevationOverlay(this).apply {
-            elevation = resources.getDimension(com.google.android.material.R.dimen.m3_sys_elevation_level2)
-            alpha = if (isNightMode()) 230 else 242 // 90% dark 95% light
-        }
-
-        val toolbarColor = ColorUtils.setAlphaComponent(
-            toolbarBackground.resolvedTintColor,
-            toolbarBackground.alpha,
-        )
-
-        window.statusBarColor = toolbarColor
-        window.navigationBarColor = toolbarColor
 
         // Set initial visibility
         setMenuVisibility(menuVisible)
