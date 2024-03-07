@@ -33,23 +33,22 @@ class ReaderErrorLayout @JvmOverloads constructor(
     }
 
     @Composable
-    override fun Content() {
-        EhTheme {
-            val defaultError = stringResource(id = R.string.decode_image_error)
-            Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
-                Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = errorMsg ?: defaultError,
-                        modifier = Modifier.padding(8.dp),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Button(onClick = onRetry, modifier = Modifier.padding(8.dp)) {
-                        Text(text = stringResource(id = R.string.action_retry))
-                    }
+    override fun Content() = EhTheme {
+        val defaultError = stringResource(id = R.string.decode_image_error)
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = errorMsg ?: defaultError,
+                    modifier = Modifier.padding(8.dp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Button(onClick = onRetry, modifier = Modifier.padding(8.dp)) {
+                    Text(text = stringResource(id = R.string.action_retry))
                 }
             }
         }
