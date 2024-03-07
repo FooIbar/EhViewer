@@ -30,14 +30,17 @@ fun ReaderGeneralSetting() = Column {
         title = stringResource(id = R.string.pref_double_tap_to_zoom),
         field = Settings.doubleTapToZoom.asMutableState(),
     )
+    val fullscreen = Settings.fullscreen.asMutableState()
     SwitchChoice(
         title = stringResource(id = R.string.pref_fullscreen),
-        field = Settings.fullscreen.asMutableState(),
+        field = fullscreen,
     )
-    SwitchChoice(
-        title = stringResource(id = R.string.pref_cutout_short),
-        field = Settings.cutoutShort.asMutableState(),
-    )
+    AnimatedVisibility(visible = fullscreen.value) {
+        SwitchChoice(
+            title = stringResource(id = R.string.pref_cutout_short),
+            field = Settings.cutoutShort.asMutableState(),
+        )
+    }
     SwitchChoice(
         title = stringResource(id = R.string.pref_keep_screen_on),
         field = Settings.keepScreenOn.asMutableState(),
