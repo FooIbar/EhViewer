@@ -198,6 +198,8 @@ object Settings : DataStorePreferences(null) {
     val readWithVolumeKeys = boolPref("reader_volume_keys", false)
     val readWithVolumeKeysInterval = intPref("reader_volume_keys_interval", 0)
     val readWithVolumeKeysInverted = boolPref("reader_volume_keys_inverted", false)
+    val grayScale = boolPref("pref_grayscale", false)
+    val invertedColors = boolPref("pref_inverted_colors", false)
 
     init {
         if ("CN" == Locale.getDefault().country) {

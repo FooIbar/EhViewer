@@ -86,6 +86,14 @@ fun ColorFilterSetting() = Column {
         values = colorFilterValues,
         field = Settings.colorFilterMode.asMutableState(),
     )
+    SwitchChoice(
+        title = stringResource(id = R.string.pref_grayscale),
+        field = Settings.grayScale.asMutableState(),
+    )
+    SwitchChoice(
+        title = stringResource(id = R.string.pref_inverted_colors),
+        field = Settings.invertedColors.asMutableState(),
+    )
 }
 
 private val colorFilterValues = arrayOf("0", "1", "2", "3", "4", "5")
