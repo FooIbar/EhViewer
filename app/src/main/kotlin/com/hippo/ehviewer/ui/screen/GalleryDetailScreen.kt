@@ -106,7 +106,6 @@ import com.hippo.ehviewer.client.exception.NoHAtHClientException
 import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.client.parser.ArchiveParser
 import com.hippo.ehviewer.client.parser.HomeParser
-import com.hippo.ehviewer.client.parser.TorrentResult
 import com.hippo.ehviewer.client.parser.format
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
@@ -162,6 +161,8 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -592,22 +593,22 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             val downloadTorrentFailed = stringResource(R.string.download_torrent_failure)
             val downloadTorrentStarted = stringResource(R.string.download_torrent_started)
             val noTorrents = stringResource(R.string.no_torrents)
-            var mTorrentList by remember { mutableStateOf<TorrentResult?>(null) }
-            suspend fun showTorrentDialog() {
-                if (mTorrentList == null) {
-                    mTorrentList = bgWork {
-                        withIOContext {
-                            EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
-                        }
+            val torrentList = remember {
+                async(Dispatchers.IO) {
+                    runSuspendCatching {
+                        EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
                     }
                 }
-                if (mTorrentList!!.isEmpty()) {
+            }
+            suspend fun showTorrentDialog() {
+                val list = bgWork { torrentList.await() }.getOrThrow()
+                if (list.isEmpty()) {
                     showSnackbar(noTorrents)
                 } else {
-                    val items = mTorrentList!!.map { it.format() }
+                    val items = list.map { it.format() }
                     val selected = showSelectItem(items, R.string.torrents, false)
-                    val url = mTorrentList!![selected].url
-                    val name = "${mTorrentList!![selected].name}.torrent"
+                    val url = list[selected].url
+                    val name = "${list[selected].name}.torrent"
                     val r = DownloadManager.Request(Uri.parse(url))
                     r.setDestinationInExternalPublicDir(
                         Environment.DIRECTORY_DOWNLOADS,
