@@ -84,6 +84,7 @@ class WebtoonPageHolder(
      */
     fun bind(page: ReaderPage) {
         this.page = page
+        statusJob?.cancel()
         statusJob = scope.launch(Dispatchers.Main) {
             page.status.collectLatest {
                 processStatus(it)
