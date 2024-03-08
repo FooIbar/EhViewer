@@ -161,6 +161,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -594,7 +595,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             val downloadTorrentStarted = stringResource(R.string.download_torrent_started)
             val noTorrents = stringResource(R.string.no_torrents)
             val torrentList = remember {
-                async(Dispatchers.IO) {
+                async(Dispatchers.IO, CoroutineStart.LAZY) {
                     runSuspendCatching {
                         EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
                     }
