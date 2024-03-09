@@ -29,6 +29,7 @@ import arrow.fx.coroutines.parMapNotNull
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
 import com.hippo.ehviewer.image.Image
@@ -368,6 +369,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
             if (deleteFiles) {
                 info.downloadDir?.delete()
+                info.tempDownloadDir?.delete()
                 EhDB.removeDownloadDirname(info.gid)
             }
         }
@@ -788,3 +790,4 @@ var downloadLocation: UniFile
 
 val DownloadInfo.downloadDir get() = dirname?.let { downloadLocation / it }
 val DownloadInfo.archiveFile get() = downloadDir?.findFile("$gid.cbz")
+val GalleryInfo.tempDownloadDir get() = AppConfig.getTempDir("$gid")
