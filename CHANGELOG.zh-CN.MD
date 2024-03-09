@@ -1,5 +1,50 @@
 # 变更日志
 
+## [未发布]
+
+### 重大变更
+
+* 由于 E 站 Cookie 策略变更，不再支持 Cookie 登录
+* 登录时自动选择 exhentai （如果可用）
+* 不再提供默认下载路径
+* 由于数据库结构变更，此版本导出的数据将无法被旧版本导入
+
+### 新功能
+
+* 下载画廊时生成 ComicInfo.xml 格式元数据
+* 归档下载时生成 ComicInfo.xml 格式元数据 [#711](https://github.com/FooIbar/EhViewer/issues/711)
+* 归档下载支持第三方下载管理器 [#79](https://github.com/FooIbar/EhViewer/issues/79)
+* 保存下载结果为 CBZ 压缩包 [#660](https://github.com/FooIbar/EhViewer/issues/660)
+* 清除 `igneous` Cookie （将于下次搜索时重新获取）
+* 随机打开本地收藏/下载中的画廊 [#695](https://github.com/FooIbar/EhViewer/issues/695)
+* 随机在搜索结果中跳转
+* 以网格模式查看下载列表
+* 以添加时间/上传时间/标题/下载标签/页数对下载列表排序
+* 本地收藏/历史/下载中的标签搜索 [#860](https://github.com/FooIbar/EhViewer/issues/860)
+
+### 改进
+
+* 搜索时优先显示已选择的类别卡片
+* 多处性能优化
+
+### Bug 修复
+
+* 显示模式为 Thumbnail 时无法点击上传者卡片 [#653](https://github.com/FooIbar/EhViewer/issues/653)
+* [Marshmallow] GIF 只显示第一帧
+* 无法在 `定时请求新闻页面` 关闭时开启 `隐藏 HV 事件通知`
+* 响应正文含有无效 UTF-8 字符导致解码失败 [#643](https://github.com/FooIbar/EhViewer/issues/643)
+* 某些情况下应用崩溃 [#710](https://github.com/FooIbar/EhViewer/issues/710)
+* 画廊名称包含非法路径字符时无法保存图片 [#815](https://github.com/FooIbar/EhViewer/issues/815)
+* 无法解码超长图片 [#732](https://github.com/FooIbar/EhViewer/issues/732)
+* E 站变更导致种子解析失败 [#880](https://github.com/FooIbar/EhViewer/issues/880)
+* E 站不再支持相似扫描导致图片搜索无法使用
+* 杂项修复
+
+### 已知问题
+
+* Android 14 上使用手势导航返回时过渡动画过早结束 [#775](https://github.com/FooIbar/EhViewer/issues/775)
+
+
 ## [1.10.3] - 2024-01-15
 
 ### 新功能
