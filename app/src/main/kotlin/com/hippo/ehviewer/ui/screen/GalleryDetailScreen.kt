@@ -587,11 +587,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     )
                 },
             )
-            val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
+            val torrentText = stringResource(R.string.torrents)
             val permissionDenied = stringResource(R.string.permission_denied)
             val downloadTorrentFailed = stringResource(R.string.download_torrent_failure)
             val downloadTorrentStarted = stringResource(R.string.download_torrent_started)
             val noTorrents = stringResource(R.string.no_torrents)
+            val noCurrentTorrents = stringResource(R.string.no_current_torrents)
             var mTorrentList by remember { mutableStateOf<TorrentResult?>(null) }
             suspend fun showTorrentDialog() {
                 if (mTorrentList == null) {
@@ -602,7 +603,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     }
                 }
                 if (mTorrentList!!.isEmpty()) {
-                    showSnackbar(noTorrents)
+                    showSnackbar(noCurrentTorrents)
                 } else {
                     val items = mTorrentList!!.map { it.format() }
                     val selected = showSelectItem(items, R.string.torrents, false)
