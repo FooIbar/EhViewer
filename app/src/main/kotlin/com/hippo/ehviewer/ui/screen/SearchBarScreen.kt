@@ -277,7 +277,7 @@ fun SearchBarScreen(
                 if (active) {
                     val hasText by searchFieldState.textAsFlow().mapIndexed { index, text ->
                         // Workaround for https://github.com/FooIbar/EhViewer/issues/715
-                        if (index == 0) delay(500)
+                        if (index == 0) delay(700)
                         text.isNotEmpty()
                     }.collectAsState(false)
                     if (hasText) {
