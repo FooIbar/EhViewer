@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.reader
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness5
 import androidx.compose.material3.Icon
@@ -11,8 +12,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
@@ -32,7 +35,7 @@ fun ColorFilterSetting() = Column {
         val brightness = Settings.customBrightnessValue.asMutableState()
         SliderChoice(
             startSlot = { Icon(imageVector = Icons.Default.Brightness5, contentDescription = null) },
-            endSlot = { Text(text = "${brightness.value}") },
+            endSlot = { Text(modifier = Modifier.width(24.dp), text = "${brightness.value}") },
             range = -75..100,
             field = brightness,
         )
@@ -56,25 +59,25 @@ fun ColorFilterSetting() = Column {
         Column {
             SliderChoice(
                 startSlot = { Text(text = "R") },
-                endSlot = { Text(text = "$r") },
+                endSlot = { Text(modifier = Modifier.width(24.dp), text = "$r") },
                 range = 0..255,
                 field = rf,
             )
             SliderChoice(
                 startSlot = { Text(text = "G") },
-                endSlot = { Text(text = "$g") },
+                endSlot = { Text(modifier = Modifier.width(24.dp), text = "$g") },
                 range = 0..255,
                 field = gf,
             )
             SliderChoice(
                 startSlot = { Text(text = "B") },
-                endSlot = { Text(text = "$b") },
+                endSlot = { Text(modifier = Modifier.width(24.dp), text = "$b") },
                 range = 0..255,
                 field = bf,
             )
             SliderChoice(
                 startSlot = { Text(text = "A") },
-                endSlot = { Text(text = "$a") },
+                endSlot = { Text(modifier = Modifier.width(24.dp), text = "$a") },
                 range = 0..255,
                 field = af,
             )

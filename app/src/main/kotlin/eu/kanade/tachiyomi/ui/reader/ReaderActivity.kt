@@ -323,6 +323,7 @@ class ReaderActivity : EhActivity() {
                             ) {
                                 SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
                                     isColorFilter = page == 2
+                                    setMenuVisibility(!isColorFilter)
                                 }
                                 Spacer(modifier = Modifier.navigationBarsPadding())
                             }
