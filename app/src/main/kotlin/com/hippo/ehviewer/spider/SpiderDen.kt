@@ -32,9 +32,9 @@ import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.coil.suspendEdit
 import com.hippo.ehviewer.download.downloadLocation
+import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.image.UniFileSource
 import com.hippo.ehviewer.jni.archiveFdBatch
-import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
@@ -79,7 +79,7 @@ class SpiderDen(val info: GalleryInfo) {
                 downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.ensureDir() }
             }
             if (saveAsCbz && tempDownloadDir == null) {
-                tempDownloadDir = AppConfig.getTempDir("$gid")?.takeIf { it.ensureDir() }
+                tempDownloadDir = info.tempDownloadDir?.takeIf { it.ensureDir() }
             }
         }
     }
@@ -308,7 +308,7 @@ class SpiderDen(val info: GalleryInfo) {
 
     suspend fun initDownloadDirIfExist() {
         downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.isDirectory }
-        tempDownloadDir = AppConfig.getTempDir("$gid")?.takeIf { it.isDirectory }
+        tempDownloadDir = info.tempDownloadDir?.takeIf { it.isDirectory }
     }
 
     suspend fun initDownloadDir() {

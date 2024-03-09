@@ -53,6 +53,7 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
+import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.ui.destinations.ReaderScreenDestination
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
@@ -389,6 +390,7 @@ suspend fun DialogState.confirmRemoveDownloadRange(list: Collection<DownloadInfo
             list.forEach { info ->
                 // Delete file
                 info.downloadDir?.delete()
+                info.tempDownloadDir?.delete()
                 // Remove download path
                 EhDB.removeDownloadDirname(info.gid)
             }
