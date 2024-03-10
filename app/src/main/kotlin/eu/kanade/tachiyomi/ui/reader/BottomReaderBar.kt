@@ -25,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -102,13 +101,13 @@ fun BottomReaderBar(onClickSettings: () -> Unit) {
     ) {
         IconButton(onClick = { readingModeExpanded = true }) {
             Icon(
-                painter = painterResource(readingMode.iconRes),
+                imageVector = readingMode.icon,
                 contentDescription = stringResource(R.string.viewer),
             )
         }
         IconButton(onClick = { orientationModeExpanded = true }) {
             Icon(
-                painter = painterResource(orientationMode.iconRes),
+                imageVector = orientationMode.icon,
                 contentDescription = stringResource(R.string.pref_rotation_type),
             )
         }

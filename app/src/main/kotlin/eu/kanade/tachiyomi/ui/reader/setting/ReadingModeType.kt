@@ -1,9 +1,16 @@
 package eu.kanade.tachiyomi.ui.reader.setting
 
-import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.icons.EhIcons
+import com.hippo.ehviewer.icons.reader.ContinuousVertical
+import com.hippo.ehviewer.icons.reader.Default
+import com.hippo.ehviewer.icons.reader.LeftToRight
+import com.hippo.ehviewer.icons.reader.RightToLeft
+import com.hippo.ehviewer.icons.reader.Vertical
+import com.hippo.ehviewer.icons.reader.Webtoon
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.pager.L2RPagerViewer
@@ -12,13 +19,13 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 
 @Stable
-enum class ReadingModeType(val prefValue: Int, @StringRes val stringRes: Int, @DrawableRes val iconRes: Int, val flagValue: Int) {
-    DEFAULT(0, R.string.label_default, R.drawable.ic_reader_default_24dp, 0x00000000),
-    LEFT_TO_RIGHT(1, R.string.left_to_right_viewer, R.drawable.ic_reader_ltr_24dp, 0x00000001),
-    RIGHT_TO_LEFT(2, R.string.right_to_left_viewer, R.drawable.ic_reader_rtl_24dp, 0x00000002),
-    VERTICAL(3, R.string.vertical_viewer, R.drawable.ic_reader_vertical_24dp, 0x00000003),
-    WEBTOON(4, R.string.webtoon_viewer, R.drawable.ic_reader_webtoon_24dp, 0x00000004),
-    CONTINUOUS_VERTICAL(5, R.string.vertical_plus_viewer, R.drawable.ic_reader_continuous_vertical_24dp, 0x00000005),
+enum class ReadingModeType(val prefValue: Int, @StringRes val stringRes: Int, val icon: ImageVector, val flagValue: Int) {
+    DEFAULT(0, R.string.label_default, EhIcons.Reader.Default, 0x00000000),
+    LEFT_TO_RIGHT(1, R.string.left_to_right_viewer, EhIcons.Reader.LeftToRight, 0x00000001),
+    RIGHT_TO_LEFT(2, R.string.right_to_left_viewer, EhIcons.Reader.RightToLeft, 0x00000002),
+    VERTICAL(3, R.string.vertical_viewer, EhIcons.Reader.Vertical, 0x00000003),
+    WEBTOON(4, R.string.webtoon_viewer, EhIcons.Reader.Webtoon, 0x00000004),
+    CONTINUOUS_VERTICAL(5, R.string.vertical_plus_viewer, EhIcons.Reader.ContinuousVertical, 0x00000005),
     ;
 
     companion object {
