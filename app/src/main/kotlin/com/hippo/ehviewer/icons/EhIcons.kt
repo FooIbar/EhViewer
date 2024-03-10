@@ -14,6 +14,8 @@ object EhIcons {
         val Default = Filled
     }
 
+    object Reader
+
     val Default = Filled
 }
 

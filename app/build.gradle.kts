@@ -269,6 +269,9 @@ dependencies {
     coreLibraryDesugaring(libs.desugar)
 
     "gmsImplementation"(libs.bundles.cronet)
+
+    debugImplementation(libs.compose.ui.tooling)
+    implementation(libs.compose.ui.tooling.preview)
 }
 
 kotlin {

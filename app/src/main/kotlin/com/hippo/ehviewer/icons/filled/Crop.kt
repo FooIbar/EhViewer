@@ -1,7 +1,10 @@
 package com.hippo.ehviewer.icons.filled
 
+import androidx.compose.foundation.Image
 import androidx.compose.material.icons.materialIcon
 import androidx.compose.material.icons.materialPath
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.util.unsafeLazy
 
@@ -36,4 +39,11 @@ val EhIcons.Filled.Crop by unsafeLazy {
             close()
         }
     }
+}
+
+@Preview
+@Composable
+@Suppress("UnusedPrivateMember")
+private fun IconCropPreview() {
+    Image(imageVector = EhIcons.Default.Crop, contentDescription = null)
 }

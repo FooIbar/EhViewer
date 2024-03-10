@@ -1,10 +1,14 @@
 package com.hippo.ehviewer.icons.filled
 
+import androidx.compose.foundation.Image
 import androidx.compose.material.icons.materialIcon
 import androidx.compose.material.icons.materialPath
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.util.unsafeLazy
 
+@Suppress("BooleanLiteralArgument")
 val EhIcons.Filled.CropOff by unsafeLazy {
     materialIcon(name = "CropOff") {
         materialPath {
@@ -57,4 +61,11 @@ val EhIcons.Filled.CropOff by unsafeLazy {
             close()
         }
     }
+}
+
+@Preview
+@Composable
+@Suppress("UnusedPrivateMember")
+private fun IconCropOffPreview() {
+    Image(imageVector = EhIcons.Default.CropOff, contentDescription = null)
 }
