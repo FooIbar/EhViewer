@@ -154,7 +154,6 @@ object Settings : DataStorePreferences(null) {
     var downloadOriginImage by boolPref("download_origin_image", false)
     var saveAsCbz by boolPref("save_as_cbz", false)
     var archiveMetadata by boolPref("archive_metadata", true)
-    var enableCronet by boolPref("enable_cronet", true)
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)
     var defaultFavSlot by intPref("default_favorite_slot", -2)
     var securityDelay by intPref("require_unlock_delay", 0)

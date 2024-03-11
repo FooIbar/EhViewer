@@ -20,7 +20,7 @@ data class GithubArtifacts(
     @SerialName("artifacts") val artifacts: List<GithubArtifact>,
 ) {
     fun getDownloadLink(): String {
-        return (artifacts.find { it.name.contains(apkVariant) } ?: artifacts[0]).downloadLink
+        return (artifacts.find { matchVariant(it.name) } ?: artifacts[0]).downloadLink
     }
 }
 

@@ -26,7 +26,6 @@ kotlinx-datetime = "0.6.0-RC.2"
 kotlinx-serialization = "1.6.3"
 ksp = "2.0.0-Beta4-1.0.19"
 ktor = "3.0.0-beta-1"
-okhttp3 = "5.0.0-alpha.12"
 okio = "3.8.0"
 splitties = "3.0.0"
 telephoto = "0.8.0"
@@ -82,8 +81,7 @@ compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinat
 
 material-motion-core = "io.github.fornewid:material-motion-compose-core:1.2.0"
 
-cronet-api = "org.chromium.net:cronet-api:119.6045.31"
-cronet-gms = "com.google.android.gms:play-services-cronet:18.0.1"
+cronet-embedded = "org.chromium.net:cronet-embedded:119.6045.31"
 
 desugar = "com.android.tools:desugar_jdk_libs_nio:2.0.4"
 
@@ -95,12 +93,10 @@ jsoup = "org.jsoup:jsoup:1.17.2"
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
-ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 
 logcat = "com.squareup.logcat:logcat:0.1"
 
-okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }
-okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp3" }
 okio-jvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
 
 photoview = "com.github.chrisbanes:PhotoView:2.3.0"
@@ -124,10 +120,7 @@ telephoto-zoomable = { module = "me.saket.telephoto:zoomable", version.ref = "te
 [bundles]
 coil = ["coil-compose", "coil-gif", "coil-network"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
-cronet = ["cronet-api", "cronet-gms"]
 kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-okio", "serialization-xml-core", "serialization-xml"]
-ktor = ["ktor-client-okhttp"]
-okhttp = ["okhttp-android"]
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
 
 [plugins]

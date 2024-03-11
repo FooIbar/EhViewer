@@ -355,7 +355,6 @@
     <string name="settings_advanced_dump_logcat_to">已將紀錄檔儲存至 %s</string>
     <string name="settings_advanced_read_cache_size">閱讀快取大小</string>
     <string name="settings_advanced_app_language_title">應用程式介面語言</string>
-     <string name="settings_advanced_http_engine">Http 引擎 (需重新啟動)</string>
     <string name="settings_advanced_touch_slop">[測試] 觸控溢出係數</string>
     <string name="settings_advanced_touch_slop_summary">提高係數將降低滑動手勢敏感度</string>
     <string name="settings_advanced_export_data">匯出檔案</string>

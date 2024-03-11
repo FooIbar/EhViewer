@@ -69,12 +69,8 @@
 |-------------|------------------------|
 | Default     | Android 9+, 完全支持       |
 | Marshmallow | Android 6.0-8.1, 有限支持* |
-| OSS         | FOSS 依赖项**             |
-| GMS         | 专有 GMS 组件              |
 
 \* 可能不支持某些压缩包
-
-** 在不支持 [HttpEngine](https://developer.android.com/reference/android/net/http/HttpEngine) 的设备上回退到 OkHttp
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
