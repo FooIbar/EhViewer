@@ -16,5 +16,7 @@
 
 -dontwarn org.conscrypt.Conscrypt
 
+-keepattributes LineNumberTable
+
 -allowaccessmodification
 -repackageclasses
