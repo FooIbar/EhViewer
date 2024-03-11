@@ -6,9 +6,7 @@ import android.net.Uri
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -17,9 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -30,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -48,7 +42,6 @@ import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.ReadableTime
-import com.hippo.ehviewer.util.isCronetAvailable
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.system.logcat
@@ -144,38 +137,6 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 entryValueRes = R.array.app_language_entry_values,
                 value = Settings::language,
             )
-            var enableCronet by Settings::enableCronet.observed
-            Preference(
-                title = stringResource(id = R.string.settings_advanced_http_engine),
-                summary = if (enableCronet) "Cronet" else "OkHttp",
-            ) {
-                coroutineScope.launch {
-                    dialogState.awaitPermissionOrCancel(
-                        title = R.string.settings_advanced_http_engine,
-                        showCancelButton = false,
-                    ) {
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            SingleChoiceSegmentedButtonRow(modifier = Modifier.align(Alignment.Center)) {
-                                SegmentedButton(
-                                    selected = !enableCronet,
-                                    onClick = { enableCronet = false },
-                                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                                ) {
-                                    Text("OkHttp")
-                                }
-                                SegmentedButton(
-                                    selected = enableCronet,
-                                    onClick = { enableCronet = true },
-                                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                                    enabled = isCronetAvailable,
-                                ) {
-                                    Text("Cronet")
-                                }
-                            }
-                        }
-                    }
-                }
-            }
             SwitchPreference(
                 title = stringResource(id = R.string.preload_thumb_aggressively),
                 value = Settings::preloadThumbAggressively,

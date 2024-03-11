@@ -54,22 +54,16 @@ import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.isAtLeastP
-import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
-import com.hippo.ehviewer.util.isCronetAvailable
-import eu.kanade.tachiyomi.network.interceptor.UncaughtExceptionInterceptor
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.cookies.HttpCookies
 import kotlinx.coroutines.launch
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogcatLogger
-import okhttp3.AsyncDns
-import okhttp3.android.AndroidAsyncDns
 import okio.Path.Companion.toOkioPath
 import splitties.arch.room.roomDb
 import splitties.init.appCtx
@@ -185,25 +179,9 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
 
     companion object {
         val ktorClient by lazy {
-            if (Settings.enableCronet && isCronetAvailable) {
-                HttpClient(CronetEngine) {
-                    install(HttpCookies) {
-                        storage = EhCookieStore
-                    }
-                }
-            } else {
-                HttpClient(OkHttp) {
-                    engine {
-                        config {
-                            if (isAtLeastQ) {
-                                dns(AsyncDns.toDns(AndroidAsyncDns.IPv4, AndroidAsyncDns.IPv6))
-                            }
-                            addInterceptor(UncaughtExceptionInterceptor())
-                        }
-                    }
-                    install(HttpCookies) {
-                        storage = EhCookieStore
-                    }
+            HttpClient(CronetEngine) {
+                install(HttpCookies) {
+                    storage = EhCookieStore
                 }
             }
         }

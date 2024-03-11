@@ -88,27 +88,17 @@ android {
         }
     }
 
-    flavorDimensions += listOf("api", "oss")
+    flavorDimensions += "api"
 
     productFlavors {
-        create("default") {
-            dimension = "api"
-        }
+        create("default")
         create("marshmallow") {
-            dimension = "api"
             minSdk = 23
             applicationIdSuffix = ".m"
             versionNameSuffix = "-M"
             compileOptions {
                 isCoreLibraryDesugaringEnabled = true
             }
-        }
-        create("oss") {
-            dimension = "oss"
-        }
-        create("gms") {
-            dimension = "oss"
-            versionNameSuffix = "-gms"
         }
     }
 
@@ -154,7 +144,6 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/**"
-            excludes += "/okhttp3/**"
             excludes += "/kotlin/**"
             excludes += "**.txt"
             excludes += "**.bin"
@@ -231,10 +220,6 @@ dependencies {
 
     implementation(libs.bundles.splitties)
 
-    // https://square.github.io/okhttp/changelogs/changelog/
-    implementation(platform(libs.okhttp.bom))
-    implementation(libs.bundles.okhttp)
-
     implementation(libs.okio.jvm)
 
     implementation(libs.logcat)
@@ -258,7 +243,7 @@ dependencies {
 
     implementation(libs.telephoto.zoomable)
 
-    implementation(libs.bundles.ktor)
+    implementation(libs.ktor.client.core)
 
     implementation(libs.bundles.kotlinx.serialization)
 
@@ -268,7 +253,7 @@ dependencies {
 
     coreLibraryDesugaring(libs.desugar)
 
-    "gmsImplementation"(libs.bundles.cronet)
+    implementation(libs.cronet.embedded)
 
     debugImplementation(libs.compose.ui.tooling)
     implementation(libs.compose.ui.tooling.preview)
