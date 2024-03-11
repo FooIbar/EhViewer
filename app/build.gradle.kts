@@ -60,7 +60,7 @@ android {
 
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
-        minSdk = 28
+        minSdk = 23
         targetSdk = 34
         versionCode = 180051
         versionName = "1.12.0"
@@ -81,7 +81,6 @@ android {
                 "nb-rNO",
             ),
         )
-        buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName$versionNameSuffix\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
         ndk {
@@ -89,24 +88,14 @@ android {
         }
     }
 
-    flavorDimensions += "api"
-
-    productFlavors {
-        create("default")
-        create("marshmallow") {
-            minSdk = 23
-            applicationIdSuffix = ".m"
-            versionNameSuffix = "-M"
-            compileOptions {
-                isCoreLibraryDesugaringEnabled = true
-            }
-        }
-    }
-
     externalNativeBuild {
         cmake {
             path = File("src/main/cpp/CMakeLists.txt")
         }
+    }
+
+    compileOptions {
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -143,6 +132,9 @@ android {
     }
 
     packaging {
+        dex {
+            useLegacyPackaging = false
+        }
         resources {
             excludes += "/META-INF/**"
             excludes += "/kotlin/**"

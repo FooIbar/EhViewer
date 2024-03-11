@@ -15,6 +15,7 @@
  */
 package com.hippo.ehviewer.util
 
+import android.os.Build
 import android.os.Environment
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
@@ -29,6 +30,10 @@ object AppConfig {
     private const val TEMP = "temp"
     private const val PARSE_ERROR = "parse_error"
     private const val CRASH = "crash"
+
+    val abi = Build.SUPPORTED_ABIS[0].takeIf {
+        it in setOf("arm64-v8a", "x86_64", "armeabi-v7a", "x86")
+    } ?: "universal"
 
     private val externalAppDir: File?
         get() {

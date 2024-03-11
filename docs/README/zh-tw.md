@@ -65,13 +65,6 @@
 
 # 下載
 
-| 變種          | 功能                     |
-|-------------|------------------------|
-| Default     | Android 9+, 完全支援       |
-| Marshmallow | Android 6.0-8.1, 有限支援* |
-
-\* 可能不支援某些壓縮包
-
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
 </a>

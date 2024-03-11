@@ -1,5 +1,6 @@
 package tachiyomi.data.release
 
+import com.hippo.ehviewer.util.AppConfig
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -20,7 +21,7 @@ data class GithubArtifacts(
     @SerialName("artifacts") val artifacts: List<GithubArtifact>,
 ) {
     fun getDownloadLink(): String {
-        return (artifacts.find { matchVariant(it.name) } ?: artifacts[0]).downloadLink
+        return (artifacts.find { it.name.contains(AppConfig.abi) } ?: artifacts[0]).downloadLink
     }
 }
 
