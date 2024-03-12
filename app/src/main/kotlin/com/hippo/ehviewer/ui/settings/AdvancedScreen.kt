@@ -77,10 +77,10 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
-            SwitchPreference(
-                title = "New Compose Reader [WIP!!!]",
-                value = Settings::newReader,
-            )
+//            SwitchPreference(
+//                title = "New Compose Reader [WIP!!!]",
+//                value = Settings::newReader,
+//            )
             SwitchPreference(
                 title = stringResource(id = R.string.settings_advanced_save_parse_error_body),
                 summary = stringResource(id = R.string.settings_advanced_save_parse_error_body_summary),
