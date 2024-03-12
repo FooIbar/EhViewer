@@ -527,10 +527,9 @@
     <string name="uploaded_time_asc">Uploaded time (ascending)</string>
     <string name="title_asc">Title (ascending)</string>
     <string name="title_desc">Title (descending)</string>
-    <string name="download_label_asc">Download label (ascending)</string>
-    <string name="download_label_desc">Download label (descending)</string>
     <string name="page_count_asc">Page count (ascending)</string>
     <string name="page_count_desc">Page count (descending)</string>
+    <string name="group_by_download_label">Group by download label</string>
     <string name="download_filter">Filter</string>
     <string name="download_all">All</string>
     <string name="download_start_all_reversed">Start all (reversed)</string>
