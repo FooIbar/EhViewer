@@ -564,12 +564,15 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 withUIContext { navToReader(list.random().galleryInfo) }
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
-                val selected = showSingleChoice(
+                val oldMode = SortMode.from(sortMode)
+                val (selected, checked) = showSelectItemWithCheckBox(
                     sortModes.toList(),
-                    SortMode.All.indexOfFirst { it.flag == sortMode },
                     R.string.sort_by,
+                    R.string.group_by_download_label,
+                    SortMode.All.indexOfFirst { it.field == oldMode.field && it.order == oldMode.order },
+                    oldMode.groupByDownloadLabel,
                 )
-                val mode = SortMode.All[selected]
+                val mode = SortMode.All[selected].copy(groupByDownloadLabel = checked)
                 DownloadManager.sortDownloads(mode)
                 sortMode = mode.flag
                 invalidateKey = !invalidateKey

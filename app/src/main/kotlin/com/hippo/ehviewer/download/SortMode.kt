@@ -3,9 +3,9 @@ package com.hippo.ehviewer.download
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.dao.DownloadInfo
 
-data class SortMode(val field: Field, val order: Order) {
+data class SortMode(val field: Field, val order: Order, val groupByDownloadLabel: Boolean = false) {
     val flag
-        get() = field.value shl 1 or order.value
+        get() = groupByDownloadLabel.compareTo(false) shl 4 or (field.value shl 1) or order.value
 
     enum class Field(val value: Int) {
         GID(0),
@@ -21,22 +21,28 @@ data class SortMode(val field: Field, val order: Order) {
     }
 
     fun comparator(): Comparator<DownloadInfo> {
-        val comparator = when (field) {
+        var comparator = when (field) {
             Field.GID -> compareBy { it.gid }
-            Field.TITLE -> compareBy { EhUtils.getSuitableTitle(it) }
+            Field.TITLE, Field.LABEL -> compareBy { EhUtils.getSuitableTitle(it) }
             Field.TIME -> compareBy { it.time }
-            Field.LABEL -> compareBy<DownloadInfo> { it.label }.thenBy { EhUtils.getSuitableTitle(it) }
             Field.PAGES -> compareBy<DownloadInfo> { it.pages }.thenBy { EhUtils.getSuitableTitle(it) }
         }
-        return if (order == Order.ASC) comparator else comparator.reversed()
+        if (order == Order.DESC) {
+            comparator = comparator.reversed()
+        }
+        if (groupByDownloadLabel) {
+            comparator = compareBy<DownloadInfo> { it.label }.then(comparator)
+        }
+        return comparator
     }
 
     companion object {
         fun from(flag: Int): SortMode {
-            val field = flag shr 1
-            val order = flag and 1
+            val field = flag and 0xF shr 1
+            val order = flag and 0x1
+            val groupByDownloadLabel = flag shr 4 == 1
             require(field in Field.entries.indices && order in Order.entries.indices)
-            return SortMode(Field.entries[field], Order.entries[order])
+            return SortMode(Field.entries[field], Order.entries[order], groupByDownloadLabel)
         }
         val Default = SortMode(Field.TIME, Order.DESC)
         val All = listOf(
@@ -46,8 +52,6 @@ data class SortMode(val field: Field, val order: Order) {
             SortMode(Field.GID, Order.ASC),
             SortMode(Field.TITLE, Order.ASC),
             SortMode(Field.TITLE, Order.DESC),
-            SortMode(Field.LABEL, Order.ASC),
-            SortMode(Field.LABEL, Order.DESC),
             SortMode(Field.PAGES, Order.ASC),
             SortMode(Field.PAGES, Order.DESC),
         )

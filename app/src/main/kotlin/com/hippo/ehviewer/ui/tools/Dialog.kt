@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
@@ -487,8 +488,12 @@ class DialogState {
         items: List<String>,
         @StringRes title: Int,
         @StringRes checkBoxText: Int,
+        selected: Int = -1,
+        initialChecked: Boolean = false,
     ): Pair<Int, Boolean> = showNoButton {
-        var checked by remember { mutableStateOf(false) }
+        var checked by remember { mutableStateOf(initialChecked) }
+        val textStyle = MaterialTheme.typography.titleMedium
+        val selectedColor = MaterialTheme.colorScheme.tertiary
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
             Text(
                 text = stringResource(id = title),
@@ -497,14 +502,20 @@ class DialogState {
             )
             LazyColumn {
                 itemsIndexed(items) { index, text ->
-                    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.tertiary) {
-                        Text(
-                            text = text,
-                            modifier = Modifier.clickable { dismissWith(index to checked) }.fillMaxWidth()
-                                .padding(horizontal = 24.dp, vertical = 16.dp),
-                            style = MaterialTheme.typography.titleMedium,
-                        )
-                    }
+                    ListItem(
+                        headlineContent = {
+                            Text(
+                                text = text,
+                                style = if (index == selected) textStyle.copy(color = selectedColor) else textStyle,
+                            )
+                        },
+                        modifier = Modifier.clickable { dismissWith(index to checked) }.fillMaxWidth(),
+                        trailingContent = {
+                            if (index == selected) {
+                                Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = selectedColor)
+                            }
+                        },
+                    )
                 }
             }
             LabeledCheckbox(

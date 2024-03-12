@@ -461,10 +461,9 @@
     <string name="uploaded_time_asc">上傳時間 (遞增)</string>
     <string name="title_asc">標題 (遞減)</string>
     <string name="title_desc">標題 (遞增)</string>
-    <string name="download_label_asc">下載標籤 (遞減)</string>
-    <string name="download_label_desc">下載標籤 (遞增)</string>
     <string name="page_count_asc">頁數 (遞減)</string>
     <string name="page_count_desc">頁數 (遞增)</string>
+    <string name="group_by_download_label">按下載標籤分組</string>
     <string name="download_filter">過濾</string>
     <string name="download_all">全部</string>
     <string name="download_start_all_reversed">全部開始（倒序）</string>
