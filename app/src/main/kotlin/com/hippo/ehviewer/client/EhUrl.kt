@@ -36,7 +36,6 @@ object EhUrl {
     const val API_E = "https://api.e-hentai.org/api.php"
     const val URL_UCONFIG_E = HOST_E + "uconfig.php"
     const val URL_MY_TAGS_E = HOST_E + "mytags"
-    const val API_SIGN_IN = "https://forums.e-hentai.org/index.php?act=Login&CODE=01"
     const val URL_POPULAR_E = "https://e-hentai.org/popular"
     const val URL_POPULAR_EX = "https://exhentai.org/popular"
     const val URL_IMAGE_SEARCH_E = "https://upload.e-hentai.org/image_lookup.php"

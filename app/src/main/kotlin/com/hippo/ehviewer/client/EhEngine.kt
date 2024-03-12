@@ -44,7 +44,6 @@ import com.hippo.ehviewer.client.parser.GalleryTokenApiParser
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.client.parser.ProfileParser
 import com.hippo.ehviewer.client.parser.RateGalleryResult
-import com.hippo.ehviewer.client.parser.SignInParser
 import com.hippo.ehviewer.client.parser.TorrentParser
 import com.hippo.ehviewer.client.parser.TorrentResult
 import com.hippo.ehviewer.client.parser.VoteCommentResult
@@ -232,22 +231,6 @@ object EhEngine {
 
     suspend fun getFavorites(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(FavoritesParser::parse)
         .apply { galleryInfoList.fillInfo(url) }
-
-    suspend fun signIn(username: String, password: String): String {
-        val referer = "https://forums.e-hentai.org/index.php?act=Login&CODE=00"
-        val url = EhUrl.API_SIGN_IN
-        val origin = "https://forums.e-hentai.org"
-        return ehRequest(url, referer, origin) {
-            formBody {
-                append("referer", referer)
-                append("b", "")
-                append("bt", "")
-                append("UserName", username)
-                append("PassWord", password)
-                append("CookieDate", "1")
-            }
-        }.fetchUsingAsText(SignInParser::parse)
-    }
 
     suspend fun commentGallery(url: String, comment: String, id: Long = -1) = ehRequest(url, url, EhUrl.origin) {
         formBody {

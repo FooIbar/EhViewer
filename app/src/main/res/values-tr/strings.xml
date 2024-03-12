@@ -8,11 +8,8 @@
     <string name="history">Geçmiş</string>
     <string name="downloads">İndirilenler</string>
     <string name="settings">Ayarlar</string>
-    <string name="username">Kullanıcı adı</string>
-    <string name="password">Şifre</string>
     <string name="sign_in">Giriş yap</string>
     <string name="register">Kaydol</string>
-    <string name="sign_in_via_webview">WebView aracılığıyla giriş yap</string>
     <string name="sign_in_first">Lütfen önce giriş yap</string>
     <string name="waring">Uyarı</string>
     <string name="invalid_download_location">İndirme konumu kullanılamıyor. Lütfen Ayarlardan ayarlayın.</string>
@@ -33,11 +30,7 @@
     <string name="error_get_ptoken_error">pToken alınamadı</string>
     <string name="error_cant_save_image">Görsel kaydedilemiyor</string>
     <string name="error_invalid_number">Geçersiz numara</string>
-    <string name="error_username_cannot_empty">Kullanıcı adı boş bir metin olamaz</string>
-    <string name="error_password_cannot_empty">Şifre boş bir metin olamaz</string>
     <string name="guest_mode">Giriş yapmaksızın devam et</string>
-    <string name="sign_in_failed">Giriş başarısız</string>
-    <string name="get_it">Anladım</string>
     <string name="gallery_list_empty_hit">Dünya büyük olmasına rağmen pandacık yalnız oturuyor</string>
     <string name="keyword_search">Anahtar Kelime Arama</string>
     <string name="image_search">Görsel Arama</string>
@@ -68,7 +61,6 @@
     <string name="error_unknown_host">Bilinmeyen host</string>
     <string name="app_waring">Bu uygulamadaki içerikler internetten alınmaktadır. Bazı içerikler fiziksel veya zihinsel olarak size zararlı gelebilir.Yukarıda, riskleri öğrendiniz ve üstleneceksiniz.
 \nKullanmaya devam ederek, yukarıdaki koşulları kabul edersiniz.</string>
-    <string name="sign_in_failed_tip">Bu sorun devam ederse, \"WebView aracılığıyla giriş yap\" seçeneğini veya \"Çerez aracılığıyla giriş yap\" seçeneğini deneyin.</string>
     <string name="gallery_list_search_bar_open_gallery">Galeriyi aç</string>
     <string name="gallery_list_search_bar_hint_e_hentai">E-Hentai\'de Arayın</string>
     <string name="gallery_list_empty_hit_subscription">Etiketlere Ayarlar-&gt;EH-&gt;Etiketlerim yerinden abone olun</string>
