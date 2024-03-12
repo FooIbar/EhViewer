@@ -25,12 +25,8 @@
     <string name="downloads">다운로드</string>
     <string name="settings">설정</string>
 
-    <string name="username">사용자 이름</string>
-    <string name="password">비밀번호</string>
-
     <string name="sign_in">로그인</string>
     <string name="register">회원가입</string>
-    <string name="sign_in_via_webview">WebView를 통하여 로그인</string>
     <string name="sign_in_first">먼저 로그인하세요.</string>
 
     <string name="text_is_empty">텍스트가 비어 있습니다.</string>
@@ -60,11 +56,7 @@
     <string name="error_invalid_number">잘못된 번호</string>
 
     <string name="app_waring">이 앱의 내용은 인터넷에서 받아옵니다. 이 앱을 사용하기 위해서는 받아온 내용 중 일부가 사용자에게 가할 수 있는 신체적 또는 정신적 피해를 감수해야 합니다.</string>
-    <string name="error_username_cannot_empty">사용자 이름은 비워둘 수 없습니다.</string>
-    <string name="error_password_cannot_empty">비밀번호는 비워둘 수 없습니다.</string>
     <string name="guest_mode">로그인 없이 사용</string>
-    <string name="sign_in_failed">로그인 실패</string>
-    <string name="get_it">알겠습니다</string>
 
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">ExHentai 검색</string>

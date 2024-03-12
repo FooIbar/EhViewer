@@ -36,11 +36,8 @@
     <string name="history">History</string>
     <string name="downloads">Downloads</string>
     <string name="settings">Settings</string>
-    <string name="username">Username</string>
-    <string name="password">Password</string>
     <string name="sign_in">Sign in</string>
     <string name="register">Register</string>
-    <string name="sign_in_via_webview">Sign in via WebView</string>
     <string name="sign_in_first">Please sign in first</string>
     <string name="text_is_empty">Text is empty</string>
     <string name="waring">Warning</string>
@@ -90,12 +87,7 @@
     <string name="error_invalid_number">Invalid number</string>
     <string name="app_waring">The content of this application is from the Internet. Some of it may do physical or mental harm to you. You have learnt the risks above and would like to undertake them. By continuing to use it, you agree to the above terms.</string>
     <string name="app_waring_2">By continuing to use it, you agree to the above terms.</string>
-    <string name="error_username_cannot_empty">Username cannot be an empty string</string>
-    <string name="error_password_cannot_empty">Password cannot be an empty string</string>
     <string name="guest_mode">Continue without signing in</string>
-    <string name="sign_in_failed">Sign in failed</string>
-    <string name="sign_in_failed_tip">If this issue continues, try \"Sign in via WebView\" or \"Sign in via cookies\".</string>
-    <string name="get_it">Got it</string>
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">Search ExHentai</string>
     <string name="gallery_list_search_bar_hint_e_hentai">Search E-Hentai</string>

@@ -26,12 +26,8 @@
     <string name="downloads">Descargas</string>
     <string name="settings">Configuración</string>
 
-    <string name="username">Usuario</string>
-    <string name="password">Contraseña</string>
-
     <string name="sign_in">Iniciar sesión</string>
     <string name="register">Registrarse</string>
-    <string name="sign_in_via_webview">Iniciar sesión vía web</string>
     <string name="sign_in_first">Por favor, inicie sesión primero</string>
 
     <string name="text_is_empty">El texto está vacío</string>
@@ -58,10 +54,7 @@
     <string name="error_invalid_number">Número invalido</string>
 
     <string name="app_waring">El contenido de esta aplicación es de Internet. Algunas de ellas pueden causarle daño psicológico. Ahora sabes los riesgos anteriormente mencionado y te gustaría asumirlos</string>
-    <string name="error_username_cannot_empty">El usuario no puede estar vacío</string>
     <string name="guest_mode">Saltar inicio de sesión</string>
-    <string name="sign_in_failed">Inicio de sesión fallido</string>
-    <string name="get_it">Entendido</string>
 
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">Buscar ExHentai</string>
@@ -385,7 +378,6 @@
     <string name="delete">Eliminar</string>
     <string name="download_state_failed">Descarga fallida</string>
     <string name="download_state_none">Descarga en pausa</string>
-    <string name="error_password_cannot_empty">La contraseña no puede estar vacía</string>
     <string name="error_something_wrong_happened">Ocurrió algo malo</string>
     <string name="settings_privacy">Privacidad</string>
     <string name="filter">Bloqueo de galerías</string>

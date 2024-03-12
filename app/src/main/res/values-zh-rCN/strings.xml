@@ -22,11 +22,8 @@
     <string name="history">历史</string>
     <string name="downloads">下载</string>
     <string name="settings">设置</string>
-    <string name="username">用户名</string>
-    <string name="password">密码</string>
     <string name="sign_in">登录</string>
     <string name="register">注册</string>
-    <string name="sign_in_via_webview">通过网页登录</string>
     <string name="sign_in_first">请先登录</string>
     <string name="text_is_empty">文本为空</string>
     <string name="waring">警告</string>
@@ -52,12 +49,7 @@
     <string name="error_invalid_number">非法数字</string>
     <string name="app_waring">本应用中内容来自互联网，部分内容可能对您的生理及心理造成难以恢复的伤害。本应用作者不会对由本应用造成的任何后果负责。未成年人应在监护人指导下使用本应用。请遵守所在地的法律法规。</string>
     <string name="app_waring_2">继续使用即代表您同意上述条款。</string>
-    <string name="error_username_cannot_empty">用户名不可为空</string>
-    <string name="error_password_cannot_empty">密码不可为空</string>
     <string name="guest_mode">游客模式</string>
-    <string name="sign_in_failed">登录失败</string>
-    <string name="sign_in_failed_tip">若持续出错，请尝试“通过网页登录”或“通过 Cookie 登录”。</string>
-    <string name="get_it">知道了</string>
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">搜索 ExHentai</string>
     <string name="gallery_list_search_bar_hint_e_hentai">搜索 E-Hentai</string>

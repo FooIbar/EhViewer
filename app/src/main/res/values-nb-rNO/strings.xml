@@ -8,8 +8,6 @@
     <string name="error_unknown_host">Ukjent vert</string>
     <string name="error_redirection">For mange videresendinger</string>
     <string name="error_socket">Nettverksfeil</string>
-    <string name="password">Passord</string>
-    <string name="sign_in_via_webview">Logg inn via WebView</string>
     <string name="downloads">Nedlastninger</string>
     <string name="register">Registrering</string>
     <string name="error_invalid_number">Ugyldig nummer</string>
@@ -18,7 +16,6 @@
     <string name="history">Historikk</string>
     <string name="subscription">Abonnement</string>
     <string name="settings">Innstillinger</string>
-    <string name="username">Brukernavn</string>
     <string name="sign_in">Logg inn</string>
     <string name="sign_in_first">Logg inn først</string>
     <string name="download">Last ned</string>
@@ -53,7 +50,6 @@
     <string name="torrents">Torrenter</string>
     <string name="more_previews">Flere forhåndsvisninger</string>
     <string name="refresh">Gjenoppfrisk</string>
-    <string name="get_it">Skjønner</string>
     <string name="keyword_search">Nøkkelordssøk</string>
     <string name="search_sft">Etiketter</string>
     <string name="any">Ubegrenset</string>

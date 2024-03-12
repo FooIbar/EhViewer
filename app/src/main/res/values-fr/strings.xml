@@ -26,12 +26,8 @@
     <string name="downloads">Téléchargement</string>
     <string name="settings">Paramétres</string>
 
-    <string name="username">Nom d\'utilisateur</string>
-    <string name="password">Mot de passe</string>
-
     <string name="sign_in">Se connecter</string>
     <string name="register">Créer un compte</string>
-    <string name="sign_in_via_webview">Se connecter via WebView</string>
     <string name="sign_in_first">Connectez-vous pour continuer</string>
 
     <string name="text_is_empty">Entrez le texte.</string>
@@ -58,11 +54,7 @@
     <string name="error_invalid_number">Nombre invalide</string>
 
     <string name="app_waring">Le contenu de l\'application provient de l\'Internet, dont quelque chose peut vous causer le dommage physique ou mentale. Vous l\'avez bien compris et voulez continuer quand même.</string>
-    <string name="error_username_cannot_empty">Nom d\'ultilisateur ne doit pas être une chaîne vide</string>
-    <string name="error_password_cannot_empty">Mot de passe ne doit pas être une chaîne vide</string>
     <string name="guest_mode">Continuer sans se connecter</string>
-    <string name="sign_in_failed">Impossible de se connecter</string>
-    <string name="get_it">Compris</string>
 
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">Chercher sur ExHentai</string>
