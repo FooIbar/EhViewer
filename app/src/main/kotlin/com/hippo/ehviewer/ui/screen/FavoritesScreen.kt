@@ -230,6 +230,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
         },
         onSearchHidden = { fabHidden = false },
         refreshState = refreshState,
+        tagNamespace = !isLocalFav,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
