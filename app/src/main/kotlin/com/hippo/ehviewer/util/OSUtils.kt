@@ -17,57 +17,37 @@ package com.hippo.ehviewer.util
 
 import android.os.Looper
 import eu.kanade.tachiyomi.util.system.logcat
-import java.io.BufferedReader
 import java.io.FileReader
-import java.util.regex.Pattern
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
 object OSUtils {
     private const val PROCFS_MEMFILE = "/proc/meminfo"
-    private val PROCFS_MEMFILE_FORMAT = Pattern.compile("^([a-zA-Z]*):[ \t]*([0-9]*)[ \t]kB")
+    private val PROCFS_MEMFILE_FORMAT = Regex("^([a-zA-Z]*):[ \t]*([0-9]*)[ \t]kB")
     private const val MEMTOTAL_STRING = "MemTotal"
-    private var sTotalMem = Long.MIN_VALUE
+
     val appAllocatedMemory: Long
-        /**
-         * Get application allocated memory size
-         */
         get() = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()
+
     val appMaxMemory: Long
-        /**
-         * Get application max memory size
-         */
         get() = Runtime.getRuntime().maxMemory()
-    val totalMemory: Long
-        /**
-         * Get device RAM size
-         */
-        get() {
-            if (sTotalMem == Long.MIN_VALUE) {
-                runCatching {
-                    BufferedReader(FileReader(PROCFS_MEMFILE), 64).use { reader ->
-                        var line: String?
-                        while (reader.readLine().also { line = it } != null) {
-                            val matcher = PROCFS_MEMFILE_FORMAT.matcher(line!!)
-                            if (matcher.find() && MEMTOTAL_STRING == matcher.group(1)) {
-                                var mem = matcher.group(2)!!.toLongOrDefault(-1L)
-                                if (mem != -1L) {
-                                    mem *= 1024
-                                }
-                                sTotalMem = mem
-                                break
-                            }
+
+    val totalMemory by lazy {
+        runCatching {
+            FileReader(PROCFS_MEMFILE).buffered(64).use { reader ->
+                reader.lineSequence().forEach { line ->
+                    PROCFS_MEMFILE_FORMAT.find(line)?.destructured?.let { (k, v) ->
+                        if (k == MEMTOTAL_STRING) {
+                            return@runCatching v.toLong() * 1024
                         }
                     }
-                }.onFailure {
-                    logcat(it)
-                }
-                if (sTotalMem == Long.MIN_VALUE) {
-                    sTotalMem = -1L
                 }
             }
-            return sTotalMem
-        }
+            -1L
+        }.onFailure {
+            logcat(it)
+        }.getOrElse { -1L }
+    }
 }
 
 val isMainThread: Boolean

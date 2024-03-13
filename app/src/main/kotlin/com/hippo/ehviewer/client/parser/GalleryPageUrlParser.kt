@@ -16,34 +16,21 @@
 package com.hippo.ehviewer.client.parser
 
 import com.hippo.ehviewer.client.EhUrl
-import com.hippo.ehviewer.util.toIntOrDefault
-import com.hippo.ehviewer.util.toLongOrDefault
-import java.util.regex.Pattern
 
 /**
  * Like http://exhentai.org/s/91ea4b6d89/901103-12
  */
 object GalleryPageUrlParser {
-    private val URL_STRICT_PATTERN = Pattern.compile(
+    private val URL_STRICT_PATTERN = Regex(
         "https?://(?:${EhUrl.DOMAIN_EX}|${EhUrl.DOMAIN_E}(?:/lofi)?)/s/([0-9a-f]{10})/(\\d+)-(\\d+)",
     )
-    private val URL_PATTERN = Pattern.compile("([0-9a-f]{10})/(\\d+)-(\\d+)")
+    private val URL_PATTERN = Regex("([0-9a-f]{10})/(\\d+)-(\\d+)")
 
     fun parse(url: String?, strict: Boolean = true): Result? {
         url ?: return null
         val pattern = if (strict) URL_STRICT_PATTERN else URL_PATTERN
-        val m = pattern.matcher(url)
-        return if (m.find()) {
-            val gid = m.group(2)!!.toLongOrDefault(-1L)
-            val pToken = m.group(1)!!
-            val page = m.group(3)!!.toIntOrDefault(0) - 1
-            if (gid < 0 || page < 0) {
-                null
-            } else {
-                Result(gid, pToken, page)
-            }
-        } else {
-            null
+        return pattern.find(url)?.destructured?.let { (pToken, gid, page) ->
+            Result(gid.toLong(), pToken, page.toInt() - 1)
         }
     }
 
