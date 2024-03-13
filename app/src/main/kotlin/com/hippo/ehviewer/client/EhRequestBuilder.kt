@@ -21,10 +21,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.util.bodyAsUtf8Text
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.forms.FormBuilder
 import io.ktor.client.request.forms.FormDataContent
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
@@ -95,9 +92,4 @@ inline fun HttpRequestBuilder.jsonBody(builder: JsonObjectBuilder.() -> Unit) {
     method = HttpMethod.Post
     val json = buildJsonObject(builder).toString()
     setBody(TextContent(text = json, contentType = ContentType.Application.Json))
-}
-
-fun HttpRequestBuilder.multipartBody(builder: FormBuilder.() -> Unit) {
-    method = HttpMethod.Post
-    setBody(MultiPartFormDataContent(formData(builder)))
 }

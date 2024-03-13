@@ -29,11 +29,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.chromium.net.CronetException
-import org.chromium.net.UploadDataProvider
-import org.chromium.net.UploadDataSink
 import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
 import org.chromium.net.apihelpers.UploadDataProviders
@@ -107,7 +104,7 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
             data.headers.flattenForEach { key, value -> addHeader(key, value) }
             data.body.contentType?.let { addHeader(HttpHeaders.ContentType, it.toString()) }
             data.body.contentLength?.let { addHeader(HttpHeaders.ContentLength, it.toString()) }
-            data.body.toUploadDataProvider(callContext)?.let { setUploadDataProvider(it, cronetHttpClientExecutor) }
+            data.body.toUploadDataProvider()?.let { setUploadDataProvider(it, cronetHttpClientExecutor) }
         }.build()
         request.start()
         callContext[Job]!!.invokeOnCompletion { request.cancel() }
@@ -139,24 +136,8 @@ private fun UrlResponseInfo.toHttpResponseData(
     )
 }
 
-@OptIn(DelicateCoroutinesApi::class)
-private fun OutgoingContent.toUploadDataProvider(callContext: CoroutineContext) = when (this) {
+private fun OutgoingContent.toUploadDataProvider() = when (this) {
     is OutgoingContent.NoContent -> null
     is OutgoingContent.ByteArrayContent -> UploadDataProviders.create(bytes())
-    is OutgoingContent.WriteChannelContent -> object : UploadDataProvider() {
-        fun launch() = GlobalScope.writer(callContext) { writeTo(channel) }.channel
-        var chan = launch()
-        override fun getLength() = contentLength!!
-        override fun read(uploadDataSink: UploadDataSink, byteBuffer: ByteBuffer) {
-            GlobalScope.launch(callContext) {
-                chan.readAvailable(byteBuffer)
-                uploadDataSink.onReadSucceeded(false)
-            }
-        }
-        override fun rewind(uploadDataSink: UploadDataSink) {
-            chan = launch()
-            uploadDataSink.onRewindSucceeded()
-        }
-    }
     else -> error("UnsupportedContentType $this")
 }
