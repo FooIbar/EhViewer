@@ -61,23 +61,22 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
             }
 
             override fun onResponseStarted(request: UrlRequest, info: UrlResponseInfo) {
-                val channel = GlobalScope.writer(callContext) {
-                    pool.useInstance {
-                        chunkChan = Channel(1)
-                        request.read(it)
-                        chunkChan.consumeEach { buffer ->
-                            buffer.flip()
-                            channel.writeFully(buffer)
-                            buffer.clear()
-                            request.read(buffer)
-                        }
-                    }
-                }.channel
                 continuation.resume(
                     info.toHttpResponseData(
                         requestTime = requestTime,
                         callContext = callContext,
-                        responseBody = channel,
+                        responseBody = GlobalScope.writer(callContext) {
+                            pool.useInstance {
+                                chunkChan = Channel(1)
+                                request.read(it)
+                                chunkChan.consumeEach { buffer ->
+                                    buffer.flip()
+                                    channel.writeFully(buffer)
+                                    buffer.clear()
+                                    request.read(buffer)
+                                }
+                            }
+                        }.channel,
                     ),
                 )
             }
@@ -116,25 +115,23 @@ private fun UrlResponseInfo.toHttpResponseData(
     requestTime: GMTDate,
     callContext: CoroutineContext,
     responseBody: ByteReadChannel = ByteReadChannel.Empty,
-): HttpResponseData {
-    return HttpResponseData(
-        statusCode = HttpStatusCode.fromValue(httpStatusCode),
-        requestTime = requestTime,
-        headers = headers {
-            allHeaders.forEach { (key, value) ->
-                appendAll(key, value)
-            }
-        },
-        version = when (negotiatedProtocol) {
-            "h2" -> HttpProtocolVersion.HTTP_2_0
-            "h3" -> HttpProtocolVersion.QUIC
-            "quic/1+spdy/3" -> HttpProtocolVersion.SPDY_3
-            else -> HttpProtocolVersion.HTTP_1_1
-        },
-        body = responseBody,
-        callContext = callContext,
-    )
-}
+) = HttpResponseData(
+    statusCode = HttpStatusCode.fromValue(httpStatusCode),
+    requestTime = requestTime,
+    headers = headers {
+        allHeaders.forEach { (key, value) ->
+            appendAll(key, value)
+        }
+    },
+    version = when (negotiatedProtocol) {
+        "h2" -> HttpProtocolVersion.HTTP_2_0
+        "h3" -> HttpProtocolVersion.QUIC
+        "quic/1+spdy/3" -> HttpProtocolVersion.SPDY_3
+        else -> HttpProtocolVersion.HTTP_1_1
+    },
+    body = responseBody,
+    callContext = callContext,
+)
 
 private fun OutgoingContent.toUploadDataProvider() = when (this) {
     is OutgoingContent.NoContent -> null
