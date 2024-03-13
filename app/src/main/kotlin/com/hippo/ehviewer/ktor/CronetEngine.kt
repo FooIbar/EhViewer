@@ -26,9 +26,9 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.job
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.chromium.net.CronetException
 import org.chromium.net.UrlRequest
@@ -103,8 +103,7 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
             data.body.toUploadDataProvider()?.let { setUploadDataProvider(it, cronetHttpClientExecutor) }
         }.build()
         request.start()
-        callContext[Job]!!.invokeOnCompletion { request.cancel() }
-        continuation.invokeOnCancellation { request.cancel() }
+        callContext.job.invokeOnCompletion { request.cancel() }
     }
 }
 
