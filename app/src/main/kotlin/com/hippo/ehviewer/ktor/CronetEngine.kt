@@ -95,15 +95,16 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
             }
         }
 
-        val request = cronetHttpClient.newUrlRequestBuilder(data.url.toString(), callback, cronetHttpClientExecutor).apply {
+        cronetHttpClient.newUrlRequestBuilder(data.url.toString(), callback, cronetHttpClientExecutor).apply {
             setHttpMethod(data.method.value)
             data.headers.flattenForEach { key, value -> addHeader(key, value) }
             data.body.contentType?.let { addHeader(HttpHeaders.ContentType, it.toString()) }
             data.body.contentLength?.let { addHeader(HttpHeaders.ContentLength, it.toString()) }
             data.body.toUploadDataProvider()?.let { setUploadDataProvider(it, cronetHttpClientExecutor) }
-        }.build()
-        request.start()
-        callContext.job.invokeOnCompletion { request.cancel() }
+        }.build().apply {
+            start()
+            callContext.job.invokeOnCompletion { cancel() }
+        }
     }
 }
 
