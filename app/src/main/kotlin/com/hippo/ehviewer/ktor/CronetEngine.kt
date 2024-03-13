@@ -36,17 +36,14 @@ import org.chromium.net.UploadDataProvider
 import org.chromium.net.UploadDataSink
 import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
+import org.chromium.net.apihelpers.UploadDataProviders
 
 object CronetEngine : HttpClientEngineBase("Cronet") {
     override val config = HttpClientEngineConfig()
     override val dispatcher = cronetDispatcher
 
     @InternalAPI
-    override suspend fun execute(data: HttpRequestData): HttpResponseData {
-        val callContext = callContext()
-
-        return executeHttpRequest(callContext, data)
-    }
+    override suspend fun execute(data: HttpRequestData) = executeHttpRequest(callContext(), data)
 
     @OptIn(DelicateCoroutinesApi::class)
     private suspend fun executeHttpRequest(
@@ -97,10 +94,10 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
             }
 
             override fun onFailed(request: UrlRequest, info: UrlResponseInfo?, error: CronetException) {
-                if (::chunkChan.isInitialized) {
-                    chunkChan.close(error)
-                } else {
+                if (continuation.isActive) {
                     continuation.resumeWithException(error)
+                } else {
+                    chunkChan.close(error)
                 }
             }
         }
@@ -143,20 +140,9 @@ private fun UrlResponseInfo.toHttpResponseData(
 }
 
 @OptIn(DelicateCoroutinesApi::class)
-private fun OutgoingContent.toUploadDataProvider(callContext: CoroutineContext): UploadDataProvider? = when (this) {
+private fun OutgoingContent.toUploadDataProvider(callContext: CoroutineContext) = when (this) {
     is OutgoingContent.NoContent -> null
-    is OutgoingContent.ByteArrayContent -> object : UploadDataProvider() {
-        val buffer = ByteBuffer.wrap(bytes()).slice()
-        override fun getLength() = buffer.limit().toLong()
-        override fun read(uploadDataSink: UploadDataSink, byteBuffer: ByteBuffer) {
-            byteBuffer.put(buffer)
-            uploadDataSink.onReadSucceeded(false)
-        }
-        override fun rewind(uploadDataSink: UploadDataSink) {
-            buffer.position(0)
-            uploadDataSink.onRewindSucceeded()
-        }
-    }
+    is OutgoingContent.ByteArrayContent -> UploadDataProviders.create(bytes())
     is OutgoingContent.WriteChannelContent -> object : UploadDataProvider() {
         fun launch() = GlobalScope.writer(callContext) { writeTo(channel) }.channel
         var chan = launch()
