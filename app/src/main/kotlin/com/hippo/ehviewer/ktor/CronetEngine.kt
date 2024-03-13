@@ -43,10 +43,7 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
     override suspend fun execute(data: HttpRequestData) = executeHttpRequest(callContext(), data)
 
     @OptIn(DelicateCoroutinesApi::class)
-    private suspend fun executeHttpRequest(
-        callContext: CoroutineContext,
-        data: HttpRequestData,
-    ): HttpResponseData = suspendCancellableCoroutine { continuation ->
+    private suspend fun executeHttpRequest(callContext: CoroutineContext, data: HttpRequestData) = suspendCancellableCoroutine { continuation ->
         val requestTime = GMTDate()
 
         val callback = object : UrlRequest.Callback() {
