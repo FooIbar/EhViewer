@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.client.data
 
-import java.util.regex.Pattern
 import moe.tarsin.kt.unreachable
 
 interface GalleryInfo {
@@ -62,36 +61,36 @@ interface GalleryInfo {
             "NL",
         )
         private val S_LANG_PATTERNS = arrayOf(
-            Pattern.compile(
+            Regex(
                 "[(\\[]eng(?:lish)?[)\\]]|英訳",
-                Pattern.CASE_INSENSITIVE,
+                RegexOption.IGNORE_CASE,
             ),
             // [(（\[]ch(?:inese)?[)）\]]|[汉漢]化|中[国國][语語]|中文|中国翻訳
-            Pattern.compile(
+            Regex(
                 "[(\uFF08\\[]ch(?:inese)?[)\uFF09\\]]|[汉漢]化|中[国國][语語]|中文|中国翻訳",
-                Pattern.CASE_INSENSITIVE,
+                RegexOption.IGNORE_CASE,
             ),
-            Pattern.compile(
+            Regex(
                 "[(\\[]spanish[)\\]]|[(\\[]Español[)\\]]|スペイン翻訳",
-                Pattern.CASE_INSENSITIVE,
+                RegexOption.IGNORE_CASE,
             ),
-            Pattern.compile("[(\\[]korean?[)\\]]|韓国翻訳", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("[(\\[]rus(?:sian)?[)\\]]|ロシア翻訳", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("[(\\[]fr(?:ench)?[)\\]]|フランス翻訳", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("[(\\[]portuguese|ポルトガル翻訳", Pattern.CASE_INSENSITIVE),
-            Pattern.compile(
+            Regex("[(\\[]korean?[)\\]]|韓国翻訳", RegexOption.IGNORE_CASE),
+            Regex("[(\\[]rus(?:sian)?[)\\]]|ロシア翻訳", RegexOption.IGNORE_CASE),
+            Regex("[(\\[]fr(?:ench)?[)\\]]|フランス翻訳", RegexOption.IGNORE_CASE),
+            Regex("[(\\[]portuguese|ポルトガル翻訳", RegexOption.IGNORE_CASE),
+            Regex(
                 "[(\\[]thai(?: ภาษาไทย)?[)\\]]|แปลไทย|タイ翻訳",
-                Pattern.CASE_INSENSITIVE,
+                RegexOption.IGNORE_CASE,
             ),
-            Pattern.compile("[(\\[]german[)\\]]|ドイツ翻訳", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("[(\\[]italiano?[)\\]]|イタリア翻訳", Pattern.CASE_INSENSITIVE),
-            Pattern.compile(
+            Regex("[(\\[]german[)\\]]|ドイツ翻訳", RegexOption.IGNORE_CASE),
+            Regex("[(\\[]italiano?[)\\]]|イタリア翻訳", RegexOption.IGNORE_CASE),
+            Regex(
                 "[(\\[]vietnamese(?: Tiếng Việt)?[)\\]]|ベトナム翻訳",
-                Pattern.CASE_INSENSITIVE,
+                RegexOption.IGNORE_CASE,
             ),
-            Pattern.compile("[(\\[]polish[)\\]]|ポーランド翻訳", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("[(\\[]hun(?:garian)?[)\\]]|ハンガリー翻訳", Pattern.CASE_INSENSITIVE),
-            Pattern.compile("[(\\[]dutch[)\\]]|オランダ翻訳", Pattern.CASE_INSENSITIVE),
+            Regex("[(\\[]polish[)\\]]|ポーランド翻訳", RegexOption.IGNORE_CASE),
+            Regex("[(\\[]hun(?:garian)?[)\\]]|ハンガリー翻訳", RegexOption.IGNORE_CASE),
+            Regex("[(\\[]dutch[)\\]]|オランダ翻訳", RegexOption.IGNORE_CASE),
         )
         val S_LANG_TAGS = arrayOf(
             "language:english",
@@ -123,7 +122,7 @@ interface GalleryInfo {
 
         private fun generateSLangFromTitle(title: String): String? {
             for (i in S_LANGS.indices) {
-                if (S_LANG_PATTERNS[i].matcher(title).find()) {
+                if (S_LANG_PATTERNS[i].matches(title)) {
                     return S_LANGS[i]
                 }
             }

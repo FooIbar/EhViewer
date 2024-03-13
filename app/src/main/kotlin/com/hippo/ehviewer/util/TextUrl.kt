@@ -16,36 +16,24 @@
 package com.hippo.ehviewer.util
 
 import android.text.Spannable
-import android.text.SpannableString
 import android.text.style.URLSpan
-import java.util.regex.Pattern
 
 object TextUrl {
     private val URL_PATTERN =
-        Pattern.compile("(http|https)://[a-z0-9A-Z%-]+(\\.[a-z0-9A-Z%-]+)+(:\\d{1,5})?(/[a-zA-Z0-9-_~:#@!&',;=%/*.?+$\\[\\]()]+)?/?")
+        Regex("(http|https)://[a-z0-9A-Z%-]+(\\.[a-z0-9A-Z%-]+)+(:\\d{1,5})?(/[a-zA-Z0-9-_~:#@!&',;=%/*.?+$\\[\\]()]+)?/?")
 
-    fun handleTextUrl(content: CharSequence): CharSequence {
-        val m = URL_PATTERN.matcher(content)
-        var spannable: Spannable? = null
-        while (m.find()) {
-            // Ensure spannable
-            if (spannable == null) {
-                spannable = if (content is Spannable) {
-                    content
-                } else {
-                    SpannableString(content)
-                }
-            }
-            val start = m.start()
-            val end = m.end()
-            val links = spannable.getSpans(start, end, URLSpan::class.java)
+    fun handleTextUrl(content: Spannable): Spannable {
+        URL_PATTERN.findAll(content).forEach { result ->
+            val start = result.range.first
+            val end = result.range.last + 1
+            val links = content.getSpans(start, end, URLSpan::class.java)
             if (links.isNotEmpty()) {
                 // There has been URLSpan already, leave it alone
-                continue
+                return@forEach
             }
-            val urlSpan = URLSpan(m.group(0))
-            spannable.setSpan(urlSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            val urlSpan = URLSpan(result.groupValues[0])
+            content.setSpan(urlSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
-        return spannable ?: content
+        return content
     }
 }
