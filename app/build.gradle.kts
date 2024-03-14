@@ -252,6 +252,13 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
 }
 
+configurations.all {
+    resolutionStrategy {
+        // Workaround for https://issuetracker.google.com/329489167
+        force("androidx.compose.foundation:foundation-android:1.7.0-alpha03")
+    }
+}
+
 kotlin {
     jvmToolchain(21)
 }
