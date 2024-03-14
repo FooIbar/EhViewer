@@ -10,6 +10,7 @@ import android.os.Parcelable
 import android.text.TextUtils.TruncateAt.END
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.annotation.StringRes
+import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -163,8 +164,6 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.downloadManager
@@ -506,32 +505,28 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             } else {
                 stringResource(id = R.string.not_favorited)
             }
-            val favoritesLock = remember { Mutex() }
+            val favoritesLock = remember { MutatorMutex() }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 val removeSucceed = stringResource(R.string.remove_from_favorite_success)
                 val addSucceed = stringResource(R.string.add_to_favorite_success)
-                val removeFailed = stringResource(R.string.remove_from_favorite_failure)
+                // val removeFailed = stringResource(R.string.remove_from_favorite_failure)
                 val addFailed = stringResource(R.string.add_to_favorite_failure)
                 FilledTertiaryIconToggleButton(
                     checked = favSlot != NOT_FAVORITED,
                     onCheckedChange = {
                         launchIO {
-                            favoritesLock.withLock {
-                                var remove = false
+                            favoritesLock.mutate {
                                 runSuspendCatching {
-                                    remove = !modifyFavorites(galleryDetail.galleryInfo)
-                                }.onSuccess {
-                                    if (remove) {
-                                        showSnackbar(removeSucceed)
-                                    } else {
+                                    modifyFavorites(galleryDetail.galleryInfo)
+                                }.onSuccess { add ->
+                                    if (add) {
                                         showSnackbar(addSucceed)
+                                    } else {
+                                        showSnackbar(removeSucceed)
                                     }
                                 }.onFailure {
-                                    if (remove) {
-                                        showSnackbar(removeFailed)
-                                    } else {
-                                        showSnackbar(addFailed)
-                                    }
+                                    // TODO: We don't know if it's add or remove
+                                    showSnackbar(addFailed)
                                 }
                             }
                         }
