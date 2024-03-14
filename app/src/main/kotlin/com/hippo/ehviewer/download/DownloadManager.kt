@@ -94,12 +94,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         if (label == null) {
             return false
         }
-        for ((label1) in labelList) {
-            if (label == label1) {
-                return true
-            }
-        }
-        return false
+        return labelList.any { it.label == label }
     }
 
     fun containDownloadInfo(gid: Long) = mAllInfoMap.containsKey(gid)
@@ -518,12 +513,14 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun deleteLabel(label: String) {
-        labelList.run {
+        with(labelList) {
             val index = indexOfFirst { it.label == label }
+            val item = get(index)
+            EhDB.removeDownloadLabel(item)
             subList(index + 1, size).forEach {
                 it.position--
             }
-            EhDB.removeDownloadLabel(removeAt(index))
+            removeAt(index)
         }
         allInfoList.forEach {
             if (it.label == label) {

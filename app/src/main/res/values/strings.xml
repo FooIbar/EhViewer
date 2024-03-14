@@ -125,6 +125,7 @@
     <string name="duplicate_quick_search">A duplicate quick search exists. The name is \"%s\".</string>
     <string name="duplicate_name">This name is already in use.</string>
     <string name="save_progress">Save progress</string>
+    <string name="delete_quick_search">Delete quick search \"%s\"?</string>
     <string name="go_to_hint">Page %1$d, total %2$d pages</string>
     <!-- search_min_rating -->
     <string name="any">Any</string>
@@ -287,6 +288,7 @@
     <string name="label_text_is_invalid">\"Default\" is an invalid label</string>
     <string name="label_text_exist">Label exists</string>
     <string name="rename_label_title">Rename label</string>
+    <string name="delete_label">Delete label \"%s\"?</string>
     <!-- History -->
     <string name="no_history">Viewed galleries will be shown here</string>
     <string name="clear_all">Clear all</string>

@@ -85,6 +85,7 @@
     <string name="duplicate_quick_search">已存在相同的快速搜索，名称为“%s”。</string>
     <string name="duplicate_name">已存在相同名称</string>
     <string name="save_progress">保存进度</string>
+    <string name="delete_quick_search">删除快速搜索“%s”？</string>
     <string name="go_to_hint">第 %1$d 页，共 %2$d 页</string>
     <!-- search_min_rating -->
     <string name="any">不限</string>
@@ -245,6 +246,7 @@
     <string name="label_text_is_invalid">“默认”是无效标签</string>
     <string name="label_text_exist">标签已存在</string>
     <string name="rename_label_title">重命名标签</string>
+    <string name="delete_label">删除标签“%s”？</string>
     <!-- History -->
     <string name="no_history">这里是阅读历史</string>
     <string name="clear_all">全部清除</string>
