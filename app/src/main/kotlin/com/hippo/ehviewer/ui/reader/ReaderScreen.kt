@@ -4,10 +4,10 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetDefaults
@@ -112,7 +112,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                                 ModalBottomSheet(
                                     onDismissRequest = { dispose() },
                                     sheetState = state,
-                                    windowInsets = WindowInsets(0),
+                                    windowInsets = WindowInsets.statusBarsIgnoringVisibility,
                                 ) {
                                     ReaderPageSheetMeta(
                                         retry = { pageLoader.retryPage(page.index) },
@@ -123,7 +123,6 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                                         saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
                                         dismiss = { launch { state.hide().also { dispose() } } },
                                     )
-                                    Spacer(modifier = Modifier.navigationBarsPadding())
                                 }
                             }
                         }
@@ -183,12 +182,12 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                                 // Yeah, I know color state should not be read here, but we have to do it...
                                 scrimColor = scrim,
                                 dragHandle = null,
-                                windowInsets = WindowInsets(0),
+                                windowInsets = WindowInsets.statusBarsIgnoringVisibility,
                             ) {
                                 SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
                                     isColorFilter = page == 2
+                                    appbarVisible = !isColorFilter
                                 }
-                                Spacer(modifier = Modifier.navigationBarsPadding())
                             }
                         }
                     }

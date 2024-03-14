@@ -2,12 +2,16 @@ package eu.kanade.tachiyomi.ui.reader
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileCopy
 import androidx.compose.material.icons.filled.Refresh
@@ -47,12 +51,14 @@ fun ReaderPageSheetMeta(
         Spacer(modifier = Modifier.size(32.dp))
         Text(text = stringResource(id = text))
     }
-    Item(icon = Icons.Default.Refresh, text = R.string.refresh, onClick = retry)
-    Item(icon = Icons.Default.Refresh, text = R.string.refresh_original, onClick = retryOrigin)
-    Item(icon = Icons.Default.Share, text = R.string.action_share, onClick = share)
-    Item(icon = Icons.Default.FileCopy, text = R.string.action_copy, onClick = copy)
-    Item(icon = Icons.Default.Save, text = R.string.action_save, onClick = save)
-    Item(icon = Icons.Default.Save, text = R.string.action_save_to, onClick = saveTo)
+    Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
+        Item(icon = Icons.Default.Refresh, text = R.string.refresh, onClick = retry)
+        Item(icon = Icons.Default.Refresh, text = R.string.refresh_original, onClick = retryOrigin)
+        Item(icon = Icons.Default.Share, text = R.string.action_share, onClick = share)
+        Item(icon = Icons.Default.FileCopy, text = R.string.action_copy, onClick = copy)
+        Item(icon = Icons.Default.Save, text = R.string.action_save, onClick = save)
+        Item(icon = Icons.Default.Save, text = R.string.action_save_to, onClick = saveTo)
+    }
 }
 
 @Composable

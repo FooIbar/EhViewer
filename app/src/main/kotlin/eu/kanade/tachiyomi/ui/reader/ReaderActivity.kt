@@ -43,10 +43,9 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -319,13 +318,12 @@ class ReaderActivity : EhActivity() {
                                 dragHandle = null,
                                 // Yeah, I know color state should not be read here, but we have to do it...
                                 scrimColor = scrim,
-                                windowInsets = WindowInsets(0),
+                                windowInsets = WindowInsets.statusBarsIgnoringVisibility,
                             ) {
                                 SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
                                     isColorFilter = page == 2
                                     setMenuVisibility(!isColorFilter)
                                 }
-                                Spacer(modifier = Modifier.navigationBarsPadding())
                             }
                         }
                     }
@@ -650,10 +648,9 @@ class ReaderActivity : EhActivity() {
             dialogState.dialog {
                 ModalBottomSheet(
                     onDismissRequest = { it.cancel() },
-                    windowInsets = WindowInsets(0),
+                    windowInsets = WindowInsets.statusBarsIgnoringVisibility,
                 ) {
                     ReaderPageSheet(page) { it.cancel() }
-                    Spacer(modifier = Modifier.navigationBarsPadding())
                 }
             }
         }

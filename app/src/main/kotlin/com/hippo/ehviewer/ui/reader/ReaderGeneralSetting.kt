@@ -2,8 +2,12 @@ package com.hippo.ehviewer.ui.reader
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.R
@@ -11,7 +15,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 
 @Composable
-fun ReaderGeneralSetting() = Column {
+fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
     SpinnerChoice(
         title = stringResource(id = R.string.pref_reader_theme),
         entries = stringArrayResource(id = R.array.reader_themes),
