@@ -66,6 +66,11 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 
 # Download
 
+| Flavor      | Feature                          |
+|-------------|----------------------------------|
+| Default     | Android 8.0+, full support       |
+| Marshmallow | Android 6.0-7.1, limited support |
+
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
 </a>

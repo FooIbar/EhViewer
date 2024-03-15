@@ -60,7 +60,7 @@ android {
 
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
-        minSdk = 23
+        minSdk = 26
         targetSdk = 34
         versionCode = 180052
         versionName = "1.12.0"
@@ -81,10 +81,22 @@ android {
                 "nb-rNO",
             ),
         )
+        buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName$versionNameSuffix\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
         ndk {
             debugSymbolLevel = "FULL"
+        }
+    }
+
+    flavorDimensions += "api"
+
+    productFlavors {
+        create("default")
+        create("marshmallow") {
+            minSdk = 23
+            applicationIdSuffix = ".m"
+            versionNameSuffix = "-M"
         }
     }
 

@@ -15,7 +15,7 @@ data class GithubRelease(
     @SerialName("assets") val assets: List<GitHubAssets>,
 ) {
     fun getDownloadLink(): String {
-        val asset = assets.find { it.downloadLink.contains(AppConfig.abi) } ?: assets[0]
+        val asset = assets.find { AppConfig.matchVariant(it.downloadLink) } ?: assets[0]
         return asset.downloadLink
     }
 }
