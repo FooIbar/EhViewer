@@ -46,11 +46,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissBoxDefaults
+import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -62,6 +63,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -201,6 +203,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         onBack = { showSearchLayout = false },
     )
     val density = LocalDensity.current
+    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val listState = rememberLazyGridState()
     val gridState = rememberLazyStaggeredGridState()
     val isTopList = remember(urlBuilder) { urlBuilder.mode == MODE_TOPLIST }
@@ -385,21 +388,30 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     }
                     itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { index, item ->
                         ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
-                            val dismissState = rememberSwipeToDismissBoxState(
-                                confirmValueChange = { value ->
+                            // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
+                            val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
+                            LaunchedEffect(dismissState) {
+                                snapshotFlow { dismissState.currentValue }.collect { value ->
                                     if (value == SwipeToDismissBoxValue.EndToStart) {
-                                        with(quickSearchList) {
-                                            val removeIndex = indexOf(item)
-                                            subList(removeIndex + 1, size).forEach {
-                                                it.position--
+                                        runCatching {
+                                            awaitPermissionOrCancel(confirmText = R.string.delete) {
+                                                Text(text = stringResource(R.string.delete_quick_search, item.name))
                                             }
-                                            removeAt(removeIndex)
+                                        }.onSuccess {
+                                            EhDB.deleteQuickSearch(item)
+                                            with(quickSearchList) {
+                                                val removeIndex = indexOf(item)
+                                                subList(removeIndex + 1, size).forEach {
+                                                    it.position--
+                                                }
+                                                removeAt(removeIndex)
+                                            }
+                                        }.onFailure {
+                                            dismissState.reset()
                                         }
-                                        launchIO { EhDB.deleteQuickSearch(item) }
                                     }
-                                    true
-                                },
-                            )
+                                }
+                            }
                             SwipeToDismissBox2(
                                 state = dismissState,
                                 backgroundContent = {},

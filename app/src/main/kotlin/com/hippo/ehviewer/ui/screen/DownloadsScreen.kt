@@ -46,11 +46,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissBoxDefaults
+import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -61,6 +63,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -142,6 +145,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val activity = remember { findActivity<MainActivity>() }
     val density = LocalDensity.current
     val view = LocalView.current
+    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
     val title = stringResource(
@@ -261,21 +265,28 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         },
                     )
                 }
-                itemsIndexed(labelList, key = { _, item -> item.label }) { index, (item) ->
-                    val dismissState = rememberSwipeToDismissBoxState(
-                        confirmValueChange = {
+                itemsIndexed(labelList, key = { _, item -> item.id!! }) { index, (item) ->
+                    // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
+                    val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
+                    LaunchedEffect(dismissState) {
+                        snapshotFlow { dismissState.currentValue }.collect {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
-                                launch {
+                                runCatching {
+                                    awaitPermissionOrCancel(confirmText = R.string.delete) {
+                                        Text(text = stringResource(R.string.delete_label, item))
+                                    }
+                                }.onSuccess {
                                     DownloadManager.deleteLabel(item)
                                     when (filterState.label) {
                                         item -> switchLabel("")
                                         null -> invalidateKey = !invalidateKey
                                     }
+                                }.onFailure {
+                                    dismissState.reset()
                                 }
                             }
-                            true
-                        },
-                    )
+                        }
+                    }
                     ReorderableItem(reorderableLabelState, key = item) { isDragging ->
                         SwipeToDismissBox2(
                             state = dismissState,
