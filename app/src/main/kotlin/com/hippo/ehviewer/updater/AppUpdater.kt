@@ -54,7 +54,7 @@ object AppUpdater {
                     return Release(shortSha, changelog, archiveUrl)
                 }
             } else {
-                val curVersion = BuildConfig.VERSION_NAME
+                val curVersion = BuildConfig.RAW_VERSION_NAME
                 val release = ghStatement(LATEST_RELEASE_URL).executeAndParseAs<GithubRelease>()
                 val latestVersion = release.version
                 val description = release.info
