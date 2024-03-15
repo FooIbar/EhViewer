@@ -264,25 +264,30 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 entryValueRes = R.array.launch_page_entry_values,
                 value = Settings::launchPage.observed,
             )
+            val listMode = Settings.listMode.asMutableState()
             SimpleMenuPreferenceInt(
                 title = stringResource(id = R.string.settings_eh_list_mode),
                 entry = R.array.list_mode_entries,
                 entryValueRes = R.array.list_mode_entry_values,
-                value = Settings.listMode.asMutableState(),
+                value = listMode,
             )
-            IntSliderPreference(
-                maxValue = 60,
-                minValue = 20,
-                step = 7,
-                title = stringResource(id = R.string.list_tile_thumb_size),
-                value = Settings.listThumbSize::value,
-            )
-            SimpleMenuPreferenceInt(
-                title = stringResource(id = R.string.settings_eh_detail_size),
-                entry = R.array.detail_size_entries,
-                entryValueRes = R.array.detail_size_entry_values,
-                value = Settings.detailSize.asMutableState(),
-            )
+            AnimatedVisibility(visible = listMode.value == 0) {
+                Column {
+                    IntSliderPreference(
+                        maxValue = 60,
+                        minValue = 20,
+                        step = 7,
+                        title = stringResource(id = R.string.list_tile_thumb_size),
+                        value = Settings.listThumbSize::value,
+                    )
+                    SimpleMenuPreferenceInt(
+                        title = stringResource(id = R.string.settings_eh_detail_size),
+                        entry = R.array.detail_size_entries,
+                        entryValueRes = R.array.detail_size_entry_values,
+                        value = Settings.detailSize.asMutableState(),
+                    )
+                }
+            }
             IntSliderPreference(
                 maxValue = 10,
                 minValue = 1,

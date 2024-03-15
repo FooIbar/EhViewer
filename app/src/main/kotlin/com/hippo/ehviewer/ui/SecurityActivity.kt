@@ -128,7 +128,7 @@ fun Context.interceptSecurityOrReturn() {
     val lockedDelayTime = lockedResumeTime - lockedLastLeaveTime
     if (lockedDelayTime < Settings.securityDelay * 60) {
         locked = false
-    } else if (Settings.security && isAuthenticationSupported() && locked) {
+    } else if (Settings.security.value && isAuthenticationSupported() && locked) {
         startActivity(Intent(this, SecurityActivity::class.java))
     }
 }

@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.settings
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -22,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.ui.isAuthenticationSupported
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
@@ -54,20 +56,27 @@ fun PrivacyScreen(navigator: DestinationsNavigator) {
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) {
         Column(modifier = Modifier.padding(it).nestedScroll(scrollBehavior.nestedScrollConnection)) {
+            val security = Settings.security.asMutableState()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_privacy_require_unlock),
-                value = Settings::security,
+                value = security.rememberedAccessor,
                 enabled = LocalContext.current.isAuthenticationSupported(),
             )
-            val securityDelay = Settings::securityDelay.observed
-            val summary = if (securityDelay.value == 0) stringResource(id = R.string.settings_privacy_require_unlock_delay_summary_immediately) else stringResource(id = R.string.settings_privacy_require_unlock_delay_summary, securityDelay.value)
-            IntSliderPreference(
-                maxValue = 30,
-                title = stringResource(id = R.string.settings_privacy_require_unlock_delay),
-                summary = summary,
-                value = securityDelay.rememberedAccessor,
-                enabled = LocalContext.current.isAuthenticationSupported(),
-            )
+            AnimatedVisibility(visible = security.value) {
+                val securityDelay = Settings::securityDelay.observed
+                val summary = if (securityDelay.value == 0) {
+                    stringResource(id = R.string.settings_privacy_require_unlock_delay_summary_immediately)
+                } else {
+                    stringResource(id = R.string.settings_privacy_require_unlock_delay_summary, securityDelay.value)
+                }
+                IntSliderPreference(
+                    maxValue = 30,
+                    title = stringResource(id = R.string.settings_privacy_require_unlock_delay),
+                    summary = summary,
+                    value = securityDelay.rememberedAccessor,
+                    enabled = LocalContext.current.isAuthenticationSupported(),
+                )
+            }
             SwitchPreference(
                 title = stringResource(id = R.string.settings_privacy_secure),
                 summary = stringResource(id = R.string.settings_privacy_secure_summary),
