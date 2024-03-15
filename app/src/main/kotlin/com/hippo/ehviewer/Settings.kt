@@ -115,6 +115,7 @@ object Settings : DataStorePreferences(null) {
     val gridView = boolPref("grid_view", false)
     val showGalleryPages = boolPref("show_gallery_pages", true)
     val qSSaveProgress = boolPref("qs_save_progress", true)
+    val security = boolPref("require_unlock", false)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
@@ -146,7 +147,6 @@ object Settings : DataStorePreferences(null) {
     var hasDefaultDownloadLabel by boolPref("has_default_download_label", false)
     var saveParseErrorBody by boolPref("save_parse_error_body", true)
     var saveCrashLog by boolPref("save_crash_log", true)
-    var security by boolPref("require_unlock", false)
     var removeImageFiles by boolPref("include_pic", true)
     var needSignIn by boolPref("need_sign_in", true)
     var harmonizeCategoryColor by boolPref("harmonize_category_color", true)
