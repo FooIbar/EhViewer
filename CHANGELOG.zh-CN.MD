@@ -1,5 +1,25 @@
 # 变更日志
 
+## [未发布]
+
+### 重大变更
+
+* Default 变种最低支持版本更改为 Android 8.0，重新添加了最低支持 Android 6.0 的 Marshmallow 变种
+
+### 改进
+
+* 重新添加了删除快速搜索/下载标签时的确认对话框
+
+### Bug 修复
+
+* 收藏页面 搜索栏中文标签转英文异常 [#902](https://github.com/FooIbar/EhViewer/issues/902)
+* 在收藏或者取消收藏之后，收藏按钮会无反应 [#908](https://github.com/FooIbar/EhViewer/issues/908)
+* 横屏页面下阅读设置UI重合 [#909](https://github.com/FooIbar/EhViewer/issues/909)
+* Search bar does not work properly in Japanese [#906](https://github.com/FooIbar/EhViewer/issues/906)
+* 搜索结果中的 Disowned 画廊不显示上传者
+* 使用 CI 频道更新时，有时会获取到错误的更新链接
+
+
 ## [1.11.1] - 2024-03-12
 
 ### 重大变更
