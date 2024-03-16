@@ -21,7 +21,10 @@ data class GithubArtifacts(
     @SerialName("artifacts") val artifacts: List<GithubArtifact>,
 ) {
     fun getDownloadLink(): String {
-        return (artifacts.find { AppConfig.matchVariant(it.name) } ?: artifacts[0]).downloadLink
+        // The default order is upload order, so we need to sort it
+        return artifacts.sortedBy { it.name }.run {
+            find { AppConfig.matchVariant(it.name) } ?: this[0]
+        }.downloadLink
     }
 }
 
