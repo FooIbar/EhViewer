@@ -99,7 +99,7 @@ fn parse_uploader_and_pages(str: &str) -> (Option<String>, bool, i32) {
     let uploader =
         regex!(r#"<a href="https://e[x-]hentai.org/uploader/.*?">(.*?)</a>|(\(Disowned\))"#)
             .captures(str)
-            .map(|grp| grp.get(1).or(grp.get(2)).unwrap().as_str().to_string());
+            .map(|grp| grp.get(1).or_else(|| grp.get(2)).unwrap().as_str().to_string());
     let pages = match regex!(r"<div>(\d+) pages</div>").captures(str) {
         None => 0,
         Some(grp) => grp[1].parse().unwrap_or(0),
