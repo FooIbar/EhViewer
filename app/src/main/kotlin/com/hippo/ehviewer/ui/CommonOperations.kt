@@ -314,7 +314,11 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
     val selected = showSelectItemWithIcon(items, EhUtils.getSuitableTitle(info))
     with(findActivity<MainActivity>()) {
         when (selected) {
-            0 -> navToReader(info)
+            0 -> {
+                EhDB.putHistoryInfo(info)
+                navToReader(info)
+            }
+
             1 -> withUIContext {
                 if (downloaded) {
                     confirmRemoveDownload(info)
