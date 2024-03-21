@@ -147,12 +147,6 @@ android {
         dex {
             useLegacyPackaging = false
         }
-        resources {
-            excludes += "/META-INF/**"
-            excludes += "/kotlin/**"
-            excludes += "**.txt"
-            excludes += "**.bin"
-        }
     }
 
     dependenciesInfo.includeInApk = false
@@ -182,6 +176,17 @@ android {
     }
 
     namespace = "com.hippo.ehviewer"
+}
+
+androidComponents {
+    onVariants(selector().withBuildType("release")) {
+        it.packaging.resources.excludes.addAll(
+            "/META-INF/**",
+            "/kotlin/**",
+            "**.txt",
+            "**.bin",
+        )
+    }
 }
 
 dependencies {
