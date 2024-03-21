@@ -23,7 +23,7 @@
         "com.google.devtools.ksp",
         "androidx.compose.compiler:compiler"
       ],
-      "recreateClosed": false
+      "recreateWhen": "never"
     },
     {
       "description": "Disable updates for SNAPSHOTs",
