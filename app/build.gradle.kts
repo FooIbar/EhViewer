@@ -81,7 +81,7 @@ android {
                 "nb-rNO",
             ),
         )
-        buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName$versionNameSuffix\"")
+        buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
         ndk {
