@@ -11,15 +11,17 @@
     },
     {
       "groupName": "Compose BOM",
-      "matchPackagePrefixes": ["dev.chrisbanes.compose"],
+      "matchPackageNames": ["dev.chrisbanes.compose:compose-bom"],
       "ignoreUnstable": false
     },
     {
       "groupName": "Kotlin, KSP and Compose Compiler",
       "matchPackagePrefixes": [
-        "org.jetbrains.kotlin.",
+        "org.jetbrains.kotlin."
+      ],
+      "matchPackageNames": [
         "com.google.devtools.ksp",
-        "androidx.compose.compiler"
+        "androidx.compose.compiler:compiler"
       ],
       "recreateClosed": false
     },
