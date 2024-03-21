@@ -5,6 +5,16 @@
   ],
   "packageRules": [
     {
+      "groupName": "AGP",
+      "matchPackageNames": ["com.android.application"],
+      "ignoreUnstable": false
+    },
+    {
+      "groupName": "Compose BOM",
+      "matchPackageNames": ["dev.chrisbanes.compose:compose-bom"],
+      "ignoreUnstable": false
+    },
+    {
       "groupName": "Kotlin, KSP and Compose Compiler",
       "matchPackagePrefixes": [
         "org.jetbrains.kotlin.",
