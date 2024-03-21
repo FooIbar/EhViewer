@@ -308,7 +308,7 @@ class MainActivity : EhActivity() {
             }
             val snackMessage = stringResource(R.string.clipboard_gallery_url_snack_message)
             val snackAction = stringResource(R.string.clipboard_gallery_url_snack_action)
-            LifecycleResumeEffect {
+            LifecycleResumeEffect(scope) {
                 val job = scope.launch {
                     delay(300)
                     val text = clipboardManager.getUrlFromClipboard(applicationContext)
