@@ -5,6 +5,14 @@
   ],
   "packageRules": [
     {
+      "groupName": "Kotlin, KSP and Compose Compiler",
+      "matchPackagePrefixes": [
+        "org.jetbrains.kotlin.",
+        "com.google.devtools.ksp",
+        "androidx.compose.compiler"
+      ]
+    },
+    {
       "description": "Disable updates for SNAPSHOTs",
       "matchCategories": ["java"],
       "allowedVersions": "!/SNAPSHOT$/"
