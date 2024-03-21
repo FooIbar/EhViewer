@@ -11,7 +11,7 @@
     },
     {
       "groupName": "Compose BOM",
-      "matchPackageNames": ["dev.chrisbanes.compose:compose-bom"],
+      "matchPackagePrefixes": ["dev.chrisbanes.compose"],
       "ignoreUnstable": false
     },
     {
@@ -20,7 +20,8 @@
         "org.jetbrains.kotlin.",
         "com.google.devtools.ksp",
         "androidx.compose.compiler"
-      ]
+      ],
+      "recreateClosed": false
     },
     {
       "description": "Disable updates for SNAPSHOTs",
