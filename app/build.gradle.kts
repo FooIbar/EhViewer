@@ -267,7 +267,7 @@ dependencies {
 configurations.all {
     resolutionStrategy {
         // Workaround for https://issuetracker.google.com/329489167
-        force("androidx.compose.foundation:foundation-android:1.7.0-alpha03")
+        force("androidx.compose.foundation:foundation-android:1.7.0-alpha05")
     }
 }
 
