@@ -122,7 +122,7 @@ interface GalleryInfo {
 
         private fun generateSLangFromTitle(title: String): String? {
             for (i in S_LANGS.indices) {
-                if (S_LANG_PATTERNS[i].matches(title)) {
+                if (S_LANG_PATTERNS[i].containsMatchIn(title)) {
                     return S_LANGS[i]
                 }
             }
