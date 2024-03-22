@@ -49,11 +49,6 @@ class PagerPageHolder(
      */
     private var statusJob: Job? = null
 
-    /**
-     * Job for progress changes of the page.
-     */
-    private var progressJob: Job? = null
-
     init {
         addView(progressIndicator)
         statusJob = scope.launch(Dispatchers.Main) {
@@ -69,16 +64,8 @@ class PagerPageHolder(
     @SuppressLint("ClickableViewAccessibility")
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        cancelProgressJob()
         unsubscribeStatus()
         progressIndicator.hide()
-    }
-
-    private fun launchProgressJob() {
-        progressJob?.cancel()
-        progressJob = scope.launch(Dispatchers.Main) {
-            page.progressFlow.collectLatest { value -> progressIndicator.setProgress(value) }
-        }
     }
 
     /**
@@ -86,22 +73,16 @@ class PagerPageHolder(
      *
      * @param status the new status of the page.
      */
-    private fun processStatus(status: Page.State) {
+    private suspend fun processStatus(status: Page.State) {
         when (status) {
             Page.State.QUEUE -> setQueued()
             Page.State.LOAD_PAGE -> setLoading()
             Page.State.DOWNLOAD_IMAGE -> {
-                launchProgressJob()
                 setDownloading()
+                page.progressFlow.collectLatest { value -> progressIndicator.setProgress(value) }
             }
-            Page.State.READY -> {
-                page.image?.let { setImage(it) }
-                cancelProgressJob()
-            }
-            Page.State.ERROR -> {
-                setError()
-                cancelProgressJob()
-            }
+            Page.State.READY -> page.image?.let { setImage(it) } ?: setError()
+            Page.State.ERROR -> setError()
         }
     }
 
@@ -111,11 +92,6 @@ class PagerPageHolder(
     private fun unsubscribeStatus() {
         statusJob?.cancel()
         statusJob = null
-    }
-
-    private fun cancelProgressJob() {
-        progressJob?.cancel()
-        progressJob = null
     }
 
     /**
@@ -149,8 +125,6 @@ class PagerPageHolder(
      */
     private fun setImage(image: Image) {
         progressIndicator.setProgress(0)
-        progressIndicator.hide()
-        removeErrorLayout()
         setImage(
             image,
             Config(
@@ -177,15 +151,7 @@ class PagerPageHolder(
     override fun onImageLoaded() {
         super.onImageLoaded()
         progressIndicator.hide()
-    }
-
-    /**
-     * Called when an image fails to decode.
-     */
-    override fun onImageLoadError() {
-        super.onImageLoadError()
-        progressIndicator.hide()
-        showErrorLayout()
+        removeErrorLayout()
     }
 
     /**

@@ -2,15 +2,16 @@ package eu.kanade.tachiyomi.ui.reader.viewer
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.Gravity
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.widget.FrameLayout
 import androidx.annotation.IntRange
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.view.isVisible
@@ -23,7 +24,6 @@ class ReaderProgressIndicator @JvmOverloads constructor(
 ) : AbstractComposeView(context, attrs, defStyleAttr) {
 
     init {
-        layoutParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT, Gravity.CENTER)
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindowOrReleasedFromPool)
     }
 
@@ -33,7 +33,9 @@ class ReaderProgressIndicator @JvmOverloads constructor(
     @Composable
     override fun Content() {
         EhTheme {
-            if (visible) CombinedCircularProgressIndicator(progress = progress)
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                if (visible) CombinedCircularProgressIndicator(progress = progress)
+            }
         }
     }
 
@@ -45,6 +47,12 @@ class ReaderProgressIndicator @JvmOverloads constructor(
     fun hide() {
         visible = false
         isVisible = false
+    }
+
+    fun reset() {
+        progress = 0f
+        visible = false
+        isVisible = true
     }
 
     fun setProgress(@IntRange(from = 0, to = 100) progress: Int) {

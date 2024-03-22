@@ -1336,8 +1336,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     }
 
     /**
-     * Add a listener allowing notification of load and error events. Extend [DefaultOnImageEventListener]
-     * to simplify implementation.
+     * Add a listener allowing notification of load and error events.
      *
      * @param onImageEventListener an [OnImageEventListener] instance.
      */
@@ -1391,7 +1390,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     /**
      * An event listener, allowing subclasses and activities to be notified of significant events.
      */
-    interface OnImageEventListener {
+    fun interface OnImageEventListener {
         /**
          * Called when the dimensions of the image and view are known, and either a preview image,
          * the full size image, or base layer tiles are loaded. This indicates the scale and translate
@@ -1399,16 +1398,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
          * graphic, or inform a subclass that it is safe to draw overlays.
          */
         fun onReady()
-
-        /**
-         * Indicates an error initiliasing the decoder when using a tiling, or when loading the full
-         * size bitmap when tiling is disabled. This method cannot be relied upon; certain encoding
-         * types of supported image formats can result in corrupt or blank images being loaded and
-         * displayed with no detectable error.
-         *
-         * @param e The exception thrown. This error is also logged by the view.
-         */
-        fun onImageLoadError(e: Exception)
     }
 
     /**
@@ -1466,14 +1455,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     )
 
     private data class ScaleAndTranslate(var scale: Float, val vTranslate: PointF)
-
-    /**
-     * Default implementation of [OnImageEventListener] for extension. This does nothing in any method.
-     */
-    open class DefaultOnImageEventListener : OnImageEventListener {
-        override fun onReady() {}
-        override fun onImageLoadError(e: Exception) {}
-    }
 
     /**
      * Builder class used to set additional options for a scale animation. Create an instance using [.animateScale],

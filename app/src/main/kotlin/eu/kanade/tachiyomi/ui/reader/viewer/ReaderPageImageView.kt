@@ -53,9 +53,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
     private var config: Config? = null
 
     var onImageLoaded: (() -> Unit)? = null
-    var onImageLoadError: (() -> Unit)? = null
     var onScaleChanged: ((newScale: Float) -> Unit)? = null
-    var onViewClicked: (() -> Unit)? = null
 
     /**
      * For automatic background. Will be set as background color when [onImageLoaded] is called.
@@ -69,18 +67,8 @@ open class ReaderPageImageView @JvmOverloads constructor(
     }
 
     @CallSuper
-    open fun onImageLoadError() {
-        onImageLoadError?.invoke()
-    }
-
-    @CallSuper
     open fun onScaleChanged(newScale: Float) {
         onScaleChanged?.invoke(newScale)
-    }
-
-    @CallSuper
-    open fun onViewClicked() {
-        onViewClicked?.invoke()
     }
 
     open fun onPageSelected(forward: Boolean) {
@@ -89,19 +77,11 @@ open class ReaderPageImageView @JvmOverloads constructor(
             if (isReady) {
                 landscapeZoom(forward)
             } else {
-                setOnImageEventListener(
-                    object : SubsamplingScaleImageView.DefaultOnImageEventListener() {
-                        override fun onReady() {
-                            setupZoom(config)
-                            landscapeZoom(forward)
-                            this@ReaderPageImageView.onImageLoaded()
-                        }
-
-                        override fun onImageLoadError(e: Exception) {
-                            onImageLoadError()
-                        }
-                    },
-                )
+                setOnImageEventListener {
+                    setupZoom(config)
+                    landscapeZoom(forward)
+                    this@ReaderPageImageView.onImageLoaded()
+                }
             }
         }
     }
@@ -221,7 +201,6 @@ open class ReaderPageImageView @JvmOverloads constructor(
                     }
                 },
             )
-            setOnClickListener { this@ReaderPageImageView.onViewClicked() }
         }
         addView(pageView, MATCH_PARENT, MATCH_PARENT)
     }
@@ -248,19 +227,11 @@ open class ReaderPageImageView @JvmOverloads constructor(
         setMinimumScaleType(config.minimumScaleType)
         setMinimumDpi(1) // Just so that very small image will be fit for initial load
         setCropBorders(config.cropBorders)
-        setOnImageEventListener(
-            object : SubsamplingScaleImageView.DefaultOnImageEventListener() {
-                override fun onReady() {
-                    setupZoom(config)
-                    if (isVisibleOnScreen()) landscapeZoom(true)
-                    this@ReaderPageImageView.onImageLoaded()
-                }
-
-                override fun onImageLoadError(e: Exception) {
-                    this@ReaderPageImageView.onImageLoadError()
-                }
-            },
-        )
+        setOnImageEventListener {
+            setupZoom(config)
+            if (isVisibleOnScreen()) landscapeZoom(true)
+            this@ReaderPageImageView.onImageLoaded()
+        }
 
         setImage(image, bounds)
         isVisible = true
@@ -291,11 +262,6 @@ open class ReaderPageImageView @JvmOverloads constructor(
                                 }
                             }
                             return true
-                        }
-
-                        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-                            this@ReaderPageImageView.onViewClicked()
-                            return super.onSingleTapConfirmed(e)
                         }
                     },
                 )

@@ -1,11 +1,9 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
 
 import android.content.res.Resources
-import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
-import androidx.core.view.isVisible
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.hippo.ehviewer.image.Image
 import eu.kanade.tachiyomi.source.model.Page
@@ -34,14 +32,10 @@ class WebtoonPageHolder(
 
     /**
      * Loading progress bar to indicate the current progress.
+     * Needed to keep a minimum height size of the holder, otherwise the adapter would create more
+     * views to fill the screen, which is not wanted.
      */
-    private val progressIndicator = createProgressIndicator()
-
-    /**
-     * Progress bar container. Needed to keep a minimum height size of the holder, otherwise the
-     * adapter would create more views to fill the screen, which is not wanted.
-     */
-    private lateinit var progressContainer: ViewGroup
+    private val progressIndicator = ReaderProgressIndicator(context)
 
     /**
      * Error layout to show when the image fails to load.
@@ -57,7 +51,7 @@ class WebtoonPageHolder(
     /**
      * Page of a chapter.
      */
-    private var page: ReaderPage? = null
+    private lateinit var page: ReaderPage
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -66,16 +60,11 @@ class WebtoonPageHolder(
      */
     private var statusJob: Job? = null
 
-    /**
-     * Job for progress changes of the page.
-     */
-    private var progressJob: Job? = null
-
     init {
+        frame.addView(progressIndicator, MATCH_PARENT, defaultHeight)
         refreshLayoutParams()
 
         frame.onImageLoaded = { onImageDecoded() }
-        frame.onImageLoadError = { onImageDecodeError() }
         frame.onScaleChanged = { viewer.activity.hideMenu() }
     }
 
@@ -110,25 +99,11 @@ class WebtoonPageHolder(
      */
     override fun recycle() {
         statusJob?.cancel()
-        cancelProgressJob()
-        progressIndicator.hide()
+        statusJob = null
 
         removeErrorLayout()
         frame.recycle()
-        progressIndicator.setProgress(0)
-    }
-
-    /**
-     * Observes the progress of the page and updates view.
-     */
-    private fun launchProgressJob() {
-        cancelProgressJob()
-
-        val page = page ?: return
-
-        progressJob = scope.launch(Dispatchers.Main) {
-            page.progressFlow.collectLatest { value -> progressIndicator.setProgress(value) }
-        }
+        progressIndicator.reset()
     }
 
     /**
@@ -136,38 +111,23 @@ class WebtoonPageHolder(
      *
      * @param status the new status of the page.
      */
-    private fun processStatus(status: Page.State) {
+    private suspend fun processStatus(status: Page.State) {
         when (status) {
             Page.State.QUEUE -> setQueued()
             Page.State.LOAD_PAGE -> setLoading()
             Page.State.DOWNLOAD_IMAGE -> {
-                launchProgressJob()
                 setDownloading()
+                page.progressFlow.collectLatest { value -> progressIndicator.setProgress(value) }
             }
-            Page.State.READY -> {
-                page?.image?.let { setImage(it) }
-                cancelProgressJob()
-            }
-            Page.State.ERROR -> {
-                setError()
-                cancelProgressJob()
-            }
+            Page.State.READY -> page.image?.let { setImage(it) } ?: setError()
+            Page.State.ERROR -> setError()
         }
-    }
-
-    /**
-     * Unsubscribes from the progress subscription.
-     */
-    private fun cancelProgressJob() {
-        progressJob?.cancel()
-        progressJob = null
     }
 
     /**
      * Called when the page is queued.
      */
     private fun setQueued() {
-        progressContainer.isVisible = true
         progressIndicator.setProgress(0)
         progressIndicator.show()
         removeErrorLayout()
@@ -178,7 +138,6 @@ class WebtoonPageHolder(
      * Called when the page is loading.
      */
     private fun setLoading() {
-        progressContainer.isVisible = true
         progressIndicator.show()
         removeErrorLayout()
     }
@@ -187,7 +146,6 @@ class WebtoonPageHolder(
      * Called when the page is downloading
      */
     private fun setDownloading() {
-        progressContainer.isVisible = true
         progressIndicator.show()
         removeErrorLayout()
     }
@@ -197,8 +155,6 @@ class WebtoonPageHolder(
      */
     private fun setImage(drawable: Image) {
         progressIndicator.setProgress(0)
-        progressIndicator.hide()
-        removeErrorLayout()
         frame.setImage(
             drawable,
             ReaderPageImageView.Config(
@@ -214,7 +170,6 @@ class WebtoonPageHolder(
      */
     private fun setError() {
         progressIndicator.hide()
-        progressContainer.isVisible = false
         initErrorLayout()
     }
 
@@ -222,27 +177,8 @@ class WebtoonPageHolder(
      * Called when the image is decoded and going to be displayed.
      */
     private fun onImageDecoded() {
-        progressContainer.isVisible = false
-    }
-
-    /**
-     * Called when the image fails to decode.
-     */
-    private fun onImageDecodeError() {
-        progressContainer.isVisible = false
-        initErrorLayout()
-    }
-
-    /**
-     * Creates a new progress bar.
-     */
-    private fun createProgressIndicator(): ReaderProgressIndicator {
-        progressContainer = FrameLayout(context)
-        frame.addView(progressContainer, MATCH_PARENT, defaultHeight)
-
-        val progress = ReaderProgressIndicator(context)
-        progressContainer.addView(progress)
-        return progress
+        progressIndicator.hide()
+        removeErrorLayout()
     }
 
     /**
@@ -250,8 +186,8 @@ class WebtoonPageHolder(
      */
     private fun initErrorLayout() {
         if (errorLayout == null) {
-            errorLayout = ReaderErrorLayout(context, page!!.errorMsg) {
-                viewer.activity.retryPage(page!!.index)
+            errorLayout = ReaderErrorLayout(context, page.errorMsg) {
+                viewer.activity.retryPage(page.index)
             }.also {
                 frame.addView(it)
             }
