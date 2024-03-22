@@ -29,6 +29,7 @@ import com.hippo.ehviewer.dao.HistoryInfo
 import com.hippo.ehviewer.dao.LocalFavoriteInfo
 import com.hippo.ehviewer.dao.ProgressInfo
 import com.hippo.ehviewer.dao.QuickSearch
+import com.hippo.ehviewer.dao.Schema17to18
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.asUniFile
@@ -36,7 +37,9 @@ import kotlinx.coroutines.flow.Flow
 import splitties.arch.room.roomDb
 
 object EhDB {
-    private val db = roomDb<EhDatabase>("eh.db")
+    private val db = roomDb<EhDatabase>("eh.db") {
+        addMigrations(Schema17to18())
+    }
 
     private suspend fun putGalleryInfo(galleryInfo: BaseGalleryInfo) {
         db.galleryDao().upsert(galleryInfo)
@@ -284,7 +287,10 @@ object EhDB {
         val tempDBName = "tmp.db"
         resource {
             context.deleteDatabase(tempDBName)
-            roomDb<EhDatabase>(tempDBName) { createFromInputStream { context.contentResolver.openInputStream(uri) } }
+            roomDb<EhDatabase>(tempDBName) {
+                createFromInputStream { context.contentResolver.openInputStream(uri) }
+                addMigrations(Schema17to18())
+            }
         } release {
             it.close()
             context.deleteDatabase(tempDBName)

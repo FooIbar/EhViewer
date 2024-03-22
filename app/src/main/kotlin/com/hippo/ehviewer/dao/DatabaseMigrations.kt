@@ -5,6 +5,7 @@ import androidx.room.DeleteTable
 import androidx.room.RenameColumn
 import androidx.room.RenameTable
 import androidx.room.migration.AutoMigrationSpec
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
 
@@ -102,6 +103,15 @@ class Schema12to13 : AutoMigrationSpec {
 @DeleteColumn(tableName = "DOWNLOADS", columnName = "RATING")
 @DeleteColumn(tableName = "DOWNLOADS", columnName = "SIMPLE_LANGUAGE")
 class Schema13to14 : AutoMigrationSpec
+
+class Schema17to18 : Migration(17, 18) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `_new_GALLERIES` (`GID` INTEGER NOT NULL, `TOKEN` TEXT NOT NULL, `TITLE` TEXT, `TITLE_JPN` TEXT, `THUMB` TEXT, `CATEGORY` INTEGER NOT NULL, `POSTED` TEXT, `UPLOADER` TEXT, `RATING` REAL NOT NULL, `SIMPLE_LANGUAGE` TEXT, `FAVORITE_SLOT` INTEGER NOT NULL, PRIMARY KEY(`GID`))")
+        db.execSQL("INSERT INTO `_new_GALLERIES` (`GID`,`TOKEN`,`TITLE`,`TITLE_JPN`,`THUMB`,`CATEGORY`,`POSTED`,`UPLOADER`,`RATING`,`SIMPLE_LANGUAGE`,`FAVORITE_SLOT`) SELECT `GID`,`TOKEN`,`TITLE`,`TITLE_JPN`,`THUMB`,`CATEGORY`,`POSTED`,`UPLOADER`,`RATING`,`SIMPLE_LANGUAGE`,`FAVORITE_SLOT` FROM `GALLERIES` WHERE `TOKEN` IS NOT NULL")
+        db.execSQL("DROP TABLE `GALLERIES`")
+        db.execSQL("ALTER TABLE `_new_GALLERIES` RENAME TO `GALLERIES`")
+    }
+}
 
 @RenameColumn(tableName = "DOWNLOADS", fromColumnName = "POSITION", toColumnName = "TIME")
 class Schema18to19 : AutoMigrationSpec
