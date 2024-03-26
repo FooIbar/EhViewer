@@ -17,7 +17,7 @@ import com.hippo.ehviewer.image.detectBorder
 import com.hippo.ehviewer.util.isAtLeastO
 
 private const val CROP_THRESHOLD = 0.75f
-private const val WEBTOON_THRESHOLD = 3
+private const val RATIO_THRESHOLD = 2
 
 private val maybeCropBorderKey = Extras.Key(default = false)
 
@@ -48,7 +48,12 @@ object CropBorderInterceptor : Interceptor {
                 val image = result.image
                 if (image is BitmapImage) {
                     val bitmap = image.bitmap
-                    val rect = if (image.height / image.width < WEBTOON_THRESHOLD) {
+                    val ratio = if (image.height > image.width) {
+                        image.height / image.width
+                    } else {
+                        image.width / image.height
+                    }
+                    val rect = if (ratio < RATIO_THRESHOLD) {
                         val array = detectBorder(bitmap)
                         val minWidth = image.width * CROP_THRESHOLD
                         val minHeight = image.height * CROP_THRESHOLD
