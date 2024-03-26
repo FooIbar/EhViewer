@@ -100,9 +100,7 @@ class DialogState {
         content = null
     }
 
-    // Move to crossinline on next compose compiler update
-    // https://issuetracker.google.com/issues/325502738
-    suspend inline fun <R> dialog(noinline block: @Composable (CancellableContinuation<R>) -> Unit) = suspendCancellableCoroutine { cont ->
+    suspend inline fun <R> dialog(crossinline block: @Composable (CancellableContinuation<R>) -> Unit) = suspendCancellableCoroutine { cont ->
         cont.invokeOnCancellation { dismiss() }
         val realContinuation = object : CancellableContinuation<R> by cont {
             override fun resumeWith(result: Result<R>) {
