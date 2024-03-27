@@ -493,7 +493,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 ) {
                     items(list, key = { it.gid }) { info ->
                         val checked = info.gid in checkedInfoMap
-                        CheckableItem(checked = checked, modifier = Modifier.animateItemPlacement()) { interactionSource ->
+                        CheckableItem(checked = checked, modifier = Modifier.animateItem()) { interactionSource ->
                             DownloadCard(
                                 onClick = {
                                     if (selectMode) {

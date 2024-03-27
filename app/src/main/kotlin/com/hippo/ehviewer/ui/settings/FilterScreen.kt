@@ -226,7 +226,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                         stickyHeader(key = filterMode) {
                             Text(
                                 text = stringResource(id = title),
-                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp).animateItemPlacement(),
+                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp).animateItem(),
                                 color = MaterialTheme.colorScheme.tertiary,
                                 style = MaterialTheme.typography.titleMedium,
                             )
@@ -234,7 +234,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                         items(filters, key = { requireNotNull(it.id) }) { filter ->
                             val filterCheckBoxRecomposeScope = currentRecomposeScope
                             Row(
-                                modifier = Modifier.fillMaxWidth().animateItemPlacement().clickable { filter.trigger { filterCheckBoxRecomposeScope.invalidate() } },
+                                modifier = Modifier.fillMaxWidth().animateItem().clickable { filter.trigger { filterCheckBoxRecomposeScope.invalidate() } },
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Checkbox(

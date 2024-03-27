@@ -141,7 +141,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     SwipeToDismissBox2(
                         state = dismissState,
                         backgroundContent = {},
-                        modifier = Modifier.animateItemPlacement(),
+                        modifier = Modifier.animateItem(),
                     ) {
                         GalleryInfoListItem(
                             onClick = { navigate(info.asDst()) },

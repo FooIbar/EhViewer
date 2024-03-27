@@ -25,10 +25,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
-import androidx.compose.foundation.text.input.forEachTextValue
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.foundation.text.input.textAsFlow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -46,13 +44,13 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -61,7 +59,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import arrow.fx.coroutines.mapIndexed
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -77,8 +74,8 @@ import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -182,7 +179,7 @@ fun SearchBarScreen(
 
     if (active) {
         LaunchedEffect(Unit) {
-            searchFieldState.forEachTextValue {
+            snapshotFlow { searchFieldState.text }.collectLatest {
                 updateSuggestions()
             }
         }
@@ -275,12 +272,7 @@ fun SearchBarScreen(
             },
             trailingIcon = {
                 if (active) {
-                    val hasText by searchFieldState.textAsFlow().mapIndexed { index, text ->
-                        // Workaround for https://github.com/FooIbar/EhViewer/issues/715
-                        if (index == 0) delay(700)
-                        text.isNotEmpty()
-                    }.collectAsState(false)
-                    if (hasText) {
+                    if (searchFieldState.text.isNotEmpty()) {
                         IconButton(onClick = { searchFieldState.clearText() }) {
                             Icon(Icons.Default.Close, contentDescription = null)
                         }
@@ -319,7 +311,7 @@ fun SearchBarScreen(
                             }
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        modifier = Modifier.clickable { it.onClick() }.animateItemPlacement(),
+                        modifier = Modifier.clickable { it.onClick() }.animateItem(),
                     )
                 }
             }
