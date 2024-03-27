@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.ShapeDefaults
@@ -36,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import arrow.core.Tuple7
+import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
@@ -110,7 +113,7 @@ fun GalleryInfoListItem(
                 modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
             )
         }
-        ConstraintLayout(modifier = Modifier.padding(8.dp, 4.dp).fillMaxSize(), constraintSet = constraintSet) {
+        ConstraintLayout(modifier = Modifier.padding(8.dp, 0.dp).fillMaxSize(), constraintSet = constraintSet) {
             val (titleRef, uploaderRef, ratingRef, categoryRef, postedRef, favRef, iconsRef) = ids
             Text(
                 text = EhUtils.getSuitableTitle(info),
@@ -128,15 +131,16 @@ fun GalleryInfoListItem(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
+                val ratingBasePadding = (LocalTextStyle.current.lineHeight.value.dp - dimensionResource(id = R.dimen.rating_size)) / 2
                 GalleryListCardRating(
                     rating = info.rating,
-                    modifier = Modifier.layoutId(ratingRef),
+                    modifier = Modifier.layoutId(ratingRef).padding(top = ratingBasePadding - 2.dp, bottom = ratingBasePadding + 2.dp),
                 )
                 val categoryColor = EhUtils.getCategoryColor(info.category)
                 val categoryText = EhUtils.getCategory(info.category).uppercase()
                 Text(
                     text = categoryText,
-                    modifier = Modifier.layoutId(categoryRef).clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
+                    modifier = Modifier.layoutId(categoryRef).clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 1.dp, horizontal = 8.dp),
                     color = if (Settings.harmonizeCategoryColor) Color.Unspecified else EhUtils.categoryTextColor,
                     textAlign = TextAlign.Center,
                 )
@@ -153,13 +157,15 @@ fun GalleryInfoListItem(
                             modifier = Modifier.size(16.dp),
                         )
                     }
-                    Text(text = info.simpleLanguage.orEmpty())
+                    if (info.simpleLanguage != null) {
+                        Text(text = info.simpleLanguage.orEmpty())
+                    }
                     if (info.pages != 0 && showPages) {
                         Text(text = "${info.pages}P")
                     }
                 }
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = if (info.favoriteName != null) Arrangement.spacedBy(6.dp) else Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.layoutId(favRef),
                 ) {
@@ -182,7 +188,7 @@ fun GalleryInfoListItem(
                 }
                 Text(
                     text = info.posted.orEmpty(),
-                    modifier = Modifier.layoutId(postedRef),
+                    modifier = Modifier.layoutId(postedRef).padding(vertical = 1.dp),
                 )
             }
         }

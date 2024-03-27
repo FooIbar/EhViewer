@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -15,6 +17,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.ShapeDefaults
@@ -29,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -91,7 +95,7 @@ fun DownloadCard(
                 DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_finish)
                 else -> null // Chill, will be removed soon
             }
-            ConstraintLayout(modifier = Modifier.padding(8.dp, 4.dp).fillMaxSize()) {
+            ConstraintLayout(modifier = Modifier.padding(8.dp, 0.dp).fillMaxSize()) {
                 val (
                     titleRef, uploaderRef, ratingRef, categoryRef, actionsRef, stateTextRef,
                     progressBarRef, progressTextRef, speedRef,
@@ -119,12 +123,13 @@ fun DownloadCard(
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
+                        val ratingBasePadding = (LocalTextStyle.current.lineHeight.value.dp - dimensionResource(id = R.dimen.rating_size)) / 2
                         GalleryListCardRating(
                             rating = info.rating,
                             modifier = Modifier.constrainAs(ratingRef) {
                                 start.linkTo(parent.start)
                                 bottom.linkTo(categoryRef.top)
-                            },
+                            }.padding(top = ratingBasePadding - 2.dp, bottom = ratingBasePadding + 2.dp),
                         )
                         val categoryColor = EhUtils.getCategoryColor(info.category)
                         val categoryText = EhUtils.getCategory(info.category).uppercase()
@@ -133,7 +138,7 @@ fun DownloadCard(
                             modifier = Modifier.constrainAs(categoryRef) {
                                 start.linkTo(parent.start)
                                 bottom.linkTo(parent.bottom)
-                            }.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
+                            }.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 1.dp, horizontal = 8.dp),
                             color = if (Settings.harmonizeCategoryColor) Color.Unspecified else EhUtils.categoryTextColor,
                             textAlign = TextAlign.Center,
                         )
@@ -173,12 +178,13 @@ fun DownloadCard(
                         )
                     }
                 }
+                val actionButtonSize = MaterialTheme.typography.labelLarge.lineHeight.value.dp * 2 + 2.dp
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.constrainAs(actionsRef) {
                         end.linkTo(parent.end)
                         bottom.linkTo(parent.bottom)
-                    },
+                    }.then(Modifier.size(actionButtonSize).offset(x = 8.dp))
                 ) {
                     val running = downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
                     val icon = remember {
@@ -200,7 +206,7 @@ fun DownloadCard(
                     Text(
                         text = stateText,
                         modifier = Modifier.constrainAs(stateTextRef) {
-                            end.linkTo(parent.end, 16.dp)
+                            end.linkTo(parent.end)
                             bottom.linkTo(actionsRef.top)
                         },
                         style = MaterialTheme.typography.titleSmall,
