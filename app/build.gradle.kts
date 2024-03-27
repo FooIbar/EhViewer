@@ -24,7 +24,7 @@ android {
 
     splits {
         abi {
-            isEnable = true
+            isEnable = false
             reset()
             if (isRelease) {
                 include("arm64-v8a", "x86_64", "armeabi-v7a", "x86")
@@ -102,12 +102,12 @@ android {
 
     externalNativeBuild {
         cmake {
-            path = File("src/main/cpp/CMakeLists.txt")
+            // path = File("src/main/cpp/CMakeLists.txt")
         }
     }
 
     compileOptions {
-        isCoreLibraryDesugaringEnabled = true
+        isCoreLibraryDesugaringEnabled = false
     }
 
     kotlinOptions {
@@ -139,6 +139,7 @@ android {
     }
 
     lint {
+        checkReleaseBuilds = false
         disable += setOf("MissingTranslation", "MissingQuantity")
         fatal += setOf("NewApi", "InlineApi")
     }

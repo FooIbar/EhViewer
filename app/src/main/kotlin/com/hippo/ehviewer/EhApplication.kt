@@ -34,19 +34,15 @@ import coil3.request.crossfade
 import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
 import com.hippo.ehviewer.client.EhCookieStore
-import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.coil.CropBorderInterceptor
 import com.hippo.ehviewer.coil.DownloadThumbInterceptor
 import com.hippo.ehviewer.coil.HardwareBitmapInterceptor
 import com.hippo.ehviewer.coil.MergeInterceptor
-import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
-import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.imageLoader
 import com.hippo.ehviewer.ktor.CronetEngine
-import com.hippo.ehviewer.legacy.cleanObsoleteCache
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
 import com.hippo.ehviewer.util.AppConfig
@@ -97,33 +93,6 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
             handler?.uncaughtException(t, e)
         }
         super.onCreate()
-        System.loadLibrary("ehviewer")
-        lifecycleScope.launchIO {
-            launch {
-                EhTagDatabase
-            }
-            launch {
-                EhDB
-            }
-            launch {
-                DownloadManager.readMetadataFromLocal()
-            }
-            launch {
-                FileUtils.cleanupDirectory(AppConfig.externalCrashDir)
-                FileUtils.cleanupDirectory(AppConfig.externalParseErrorDir)
-            }
-            launch {
-                cleanupDownload()
-            }
-            if (Settings.requestNews) {
-                launch {
-                    checkDawn()
-                }
-            }
-            launch {
-                cleanObsoleteCache()
-            }
-        }
         if (BuildConfig.DEBUG) {
             StrictMode.enableDefaults()
             Snapshot.registerApplyObserver { anies, _ ->

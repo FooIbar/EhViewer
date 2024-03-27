@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  check:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,175 +20,29 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Install Rust Toolchain
-        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
-
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "./app/src/main/rust"
-          shared-key: ${{ runner.os }}
-
-      - name: Rustfmt Check
-        working-directory: ./app/src/main/rust
-        run: cargo fmt --all -- --check
-
-      - name: Clippy Check
-        working-directory: ./app/src/main/rust
-        run: cargo clippy --all-targets --all-features -- -D warnings
-
-      - name: Setup Gradle
+      - name: Gradle Build
         uses: gradle/actions/setup-gradle@v3
         with:
-          cache-read-only: true
+          arguments: assembleDefaultRelease
 
-      - name: Spotless Check
-        run: ./gradlew spotlessCheck
-
-  default:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Install Rust Toolchain
-        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
-
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "./app/src/main/rust"
-          shared-key: ${{ runner.os }}
-          save-if: "false"
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
-          gradle-home-cache-cleanup: true
-
-      - name: CMake Cache
-        uses: actions/cache@v4
-        with:
-          path: app/.cxx
-          key: cmake-default-${{ hashFiles('gradle/libs.versions.toml', 'app/build.gradle.kts', 'app/src/main/cpp/CMakeLists.txt') }}
-          restore-keys: cmake-default-
-
-      - name: Build
-        run: ./gradlew assembleDefaultRelease
-
-      - name: Upload ARM64
+      - name: Upload apk
         uses: actions/upload-artifact@v4
         with:
-          name: default-arm64-v8a-${{ github.sha }}
-          path: app/build/outputs/apk/default/release/app-default-arm64-v8a-release.apk
-
-      - name: Upload x86_64
-        uses: actions/upload-artifact@v4
-        with:
-          name: default-x86_64-${{ github.sha }}
-          path: app/build/outputs/apk/default/release/app-default-x86_64-release.apk
-
-      - name: Upload ARM32
-        uses: actions/upload-artifact@v4
-        with:
-          name: default-armeabi-v7a-${{ github.sha }}
-          path: app/build/outputs/apk/default/release/app-default-armeabi-v7a-release.apk
-
-      - name: Upload x86
-        uses: actions/upload-artifact@v4
-        with:
-          name: default-x86-${{ github.sha }}
-          path: app/build/outputs/apk/default/release/app-default-x86-release.apk
+          name: apk
+          path: app/build/outputs/apk/default/release/app-default-release.apk
 
       - name: Upload mapping
         uses: actions/upload-artifact@v4
         with:
-          name: default-mapping-${{ github.sha }}
+          name: mapping
           path: app/build/outputs/mapping/defaultRelease/mapping.txt
 
-      - name: Upload native debug symbols
+      - name: Generate dump
+        run: ./gradlew assembleDefaultRelease -Dorg.gradle.caching=false -Dcom.android.tools.r8.dumpinputtofile=dump.zip --no-daemon
+
+      - name: Upload dump
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: default-native-debug-symbols-${{ github.sha }}
-          path: app/build/outputs/native-debug-symbols/defaultRelease/native-debug-symbols.zip
-
-  marshmallow:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Install Rust Toolchain
-        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
-
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "./app/src/main/rust"
-          shared-key: ${{ runner.os }}
-          save-if: "false"
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
-          gradle-home-cache-cleanup: true
-
-      - name: CMake Cache
-        uses: actions/cache@v4
-        with:
-          path: app/.cxx
-          key: cmake-marshmallow-${{ hashFiles('gradle/libs.versions.toml', 'app/build.gradle.kts', 'app/src/main/cpp/CMakeLists.txt') }}
-          restore-keys: cmake-marshmallow-
-
-      - name: Build
-        run: ./gradlew assembleMarshmallowRelease
-
-      - name: Upload ARM64
-        uses: actions/upload-artifact@v4
-        with:
-          name: marshmallow-arm64-v8a-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-arm64-v8a-release.apk
-
-      - name: Upload x86_64
-        uses: actions/upload-artifact@v4
-        with:
-          name: marshmallow-x86_64-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-x86_64-release.apk
-
-      - name: Upload ARM32
-        uses: actions/upload-artifact@v4
-        with:
-          name: marshmallow-armeabi-v7a-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-armeabi-v7a-release.apk
-
-      - name: Upload x86
-        uses: actions/upload-artifact@v4
-        with:
-          name: marshmallow-x86-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-x86-release.apk
-
-      - name: Upload mapping
-        uses: actions/upload-artifact@v4
-        with:
-          name: marshmallow-mapping-${{ github.sha }}
-          path: app/build/outputs/mapping/marshmallowRelease/mapping.txt
-
-      - name: Upload native debug symbols
-        uses: actions/upload-artifact@v4
-        with:
-          name: marshmallow-native-debug-symbols-${{ github.sha }}
-          path: app/build/outputs/native-debug-symbols/marshmallowRelease/native-debug-symbols.zip
+          name: dump
+          path: dump.zip
