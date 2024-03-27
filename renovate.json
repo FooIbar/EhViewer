@@ -7,7 +7,7 @@
     {
       "groupName": "AGP",
       "matchPackageNames": ["com.android.application"],
-      "ignoreUnstable": true
+      "ignoreUnstable": false
     },
     {
       "groupName": "Compose BOM",
