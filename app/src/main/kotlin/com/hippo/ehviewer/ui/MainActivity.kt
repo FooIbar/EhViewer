@@ -117,7 +117,7 @@ import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
 import com.hippo.ehviewer.ui.screen.asDst
 import com.hippo.ehviewer.ui.screen.asDstWith
 import com.hippo.ehviewer.ui.screen.navWithUrl
-import com.hippo.ehviewer.ui.screen.navigate
+import com.hippo.ehviewer.ui.screen.navigateTo
 import com.hippo.ehviewer.ui.settings.showNewVersion
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
@@ -225,7 +225,7 @@ class MainActivity : EhActivity() {
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
-                    navController.navigate(DownloadScreenDestination)
+                    navController.navigateTo(DownloadScreenDestination)
                 }
             }
 
@@ -259,25 +259,24 @@ class MainActivity : EhActivity() {
                             if ("text/plain" == type) {
                                 val keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
                                 if (keyword != null && !navController.navWithUrl(keyword)) {
-                                    navController.navigate(ListUrlBuilder(mKeyword = keyword).asDst())
+                                    navController.navigateTo(ListUrlBuilder(mKeyword = keyword).asDst())
                                 }
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
                                 if (null != uri) {
-                                    withIOContext { uri.asUniFile().sha1() }?.let {
-                                        navController.navigate(
-                                            ListUrlBuilder(
-                                                mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
-                                                hash = it,
-                                            ).asDst(),
-                                        )
-                                    }
+                                    val hash = withIOContext { uri.asUniFile().sha1() }
+                                    navController.navigateTo(
+                                        ListUrlBuilder(
+                                            mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
+                                            hash = hash,
+                                        ).asDst(),
+                                    )
                                 }
                             }
                         }
                         DownloadService.ACTION_START_DOWNLOADSCENE -> {
                             val args = intent.getBundleExtra(DownloadService.ACTION_START_DOWNLOADSCENE_ARGS)
-                            navController.navigate(DownloadsScreenDestination)
+                            navController.navigateTo(DownloadsScreenDestination)
                         }
                     }
                 }
@@ -317,11 +316,11 @@ class MainActivity : EhActivity() {
                         val result1 = GalleryDetailUrlParser.parse(text, false)
                         var launch: (() -> Unit)? = null
                         if (result1 != null) {
-                            launch = { navController.navigate(result1.gid asDstWith result1.token) }
+                            launch = { navController.navigateTo(result1.gid asDstWith result1.token) }
                         }
                         val result2 = GalleryPageUrlParser.parse(text, false)
                         if (result2 != null) {
-                            launch = { navController.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
+                            launch = { navController.navigateTo(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
                         }
                         launch?.let {
                             val ret = snackbarState.showSnackbar(snackMessage, snackAction, true)

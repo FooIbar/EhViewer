@@ -44,8 +44,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.onConsumedWindowInsetsChanged
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.GenericShape
-import androidx.compose.foundation.text.BasicTextField2
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
@@ -494,7 +493,7 @@ private fun SearchBarInputField(
         if (focused) colors.focusedTextColor else colors.unfocusedTextColor
     }
 
-    BasicTextField2(
+    BasicTextField(
         state = state,
         modifier = modifier
             .height(InputFieldHeight)
@@ -512,7 +511,7 @@ private fun SearchBarInputField(
         textStyle = LocalTextStyle.current.merge(TextStyle(color = textColor)),
         cursorBrush = SolidColor(colors.cursorColor),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+        onKeyboardAction = { onSearch() },
         interactionSource = interactionSource,
         decorator = @Composable { innerTextField ->
             TextFieldDefaults.DecorationBox(

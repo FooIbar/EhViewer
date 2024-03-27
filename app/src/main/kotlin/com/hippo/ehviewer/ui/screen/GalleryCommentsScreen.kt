@@ -358,7 +358,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
                     }
 
                     GalleryCommentCard(
-                        modifier = Modifier.animateItemPlacement(),
+                        modifier = Modifier.animateItem(),
                         comment = item,
                         onUserClick = {
                             navigate(

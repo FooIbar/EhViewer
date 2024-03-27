@@ -40,12 +40,12 @@ fun DestinationsNavigator.popNavigate(direction: Direction) = navigate(direction
 @MainThread
 fun NavController.navWithUrl(url: String): Boolean {
     val dest = urlToDestination(url) ?: return false
-    navigate(dest)
+    navigateTo(dest)
     return true
 }
 
 @MainThread
-fun NavController.navigate(direction: Direction) = navigate(direction.route)
+fun NavController.navigateTo(direction: Direction) = navigate(direction.route)
 
 fun BaseGalleryInfo.asDst() = GalleryDetailScreenDestination(GalleryInfoArgs(this))
 

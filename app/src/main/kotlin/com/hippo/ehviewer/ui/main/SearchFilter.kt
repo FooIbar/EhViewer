@@ -82,7 +82,7 @@ fun SearchFilter(
                 selected = isCategoryChecked(it.first),
                 onClick = { onCategoryChanged(category xor it.first) },
                 label = { Text(text = stringResource(id = it.second)) },
-                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItem(),
             )
         }
     }
