@@ -49,27 +49,30 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerState2
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.ModalSideDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.SideDrawer
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberDrawerState2
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
@@ -79,8 +82,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlurEffect
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
@@ -90,6 +98,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.compose.rememberNavController
@@ -126,6 +135,7 @@ import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.addTextToClipboard
+import com.hippo.ehviewer.util.calculateFraction
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
@@ -203,7 +213,7 @@ class MainActivity : EhActivity() {
             val configuration = LocalConfiguration.current
             val dialogState = LocalDialogState.current
             val navDrawerState = rememberDrawerState(DrawerValue.Closed)
-            val sideSheetState = rememberDrawerState(DrawerValue.Closed)
+            val sideSheetState = rememberDrawerState2(DrawerValue.Closed)
             val snackbarState = remember { SnackbarHostState() }
             val scope = rememberCoroutineScope()
             val navController = rememberNavController()
@@ -357,9 +367,11 @@ class MainActivity : EhActivity() {
                     },
                 ) {
                     LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
+                        val minOffset = -with(density) { 360.dp.toPx() }
                         ModalNavigationDrawer(
                             drawerContent = {
                                 ModalDrawerSheet(
+                                    drawerState = navDrawerState,
                                     modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp),
                                     windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Start),
                                 ) {
@@ -397,7 +409,13 @@ class MainActivity : EhActivity() {
                             gesturesEnabled = !drawerLocked || navDrawerState.isOpen,
                         ) {
                             val sheet = sideSheet.firstOrNull()
-                            SideDrawer(
+                            val radius by remember {
+                                snapshotFlow {
+                                    val step = calculateFraction(minOffset, 0f, navDrawerState.currentOffset)
+                                    with(density) { lerp(0, 10, step).dp.toPx() }
+                                }
+                            }.collectAsState(0f)
+                            ModalSideDrawer(
                                 drawerContent = {
                                     if (sheet != null) {
                                         ModalDrawerSheet(
@@ -409,6 +427,13 @@ class MainActivity : EhActivity() {
                                                 sheet(sideSheetState)
                                             }
                                         }
+                                    }
+                                },
+                                modifier = Modifier.graphicsLayer {
+                                    if (radius != 0f) {
+                                        renderEffect = BlurEffect(radius, radius, TileMode.Clamp)
+                                        shape = RectangleShape
+                                        clip = true
                                     }
                                 },
                                 drawerState = sideSheetState,
@@ -507,7 +532,7 @@ class MainActivity : EhActivity() {
     }
 }
 
-val LocalNavDrawerState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalNavDrawerState not present!") }
+val LocalNavDrawerState = compositionLocalOf<DrawerState> { error("CompositionLocal LocalNavDrawerState not present!") }
 val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }
 val LocalDrawerLockHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerLockHandle not present!") }
 val LocalSnackBarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackBarHostState not present!") }
