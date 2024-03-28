@@ -26,8 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.parseAsHtml
 import androidx.compose.ui.unit.dp
-import androidx.core.text.parseAsHtml
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -35,7 +35,6 @@ import com.hippo.ehviewer.ui.destinations.LicenseScreenDestination
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
-import com.hippo.ehviewer.ui.tools.toAnnotatedString
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.updater.Release
 import com.hippo.ehviewer.util.AppConfig
@@ -58,7 +57,7 @@ private fun versionCode() = "${BuildConfig.VERSION_NAME} (${BuildConfig.COMMIT_S
 
 @Composable
 @Stable
-private fun author() = stringResource(R.string.settings_about_author_summary).replace('$', '@').parseAsHtml().toAnnotatedString()
+private fun author() = stringResource(R.string.settings_about_author_summary).replace('$', '@').parseAsHtml()
 
 @Destination
 @Composable
