@@ -236,7 +236,7 @@ class DrawerState2(
  * @param confirmStateChange Optional callback invoked to confirm or veto a pending state change.
  */
 @Composable
-fun rememberDrawerState(
+fun rememberDrawerState2(
     initialValue: DrawerValue,
     confirmStateChange: (DrawerValue) -> Boolean = { true },
 ): DrawerState2 {
@@ -246,147 +246,10 @@ fun rememberDrawerState(
 }
 
 @Composable
-fun ModalNavigationDrawer(
+fun ModalSideDrawer(
     drawerContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    drawerState: DrawerState2 = rememberDrawerState(DrawerValue.Closed),
-    gesturesEnabled: Boolean = true,
-    scrimColor: Color = DrawerDefaults.scrimColor,
-    content: @Composable () -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    val density = LocalDensity.current
-    var minValue by remember { mutableFloatStateOf(-with(density) { ContainerWidth.toPx() }) }
-    val maxValue = 0f
-
-    SideEffect {
-        drawerState.density = density
-        drawerState.anchoredDraggableState.updateAnchors(
-            DraggableAnchors {
-                DrawerValue.Closed at minValue
-                DrawerValue.Open at maxValue
-            },
-        )
-    }
-
-    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-    val velocityTracker = remember { VelocityTracker() }
-    val dragModifier = if (gesturesEnabled) {
-        Modifier.pointerInput(isRtl) {
-            val multiplier = if (isRtl) -1 else 1
-            awaitEachGesture {
-                fun canConsume(slop: Float) = (slop > 0 && drawerState.isClosed) || (slop < 0 && drawerState.isOpen)
-                val down = awaitFirstDown(requireUnconsumed = false)
-                var ignore = false
-                val drag = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
-                    val overSlop = over * multiplier
-                    val canConsume = canConsume(overSlop)
-                    if (canConsume && !ignore) {
-                        velocityTracker.addPointerInputChange(change)
-                        change.consume()
-                        drawerState.anchoredDraggableState.dispatchRawDelta(overSlop)
-                    } else {
-                        ignore = true
-                    }
-                }
-                if (drag != null) {
-                    horizontalDrag(drag.id) {
-                        velocityTracker.addPointerInputChange(it)
-                        drawerState.anchoredDraggableState.dispatchRawDelta(it.positionChange().x * multiplier)
-                    }
-                    val velocity = velocityTracker.calculateVelocity()
-                    velocityTracker.resetTracking()
-                    scope.launch {
-                        drawerState.anchoredDraggableState.settle(velocity.x * multiplier)
-                    }
-                }
-            }
-        }
-    } else {
-        Modifier
-    }
-    Box(modifier.fillMaxSize().then(dragModifier)) {
-        val radius by remember {
-            snapshotFlow {
-                val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
-                lerp(0, 10, step).dp
-            }
-        }.collectAsState(0.dp)
-        val blurModifier = Modifier.graphicsLayer {
-            if (radius != 0.dp) {
-                renderEffect = BlurEffect(radius.toPx(), radius.toPx(), TileMode.Clamp)
-                shape = RectangleShape
-                clip = true
-            }
-        }
-        Box(modifier = blurModifier) {
-            content()
-        }
-        Scrim(
-            open = drawerState.isOpen,
-            onClose = {
-                if (gesturesEnabled && drawerState.confirmStateChange(DrawerValue.Closed)) {
-                    scope.launch { drawerState.close() }
-                }
-            },
-            fraction = {
-                calculateFraction(minValue, maxValue, drawerState.requireOffset())
-            },
-            color = scrimColor,
-        )
-        val predictiveState by animateFloatMergeOneWayPredictiveBackAsState(drawerState.isOpen) {
-            drawerState.close()
-        }
-        val absoluteElevation = LocalAbsoluteTonalElevation.current + DrawerDefaults.ModalDrawerElevation
-        val predictiveModifier = if (drawerState.isOpen) {
-            if (predictiveState > 0) {
-                Modifier.layout { measurable, constraints ->
-                    val placeable = measurable.measure(constraints)
-                    val multiplierX = lerp(1f, 1.05f, predictiveState)
-                    val multiplierY = lerp(1f, 0.95f, predictiveState)
-                    val scaledWidth = (multiplierX * placeable.width).roundToInt()
-                    val scaledHeight = (multiplierY * placeable.height).roundToInt()
-                    val reMeasured = measurable.measure(Constraints.fixed(scaledWidth, scaledHeight))
-                    layout(scaledWidth, scaledHeight) {
-                        reMeasured.placeRelative(scaledWidth - placeable.width, 0)
-                    }
-                }.background(
-                    color = MaterialTheme.colorScheme.surfaceColorAtElevation(absoluteElevation),
-                    shape = DrawerDefaults.shape,
-                )
-            } else {
-                Modifier.graphicsLayer {
-                    val scale = lerp(1f, 0.95f, -predictiveState)
-                    scaleX = scale
-                    scaleY = scale
-                }.offset {
-                    IntOffset(lerp(0f, minValue * 0.05f, -predictiveState).roundToInt(), 0)
-                }
-            }
-        } else {
-            Modifier.onGloballyPositioned {
-                val w = it.size.width
-                if (w != 0) {
-                    minValue = -it.size.width.toFloat()
-                }
-            }
-        }
-        Box(
-            modifier = Modifier.offset {
-                IntOffset(drawerState.requireOffset().roundToInt(), 0)
-            } then predictiveModifier.align(Alignment.CenterStart),
-            contentAlignment = Alignment.CenterEnd,
-        ) {
-            drawerContent()
-        }
-    }
-}
-
-@Composable
-fun SideDrawer(
-    drawerContent: @Composable () -> Unit,
-    modifier: Modifier = Modifier,
-    drawerState: DrawerState2 = rememberDrawerState(DrawerValue.Closed),
+    drawerState: DrawerState2 = rememberDrawerState2(DrawerValue.Closed),
     gesturesEnabled: Boolean = true,
     scrimColor: Color = DrawerDefaults.scrimColor,
     content: @Composable () -> Unit,
