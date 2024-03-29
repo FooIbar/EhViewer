@@ -5,9 +5,8 @@ package androidx.compose.material3
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -54,7 +53,11 @@ fun SearchBarInputField(
 
     BasicTextField(
         state = state,
-        modifier = modifier.height(InputFieldHeight).fillMaxWidth().focusRequester(focusRequester).onFocusChanged {
+        modifier = modifier.sizeIn(
+            minWidth = SearchBarMinWidth,
+            maxWidth = SearchBarMaxWidth,
+            minHeight = InputFieldHeight,
+        ).focusRequester(focusRequester).onFocusChanged {
             if (it.isFocused) onExpandedChange(true)
         },
         enabled = enabled,
@@ -95,7 +98,8 @@ fun SearchBarInputField(
     }
 }
 
-// Search bar has 16dp padding between icons and start/end, while by default text field has 12dp.
-private val SearchBarIconOffsetX = 4.dp
-
-private const val AnimationDelayMillis = 100
+val SearchBarIconOffsetX = 4.dp
+val SearchBarMinWidth = 360.dp
+val SearchBarMaxWidth = 720.dp
+val SearchBarHorizontalPadding = 16.dp
+const val AnimationDelayMillis = 100

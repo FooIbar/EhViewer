@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,6 +40,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarHorizontalPadding
 import androidx.compose.material3.SearchBarInputField
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
@@ -55,6 +57,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -250,8 +253,9 @@ fun SearchBarScreen(
             active = v
         }
         val activeState = rememberCompositionActiveState()
+        val configuration = LocalConfiguration.current
         SearchBar(
-            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier
+            modifier = Modifier.align(Alignment.TopCenter) then scrollAwayModifier
                 .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)),
             inputField = {
                 SearchBarInputField(
@@ -262,6 +266,7 @@ fun SearchBarScreen(
                     },
                     expanded = active,
                     onExpandedChange = onActiveChange,
+                    modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - SearchBarHorizontalPadding * 2).fillMaxWidth(),
                     label = title.ifNotNullThen {
                         Text(title!!, overflow = TextOverflow.Ellipsis)
                     }.takeUnless {
