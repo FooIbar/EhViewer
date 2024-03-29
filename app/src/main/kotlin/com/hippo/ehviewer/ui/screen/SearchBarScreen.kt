@@ -39,6 +39,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarInputField
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
@@ -239,50 +240,57 @@ fun SearchBarScreen(
                     .padding(top = 48.dp) then scrollAwayModifier,
             )
         }
+        val onActiveChange = { v: Boolean ->
+            if (v) {
+                onSearchViewExpanded()
+            } else {
+                onSearchViewHidden()
+            }
+            active = v
+        }
         SearchBar(
             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier
                 .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)),
-            state = searchFieldState,
-            onSearch = {
-                hideSearchView()
-                onApplySearch()
-            },
-            active = active,
-            onActiveChange = {
-                if (it) {
-                    onSearchViewExpanded()
-                } else {
-                    onSearchViewHidden()
-                }
-                active = it
-            },
-            title = title.ifNotNullThen { Text(title!!, overflow = TextOverflow.Ellipsis) },
-            placeholder = searchFieldHint.ifNotNullThen { Text(searchFieldHint!!) },
-            leadingIcon = {
-                if (active) {
-                    IconButton(onClick = { hideSearchView() }) {
-                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
-                    }
-                } else {
-                    val drawerState = LocalNavDrawerState.current
-                    IconButton(onClick = { scope.launchUI { drawerState.open() } }) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
-                    }
-                }
-            },
-            trailingIcon = {
-                if (active) {
-                    if (searchFieldState.text.isNotEmpty()) {
-                        IconButton(onClick = { searchFieldState.clearText() }) {
-                            Icon(Icons.Default.Close, contentDescription = null)
+            inputField = {
+                SearchBarInputField(
+                    state = searchFieldState,
+                    onSearch = {
+                        hideSearchView()
+                        onApplySearch()
+                    },
+                    expanded = active,
+                    onExpandedChange = onActiveChange,
+                    label = title.ifNotNullThen { Text(title!!, overflow = TextOverflow.Ellipsis) },
+                    placeholder = searchFieldHint.ifNotNullThen { Text(searchFieldHint!!) },
+                    leadingIcon = {
+                        if (active) {
+                            IconButton(onClick = { hideSearchView() }) {
+                                Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
+                            }
+                        } else {
+                            val drawerState = LocalNavDrawerState.current
+                            IconButton(onClick = { scope.launchUI { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = null)
+                            }
                         }
-                    }
-                } else {
-                    Row {
-                        trailingIcon()
-                    }
-                }
+                    },
+                    trailingIcon = {
+                        if (active) {
+                            if (searchFieldState.text.isNotEmpty()) {
+                                IconButton(onClick = { searchFieldState.clearText() }) {
+                                    Icon(Icons.Default.Close, contentDescription = null)
+                                }
+                            }
+                        } else {
+                            Row {
+                                trailingIcon()
+                            }
+                        }
+                    },
+                )
             },
+            expanded = active,
+            onExpandedChange = onActiveChange,
         ) {
             filter?.invoke()
             LazyColumn(
