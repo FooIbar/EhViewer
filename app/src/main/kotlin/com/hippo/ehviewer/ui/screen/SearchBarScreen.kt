@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.ui.screen
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
@@ -20,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,6 +39,8 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarHorizontalPadding
+import androidx.compose.material3.SearchBarInputField
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
@@ -69,6 +71,7 @@ import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.rememberCompositionActiveState
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -114,7 +117,7 @@ fun SearchBarScreen(
 ) {
     var mSuggestionList by remember { mutableStateOf(emptyList<Suggestion>()) }
     val mSearchDatabase = searchDatabase.searchDao()
-    var active by rememberSaveable { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
     val dialogState = LocalDialogState.current
@@ -177,7 +180,7 @@ fun SearchBarScreen(
         onSearchHidden()
     }
 
-    if (active) {
+    if (expanded) {
         LaunchedEffect(Unit) {
             snapshotFlow { searchFieldState.text }.collectLatest {
                 updateSuggestions()
@@ -187,7 +190,7 @@ fun SearchBarScreen(
 
     fun hideSearchView() {
         onSearchViewHidden()
-        active = false
+        expanded = false
     }
 
     fun onApplySearch() {
@@ -214,13 +217,13 @@ fun SearchBarScreen(
         }
     }
 
-    val scrollAwayModifier = if (!active) {
+    val scrollAwayModifier = if (!expanded) {
         Modifier.offset { IntOffset(0, searchBarOffsetY()) }
     } else {
         Modifier
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
                 // Placeholder, fill immutable SearchBar padding
@@ -239,51 +242,66 @@ fun SearchBarScreen(
                     .padding(top = 48.dp) then scrollAwayModifier,
             )
         }
+        val onExpandedChange = { v: Boolean ->
+            if (v) {
+                onSearchViewExpanded()
+            } else {
+                onSearchViewHidden()
+            }
+            expanded = v
+        }
+        val activeState = rememberCompositionActiveState()
         SearchBar(
-            modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier
+            modifier = Modifier.align(Alignment.TopCenter) then scrollAwayModifier
                 .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)),
-            state = searchFieldState,
-            onSearch = {
-                hideSearchView()
-                onApplySearch()
-            },
-            active = active,
-            onActiveChange = {
-                if (it) {
-                    onSearchViewExpanded()
-                } else {
-                    onSearchViewHidden()
-                }
-                active = it
-            },
-            title = title.ifNotNullThen { Text(title!!, overflow = TextOverflow.Ellipsis) },
-            placeholder = searchFieldHint.ifNotNullThen { Text(searchFieldHint!!) },
-            leadingIcon = {
-                if (active) {
-                    IconButton(onClick = { hideSearchView() }) {
-                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
-                    }
-                } else {
-                    val drawerState = LocalNavDrawerState.current
-                    IconButton(onClick = { scope.launchUI { drawerState.open() } }) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
-                    }
-                }
-            },
-            trailingIcon = {
-                if (active) {
-                    if (searchFieldState.text.isNotEmpty()) {
-                        IconButton(onClick = { searchFieldState.clearText() }) {
-                            Icon(Icons.Default.Close, contentDescription = null)
+            inputField = {
+                SearchBarInputField(
+                    state = searchFieldState,
+                    onSearch = {
+                        hideSearchView()
+                        onApplySearch()
+                    },
+                    expanded = expanded,
+                    onExpandedChange = onExpandedChange,
+                    modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2),
+                    label = title.ifNotNullThen {
+                        Text(title!!, overflow = TextOverflow.Ellipsis)
+                    }.takeUnless {
+                        val contentActive by activeState.state
+                        expanded || contentActive || searchFieldState.text.isNotEmpty()
+                    },
+                    placeholder = searchFieldHint.ifNotNullThen { Text(searchFieldHint!!) },
+                    leadingIcon = {
+                        if (expanded) {
+                            IconButton(onClick = { hideSearchView() }) {
+                                Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
+                            }
+                        } else {
+                            val drawerState = LocalNavDrawerState.current
+                            IconButton(onClick = { scope.launchUI { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = null)
+                            }
                         }
-                    }
-                } else {
-                    Row {
-                        trailingIcon()
-                    }
-                }
+                    },
+                    trailingIcon = {
+                        if (expanded) {
+                            if (searchFieldState.text.isNotEmpty()) {
+                                IconButton(onClick = { searchFieldState.clearText() }) {
+                                    Icon(Icons.Default.Close, contentDescription = null)
+                                }
+                            }
+                        } else {
+                            Row {
+                                trailingIcon()
+                            }
+                        }
+                    },
+                )
             },
+            expanded = expanded,
+            onExpandedChange = onExpandedChange,
         ) {
+            activeState.Anchor()
             filter?.invoke()
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
