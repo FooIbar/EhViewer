@@ -62,7 +62,10 @@ abstract class PageLoader {
             onRequest(index)
         }
 
-        val pagesAbsent = ((index - 5).coerceAtLeast(0) until (preloads + index).coerceAtMost(size)).mapNotNull { it.takeIf { cache[it] == null } }
+        val pagesAbsent = ((index - 5).coerceAtLeast(0) until (preloads + index).coerceAtMost(size))
+            .mapNotNullTo(mutableListOf()) { it.takeIf { it != index && cache[it] == null } }
+        // Load forward first, then load backward from the nearest index
+        pagesAbsent.sortBy { (index - it).coerceAtLeast(0) }
         preloadPages(pagesAbsent, (index - 10).coerceAtLeast(0) to (preloads + index + 10).coerceAtMost(size))
     }
 
