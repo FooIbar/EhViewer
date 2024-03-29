@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.ui.screen
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -57,7 +57,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -225,7 +224,7 @@ fun SearchBarScreen(
         Modifier
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
                 // Placeholder, fill immutable SearchBar padding
@@ -253,7 +252,6 @@ fun SearchBarScreen(
             active = v
         }
         val activeState = rememberCompositionActiveState()
-        val configuration = LocalConfiguration.current
         SearchBar(
             modifier = Modifier.align(Alignment.TopCenter) then scrollAwayModifier
                 .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)),
@@ -266,7 +264,7 @@ fun SearchBarScreen(
                     },
                     expanded = active,
                     onExpandedChange = onActiveChange,
-                    modifier = Modifier.widthIn(max = configuration.screenWidthDp.dp - SearchBarHorizontalPadding * 2).fillMaxWidth(),
+                    modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2).fillMaxWidth(),
                     label = title.ifNotNullThen {
                         Text(title!!, overflow = TextOverflow.Ellipsis)
                     }.takeUnless {
