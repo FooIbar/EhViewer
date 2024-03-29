@@ -70,6 +70,7 @@ import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.rememberCompositionActiveState
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -248,6 +249,7 @@ fun SearchBarScreen(
             }
             active = v
         }
+        val activeState = rememberCompositionActiveState()
         SearchBar(
             modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter) then scrollAwayModifier
                 .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)),
@@ -260,7 +262,12 @@ fun SearchBarScreen(
                     },
                     expanded = active,
                     onExpandedChange = onActiveChange,
-                    label = title.ifNotNullThen { Text(title!!, overflow = TextOverflow.Ellipsis) },
+                    label = title.ifNotNullThen {
+                        Text(title!!, overflow = TextOverflow.Ellipsis)
+                    }.takeUnless {
+                        val contentActive by activeState.state
+                        active || contentActive || searchFieldState.text.isNotEmpty()
+                    },
                     placeholder = searchFieldHint.ifNotNullThen { Text(searchFieldHint!!) },
                     leadingIcon = {
                         if (active) {
@@ -292,6 +299,7 @@ fun SearchBarScreen(
             expanded = active,
             onExpandedChange = onActiveChange,
         ) {
+            activeState.Anchor()
             filter?.invoke()
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
