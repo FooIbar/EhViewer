@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
@@ -118,7 +117,7 @@ fun SearchBarScreen(
 ) {
     var mSuggestionList by remember { mutableStateOf(emptyList<Suggestion>()) }
     val mSearchDatabase = searchDatabase.searchDao()
-    var active by rememberSaveable { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
     val dialogState = LocalDialogState.current
@@ -181,7 +180,7 @@ fun SearchBarScreen(
         onSearchHidden()
     }
 
-    if (active) {
+    if (expanded) {
         LaunchedEffect(Unit) {
             snapshotFlow { searchFieldState.text }.collectLatest {
                 updateSuggestions()
@@ -191,7 +190,7 @@ fun SearchBarScreen(
 
     fun hideSearchView() {
         onSearchViewHidden()
-        active = false
+        expanded = false
     }
 
     fun onApplySearch() {
@@ -218,7 +217,7 @@ fun SearchBarScreen(
         }
     }
 
-    val scrollAwayModifier = if (!active) {
+    val scrollAwayModifier = if (!expanded) {
         Modifier.offset { IntOffset(0, searchBarOffsetY()) }
     } else {
         Modifier
@@ -243,13 +242,13 @@ fun SearchBarScreen(
                     .padding(top = 48.dp) then scrollAwayModifier,
             )
         }
-        val onActiveChange = { v: Boolean ->
+        val onExpandedChange = { v: Boolean ->
             if (v) {
                 onSearchViewExpanded()
             } else {
                 onSearchViewHidden()
             }
-            active = v
+            expanded = v
         }
         val activeState = rememberCompositionActiveState()
         SearchBar(
@@ -262,18 +261,18 @@ fun SearchBarScreen(
                         hideSearchView()
                         onApplySearch()
                     },
-                    expanded = active,
-                    onExpandedChange = onActiveChange,
+                    expanded = expanded,
+                    onExpandedChange = onExpandedChange,
                     modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2),
                     label = title.ifNotNullThen {
                         Text(title!!, overflow = TextOverflow.Ellipsis)
                     }.takeUnless {
                         val contentActive by activeState.state
-                        active || contentActive || searchFieldState.text.isNotEmpty()
+                        expanded || contentActive || searchFieldState.text.isNotEmpty()
                     },
                     placeholder = searchFieldHint.ifNotNullThen { Text(searchFieldHint!!) },
                     leadingIcon = {
-                        if (active) {
+                        if (expanded) {
                             IconButton(onClick = { hideSearchView() }) {
                                 Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                             }
@@ -285,7 +284,7 @@ fun SearchBarScreen(
                         }
                     },
                     trailingIcon = {
-                        if (active) {
+                        if (expanded) {
                             if (searchFieldState.text.isNotEmpty()) {
                                 IconButton(onClick = { searchFieldState.clearText() }) {
                                     Icon(Icons.Default.Close, contentDescription = null)
@@ -299,8 +298,8 @@ fun SearchBarScreen(
                     },
                 )
             },
-            expanded = active,
-            onExpandedChange = onActiveChange,
+            expanded = expanded,
+            onExpandedChange = onExpandedChange,
         ) {
             activeState.Anchor()
             filter?.invoke()
