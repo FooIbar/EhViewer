@@ -5,6 +5,7 @@ package androidx.compose.material3
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.text.BasicTextField
@@ -59,7 +60,7 @@ fun SearchBarInputField(
             minHeight = InputFieldHeight,
         ).focusRequester(focusRequester).onFocusChanged {
             if (it.isFocused) onExpandedChange(true)
-        },
+        }.fillMaxWidth(),
         enabled = enabled,
         lineLimits = TextFieldLineLimits.SingleLine,
         textStyle = LocalTextStyle.current.merge(TextStyle(color = textColor)),

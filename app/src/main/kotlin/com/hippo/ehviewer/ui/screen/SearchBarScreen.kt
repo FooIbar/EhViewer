@@ -264,7 +264,7 @@ fun SearchBarScreen(
                     },
                     expanded = active,
                     onExpandedChange = onActiveChange,
-                    modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2).fillMaxWidth(),
+                    modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2),
                     label = title.ifNotNullThen {
                         Text(title!!, overflow = TextOverflow.Ellipsis)
                     }.takeUnless {
