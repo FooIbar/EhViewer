@@ -20,8 +20,9 @@ option(BUILD_TESTING OFF)
 
 FetchContent_Declare(
         liblzma
-        GIT_REPOSITORY https://github.com/FooIbar/xz.git
+        GIT_REPOSITORY https://git.tukaani.org/xz.git
         GIT_TAG v5.6.1
+        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/0001-Don-t-build-other-binaries.patch || cd .
 )
 
 FetchContent_MakeAvailable(liblzma)
