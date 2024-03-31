@@ -145,7 +145,6 @@ import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.sha1
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -454,7 +453,6 @@ class MainActivity : EhActivity() {
                                             StartDestination
                                         },
                                         defaultTransitions = rememberEhNavAnim(),
-                                        engine = rememberNavHostEngine(),
                                         navController = navController,
                                     )
                                 }
