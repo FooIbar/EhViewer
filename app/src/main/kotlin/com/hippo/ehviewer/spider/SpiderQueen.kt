@@ -735,14 +735,16 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     val currentJob = mDecodeJobMap[index]
                     if (currentJob?.isActive != true) {
                         mDecodeJobMap[index] = launch {
-                            doInJob(index)
+                            mFetcherJobMap[index]?.join()
+                            if (mPageStateArray[index] == STATE_FINISHED) {
+                                doInJob(index)
+                            }
                         }
                     }
                 }
             }
 
             private suspend fun doInJob(index: Int) {
-                mFetcherJobMap[index]?.takeIf { it.isActive }?.join()
                 runCatching {
                     val src = mSpiderDen.getImageSource(index) ?: return
                     val image = mSemaphore.withPermit { Image.decode(src) }
