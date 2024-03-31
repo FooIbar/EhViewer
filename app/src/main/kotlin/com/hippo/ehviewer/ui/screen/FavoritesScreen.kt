@@ -80,6 +80,7 @@ import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -90,7 +91,7 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
     // Immutables

@@ -34,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import arrow.atomic.Atomic
-import com.hippo.ehviewer.ui.destinations.DirectionDestination
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.settings.PreferenceTokens.PreferenceTextPadding
 import com.hippo.ehviewer.util.ProgressDialog
@@ -45,6 +44,7 @@ import com.jamal.composeprefs3.ui.prefs.SpannedTextPref
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.jamal.composeprefs3.ui.prefs.TextPref
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
@@ -64,7 +64,7 @@ object PreferenceTokens {
 fun PreferenceHeader(
     icon: Painter,
     @StringRes title: Int,
-    childRoute: DirectionDestination,
+    childRoute: DirectionDestinationSpec,
     navigator: DestinationsNavigator,
 ) {
     Row(
@@ -82,7 +82,7 @@ fun PreferenceHeader(
 fun PreferenceHeader(
     icon: ImageVector,
     @StringRes title: Int,
-    childRoute: DirectionDestination,
+    childRoute: DirectionDestinationSpec,
     navigator: DestinationsNavigator,
 ) = PreferenceHeader(
     icon = rememberVectorPainter(image = icon),

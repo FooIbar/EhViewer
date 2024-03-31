@@ -98,6 +98,7 @@ import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -143,7 +144,7 @@ private fun Context.generateComment(
 
 private val MinimumContentPaddingEditText = 88.dp
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composing(navigator) {
     LockDrawer(true)

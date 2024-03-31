@@ -50,6 +50,7 @@ import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.displayPath
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.system.logcat
@@ -58,7 +59,7 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun DownloadScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()

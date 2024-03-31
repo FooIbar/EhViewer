@@ -18,13 +18,14 @@ import com.hippo.ehviewer.ui.StartDestination
 import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.util.setDefaultSettings
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import io.ktor.http.Url
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun WebViewSignInScreen(navigator: DestinationsNavigator) {
     LockDrawer(true)

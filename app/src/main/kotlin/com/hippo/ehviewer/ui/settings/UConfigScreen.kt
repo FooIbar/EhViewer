@@ -28,11 +28,12 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.util.setDefaultSettings
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 private const val APPLY_JS = "javascript:(function(){var apply = document.getElementById(\"apply\").children[0];apply.click();})();"
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun UConfigScreen(navigator: DestinationsNavigator) {
     LockDrawer(true)

@@ -51,11 +51,12 @@ import com.hippo.ehviewer.ui.tools.getOffset
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.flattenForEach
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import moe.tarsin.coroutines.runSuspendCatching
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun GalleryPreviewScreen(detail: GalleryDetail, toNextPage: Boolean, navigator: DestinationsNavigator) = composing(navigator) {
     LockDrawer(true)

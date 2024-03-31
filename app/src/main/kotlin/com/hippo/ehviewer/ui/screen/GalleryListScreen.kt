@@ -140,6 +140,7 @@ import com.hippo.ehviewer.util.pickVisualMedia
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.sha1
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Direction
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -154,23 +155,23 @@ import moe.tarsin.coroutines.runSuspendCatching
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun HomePageScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(), navigator)
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun SubscriptionScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator)
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun WhatshotScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator)
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun ToplistScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator)
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = composing(navigator) {
     val searchFieldState = rememberTextFieldState()

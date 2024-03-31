@@ -59,6 +59,7 @@ import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastT
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -67,7 +68,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
 import moe.tarsin.coroutines.runSuspendCatching
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun EhScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()

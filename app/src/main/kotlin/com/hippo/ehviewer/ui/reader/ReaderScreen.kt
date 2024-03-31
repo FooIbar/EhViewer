@@ -42,6 +42,7 @@ import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
@@ -53,7 +54,7 @@ import kotlin.coroutines.resume
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsNavigator) = composing(navigator) {
     // Workaround for incorrect fling velocity on zoom gesture end
