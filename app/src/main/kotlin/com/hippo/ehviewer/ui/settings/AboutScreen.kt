@@ -41,6 +41,7 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.installPackage
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
@@ -59,7 +60,7 @@ private fun versionCode() = "${BuildConfig.VERSION_NAME} (${BuildConfig.COMMIT_S
 @Stable
 private fun author() = stringResource(R.string.settings_about_author_summary).replace('$', '@').parseAsHtml()
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun AboutScreen(navigator: DestinationsNavigator) {
     val context = LocalContext.current

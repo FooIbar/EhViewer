@@ -27,11 +27,12 @@ import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import moe.tarsin.coroutines.runSuspendCatching
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsNavigator) {
     LockDrawer(true)

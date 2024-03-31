@@ -89,6 +89,7 @@ import androidx.compose.ui.graphics.BlurEffect
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
@@ -144,7 +145,7 @@ import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.sha1
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.rememberNavHostEngine
+import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.channels.BufferOverflow
@@ -158,7 +159,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
-private val navItems = arrayOf(
+private val navItems = arrayOf<Triple<DirectionDestinationSpec, Int, ImageVector>>(
     Triple(HomePageScreenDestination, R.string.homepage, Icons.Default.Home),
     Triple(SubscriptionScreenDestination, R.string.subscription, EhIcons.Default.Subscriptions),
     Triple(WhatshotScreenDestination, R.string.whats_hot, Icons.Default.Whatshot),
@@ -446,12 +447,8 @@ class MainActivity : EhActivity() {
                                 ) {
                                     DestinationsNavHost(
                                         navGraph = NavGraphs.root,
-                                        startRoute = if (Settings.needSignIn) {
-                                            SignInScreenDestination
-                                        } else {
-                                            StartDestination
-                                        },
-                                        engine = rememberNavHostEngine(rootDefaultAnimations = rememberEhNavAnim()),
+                                        startRoute = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
+                                        defaultTransitions = rememberEhNavAnim(),
                                         navController = navController,
                                     )
                                 }

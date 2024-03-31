@@ -56,12 +56,13 @@ import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val title = stringResource(id = R.string.history)
