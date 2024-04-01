@@ -24,8 +24,6 @@ import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.job
@@ -42,7 +40,6 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
     @InternalAPI
     override suspend fun execute(data: HttpRequestData) = executeHttpRequest(callContext(), data)
 
-    @OptIn(DelicateCoroutinesApi::class)
     private suspend fun executeHttpRequest(
         callContext: CoroutineContext,
         data: HttpRequestData,
@@ -65,7 +62,7 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
                     info.toHttpResponseData(
                         requestTime = requestTime,
                         callContext = callContext,
-                        responseBody = GlobalScope.writer(callContext.job) {
+                        responseBody = writer(callContext.job) {
                             pool.useInstance {
                                 chunkChan = Channel()
                                 request.read(it)
