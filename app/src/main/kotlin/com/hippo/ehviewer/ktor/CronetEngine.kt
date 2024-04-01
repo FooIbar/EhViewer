@@ -65,7 +65,7 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
                     info.toHttpResponseData(
                         requestTime = requestTime,
                         callContext = callContext,
-                        responseBody = GlobalScope.writer(callContext) {
+                        responseBody = GlobalScope.writer(callContext.job) {
                             pool.useInstance {
                                 chunkChan = Channel()
                                 request.read(it)
