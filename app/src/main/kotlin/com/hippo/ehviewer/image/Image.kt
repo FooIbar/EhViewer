@@ -92,7 +92,7 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
 
         suspend fun decode(src: ImageSource): Image? {
             return runCatching {
-                when (src) {
+                val image = when (src) {
                     is UniFileSource -> {
                         if (isAtLeastP && !isAtLeastU) {
                             src.source.openFileDescriptor("rw").use {
@@ -110,19 +110,18 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
                                 }
                             }
                         }
-                        val image = src.right().decodeCoil()
-                        if (image is BitmapImage) src.close()
-                        Image(image, src)
+                        src.right().decodeCoil()
                     }
 
                     is ByteBufferSource -> {
                         if (isAtLeastP && !isAtLeastU) {
                             rewriteGifSource(src.source)
                         }
-                        val image = src.left().decodeCoil()
-                        if (image is BitmapImage) src.close()
-                        Image(image, src)
+                        src.left().decodeCoil()
                     }
+                }
+                Image(image, src).apply {
+                    if (innerImage is BitmapImage) src.close()
                 }
             }.onFailure {
                 src.close()
