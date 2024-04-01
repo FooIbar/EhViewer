@@ -127,8 +127,6 @@ static long archive_map_entries_index(archive_ctx *ctx, bool sort) {
             count++;
         }
     }
-    if (!count)
-        LOGE("%s", archive_error_string(ctx->arc));
     if (sort)
         qsort(entries, entryCount, sizeof(entry), compare_entries);
     return count;
@@ -171,8 +169,6 @@ static long archive_list_all_entries(archive_ctx *ctx) {
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK)
         if (archive_entry_is_playable(ctx->entry))
             count++;
-    if (!count)
-        LOGE("%s", archive_error_string(ctx->arc));
     return count;
 }
 
@@ -306,6 +302,11 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
     } else {
         entryCount = archive_list_all_entries(ctx);
         LOGI("%s%zu%s", "Found ", entryCount, " image entries in archive");
+        if (!entryCount) {
+            LOGE("%s%s", "Archive open failed:", archive_error_string(ctx->arc));
+            archive_release_ctx(ctx);
+            return 0;
+        }
 
         // We must read through the file|vm then we can know whether it is encrypted
         int encryptRet = archive_read_has_encrypted_entries(ctx->arc);
