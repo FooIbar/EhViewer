@@ -24,8 +24,6 @@ import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.job
@@ -42,7 +40,6 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
     @InternalAPI
     override suspend fun execute(data: HttpRequestData) = executeHttpRequest(callContext(), data)
 
-    @OptIn(DelicateCoroutinesApi::class)
     private suspend fun executeHttpRequest(
         callContext: CoroutineContext,
         data: HttpRequestData,
@@ -50,7 +47,7 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
         val requestTime = GMTDate()
 
         val callback = object : UrlRequest.Callback() {
-            lateinit var chunkChan: Channel<ByteBuffer>
+            private val chunkChan = Channel<Unit>()
             override fun onRedirectReceived(request: UrlRequest, info: UrlResponseInfo, newLocationUrl: String) {
                 continuation.resume(
                     info.toHttpResponseData(
@@ -65,11 +62,11 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
                     info.toHttpResponseData(
                         requestTime = requestTime,
                         callContext = callContext,
-                        responseBody = GlobalScope.writer(callContext) {
-                            pool.useInstance {
-                                chunkChan = Channel()
-                                request.read(it)
-                                chunkChan.consumeEach { buffer ->
+                        // Don't use the same coroutine context as the response, as it will block response processing.
+                        responseBody = writer {
+                            pool.useInstance { buffer ->
+                                request.read(buffer)
+                                chunkChan.consumeEach {
                                     buffer.flip()
                                     channel.writeFully(buffer)
                                     buffer.clear()
@@ -82,7 +79,7 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
             }
 
             override fun onReadCompleted(request: UrlRequest, info: UrlResponseInfo, byteBuffer: ByteBuffer) {
-                chunkChan.trySend(byteBuffer).getOrThrow()
+                chunkChan.trySend(Unit).getOrThrow()
             }
 
             override fun onSucceeded(request: UrlRequest, info: UrlResponseInfo) {
