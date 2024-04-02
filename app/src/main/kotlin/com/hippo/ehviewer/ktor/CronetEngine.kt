@@ -93,6 +93,10 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
                     chunkChan.close(error)
                 }
             }
+
+            override fun onCanceled(request: UrlRequest, info: UrlResponseInfo?) {
+                chunkChan.cancel()
+            }
         }
 
         cronetHttpClient.newUrlRequestBuilder(data.url.toString(), callback, cronetHttpClientExecutor).apply {
