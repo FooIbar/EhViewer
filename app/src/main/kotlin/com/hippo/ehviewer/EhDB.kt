@@ -37,7 +37,8 @@ import kotlinx.coroutines.flow.Flow
 import splitties.arch.room.roomDb
 
 object EhDB {
-    private val db = roomDb<EhDatabase>("eh.db") {
+    private const val DB_NAME = "eh.db"
+    private val db = roomDb<EhDatabase>(DB_NAME) {
         addMigrations(Schema17to18())
     }
 
@@ -259,28 +260,10 @@ object EhDB {
         db.filterDao().update(filter)
     }
 
-    suspend fun exportDB(context: Context, uri: Uri) {
-        val ehExportName = "eh.export.db"
-        resource {
-            context.deleteDatabase(ehExportName)
-            roomDb<EhDatabase>(ehExportName)
-        } release {
-            it.close()
-            context.deleteDatabase(ehExportName)
-        } use { newDb ->
-            db.galleryDao().list().let { newDb.galleryDao().insertOrIgnore(it) }
-            db.progressDao().list().let { newDb.progressDao().insertOrIgnore(it) }
-            db.downloadLabelDao().list().let { newDb.downloadLabelDao().insert(it) }
-            db.downloadDirnameDao().list().let { newDb.downloadDirnameDao().insertOrIgnore(it) }
-            db.downloadsDao().list().let { newDb.downloadsDao().insert(it) }
-            db.historyDao().list().let { newDb.historyDao().insertOrIgnore(it) }
-            db.quickSearchDao().list().let { newDb.quickSearchDao().insert(it) }
-            db.localFavoritesDao().list().let { newDb.localFavoritesDao().insertOrIgnore(it) }
-            db.filterDao().list().let { newDb.filterDao().insert(it) }
-            newDb.close()
-            val dbFile = context.getDatabasePath(ehExportName)
-            dbFile.asUniFile() sendTo uri.asUniFile()
-        }
+    fun exportDB(context: Context, uri: Uri) {
+        db.query("PRAGMA wal_checkpoint(FULL)", null).use { it.moveToNext() }
+        val dbFile = context.getDatabasePath(DB_NAME)
+        dbFile.asUniFile() sendTo uri.asUniFile()
     }
 
     suspend fun importDB(context: Context, uri: Uri) {
