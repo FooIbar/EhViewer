@@ -60,7 +60,6 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import java.io.File
-import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import kotlin.math.ceil
 import kotlinx.coroutines.CancellationException
