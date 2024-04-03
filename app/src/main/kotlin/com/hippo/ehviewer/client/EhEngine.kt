@@ -60,7 +60,6 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import java.io.File
-import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import kotlin.math.ceil
 import kotlinx.coroutines.CancellationException
@@ -71,6 +70,8 @@ import kotlinx.serialization.json.addJsonArray
 import kotlinx.serialization.json.put
 import moe.tarsin.coroutines.removeAllSuspend
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.buffer
+import okio.sink
 import org.jsoup.Jsoup
 import splitties.init.appCtx
 
@@ -84,11 +85,11 @@ private const val U_CONFIG_TEXT = "Selected Profile"
 fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
     val dir = AppConfig.externalParseErrorDir ?: return
     val file = File(dir, ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".txt")
-    RandomAccessFile(file, "rw").use { randomAccessFile ->
-        with(randomAccessFile) {
-            writeUTF(e.message + "\n")
-            onLeft { writeUTF(it) }
-            onRight { channel.write(it) }
+    file.sink().buffer().use { sink ->
+        with(sink) {
+            writeUtf8(e.message + "\n")
+            onLeft { writeUtf8(it) }
+            onRight { write(it) }
         }
     }
 }
@@ -100,7 +101,7 @@ fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): N
     // Check sad panda (without panda)
     val empty = body.fold(
         { it.isEmpty() },
-        { it.limit() == 0 },
+        { !it.hasRemaining() },
     )
     if (empty) {
         if (EhUtils.isExHentai) {
@@ -159,6 +160,7 @@ suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: s
         runSuspendCatching {
             block(buffer)
         }.onFailure {
+            buffer.rewind()
             rethrowExactly(response.status.value, buffer.right(), it)
         }.getOrThrow()
     }
