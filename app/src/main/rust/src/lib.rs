@@ -15,7 +15,7 @@ extern crate sha1;
 extern crate tl;
 
 use android_logger::Config;
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, ensure, Result};
 use jni::objects::JByteBuffer;
 use jni::sys::{jint, jobject, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
@@ -114,7 +114,8 @@ where
         let buffer = deref_mut_direct_bytebuffer(env, str)?;
         let value = {
             let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
-            let dom = tl::parse(html, ParserOptions::default()).map_err(|_| anyhow!("{html}"))?;
+            let dom = tl::parse(html, ParserOptions::default()).map_err(|e| anyhow!(e))?;
+            ensure!(dom.version().is_some(), "{html}");
             f(&dom, html)?
         };
         let mut cursor = Cursor::new(buffer);
