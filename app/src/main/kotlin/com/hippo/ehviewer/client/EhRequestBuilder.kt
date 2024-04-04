@@ -25,6 +25,7 @@ import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.HttpStatement
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -32,6 +33,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.ParametersBuilder
 import io.ktor.http.content.TextContent
 import io.ktor.http.userAgent
+import kotlinx.coroutines.cancel
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.JsonObjectBuilder
@@ -42,7 +44,7 @@ import okio.BufferedSource
 
 inline fun JsonObjectBuilder.array(name: String, builder: JsonArrayBuilder.() -> Unit) = put(name, buildJsonArray(builder))
 
-suspend inline fun <reified T> HttpStatement.executeAndParseAs() = execute { it.bodyAsUtf8Text().parseAs<T>() }
+suspend inline fun <reified T> HttpStatement.executeAndParseAs() = executeSafely { it.bodyAsUtf8Text().parseAs<T>() }
 inline fun <reified T> BufferedSource.parseAs(): T = json.decodeFromBufferedSource(this)
 inline fun <reified T> String.parseAs(): T = json.decodeFromString(this)
 
@@ -81,6 +83,16 @@ suspend inline fun noRedirectEhRequest(
     applyEhConfig(referer, origin)
     apply(builder)
 }.also { logcat("EhRequest") { url } }
+
+suspend inline fun <T> HttpStatement.executeSafely(
+    crossinline block: suspend (response: HttpResponse) -> T,
+) = execute { resp ->
+    try {
+        block(resp)
+    } finally {
+        resp.coroutineContext.cancel()
+    }
+}
 
 inline fun HttpRequestBuilder.formBody(builder: ParametersBuilder.() -> Unit) {
     method = HttpMethod.Post

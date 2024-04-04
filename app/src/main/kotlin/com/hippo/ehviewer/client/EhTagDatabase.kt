@@ -152,7 +152,7 @@ object EhTagDatabase : CoroutineScope {
 
     private suspend fun save(client: HttpClient, url: String, file: File) {
         runCatching {
-            client.prepareGet(url).execute {
+            client.prepareGet(url).executeSafely {
                 if (it.status.isSuccess()) {
                     it.bodyAsChannel().copyTo(file)
                 } else {
