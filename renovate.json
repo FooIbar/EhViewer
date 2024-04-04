@@ -6,12 +6,19 @@
   "packageRules": [
     {
       "groupName": "AGP",
-      "matchPackageNames": ["com.android.application"],
+      "matchPackageNames": [
+        "com.android.application"
+      ],
       "ignoreUnstable": false
     },
     {
-      "groupName": "Compose BOM",
-      "matchPackageNames": ["dev.chrisbanes.compose:compose-bom"],
+      "groupName": "AndroidX & Jetpack Compose",
+      "matchPackagePrefixes": [
+        "androidx."
+      ],
+      "matchPackageNames": [
+        "dev.chrisbanes.compose:compose-bom"
+      ],
       "ignoreUnstable": false
     },
     {
@@ -27,7 +34,9 @@
     },
     {
       "description": "Disable updates for SNAPSHOTs",
-      "matchCategories": ["java"],
+      "matchCategories": [
+        "java"
+      ],
       "allowedVersions": "!/SNAPSHOT$/"
     }
   ]
