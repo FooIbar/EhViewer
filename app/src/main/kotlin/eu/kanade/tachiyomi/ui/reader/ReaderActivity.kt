@@ -222,7 +222,7 @@ class ReaderActivity : EhActivity() {
         mPage = savedInstanceState.getInt(KEY_PAGE, -1)
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
         lifecycleScope.launchIO {
