@@ -25,11 +25,14 @@ import androidx.collection.LruCache
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.coroutineScope
+import coil3.EventListener
 import coil3.SingletonImageLoader
 import coil3.asCoilImage
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
 import coil3.network.ktor.KtorNetworkFetcherFactory
+import coil3.request.ErrorResult
+import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
@@ -64,6 +67,7 @@ import kotlinx.coroutines.launch
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 import logcat.LogcatLogger
+import logcat.asLog
 import okio.Path.Companion.toOkioPath
 import splitties.arch.room.roomDb
 import splitties.init.appCtx
@@ -174,7 +178,17 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         crossfade(300)
         val drawable = AppCompatResources.getDrawable(appCtx, R.drawable.image_failed)
         if (drawable != null) error(drawable.asCoilImage(true))
-        if (BuildConfig.DEBUG) logger(DebugLogger())
+        if (BuildConfig.DEBUG) {
+            logger(DebugLogger())
+        } else {
+            eventListener(object : EventListener() {
+                override fun onError(request: ImageRequest, result: ErrorResult) {
+                    logcat("ImageLoader", LogPriority.ERROR) {
+                        "🚨 Failed - ${request.data}\n${result.throwable.asLog()}"
+                    }
+                }
+            })
+        }
     }
 
     companion object {
