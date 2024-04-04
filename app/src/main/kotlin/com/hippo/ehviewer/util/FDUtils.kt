@@ -25,5 +25,5 @@ infix fun ParcelFileDescriptor.sendTo(fd: ParcelFileDescriptor) {
 }
 
 infix fun UniFile.sendTo(file: UniFile) = openFileDescriptor("r").use { src ->
-    file.openFileDescriptor("w").use { dst -> src sendTo dst }
+    file.openFileDescriptor("wt").use { dst -> src sendTo dst }
 }
