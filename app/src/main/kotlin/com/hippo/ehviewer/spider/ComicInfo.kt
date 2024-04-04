@@ -99,7 +99,6 @@ fun ComicInfo.toSimpleTags() = listOfNotNull(
 
 fun ComicInfo.write(file: UniFile) {
     file.openOutputStream().use {
-        it.channel.truncate(0)
         OutputStreamWriter(it, Charsets.UTF_8).use { writer ->
             xmlStreaming.newGenericWriter(writer).use { xmlWriter ->
                 xml.encodeToWriter(xmlWriter, ComicInfo.serializer(), this)

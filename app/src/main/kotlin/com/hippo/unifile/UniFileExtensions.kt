@@ -22,7 +22,7 @@ fun UniFile.openInputStream(): FileInputStream {
  * Use Native IO/NIO directly if possible, unless you need process file content on JVM!
  */
 fun UniFile.openOutputStream(): FileOutputStream {
-    return AutoCloseOutputStream(openFileDescriptor("w"))
+    return AutoCloseOutputStream(openFileDescriptor("wt"))
 }
 
 fun UniFile.sha1() = openFileDescriptor("r").use { sha1(it.fd) }

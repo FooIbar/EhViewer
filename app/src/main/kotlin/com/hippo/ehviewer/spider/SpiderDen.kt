@@ -191,8 +191,7 @@ class SpiderDen(val info: GalleryInfo) {
         val extension = MimeTypeMap.getFileExtensionFromUrl(url).ifEmpty { "jpg" }
         return saveResponseMeta(index, extension) { outFile ->
             outFile.openOutputStream().use {
-                val chan = it.channel.apply { truncate(0) }
-                response.bodyAsChannel().copyTo(chan)
+                response.bodyAsChannel().copyTo(it.channel)
             }
         }
     }
