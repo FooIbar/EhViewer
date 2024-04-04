@@ -148,9 +148,9 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
 
             ACTION_CLEAR -> {
                 clear()
+                checkStopSelf()
             }
         }
-        checkStopSelf()
     }
 
     override fun onBind(intent: Intent) = error("No bindService")
