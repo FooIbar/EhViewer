@@ -1,7 +1,6 @@
 package com.hippo.ehviewer.coil
 
 import coil3.intercept.Interceptor
-import coil3.request.ErrorResult
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
@@ -30,24 +29,24 @@ object DownloadThumbInterceptor : Interceptor {
                 }
                 if (withIOContext { thumb.isFile }) {
                     val new = chain.request.newBuilder().data(thumb.uri.toString()).build()
-                    when (val result = chain.withRequest(new).proceed()) {
-                        is SuccessResult -> return result
-                        is ErrorResult -> withIOContext { thumb.delete() }
-                    }
+                    val result = chain.withRequest(new).proceed()
+                    if (result is SuccessResult) return result
                 }
                 val new = chain.request.newBuilder().data(url).build()
-                return chain.withRequest(new).proceed().also {
-                    if (it is SuccessResult) {
-                        withIOContext {
-                            if (thumb.ensureFile()) {
-                                val key = requireNotNull(chain.request.memoryCacheKey)
-                                imageCache.read(key) {
-                                    data.asUniFile() sendTo thumb
-                                }
+                val result = chain.withRequest(new).proceed()
+                if (result is SuccessResult) {
+                    withIOContext {
+                        // Accessing the recreated file immediately after deleting it throws
+                        // FileNotFoundException, so we just overwrite the existing file.
+                        if (thumb.ensureFile()) {
+                            val key = requireNotNull(chain.request.memoryCacheKey)
+                            imageCache.read(key) {
+                                data.asUniFile() sendTo thumb
                             }
                         }
                     }
                 }
+                return result
             }
         }
         return chain.proceed()
