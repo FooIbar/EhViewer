@@ -28,6 +28,7 @@ import com.hippo.ehviewer.client.EhUtils.getSuitableTitle
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.ehRequest
+import com.hippo.ehviewer.client.executeSafely
 import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.coil.suspendEdit
@@ -157,7 +158,7 @@ class SpiderDen(val info: GalleryInfo) {
             notifyProgress(total!!, done, (done - prev).toInt())
             prev = done
         }
-    }.execute {
+    }.executeSafely {
         if (it.status.isSuccess()) {
             saveFromHttpResponse(index, it)
         } else {

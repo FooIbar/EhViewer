@@ -201,7 +201,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         }
 
         val noRedirectKtorClient by lazy {
-            HttpClient(ktorClient.engine) {
+            HttpClient(CronetEngine) {
                 followRedirects = false
                 install(HttpCookies) {
                     storage = EhCookieStore

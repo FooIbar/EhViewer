@@ -144,7 +144,7 @@ fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): N
 
 val httpContentPool = DirectByteBufferPool(8, 0x80000)
 
-suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend String.() -> T) = execute { response ->
+suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend String.() -> T) = executeSafely { response ->
     val body = response.bodyAsUtf8Text()
     runSuspendCatching {
         block(body)
@@ -153,7 +153,7 @@ suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend
     }.getOrThrow()
 }
 
-suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: suspend ByteBuffer.() -> T) = execute { response ->
+suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: suspend ByteBuffer.() -> T) = executeSafely { response ->
     httpContentPool.useInstance { buffer ->
         with(response.bodyAsChannel()) { while (!isClosedForRead) readAvailable(buffer) }
         buffer.flip()
@@ -167,7 +167,7 @@ suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: s
 }
 
 object EhEngine {
-    suspend fun getOriginalImageUrl(url: String, referer: String?) = noRedirectEhRequest(url, referer).execute { response ->
+    suspend fun getOriginalImageUrl(url: String, referer: String?) = noRedirectEhRequest(url, referer).executeSafely { response ->
         val location = response.headers["Location"] ?: throw InsufficientFundsException()
         location.takeIf { "bounce_login" !in it } ?: throw NotLoggedInException()
     }
@@ -243,7 +243,7 @@ object EhEngine {
                 append("edit_comment", id.toString())
             }
         }
-    }.execute { response ->
+    }.executeSafely { response ->
         // Ktor does not handle POST redirect, we need to do it manually
         // https://youtrack.jetbrains.com/issue/KTOR-478
         val location = response.headers["Location"] ?: url
@@ -272,7 +272,7 @@ object EhEngine {
                 append("apply", "Apply Changes")
                 append("update", "1")
             }
-        }.execute { }
+        }.executeSafely { }
     }
 
     suspend fun downloadArchive(gid: Long, token: String, or: String, res: String, isHAtH: Boolean): String? {

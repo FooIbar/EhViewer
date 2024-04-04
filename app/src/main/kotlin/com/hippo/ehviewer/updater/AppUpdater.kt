@@ -4,6 +4,7 @@ import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.executeAndParseAs
+import com.hippo.ehviewer.client.executeSafely
 import com.hippo.ehviewer.util.copyTo
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
@@ -36,7 +37,7 @@ object AppUpdater {
             Settings.lastUpdateTime = now.epochSeconds
             if (Settings.useCIUpdateChannel) {
                 val curSha = BuildConfig.COMMIT_SHA
-                val branch = ghStatement(API_URL).execute { JSONObject(it.bodyAsText()).getString("default_branch") }
+                val branch = ghStatement(API_URL).executeSafely { JSONObject(it.bodyAsText()).getString("default_branch") }
                 val workflowRunsUrl = "$API_URL/actions/workflows/ci.yml/runs?branch=$branch&event=push&status=success&per_page=1"
                 val workflowRun = ghStatement(workflowRunsUrl).executeAndParseAs<GithubWorkflowRuns>().workflowRuns[0]
                 val shortSha = workflowRun.headSha.take(7)
@@ -68,7 +69,7 @@ object AppUpdater {
     }
 
     suspend fun downloadUpdate(url: String, file: File) =
-        ghStatement(url).execute { response ->
+        ghStatement(url).executeSafely { response ->
             if (url.endsWith("zip")) {
                 response.bodyAsChannel().toInputStream().use { stream ->
                     ZipInputStream(stream).use { zip ->
