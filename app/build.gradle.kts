@@ -140,7 +140,7 @@ android {
 
     lint {
         disable += setOf("MissingTranslation", "MissingQuantity")
-        fatal += setOf("NewApi", "InlineApi")
+        fatal += setOf("NewApi", "InlinedApi")
     }
 
     packaging {
