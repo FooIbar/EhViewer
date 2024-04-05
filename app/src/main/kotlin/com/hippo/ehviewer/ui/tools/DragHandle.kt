@@ -42,7 +42,7 @@ fun ReorderableItemScope.DragHandle(
                 } else if (isAtLeastOMR1) {
                     HapticFeedbackConstants.KEYBOARD_RELEASE
                 } else {
-                    HapticFeedbackConstants.VIRTUAL_KEY_RELEASE
+                    HapticFeedbackConstants.VIRTUAL_KEY
                 }
                 view.performHapticFeedback(feedbackConstant)
                 onDragStopped()
