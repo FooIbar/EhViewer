@@ -735,9 +735,20 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     val currentJob = mDecodeJobMap[index]
                     if (currentJob?.isActive != true) {
                         mDecodeJobMap[index] = launch {
-                            mFetcherJobMap[index]?.join()
-                            if (mPageStateArray[index] == STATE_FINISHED) {
-                                doInJob(index)
+                            runCatching {
+                                mSemaphore.withPermit {
+                                    mFetcherJobMap[index]?.join()
+                                    if (mPageStateArray[index] == STATE_FINISHED) {
+                                        doInJob(index)
+                                    }
+                                }
+                            }.onFailure {
+                                if (mPageStateArray[index] == STATE_FINISHED) {
+                                    notifyGetImageFailure(index, DECODE_ERROR)
+                                }
+                                if (it is CancellationException) {
+                                    throw it
+                                }
                             }
                         }
                     }
@@ -745,23 +756,16 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             }
 
             private suspend fun doInJob(index: Int) {
+                val src = mSpiderDen.getImageSource(index) ?: return
+                val image = Image.decode(src)
+                checkNotNull(image)
                 runCatching {
-                    val src = mSpiderDen.getImageSource(index) ?: return
-                    val image = mSemaphore.withPermit { Image.decode(src) }
-                    checkNotNull(image)
-                    runCatching {
-                        currentCoroutineContext().ensureActive()
-                    }.onFailure {
-                        image.recycle()
-                        throw it
-                    }
-                    notifyGetImageSuccess(index, image)
+                    currentCoroutineContext().ensureActive()
                 }.onFailure {
-                    notifyGetImageFailure(index, DECODE_ERROR)
-                    if (it is CancellationException) {
-                        throw it
-                    }
+                    image.recycle()
+                    throw it
                 }
+                notifyGetImageSuccess(index, image)
             }
         }
     }
