@@ -4,18 +4,23 @@ import android.os.ParcelFileDescriptor
 import android.system.Int64Ref
 import android.system.Os
 import com.hippo.unifile.UniFile
+import eu.kanade.tachiyomi.util.system.logcat
 import java.io.FileDescriptor
 import java.io.FileInputStream
 import java.io.FileOutputStream
 
-private fun sendFileTotally(from: FileDescriptor, to: FileDescriptor) {
+private fun sendFileTotally(from: FileDescriptor, to: FileDescriptor): Long {
     if (isAtLeastP) {
-        Os.sendfile(to, from, Int64Ref(0), Long.MAX_VALUE)
-    } else {
-        FileInputStream(from).use { src ->
-            FileOutputStream(to).use { dst ->
-                src.channel.transferTo(0, Long.MAX_VALUE, dst.channel)
-            }
+        // sendfile may fail on some devices
+        try {
+            return Os.sendfile(to, from, Int64Ref(0), Long.MAX_VALUE)
+        } catch (e: Exception) {
+            logcat("sendfile", e)
+        }
+    }
+    return FileInputStream(from).use { src ->
+        FileOutputStream(to).use { dst ->
+            src.channel.transferTo(0, Long.MAX_VALUE, dst.channel)
         }
     }
 }
