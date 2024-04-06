@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -286,11 +287,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
             val additionalPadding = if (commenting) {
                 editTextMeasured
             } else {
-                if (!comments.hasMore) {
-                    MinimumContentPaddingEditText
-                } else {
-                    0.dp
-                }
+                0.dp
             }
             val voteUpSucceed = stringResource(R.string.vote_up_successfully)
             val cancelVoteUpSucceed = stringResource(R.string.cancel_vote_up_successfully)
@@ -398,6 +395,12 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
                                 Text(text = stringResource(id = R.string.click_more_comments))
                             }
                         }
+                    }
+                } else {
+                    // Workaround for comment list lagging when reaching the bottom
+                    // https://github.com/FooIbar/EhViewer/issues/994
+                    item {
+                        Spacer(modifier = Modifier.height(MinimumContentPaddingEditText))
                     }
                 }
             }
