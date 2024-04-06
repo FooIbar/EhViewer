@@ -33,6 +33,7 @@ import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
@@ -42,6 +43,7 @@ import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.ReadableTime
+import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -141,6 +143,13 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
             SwitchPreference(
                 title = stringResource(id = R.string.preload_thumb_aggressively),
                 value = Settings::preloadThumbAggressively,
+            )
+            var animateItems by Settings.animateItems.asMutableState()
+            SwitchPref(
+                checked = animateItems,
+                onMutate = { animateItems = !animateItems },
+                title = stringResource(id = R.string.animate_items),
+                summary = stringResource(id = R.string.animate_items_summary),
             )
             IntSliderPreference(
                 maxValue = 5,
