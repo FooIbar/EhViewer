@@ -7,7 +7,7 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.text.style.StyleSpan
 import android.widget.TextView
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -377,25 +377,27 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
                 }
                 if (comments.hasMore) {
                     item {
-                        AnimatedVisibility(refreshing) {
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.align(Alignment.Center).padding(keylineMargin),
-                                )
-                            }
-                        }
-                        AnimatedVisibility(!refreshing) {
-                            TextButton(
-                                onClick = {
-                                    launchIO {
-                                        refreshing = true
-                                        runSuspendCatching { refreshComment(true) }
-                                        refreshing = false
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth().padding(keylineMargin),
+                        Crossfade(targetState = refreshing, modifier = Modifier.padding(keylineMargin), label = "refreshing") {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().height(40.dp),
+                                contentAlignment = Alignment.Center,
                             ) {
-                                Text(text = stringResource(id = R.string.click_more_comments))
+                                if (it) {
+                                    CircularProgressIndicator()
+                                } else {
+                                    TextButton(
+                                        onClick = {
+                                            launchIO {
+                                                refreshing = true
+                                                runSuspendCatching { refreshComment(true) }
+                                                refreshing = false
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) {
+                                        Text(text = stringResource(id = R.string.click_more_comments))
+                                    }
+                                }
                             }
                         }
                     }
