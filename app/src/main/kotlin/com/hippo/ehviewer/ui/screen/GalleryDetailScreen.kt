@@ -484,7 +484,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 navigator.navigate(info.gid asDstWith info.token)
             }
         }
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+        Spacer(modifier = Modifier.size(keylineMargin))
         if (galleryDetail.newerVersions.isNotEmpty()) {
             Box(contentAlignment = Alignment.Center) {
                 CrystalCard(
@@ -494,7 +494,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 }
                 Text(text = stringResource(id = R.string.newer_version_available))
             }
-            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+            Spacer(modifier = Modifier.size(keylineMargin))
         }
         Row(
             modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -640,7 +640,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 },
             )
         }
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+        Spacer(modifier = Modifier.size(keylineMargin))
         fun getAllRatingText(rating: Float, ratingCount: Int): String {
             return getString(
                 R.string.rating_text,
@@ -665,7 +665,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         var rating by remember { mutableFloatStateOf(galleryDetail.rating.coerceAtLeast(.5f)) }
                         var text by remember { mutableIntStateOf(getRatingText(rating)) }
                         Text(text = stringResource(id = text), style = MaterialTheme.typography.bodyLarge)
-                        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+                        Spacer(modifier = Modifier.size(keylineMargin))
                         GalleryRatingBar(
                             rating = rating,
                             onRatingChange = {
@@ -696,11 +696,11 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 GalleryDetailRating(rating = galleryDetail.rating)
-                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+                Spacer(modifier = Modifier.size(keylineMargin))
                 Text(text = ratingText)
             }
         }
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+        Spacer(modifier = Modifier.size(keylineMargin))
         val tags = galleryDetail.tags
         if (tags.isEmpty()) {
             Box(
@@ -761,7 +761,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 },
             )
         }
-        Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+        Spacer(modifier = Modifier.size(keylineMargin))
         if (Settings.showComments) {
             GalleryDetailComment(galleryDetail.comments.comments)
             Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.strip_item_padding_v)))
@@ -895,7 +895,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             BelowHeader(galleryDetail)
                         } else {
                             Box(
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier.fillMaxSize().padding(keylineMargin),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 CircularProgressIndicator()
@@ -955,7 +955,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             BelowHeader(galleryDetail)
                         } else {
                             Box(
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier.fillMaxSize().padding(keylineMargin),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 CircularProgressIndicator()
