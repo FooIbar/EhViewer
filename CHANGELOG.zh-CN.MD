@@ -1,5 +1,26 @@
 # 变更日志
 
+## [1.11.3] - 2024-04-06
+
+### 改进
+
+* 优化预加载逻辑和图片加载顺序
+* 优化画廊详情和评论页面 UI
+
+### Bug 修复
+
+* 某些模式下搜索结果不显示画廊语言 [#923](https://github.com/FooIbar/EhViewer/issues/923)
+* 某些情况下在搜索结果中直接阅读画廊后崩溃 [#927](https://github.com/FooIbar/EhViewer/issues/927)
+* 更新至最新版本后仍提示有新版本 [#927](https://github.com/FooIbar/EhViewer/issues/927)
+* 从旧版本升级时包含不兼容数据导致崩溃/无法导出数据 [#940](https://github.com/FooIbar/EhViewer/issues/940) [#974](https://github.com/FooIbar/EhViewer/issues/974)
+* Android 10 以下的设备打开 设置-隐私 时崩溃 [#953](https://github.com/FooIbar/EhViewer/issues/953)
+* 下载标签无法拖动
+* 刷新 和 刷新（原图） 无法在已下载的图片上使用
+* 临时 IP 封禁错误显示为解析失败
+* 某些情况下下载时闪退 [#980](https://github.com/FooIbar/EhViewer/issues/980)
+* 某些设备上下载列表中的缩略图无法显示 [#977](https://github.com/FooIbar/EhViewer/issues/977)
+
+
 ## [1.11.2] - 2024-03-17
 
 ### 重大变更
