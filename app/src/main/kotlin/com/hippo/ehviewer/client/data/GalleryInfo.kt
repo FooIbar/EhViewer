@@ -37,7 +37,6 @@ interface GalleryInfo {
     var favoriteSlot: Int
     var favoriteName: String?
     var favoriteNote: String?
-    val artists: List<String>?
 
     fun generateSLang() {
         simpleLanguage = simpleTags?.let { generateSLangFromTags(it) }

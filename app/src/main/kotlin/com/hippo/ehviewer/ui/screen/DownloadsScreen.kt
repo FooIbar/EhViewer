@@ -95,6 +95,7 @@ import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.Download
+import com.hippo.ehviewer.spider.getComicInfo
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
@@ -123,7 +124,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import kotlin.math.roundToInt
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -174,7 +174,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
     val labelExists = stringResource(R.string.label_text_exist)
     val downloadsCountGroupByArtist = rememberInVM {
-        downloadInfoList.flatMapNotNull { it.artists }.groupBy { it }.mapValues { it.value.size }
+        downloadInfoList.flatMapNotNull { it.getComicInfo().penciller }.groupBy { it }.mapValues { it.value.size }
     }
     val artistList = rememberInVM { downloadsCountGroupByArtist.toList().sortedByDescending { it.second }.map { it.first } }
     val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())

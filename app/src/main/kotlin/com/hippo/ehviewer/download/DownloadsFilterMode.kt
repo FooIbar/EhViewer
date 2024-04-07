@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.download
 
 import com.hippo.ehviewer.dao.DownloadInfo
+import com.hippo.ehviewer.spider.getComicInfo
 
 enum class DownloadsFilterMode(
     val flag: Int,
@@ -10,7 +11,7 @@ enum class DownloadsFilterMode(
         label == "" || info.label == label
     }),
     ARTIST(flag = 1, take = { info, label, _ ->
-        label == "" || info.artists?.contains(label) ?: false
+        label == "" || info.getComicInfo().penciller?.contains(label) ?: false
     }),
     ;
 
