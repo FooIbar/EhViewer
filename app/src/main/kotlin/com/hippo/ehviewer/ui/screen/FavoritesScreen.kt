@@ -77,6 +77,7 @@ import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
@@ -97,6 +98,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
     // Immutables
     val localFavName = stringResource(R.string.local_favorites)
     val cloudFavName = stringResource(R.string.cloud_favorites)
+    val animateItems by Settings.animateItems.collectAsState()
 
     // Meta State
     var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
@@ -266,7 +268,10 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
             listMode = listMode,
             detailItemContent = { info ->
                 val checked = info.gid in checkedInfoMap
-                CheckableItem(checked = checked, modifier = Modifier.animateItemPlacement()) { interactionSource ->
+                CheckableItem(
+                    checked = checked,
+                    modifier = Modifier.thenIf(animateItems) { animateItemPlacement() },
+                ) { interactionSource ->
                     GalleryInfoListItem(
                         onClick = {
                             if (selectMode) {
@@ -292,7 +297,10 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
             },
             thumbItemContent = { info ->
                 val checked = info.gid in checkedInfoMap
-                CheckableItem(checked = checked, modifier = Modifier.animateItemPlacement()) { interactionSource ->
+                CheckableItem(
+                    checked = checked,
+                    modifier = Modifier.thenIf(animateItems) { animateItemPlacement() },
+                ) { interactionSource ->
                     GalleryInfoGridItem(
                         onClick = {
                             if (selectMode) {
