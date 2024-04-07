@@ -118,7 +118,7 @@ object Settings : DataStorePreferences(null) {
     val qSSaveProgress = boolPref("qs_save_progress", true)
     val security = boolPref("require_unlock", false)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
-    var downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
+    val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)
