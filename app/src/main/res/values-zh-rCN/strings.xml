@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright 2016 Hippo Seven
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +12,8 @@
   ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
-  --><resources>
+  -->
+<resources>
     <!-- Theme -->
     <string name="homepage">主页</string>
     <string name="subscription">订阅</string>
@@ -96,9 +96,6 @@
     <!-- Gallery detail -->
     <string name="download">下载</string>
     <string name="read">阅读</string>
-    <plurals name="page_count">
-        <item quantity="other">%d 页</item>
-    </plurals>
     <string name="favored_times">\u2665 %d</string>
     <string name="rating_text">%1$s (%2$.2f, %3$d)</string>
     <string name="torrent_count">种子 (%d)</string>
@@ -400,29 +397,8 @@
     <!-- Readable Time -->
     <string name="from_the_future">来自未来</string>
     <string name="just_now">刚刚</string>
-    <plurals name="some_minutes_ago">
-        <item quantity="other">%d 分钟前</item>
-    </plurals>
-    <plurals name="some_hours_ago">
-        <item quantity="other">%d 小时前</item>
-    </plurals>
     <string name="yesterday">昨天</string>
     <string name="some_days_ago">%d 天前</string>
-    <plurals name="second">
-        <item quantity="other">秒</item>
-    </plurals>
-    <plurals name="minute">
-        <item quantity="other">分钟</item>
-    </plurals>
-    <plurals name="hour">
-        <item quantity="other">小时</item>
-    </plurals>
-    <plurals name="day">
-        <item quantity="other">天</item>
-    </plurals>
-    <plurals name="year">
-        <item quantity="other">年</item>
-    </plurals>
     <string name="no_archives">没有压缩包</string>
     <string name="download_archive_started">开始下载压缩包</string>
     <string name="download_archive_failure">无法下载压缩包</string>
@@ -613,4 +589,29 @@
     <string name="dark_theme_on">总是开启</string>
     <string name="pref_crop_borders">裁剪边缘</string>
     <!-- Tachiyomi Reader End-->
+
+    <plurals name="page_count">
+        <item quantity="other">%d 页</item>
+    </plurals>
+    <plurals name="some_minutes_ago">
+        <item quantity="other">%d 分钟前</item>
+    </plurals>
+    <plurals name="some_hours_ago">
+        <item quantity="other">%d 小时前</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="other">秒</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="other">分钟</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="other">小时</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="other">天</item>
+    </plurals>
+    <plurals name="year">
+        <item quantity="other">年</item>
+    </plurals>
 </resources>

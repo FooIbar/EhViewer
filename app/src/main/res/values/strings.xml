@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright 2016 Hippo Seven
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +12,8 @@
   ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
-  --><resources>
+  -->
+<resources>
     <string name="app_name" translatable="false">EhViewer</string>
     <string name="site_e" translatable="false">e-hentai</string>
     <string name="site_ex" translatable="false">exhentai</string>
@@ -104,7 +104,7 @@
     <string name="search_sp_err1">The page range maximum cannot be below 10</string>
     <string name="search_sp_err2">The page range must be at least 20</string>
     <!-- A placeholder for other languages -->
-    <string name="search_sp_suffix"/>
+    <string name="search_sp_suffix" />
     <string name="search_sf">Disable default filters for:</string>
     <string name="search_sfl">Language</string>
     <string name="search_sfu">Uploader</string>
@@ -136,10 +136,6 @@
     <!-- Gallery detail -->
     <string name="download">Download</string>
     <string name="read">Read</string>
-    <plurals name="page_count">
-        <item quantity="one">%d page</item>
-        <item quantity="other">%d pages</item>
-    </plurals>
     <string name="favored_times">\u2665 %d</string>
     <string name="rating_text">%1$s (%2$.2f, %3$d)</string>
     <string name="torrent_count">Torrent (%d)</string>
@@ -458,36 +454,8 @@
     <!-- Readable Time -->
     <string name="from_the_future">From the future</string>
     <string name="just_now">Just now</string>
-    <plurals name="some_minutes_ago">
-        <item quantity="one">A minute ago</item>
-        <item quantity="other">%d minutes ago</item>
-    </plurals>
-    <plurals name="some_hours_ago">
-        <item quantity="one">An hour ago</item>
-        <item quantity="other">%d hours ago</item>
-    </plurals>
     <string name="yesterday">Yesterday</string>
     <string name="some_days_ago">%d days ago</string>
-    <plurals name="second">
-        <item quantity="one">sec</item>
-        <item quantity="other">secs</item>
-    </plurals>
-    <plurals name="minute">
-        <item quantity="one">min</item>
-        <item quantity="other">mins</item>
-    </plurals>
-    <plurals name="hour">
-        <item quantity="one">hour</item>
-        <item quantity="other">hours</item>
-    </plurals>
-    <plurals name="day">
-        <item quantity="one">day</item>
-        <item quantity="other">days</item>
-    </plurals>
-    <plurals name="year">
-        <item quantity="one">year</item>
-        <item quantity="other">years</item>
-    </plurals>
     <string name="no_archives">No Archives</string>
     <string name="download_archive_started">Archive download started</string>
     <string name="download_archive_failure">Failed to download archive</string>
@@ -676,4 +644,37 @@
     <string name="dark_theme_off">Always off</string>
     <string name="dark_theme_on">Always on</string>
     <!-- Tachiyomi Reader End-->
+
+    <plurals name="page_count">
+        <item quantity="one">%d page</item>
+        <item quantity="other">%d pages</item>
+    </plurals>
+    <plurals name="some_minutes_ago">
+        <item quantity="one">A minute ago</item>
+        <item quantity="other">%d minutes ago</item>
+    </plurals>
+    <plurals name="some_hours_ago">
+        <item quantity="one">An hour ago</item>
+        <item quantity="other">%d hours ago</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="one">sec</item>
+        <item quantity="other">secs</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="one">min</item>
+        <item quantity="other">mins</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="one">hour</item>
+        <item quantity="other">hours</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="one">day</item>
+        <item quantity="other">days</item>
+    </plurals>
+    <plurals name="year">
+        <item quantity="one">year</item>
+        <item quantity="other">years</item>
+    </plurals>
 </resources>
