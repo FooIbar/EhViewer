@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.util.VelocityTrackerAddPointsFix
 import androidx.compose.ui.res.colorResource
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -57,15 +56,6 @@ import moe.tarsin.kt.unreachable
 @Destination<RootGraph>
 @Composable
 fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsNavigator) = composing(navigator) {
-    // Workaround for incorrect fling velocity on zoom gesture end
-    // https://github.com/saket/telephoto/issues/71
-    DisposableEffect(Unit) {
-        VelocityTrackerAddPointsFix = false
-        onDispose {
-            VelocityTrackerAddPointsFix = true
-        }
-    }
-
     LockDrawer(true)
     ConfigureKeepScreenOn()
     val pageLoader = remember {
