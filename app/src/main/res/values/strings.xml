@@ -281,6 +281,9 @@
     <string name="remember_download_label">Remember download label</string>
     <string name="default_download_label">Default download label</string>
     <string name="added_to_download_list">Added to download list</string>
+    <string name="select_grouping_mode">Select Grouping Mode</string>
+    <string name="select_grouping_mode_custom">Custom</string>
+    <string name="select_grouping_mode_artist">Artist</string>
     <!-- Download label -->
     <string name="add">Add</string>
     <string name="new_label_title">New label</string>

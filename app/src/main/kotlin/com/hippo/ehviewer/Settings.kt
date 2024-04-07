@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
@@ -117,6 +118,7 @@ object Settings : DataStorePreferences(null) {
     val qSSaveProgress = boolPref("qs_save_progress", true)
     val security = boolPref("require_unlock", false)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
+    var downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)

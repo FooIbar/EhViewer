@@ -31,6 +31,7 @@ import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.GridView
@@ -87,8 +88,10 @@ import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.download.DownloadManager.downloadInfoList
 import com.hippo.ehviewer.download.DownloadManager.labelList
 import com.hippo.ehviewer.download.DownloadService
+import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.Download
@@ -112,6 +115,7 @@ import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.findActivity
+import com.hippo.ehviewer.util.flatMapNotNull
 import com.hippo.ehviewer.util.mapToLongArray
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -132,7 +136,8 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
-    var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(Settings.recentDownloadLabel.value)) }
+    val filterMode by Settings.downloadFilterMode.collectAsState { DownloadsFilterMode.from(it) }
+    var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(filterMode, Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember(filterState.label) { mutableIntStateOf(0) }
 
@@ -157,7 +162,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val sortModes = stringArrayResource(id = R.array.download_sort_modes)
     val downloadStates = stringArrayResource(id = R.array.download_state)
     val list = remember(filterState, invalidateKey) {
-        DownloadManager.downloadInfoList.filterTo(mutableStateListOf()) { info ->
+        downloadInfoList.filterTo(mutableStateListOf()) { info ->
             filterState.take(info)
         }
     }
@@ -168,8 +173,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val labelEmpty = stringResource(R.string.label_text_is_empty)
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
     val labelExists = stringResource(R.string.label_text_exist)
-    val downloadsCount by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
-    val totalCount = remember(downloadsCount) { downloadsCount.values.sum() }
+    val downloadsCountGroupByArtist = rememberInVM {
+        downloadInfoList.flatMapNotNull { it.artists }.groupBy { it }.mapValues { it.value.size }
+    }
+    val artistList = rememberInVM { downloadsCountGroupByArtist.toList().sortedByDescending { it.second }.map { it.first } }
+    val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
+    val totalCount = remember(downloadsCountGroupByLabel) { downloadsCountGroupByLabel.values.sum() }
 
     fun switchLabel(label: String?) {
         Settings.recentDownloadLabel.value = label
@@ -222,17 +231,53 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             }
                         },
                     ) {
+                        Icon(imageVector = Icons.Default.Download, contentDescription = null)
+                    }
+                    val custom = stringResource(R.string.select_grouping_mode_custom)
+                    val artist = stringResource(R.string.select_grouping_mode_artist)
+                    IconButton(
+                        onClick = {
+                            launch {
+                                showSelectActions(R.string.select_grouping_mode) {
+                                    val select = { mode: DownloadsFilterMode ->
+                                        filterState = filterState.copy(mode = mode, label = "")
+                                        Settings.downloadFilterMode.value = mode.flag
+                                        Settings.recentDownloadLabel.value = ""
+                                    }
+                                    onSelect(custom) { select(DownloadsFilterMode.CUSTOM) }
+                                    onSelect(artist) { select(DownloadsFilterMode.ARTIST) }
+                                }
+                            }
+                        },
+                    ) {
                         Icon(imageVector = Icons.Default.Settings, contentDescription = null)
                     }
                 },
             )
 
+            data class GroupLabel(
+                val id: Any,
+                val text: String,
+            )
+
+            val groupLabelList = rememberInVM(filterMode) {
+                when (filterMode) {
+                    DownloadsFilterMode.ARTIST -> artistList.map { GroupLabel(it, it) }
+                    DownloadsFilterMode.CUSTOM -> labelList.map { GroupLabel(it.id!!, it.label) }
+                }
+            }
+
             val labelsListState = rememberLazyListState()
             val reorderableLabelState = rememberReorderableLazyColumnState(labelsListState) { from, to ->
-                val fromPosition = from.index - 2
-                val toPosition = to.index - 2
-                labelList.apply { add(toPosition, removeAt(fromPosition)) }
-                view.performHapticFeedback(draggingHapticFeedback)
+                when (filterMode) {
+                    DownloadsFilterMode.ARTIST -> Unit
+                    DownloadsFilterMode.CUSTOM -> {
+                        val fromPosition = from.index - 2
+                        val toPosition = to.index - 2
+                        labelList.apply { add(toPosition, removeAt(fromPosition)) }
+                        view.performHapticFeedback(draggingHapticFeedback)
+                    }
+                }
             }
             var fromIndex by remember { mutableIntStateOf(-1) }
             LazyColumn(
@@ -253,46 +298,49 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         },
                     )
                 }
-                stickyHeader {
-                    ListItem(
-                        modifier = Modifier.clickable {
-                            switchLabel(null)
-                            closeSheet()
-                        },
-                        tonalElevation = 1.dp,
-                        shadowElevation = 1.dp,
-                        headlineContent = {
-                            Text("$defaultName [${downloadsCount.getOrDefault(null, 0)}]")
-                        },
-                    )
+                if (DownloadsFilterMode.ARTIST != filterMode) {
+                    stickyHeader {
+                        ListItem(
+                            modifier = Modifier.clickable {
+                                switchLabel(null)
+                                closeSheet()
+                            },
+                            tonalElevation = 1.dp,
+                            shadowElevation = 1.dp,
+                            headlineContent = {
+                                Text("$defaultName [${downloadsCountGroupByLabel.getOrDefault(null, 0)}]")
+                            },
+                        )
+                    }
                 }
-                itemsIndexed(labelList, key = { _, item -> item.id!! }) { index, (item, _, id) ->
-                    // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
-                    val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
-                    LaunchedEffect(dismissState) {
-                        snapshotFlow { dismissState.currentValue }.collect {
-                            if (it == SwipeToDismissBoxValue.EndToStart) {
-                                runCatching {
-                                    awaitPermissionOrCancel(confirmText = R.string.delete) {
-                                        Text(text = stringResource(R.string.delete_label, item))
+
+                itemsIndexed(groupLabelList, key = { _, item -> item.id }) { index, (id, item) ->
+                    val dismissState = if (DownloadsFilterMode.ARTIST == filterMode) null else {
+                        // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
+                        val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold,) }
+                        LaunchedEffect(dismissState) {
+                            snapshotFlow { dismissState.currentValue }.collect {
+                                if (it == SwipeToDismissBoxValue.EndToStart) {
+                                    runCatching {
+                                        awaitPermissionOrCancel(confirmText = R.string.delete) {
+                                            Text(text = stringResource(R.string.delete_label, item))
+                                        }
+                                    }.onSuccess {
+                                        DownloadManager.deleteLabel(item)
+                                        when (filterState.label) {
+                                            item -> switchLabel("")
+                                            null -> invalidateKey = !invalidateKey
+                                        }
+                                    }.onFailure {
+                                        dismissState.reset()
                                     }
-                                }.onSuccess {
-                                    DownloadManager.deleteLabel(item)
-                                    when (filterState.label) {
-                                        item -> switchLabel("")
-                                        null -> invalidateKey = !invalidateKey
-                                    }
-                                }.onFailure {
-                                    dismissState.reset()
                                 }
                             }
                         }
+                        dismissState
                     }
-                    ReorderableItem(reorderableLabelState, key = id!!) { isDragging ->
-                        SwipeToDismissBox2(
-                            state = dismissState,
-                            backgroundContent = {},
-                        ) {
+                    ReorderableItem(reorderableLabelState, key = id) { isDragging ->
+                        val content: @Composable () -> Unit = @Composable {
                             val elevation by animateDpAsState(
                                 if (isDragging) {
                                     8.dp // md.sys.elevation.level4
@@ -309,7 +357,11 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                 tonalElevation = 1.dp,
                                 shadowElevation = elevation,
                                 headlineContent = {
-                                    Text("$item [${downloadsCount.getOrDefault(item, 0)}]")
+                                    val count = when (filterMode) {
+                                        DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel.getOrDefault(item, 0)
+                                        DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist.getOrDefault(item, 0)
+                                    }
+                                    Text("$item [$count]")
                                 },
                                 trailingContent = {
                                     Row {
@@ -351,6 +403,14 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                         )
                                     }
                                 },
+                            )
+                        }
+                        when (filterMode) {
+                            DownloadsFilterMode.ARTIST -> content()
+                            DownloadsFilterMode.CUSTOM -> SwipeToDismissBox2(
+                                state = dismissState!!,
+                                backgroundContent = {},
+                                content = { content() }
                             )
                         }
                     }

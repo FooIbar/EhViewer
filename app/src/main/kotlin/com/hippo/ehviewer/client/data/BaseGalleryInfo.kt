@@ -22,9 +22,13 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import arrow.core.Option
+import arrow.core.getOrElse
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Parcelize
 @Serializable
@@ -90,6 +94,23 @@ data class BaseGalleryInfo(
     override var favoriteNote: String? = null,
 ) : GalleryInfo, Parcelable {
     constructor() : this(0, "")
+
+    @Ignore
+    @Transient
+    @IgnoredOnParcel
+    private var _artists: Option<List<String>?> = Option.fromNullable(null)
+
+    override val artists: List<String>?
+        get() = _artists.getOrElse {
+            // TODO("(add artist tagNamespace in simpleTags and refactor DownloadsFilterState) or new column in GALLERIES")
+            val artists = simpleTags?.mapNotNull {
+                val (namespace, tag) = it.split(':', limit = 2).apply { if (1 == this.size) return@mapNotNull null }
+                if (TagNamespace.Artist == TagNamespace(namespace)) tag else null
+            }?.ifEmpty { null }
+            // TODO("need to be improved")
+            val res = artists ?: simpleTags?.firstOrNull()?.let { listOf(it) }
+            res.apply { _artists = Option(res) }
+        }
 }
 
 class SimpleTagsConverter {
