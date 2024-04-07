@@ -602,7 +602,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     showSnackbar(noCurrentTorrents)
                 } else {
                     val items = mTorrentList!!.map { it.format() }
-                    val selected = showSelectItem(items, R.string.torrents, false)
+                    val selected = showSelectItem(items, R.string.torrents, respectDefaultWidth = false)
                     val url = mTorrentList!![selected].url
                     val name = "${mTorrentList!![selected].name}.torrent"
                     val r = DownloadManager.Request(Uri.parse(url))

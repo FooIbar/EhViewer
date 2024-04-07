@@ -206,7 +206,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     IconButton(
                         onClick = {
                             launch {
-                                showSelectActions(R.string.default_download_label) {
+                                val selected = if (!Settings.hasDefaultDownloadLabel) {
+                                    0
+                                } else {
+                                    labelList.indexOfFirst { it.label == Settings.defaultDownloadLabel } + 2
+                                }
+                                showSelectActions(R.string.default_download_label, selected) {
                                     onSelect(letMeSelect) {
                                         Settings.hasDefaultDownloadLabel = false
                                     }

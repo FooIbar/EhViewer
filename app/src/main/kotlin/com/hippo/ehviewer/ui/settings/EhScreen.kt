@@ -241,7 +241,11 @@ fun EhScreen(navigator: DestinationsNavigator) {
                             addAll(Settings.favCat)
                         }
                     }
-                    defaultFavSlot = dialogState.showSelectItem(items, R.string.default_favorites_collection) - 2
+                    defaultFavSlot = dialogState.showSelectItem(
+                        items = items,
+                        title = R.string.default_favorites_collection,
+                        selected = defaultFavSlot + 2,
+                    ) - 2
                 }
             }
             SimpleMenuPreferenceInt(
