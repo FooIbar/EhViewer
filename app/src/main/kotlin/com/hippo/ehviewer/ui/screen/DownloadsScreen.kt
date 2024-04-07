@@ -364,43 +364,46 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                     Text("$item [$count]")
                                 },
                                 trailingContent = {
-                                    Row {
-                                        IconButton(
-                                            onClick = {
-                                                launch {
-                                                    val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
-                                                        when {
-                                                            text.isBlank() -> labelEmpty
-                                                            text == defaultName -> defaultInvalid
-                                                            DownloadManager.containLabel(text) -> labelExists
-                                                            else -> null
+                                    when (filterMode) {
+                                        DownloadsFilterMode.ARTIST -> Unit
+                                        DownloadsFilterMode.CUSTOM -> Row {
+                                            IconButton(
+                                                onClick = {
+                                                    launch {
+                                                        val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
+                                                            when {
+                                                                text.isBlank() -> labelEmpty
+                                                                text == defaultName -> defaultInvalid
+                                                                DownloadManager.containLabel(text) -> labelExists
+                                                                else -> null
+                                                            }
+                                                        }
+                                                        DownloadManager.renameLabel(item, new)
+                                                        if (filterState.label == item) {
+                                                            switchLabel(new)
                                                         }
                                                     }
-                                                    DownloadManager.renameLabel(item, new)
-                                                    if (filterState.label == item) {
-                                                        switchLabel(new)
+                                                },
+                                            ) {
+                                                Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                                            }
+                                            DragHandle(
+                                                onDragStarted = {
+                                                    fromIndex = index
+                                                },
+                                                onDragStopped = {
+                                                    if (fromIndex != -1) {
+                                                        if (fromIndex != index) {
+                                                            val range = if (fromIndex < index) fromIndex..index else index..fromIndex
+                                                            val toUpdate = labelList.slice(range)
+                                                            toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                            launchIO { EhDB.updateDownloadLabel(toUpdate) }
+                                                        }
+                                                        fromIndex = -1
                                                     }
-                                                }
-                                            },
-                                        ) {
-                                            Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                                                },
+                                            )
                                         }
-                                        DragHandle(
-                                            onDragStarted = {
-                                                fromIndex = index
-                                            },
-                                            onDragStopped = {
-                                                if (fromIndex != -1) {
-                                                    if (fromIndex != index) {
-                                                        val range = if (fromIndex < index) fromIndex..index else index..fromIndex
-                                                        val toUpdate = labelList.slice(range)
-                                                        toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                        launchIO { EhDB.updateDownloadLabel(toUpdate) }
-                                                    }
-                                                    fromIndex = -1
-                                                }
-                                            },
-                                        )
                                     }
                                 },
                             )
@@ -531,7 +534,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 val thumbColumns by Settings.thumbColumns.collectAsState()
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Fixed(thumbColumns),
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    modifier = Modifier
+                        .nestedScroll(searchBarConnection)
+                        .fillMaxSize(),
                     verticalItemSpacing = gridInterval,
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
                     contentPadding = realPadding,
@@ -548,7 +553,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 }
             } else {
                 FastScrollLazyColumn(
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    modifier = Modifier
+                        .nestedScroll(searchBarConnection)
+                        .fillMaxSize(),
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
                 ) {
@@ -593,7 +600,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         Deferred({ delay(200) }) {
             if (list.isEmpty()) {
                 Column(
-                    modifier = Modifier.padding(realPadding).fillMaxSize(),
+                    modifier = Modifier
+                        .padding(realPadding)
+                        .fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {

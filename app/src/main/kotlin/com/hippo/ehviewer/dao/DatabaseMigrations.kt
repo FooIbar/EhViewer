@@ -7,7 +7,11 @@ import androidx.room.RenameTable
 import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.hippo.ehviewer.client.EhEngine
+import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
+import kotlinx.coroutines.runBlocking
 
 class Schema4to5 : AutoMigrationSpec {
     override fun onPostMigrate(db: SupportSQLiteDatabase) {
@@ -125,3 +129,31 @@ class Schema20to21 : AutoMigrationSpec {
 // Virtual tables can't be altered, so we use rename to recreate it
 @RenameTable(fromTableName = "GalleryFts", toTableName = "GALLERIES_FTS")
 class Schema21to22 : AutoMigrationSpec
+
+class Schema22to23 : AutoMigrationSpec {
+    override fun onPostMigrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE GALLERIES ADD AUTHOR TEXT")
+        val cursor = db.query("SELECT GID, TOKEN FROM GALLERIES")
+        val galleryList = cursor.use {
+            if (0 == cursor.count) return
+            val galleryList = mutableListOf<GalleryInfo>()
+            while (cursor.moveToNext()) {
+                val gid = cursor.getLong(0)
+                val token = cursor.getString(1)
+                galleryList.add(BaseGalleryInfo(gid = gid, token = token))
+            }
+            galleryList
+        }
+
+        runBlocking {
+            EhEngine.fillGalleryListByApi(galleryList)
+        }
+
+        db.beginTransaction()
+        galleryList.forEach {
+            db.execSQL("UPDATE GALLERIES SET AUTHOR = '${it.artists}' WHERE GID = ${it.gid}")
+        }
+        db.setTransactionSuccessful()
+        db.endTransaction()
+    }
+}
