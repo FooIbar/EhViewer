@@ -53,10 +53,6 @@
     <string name="keyword_search">Nøkkelordssøk</string>
     <string name="search_sft">Etiketter</string>
     <string name="any">Ubegrenset</string>
-    <plurals name="page_count">
-        <item quantity="one">%d side</item>
-        <item quantity="other">%d sider</item>
-    </plurals>
     <string name="more_comment">Flere kommentarer</string>
     <string name="tag_vote_up">Stem opp</string>
     <string name="pref_grayscale">Gråskala</string>
@@ -186,6 +182,18 @@
     <string name="delete_search_history">Slett «%s» fra søkehistorikk\?</string>
     <string name="collections">Samlinger</string>
     <string name="tag_vote_down">Stem ned</string>
+    <string name="yesterday">I går</string>
+    <string name="some_days_ago">%d dager siden</string>
+    <string name="download_all">Alle</string>
+    <string name="action_save">Lagre</string>
+    <string name="settings_privacy">Personvern</string>
+    <string name="no_archives">Ingen arkiver</string>
+    <string name="action_save_to">Lagre i …</string>
+
+    <plurals name="page_count">
+        <item quantity="one">%d side</item>
+        <item quantity="other">%d sider</item>
+    </plurals>
     <plurals name="some_minutes_ago">
         <item quantity="one">Et minutt siden</item>
         <item quantity="other">%d minutter siden</item>
@@ -198,19 +206,14 @@
         <item quantity="one">Én time siden</item>
         <item quantity="other">%d timer siden</item>
     </plurals>
-    <string name="yesterday">I går</string>
-    <string name="some_days_ago">%d dager siden</string>
     <plurals name="hour">
         <item quantity="one">time</item>
         <item quantity="other">timer</item>
     </plurals>
-    <string name="download_all">Alle</string>
-    <string name="action_save">Lagre</string>
     <plurals name="second">
         <item quantity="one">sek</item>
         <item quantity="other">sek</item>
     </plurals>
-    <string name="settings_privacy">Personvern</string>
     <plurals name="day">
         <item quantity="one">dag</item>
         <item quantity="other">dager</item>
@@ -219,6 +222,4 @@
         <item quantity="one">år</item>
         <item quantity="other">år</item>
     </plurals>
-    <string name="no_archives">Ingen arkiver</string>
-    <string name="action_save_to">Lagre i …</string>
 </resources>

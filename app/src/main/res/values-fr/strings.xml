@@ -105,10 +105,6 @@
     <!-- Gallery detail -->
     <string name="download">Télécharger</string>
     <string name="read">Lire</string>
-    <plurals name="page_count">
-        <item quantity="one">%d page</item>
-        <item quantity="other">%d pages</item>
-    </plurals>
     <string name="favored_times">\u2665 %d</string>
     <string name="rating_text">%1$s (%2$.2f, %3$d)</string>
     <string name="torrent_count">Torrent (%d)</string>
@@ -375,6 +371,30 @@
     <!-- Readable Time -->
     <string name="from_the_future">Du futur</string>
     <string name="just_now">En ce moment</string>
+    <string name="yesterday">Hier</string>
+    <string name="some_days_ago">Il y a %d jours</string>
+    <string name="no_archives">Aucun fiche archives</string>
+    <string name="download_archive_started">Téléchargement du fiche archives a commencé</string>
+    <string name="download_archive_failure">Téléchargement du fiche archives a échoué</string>
+    <string name="download_archive_failure_no_hath">Client H@H est nécessaire pour le téléchargement de fiches archives</string>
+    <string name="settings_privacy">Confidentialité</string>
+    <string name="settings_privacy_secure">Empêcher les captures d\'ecran</string>
+    <string name="settings_privacy_secure_summary">Quand cette option est activée, vous ne pouvez prendre aucune capture d\'écran de l\'application, et le systéme n\'affiche pas le contenu d\'écran dans le sélecteur de tâches.\n\nRedémarrage de l\'application est nécessaire pour appliquer le changement</string>
+    <string name="settings_advanced_app_language_title">Langue de l\'app (Language)</string>
+    <string name="app_language_system">Langue du système (défaut)</string>
+    <string name="settings_eh_identity_cookies_signed">Tout le monde peut utiliser les cookies de ce compte pour s\'y connecter.&lt;br&gt;&lt;b&gt;GARDEZ-LES BIEN !&lt;/b&gt;</string>
+    <string name="settings_eh_identity_cookies_guest">Vous ne vous êtes pas connecté.</string>
+    <string name="settings_eh_show_gallery_pages">Montrer les nombres des pages des galeries</string>
+    <string name="settings_eh_show_gallery_pages_summary">Montrer le nombre des pages des galerie dans la liste des galeries</string>
+    <string name="dark_theme">Thème sombre</string>
+    <string name="dark_theme_follow_system">Identique au système</string>
+    <string name="dark_theme_off">Toujours actif</string>
+    <string name="dark_theme_on">Toujours inactif</string>
+
+    <plurals name="page_count">
+        <item quantity="one">%d page</item>
+        <item quantity="other">%d pages</item>
+    </plurals>
     <plurals name="some_minutes_ago">
         <item quantity="one">Il y a %d minute</item>
         <item quantity="other">Il y a %d minutes</item>
@@ -383,8 +403,6 @@
         <item quantity="one">Il y a %d heure</item>
         <item quantity="other">Il y a %d heures</item>
     </plurals>
-    <string name="yesterday">Hier</string>
-    <string name="some_days_ago">Il y a %d jours</string>
     <plurals name="second">
         <item quantity="one">%d sec</item>
         <item quantity="other">secs</item>
@@ -405,22 +423,5 @@
         <item quantity="one">%d an</item>
         <item quantity="other">ans</item>
     </plurals>
-    <string name="no_archives">Aucun fiche archives</string>
-    <string name="download_archive_started">Téléchargement du fiche archives a commencé</string>
-    <string name="download_archive_failure">Téléchargement du fiche archives a échoué</string>
-    <string name="download_archive_failure_no_hath">Client H@H est nécessaire pour le téléchargement de fiches archives</string>
-    <string name="settings_privacy">Confidentialité</string>
-    <string name="settings_privacy_secure">Empêcher les captures d\'ecran</string>
-    <string name="settings_privacy_secure_summary">Quand cette option est activée, vous ne pouvez prendre aucune capture d\'écran de l\'application, et le systéme n\'affiche pas le contenu d\'écran dans le sélecteur de tâches.\n\nRedémarrage de l\'application est nécessaire pour appliquer le changement</string>
-    <string name="settings_advanced_app_language_title">Langue de l\'app (Language)</string>
-    <string name="app_language_system">Langue du système (défaut)</string>
-    <string name="settings_eh_identity_cookies_signed">Tout le monde peut utiliser les cookies de ce compte pour s\'y connecter.&lt;br&gt;&lt;b&gt;GARDEZ-LES BIEN !&lt;/b&gt;</string>
-    <string name="settings_eh_identity_cookies_guest">Vous ne vous êtes pas connecté.</string>
-    <string name="settings_eh_show_gallery_pages">Montrer les nombres des pages des galeries</string>
-    <string name="settings_eh_show_gallery_pages_summary">Montrer le nombre des pages des galerie dans la liste des galeries</string>
-    <string name="dark_theme">Thème sombre</string>
-    <string name="dark_theme_follow_system">Identique au système</string>
-    <string name="dark_theme_off">Toujours actif</string>
-    <string name="dark_theme_on">Toujours inactif</string>
 
 </resources>
