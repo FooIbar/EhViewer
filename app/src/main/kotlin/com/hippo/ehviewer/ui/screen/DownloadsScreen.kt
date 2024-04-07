@@ -56,6 +56,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -341,82 +342,87 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         dismissState
                     }
                     ReorderableItem(reorderableLabelState, key = id) { isDragging ->
-                        val content: @Composable () -> Unit = @Composable {
-                            val elevation by animateDpAsState(
-                                if (isDragging) {
-                                    8.dp // md.sys.elevation.level4
-                                } else {
-                                    1.dp // md.sys.elevation.level1
-                                },
-                                label = "elevation",
-                            )
-                            ListItem(
-                                modifier = Modifier.clickable {
-                                    switchLabel(item)
-                                    closeSheet()
-                                },
-                                tonalElevation = 1.dp,
-                                shadowElevation = elevation,
-                                headlineContent = {
-                                    val count = when (filterMode) {
-                                        DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel.getOrDefault(item, 0)
-                                        DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist.getOrDefault(item, 0)
-                                    }
-                                    Text("$item [$count]")
-                                },
-                                trailingContent = {
-                                    when(filterMode) {
-                                        DownloadsFilterMode.ARTIST -> Unit
-                                        DownloadsFilterMode.CUSTOM -> Row {
-                                            IconButton(
-                                                onClick = {
-                                                    launch {
-                                                        val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
-                                                            when {
-                                                                text.isBlank() -> labelEmpty
-                                                                text == defaultName -> defaultInvalid
-                                                                DownloadManager.containLabel(text) -> labelExists
-                                                                else -> null
-                                                            }
-                                                        }
-                                                        DownloadManager.renameLabel(item, new)
-                                                        if (filterState.label == item) {
-                                                            switchLabel(new)
-                                                        }
-                                                    }
-                                                },
-                                            ) {
-                                                Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                        val elevation by animateDpAsState(
+                            if (isDragging) {
+                                8.dp // md.sys.elevation.level4
+                            } else {
+                                1.dp // md.sys.elevation.level1
+                            },
+                            label = "elevation",
+                        )
+
+                        remember(filterMode) {
+                            movableContentOf {
+                                val content = @Composable {
+                                    ListItem(
+                                        modifier = Modifier.clickable {
+                                            switchLabel(item)
+                                            closeSheet()
+                                        },
+                                        tonalElevation = 1.dp,
+                                        shadowElevation = elevation,
+                                        headlineContent = {
+                                            val count = when (filterMode) {
+                                                DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel.getOrDefault(item, 0)
+                                                DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist.getOrDefault(item, 0)
                                             }
-                                            DragHandle(
-                                                onDragStarted = {
-                                                    fromIndex = index
-                                                },
-                                                onDragStopped = {
-                                                    if (fromIndex != -1) {
-                                                        if (fromIndex != index) {
-                                                            val range = if (fromIndex < index) fromIndex..index else index..fromIndex
-                                                            val toUpdate = labelList.slice(range)
-                                                            toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                            launchIO { EhDB.updateDownloadLabel(toUpdate) }
-                                                        }
-                                                        fromIndex = -1
+                                            Text("$item [$count]")
+                                        },
+                                        trailingContent = {
+                                            when (filterMode) {
+                                                DownloadsFilterMode.ARTIST -> Unit
+                                                DownloadsFilterMode.CUSTOM -> Row {
+                                                    IconButton(
+                                                        onClick = {
+                                                            launch {
+                                                                val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
+                                                                    when {
+                                                                        text.isBlank() -> labelEmpty
+                                                                        text == defaultName -> defaultInvalid
+                                                                        DownloadManager.containLabel(text) -> labelExists
+                                                                        else -> null
+                                                                    }
+                                                                }
+                                                                DownloadManager.renameLabel(item, new)
+                                                                if (filterState.label == item) {
+                                                                    switchLabel(new)
+                                                                }
+                                                            }
+                                                        },
+                                                    ) {
+                                                        Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                                     }
-                                                },
-                                            )
-                                        }
-                                    }
-                                },
-                            )
-                        }
-                        when (filterMode) {
-                            DownloadsFilterMode.ARTIST -> content()
-                            DownloadsFilterMode.CUSTOM -> SwipeToDismissBox2(
-                                state = dismissState!!,
-                                backgroundContent = {},
-                                content = { content() }
-                            )
-                        }
+                                                    DragHandle(
+                                                        onDragStarted = {
+                                                            fromIndex = index
+                                                        },
+                                                        onDragStopped = {
+                                                            if (fromIndex != -1) {
+                                                                if (fromIndex != index) {
+                                                                    val range = if (fromIndex < index) fromIndex..index else index..fromIndex
+                                                                    val toUpdate = labelList.slice(range)
+                                                                    toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                                    launchIO { EhDB.updateDownloadLabel(toUpdate) }
+                                                                }
+                                                                fromIndex = -1
+                                                            }
+                                                        },
+                                                    )
+                                                }
+                                            }
+                                        },
+                                    )
+                                }
+                                when (filterMode) {
+                                    DownloadsFilterMode.ARTIST -> content()
+                                    DownloadsFilterMode.CUSTOM -> SwipeToDismissBox2(
+                                        state = dismissState!!,
+                                        backgroundContent = {},
+                                        content = { content() }
+                                    )
+                                }
+                            }
+                        }()
                     }
                 }
             }
