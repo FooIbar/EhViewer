@@ -174,11 +174,23 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val labelEmpty = stringResource(R.string.label_text_is_empty)
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
     val labelExists = stringResource(R.string.label_text_exist)
-    val downloadsCountGroupByArtist = remember(invalidateKey) {
-        downloadInfoList.flatMapNotNull { it.artists }.groupBy { it }.mapValues { it.value.size }
+    val downloadsCountGroupByArtist by remember(invalidateKey) {
+        lazy {
+            downloadInfoList.flatMapNotNull { it.artists }.groupBy { it }.mapValues { it.value.size }
+                .toMutableMap<String?, Int>().apply { put(null, downloadInfoList.count { null == it.artists }) }
+        }
     }
-    val artistList = remember(downloadsCountGroupByArtist) { downloadsCountGroupByArtist.toList().sortedByDescending { it.second }.map { it.first } }
     val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
+    val downloadsCount = remember(filterMode) {
+        when (filterMode) {
+            DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel
+            DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist
+        }
+    }
+
+    val artistList by remember(downloadsCountGroupByArtist) {
+        lazy { downloadsCountGroupByArtist.toList().filter { null != it.first }.sortedByDescending { it.second }.map { it.first!! } }
+    }
     val totalCount = remember(downloadsCountGroupByLabel) { downloadsCountGroupByLabel.values.sum() }
 
     fun switchLabel(label: String?) {
@@ -263,8 +275,8 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
 
             val groupLabelList = rememberInVM(filterMode) {
                 when (filterMode) {
-                    DownloadsFilterMode.ARTIST -> artistList.map { GroupLabel(it, it) }
-                    DownloadsFilterMode.CUSTOM -> labelList.map { GroupLabel(it.id!!, it.label) }
+                    DownloadsFilterMode.ARTIST -> artistList.map { it to it }
+                    DownloadsFilterMode.CUSTOM -> labelList.map { it.id!! to it.label }
                 }
             }
 
@@ -315,8 +327,8 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     }
                 }
 
-                itemsIndexed(groupLabelList, key = { _, item -> item.id }) { index, (id, item) ->
-                    val dismissState = when(filterMode) {
+                itemsIndexed(groupLabelList, key = { _, (id, _) -> id }) { index, (id, item) ->
+                    val dismissState = when (filterMode) {
                         DownloadsFilterMode.ARTIST -> null
                         DownloadsFilterMode.CUSTOM -> {
                             // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
@@ -364,11 +376,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                         tonalElevation = 1.dp,
                                         shadowElevation = elevation,
                                         headlineContent = {
-                                            val count = when (filterMode) {
-                                                DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel.getOrDefault(item, 0)
-                                                DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist.getOrDefault(item, 0)
-                                            }
-                                            Text("$item [$count]")
+                                            Text("$item [${downloadsCount.getOrDefault(item, 0)}]")
                                         },
                                         trailingContent = {
                                             when (filterMode) {
@@ -420,7 +428,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                     DownloadsFilterMode.CUSTOM -> SwipeToDismissBox2(
                                         state = dismissState!!,
                                         backgroundContent = {},
-                                        content = { content() }
+                                        content = { content() },
                                     )
                                 }
                             }
