@@ -273,7 +273,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 },
             )
 
-            val groupLabelList = rememberInVM(filterMode) {
+            val groupLabelList = remember(filterMode) {
                 when (filterMode) {
                     DownloadsFilterMode.ARTIST -> artistList.map { it to it }
                     DownloadsFilterMode.CUSTOM -> labelList.map { it.id!! to it.label }
