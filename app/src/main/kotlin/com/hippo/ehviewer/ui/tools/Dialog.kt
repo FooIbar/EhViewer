@@ -450,7 +450,12 @@ class DialogState {
         selected: Int = -1,
         respectDefaultWidth: Boolean = true,
     ): Int = showNoButton(respectDefaultWidth) {
-        Column(modifier = Modifier.padding(top = 8.dp, bottom = 28.dp)) {
+        val paddingModifier = if (title != null) {
+            Modifier.padding(top = 8.dp, bottom = 28.dp)
+        } else {
+            Modifier.padding(vertical = 28.dp)
+        }
+        Column(modifier = paddingModifier) {
             if (title != null) {
                 Text(
                     text = title.fold({ it }, { stringResource(id = it) }),
