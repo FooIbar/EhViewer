@@ -530,12 +530,13 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun readMetadataFromLocal() {
-        val list = allInfoList.filter { it.pages == 0 || it.simpleTags == null }.parMapNotNull(concurrency = 5) { info ->
+        val list = allInfoList.filter { it.pages == 0 || it.simpleTags == null || it.artists == null }.parMapNotNull(concurrency = 5) { info ->
             info.downloadDir?.run {
                 val comicInfo = findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }
                 if (comicInfo != null) {
                     info.pages = comicInfo.pageCount
                     info.simpleTags = comicInfo.toSimpleTags()
+                    info.artists = comicInfo.penciller
                     info.galleryInfo
                 } else if (info.pages == 0) {
                     findFile(SPIDER_INFO_FILENAME)?.let {

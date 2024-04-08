@@ -12,7 +12,7 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
         Filter::class, HistoryInfo::class, LocalFavoriteInfo::class, ProgressInfo::class, QuickSearch::class,
         GalleryEntityFts::class,
     ],
-    version = 22,
+    version = 23,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 4, to = 5, spec = Schema4to5::class),
@@ -32,6 +32,7 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
         AutoMigration(from = 19, to = 20),
         AutoMigration(from = 20, to = 21, spec = Schema20to21::class),
         AutoMigration(from = 21, to = 22, spec = Schema21to22::class),
+        AutoMigration(from = 22, to = 23),
     ],
 )
 @TypeConverters(FilterModeConverter::class)

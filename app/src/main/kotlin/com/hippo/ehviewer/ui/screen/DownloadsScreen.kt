@@ -96,7 +96,6 @@ import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.Download
-import com.hippo.ehviewer.spider.getComicInfo
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.MainActivity
@@ -176,7 +175,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
     val labelExists = stringResource(R.string.label_text_exist)
     val downloadsCountGroupByArtist = remember(invalidateKey) {
-        downloadInfoList.flatMapNotNull { it.getComicInfo().penciller }.groupBy { it }.mapValues { it.value.size }
+        downloadInfoList.flatMapNotNull { it.artists }.groupBy { it }.mapValues { it.value.size }
     }
     val artistList = remember(downloadsCountGroupByArtist) { downloadsCountGroupByArtist.toList().sortedByDescending { it.second }.map { it.first } }
     val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
@@ -317,29 +316,32 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 }
 
                 itemsIndexed(groupLabelList, key = { _, item -> item.id }) { index, (id, item) ->
-                    val dismissState = if (DownloadsFilterMode.ARTIST == filterMode) null else {
-                        // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
-                        val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold,) }
-                        LaunchedEffect(dismissState) {
-                            snapshotFlow { dismissState.currentValue }.collect {
-                                if (it == SwipeToDismissBoxValue.EndToStart) {
-                                    runCatching {
-                                        awaitPermissionOrCancel(confirmText = R.string.delete) {
-                                            Text(text = stringResource(R.string.delete_label, item))
+                    val dismissState = when(filterMode) {
+                        DownloadsFilterMode.ARTIST -> null
+                        DownloadsFilterMode.CUSTOM -> {
+                            // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
+                            val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
+                            LaunchedEffect(dismissState) {
+                                snapshotFlow { dismissState.currentValue }.collect {
+                                    if (it == SwipeToDismissBoxValue.EndToStart) {
+                                        runCatching {
+                                            awaitPermissionOrCancel(confirmText = R.string.delete) {
+                                                Text(text = stringResource(R.string.delete_label, item))
+                                            }
+                                        }.onSuccess {
+                                            DownloadManager.deleteLabel(item)
+                                            when (filterState.label) {
+                                                item -> switchLabel("")
+                                                null -> invalidateKey = !invalidateKey
+                                            }
+                                        }.onFailure {
+                                            dismissState.reset()
                                         }
-                                    }.onSuccess {
-                                        DownloadManager.deleteLabel(item)
-                                        when (filterState.label) {
-                                            item -> switchLabel("")
-                                            null -> invalidateKey = !invalidateKey
-                                        }
-                                    }.onFailure {
-                                        dismissState.reset()
                                     }
                                 }
                             }
+                            dismissState
                         }
-                        dismissState
                     }
                     ReorderableItem(reorderableLabelState, key = id) { isDragging ->
                         val elevation by animateDpAsState(

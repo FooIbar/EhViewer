@@ -68,6 +68,9 @@ data class BaseGalleryInfo(
     @ColumnInfo(name = "SIMPLE_TAGS")
     override var simpleTags: List<String>? = null,
 
+    @ColumnInfo(name = "ARTISTS")
+    override var artists: List<String>? = null,
+
     @ColumnInfo(name = "PAGES", defaultValue = "0")
     override var pages: Int = 0,
 

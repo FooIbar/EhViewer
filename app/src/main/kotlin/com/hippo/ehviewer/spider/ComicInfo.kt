@@ -61,7 +61,7 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
             }
 
             else -> simpleTags?.forEach { tagString ->
-                val (namespace, tag) = tagString.split(':', limit = 2).apply { if (1 == this.size) return@forEach }
+                val (namespace, tag) = tagString.split(':', limit = 2)
                 when (val ns = TagNamespace(namespace)) {
                     Artist, Cosplayer -> artists.add(tag)
                     Group -> groups.add(tag)

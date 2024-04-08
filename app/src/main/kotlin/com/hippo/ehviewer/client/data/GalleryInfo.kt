@@ -30,6 +30,7 @@ interface GalleryInfo {
     var rating: Float
     var rated: Boolean
     var simpleTags: List<String>?
+    var artists: List<String>?
     var pages: Int
     var thumbWidth: Int
     var thumbHeight: Int
