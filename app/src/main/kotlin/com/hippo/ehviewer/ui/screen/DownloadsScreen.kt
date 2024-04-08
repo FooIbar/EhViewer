@@ -156,9 +156,13 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
     val unknownName = stringResource(R.string.unknown_artists)
+    val emptyLabelName = when (filterMode) {
+        DownloadsFilterMode.ARTIST -> unknownName
+        DownloadsFilterMode.CUSTOM -> defaultName
+    }
     val title = stringResource(
         R.string.scene_download_title,
-        with(filterState) { if (label == "") allName else label ?: defaultName },
+        with(filterState) { if (label == "") allName else label ?: emptyLabelName },
     )
     val hint = stringResource(R.string.search_bar_hint, title)
     val sortModes = stringArrayResource(id = R.array.download_sort_modes)
@@ -307,10 +311,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         },
                     )
                 }
-                val name = when (filterMode) {
-                    DownloadsFilterMode.ARTIST -> unknownName
-                    DownloadsFilterMode.CUSTOM -> defaultName
-                }
                 stickyHeader {
                     ListItem(
                         modifier = Modifier.clickable {
@@ -320,7 +320,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         tonalElevation = 1.dp,
                         shadowElevation = 1.dp,
                         headlineContent = {
-                            Text("$name [${downloadsCount.getOrDefault(null, 0)}]")
+                            Text("$emptyLabelName [${downloadsCount.getOrDefault(null, 0)}]")
                         },
                     )
                 }
