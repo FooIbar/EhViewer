@@ -188,11 +188,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         }
     }
     val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
-    val downloadsCount = remember(filterMode) {
-        when (filterMode) {
-            DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel
-            DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist
-        }
+    val downloadsCount = when (filterMode) {
+        DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel
+        DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist
     }
 
     val artistList by remember(downloadsCountGroupByArtist) {
@@ -284,15 +282,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
 
             val labelsListState = rememberLazyListState()
             val reorderableLabelState = rememberReorderableLazyColumnState(labelsListState) { from, to ->
-                when (filterMode) {
-                    DownloadsFilterMode.ARTIST -> Unit
-                    DownloadsFilterMode.CUSTOM -> {
-                        val fromPosition = from.index - 2
-                        val toPosition = to.index - 2
-                        labelList.apply { add(toPosition, removeAt(fromPosition)) }
-                        view.performHapticFeedback(draggingHapticFeedback)
-                    }
-                }
+                val fromPosition = from.index - 2
+                val toPosition = to.index - 2
+                labelList.apply { add(toPosition, removeAt(fromPosition)) }
+                view.performHapticFeedback(draggingHapticFeedback)
             }
             var fromIndex by remember { mutableIntStateOf(-1) }
             LazyColumn(
