@@ -175,10 +175,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val labelEmpty = stringResource(R.string.label_text_is_empty)
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
     val labelExists = stringResource(R.string.label_text_exist)
-    val downloadsCountGroupByArtist = rememberInVM(invalidateKey) {
+    val downloadsCountGroupByArtist = remember(invalidateKey) {
         downloadInfoList.flatMapNotNull { it.getComicInfo().penciller }.groupBy { it }.mapValues { it.value.size }
     }
-    val artistList = rememberInVM(downloadsCountGroupByArtist) { downloadsCountGroupByArtist.toList().sortedByDescending { it.second }.map { it.first } }
+    val artistList = remember(downloadsCountGroupByArtist) { downloadsCountGroupByArtist.toList().sortedByDescending { it.second }.map { it.first } }
     val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
     val totalCount = remember(downloadsCountGroupByLabel) { downloadsCountGroupByLabel.values.sum() }
 
