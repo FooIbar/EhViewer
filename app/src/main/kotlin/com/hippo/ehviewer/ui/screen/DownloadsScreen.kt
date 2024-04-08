@@ -195,6 +195,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val artistList by remember(downloadsCountGroupByArtist) {
         lazy { downloadsCountGroupByArtist.value.toList().filter { null != it.first }.sortedByDescending { it.second }.map { it.first!! } }
     }
+    val groupLabelList = remember(filterState, invalidateKey) {
+        when (filterState.mode) {
+            DownloadsFilterMode.ARTIST -> artistList.map { it to it }
+            DownloadsFilterMode.CUSTOM -> labelList.map { it.id!! to it.label }
+        }
+    }
     val totalCount = remember(downloadsCountGroupByLabel) { downloadsCountGroupByLabel.values.sum() }
 
     fun switchLabel(label: String?) {
@@ -221,6 +227,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                     }
                                 }
                                 DownloadManager.addLabel(text)
+                                invalidateKey = !invalidateKey
                             }
                         },
                     ) {
@@ -272,13 +279,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 },
             )
 
-            val groupLabelList = remember(filterMode) {
-                when (filterMode) {
-                    DownloadsFilterMode.ARTIST -> artistList.map { it to it }
-                    DownloadsFilterMode.CUSTOM -> labelList.map { it.id!! to it.label }
-                }
-            }
-
             val labelsListState = rememberLazyListState()
             val editEnable = DownloadsFilterMode.CUSTOM == filterMode
             val reorderableLabelState = rememberReorderableLazyColumnState(labelsListState) { from, to ->
@@ -321,37 +321,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 }
 
                 itemsIndexed(groupLabelList, key = { _, (id, _) -> id }) { index, (id, item) ->
-                    val dismissState = when (filterMode) {
-                        DownloadsFilterMode.ARTIST -> null
-                        DownloadsFilterMode.CUSTOM -> {
-                            // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
-                            val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
-                            LaunchedEffect(dismissState) {
-                                snapshotFlow { dismissState.currentValue }.collect {
-                                    if (it == SwipeToDismissBoxValue.EndToStart) {
-                                        runCatching {
-                                            awaitPermissionOrCancel(confirmText = R.string.delete) {
-                                                Text(text = stringResource(R.string.delete_label, item))
-                                            }
-                                        }.onSuccess {
-                                            DownloadManager.deleteLabel(item)
-                                            when (filterState.label) {
-                                                item -> switchLabel("")
-                                                null -> invalidateKey = !invalidateKey
-                                            }
-                                        }.onFailure {
-                                            dismissState.reset()
-                                        }
-                                    }
-                                }
-                            }
-                            dismissState
-                        }
-                    }
-                    ReorderableItem(reorderableLabelState, key = id) { isDragging ->
                     // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                     val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
-                    LaunchedEffect(dismissState) {
+                    LaunchedEffect(dismissState, invalidateKey) {
                         snapshotFlow { dismissState.currentValue }.collect {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
                                 runCatching {
@@ -423,6 +395,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                                             if (filterState.label == item) {
                                                                 switchLabel(new)
                                                             }
+                                                            invalidateKey = !invalidateKey
                                                         }
                                                     },
                                                 ) {
@@ -438,6 +411,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                                                 val range = if (fromIndex < index) fromIndex..index else index..fromIndex
                                                                 val toUpdate = labelList.slice(range)
                                                                 toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                                invalidateKey = !invalidateKey
                                                                 launchIO { EhDB.updateDownloadLabel(toUpdate) }
                                                             }
                                                             fromIndex = -1
