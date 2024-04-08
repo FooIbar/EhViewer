@@ -181,7 +181,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val labelEmpty = stringResource(R.string.label_text_is_empty)
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
     val labelExists = stringResource(R.string.label_text_exist)
-    val downloadsCountGroupByArtist by remember(invalidateKey) {
+    val downloadsCountGroupByArtist = remember(invalidateKey) {
         lazy {
             downloadInfoList.flatMapNotNull { it.artists }.groupBy { it }.mapValues { it.value.size }
                 .toMutableMap<String?, Int>().apply { put(null, downloadInfoList.count { null == it.artists }) }
@@ -190,11 +190,11 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
     val downloadsCount = when (filterMode) {
         DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel
-        DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist
+        DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist.value
     }
 
     val artistList by remember(downloadsCountGroupByArtist) {
-        lazy { downloadsCountGroupByArtist.toList().filter { null != it.first }.sortedByDescending { it.second }.map { it.first!! } }
+        lazy { downloadsCountGroupByArtist.value.toList().filter { null != it.first }.sortedByDescending { it.second }.map { it.first!! } }
     }
     val totalCount = remember(downloadsCountGroupByLabel) { downloadsCountGroupByLabel.values.sum() }
 
