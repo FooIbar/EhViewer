@@ -14,6 +14,7 @@ fun SwipeToDismissBox2(
     state: SwipeToDismissBoxState,
     backgroundContent: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
+    gesturesEnabled: Boolean = true,
     content: @Composable RowScope.() -> Unit,
 ) {
     val viewConfiguration = LocalViewConfiguration.current
@@ -23,6 +24,7 @@ fun SwipeToDismissBox2(
             backgroundContent = backgroundContent,
             modifier = modifier,
             enableDismissFromStartToEnd = false,
+            gesturesEnabled = gesturesEnabled,
         ) {
             CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
                 content()
