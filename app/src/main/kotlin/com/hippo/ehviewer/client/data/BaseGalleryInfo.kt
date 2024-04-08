@@ -22,13 +22,9 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import arrow.core.Option
-import arrow.core.getOrElse
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
-import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 @Parcelize
 @Serializable
