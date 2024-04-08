@@ -70,7 +70,7 @@ SET(LIBARCHIVE_CUSTOM_LIBS "nettle" "liblzma")
 FetchContent_Declare(
         libarchive
         GIT_REPOSITORY https://github.com/FooIbar/libarchive.git
-        GIT_TAG v3.7.2
+        GIT_TAG v3.7.3
 )
 
 FetchContent_MakeAvailable(libarchive)
