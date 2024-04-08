@@ -155,6 +155,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
+    val unknownName = stringResource(R.string.unknown_artists)
     val title = stringResource(
         R.string.scene_download_title,
         with(filterState) { if (label == "") allName else label ?: defaultName },
@@ -268,11 +269,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 },
             )
 
-            data class GroupLabel(
-                val id: Any,
-                val text: String,
-            )
-
             val groupLabelList = rememberInVM(filterMode) {
                 when (filterMode) {
                     DownloadsFilterMode.ARTIST -> artistList.map { it to it }
@@ -311,20 +307,22 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         },
                     )
                 }
-                if (DownloadsFilterMode.ARTIST != filterMode) {
-                    stickyHeader {
-                        ListItem(
-                            modifier = Modifier.clickable {
-                                switchLabel(null)
-                                closeSheet()
-                            },
-                            tonalElevation = 1.dp,
-                            shadowElevation = 1.dp,
-                            headlineContent = {
-                                Text("$defaultName [${downloadsCountGroupByLabel.getOrDefault(null, 0)}]")
-                            },
-                        )
-                    }
+                val name = when (filterMode) {
+                    DownloadsFilterMode.ARTIST -> unknownName
+                    DownloadsFilterMode.CUSTOM -> defaultName
+                }
+                stickyHeader {
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            switchLabel(null)
+                            closeSheet()
+                        },
+                        tonalElevation = 1.dp,
+                        shadowElevation = 1.dp,
+                        headlineContent = {
+                            Text("$name [${downloadsCount.getOrDefault(null, 0)}]")
+                        },
+                    )
                 }
 
                 itemsIndexed(groupLabelList, key = { _, (id, _) -> id }) { index, (id, item) ->

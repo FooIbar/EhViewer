@@ -10,7 +10,8 @@ enum class DownloadsFilterMode(
         label == "" || info.label == label
     }),
     ARTIST(flag = 1, take = { info, label, _ ->
-        label == "" || info.artists?.contains(label) ?: false
+        if (null == label) null == info.artists
+        else label == "" || info.artists?.contains(label) ?: false
     }),
     ;
 
