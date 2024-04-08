@@ -86,6 +86,8 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
+import com.hippo.ehviewer.client.EhTagDatabase
+import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
@@ -374,7 +376,17 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                         tonalElevation = 1.dp,
                                         shadowElevation = elevation,
                                         headlineContent = {
-                                            Text("$item [${downloadsCount.getOrDefault(item, 0)}]")
+                                            val name = when (filterMode) {
+                                                DownloadsFilterMode.CUSTOM -> item
+                                                DownloadsFilterMode.ARTIST -> {
+                                                    if (EhTagDatabase.initialized && EhTagDatabase.isTranslatable(context)) {
+                                                        EhTagDatabase.getTranslation(TagNamespace.Artist.toPrefix(), item) ?: item
+                                                    } else {
+                                                        item
+                                                    }
+                                                }
+                                            }
+                                            Text("$name [${downloadsCount.getOrDefault(item, 0)}]")
                                         },
                                         trailingContent = {
                                             when (filterMode) {
@@ -549,7 +561,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 val thumbColumns by Settings.thumbColumns.collectAsState()
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Fixed(thumbColumns),
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    modifier = Modifier
+                        .nestedScroll(searchBarConnection)
+                        .fillMaxSize(),
                     verticalItemSpacing = gridInterval,
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
                     contentPadding = realPadding,
@@ -566,7 +580,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 }
             } else {
                 FastScrollLazyColumn(
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    modifier = Modifier
+                        .nestedScroll(searchBarConnection)
+                        .fillMaxSize(),
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
                 ) {
@@ -611,7 +627,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         Deferred({ delay(200) }) {
             if (list.isEmpty()) {
                 Column(
-                    modifier = Modifier.padding(realPadding).fillMaxSize(),
+                    modifier = Modifier
+                        .padding(realPadding)
+                        .fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
