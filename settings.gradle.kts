@@ -4,6 +4,15 @@ pluginManagement {
         google()
         mavenCentral()
     }
+    // TODO: Remove on AGP 8.5.0-alpha05
+    buildscript {
+        repositories {
+            maven("https://storage.googleapis.com/r8-releases/raw")
+        }
+        dependencies {
+            classpath("com.android.tools:r8:8.5.4-dev")
+        }
+    }
 }
 
 dependencyResolutionManagement {
