@@ -542,9 +542,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 val thumbColumns by Settings.thumbColumns.collectAsState()
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Fixed(thumbColumns),
-                    modifier = Modifier
-                        .nestedScroll(searchBarConnection)
-                        .fillMaxSize(),
+                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
                     verticalItemSpacing = gridInterval,
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
                     contentPadding = realPadding,
@@ -561,9 +559,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 }
             } else {
                 FastScrollLazyColumn(
-                    modifier = Modifier
-                        .nestedScroll(searchBarConnection)
-                        .fillMaxSize(),
+                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
                 ) {
@@ -608,9 +604,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         Deferred({ delay(200) }) {
             if (list.isEmpty()) {
                 Column(
-                    modifier = Modifier
-                        .padding(realPadding)
-                        .fillMaxSize(),
+                    modifier = Modifier.padding(realPadding).fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
