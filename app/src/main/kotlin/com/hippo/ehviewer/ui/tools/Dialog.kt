@@ -35,6 +35,7 @@ import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -450,12 +451,7 @@ class DialogState {
         selected: Int = -1,
         respectDefaultWidth: Boolean = true,
     ): Int = showNoButton(respectDefaultWidth) {
-        val paddingModifier = if (title != null) {
-            Modifier.padding(top = 8.dp, bottom = 28.dp)
-        } else {
-            Modifier.padding(vertical = 28.dp)
-        }
-        Column(modifier = paddingModifier) {
+        Column(modifier = Modifier.padding(vertical = 8.dp)) {
             if (title != null) {
                 Text(
                     text = title.fold({ it }, { stringResource(id = it) }),
@@ -468,8 +464,7 @@ class DialogState {
                     CheckableItem(
                         text = text,
                         checked = index == selected,
-                        onClick = { dismissWith(index) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().clickable { dismissWith(index) }.padding(horizontal = 8.dp),
                     )
                 }
             }
@@ -505,8 +500,7 @@ class DialogState {
                     CheckableItem(
                         text = text,
                         checked = index == selected,
-                        onClick = { dismissWith(index to checked) },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().clickable { dismissWith(index to checked) }.padding(horizontal = 8.dp),
                     )
                 }
             }
@@ -532,10 +526,11 @@ class DialogState {
                     headlineContent = {
                         Text(text = stringResource(id = text), style = MaterialTheme.typography.titleMedium)
                     },
-                    modifier = Modifier.clickable { dismissWith(index) },
+                    modifier = Modifier.clickable { dismissWith(index) }.padding(horizontal = 8.dp),
                     leadingContent = {
                         Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
                     },
+                    colors = ListItemDefaults.colors(containerColor = Color.Unspecified),
                 )
             }
         }
@@ -601,9 +596,9 @@ class DialogState {
 }
 
 @Composable
-private fun CheckableItem(text: String, checked: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun CheckableItem(text: String, checked: Boolean, modifier: Modifier = Modifier) {
     val textStyle = MaterialTheme.typography.titleMedium
-    val checkedColor = MaterialTheme.colorScheme.tertiary
+    val checkedColor = MaterialTheme.colorScheme.primary
     ListItem(
         headlineContent = {
             Text(
@@ -611,10 +606,11 @@ private fun CheckableItem(text: String, checked: Boolean, onClick: () -> Unit, m
                 style = if (checked) textStyle.copy(color = checkedColor) else textStyle,
             )
         },
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = modifier,
         trailingContent = checked.ifTrueThen {
             Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = checkedColor)
         },
+        colors = ListItemDefaults.colors(containerColor = Color.Unspecified),
     )
 }
 
