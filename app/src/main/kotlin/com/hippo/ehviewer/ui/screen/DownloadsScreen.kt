@@ -327,7 +327,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 itemsIndexed(groupLabelList, key = { _, (id, _) -> id }) { index, (id, item) ->
                     // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                     val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
-                    LaunchedEffect(dismissState, invalidateKey) {
+                    LaunchedEffect(dismissState) {
                         snapshotFlow { dismissState.currentValue }.collect {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
                                 runCatching {
@@ -397,7 +397,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                                         if (filterState.label == item) {
                                                             switchLabel(new)
                                                         }
-                                                        invalidateKey = !invalidateKey
                                                     }
                                                 },
                                             ) {
