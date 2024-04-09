@@ -28,6 +28,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -126,7 +127,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                                 onExpandedChange = { expanded = !expanded },
                             ) {
                                 OutlinedTextField(
-                                    modifier = Modifier.menuAnchor(),
+                                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
                                     readOnly = true,
                                     value = type,
                                     onValueChange = {},

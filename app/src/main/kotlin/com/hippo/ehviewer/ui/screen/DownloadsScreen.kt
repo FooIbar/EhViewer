@@ -489,7 +489,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             onClick = ::onItemClick.partially1(info),
                             onLongClick = { navigator.navigate(info.galleryInfo.asDst()) },
                             info = info,
-                            modifier = Modifier.thenIf(animateItems) { animateItemPlacement() },
+                            modifier = Modifier.thenIf(animateItems) { animateItem() },
                             badgeText = info.pages.takeIf { it > 0 }?.toString(),
                         )
                     }

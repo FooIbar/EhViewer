@@ -64,8 +64,9 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.parseAsHtml
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -337,7 +338,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
                         }
                         if (comment.editable) {
                             onSelect(editComment) {
-                                userComment = TextFieldValue(comment.comment.parseAsHtml())
+                                userComment = TextFieldValue(AnnotatedString.fromHtml(comment.comment))
                                 commentId = comment.id
                                 commenting = true
                             }

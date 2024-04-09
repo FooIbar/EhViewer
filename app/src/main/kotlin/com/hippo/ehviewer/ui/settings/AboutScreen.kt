@@ -26,7 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.parseAsHtml
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.R
@@ -58,7 +59,7 @@ private fun versionCode() = "${BuildConfig.VERSION_NAME} (${BuildConfig.COMMIT_S
 
 @Composable
 @Stable
-private fun author() = stringResource(R.string.settings_about_author_summary).replace('$', '@').parseAsHtml()
+private fun author() = AnnotatedString.fromHtml(stringResource(R.string.settings_about_author_summary).replace('$', '@'))
 
 @Destination<RootGraph>
 @Composable
