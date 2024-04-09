@@ -194,15 +194,15 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel
         DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist.value
     }
-
     val artistList by remember(downloadsCountGroupByArtist) {
-        lazy { downloadsCountGroupByArtist.value.toList().filter { null != it.first }.sortedByDescending { it.second }.map { it.first!! } }
-    }
-    val groupLabelList = remember(filterState, invalidateKey) {
-        when (filterState.mode) {
-            DownloadsFilterMode.ARTIST -> artistList.map { it to it }
-            DownloadsFilterMode.CUSTOM -> labelList.map { it.id!! to it.label }
+        lazy {
+            (downloadsCountGroupByArtist.value - null).asSequence().sortedByDescending { it.value }.mapTo(ArrayList()) { it.key!! to it.key!! }
         }
+    }
+    val labelList by lazy { DownloadManager.labelList.map { it.id!! to it.label } }
+    val groupList = when (filterMode) {
+        DownloadsFilterMode.CUSTOM -> labelList
+        DownloadsFilterMode.ARTIST -> artistList
     }
     val totalCount = remember(downloadsCountGroupByLabel) { downloadsCountGroupByLabel.values.sum() }
 
@@ -288,7 +288,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
             val reorderableLabelState = rememberReorderableLazyColumnState(labelsListState) { from, to ->
                 val fromPosition = from.index - 2
                 val toPosition = to.index - 2
-                labelList.apply { add(toPosition, removeAt(fromPosition)) }
+                DownloadManager.labelList.apply { add(toPosition, removeAt(fromPosition)) }
                 view.performHapticFeedback(draggingHapticFeedback)
             }
             var fromIndex by remember { mutableIntStateOf(-1) }
@@ -324,7 +324,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     )
                 }
 
-                itemsIndexed(groupLabelList, key = { _, (id, _) -> id }) { index, (id, item) ->
+                itemsIndexed(groupList, key = { _, (id, _) -> id }) { index, (id, item) ->
                     // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                     val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
                     LaunchedEffect(dismissState) {
@@ -410,7 +410,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                                     if (fromIndex != -1) {
                                                         if (fromIndex != index) {
                                                             val range = if (fromIndex < index) fromIndex..index else index..fromIndex
-                                                            val toUpdate = labelList.slice(range)
+                                                            val toUpdate = DownloadManager.labelList.slice(range)
                                                             toUpdate.zip(range).forEach { it.first.position = it.second }
                                                             invalidateKey = !invalidateKey
                                                             launchIO { EhDB.updateDownloadLabel(toUpdate) }
