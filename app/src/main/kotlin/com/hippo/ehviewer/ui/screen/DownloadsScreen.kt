@@ -218,47 +218,48 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 title = { Text(text = labelsStr) },
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 actions = {
-                    IconButton(
-                        onClick = {
-                            launch {
-                                val text = awaitInputText(title = newLabel, hint = labelsStr) { text ->
-                                    when {
-                                        text.isBlank() -> labelEmpty
-                                        text == defaultName -> defaultInvalid
-                                        DownloadManager.containLabel(text) -> labelExists
-                                        else -> null
+                    if (DownloadsFilterMode.CUSTOM == filterMode) {
+                        IconButton(
+                            onClick = {
+                                launch {
+                                    val text = awaitInputText(title = newLabel, hint = labelsStr) { text ->
+                                        when {
+                                            text.isBlank() -> labelEmpty
+                                            text == defaultName -> defaultInvalid
+                                            DownloadManager.containLabel(text) -> labelExists
+                                            else -> null
+                                        }
                                     }
+                                    DownloadManager.addLabel(text)
                                 }
-                                DownloadManager.addLabel(text)
-                                invalidateKey = !invalidateKey
-                            }
-                        },
-                    ) {
-                        Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
-                    }
-                    val letMeSelect = stringResource(R.string.let_me_select)
-                    IconButton(
-                        onClick = {
-                            launch {
-                                showSelectActions(R.string.default_download_label) {
-                                    onSelect(letMeSelect) {
-                                        Settings.hasDefaultDownloadLabel = false
-                                    }
-                                    onSelect(defaultName) {
-                                        Settings.hasDefaultDownloadLabel = true
-                                        Settings.defaultDownloadLabel = null
-                                    }
-                                    labelList.forEach { (label) ->
-                                        onSelect(label) {
+                            },
+                        ) {
+                            Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
+                        }
+                        val letMeSelect = stringResource(R.string.let_me_select)
+                        IconButton(
+                            onClick = {
+                                launch {
+                                    showSelectActions(R.string.default_download_label) {
+                                        onSelect(letMeSelect) {
+                                            Settings.hasDefaultDownloadLabel = false
+                                        }
+                                        onSelect(defaultName) {
                                             Settings.hasDefaultDownloadLabel = true
-                                            Settings.defaultDownloadLabel = label
+                                            Settings.defaultDownloadLabel = null
+                                        }
+                                        DownloadManager.labelList.forEach { (label) ->
+                                            onSelect(label) {
+                                                Settings.hasDefaultDownloadLabel = true
+                                                Settings.defaultDownloadLabel = label
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        },
-                    ) {
-                        Icon(imageVector = Icons.Default.Download, contentDescription = null)
+                            },
+                        ) {
+                            Icon(imageVector = Icons.Default.Download, contentDescription = null)
+                        }
                     }
                     val custom = stringResource(R.string.select_grouping_mode_custom)
                     val artist = stringResource(R.string.select_grouping_mode_artist)
