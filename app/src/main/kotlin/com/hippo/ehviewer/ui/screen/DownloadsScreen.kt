@@ -119,6 +119,7 @@ import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.flatMapNotNull
 import com.hippo.ehviewer.util.mapToLongArray
+import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -182,8 +183,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val labelExists = stringResource(R.string.label_text_exist)
     val downloadsCountGroupByArtist = remember(invalidateKey) {
         lazy {
-            downloadInfoList.flatMapNotNull { it.artists }.groupBy { it }.mapValues { it.value.size }
-                .toMutableMap<String?, Int>().apply { put(null, downloadInfoList.count { null == it.artists }) }
+            mutableMapOf<String?, Int>().apply {
+                putAll(downloadInfoList.flatMapNotNull { it.artists }.groupingBy { it }.eachCount())
+                put(null, downloadInfoList.count { null == it.artists })
+            }
         }
     }
     val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
@@ -343,20 +346,19 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         }
                     }
                     ReorderableItem(reorderableLabelState, enabled = editEnable, key = id) { isDragging ->
-                        val elevation by animateDpAsState(
-                            if (isDragging) {
-                                8.dp // md.sys.elevation.level4
-                            } else {
-                                1.dp // md.sys.elevation.level1
-                            },
-                            label = "elevation",
-                        )
-
                         SwipeToDismissBox2(
                             state = dismissState,
                             backgroundContent = {},
                             gesturesEnabled = editEnable,
                             content = {
+                                val elevation by animateDpAsState(
+                                    if (isDragging) {
+                                        8.dp // md.sys.elevation.level4
+                                    } else {
+                                        1.dp // md.sys.elevation.level1
+                                    },
+                                    label = "elevation",
+                                )
                                 ListItem(
                                     modifier = Modifier.clickable {
                                         switchLabel(item)
@@ -377,48 +379,46 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                         }
                                         Text("$name [${downloadsCount.getOrDefault(item, 0)}]")
                                     },
-                                    trailingContent = {
-                                        if (editEnable) {
-                                            Row {
-                                                IconButton(
-                                                    onClick = {
-                                                        launch {
-                                                            val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
-                                                                when {
-                                                                    text.isBlank() -> labelEmpty
-                                                                    text == defaultName -> defaultInvalid
-                                                                    DownloadManager.containLabel(text) -> labelExists
-                                                                    else -> null
-                                                                }
+                                    trailingContent = editEnable.ifTrueThen {
+                                        Row {
+                                            IconButton(
+                                                onClick = {
+                                                    launch {
+                                                        val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
+                                                            when {
+                                                                text.isBlank() -> labelEmpty
+                                                                text == defaultName -> defaultInvalid
+                                                                DownloadManager.containLabel(text) -> labelExists
+                                                                else -> null
                                                             }
-                                                            DownloadManager.renameLabel(item, new)
-                                                            if (filterState.label == item) {
-                                                                switchLabel(new)
-                                                            }
-                                                            invalidateKey = !invalidateKey
                                                         }
-                                                    },
-                                                ) {
-                                                    Icon(imageVector = Icons.Default.Edit, contentDescription = null)
-                                                }
-                                                DragHandle(
-                                                    onDragStarted = {
-                                                        fromIndex = index
-                                                    },
-                                                    onDragStopped = {
-                                                        if (fromIndex != -1) {
-                                                            if (fromIndex != index) {
-                                                                val range = if (fromIndex < index) fromIndex..index else index..fromIndex
-                                                                val toUpdate = labelList.slice(range)
-                                                                toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                                invalidateKey = !invalidateKey
-                                                                launchIO { EhDB.updateDownloadLabel(toUpdate) }
-                                                            }
-                                                            fromIndex = -1
+                                                        DownloadManager.renameLabel(item, new)
+                                                        if (filterState.label == item) {
+                                                            switchLabel(new)
                                                         }
-                                                    },
-                                                )
+                                                        invalidateKey = !invalidateKey
+                                                    }
+                                                },
+                                            ) {
+                                                Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                             }
+                                            DragHandle(
+                                                onDragStarted = {
+                                                    fromIndex = index
+                                                },
+                                                onDragStopped = {
+                                                    if (fromIndex != -1) {
+                                                        if (fromIndex != index) {
+                                                            val range = if (fromIndex < index) fromIndex..index else index..fromIndex
+                                                            val toUpdate = labelList.slice(range)
+                                                            toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                            invalidateKey = !invalidateKey
+                                                            launchIO { EhDB.updateDownloadLabel(toUpdate) }
+                                                        }
+                                                        fromIndex = -1
+                                                    }
+                                                },
+                                            )
                                         }
                                     },
                                 )
