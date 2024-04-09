@@ -351,79 +351,78 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             state = dismissState,
                             backgroundContent = {},
                             gesturesEnabled = editEnable,
-                            content = {
-                                val elevation by animateDpAsState(
-                                    if (isDragging) {
-                                        8.dp // md.sys.elevation.level4
-                                    } else {
-                                        1.dp // md.sys.elevation.level1
-                                    },
-                                    label = "elevation",
-                                )
-                                ListItem(
-                                    modifier = Modifier.clickable {
-                                        switchLabel(item)
-                                        closeSheet()
-                                    },
-                                    tonalElevation = 1.dp,
-                                    shadowElevation = elevation,
-                                    headlineContent = {
-                                        val name = when (filterMode) {
-                                            DownloadsFilterMode.CUSTOM -> item
-                                            DownloadsFilterMode.ARTIST -> {
-                                                if (EhTagDatabase.initialized && EhTagDatabase.isTranslatable(context)) {
-                                                    EhTagDatabase.getTranslation(TagNamespace.Artist.toPrefix(), item) ?: item
-                                                } else {
-                                                    item
+                        ) {
+                            val elevation by animateDpAsState(
+                                if (isDragging) {
+                                    8.dp // md.sys.elevation.level4
+                                } else {
+                                    1.dp // md.sys.elevation.level1
+                                },
+                                label = "elevation",
+                            )
+                            ListItem(
+                                modifier = Modifier.clickable {
+                                    switchLabel(item)
+                                    closeSheet()
+                                },
+                                tonalElevation = 1.dp,
+                                shadowElevation = elevation,
+                                headlineContent = {
+                                    val name = when (filterMode) {
+                                        DownloadsFilterMode.CUSTOM -> item
+                                        DownloadsFilterMode.ARTIST -> {
+                                            if (EhTagDatabase.initialized && EhTagDatabase.isTranslatable(context)) {
+                                                EhTagDatabase.getTranslation(TagNamespace.Artist.toPrefix(), item) ?: item
+                                            } else {
+                                                item
+                                            }
+                                        }
+                                    }
+                                    Text("$name [${downloadsCount.getOrDefault(item, 0)}]")
+                                },
+                                trailingContent = editEnable.ifTrueThen {
+                                    Row {
+                                        IconButton(
+                                            onClick = {
+                                                launch {
+                                                    val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
+                                                        when {
+                                                            text.isBlank() -> labelEmpty
+                                                            text == defaultName -> defaultInvalid
+                                                            DownloadManager.containLabel(text) -> labelExists
+                                                            else -> null
+                                                        }
+                                                    }
+                                                    DownloadManager.renameLabel(item, new)
+                                                    if (filterState.label == item) {
+                                                        switchLabel(new)
+                                                    }
                                                 }
-                                            }
+                                            },
+                                        ) {
+                                            Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                         }
-                                        Text("$name [${downloadsCount.getOrDefault(item, 0)}]")
-                                    },
-                                    trailingContent = editEnable.ifTrueThen {
-                                        Row {
-                                            IconButton(
-                                                onClick = {
-                                                    launch {
-                                                        val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
-                                                            when {
-                                                                text.isBlank() -> labelEmpty
-                                                                text == defaultName -> defaultInvalid
-                                                                DownloadManager.containLabel(text) -> labelExists
-                                                                else -> null
-                                                            }
-                                                        }
-                                                        DownloadManager.renameLabel(item, new)
-                                                        if (filterState.label == item) {
-                                                            switchLabel(new)
-                                                        }
+                                        DragHandle(
+                                            onDragStarted = {
+                                                fromIndex = index
+                                            },
+                                            onDragStopped = {
+                                                if (fromIndex != -1) {
+                                                    if (fromIndex != index) {
+                                                        val range = if (fromIndex < index) fromIndex..index else index..fromIndex
+                                                        val toUpdate = DownloadManager.labelList.slice(range)
+                                                        toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                        invalidateKey = !invalidateKey
+                                                        launchIO { EhDB.updateDownloadLabel(toUpdate) }
                                                     }
-                                                },
-                                            ) {
-                                                Icon(imageVector = Icons.Default.Edit, contentDescription = null)
-                                            }
-                                            DragHandle(
-                                                onDragStarted = {
-                                                    fromIndex = index
-                                                },
-                                                onDragStopped = {
-                                                    if (fromIndex != -1) {
-                                                        if (fromIndex != index) {
-                                                            val range = if (fromIndex < index) fromIndex..index else index..fromIndex
-                                                            val toUpdate = DownloadManager.labelList.slice(range)
-                                                            toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                            invalidateKey = !invalidateKey
-                                                            launchIO { EhDB.updateDownloadLabel(toUpdate) }
-                                                        }
-                                                        fromIndex = -1
-                                                    }
-                                                },
-                                            )
-                                        }
-                                    },
-                                )
-                            },
-                        )
+                                                    fromIndex = -1
+                                                }
+                                            },
+                                        )
+                                    }
+                                },
+                            )
+                        }
                     }
                 }
             }
