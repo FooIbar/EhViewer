@@ -37,7 +37,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.parseAsHtml
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
@@ -116,7 +117,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                             Column {
                                 val warning = stringResource(id = R.string.settings_eh_identity_cookies_signed)
                                 val str = cookies.joinToString("\n") { (k, v) -> "$k: $v" }
-                                Text(text = warning.parseAsHtml())
+                                Text(text = AnnotatedString.fromHtml(warning))
                                 Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
                                 OutlinedTextField(
                                     value = str,
@@ -241,7 +242,11 @@ fun EhScreen(navigator: DestinationsNavigator) {
                             addAll(Settings.favCat)
                         }
                     }
-                    defaultFavSlot = dialogState.showSelectItem(items, R.string.default_favorites_collection) - 2
+                    defaultFavSlot = dialogState.showSelectItem(
+                        items = items,
+                        title = R.string.default_favorites_collection,
+                        selected = defaultFavSlot + 2,
+                    ) - 2
                 }
             }
             SimpleMenuPreferenceInt(

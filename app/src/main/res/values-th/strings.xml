@@ -100,9 +100,6 @@
     <!-- Gallery detail -->
     <string name="download">ดาวน์โหลด</string>
     <string name="read">อ่าน</string>
-    <plurals name="page_count">
-        <item quantity="other">%d หน้า</item>
-    </plurals>
     <string name="favored_times">\u2665 %d</string>
     <string name="rating_text">%1$s (%2$.2f, %3$d)</string>
     <string name="torrent_count">Torrent (%d)</string>
@@ -362,14 +359,28 @@
     <!-- Readable Time -->
     <string name="from_the_future">จากอนาคต</string>
     <string name="just_now">เดี๋ยวนี้</string>
+    <string name="yesterday">เมื่อวาน</string>
+    <string name="some_days_ago">%d วันที่ผ่านมา</string>
+    <string name="no_archives">ยังไม่มีไฟล์บีบอัด</string>
+    <string name="download_archive_started">เริ่มการดาวน์โหลดบีบอัด</string>
+    <string name="download_archive_failure">การดาวน์โหลดไฟล์บีบอัดล้มเหลว</string>
+    <string name="download_archive_failure_no_hath">ต้องการ H@H client เพื่อโหลดไฟล์บีบอัด</string>
+    <string name="settings_privacy">ความเป็นส่วนตัว</string>
+    <string name="settings_privacy_secure">ป้องกันการบันทึกภาพหน้าจอ</string>
+    <string name="settings_privacy_secure_summary">ป้องกันเนื้อหาต่างๆของตัวแอปจากการถูกบันทึกหน้าจอ หรือถูกแสดงในหน้ารายการ \"แอพล่าสุด\" ตอนสลับหรือระหว่างสลับไปแอปอื่น.</string>
+
+    <string name="download_service">บริการดาวน์โหลด</string>
+    <string name="favorite_name">รายการโปรด</string>
+
+    <plurals name="page_count">
+        <item quantity="other">%d หน้า</item>
+    </plurals>
     <plurals name="some_minutes_ago">
         <item quantity="other">%d นาทีที่ผ่านมา</item>
     </plurals>
     <plurals name="some_hours_ago">
         <item quantity="other">%d ชั่วโมงที่ผ่านมา</item>
     </plurals>
-    <string name="yesterday">เมื่อวาน</string>
-    <string name="some_days_ago">%d วันที่ผ่านมา</string>
     <plurals name="second">
         <item quantity="other">วิ</item>
     </plurals>
@@ -385,14 +396,4 @@
     <plurals name="year">
         <item quantity="other">ปี</item>
     </plurals>
-    <string name="no_archives">ยังไม่มีไฟล์บีบอัด</string>
-    <string name="download_archive_started">เริ่มการดาวน์โหลดบีบอัด</string>
-    <string name="download_archive_failure">การดาวน์โหลดไฟล์บีบอัดล้มเหลว</string>
-    <string name="download_archive_failure_no_hath">ต้องการ H@H client เพื่อโหลดไฟล์บีบอัด</string>
-    <string name="settings_privacy">ความเป็นส่วนตัว</string>
-    <string name="settings_privacy_secure">ป้องกันการบันทึกภาพหน้าจอ</string>
-    <string name="settings_privacy_secure_summary">ป้องกันเนื้อหาต่างๆของตัวแอปจากการถูกบันทึกหน้าจอ หรือถูกแสดงในหน้ารายการ \"แอพล่าสุด\" ตอนสลับหรือระหว่างสลับไปแอปอื่น.</string>
-
-    <string name="download_service">บริการดาวน์โหลด</string>
-    <string name="favorite_name">รายการโปรด</string>
 </resources>

@@ -105,9 +105,6 @@
     <!-- Gallery detail -->
     <string name="download">ダウンロード</string>
     <string name="read">閲覧</string>
-    <plurals name="page_count">
-        <item quantity="other">%dページ</item>
-    </plurals>
     <string name="favored_times">\u2665 %d</string>
     <string name="rating_text">%1$s (%2$.2f, %3$d)</string>
     <string name="torrent_count">トレント (%d)</string>
@@ -372,30 +369,8 @@
     <!-- Readable Time -->
     <string name="from_the_future">未来から</string>
     <string name="just_now">ただ今</string>
-    <plurals name="some_minutes_ago">
-        <item quantity="other">%d分前</item>
-    </plurals>
-    <plurals name="some_hours_ago">
-        <item quantity="other">%d時前</item>
-    </plurals>
     <string name="yesterday">昨日</string>
     <string name="some_days_ago">%d日前</string>
-
-    <plurals name="second">
-        <item quantity="other">秒</item>
-    </plurals>
-    <plurals name="minute">
-        <item quantity="other">分</item>
-    </plurals>
-    <plurals name="hour">
-        <item quantity="other">時</item>
-    </plurals>
-    <plurals name="day">
-        <item quantity="other">日</item>
-    </plurals>
-    <plurals name="year">
-        <item quantity="other">年</item>
-    </plurals>
     <string name="no_archives">圧縮パッケージなし</string>
     <string name="download_archive_started">圧縮パッケージのダウンロードを開始しました</string>
     <string name="download_archive_failure">圧縮パッケージをダウンロードできませんでした</string>
@@ -417,4 +392,29 @@
     <string name="settings_eh_show_gallery_pages">ギャラリーページ数を表示</string>
     <string name="settings_eh_show_gallery_pages_summary">リストにギャラリーのページの数量を表示します</string>
     <string name="dark_theme">暗いテーマ</string>
+
+    <plurals name="page_count">
+        <item quantity="other">%dページ</item>
+    </plurals>
+    <plurals name="some_minutes_ago">
+        <item quantity="other">%d分前</item>
+    </plurals>
+    <plurals name="some_hours_ago">
+        <item quantity="other">%d時前</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="other">秒</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="other">分</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="other">時</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="other">日</item>
+    </plurals>
+    <plurals name="year">
+        <item quantity="other">年</item>
+    </plurals>
 </resources>

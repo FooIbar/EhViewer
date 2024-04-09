@@ -91,7 +91,6 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadManager.downloadInfoList
-import com.hippo.ehviewer.download.DownloadManager.labelList
 import com.hippo.ehviewer.download.DownloadService
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
@@ -242,7 +241,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         IconButton(
                             onClick = {
                                 launch {
-                                    showSelectActions(R.string.default_download_label) {
+                                    val selected = if (!Settings.hasDefaultDownloadLabel) {
+                                        0
+                                    } else {
+                                        DownloadManager.labelList.indexOfFirst { it.label == Settings.defaultDownloadLabel } + 2
+                                    }
+                                    showSelectActions(R.string.default_download_label, selected) {
                                         onSelect(letMeSelect) {
                                             Settings.hasDefaultDownloadLabel = false
                                         }
@@ -326,7 +330,11 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     )
                 }
 
-                itemsIndexed(groupList, key = { _, (id, _) -> id }) { index, (id, item) ->
+                itemsIndexed(groupList, key = { _, (id, _) -> id }) { index, (id, label) ->
+                    val item = when (filterMode) {
+                        DownloadsFilterMode.ARTIST -> label
+                        DownloadsFilterMode.CUSTOM -> rememberUpdatedState(label).value
+                    }
                     // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                     val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
                     LaunchedEffect(dismissState) {
@@ -414,7 +422,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                                         val range = if (fromIndex < index) fromIndex..index else index..fromIndex
                                                         val toUpdate = DownloadManager.labelList.slice(range)
                                                         toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                        invalidateKey = !invalidateKey
                                                         launchIO { EhDB.updateDownloadLabel(toUpdate) }
                                                     }
                                                     fromIndex = -1
@@ -553,7 +560,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             onClick = ::onItemClick.partially1(info),
                             onLongClick = { navigator.navigate(info.galleryInfo.asDst()) },
                             info = info,
-                            modifier = Modifier.thenIf(animateItems) { animateItemPlacement() },
+                            modifier = Modifier.thenIf(animateItems) { animateItem() },
                             badgeText = info.pages.takeIf { it > 0 }?.toString(),
                         )
                     }

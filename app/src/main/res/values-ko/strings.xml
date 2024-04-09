@@ -100,9 +100,6 @@
     <!-- Gallery detail -->
     <string name="download">다운로드</string>
     <string name="read">읽기</string>
-    <plurals name="page_count">
-        <item quantity="other">%d 페이지</item>
-    </plurals>
     <string name="torrent_count">토렌트 (%d)</string>
     <string name="share">공유</string>
     <string name="rate">평가</string>
@@ -347,14 +344,32 @@
     <!-- Readable Time -->
     <string name="from_the_future">미래에</string>
     <string name="just_now">방금</string>
+    <string name="yesterday">어제</string>
+    <string name="some_days_ago">%d일 전</string>
+    <string name="no_archives">아카이브 없음</string>
+    <string name="download_archive_started">아카이브 다운로드가 시작되었습니다.</string>
+    <string name="download_archive_failure">아카이브 다운로드에 실패했습니다.</string>
+    <string name="download_archive_failure_no_hath">아카이브를 다운로드하려면 H@H 클라이언트가 필요합니다.</string>
+    <string name="settings_privacy">개인 정보</string>
+    <string name="settings_privacy_secure">화면 캡처 허용 안 함</string>
+    <string name="settings_privacy_secure_summary">이 앱에서 스크린샷을 찍을 수 없게 하며, \"최근 앱\" 화면에서 앱의 내용을 보이지 않게 합니다.</string>
+
+    <string name="download_service">다운로드 서비스</string>
+    <string name="favorite_name">즐겨찾기</string>
+    <string name="dark_theme">어두운 테마</string>
+    <string name="dark_theme_follow_system">시스템 설정</string>
+    <string name="dark_theme_off">항상 꺼짐</string>
+    <string name="dark_theme_on">항상 켜짐</string>
+
+    <plurals name="page_count">
+        <item quantity="other">%d 페이지</item>
+    </plurals>
     <plurals name="some_minutes_ago">
         <item quantity="other">%d분 전</item>
     </plurals>
     <plurals name="some_hours_ago">
         <item quantity="other">%d시간 전</item>
     </plurals>
-    <string name="yesterday">어제</string>
-    <string name="some_days_ago">%d일 전</string>
     <plurals name="second">
         <item quantity="other">초</item>
     </plurals>
@@ -370,18 +385,4 @@
     <plurals name="year">
         <item quantity="other">년</item>
     </plurals>
-    <string name="no_archives">아카이브 없음</string>
-    <string name="download_archive_started">아카이브 다운로드가 시작되었습니다.</string>
-    <string name="download_archive_failure">아카이브 다운로드에 실패했습니다.</string>
-    <string name="download_archive_failure_no_hath">아카이브를 다운로드하려면 H@H 클라이언트가 필요합니다.</string>
-    <string name="settings_privacy">개인 정보</string>
-    <string name="settings_privacy_secure">화면 캡처 허용 안 함</string>
-    <string name="settings_privacy_secure_summary">이 앱에서 스크린샷을 찍을 수 없게 하며, \"최근 앱\" 화면에서 앱의 내용을 보이지 않게 합니다.</string>
-
-    <string name="download_service">다운로드 서비스</string>
-    <string name="favorite_name">즐겨찾기</string>
-    <string name="dark_theme">어두운 테마</string>
-    <string name="dark_theme_follow_system">시스템 설정</string>
-    <string name="dark_theme_off">항상 꺼짐</string>
-    <string name="dark_theme_on">항상 켜짐</string>
 </resources>

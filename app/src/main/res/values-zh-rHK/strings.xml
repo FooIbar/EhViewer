@@ -110,9 +110,6 @@
     <!-- Gallery detail -->
     <string name="download">下載</string>
     <string name="read">閲讀</string>
-    <plurals name="page_count">
-        <item quantity="other">%d 頁</item>
-    </plurals>
     <string name="favored_times">\u2665 %d</string>
     <string name="rating_text">%1$s (%2$.2f, %3$d)</string>
     <string name="torrent_count">種子 (%d)</string>
@@ -397,30 +394,8 @@
     <!-- Readable Time -->
     <string name="from_the_future">來自未來</string>
     <string name="just_now">剛剛</string>
-    <plurals name="some_minutes_ago">
-        <item quantity="other">%d 分鐘前</item>
-    </plurals>
-    <plurals name="some_hours_ago">
-        <item quantity="other">%d 小時前</item>
-    </plurals>
     <string name="yesterday">昨天</string>
     <string name="some_days_ago">%d 天前</string>
-
-    <plurals name="second">
-        <item quantity="other">秒</item>
-    </plurals>
-    <plurals name="minute">
-        <item quantity="other">分鐘</item>
-    </plurals>
-    <plurals name="hour">
-        <item quantity="other">小時</item>
-    </plurals>
-    <plurals name="day">
-        <item quantity="other">天</item>
-    </plurals>
-    <plurals name="year">
-        <item quantity="other">年</item>
-    </plurals>
     <string name="no_archives">沒有壓縮包</string>
     <string name="download_archive_started">開始下載壓縮包</string>
     <string name="download_archive_failure">無法下載壓縮包</string>
@@ -516,5 +491,30 @@
     <string name="rotation_reverse_portrait">顛倒直向</string>
     <string name="disabled_nav">停用</string>
     <!-- Tachiyomi Reader End-->
+
+    <plurals name="page_count">
+        <item quantity="other">%d 頁</item>
+    </plurals>
+    <plurals name="some_minutes_ago">
+        <item quantity="other">%d 分鐘前</item>
+    </plurals>
+    <plurals name="some_hours_ago">
+        <item quantity="other">%d 小時前</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="other">秒</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="other">分鐘</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="other">小時</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="other">天</item>
+    </plurals>
+    <plurals name="year">
+        <item quantity="other">年</item>
+    </plurals>
 
 </resources>

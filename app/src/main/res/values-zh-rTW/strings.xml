@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright 2016 Hippo Seven
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +12,8 @@
   ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
-  --><resources>
+  -->
+<resources>
     <!-- Theme -->
     <string name="homepage">首頁</string>
     <string name="subscription">訂閱</string>
@@ -96,9 +96,6 @@
     <!-- Gallery detail -->
     <string name="download">下載</string>
     <string name="read">閱讀</string>
-    <plurals name="page_count">
-        <item quantity="other">%d 頁</item>
-    </plurals>
     <string name="favored_times">\u2665 %d</string>
     <string name="rating_text">%1$s (%2$.2f, %3$d)</string>
     <string name="torrent_count">種子 (%d)</string>
@@ -303,7 +300,7 @@
     <string name="settings_eh_show_gallery_pages_summary">在圖庫列表中顯示頁數</string>
     <string name="settings_eh_show_gallery_comments">顯示畫廊評論</string>
     <string name="settings_eh_show_gallery_comments_summary">在畫廊詳情頁中顯示評論</string>
-     <string name="settings_eh_show_gallery_comment_threshold">評論分數閥值</string>
+    <string name="settings_eh_show_gallery_comment_threshold">評論分數閥值</string>
     <string name="settings_eh_show_gallery_comment_threshold_summary">隱藏小於或等於設定分數的評論（-101 為停用）</string>
     <string name="settings_eh_show_tag_translations">顯示標籤翻譯</string>
     <string name="settings_eh_show_tag_translations_summary">顯示翻譯後的標籤而非原始文字（需花費時間來下載資料檔案）</string>
@@ -399,29 +396,8 @@
     <!-- Readable Time -->
     <string name="from_the_future">來自未來</string>
     <string name="just_now">剛剛</string>
-    <plurals name="some_minutes_ago">
-        <item quantity="other">%d 分鐘前</item>
-    </plurals>
-    <plurals name="some_hours_ago">
-        <item quantity="other">%d 小時前</item>
-    </plurals>
     <string name="yesterday">昨天</string>
     <string name="some_days_ago">%d 天前</string>
-    <plurals name="second">
-        <item quantity="other">秒</item>
-    </plurals>
-    <plurals name="minute">
-        <item quantity="other">分鐘</item>
-    </plurals>
-    <plurals name="hour">
-        <item quantity="other">小時</item>
-    </plurals>
-    <plurals name="day">
-        <item quantity="other">天</item>
-    </plurals>
-    <plurals name="year">
-        <item quantity="other">年</item>
-    </plurals>
     <string name="no_archives">沒有壓縮檔</string>
     <string name="download_archive_started">開始下載壓縮檔</string>
     <string name="download_archive_failure">下載失敗</string>
@@ -507,7 +483,7 @@
     <string name="update_frequency_weekly">每週</string>
     <string name="update_frequency_biweekly">每兩週</string>
     <string name="update_frequency_monthly">每月</string>
-     <string name="update_failed">更新失败：%s</string>
+    <string name="update_failed">更新失败：%s</string>
     <string name="new_version_available">有新版本可用！</string>
     <string name="already_latest_version">已是最新版本</string>
     <string name="permission_denied">沒有權限</string>
@@ -610,4 +586,29 @@
     <string name="dark_theme_on">總是開啟</string>
     <string name="pref_crop_borders">邊緣裁剪</string>
     <!-- Tachiyomi Reader End-->
+
+    <plurals name="page_count">
+        <item quantity="other">%d 頁</item>
+    </plurals>
+    <plurals name="some_minutes_ago">
+        <item quantity="other">%d 分鐘前</item>
+    </plurals>
+    <plurals name="some_hours_ago">
+        <item quantity="other">%d 小時前</item>
+    </plurals>
+    <plurals name="second">
+        <item quantity="other">秒</item>
+    </plurals>
+    <plurals name="minute">
+        <item quantity="other">分鐘</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="other">小時</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="other">天</item>
+    </plurals>
+    <plurals name="year">
+        <item quantity="other">年</item>
+    </plurals>
 </resources>

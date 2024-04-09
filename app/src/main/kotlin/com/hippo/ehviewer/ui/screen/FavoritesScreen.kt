@@ -270,7 +270,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 val checked = info.gid in checkedInfoMap
                 CheckableItem(
                     checked = checked,
-                    modifier = Modifier.thenIf(animateItems) { animateItemPlacement() },
+                    modifier = Modifier.thenIf(animateItems) { animateItem() },
                 ) { interactionSource ->
                     GalleryInfoListItem(
                         onClick = {
@@ -299,7 +299,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 val checked = info.gid in checkedInfoMap
                 CheckableItem(
                     checked = checked,
-                    modifier = Modifier.thenIf(animateItems) { animateItemPlacement() },
+                    modifier = Modifier.thenIf(animateItems) { animateItem() },
                 ) { interactionSource ->
                     GalleryInfoGridItem(
                         onClick = {
