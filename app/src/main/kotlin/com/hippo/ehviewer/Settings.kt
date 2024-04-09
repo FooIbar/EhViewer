@@ -117,6 +117,7 @@ object Settings : DataStorePreferences(null) {
     val showGalleryPages = boolPref("show_gallery_pages", true)
     val qSSaveProgress = boolPref("qs_save_progress", true)
     val security = boolPref("require_unlock", false)
+    val animateItems = boolPref("animate_items", true)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
     val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
 

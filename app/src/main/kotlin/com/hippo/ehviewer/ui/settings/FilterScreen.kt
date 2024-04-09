@@ -49,14 +49,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhFilter
 import com.hippo.ehviewer.client.EhFilter.forget
 import com.hippo.ehviewer.client.EhFilter.remember
 import com.hippo.ehviewer.client.EhFilter.trigger
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.thenIf
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -74,6 +77,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
     val dialogState = LocalDialogState.current
     val textIsEmpty = stringResource(R.string.text_is_empty)
     val labelExist = stringResource(R.string.label_text_exist)
+    val animateItems by Settings.animateItems.collectAsState()
 
     fun addFilter() {
         scope.launch {
@@ -227,7 +231,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                         stickyHeader(key = filterMode) {
                             Text(
                                 text = stringResource(id = title),
-                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp).animateItem(),
+                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp).thenIf(animateItems) { animateItem() },
                                 color = MaterialTheme.colorScheme.tertiary,
                                 style = MaterialTheme.typography.titleMedium,
                             )
@@ -235,7 +239,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                         items(filters, key = { requireNotNull(it.id) }) { filter ->
                             val filterCheckBoxRecomposeScope = currentRecomposeScope
                             Row(
-                                modifier = Modifier.fillMaxWidth().animateItem().clickable { filter.trigger { filterCheckBoxRecomposeScope.invalidate() } },
+                                modifier = Modifier.fillMaxWidth().thenIf(animateItems) { animateItem() }.clickable { filter.trigger { filterCheckBoxRecomposeScope.invalidate() } },
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Checkbox(

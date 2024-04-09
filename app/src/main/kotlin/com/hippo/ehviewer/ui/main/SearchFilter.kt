@@ -40,7 +40,9 @@ import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.toIntOrDefault
 import kotlinx.coroutines.launch
 
@@ -68,6 +70,7 @@ fun SearchFilter(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val dialogState = LocalDialogState.current
+    val animateItems by Settings.animateItems.collectAsState()
     fun isCategoryChecked(bit: Int) = category and bit != 0
     val categories = remember(category) { categoryTable.sortedBy { !isCategoryChecked(it.first) } }
     LazyRow(
@@ -82,7 +85,7 @@ fun SearchFilter(
                 selected = isCategoryChecked(it.first),
                 onClick = { onCategoryChanged(category xor it.first) },
                 label = { Text(text = stringResource(id = it.second)) },
-                modifier = Modifier.animateItem(),
+                modifier = Modifier.thenIf(animateItems) { animateItem() },
             )
         }
     }
