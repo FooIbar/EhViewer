@@ -184,7 +184,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val labelExists = stringResource(R.string.label_text_exist)
     val downloadsCountGroupByArtist = remember(invalidateKey) {
         lazy {
-            mutableMapOf<String?, Int>().apply {
+            buildMap {
                 putAll(downloadInfoList.flatMapNotNull { it.artists }.groupingBy { it }.eachCount())
                 put(null, downloadInfoList.count { null == it.artists })
             }
