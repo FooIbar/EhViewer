@@ -117,7 +117,6 @@ import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.findActivity
-import com.hippo.ehviewer.util.flatMapNotNull
 import com.hippo.ehviewer.util.mapToLongArray
 import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
@@ -182,23 +181,14 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val labelEmpty = stringResource(R.string.label_text_is_empty)
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
     val labelExists = stringResource(R.string.label_text_exist)
-    val downloadsCountGroupByArtist = remember(invalidateKey) {
-        lazy {
-            buildMap {
-                putAll(downloadInfoList.flatMapNotNull { it.artists }.groupingBy { it }.eachCount())
-                put(null, downloadInfoList.count { null == it.artists })
-            }
-        }
-    }
-    val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
+    val downloadsCountGroupByArtist by rememberInVM { EhDB.downloadsCountByArtist }.collectAsState(emptyMap())
+    val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCountByLabel }.collectAsState(emptyMap())
     val downloadsCount = when (filterMode) {
         DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel
-        DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist.value
+        DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist
     }
-    val artistList by remember(downloadsCountGroupByArtist) {
-        lazy {
-            (downloadsCountGroupByArtist.value - null).asSequence().sortedByDescending { it.value }.mapTo(ArrayList()) { it.key!! to it.key!! }
-        }
+    val artistList = remember(downloadsCountGroupByArtist) {
+        (downloadsCountGroupByArtist.keys - null).map { it!! to it }
     }
     val labelList by lazy { DownloadManager.labelList.map { it.id!! to it.label } }
     val groupList = when (filterMode) {

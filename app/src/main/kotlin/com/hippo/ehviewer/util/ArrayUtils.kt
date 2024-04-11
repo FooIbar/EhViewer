@@ -16,12 +16,3 @@ inline fun <T> Collection<T>.mapToLongArray(transform: (T) -> Long): LongArray {
 inline fun <R : Any> LongArray.mapNotNull(transform: (Long) -> R?): List<R> {
     return mapNotNullTo(ArrayList(), transform)
 }
-
-inline fun <T, R> Iterable<T>.flatMapNotNull(transform: (T) -> Iterable<R>?): List<R> {
-    val destination = ArrayList<R>()
-    for (element in this) {
-        val list = transform(element) ?: continue
-        destination.addAll(list)
-    }
-    return destination
-}

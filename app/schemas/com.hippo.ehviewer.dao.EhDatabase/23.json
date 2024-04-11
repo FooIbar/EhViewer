@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 23,
-    "identityHash": "fbd02c281348a1cfdfb0cd921158348e",
+    "identityHash": "112d4ba1b26e64edf9b5108596e6c5c8",
     "entities": [
       {
         "tableName": "GALLERIES",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`GID` INTEGER NOT NULL, `TOKEN` TEXT NOT NULL, `TITLE` TEXT, `TITLE_JPN` TEXT, `THUMB` TEXT, `CATEGORY` INTEGER NOT NULL, `POSTED` TEXT, `UPLOADER` TEXT, `RATING` REAL NOT NULL, `SIMPLE_TAGS` TEXT, `ARTISTS` TEXT, `PAGES` INTEGER NOT NULL DEFAULT 0, `SIMPLE_LANGUAGE` TEXT, `FAVORITE_SLOT` INTEGER NOT NULL, PRIMARY KEY(`GID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`GID` INTEGER NOT NULL, `TOKEN` TEXT NOT NULL, `TITLE` TEXT, `TITLE_JPN` TEXT, `THUMB` TEXT, `CATEGORY` INTEGER NOT NULL, `POSTED` TEXT, `UPLOADER` TEXT, `RATING` REAL NOT NULL, `SIMPLE_TAGS` TEXT, `PAGES` INTEGER NOT NULL DEFAULT 0, `SIMPLE_LANGUAGE` TEXT, `FAVORITE_SLOT` INTEGER NOT NULL, PRIMARY KEY(`GID`))",
         "fields": [
           {
             "fieldPath": "gid",
@@ -65,12 +65,6 @@
           {
             "fieldPath": "simpleTags",
             "columnName": "SIMPLE_TAGS",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "artists",
-            "columnName": "ARTISTS",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -247,6 +241,60 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "DOWNLOAD_ARTISTS",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`GID` INTEGER NOT NULL, `ARTIST` TEXT NOT NULL, `_id` INTEGER, PRIMARY KEY(`_id`), FOREIGN KEY(`GID`) REFERENCES `DOWNLOADS`(`GID`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "gid",
+            "columnName": "GID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "artist",
+            "columnName": "ARTIST",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_DOWNLOAD_ARTISTS_GID",
+            "unique": false,
+            "columnNames": [
+              "GID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_DOWNLOAD_ARTISTS_GID` ON `${TABLE_NAME}` (`GID`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "DOWNLOADS",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "GID"
+            ],
+            "referencedColumns": [
+              "GID"
+            ]
+          }
+        ]
       },
       {
         "tableName": "FILTER",
@@ -525,7 +573,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fbd02c281348a1cfdfb0cd921158348e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '112d4ba1b26e64edf9b5108596e6c5c8')"
     ]
   }
 }

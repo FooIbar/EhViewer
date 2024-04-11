@@ -20,6 +20,7 @@ import android.net.Uri
 import arrow.fx.coroutines.release
 import arrow.fx.coroutines.resource
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.dao.DownloadArtist
 import com.hippo.ehviewer.dao.DownloadDirname
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
@@ -112,8 +113,11 @@ object EhDB {
         dao.insertOrIgnore(downloadDirnameList)
     }
 
-    val downloadsCount
-        get() = db.downloadsDao().count()
+    val downloadsCountByLabel
+        get() = db.downloadsDao().countByLabel()
+
+    val downloadsCountByArtist
+        get() = db.downloadsDao().countByArtist()
 
     suspend fun getAllDownloadLabelList() = db.downloadLabelDao().list()
 
@@ -139,6 +143,18 @@ object EhDB {
         val dao = db.downloadLabelDao()
         dao.delete(raw)
         dao.fill(raw.position)
+    }
+
+    suspend fun updateDownloadArtist(gid: Long, artists: List<DownloadArtist>?) {
+        val dao = db.downloadArtistDao()
+        dao.deleteByKey(gid)
+        dao.upsert(gid, artists?.onEach { it.id = null })
+    }
+
+    suspend fun updateDownloadsArtist(downloadInfoList: List<DownloadInfo>) {
+        downloadInfoList.forEach {
+            updateDownloadArtist(it.gid, it.artistInfoList)
+        }
     }
 
     suspend fun removeLocalFavorites(galleryInfo: BaseGalleryInfo) {

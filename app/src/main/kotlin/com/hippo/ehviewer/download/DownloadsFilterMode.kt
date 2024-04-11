@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.download
 
 import com.hippo.ehviewer.dao.DownloadInfo
+import com.hippo.ehviewer.dao.artists
 
 enum class DownloadsFilterMode(
     val flag: Int,

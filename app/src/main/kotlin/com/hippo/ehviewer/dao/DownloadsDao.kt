@@ -14,13 +14,17 @@ import kotlinx.coroutines.flow.Flow
 interface DownloadsDao {
     @Suppress("ktlint:standard:annotation")
     @Query("SELECT LABEL, COUNT(*) AS COUNT FROM DOWNLOADS LEFT JOIN DOWNLOAD_LABELS USING(LABEL) GROUP BY LABEL")
-    fun count(): Flow<Map<@MapColumn("LABEL") String?, @MapColumn("COUNT") Int>>
+    fun countByLabel(): Flow<Map<@MapColumn("LABEL") String?, @MapColumn("COUNT") Int>>
+
+    @Suppress("ktlint:standard:annotation")
+    @Query("SELECT ARTIST, COUNT(*) AS COUNT FROM DOWNLOADS LEFT JOIN DOWNLOAD_ARTISTS USING(GID) GROUP BY ARTIST")
+    fun countByArtist(): Flow<Map<@MapColumn("ARTIST") String?, @MapColumn("COUNT") Int>>
 
     @Query("SELECT * FROM DOWNLOADS ORDER BY TIME")
     suspend fun list(): List<DownloadEntity>
 
     @Transaction
-    @Query("SELECT * FROM DOWNLOADS LEFT JOIN DOWNLOAD_DIRNAME USING(GID) ORDER BY TIME DESC")
+    @Query("SELECT * FROM DOWNLOADS LEFT JOIN DOWNLOAD_DIRNAME USING(GID) LEFT JOIN DOWNLOAD_ARTISTS USING(GID) ORDER BY TIME DESC")
     suspend fun joinList(): List<DownloadInfo>
 
     @Update

@@ -8,7 +8,7 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 
 @Database(
     entities = [
-        BaseGalleryInfo::class, DownloadLabel::class, DownloadEntity::class, DownloadDirname::class,
+        BaseGalleryInfo::class, DownloadLabel::class, DownloadEntity::class, DownloadDirname::class, DownloadArtist::class,
         Filter::class, HistoryInfo::class, LocalFavoriteInfo::class, ProgressInfo::class, QuickSearch::class,
         GalleryEntityFts::class,
     ],
@@ -38,6 +38,7 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 @TypeConverters(FilterModeConverter::class)
 abstract class EhDatabase : RoomDatabase() {
     abstract fun galleryDao(): GalleryDao
+    abstract fun downloadArtistDao(): DownloadArtistDao
     abstract fun downloadDirnameDao(): DownloadDirnameDao
     abstract fun downloadLabelDao(): DownloadLabelDao
     abstract fun downloadsDao(): DownloadsDao

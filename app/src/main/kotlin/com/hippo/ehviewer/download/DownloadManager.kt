@@ -30,6 +30,7 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.dao.DownloadArtist
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
 import com.hippo.ehviewer.image.Image
@@ -530,19 +531,19 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun readMetadataFromLocal() {
-        val list = allInfoList.filter { it.pages == 0 || it.simpleTags == null || it.artists == null }.parMapNotNull(concurrency = 5) { info ->
+        val list = allInfoList.filter { it.pages == 0 || it.simpleTags == null || it.artistInfoList == null }.parMapNotNull(concurrency = 5) { info ->
             info.downloadDir?.run {
                 val comicInfo = findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }
                 if (comicInfo != null) {
                     info.pages = comicInfo.pageCount
                     info.simpleTags = comicInfo.toSimpleTags()
-                    info.artists = comicInfo.penciller
-                    info.galleryInfo
+                    info.artistInfoList = comicInfo.penciller?.map { DownloadArtist(gid = info.gid, artist = it) }
+                    info
                 } else if (info.pages == 0) {
                     findFile(SPIDER_INFO_FILENAME)?.let {
                         readCompatFromUniFile(it)?.run {
                             info.pages = pages
-                            info.galleryInfo
+                            info
                         }
                     }
                 } else {
@@ -550,7 +551,8 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                 }
             }
         }
-        EhDB.updateGalleryInfo(list)
+        EhDB.updateGalleryInfo(list.map { it.galleryInfo })
+        EhDB.updateDownloadsArtist(list)
     }
 
     val isIdle: Boolean
