@@ -134,7 +134,10 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                     downloaded = 0
                     legacy = -1
                 }
-                val spider = SpiderQueen.obtainSpiderQueen(info, SpiderQueen.MODE_DOWNLOAD)
+                val spider = SpiderQueen.obtainSpiderQueen(info, SpiderQueen.MODE_DOWNLOAD) {
+                    info.artistInfoList = DownloadArtist.from(info.gid, it.penciller)
+                    EhDB.putDownloadArtist(info.gid, info.artistInfoList)
+                }
                 mCurrentSpider = spider
                 spider.addOnSpiderListener(this)
                 // Update in DB
@@ -175,7 +178,6 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             info = DownloadInfo(galleryInfo, galleryInfo.putToDownloadDir())
             info.label = label
             info.state = DownloadInfo.STATE_WAIT
-
             // Add to all download list and map
             allInfoList.insertWith(info, comparator())
             mAllInfoMap[galleryInfo.gid] = info
@@ -280,8 +282,8 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         }
     }
 
-    suspend fun restoreDownload(galleryInfo: BaseGalleryInfo, dirname: String) {
-        val info = DownloadInfo(galleryInfo, dirname)
+    suspend fun restoreDownload(galleryInfo: BaseGalleryInfo, dirname: String, artistInfoList: List<DownloadArtist>?) {
+        val info = DownloadInfo(galleryInfo, dirname, artistInfoList)
         info.state = DownloadInfo.STATE_NONE
 
         // Add to all download list and map
@@ -537,7 +539,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                 if (comicInfo != null) {
                     info.pages = comicInfo.pageCount
                     info.simpleTags = comicInfo.toSimpleTags()
-                    info.artistInfoList = comicInfo.penciller?.map { DownloadArtist(gid = info.gid, artist = it) }
+                    info.artistInfoList = DownloadArtist.from(info.gid, comicInfo.penciller)
                     info
                 } else if (info.pages == 0) {
                     findFile(SPIDER_INFO_FILENAME)?.let {
@@ -552,7 +554,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             }
         }
         EhDB.updateGalleryInfo(list.map { it.galleryInfo })
-        EhDB.updateDownloadsArtist(list)
+        EhDB.putDownloadsArtist(list)
     }
 
     val isIdle: Boolean

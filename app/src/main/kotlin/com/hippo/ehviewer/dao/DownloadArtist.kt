@@ -23,4 +23,8 @@ data class DownloadArtist(
     @PrimaryKey
     @ColumnInfo(name = "_id")
     var id: Long? = null,
-)
+) {
+    companion object {
+        fun from(gid: Long, artists: Iterable<String>?) = artists?.map { DownloadArtist(gid, it) }
+    }
+}

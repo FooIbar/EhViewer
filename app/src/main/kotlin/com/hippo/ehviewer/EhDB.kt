@@ -73,6 +73,7 @@ object EhDB {
 
     suspend fun putDownloadInfo(downloadInfo: DownloadInfo) {
         putGalleryInfo(downloadInfo.galleryInfo)
+        putDownloadArtist(downloadInfo.gid, downloadInfo.artistInfoList)
         db.downloadsDao().upsert(downloadInfo.downloadInfo)
     }
 
@@ -145,15 +146,15 @@ object EhDB {
         dao.fill(raw.position)
     }
 
-    suspend fun updateDownloadArtist(gid: Long, artists: List<DownloadArtist>?) {
+    suspend fun putDownloadArtist(gid: Long, artists: List<DownloadArtist>?) {
         val dao = db.downloadArtistDao()
         dao.deleteByKey(gid)
-        dao.upsert(gid, artists?.onEach { it.id = null })
+        artists?.let { dao.insert(artists.onEach { it.id = null }) }
     }
 
-    suspend fun updateDownloadsArtist(downloadInfoList: List<DownloadInfo>) {
+    suspend fun putDownloadsArtist(downloadInfoList: List<DownloadInfo>) {
         downloadInfoList.forEach {
-            updateDownloadArtist(it.gid, it.artistInfoList)
+            putDownloadArtist(it.gid, it.artistInfoList)
         }
     }
 

@@ -16,11 +16,6 @@ interface DownloadArtistDao {
     @Insert
     suspend fun insert(downloadArtists: List<DownloadArtist>)
 
-    suspend fun upsert(gid: Long, artists: List<DownloadArtist>?) {
-        deleteByKey(gid)
-        artists?.let { insert(it) }
-    }
-
     @Query("DELETE FROM DOWNLOAD_ARTISTS WHERE GID = :gid")
     suspend fun deleteByKey(gid: Long)
 

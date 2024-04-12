@@ -316,19 +316,19 @@ class SpiderDen(val info: GalleryInfo) {
         check(downloadDir!!.ensureDir())
     }
 
-    suspend fun writeComicInfo(fetchMetadata: Boolean = true) {
-        downloadDir?.run {
-            createFile(COMIC_INFO_FILE)?.also {
+    suspend fun writeComicInfo(fetchMetadata: Boolean = true): ComicInfo? {
+        return downloadDir?.run {
+            createFile(COMIC_INFO_FILE)?.let {
                 runCatching {
                     if (info !is GalleryDetail && fetchMetadata) {
                         withNonCancellableContext {
                             EhEngine.fillGalleryListByApi(listOf(info))
                         }
                     }
-                    info.getComicInfo().write(it)
+                    info.getComicInfo().apply { write(it) }
                 }.onFailure {
                     logcat(it)
-                }
+                }.getOrNull()
             }
         }
     }
