@@ -22,13 +22,12 @@
       "ignoreUnstable": false
     },
     {
-      "groupName": "Kotlin, KSP and Compose Compiler",
+      "groupName": "Kotlin & KSP",
       "matchPackagePrefixes": [
         "org.jetbrains.kotlin."
       ],
       "matchPackageNames": [
-        "com.google.devtools.ksp",
-        "androidx.compose.compiler:compiler"
+        "com.google.devtools.ksp"
       ],
       "recreateWhen": "never"
     },
