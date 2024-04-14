@@ -27,7 +27,7 @@ ksp = "2.0.0-RC1-1.0.20"
 ktor = "3.0.0-beta-1"
 okio = "3.9.0"
 splitties = "3.0.0"
-telephoto = "0.10.0-SNAPSHOT"
+telephoto = "0.10.0"
 xmlutil = "0.86.3"
 
 [libraries]
