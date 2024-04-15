@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,8 +19,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +51,7 @@ fun DownloadCard(
     onStart: () -> Unit,
     onStop: () -> Unit,
     info: DownloadInfo,
+    selectMode: Boolean,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
@@ -58,11 +62,22 @@ fun DownloadCard(
         interactionSource = interactionSource,
     ) {
         Row {
-            Card(onClick = onThumbClick) {
-                EhAsyncCropThumb(
-                    key = info,
-                    modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
-                )
+            val thumb = remember {
+                movableContentOf<DownloadInfo> {
+                    EhAsyncCropThumb(
+                        key = it,
+                        modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
+                    )
+                }
+            }
+            if (selectMode) {
+                Card {
+                    thumb(info)
+                }
+            } else {
+                Card(onClick = onThumbClick) {
+                    thumb(info)
+                }
             }
 
             val stateFailed = stringResource(R.string.download_state_failed)
@@ -165,13 +180,19 @@ fun DownloadCard(
                         bottom.linkTo(parent.bottom)
                     },
                 ) {
-                    if (downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD) {
-                        IconButton(onClick = onStop) {
-                            Icon(imageVector = Icons.Default.Pause, contentDescription = null)
+                    val running = downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
+                    val icon = remember {
+                        movableContentOf<Boolean> {
+                            Icon(imageVector = if (it) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = null)
+                        }
+                    }
+                    if (selectMode) {
+                        Box(modifier = Modifier.minimumInteractiveComponentSize()) {
+                            icon(running)
                         }
                     } else {
-                        IconButton(onClick = onStart) {
-                            Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
+                        IconButton(onClick = if (running) onStop else onStart) {
+                            icon(running)
                         }
                     }
                 }
