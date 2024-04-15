@@ -18,19 +18,16 @@ package com.hippo.unifile
 import android.net.Uri
 import android.provider.DocumentsContract.Document.MIME_TYPE_DIR
 import android.webkit.MimeTypeMap
-import eu.kanade.tachiyomi.util.system.logcat
-import splitties.init.appCtx
 
 class TreeDocumentFile(
-    parent: UniFile?,
+    private val parent: UniFile?,
     override var uri: Uri,
     override var name: String = getFilenameForUri(uri),
     mimeType: String? = null,
-) : UniFile(parent) {
+) : UniFile() {
     private var cachePresent = false
     private val allChildren by lazy {
         cachePresent = true
-        logcat { "Directory lookup cache created for $name" }
         DocumentsContractApi21.listFiles(uri).mapTo(mutableListOf()) { (uri, name, mimeType) ->
             TreeDocumentFile(this, uri, name, mimeType)
         }
@@ -98,7 +95,6 @@ class TreeDocumentFile(
     override fun ensureDir(): Boolean {
         if (isDirectory) return true
         if (isFile) return false
-        val parent = parentFile
         return if (parent != null && parent.ensureDir()) {
             parent.createDirectory(name) != null
         } else {
@@ -109,7 +105,6 @@ class TreeDocumentFile(
     override fun ensureFile(): Boolean {
         if (isFile) return true
         if (isDirectory) return false
-        val parent = parentFile
         return if (parent != null && parent.ensureDir()) {
             parent.createFile(name) != null
         } else {
@@ -135,7 +130,7 @@ class TreeDocumentFile(
     }
 
     override fun renameTo(displayName: String): Boolean {
-        val result = DocumentsContractApi21.renameTo(appCtx, uri, displayName)
+        val result = DocumentsContractApi21.renameTo(uri, displayName)
         if (result != null) {
             uri = result
             name = displayName
