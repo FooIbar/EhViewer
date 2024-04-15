@@ -294,6 +294,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
         // Save to
         EhDB.putDownloadInfo(info)
+        EhDB.putDownloadArtist(galleryInfo.gid, artistInfoList)
 
         // Notify
         mutableNotifyFlow.emit(info)

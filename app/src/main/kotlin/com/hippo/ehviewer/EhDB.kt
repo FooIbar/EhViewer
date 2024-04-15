@@ -74,7 +74,6 @@ object EhDB {
     suspend fun putDownloadInfo(downloadInfo: DownloadInfo) {
         putGalleryInfo(downloadInfo.galleryInfo)
         db.downloadsDao().upsert(downloadInfo.downloadInfo)
-        putDownloadArtist(downloadInfo.gid, downloadInfo.artistInfoList)
     }
 
     suspend fun removeDownloadInfo(downloadInfo: DownloadInfo) {
