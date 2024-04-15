@@ -32,6 +32,7 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.dao.Schema17to18
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.util.sendTo
+import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import kotlinx.coroutines.flow.Flow
 import splitties.arch.room.roomDb
@@ -260,10 +261,10 @@ object EhDB {
         db.filterDao().update(filter)
     }
 
-    fun exportDB(context: Context, uri: Uri) {
+    fun exportDB(context: Context, file: UniFile) {
         db.query("PRAGMA wal_checkpoint(FULL)", null).use { it.moveToNext() }
         val dbFile = context.getDatabasePath(DB_NAME)
-        dbFile.asUniFile() sendTo uri.asUniFile()
+        dbFile.asUniFile() sendTo file
     }
 
     suspend fun importDB(context: Context, uri: Uri) {

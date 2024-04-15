@@ -424,6 +424,7 @@
     <string name="favorite_name">收藏画廊</string>
     <string name="black_dark_theme">纯黑深色主题</string>
     <string name="harmonize_category_color">类别颜色适配动态配色</string>
+    <string name="backup_before_update">更新前备份数据</string>
     <string name="use_ci_update_channel">使用持续集成(CI)构建频道更新</string>
     <string name="sort_by">排序依据</string>
     <string name="added_time_desc">添加时间（降序）</string>
