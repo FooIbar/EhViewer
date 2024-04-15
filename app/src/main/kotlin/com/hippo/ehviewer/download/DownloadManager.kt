@@ -272,6 +272,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
             // Save to
             EhDB.putDownloadInfo(info)
+            EhDB.putDownloadArtist(info.gid, info.artistInfoList)
         }
     }
 
