@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 23,
-    "identityHash": "112d4ba1b26e64edf9b5108596e6c5c8",
+    "identityHash": "621c7ff29541a116777f5957d6ed0281",
     "entities": [
       {
         "tableName": "GALLERIES",
@@ -273,13 +273,14 @@
         },
         "indices": [
           {
-            "name": "index_DOWNLOAD_ARTISTS_GID",
+            "name": "index_DOWNLOAD_ARTISTS_GID_ARTIST",
             "unique": false,
             "columnNames": [
-              "GID"
+              "GID",
+              "ARTIST"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_DOWNLOAD_ARTISTS_GID` ON `${TABLE_NAME}` (`GID`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_DOWNLOAD_ARTISTS_GID_ARTIST` ON `${TABLE_NAME}` (`GID`, `ARTIST`)"
           }
         ],
         "foreignKeys": [
@@ -573,7 +574,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '112d4ba1b26e64edf9b5108596e6c5c8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '621c7ff29541a116777f5957d6ed0281')"
     ]
   }
 }

@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "DOWNLOAD_ARTISTS",
-    indices = [Index("GID")],
+    indices = [Index("GID", "ARTIST")],
     foreignKeys = [
         ForeignKey(DownloadEntity::class, ["GID"], ["GID"], onDelete = ForeignKey.CASCADE),
     ],
