@@ -10,6 +10,7 @@ val isRelease: Boolean
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
@@ -132,9 +133,6 @@ android {
             "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
             "-opt-in=splitties.experimental.ExperimentalSplittiesApi",
             "-opt-in=splitties.preferences.DataStorePreferencesPreview",
-
-            "-P", "plugin:androidx.compose.compiler.plugins.kotlin:experimentalStrongSkipping=true",
-            "-P", "plugin:androidx.compose.compiler.plugins.kotlin:nonSkippingGroupOptimization=true",
         )
     }
 
@@ -171,11 +169,15 @@ android {
         viewBinding = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
-    }
-
     namespace = "com.hippo.ehviewer"
+}
+
+composeCompiler {
+    // https://youtrack.jetbrains.com/issue/KT-67216
+    suppressKotlinVersionCompatibilityCheck = libs.versions.kotlin.get()
+    enableIntrinsicRemember = true
+    enableNonSkippingGroupOptimization = true
+    enableExperimentalStrongSkippingMode = true
 }
 
 androidComponents {

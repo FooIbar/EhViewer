@@ -4,7 +4,7 @@ import androidx.activity.BackEventCompat
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.spring
@@ -22,6 +22,8 @@ import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+
+val PredictiveBackEasing = CubicBezierEasing(0.1f, 0.1f, 0f, 1f)
 
 /* enable               0               1
  * animationProgress    1F              0F
@@ -41,7 +43,7 @@ import kotlinx.coroutines.launch
 fun animateFloatMergePredictiveBackAsState(
     enable: Boolean,
     animationSpec: AnimationSpec<Float> = spring(),
-    predictiveBackInterpolator: Easing = EaseOut,
+    predictiveBackInterpolator: Easing = PredictiveBackEasing,
     finishedListener: ((Float) -> Unit)? = null,
     onBack: () -> Unit,
 ): State<Float> {
@@ -84,7 +86,7 @@ fun animateFloatMergePredictiveBackAsState(
 fun animateFloatMergeOneWayPredictiveBackAsState(
     enable: Boolean,
     animationSpec: AnimationSpec<Float> = spring(),
-    predictiveBackInterpolator: Easing = EaseOut,
+    predictiveBackInterpolator: Easing = PredictiveBackEasing,
     onBack: suspend () -> Unit,
 ): State<Float> {
     val animatable = remember { Animatable(0f, Float.VectorConverter) }
