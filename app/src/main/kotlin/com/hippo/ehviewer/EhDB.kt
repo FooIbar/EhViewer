@@ -148,7 +148,7 @@ object EhDB {
 
     suspend fun putDownloadArtist(gid: Long, artists: List<DownloadArtist>) {
         val dao = db.downloadArtistDao()
-        dao.deleteByKey(gid)
+        dao.deleteByGid(gid)
         if (artists.isNotEmpty()) {
             dao.insert(artists.onEach { it.id = null })
         }

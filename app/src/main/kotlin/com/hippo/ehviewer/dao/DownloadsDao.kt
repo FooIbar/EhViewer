@@ -24,7 +24,7 @@ interface DownloadsDao {
     suspend fun list(): List<DownloadEntity>
 
     @Transaction
-    @Query("SELECT * FROM DOWNLOADS LEFT JOIN DOWNLOAD_DIRNAME USING(GID) LEFT JOIN DOWNLOAD_ARTISTS USING(GID) ORDER BY TIME DESC")
+    @Query("SELECT * FROM DOWNLOADS LEFT JOIN DOWNLOAD_DIRNAME USING(GID) ORDER BY TIME DESC")
     suspend fun joinList(): List<DownloadInfo>
 
     @Update

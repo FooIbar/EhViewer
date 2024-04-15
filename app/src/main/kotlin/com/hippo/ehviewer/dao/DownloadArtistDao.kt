@@ -17,11 +17,8 @@ interface DownloadArtistDao {
     suspend fun insert(downloadArtists: List<DownloadArtist>)
 
     @Query("DELETE FROM DOWNLOAD_ARTISTS WHERE GID = :gid")
-    suspend fun deleteByKey(gid: Long)
+    suspend fun deleteByGid(gid: Long)
 
     @Delete
     suspend fun delete(downloadArtist: DownloadArtist)
-
-    @Delete
-    suspend fun delete(downloadArtists: List<DownloadArtist>)
 }

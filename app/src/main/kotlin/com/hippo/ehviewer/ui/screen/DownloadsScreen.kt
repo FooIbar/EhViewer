@@ -188,7 +188,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist
     }
     val artistList = remember(downloadsCountGroupByArtist) {
-        (downloadsCountGroupByArtist.keys - null).map { it!! to it }
+        downloadsCountGroupByArtist.keys.mapNotNull { it?.let { it to it } }
     }
     val labelList by lazy { DownloadManager.labelList.map { it.id!! to it.label } }
     val groupList = when (filterMode) {
@@ -320,7 +320,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     )
                 }
 
-                itemsIndexed(groupList, key = { _, (id, _) -> id }) { index, (id, label) ->
+                itemsIndexed(groupList, key = { _, (id) -> id }) { index, (id, label) ->
                     val item by rememberUpdatedState(label)
                     // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                     val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
