@@ -24,8 +24,7 @@ import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.util.Locale
 
-class RawFile(parent: UniFile?, private var file: File) : UniFile(parent) {
-    private val parent = parent as? RawFile
+class RawFile(private val parent: RawFile?, private var file: File) : UniFile() {
 
     private var cachePresent = false
     private val allChildren by lazy {

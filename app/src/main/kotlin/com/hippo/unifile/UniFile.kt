@@ -28,7 +28,7 @@ import splitties.init.appCtx
  * In Android files can be accessed via [java.io.File] and [android.net.Uri].
  * The UniFile is designed to emulate File interface for both File and Uri.
  */
-abstract class UniFile internal constructor(private val parent: UniFile?) {
+sealed class UniFile {
     /**
      * Create a new file as a direct child of this directory.
      *
@@ -78,21 +78,6 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
      * @see android.provider.DocumentsContract.Document.COLUMN_MIME_TYPE
      */
     abstract val type: String?
-
-    /**
-     * Return the parent file of this file. Only defined inside of the
-     * user-selected tree; you can never escape above the top of the tree.
-     *
-     *
-     * The underlying [android.provider.DocumentsProvider] only defines a
-     * forward mapping from parent to child, so the reverse mapping of child to
-     * parent offered here is purely a convenience method, and it may be
-     * incorrect if the underlying tree structure changes.
-     *
-     * @return parent of the file, or null if it is the top of the file tree
-     */
-    val parentFile: UniFile?
-        get() = parent
 
     /**
      * Indicates if this file represents a *directory*.
@@ -235,7 +220,7 @@ abstract class UniFile internal constructor(private val parent: UniFile?) {
     companion object {
         fun fromFile(file: File) = RawFile(null, file)
 
-        private fun fromSingleUri(singleUri: Uri) = SingleDocumentFile(null, singleUri)
+        private fun fromSingleUri(singleUri: Uri) = SingleDocumentFile(singleUri)
 
         private fun fromTreeUri(treeUri: Uri) = TreeDocumentFile(null, DocumentsContractApi21.prepareTreeUri(treeUri))
 
