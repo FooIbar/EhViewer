@@ -68,16 +68,11 @@ data class DownloadInfo(
     val dirname: String?,
 
     @Relation(parentColumn = "GID", entityColumn = "GID")
-    var artistInfoList: List<DownloadArtist>? = null,
+    var artistInfoList: List<DownloadArtist> = emptyList(),
 
     @Embedded
     val downloadInfo: DownloadEntity = DownloadEntity(galleryInfo.gid),
 ) : GalleryInfo by galleryInfo, AbstractDownloadInfo by downloadInfo {
-    init {
-        if (true == artistInfoList?.isEmpty()) {
-            artistInfoList = null
-        }
-    }
 
     companion object {
         const val STATE_INVALID = -1
@@ -89,5 +84,5 @@ data class DownloadInfo(
     }
 }
 
-val DownloadInfo.artists: List<String>?
-    get() = artistInfoList?.map { it.artist }
+val DownloadInfo.artists: List<String>
+    get() = artistInfoList.map { it.artist }

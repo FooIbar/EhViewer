@@ -135,7 +135,9 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                     legacy = -1
                 }
                 val spider = SpiderQueen.obtainSpiderQueen(info, SpiderQueen.MODE_DOWNLOAD) {
-                    info.artistInfoList = DownloadArtist.from(info.gid, it.penciller)
+                    info.artistInfoList = it.penciller?.let { penciller ->
+                        DownloadArtist.from(info.gid, penciller)
+                    } ?: emptyList()
                     EhDB.putDownloadArtist(info.gid, info.artistInfoList)
                 }
                 mCurrentSpider = spider
@@ -282,7 +284,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         }
     }
 
-    suspend fun restoreDownload(galleryInfo: BaseGalleryInfo, dirname: String, artistInfoList: List<DownloadArtist>?) {
+    suspend fun restoreDownload(galleryInfo: BaseGalleryInfo, dirname: String, artistInfoList: List<DownloadArtist>) {
         val info = DownloadInfo(galleryInfo, dirname, artistInfoList)
         info.state = DownloadInfo.STATE_NONE
 
@@ -533,13 +535,15 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun readMetadataFromLocal() {
-        val list = allInfoList.filter { it.pages == 0 || it.simpleTags == null || it.artistInfoList == null }.parMapNotNull(concurrency = 5) { info ->
+        val list = allInfoList.filter { it.pages == 0 || it.simpleTags == null || it.artistInfoList.isNotEmpty() }.parMapNotNull(concurrency = 5) { info ->
             info.downloadDir?.run {
                 val comicInfo = findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }
                 if (comicInfo != null) {
                     info.pages = comicInfo.pageCount
                     info.simpleTags = comicInfo.toSimpleTags()
-                    info.artistInfoList = DownloadArtist.from(info.gid, comicInfo.penciller)
+                    info.artistInfoList = comicInfo.penciller?.let {
+                        DownloadArtist.from(info.gid, it)
+                    } ?: emptyList()
                     info
                 } else if (info.pages == 0) {
                     findFile(SPIDER_INFO_FILENAME)?.let {

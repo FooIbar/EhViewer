@@ -204,7 +204,9 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                             if (it.pages != 0) {
                                 EhDB.putDownloadDirname(it.gid, it.dirname)
                                 val comicInfo = SpiderDen(it.galleryInfo, it.dirname).writeComicInfo(false)
-                                val artistInfoList = DownloadArtist.from(it.gid, comicInfo?.penciller)
+                                val artistInfoList = comicInfo?.penciller?.let { penciller ->
+                                    DownloadArtist.from(it.gid, penciller)
+                                } ?: emptyList()
                                 DownloadManager.restoreDownload(it.galleryInfo, it.dirname, artistInfoList)
                             }
                         }.size

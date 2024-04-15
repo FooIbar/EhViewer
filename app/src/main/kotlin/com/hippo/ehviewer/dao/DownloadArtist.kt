@@ -25,6 +25,6 @@ data class DownloadArtist(
     var id: Long? = null,
 ) {
     companion object {
-        fun from(gid: Long, artists: Iterable<String>?) = artists?.map { DownloadArtist(gid, it) }
+        fun from(gid: Long, artists: Iterable<String>) = artists.map { DownloadArtist(gid, it) }
     }
 }
