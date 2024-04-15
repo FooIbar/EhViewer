@@ -43,6 +43,7 @@ import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.ReadableTime
+import com.hippo.unifile.asUniFile
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -181,7 +182,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 uri?.let {
                     context.runCatching {
                         grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                        EhDB.exportDB(context, uri)
+                        EhDB.exportDB(context, uri.asUniFile())
                         launchSnackBar(getString(R.string.settings_advanced_export_data_to, uri.toString()))
                     }.onFailure {
                         logcat(it)
