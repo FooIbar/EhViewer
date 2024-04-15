@@ -153,12 +153,6 @@ object EhDB {
         }
     }
 
-    suspend fun putDownloadsArtist(downloadInfoList: List<DownloadInfo>) {
-        downloadInfoList.forEach {
-            putDownloadArtist(it.gid, it.artistInfoList)
-        }
-    }
-
     suspend fun removeLocalFavorites(galleryInfo: BaseGalleryInfo) {
         db.localFavoritesDao().deleteByKey(galleryInfo.gid)
         deleteGalleryInfo(galleryInfo)

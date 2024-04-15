@@ -35,6 +35,7 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
+import com.hippo.ehviewer.spider.ComicInfo
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
@@ -536,21 +537,21 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun readMetadataFromLocal() {
-        val list = allInfoList.filter { it.pages == 0 || it.simpleTags == null || it.artistInfoList.isNotEmpty() }.parMapNotNull(concurrency = 5) { info ->
+        val mutex = Mutex()
+        val cache = mutableMapOf<DownloadInfo, ComicInfo?>()
+
+        val galleryInfoList = allInfoList.filter { it.pages == 0 || it.simpleTags == null }.parMapNotNull(concurrency = 5) { info ->
             info.downloadDir?.run {
-                val comicInfo = findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }
+                val comicInfo = findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }?.also { mutex.withLock { cache[info] = it } }
                 if (comicInfo != null) {
                     info.pages = comicInfo.pageCount
                     info.simpleTags = comicInfo.toSimpleTags()
-                    info.artistInfoList = comicInfo.penciller?.let {
-                        DownloadArtist.from(info.gid, it)
-                    } ?: emptyList()
-                    info
+                    info.galleryInfo
                 } else if (info.pages == 0) {
                     findFile(SPIDER_INFO_FILENAME)?.let {
                         readCompatFromUniFile(it)?.run {
                             info.pages = pages
-                            info
+                            info.galleryInfo
                         }
                     }
                 } else {
@@ -558,8 +559,26 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                 }
             }
         }
-        EhDB.updateGalleryInfo(list.map { it.galleryInfo })
-        EhDB.putDownloadsArtist(list)
+        val artistInfoList = allInfoList.filter { it.artistInfoList.isNotEmpty() }.parMapNotNull(concurrency = 5) { info ->
+            // Discriminate between absence of caching and caching of null values
+            val comicInfo = if (cache.containsKey(info)) {
+                cache[info]
+            } else {
+                info.downloadDir?.findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }
+            }
+            if (comicInfo != null) {
+                comicInfo.penciller?.let {
+                    info.gid to DownloadArtist.from(info.gid, it)
+                }
+            } else {
+                null
+            }
+        }
+
+        EhDB.updateGalleryInfo(galleryInfoList)
+        artistInfoList.forEach { (gid, updateList) ->
+            EhDB.putDownloadArtist(gid, updateList)
+        }
     }
 
     val isIdle: Boolean
