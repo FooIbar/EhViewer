@@ -17,7 +17,7 @@ package com.hippo.unifile
 
 import android.net.Uri
 
-class SingleDocumentFile(parent: UniFile?, override val uri: Uri) : UniFile(parent) {
+class SingleDocumentFile(override val uri: Uri) : UniFile() {
 
     override fun createFile(displayName: String) = null
 

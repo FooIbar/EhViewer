@@ -590,6 +590,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                 },
                                 onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
                                 info = info,
+                                selectMode = selectMode,
                                 modifier = Modifier.height(height),
                                 interactionSource = interactionSource,
                             )

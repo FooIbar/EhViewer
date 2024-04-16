@@ -145,6 +145,7 @@ object Settings : DataStorePreferences(null) {
     var showTagTranslations by boolPref(KEY_SHOW_TAG_TRANSLATIONS, false).observed { updateWhenTagTranslationChanges() }
     var appLinkVerifyTip by boolPref("app_link_verify_tip", false)
     var enabledSecurity by boolPref("enable_secure", false)
+    var backupBeforeUpdate by boolPref("backup_before_update", true)
     var useCIUpdateChannel by boolPref("ci_update_channel", false)
     var mediaScan by boolPref("media_scan", false).observed { updateWhenKeepMediaStatusChanges() }
     var hasDefaultDownloadLabel by boolPref("has_default_download_label", false)

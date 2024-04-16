@@ -30,8 +30,10 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.BuildConfig
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.ui.destinations.LicenseScreenDestination
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
@@ -39,6 +41,7 @@ import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.updater.Release
 import com.hippo.ehviewer.util.AppConfig
+import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.installPackage
 import com.ramcosta.composedestinations.annotation.Destination
@@ -48,6 +51,7 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import moe.tarsin.coroutines.runSuspendCatching
 
 private const val REPO_URL = "https://github.com/${BuildConfig.REPO_NAME}"
@@ -109,6 +113,10 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 summary = versionCode(),
             )
             SwitchPreference(
+                title = stringResource(id = R.string.backup_before_update),
+                value = Settings::backupBeforeUpdate,
+            )
+            SwitchPreference(
                 title = stringResource(id = R.string.use_ci_update_channel),
                 value = Settings::useCIUpdateChannel,
             )
@@ -143,6 +151,12 @@ suspend fun DialogState.showNewVersion(context: Context, release: Release) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = release.changelog)
+        }
+    }
+    if (Settings.backupBeforeUpdate) {
+        val time = ReadableTime.getFilenamableTime(Clock.System.now().toEpochMilliseconds())
+        downloadLocation.createFile("$time.db")?.let {
+            EhDB.exportDB(context, it)
         }
     }
     // TODO: Download in the background and show progress in notification
