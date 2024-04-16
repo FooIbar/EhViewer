@@ -43,9 +43,7 @@ fun ChapterNavigator(
     val layoutDirection = if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
     val view = LocalView.current
     val configuration = LocalConfiguration.current
-    // https://m3.material.io/components/sliders/specs
-    // Tick width is 2 dp
-    val maxTickCount = configuration.screenWidthDp / 6
+    val maxTickCount = configuration.screenWidthDp / (SliderDefaults.TickSize.value * 2.5f).roundToInt()
     val showTicks = totalPages < maxTickCount
 
     // Match with toolbar background color set in ReaderActivity

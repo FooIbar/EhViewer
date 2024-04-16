@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 
 @Composable
 fun SpinnerChoice(title: String, entries: Array<String>, values: Array<String>, field: MutableState<Int>) {
@@ -97,9 +98,7 @@ fun SliderChoice(
     ) {
         startSlot()
         val configuration = LocalConfiguration.current
-        // https://m3.material.io/components/sliders/specs
-        // Tick width is 2 dp
-        val maxTickCount = configuration.screenWidthDp / 6
+        val maxTickCount = configuration.screenWidthDp / (SliderDefaults.TickSize.value * 2.5f).roundToInt()
         val steps = range.last - range.first - 1
         val showTicks = steps < maxTickCount
         Slider(
