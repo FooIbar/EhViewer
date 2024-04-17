@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -33,12 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.hippo.ehviewer.R
@@ -187,38 +185,35 @@ fun DownloadCard(
 
                 // Make spacing consistent with gallery page
                 // The height of the action button should be 2 * height of Text composable + 1dp of vertical padding (2dp total)
-                MeasureUnconstrainedViewHeight(
+                val textMeasurer = rememberTextMeasurer()
+                val measuredHeight = with(LocalDensity.current) {
+                    textMeasurer.measure("", MaterialTheme.typography.labelLarge).size.height.toDp()
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.constrainAs(actionsRef) {
-                        end.linkTo(parent.end)
+                        end.linkTo(parent.end, margin = (-8).dp)
                         bottom.linkTo(parent.bottom)
-                    },
-                    viewToMeasure = {
-                        Text(text = "", style = MaterialTheme.typography.labelLarge)
-                    },
-                ) { measuredHeight ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.height(measuredHeight * 2 + 2.dp).offset(x = 8.dp)
-                    ) {
-                        val running =
-                            downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
-                        val icon = remember {
-                            movableContentOf<Boolean> {
-                                Icon(
-                                    imageVector = if (it) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(measuredHeight * 1.25f),
-                                )
-                            }
+                    }.height(measuredHeight * 2 + 2.dp),
+                ) {
+                    val running =
+                        downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
+                    val icon = remember {
+                        movableContentOf<Boolean> {
+                            Icon(
+                                imageVector = if (it) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                contentDescription = null,
+                                modifier = Modifier.size(measuredHeight * 1.25f),
+                            )
                         }
-                        if (selectMode) {
-                            Box(modifier = Modifier.minimumInteractiveComponentSize()) {
-                                icon(running)
-                            }
-                        } else {
-                            IconButton(onClick = if (running) onStop else onStart) {
-                                icon(running)
-                            }
+                    }
+                    if (selectMode) {
+                        Box(modifier = Modifier.minimumInteractiveComponentSize()) {
+                            icon(running)
+                        }
+                    } else {
+                        IconButton(onClick = if (running) onStop else onStart) {
+                            icon(running)
                         }
                     }
                 }
@@ -234,26 +229,6 @@ fun DownloadCard(
                     )
                 }
             }
-        }
-    }
-}
-
-// https://stackoverflow.com/questions/70500071/is-it-possible-to-measure-string-width-to-properly-size-a-text-composable
-@Composable
-internal fun MeasureUnconstrainedViewHeight(
-    modifier: Modifier = Modifier,
-    viewToMeasure: @Composable () -> Unit,
-    content: @Composable (measuredWidth: Dp) -> Unit,
-) {
-    SubcomposeLayout(modifier = modifier) { constraints ->
-        val measuredHeight = subcompose("viewToMeasure", viewToMeasure)[0]
-            .measure(constraints).height.toDp()
-
-        val contentPlaceable = subcompose("content") {
-            content(measuredHeight)
-        }[0].measure(constraints)
-        layout(contentPlaceable.width, contentPlaceable.height) {
-            contentPlaceable.place(0, 0)
         }
     }
 }
