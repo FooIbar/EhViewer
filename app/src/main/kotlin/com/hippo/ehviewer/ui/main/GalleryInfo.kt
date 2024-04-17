@@ -66,10 +66,11 @@ private val constraintSet = ConstraintSet {
     }
     constrain(uploaderRef) {
         start.linkTo(parent.start)
-        bottom.linkTo(ratingRef.top)
+        bottom.linkTo(iconsRef.top)
     }
     constrain(ratingRef) {
         start.linkTo(parent.start)
+        top.linkTo(uploaderRef.bottom)
         bottom.linkTo(categoryRef.top, margin = 4.dp)
     }
     constrain(categoryRef) {
@@ -112,7 +113,7 @@ fun GalleryInfoListItem(
                 modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
             )
         }
-        ConstraintLayout(modifier = Modifier.padding(8.dp, 0.dp).fillMaxSize(), constraintSet = constraintSet) {
+        ConstraintLayout(modifier = Modifier.padding(horizontal = 8.dp).fillMaxSize(), constraintSet = constraintSet) {
             val (titleRef, uploaderRef, ratingRef, categoryRef, postedRef, favRef, iconsRef) = ids
             Text(
                 text = EhUtils.getSuitableTitle(info),
@@ -130,13 +131,13 @@ fun GalleryInfoListItem(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                with(LocalDensity.current) {
-                    GalleryListCardRating(
-                        rating = info.rating,
-                        ratingSize = LocalTextStyle.current.fontSize.toDp(),
-                        modifier = Modifier.layoutId(ratingRef),
-                    )
-                }
+                GalleryListCardRating(
+                    rating = info.rating,
+                    ratingSize = with(LocalDensity.current) {
+                        LocalTextStyle.current.fontSize.toDp()
+                    },
+                    modifier = Modifier.layoutId(ratingRef),
+                )
                 val categoryColor = EhUtils.getCategoryColor(info.category)
                 val categoryText = EhUtils.getCategory(info.category).uppercase()
                 Text(
@@ -158,7 +159,7 @@ fun GalleryInfoListItem(
                             modifier = Modifier.size(16.dp),
                         )
                     }
-                    if (info.simpleLanguage != null) {
+                    info.simpleLanguage?.let {
                         Text(text = info.simpleLanguage.orEmpty())
                     }
                     if (info.pages != 0 && showPages) {
