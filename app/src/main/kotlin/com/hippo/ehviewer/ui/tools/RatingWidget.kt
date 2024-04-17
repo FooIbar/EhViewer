@@ -126,7 +126,7 @@ fun GalleryListCardRating(rating: Float, ratingSize: Dp, modifier: Modifier = Mo
     MetaRatingWidgetReuse(
         rating = rating,
         ratingSize = ratingSize,
-        ratingInterval = ratingSize / 12f,
+        ratingInterval = ratingSize / 16f,
         modifier = modifier,
     )
 }
