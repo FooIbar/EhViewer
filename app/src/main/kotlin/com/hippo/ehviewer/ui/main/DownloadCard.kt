@@ -32,7 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -123,14 +123,16 @@ fun DownloadCard(
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
-                        val ratingBasePadding = (LocalTextStyle.current.lineHeight.value.dp - dimensionResource(id = R.dimen.rating_size)) / 2
-                        GalleryListCardRating(
-                            rating = info.rating,
-                            modifier = Modifier.constrainAs(ratingRef) {
-                                start.linkTo(parent.start)
-                                bottom.linkTo(categoryRef.top)
-                            }.padding(top = ratingBasePadding - 2.dp, bottom = ratingBasePadding + 2.dp),
-                        )
+                        with(LocalDensity.current) {
+                            GalleryListCardRating(
+                                rating = info.rating,
+                                ratingSize = LocalTextStyle.current.fontSize.toDp(),
+                                modifier = Modifier.constrainAs(ratingRef) {
+                                    start.linkTo(parent.start)
+                                    bottom.linkTo(categoryRef.top, margin = 4.dp)
+                                },
+                            )
+                        }
                         val categoryColor = EhUtils.getCategoryColor(info.category)
                         val categoryText = EhUtils.getCategory(info.category).uppercase()
                         Text(

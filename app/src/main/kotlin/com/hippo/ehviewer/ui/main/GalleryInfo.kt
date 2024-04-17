@@ -37,7 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import arrow.core.Tuple7
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
@@ -71,7 +70,7 @@ private val constraintSet = ConstraintSet {
     }
     constrain(ratingRef) {
         start.linkTo(parent.start)
-        bottom.linkTo(categoryRef.top)
+        bottom.linkTo(categoryRef.top, margin = 4.dp)
     }
     constrain(categoryRef) {
         start.linkTo(parent.start)
@@ -131,11 +130,13 @@ fun GalleryInfoListItem(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                val ratingBasePadding = (LocalTextStyle.current.lineHeight.value.dp - dimensionResource(id = R.dimen.rating_size)) / 2
-                GalleryListCardRating(
-                    rating = info.rating,
-                    modifier = Modifier.layoutId(ratingRef).padding(top = ratingBasePadding - 2.dp, bottom = ratingBasePadding + 2.dp),
-                )
+                with(LocalDensity.current) {
+                    GalleryListCardRating(
+                        rating = info.rating,
+                        ratingSize = LocalTextStyle.current.fontSize.toDp(),
+                        modifier = Modifier.layoutId(ratingRef),
+                    )
+                }
                 val categoryColor = EhUtils.getCategoryColor(info.category)
                 val categoryText = EhUtils.getCategory(info.category).uppercase()
                 Text(

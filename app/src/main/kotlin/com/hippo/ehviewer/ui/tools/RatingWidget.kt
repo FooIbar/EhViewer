@@ -17,10 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
 import kotlin.math.roundToInt
 
 private val colorYellow800 = Color(0xfff9a825)
@@ -124,11 +122,11 @@ fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier
 }
 
 @Composable
-fun GalleryListCardRating(rating: Float, modifier: Modifier = Modifier) {
+fun GalleryListCardRating(rating: Float, ratingSize: Dp, modifier: Modifier = Modifier) {
     MetaRatingWidgetReuse(
         rating = rating,
-        ratingSize = dimensionResource(id = R.dimen.rating_size),
-        ratingInterval = dimensionResource(id = R.dimen.rating_interval),
+        ratingSize = ratingSize,
+        ratingInterval = ratingSize / 12f,
         modifier = modifier,
     )
 }
