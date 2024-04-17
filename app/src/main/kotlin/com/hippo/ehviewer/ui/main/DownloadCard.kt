@@ -34,7 +34,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -44,6 +43,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.ui.LocalTextMeasurer
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
 import com.hippo.ehviewer.util.FileUtils
@@ -185,10 +185,10 @@ fun DownloadCard(
 
                 // Make spacing consistent with gallery page
                 // The height of the action button should be 2 * height of Text composable + 1dp of vertical padding (2dp total)
-                val textMeasurer = rememberTextMeasurer()
-                val measuredHeight = with(LocalDensity.current) {
-                    textMeasurer.measure("", MaterialTheme.typography.labelLarge).size.height.toDp()
-                }
+                val textMeasurer = LocalTextMeasurer.current
+                val density = LocalDensity.current
+                val labelLarge = MaterialTheme.typography.labelLarge
+                val measuredHeight = remember(textMeasurer) { with(density) { textMeasurer.measure("", labelLarge).size.height.toDp() } }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.constrainAs(actionsRef) {
@@ -196,8 +196,7 @@ fun DownloadCard(
                         bottom.linkTo(parent.bottom)
                     }.height(measuredHeight * 2 + 2.dp),
                 ) {
-                    val running =
-                        downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
+                    val running = downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
                     val icon = remember {
                         movableContentOf<Boolean> {
                             Icon(

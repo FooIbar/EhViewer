@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.navigation.NavBackStackEntry
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.DialogState
@@ -42,6 +43,7 @@ inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -
             CompositionLocalProvider(
                 LocalDialogState provides dialogState,
                 LocalContentColor provides MaterialTheme.colorScheme.onBackground,
+                LocalTextMeasurer provides rememberTextMeasurer(),
             ) {
                 content()
             }
