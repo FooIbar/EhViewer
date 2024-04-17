@@ -94,6 +94,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                                 keepNoMediaFileStatus(downloadLocationState)
                             }
                         }.onFailure {
+                            logcat(it)
                             launchSnackBar(cannotGetDownloadLocation)
                         }
                     }
