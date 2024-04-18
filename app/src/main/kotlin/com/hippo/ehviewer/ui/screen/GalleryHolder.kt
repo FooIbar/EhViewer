@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
@@ -63,7 +64,7 @@ fun collectListThumbSizeAsState(): State<Dp> {
     val density = LocalDensity.current
     return Settings.listThumbSize.collectAsState {
         with(density) {
-            it.toDp() * 9
+            (it.toDp() * 9).coerceAtLeast(120.dp)
         }
     }
 }
