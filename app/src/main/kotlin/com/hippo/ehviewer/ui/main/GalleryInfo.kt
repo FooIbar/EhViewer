@@ -152,6 +152,8 @@ fun GalleryInfoListItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.layoutId(iconsRef),
                 ) {
+                    // PlaceHolder to reserve minimum height
+                    Text(text = "")
                     val download by DownloadManager.collectContainDownloadInfo(info.gid)
                     if (download) {
                         Icon(
@@ -168,15 +170,14 @@ fun GalleryInfoListItem(
                     }
                 }
                 Row(
-                    horizontalArrangement = if (info.favoriteName != null) Arrangement.spacedBy(6.dp) else Arrangement.Start,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.layoutId(favRef),
                 ) {
                     if (isInFavScene) {
-                        Text(
-                            text = info.favoriteNote.orEmpty(),
-                            fontStyle = FontStyle.Italic,
-                        )
+                        info.favoriteNote?.let {
+                            Text(text = it, fontStyle = FontStyle.Italic)
+                        }
                     } else {
                         val showFav by FavouriteStatusRouter.collectAsState(info) { it != NOT_FAVORITED }
                         if (showFav) {
@@ -185,7 +186,9 @@ fun GalleryInfoListItem(
                                 contentDescription = null,
                                 modifier = Modifier.size(localFontSize),
                             )
-                            Text(text = info.favoriteName.orEmpty())
+                            info.favoriteName?.let {
+                                Text(text = it)
+                            }
                         }
                     }
                 }
