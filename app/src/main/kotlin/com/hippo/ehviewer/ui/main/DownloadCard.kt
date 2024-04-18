@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
@@ -24,16 +23,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
+import arrow.core.Tuple9
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
@@ -42,6 +44,51 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
 import com.hippo.ehviewer.util.FileUtils
+
+private val ids = Tuple9(1, 2, 3, 4, 5, 6, 7, 8, 9)
+
+private val constraintSet = ConstraintSet {
+    val (
+        titleRef, uploaderRef, ratingRef, categoryRef, actionsRef, stateTextRef,
+        progressBarRef, progressTextRef, speedRef,
+    ) = createRefsFor(1, 2, 3, 4, 5, 6, 7, 8, 9)
+    constrain(titleRef) {
+        top.linkTo(parent.top)
+        width = Dimension.matchParent
+    }
+    constrain(uploaderRef) {
+        start.linkTo(parent.start)
+        bottom.linkTo(actionsRef.top)
+    }
+    constrain(ratingRef) {
+        start.linkTo(parent.start)
+        top.linkTo(actionsRef.top, 1.dp)
+    }
+    constrain(categoryRef) {
+        start.linkTo(parent.start)
+        bottom.linkTo(parent.bottom)
+    }
+    constrain(progressBarRef) {
+        bottom.linkTo(actionsRef.top)
+        width = Dimension.matchParent
+    }
+    constrain(progressTextRef) {
+        bottom.linkTo(progressBarRef.top)
+        start.linkTo(progressBarRef.start)
+    }
+    constrain(speedRef) {
+        bottom.linkTo(progressBarRef.top)
+        end.linkTo(progressBarRef.end)
+    }
+    constrain(actionsRef) {
+        end.linkTo(parent.end, (-4).dp)
+        bottom.linkTo(parent.bottom, (-4).dp)
+    }
+    constrain(stateTextRef) {
+        end.linkTo(parent.end)
+        bottom.linkTo(actionsRef.top)
+    }
+}
 
 @Composable
 fun DownloadCard(
@@ -91,18 +138,18 @@ fun DownloadCard(
                 DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_finish)
                 else -> null // Chill, will be removed soon
             }
-            ConstraintLayout(modifier = Modifier.padding(8.dp, 4.dp).fillMaxSize()) {
+            ConstraintLayout(
+                modifier = Modifier.padding(start = 8.dp, top = 2.dp, end = 4.dp, bottom = 4.dp).fillMaxSize(),
+                constraintSet = constraintSet,
+            ) {
                 val (
                     titleRef, uploaderRef, ratingRef, categoryRef, actionsRef, stateTextRef,
                     progressBarRef, progressTextRef, speedRef,
-                ) = createRefs()
+                ) = ids
                 Text(
                     text = EhUtils.getSuitableTitle(info),
                     maxLines = 2,
-                    modifier = Modifier.constrainAs(titleRef) {
-                        top.linkTo(parent.top)
-                        start.linkTo(parent.start)
-                    }.fillMaxWidth(),
+                    modifier = Modifier.layoutId(titleRef),
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleSmall,
                 )
@@ -111,29 +158,21 @@ fun DownloadCard(
                         info.uploader?.let {
                             Text(
                                 text = it,
-                                modifier = Modifier.constrainAs(uploaderRef) {
-                                    start.linkTo(parent.start)
-                                    bottom.linkTo(ratingRef.top)
-                                }.alpha(if (info.disowned) 0.5f else 1f),
+                                modifier = Modifier.layoutId(uploaderRef).alpha(if (info.disowned) 0.5f else 1f),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
                         GalleryListCardRating(
                             rating = info.rating,
-                            modifier = Modifier.constrainAs(ratingRef) {
-                                start.linkTo(parent.start)
-                                bottom.linkTo(categoryRef.top)
-                            },
+                            modifier = Modifier.layoutId(ratingRef),
                         )
                         val categoryColor = EhUtils.getCategoryColor(info.category)
                         val categoryText = EhUtils.getCategory(info.category).uppercase()
                         Text(
                             text = categoryText,
-                            modifier = Modifier.constrainAs(categoryRef) {
-                                start.linkTo(parent.start)
-                                bottom.linkTo(parent.bottom)
-                            }.clip(ShapeDefaults.Small).background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
+                            modifier = Modifier.layoutId(categoryRef).clip(ShapeDefaults.Small)
+                                .background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
                             color = if (Settings.harmonizeCategoryColor) Color.Unspecified else EhUtils.categoryTextColor,
                             textAlign = TextAlign.Center,
                         )
@@ -144,66 +183,43 @@ fun DownloadCard(
                     }
                     ProvideTextStyle(MaterialTheme.typography.labelMedium) {
                         if (total <= 0 || finished < 0) {
-                            LinearProgressIndicator(
-                                modifier = Modifier.constrainAs(progressBarRef) {
-                                    bottom.linkTo(actionsRef.top)
-                                }.fillMaxWidth(),
-                            )
+                            LinearProgressIndicator(modifier = Modifier.layoutId(progressBarRef))
                         } else {
                             LinearProgressIndicator(
                                 progress = { finished.toFloat() / total.toFloat() },
-                                modifier = Modifier.constrainAs(progressBarRef) {
-                                    bottom.linkTo(actionsRef.top)
-                                }.fillMaxWidth(),
+                                modifier = Modifier.layoutId(progressBarRef),
                             )
                             Text(
                                 text = "$finished/$total",
-                                modifier = Modifier.constrainAs(progressTextRef) {
-                                    bottom.linkTo(progressBarRef.top)
-                                    start.linkTo(progressBarRef.start)
-                                },
+                                modifier = Modifier.layoutId(progressTextRef),
                             )
                         }
                         Text(
                             text = FileUtils.humanReadableByteCount(speed.coerceAtLeast(0), false) + "/S",
-                            modifier = Modifier.constrainAs(speedRef) {
-                                bottom.linkTo(progressBarRef.top)
-                                end.linkTo(progressBarRef.end)
-                            },
+                            modifier = Modifier.layoutId(speedRef),
                         )
                     }
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.constrainAs(actionsRef) {
-                        end.linkTo(parent.end)
-                        bottom.linkTo(parent.bottom)
-                    },
-                ) {
-                    val running = downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
-                    val icon = remember {
-                        movableContentOf<Boolean> {
-                            Icon(imageVector = if (it) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = null)
-                        }
+                val running = downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
+                val icon = remember {
+                    movableContentOf<Boolean> {
+                        Icon(imageVector = if (it) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = null)
                     }
-                    if (selectMode) {
-                        Box(modifier = Modifier.minimumInteractiveComponentSize()) {
-                            icon(running)
-                        }
-                    } else {
-                        IconButton(onClick = if (running) onStop else onStart) {
-                            icon(running)
-                        }
+                }
+                if (selectMode) {
+                    Box(modifier = Modifier.layoutId(actionsRef).minimumInteractiveComponentSize()) {
+                        icon(running)
+                    }
+                } else {
+                    IconButton(onClick = if (running) onStop else onStart, modifier = Modifier.layoutId(actionsRef)) {
+                        icon(running)
                     }
                 }
                 if (stateText != null) {
                     Text(
                         text = stateText,
-                        modifier = Modifier.constrainAs(stateTextRef) {
-                            end.linkTo(parent.end, 16.dp)
-                            bottom.linkTo(actionsRef.top)
-                        },
-                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.layoutId(stateTextRef),
+                        style = MaterialTheme.typography.labelLarge,
                     )
                 }
             }
