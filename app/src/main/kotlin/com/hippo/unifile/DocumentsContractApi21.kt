@@ -33,10 +33,15 @@ object DocumentsContractApi21 {
 
     fun createDirectory(self: Uri, displayName: String) = createFile(self, DocumentsContract.Document.MIME_TYPE_DIR, displayName)
 
-    fun prepareTreeUri(treeUri: Uri?): Uri {
+    fun prepareTreeUri(treeUri: Uri): Uri {
+        val documentId = if (treeUri.pathSegments.size == 2) {
+            DocumentsContract.getTreeDocumentId(treeUri)
+        } else {
+            DocumentsContract.getDocumentId(treeUri)
+        }
         return DocumentsContract.buildDocumentUriUsingTree(
             treeUri,
-            DocumentsContract.getDocumentId(treeUri),
+            documentId,
         )
     }
 

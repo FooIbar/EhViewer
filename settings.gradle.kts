@@ -20,11 +20,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven("https://oss.sonatype.org/content/repositories/snapshots")
         maven("https://jitpack.io")
-        maven("https://androidx.dev/storage/compose-compiler/repository/")
-        // TODO: Remove on Compose 1.7.0-alpha07 release
-        maven("https://androidx.dev/snapshots/builds/11689537/artifacts/repository")
     }
 }
 
