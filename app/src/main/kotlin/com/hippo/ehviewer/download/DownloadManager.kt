@@ -25,7 +25,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.util.lerp
-import arrow.fx.coroutines.parMapNotNull
+import arrow.fx.coroutines.parMap
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -35,7 +35,6 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
-import com.hippo.ehviewer.spider.ComicInfo
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
@@ -538,41 +537,40 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     suspend fun readMetadataFromLocal() {
-        val mutex = Mutex()
-        val cache = mutableMapOf<DownloadInfo, ComicInfo?>()
+        val galleryMutex = Mutex()
+        val galleryInfoList = mutableListOf<BaseGalleryInfo>()
+        val artistMutex = Mutex()
+        val artistInfoList = mutableListOf<Pair<Long, List<DownloadArtist>>>()
 
-        val galleryInfoList = allInfoList.filter { it.pages == 0 || it.simpleTags == null }.parMapNotNull(concurrency = 5) { info ->
+        allInfoList.mapNotNull {
+            val updateGallery = it.pages == 0 || it.simpleTags == null
+            val updateArtist = it.artistInfoList.isEmpty()
+            if (updateGallery || updateArtist) {
+                Triple(it, updateGallery, updateArtist)
+            } else {
+                null
+            }
+        }.parMap(concurrency = 5) { (info, updateGallery, updateArtist) ->
             info.downloadDir?.run {
-                val comicInfo = findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }?.also { mutex.withLock { cache[info] = it } }
+                val comicInfo = findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }
                 if (comicInfo != null) {
-                    info.pages = comicInfo.pageCount
-                    info.simpleTags = comicInfo.toSimpleTags()
-                    info.galleryInfo
+                    if (updateGallery) {
+                        info.pages = comicInfo.pageCount
+                        info.simpleTags = comicInfo.toSimpleTags()
+                        galleryMutex.withLock { galleryInfoList.add(info.galleryInfo) }
+                    }
+                    if (updateArtist && comicInfo.penciller != null) {
+                        info.artistInfoList = DownloadArtist.from(info.gid, comicInfo.penciller)
+                        artistMutex.withLock { artistInfoList.add(info.gid to info.artistInfoList) }
+                    }
                 } else if (info.pages == 0) {
                     findFile(SPIDER_INFO_FILENAME)?.let {
                         readCompatFromUniFile(it)?.run {
                             info.pages = pages
-                            info.galleryInfo
+                            galleryMutex.withLock { galleryInfoList.add(info.galleryInfo) }
                         }
                     }
-                } else {
-                    null
                 }
-            }
-        }
-        val artistInfoList = allInfoList.filter { it.artistInfoList.isNotEmpty() }.parMapNotNull(concurrency = 5) { info ->
-            // Discriminate between absence of caching and caching of null values
-            val comicInfo = if (cache.containsKey(info)) {
-                cache[info]
-            } else {
-                info.downloadDir?.findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }
-            }
-            if (comicInfo != null) {
-                comicInfo.penciller?.let {
-                    info.gid to DownloadArtist.from(info.gid, it)
-                }
-            } else {
-                null
             }
         }
 
