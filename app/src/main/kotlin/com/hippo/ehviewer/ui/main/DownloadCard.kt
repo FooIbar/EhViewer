@@ -127,7 +127,7 @@ fun DownloadCard(
                         GalleryListCardRating(
                             rating = info.rating,
                             ratingSize = with(LocalDensity.current) {
-                                LocalTextStyle.current.fontSize.toDp()
+                                LocalTextStyle.current.fontSize.toDp() * 1.1f
                             },
                             modifier = Modifier.constrainAs(ratingRef) {
                                 start.linkTo(parent.start)

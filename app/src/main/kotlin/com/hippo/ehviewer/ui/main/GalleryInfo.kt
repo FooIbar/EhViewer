@@ -123,6 +123,9 @@ fun GalleryInfoListItem(
                 style = MaterialTheme.typography.titleSmall,
             )
             ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                val localFontSize = with(LocalDensity.current) {
+                    LocalTextStyle.current.fontSize.toDp()
+                }
                 info.uploader?.let {
                     Text(
                         text = it,
@@ -133,9 +136,7 @@ fun GalleryInfoListItem(
                 }
                 GalleryListCardRating(
                     rating = info.rating,
-                    ratingSize = with(LocalDensity.current) {
-                        LocalTextStyle.current.fontSize.toDp()
-                    },
+                    ratingSize = localFontSize * 1.1f,
                     modifier = Modifier.layoutId(ratingRef),
                 )
                 val categoryColor = EhUtils.getCategoryColor(info.category)
@@ -156,7 +157,7 @@ fun GalleryInfoListItem(
                         Icon(
                             Icons.Default.Download,
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(localFontSize),
                         )
                     }
                     info.simpleLanguage?.let {
@@ -182,7 +183,7 @@ fun GalleryInfoListItem(
                             Icon(
                                 Icons.Default.Favorite,
                                 contentDescription = null,
-                                modifier = Modifier.size(16.dp),
+                                modifier = Modifier.size(localFontSize),
                             )
                             Text(text = info.favoriteName.orEmpty())
                         }
