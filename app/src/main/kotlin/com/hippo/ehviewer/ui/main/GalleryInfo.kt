@@ -160,7 +160,7 @@ fun GalleryInfoListItem(
                         )
                     }
                     info.simpleLanguage?.let {
-                        Text(text = info.simpleLanguage.orEmpty())
+                        Text(text = it)
                     }
                     if (info.pages != 0 && showPages) {
                         Text(text = "${info.pages}P")
