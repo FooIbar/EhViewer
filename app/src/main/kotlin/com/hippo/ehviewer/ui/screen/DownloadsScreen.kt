@@ -55,6 +55,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -190,7 +191,11 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val artistList = remember(downloadsCountGroupByArtist) {
         downloadsCountGroupByArtist.keys.mapNotNull { it?.let { it to it } }
     }
-    val labelList by lazy { DownloadManager.labelList.map { it.id!! to it.label } }
+    val labelList by remember {
+        derivedStateOf {
+            DownloadManager.labelList.map { it.id!! to it.label }
+        }
+    }
     val groupList = when (filterMode) {
         DownloadsFilterMode.CUSTOM -> labelList
         DownloadsFilterMode.ARTIST -> artistList
