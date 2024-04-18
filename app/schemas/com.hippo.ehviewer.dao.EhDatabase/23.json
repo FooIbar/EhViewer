@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 23,
-    "identityHash": "621c7ff29541a116777f5957d6ed0281",
+    "identityHash": "7d1cfc4e9a9d506a73eb0520ae414d25",
     "entities": [
       {
         "tableName": "GALLERIES",
@@ -244,7 +244,7 @@
       },
       {
         "tableName": "DOWNLOAD_ARTISTS",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`GID` INTEGER NOT NULL, `ARTIST` TEXT NOT NULL, `_id` INTEGER, PRIMARY KEY(`_id`), FOREIGN KEY(`GID`) REFERENCES `DOWNLOADS`(`GID`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`GID` INTEGER NOT NULL, `ARTIST` TEXT NOT NULL, PRIMARY KEY(`GID`, `ARTIST`), FOREIGN KEY(`GID`) REFERENCES `DOWNLOADS`(`GID`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "gid",
@@ -257,32 +257,16 @@
             "columnName": "ARTIST",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "id",
-            "columnName": "_id",
-            "affinity": "INTEGER",
-            "notNull": false
           }
         ],
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "_id"
+            "GID",
+            "ARTIST"
           ]
         },
-        "indices": [
-          {
-            "name": "index_DOWNLOAD_ARTISTS_GID_ARTIST",
-            "unique": false,
-            "columnNames": [
-              "GID",
-              "ARTIST"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_DOWNLOAD_ARTISTS_GID_ARTIST` ON `${TABLE_NAME}` (`GID`, `ARTIST`)"
-          }
-        ],
+        "indices": [],
         "foreignKeys": [
           {
             "table": "DOWNLOADS",
@@ -574,7 +558,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '621c7ff29541a116777f5957d6ed0281')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7d1cfc4e9a9d506a73eb0520ae414d25')"
     ]
   }
 }
