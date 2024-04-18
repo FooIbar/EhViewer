@@ -174,6 +174,8 @@ fun GalleryInfoListItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.layoutId(favRef),
                 ) {
+                    // PlaceHolder to reserve minimum height
+                    Text(text = "")
                     if (isInFavScene) {
                         info.favoriteNote?.let {
                             Text(text = it, fontStyle = FontStyle.Italic)
