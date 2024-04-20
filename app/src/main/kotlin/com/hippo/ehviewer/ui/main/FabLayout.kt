@@ -169,15 +169,6 @@ fun FabLayout(
                     }
                 }
             }
-            FloatingActionButton(onClick = { onExpandChanged(!updatedExpanded) }) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = null,
-                    modifier = Modifier.graphicsLayer {
-                        rotationZ = lerp(-135f, 0f, animatedProgress)
-                    },
-                )
-            }
             secondaryFab.run {
                 forEachIndexed { index, (imageVector, onClick) ->
                     SmallFloatingActionButton(
@@ -193,13 +184,22 @@ fun FabLayout(
                             val placeable = measurable.measure(constraints)
                             layout(placeable.width, placeable.height) {
                                 val distance = lerp(0, 150 * (size - index) + 50, animatedProgress)
-                                placeable.placeRelative(0, -distance, -(size - index).toFloat())
+                                placeable.placeRelative(0, -distance)
                             }
                         },
                     ) {
                         Icon(imageVector = imageVector, contentDescription = null)
                     }
                 }
+            }
+            FloatingActionButton(onClick = { onExpandChanged(!updatedExpanded) }) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = null,
+                    modifier = Modifier.graphicsLayer {
+                        rotationZ = lerp(-135f, 0f, animatedProgress)
+                    },
+                )
             }
         }
     }
