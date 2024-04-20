@@ -667,6 +667,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
             modifier = Modifier.graphicsLayer {
                 scaleX = animatedSearchLayout
                 scaleY = animatedSearchLayout
+                alpha = animatedSearchLayout
             },
             data = data,
             contentModifier = Modifier.nestedScroll(searchBarConnection),
