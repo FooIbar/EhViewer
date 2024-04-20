@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -30,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.hippo.ehviewer.ui.tools.PredictiveBackEasing
@@ -176,12 +177,9 @@ fun FabLayout(
                                     onExpandChanged(false)
                                 }
                             },
-                            modifier = Modifier.padding(20.dp).layout { measurable, constraints ->
-                                val placeable = measurable.measure(constraints)
-                                layout(placeable.width, placeable.height) {
-                                    val distance = lerp(0, 150 * (size - index) + 50, animatedProgress)
-                                    placeable.placeRelative(0, -distance)
-                                }
+                            modifier = Modifier.padding(20.dp).offset {
+                                val distance = lerp(0, 150 * (size - index) + 50, animatedProgress)
+                                IntOffset(0, -distance)
                             },
                         ) {
                             Icon(imageVector = imageVector, contentDescription = null)
