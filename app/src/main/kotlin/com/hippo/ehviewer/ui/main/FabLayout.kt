@@ -8,12 +8,12 @@ import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FloatingActionButton
@@ -147,32 +147,25 @@ fun FabLayout(
         modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(16.dp).snackBarPadding(),
         contentAlignment = Alignment.BottomEnd,
     ) {
-        BoxWithConstraints(
-            modifier = Modifier.graphicsLayer {
-                rotationZ = lerp(-90f, 0f, appearState)
-                scaleX = appearState
-                scaleY = appearState
-            },
-            contentAlignment = Alignment.BottomCenter,
-        ) {
-            val animatedProgress by state.expandProgress.asState()
-            PredictiveBackHandler(updatedExpanded) { flow ->
-                try {
-                    state.mutatorMutex.mutate(MutatePriority.UserInput) {
-                        flow.collect {
-                            val eased = PredictiveBackEasing.transform(it.progress)
-                            state.expandProgress.snapTo(1 - eased)
-                        }
-                    }
-                    onExpandChanged(false)
-                } catch (e: CancellationException) {
-                    coroutineScope.launch {
-                        state.expand()
+        val animatedProgress by state.expandProgress.asState()
+        PredictiveBackHandler(updatedExpanded) { flow ->
+            try {
+                state.mutatorMutex.mutate(MutatePriority.UserInput) {
+                    flow.collect {
+                        val eased = PredictiveBackEasing.transform(it.progress)
+                        state.expandProgress.snapTo(1 - eased)
                     }
                 }
+                onExpandChanged(false)
+            } catch (e: CancellationException) {
+                coroutineScope.launch {
+                    state.expand()
+                }
             }
+        }
+        if (!state.appearProgress.isRunning && !updatedHidden) {
             Box(
-                modifier = Modifier.size(56.dp, maxHeight).graphicsLayer { alpha = animatedProgress },
+                modifier = Modifier.width(56.dp).fillMaxHeight().graphicsLayer { alpha = animatedProgress },
                 contentAlignment = Alignment.BottomCenter,
             ) {
                 with(secondaryFab) {
@@ -199,15 +192,22 @@ fun FabLayout(
                     }
                 }
             }
-            FloatingActionButton(onClick = { onExpandChanged(!updatedExpanded) }) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = null,
-                    modifier = Modifier.graphicsLayer {
-                        rotationZ = lerp(-135f, 0f, animatedProgress)
-                    },
-                )
-            }
+        }
+        FloatingActionButton(
+            onClick = { onExpandChanged(!updatedExpanded) },
+            modifier = Modifier.graphicsLayer {
+                rotationZ = lerp(-90f, 0f, appearState)
+                scaleX = appearState
+                scaleY = appearState
+            },
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = null,
+                modifier = Modifier.graphicsLayer {
+                    rotationZ = lerp(-135f, 0f, animatedProgress)
+                },
+            )
         }
     }
 }
