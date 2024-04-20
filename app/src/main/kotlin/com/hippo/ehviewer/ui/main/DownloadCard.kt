@@ -101,127 +101,119 @@ fun DownloadCard(
     selectMode: Boolean,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-) {
-    CrystalCard(
-        modifier = modifier,
-        onClick = onClick,
-        onLongClick = onLongClick,
-        interactionSource = interactionSource,
-    ) {
-        Row {
-            val thumb = remember {
-                movableContentOf<DownloadInfo> {
-                    EhAsyncCropThumb(
-                        key = it,
-                        modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
+) = CrystalCard(modifier = modifier, onClick = onClick, onLongClick = onLongClick, interactionSource = interactionSource) {
+    Row {
+        val thumb = remember {
+            movableContentOf<DownloadInfo> {
+                EhAsyncCropThumb(
+                    key = it,
+                    modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
+                )
+            }
+        }
+        if (selectMode) {
+            Card {
+                thumb(info)
+            }
+        } else {
+            Card(onClick = onThumbClick) {
+                thumb(info)
+            }
+        }
+        val stateFailed = stringResource(R.string.download_state_failed)
+        val stateFailed2 = stringResource(R.string.download_state_failed_2, info.legacy)
+        val downloadState by DownloadManager.collectDownloadState(info.gid)
+        val stateText = when (downloadState) {
+            DownloadInfo.STATE_NONE -> stringResource(R.string.download_state_none)
+            DownloadInfo.STATE_WAIT -> stringResource(R.string.download_state_wait)
+            DownloadInfo.STATE_DOWNLOAD -> null
+            DownloadInfo.STATE_FAILED -> if (info.legacy <= 0) stateFailed else stateFailed2
+            DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_finish)
+            else -> null // Chill, will be removed soon
+        }
+        ConstraintLayout(
+            modifier = Modifier.padding(start = 8.dp, top = 2.dp, end = 4.dp, bottom = 4.dp).fillMaxSize(),
+            constraintSet = constraintSet,
+        ) {
+            val (
+                titleRef, uploaderRef, ratingRef, categoryRef, actionsRef, stateTextRef,
+                progressBarRef, progressTextRef, speedRef,
+            ) = ids
+            Text(
+                text = EhUtils.getSuitableTitle(info),
+                maxLines = 2,
+                modifier = Modifier.layoutId(titleRef),
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.titleSmall,
+            )
+            if (downloadState != DownloadInfo.STATE_DOWNLOAD) {
+                ProvideTextStyle(MaterialTheme.typography.labelLarge) {
+                    info.uploader?.let {
+                        Text(
+                            text = it,
+                            modifier = Modifier.layoutId(uploaderRef).alpha(if (info.disowned) 0.5f else 1f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    GalleryListCardRating(
+                        rating = info.rating,
+                        modifier = Modifier.layoutId(ratingRef),
                     )
+                    val categoryColor = EhUtils.getCategoryColor(info.category)
+                    val categoryText = EhUtils.getCategory(info.category).uppercase()
+                    Text(
+                        text = categoryText,
+                        modifier = Modifier.layoutId(categoryRef).clip(ShapeDefaults.Small)
+                            .background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
+                        color = if (Settings.harmonizeCategoryColor) Color.Unspecified else EhUtils.categoryTextColor,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            } else {
+                val (total, finished, speed) = DownloadManager.updatedDownloadInfo(info) {
+                    Triple(total, finished, speed)
+                }
+                ProvideTextStyle(MaterialTheme.typography.labelMedium) {
+                    if (total <= 0 || finished < 0) {
+                        LinearProgressIndicator(modifier = Modifier.layoutId(progressBarRef))
+                    } else {
+                        LinearProgressIndicator(
+                            progress = { finished.toFloat() / total.toFloat() },
+                            modifier = Modifier.layoutId(progressBarRef),
+                        )
+                        Text(
+                            text = "$finished/$total",
+                            modifier = Modifier.layoutId(progressTextRef),
+                        )
+                    }
+                    Text(
+                        text = FileUtils.humanReadableByteCount(speed.coerceAtLeast(0), false) + "/S",
+                        modifier = Modifier.layoutId(speedRef),
+                    )
+                }
+            }
+            val running = downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
+            val icon = remember {
+                movableContentOf<Boolean> {
+                    Icon(imageVector = if (it) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = null)
                 }
             }
             if (selectMode) {
-                Card {
-                    thumb(info)
+                Box(modifier = Modifier.layoutId(actionsRef).minimumInteractiveComponentSize()) {
+                    icon(running)
                 }
             } else {
-                Card(onClick = onThumbClick) {
-                    thumb(info)
+                IconButton(onClick = if (running) onStop else onStart, modifier = Modifier.layoutId(actionsRef)) {
+                    icon(running)
                 }
             }
-
-            val stateFailed = stringResource(R.string.download_state_failed)
-            val stateFailed2 = stringResource(R.string.download_state_failed_2, info.legacy)
-            val downloadState by DownloadManager.collectDownloadState(info.gid)
-            val stateText = when (downloadState) {
-                DownloadInfo.STATE_NONE -> stringResource(R.string.download_state_none)
-                DownloadInfo.STATE_WAIT -> stringResource(R.string.download_state_wait)
-                DownloadInfo.STATE_DOWNLOAD -> null
-                DownloadInfo.STATE_FAILED -> if (info.legacy <= 0) stateFailed else stateFailed2
-                DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_finish)
-                else -> null // Chill, will be removed soon
-            }
-            ConstraintLayout(
-                modifier = Modifier.padding(start = 8.dp, top = 2.dp, end = 4.dp, bottom = 4.dp).fillMaxSize(),
-                constraintSet = constraintSet,
-            ) {
-                val (
-                    titleRef, uploaderRef, ratingRef, categoryRef, actionsRef, stateTextRef,
-                    progressBarRef, progressTextRef, speedRef,
-                ) = ids
+            if (stateText != null) {
                 Text(
-                    text = EhUtils.getSuitableTitle(info),
-                    maxLines = 2,
-                    modifier = Modifier.layoutId(titleRef),
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleSmall,
+                    text = stateText,
+                    modifier = Modifier.layoutId(stateTextRef),
+                    style = MaterialTheme.typography.labelLarge,
                 )
-                if (downloadState != DownloadInfo.STATE_DOWNLOAD) {
-                    ProvideTextStyle(MaterialTheme.typography.labelLarge) {
-                        info.uploader?.let {
-                            Text(
-                                text = it,
-                                modifier = Modifier.layoutId(uploaderRef).alpha(if (info.disowned) 0.5f else 1f),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                        GalleryListCardRating(
-                            rating = info.rating,
-                            modifier = Modifier.layoutId(ratingRef),
-                        )
-                        val categoryColor = EhUtils.getCategoryColor(info.category)
-                        val categoryText = EhUtils.getCategory(info.category).uppercase()
-                        Text(
-                            text = categoryText,
-                            modifier = Modifier.layoutId(categoryRef).clip(ShapeDefaults.Small)
-                                .background(categoryColor).padding(vertical = 2.dp, horizontal = 8.dp),
-                            color = if (Settings.harmonizeCategoryColor) Color.Unspecified else EhUtils.categoryTextColor,
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                } else {
-                    val (total, finished, speed) = DownloadManager.updatedDownloadInfo(info) {
-                        Triple(total, finished, speed)
-                    }
-                    ProvideTextStyle(MaterialTheme.typography.labelMedium) {
-                        if (total <= 0 || finished < 0) {
-                            LinearProgressIndicator(modifier = Modifier.layoutId(progressBarRef))
-                        } else {
-                            LinearProgressIndicator(
-                                progress = { finished.toFloat() / total.toFloat() },
-                                modifier = Modifier.layoutId(progressBarRef),
-                            )
-                            Text(
-                                text = "$finished/$total",
-                                modifier = Modifier.layoutId(progressTextRef),
-                            )
-                        }
-                        Text(
-                            text = FileUtils.humanReadableByteCount(speed.coerceAtLeast(0), false) + "/S",
-                            modifier = Modifier.layoutId(speedRef),
-                        )
-                    }
-                }
-                val running = downloadState == DownloadInfo.STATE_WAIT || downloadState == DownloadInfo.STATE_DOWNLOAD
-                val icon = remember {
-                    movableContentOf<Boolean> {
-                        Icon(imageVector = if (it) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = null)
-                    }
-                }
-                if (selectMode) {
-                    Box(modifier = Modifier.layoutId(actionsRef).minimumInteractiveComponentSize()) {
-                        icon(running)
-                    }
-                } else {
-                    IconButton(onClick = if (running) onStop else onStart, modifier = Modifier.layoutId(actionsRef)) {
-                        icon(running)
-                    }
-                }
-                if (stateText != null) {
-                    Text(
-                        text = stateText,
-                        modifier = Modifier.layoutId(stateTextRef),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                }
             }
         }
     }
