@@ -195,8 +195,6 @@ fun FabLayout(
                                 val distance = lerp(0, 150 * (size - index) + 50, animatedProgress)
                                 placeable.placeRelative(0, -distance, -(size - index).toFloat())
                             }
-                        }.graphicsLayer {
-                            alpha = animatedProgress
                         },
                     ) {
                         Icon(imageVector = imageVector, contentDescription = null)
