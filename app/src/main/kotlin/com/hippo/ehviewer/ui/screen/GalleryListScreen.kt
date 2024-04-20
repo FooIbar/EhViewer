@@ -602,7 +602,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         val layoutDirection = LocalLayoutDirection.current
         val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
         val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
-        Column(
+        ElevatedCard(
             modifier = Modifier.graphicsLayer {
                 scaleX = 1 - animatedSearchLayout
                 scaleY = 1 - animatedSearchLayout
@@ -612,29 +612,27 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 start = contentPadding.calculateStartPadding(layoutDirection) + marginH,
                 end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
                 bottom = 8.dp,
-            ),
+            ).padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v)),
         ) {
-            ElevatedCard(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
-                Column(
-                    modifier = Modifier.padding(
-                        horizontal = dimensionResource(id = R.dimen.search_category_padding_h),
-                        vertical = dimensionResource(id = R.dimen.search_category_padding_v),
-                    ).fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.search_image),
-                        modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    ImageSearch(
-                        image = imageUri,
-                        onSelectImage = {
-                            launch { imageUri = pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly) }
-                        },
-                    )
-                }
+            Column(
+                modifier = Modifier.padding(
+                    horizontal = dimensionResource(id = R.dimen.search_category_padding_h),
+                    vertical = dimensionResource(id = R.dimen.search_category_padding_v),
+                ).fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = stringResource(id = R.string.search_image),
+                    modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                ImageSearch(
+                    image = imageUri,
+                    onSelectImage = {
+                        launch { imageUri = pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly) }
+                    },
+                )
             }
         }
 
