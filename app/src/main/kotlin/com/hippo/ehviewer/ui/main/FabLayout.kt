@@ -8,10 +8,12 @@ import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FloatingActionButton
@@ -145,13 +147,13 @@ fun FabLayout(
         modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(16.dp).snackBarPadding(),
         contentAlignment = Alignment.BottomEnd,
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier.graphicsLayer {
                 rotationZ = lerp(-90f, 0f, appearState)
                 scaleX = appearState
                 scaleY = appearState
             },
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.BottomCenter,
         ) {
             val animatedProgress by state.expandProgress.asState()
             PredictiveBackHandler(updatedExpanded) { flow ->
@@ -169,26 +171,31 @@ fun FabLayout(
                     }
                 }
             }
-            secondaryFab.run {
-                forEachIndexed { index, (imageVector, onClick) ->
-                    SmallFloatingActionButton(
-                        onClick = {
-                            coroutineScope.launchIO {
-                                runSuspendCatching {
-                                    onClick()
+            Box(
+                modifier = Modifier.size(56.dp, maxHeight).graphicsLayer { alpha = animatedProgress },
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                with(secondaryFab) {
+                    forEachIndexed { index, (imageVector, onClick) ->
+                        SmallFloatingActionButton(
+                            onClick = {
+                                coroutineScope.launchIO {
+                                    runSuspendCatching {
+                                        onClick()
+                                    }
+                                    onExpandChanged(false)
                                 }
-                                onExpandChanged(false)
-                            }
-                        },
-                        modifier = Modifier.layout { measurable, constraints ->
-                            val placeable = measurable.measure(constraints)
-                            layout(placeable.width, placeable.height) {
-                                val distance = lerp(0, 150 * (size - index) + 50, animatedProgress)
-                                placeable.placeRelative(0, -distance)
-                            }
-                        },
-                    ) {
-                        Icon(imageVector = imageVector, contentDescription = null)
+                            },
+                            modifier = Modifier.layout { measurable, constraints ->
+                                val placeable = measurable.measure(constraints)
+                                layout(placeable.width, placeable.height) {
+                                    val distance = lerp(0, 150 * (size - index) + 50, animatedProgress)
+                                    placeable.placeRelative(0, -distance)
+                                }
+                            },
+                        ) {
+                            Icon(imageVector = imageVector, contentDescription = null)
+                        }
                     }
                 }
             }
