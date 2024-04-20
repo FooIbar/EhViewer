@@ -618,7 +618,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 .graphicsLayer {
                     scaleX = 1 - animatedSearchLayout
                     scaleY = 1 - animatedSearchLayout
-                    alpha = 1 - animatedSearchLayout
                 },
         ) {
             ElevatedCard(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
@@ -668,7 +667,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
             modifier = Modifier.graphicsLayer {
                 scaleX = animatedSearchLayout
                 scaleY = animatedSearchLayout
-                alpha = animatedSearchLayout
             },
             data = data,
             contentModifier = Modifier.nestedScroll(searchBarConnection),
