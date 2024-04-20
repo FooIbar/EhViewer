@@ -9,11 +9,9 @@ import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FloatingActionButton
@@ -142,31 +140,30 @@ fun FabLayout(
             },
         )
     }
-    val appearState by state.appearProgress.asState()
-    Box(
-        modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(16.dp).snackBarPadding(),
-        contentAlignment = Alignment.BottomEnd,
-    ) {
-        val animatedProgress by state.expandProgress.asState()
-        PredictiveBackHandler(updatedExpanded) { flow ->
-            try {
-                state.mutatorMutex.mutate(MutatePriority.UserInput) {
-                    flow.collect {
-                        val eased = PredictiveBackEasing.transform(it.progress)
-                        state.expandProgress.snapTo(1 - eased)
-                    }
-                }
-                onExpandChanged(false)
-            } catch (e: CancellationException) {
-                coroutineScope.launch {
-                    state.expand()
+    val animatedProgress by state.expandProgress.asState()
+    PredictiveBackHandler(updatedExpanded) { flow ->
+        try {
+            state.mutatorMutex.mutate(MutatePriority.UserInput) {
+                flow.collect {
+                    val eased = PredictiveBackEasing.transform(it.progress)
+                    state.expandProgress.snapTo(1 - eased)
                 }
             }
+            onExpandChanged(false)
+        } catch (e: CancellationException) {
+            coroutineScope.launch {
+                state.expand()
+            }
         }
+    }
+    Box(
+        modifier = Modifier.fillMaxSize().navigationBarsPadding().snackBarPadding(),
+        contentAlignment = Alignment.BottomEnd,
+    ) {
         if (!state.appearProgress.isRunning && !updatedHidden) {
             Box(
-                modifier = Modifier.width(56.dp).fillMaxHeight().graphicsLayer { alpha = animatedProgress },
-                contentAlignment = Alignment.BottomCenter,
+                modifier = Modifier.fillMaxSize().graphicsLayer { alpha = animatedProgress },
+                contentAlignment = Alignment.BottomEnd,
             ) {
                 with(secondaryFab) {
                     forEachIndexed { index, (imageVector, onClick) ->
@@ -179,7 +176,7 @@ fun FabLayout(
                                     onExpandChanged(false)
                                 }
                             },
-                            modifier = Modifier.layout { measurable, constraints ->
+                            modifier = Modifier.padding(20.dp).layout { measurable, constraints ->
                                 val placeable = measurable.measure(constraints)
                                 layout(placeable.width, placeable.height) {
                                     val distance = lerp(0, 150 * (size - index) + 50, animatedProgress)
@@ -193,9 +190,10 @@ fun FabLayout(
                 }
             }
         }
+        val appearState by state.appearProgress.asState()
         FloatingActionButton(
             onClick = { onExpandChanged(!updatedExpanded) },
-            modifier = Modifier.graphicsLayer {
+            modifier = Modifier.padding(16.dp).graphicsLayer {
                 rotationZ = lerp(-90f, 0f, appearState)
                 scaleX = appearState
                 scaleY = appearState
