@@ -98,7 +98,7 @@ okio-jvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
 
 photoview = "com.github.chrisbanes:PhotoView:2.3.0"
 
-reorderable = "sh.calvin.reorderable:reorderable:1.5.0"
+reorderable = "sh.calvin.reorderable:reorderable:1.5.1"
 
 serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
