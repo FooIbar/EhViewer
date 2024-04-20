@@ -608,17 +608,18 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
         Column(
             modifier = Modifier.imePadding().verticalScroll(rememberScrollState())
+                .graphicsLayer {
+                    scaleX = 1 - animatedSearchLayout
+                    scaleY = 1 - animatedSearchLayout
+                    alpha = 1 - animatedSearchLayout
+                }
                 .padding(
                     top = contentPadding.calculateTopPadding() + marginV,
                     start = contentPadding.calculateStartPadding(layoutDirection) + marginH,
                     end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
                     bottom = 8.dp,
                 )
-                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
-                .graphicsLayer {
-                    scaleX = 1 - animatedSearchLayout
-                    scaleY = 1 - animatedSearchLayout
-                },
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
         ) {
             ElevatedCard(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                 Column(
