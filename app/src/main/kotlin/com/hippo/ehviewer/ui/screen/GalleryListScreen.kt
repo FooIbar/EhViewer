@@ -17,20 +17,16 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
@@ -607,19 +603,16 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
         val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
         Column(
-            modifier = Modifier.imePadding().verticalScroll(rememberScrollState())
-                .graphicsLayer {
-                    scaleX = 1 - animatedSearchLayout
-                    scaleY = 1 - animatedSearchLayout
-                    alpha = 1 - animatedSearchLayout
-                }
-                .padding(
-                    top = contentPadding.calculateTopPadding() + marginV,
-                    start = contentPadding.calculateStartPadding(layoutDirection) + marginH,
-                    end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
-                    bottom = 8.dp,
-                )
-                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
+            modifier = Modifier.graphicsLayer {
+                scaleX = 1 - animatedSearchLayout
+                scaleY = 1 - animatedSearchLayout
+                alpha = 1 - animatedSearchLayout
+            }.padding(
+                top = contentPadding.calculateTopPadding() + marginV,
+                start = contentPadding.calculateStartPadding(layoutDirection) + marginH,
+                end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
+                bottom = 8.dp,
+            ),
         ) {
             ElevatedCard(modifier = Modifier.padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v))) {
                 Column(
