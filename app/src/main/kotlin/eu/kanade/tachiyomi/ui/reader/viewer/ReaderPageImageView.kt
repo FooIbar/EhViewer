@@ -226,7 +226,6 @@ open class ReaderPageImageView @JvmOverloads constructor(
         setDoubleTapZoomDuration(config.zoomDuration.getSystemScaledDuration())
         setMinimumScaleType(config.minimumScaleType)
         setMinimumDpi(1) // Just so that very small image will be fit for initial load
-        setCropBorders(config.cropBorders)
         setOnImageEventListener {
             setupZoom(config)
             if (isVisibleOnScreen()) landscapeZoom(true)
