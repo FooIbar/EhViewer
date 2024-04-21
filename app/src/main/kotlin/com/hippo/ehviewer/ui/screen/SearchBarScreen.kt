@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -307,9 +306,11 @@ fun SearchBarScreen(
             activeState.Anchor()
             filter?.invoke()
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime)
-                    .only(WindowInsetsSides.Bottom).asPaddingValues(),
+                modifier = Modifier.fillMaxSize()
+                    .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime).only(WindowInsetsSides.Bottom)),
+                // Workaround for https://issuetracker.google.com/332939169
+                // contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime)
+                //     .only(WindowInsetsSides.Bottom).asPaddingValues(),
             ) {
                 // Workaround for prepending before the first item
                 item {}
