@@ -803,7 +803,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         if (showBottomSheet && galleryDetail != null) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
-                windowInsets = WindowInsets(0, 0, 0, 0),
+                contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
             ) {
                 GalleryInfoBottomSheet(galleryDetail, navigator)
             }

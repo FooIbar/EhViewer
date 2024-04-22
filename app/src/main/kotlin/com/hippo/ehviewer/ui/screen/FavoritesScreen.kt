@@ -27,7 +27,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,7 +46,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
@@ -212,10 +210,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
         }
     }
 
-    val refreshState = rememberPullToRefreshState {
-        data.loadState.refresh is LoadState.NotLoading
-    }
-
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
@@ -231,7 +225,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
             fabHidden = true
         },
         onSearchHidden = { fabHidden = false },
-        refreshState = refreshState,
         tagNamespace = !isLocalFav,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
@@ -320,7 +313,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     )
                 }
             },
-            refreshState = refreshState,
+            searchBarOffsetY = { searchBarOffsetY },
             scrollToTopOnRefresh = urlBuilder.favCat != FavListUrlBuilder.FAV_CAT_LOCAL,
             onRefresh = { refresh() },
             onLoading = { searchBarOffsetY = 0 },
