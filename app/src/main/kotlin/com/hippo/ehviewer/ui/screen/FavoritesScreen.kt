@@ -110,7 +110,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val favCatName = remember(urlBuilder) {
         when (val favCat = urlBuilder.favCat) {
             in 0..9 -> Settings.favCat[favCat]
-            FavListUrlBuilder.FAV_CAT_LOCAL -> localFavName
+            FavListUrlBuilder.FAV_CAT_LOCAL -> localFavName.also { searchBarOffsetY = 0 }
             else -> cloudFavName
         }
     }
