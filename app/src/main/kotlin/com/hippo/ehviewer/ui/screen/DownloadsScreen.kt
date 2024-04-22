@@ -131,7 +131,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     var sortMode by Settings.downloadSortMode.asMutableState()
     var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
-    var searchBarOffsetY by remember(filterState.label) { mutableIntStateOf(0) }
+    var searchBarOffsetY by remember { mutableIntStateOf(0) }
     val animateItems by Settings.animateItems.collectAsState()
 
     var fabExpanded by remember { mutableStateOf(false) }
@@ -172,6 +172,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     fun switchLabel(label: String?) {
         Settings.recentDownloadLabel.value = label
         filterState = filterState.copy(label = label)
+    }
+
+    LaunchedEffect(filterState) {
+        searchBarOffsetY = 0
     }
 
     with(activity) {
