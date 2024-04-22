@@ -10,6 +10,7 @@ import android.os.Parcelable
 import android.text.TextUtils.TruncateAt.END
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -213,7 +214,7 @@ private fun List<GalleryTagGroup>.getArtistTag(): String? {
 
 @Destination<RootGraph>
 @Composable
-fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
     LockDrawer(true)
     var galleryInfo by remember {
         val casted = args as? GalleryInfoArgs
@@ -870,9 +871,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         GalleryDetailHeaderCard(
                             info = galleryInfo,
                             onInfoCardClick = ::onGalleryInfoCardClick,
-                            onCategoryChipClick = ::onCategoryChipClick,
                             onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
                             onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
+                            onCategoryChipClick = ::onCategoryChipClick,
                             modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
                         )
                         Row {
@@ -924,9 +925,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             GalleryDetailHeaderCard(
                                 info = galleryInfo,
                                 onInfoCardClick = ::onGalleryInfoCardClick,
-                                onCategoryChipClick = ::onCategoryChipClick,
                                 onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
                                 onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
+                                onCategoryChipClick = ::onCategoryChipClick,
                                 modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
                             )
                             Column(

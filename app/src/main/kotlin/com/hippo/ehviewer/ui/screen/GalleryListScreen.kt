@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.screen
 import android.net.Uri
 import android.view.ViewConfiguration
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -148,23 +149,23 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
 @Destination<RootGraph>
 @Composable
-fun HomePageScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(), navigator)
+fun AnimatedVisibilityScope.HomePageScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(), navigator)
 
 @Destination<RootGraph>
 @Composable
-fun SubscriptionScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator)
+fun AnimatedVisibilityScope.SubscriptionScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator)
 
 @Destination<RootGraph>
 @Composable
-fun WhatshotScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator)
+fun AnimatedVisibilityScope.WhatshotScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator)
 
 @Destination<RootGraph>
 @Composable
-fun ToplistScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator)
+fun AnimatedVisibilityScope.ToplistScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator)
 
 @Destination<RootGraph>
 @Composable
-fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = composing(navigator) {
     val searchFieldState = rememberTextFieldState()
     var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }

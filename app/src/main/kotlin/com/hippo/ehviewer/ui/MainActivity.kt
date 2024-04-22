@@ -24,6 +24,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -441,16 +443,19 @@ class MainActivity : EhActivity() {
                                 gesturesEnabled = sheet != null && !drawerLocked,
                             ) {
                                 val windowSizeClass = calculateWindowSizeClass(this)
-                                CompositionLocalProvider(
-                                    LocalViewConfiguration provides viewConfiguration,
-                                    LocalWindowSizeClass provides windowSizeClass,
-                                ) {
-                                    DestinationsNavHost(
-                                        navGraph = NavGraphs.root,
-                                        startRoute = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
-                                        defaultTransitions = rememberEhNavAnim(),
-                                        navController = navController,
-                                    )
+                                SharedTransitionLayout {
+                                    CompositionLocalProvider(
+                                        LocalSharedTransitionScope provides this,
+                                        LocalViewConfiguration provides viewConfiguration,
+                                        LocalWindowSizeClass provides windowSizeClass,
+                                    ) {
+                                        DestinationsNavHost(
+                                            navGraph = NavGraphs.root,
+                                            startRoute = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
+                                            defaultTransitions = rememberEhNavAnim(),
+                                            navController = navController,
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -534,6 +539,7 @@ val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionL
 val LocalDrawerLockHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerLockHandle not present!") }
 val LocalSnackBarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackBarHostState not present!") }
 val LocalSnackBarFabPadding = compositionLocalOf<State<Dp>> { error("CompositionLocal LocalSnackBarFabPadding not present!") }
+val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope> { error("CompositionLocal LocalSharedTransitionScope not present!") }
 
 @Composable
 fun LockDrawer(value: Boolean) {

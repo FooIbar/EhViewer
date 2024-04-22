@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.screen
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -65,7 +66,7 @@ import kotlinx.coroutines.launch
 
 @Destination<RootGraph>
 @Composable
-fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val title = stringResource(id = R.string.history)
     val hint = stringResource(R.string.search_bar_hint, title)
     val animateItems by Settings.animateItems.collectAsState()

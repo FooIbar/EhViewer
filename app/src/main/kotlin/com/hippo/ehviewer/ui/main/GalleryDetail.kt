@@ -1,5 +1,7 @@
 package com.hippo.ehviewer.ui.main
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
@@ -96,6 +97,7 @@ fun GalleryDetailHeaderInfoCard(
     }
 }
 
+context(SharedTransitionScope, AnimatedVisibilityScope)
 @Composable
 fun GalleryDetailHeaderCard(
     info: GalleryInfo,
@@ -109,7 +111,10 @@ fun GalleryDetailHeaderCard(
         Card {
             EhAsyncCropThumb(
                 key = remember(info.gid) { info },
-                modifier = Modifier.height(dimensionResource(id = R.dimen.gallery_detail_thumb_height)).width(dimensionResource(id = R.dimen.gallery_detail_thumb_width)),
+                modifier = Modifier.size(
+                    dimensionResource(id = R.dimen.gallery_detail_thumb_width),
+                    dimensionResource(id = R.dimen.gallery_detail_thumb_height),
+                ),
             )
         }
         Spacer(modifier = Modifier.weight(0.5F))

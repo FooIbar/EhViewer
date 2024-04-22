@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.screen
 
 import android.content.Intent
 import android.view.ViewConfiguration
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
@@ -126,7 +127,7 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 
 @Destination<RootGraph>
 @Composable
-fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
     var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(Settings.recentDownloadLabel.value)) }

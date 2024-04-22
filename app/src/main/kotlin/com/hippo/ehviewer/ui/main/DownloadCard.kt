@@ -1,5 +1,7 @@
 package com.hippo.ehviewer.ui.main
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -90,6 +92,7 @@ private val constraintSet = ConstraintSet {
     }
 }
 
+context(SharedTransitionScope, AnimatedVisibilityScope)
 @Composable
 fun DownloadCard(
     onClick: () -> Unit,
