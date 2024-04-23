@@ -17,6 +17,10 @@ inline fun Modifier.thenIf(condition: Boolean, crossinline block: Modifier.() ->
 @Stable
 class TransitionsVisibilityScope(val scopes: List<AnimatedVisibilityScope>)
 
+context(AnimatedVisibilityScope, TransitionsVisibilityScope)
+@Composable
+inline fun <T> advance(block: @Composable TransitionsVisibilityScope.() -> T) = block(TransitionsVisibilityScope(scopes + this@AnimatedVisibilityScope))
+
 context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun Modifier.sharedBounds(

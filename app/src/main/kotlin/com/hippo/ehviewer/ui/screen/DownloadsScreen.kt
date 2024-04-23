@@ -106,6 +106,7 @@ import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
+import com.hippo.ehviewer.ui.tools.advance
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
@@ -478,68 +479,70 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         }
         val trans = updateTransition(gridView, label = "Downloads")
         trans.AnimatedContent { showGridView ->
-            if (showGridView) {
-                val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
-                val thumbColumns by Settings.thumbColumns.collectAsState()
-                FastScrollLazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Fixed(thumbColumns),
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-                    verticalItemSpacing = gridInterval,
-                    horizontalArrangement = Arrangement.spacedBy(gridInterval),
-                    contentPadding = realPadding,
-                ) {
-                    items(list) { info ->
-                        GalleryInfoGridItem(
-                            onClick = ::onItemClick.partially1(info),
-                            onLongClick = { navigator.navigate(info.galleryInfo.asDst()) },
-                            info = info,
-                            modifier = Modifier.thenIf(animateItems) { animateItem() },
-                            badgeText = info.pages.takeIf { it > 0 }?.toString(),
-                        )
-                    }
-                }
-            } else {
-                FastScrollLazyColumn(
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-                    contentPadding = realPadding,
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-                ) {
-                    items(list, key = { it.gid }) { info ->
-                        val checked = info.gid in checkedInfoMap
-                        CheckableItem(
-                            checked = checked,
-                            modifier = Modifier.thenIf(animateItems) { animateItem() },
-                        ) { interactionSource ->
-                            DownloadCard(
-                                onClick = {
-                                    if (selectMode) {
-                                        if (checked) {
-                                            checkedInfoMap.remove(info.gid)
-                                        } else {
-                                            checkedInfoMap[info.gid] = info
-                                        }
-                                    } else {
-                                        onItemClick(info)
-                                    }
-                                },
-                                onThumbClick = {
-                                    navigator.navigate(info.galleryInfo.asDst())
-                                },
-                                onLongClick = {
-                                    checkedInfoMap[info.gid] = info
-                                },
-                                onStart = {
-                                    val intent = Intent(activity, DownloadService::class.java)
-                                    intent.action = DownloadService.ACTION_START
-                                    intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                                    ContextCompat.startForegroundService(activity, intent)
-                                },
-                                onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
+            advance {
+                if (showGridView) {
+                    val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
+                    val thumbColumns by Settings.thumbColumns.collectAsState()
+                    FastScrollLazyVerticalStaggeredGrid(
+                        columns = StaggeredGridCells.Fixed(thumbColumns),
+                        modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                        verticalItemSpacing = gridInterval,
+                        horizontalArrangement = Arrangement.spacedBy(gridInterval),
+                        contentPadding = realPadding,
+                    ) {
+                        items(list) { info ->
+                            GalleryInfoGridItem(
+                                onClick = ::onItemClick.partially1(info),
+                                onLongClick = { navigator.navigate(info.galleryInfo.asDst()) },
                                 info = info,
-                                selectMode = selectMode,
-                                modifier = Modifier.height(height),
-                                interactionSource = interactionSource,
+                                modifier = Modifier.thenIf(animateItems) { animateItem() },
+                                badgeText = info.pages.takeIf { it > 0 }?.toString(),
                             )
+                        }
+                    }
+                } else {
+                    FastScrollLazyColumn(
+                        modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                        contentPadding = realPadding,
+                        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
+                    ) {
+                        items(list, key = { it.gid }) { info ->
+                            val checked = info.gid in checkedInfoMap
+                            CheckableItem(
+                                checked = checked,
+                                modifier = Modifier.thenIf(animateItems) { animateItem() },
+                            ) { interactionSource ->
+                                DownloadCard(
+                                    onClick = {
+                                        if (selectMode) {
+                                            if (checked) {
+                                                checkedInfoMap.remove(info.gid)
+                                            } else {
+                                                checkedInfoMap[info.gid] = info
+                                            }
+                                        } else {
+                                            onItemClick(info)
+                                        }
+                                    },
+                                    onThumbClick = {
+                                        navigator.navigate(info.galleryInfo.asDst())
+                                    },
+                                    onLongClick = {
+                                        checkedInfoMap[info.gid] = info
+                                    },
+                                    onStart = {
+                                        val intent = Intent(activity, DownloadService::class.java)
+                                        intent.action = DownloadService.ACTION_START
+                                        intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
+                                        ContextCompat.startForegroundService(activity, intent)
+                                    },
+                                    onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
+                                    info = info,
+                                    selectMode = selectMode,
+                                    modifier = Modifier.height(height),
+                                    interactionSource = interactionSource,
+                                )
+                            }
                         }
                     }
                 }
