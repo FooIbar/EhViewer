@@ -5,7 +5,6 @@ import android.view.ViewConfiguration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -477,8 +476,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             launchIO { EhDB.putHistoryInfo(info.galleryInfo) }
             navToReader(info.galleryInfo)
         }
-        val trans = updateTransition(gridView, label = "Downloads")
-        trans.AnimatedContent { showGridView ->
+        AnimatedContent(gridView, label = "Downloads") { showGridView ->
             advance {
                 if (showGridView) {
                     val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
