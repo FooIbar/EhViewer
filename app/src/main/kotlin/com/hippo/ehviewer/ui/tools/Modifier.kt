@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 
@@ -19,9 +20,9 @@ val NoopTransitionsVisibilityScope = TransitionsVisibilityScope(emptyList())
 @Stable
 class TransitionsVisibilityScope(val scopes: List<AnimatedVisibilityScope>)
 
-context(AnimatedVisibilityScope, TransitionsVisibilityScope)
+context(TransitionsVisibilityScope)
 @Composable
-inline fun <T> advance(block: @Composable TransitionsVisibilityScope.() -> T) = block(TransitionsVisibilityScope(scopes + this@AnimatedVisibilityScope))
+inline fun <T> AnimatedVisibilityScope.advance(block: @Composable TransitionsVisibilityScope.() -> T) = block(remember(scopes, this) { TransitionsVisibilityScope(scopes + this) })
 
 context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
