@@ -49,15 +49,17 @@ inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -
     }
 }
 
+private typealias Ty = AnimatedContentTransitionScope<NavBackStackEntry>
+
 @Composable
 fun rememberEhNavAnim(): NavHostAnimatedDestinationStyle {
     val slideDistance = rememberSlideDistance()
     return remember(slideDistance) {
         object : NavHostAnimatedDestinationStyle() {
-            override val enterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = { materialSharedAxisXIn(true, slideDistance) }
-            override val exitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = { materialSharedAxisXOut(true, slideDistance) }
-            override val popEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition = { materialSharedAxisXIn(false, slideDistance) }
-            override val popExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition = { materialSharedAxisXOut(false, slideDistance) }
+            override val enterTransition: Ty.() -> EnterTransition = { materialSharedAxisXIn(true, slideDistance) }
+            override val exitTransition: Ty.() -> ExitTransition = { materialSharedAxisXOut(true, slideDistance) }
+            override val popEnterTransition: Ty.() -> EnterTransition = { materialSharedAxisXIn(false, slideDistance) }
+            override val popExitTransition: Ty.() -> ExitTransition = { materialSharedAxisXOut(false, slideDistance) }
         }
     }
 }
