@@ -3,6 +3,8 @@ package com.hippo.ehviewer.ui.screen
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,8 +18,6 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.union
@@ -44,8 +44,6 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarHorizontalPadding
 import androidx.compose.material3.SearchBarInputField
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -110,7 +108,6 @@ fun SearchBarScreen(
     onApplySearch: (String) -> Unit,
     onSearchExpanded: () -> Unit,
     onSearchHidden: () -> Unit,
-    refreshState: PullToRefreshState? = null,
     suggestionProvider: SuggestionProvider? = null,
     tagNamespace: Boolean = false,
     searchBarOffsetY: () -> Int,
@@ -222,12 +219,6 @@ fun SearchBarScreen(
         }
     }
 
-    val scrollAwayModifier = if (!expanded) {
-        Modifier.offset { IntOffset(0, searchBarOffsetY()) }
-    } else {
-        Modifier
-    }
-
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
@@ -240,13 +231,6 @@ fun SearchBarScreen(
             floatingActionButton = floatingActionButton,
             content = content,
         )
-        if (refreshState != null) {
-            PullToRefreshContainer(
-                state = refreshState,
-                modifier = Modifier.align(Alignment.TopCenter).safeDrawingPadding()
-                    .padding(top = 48.dp) then scrollAwayModifier,
-            )
-        }
         // https://issuetracker.google.com/337191298
         // Workaround for can't exit SearchBar due to refocus in non-touch mode
         Box(Modifier.size(1.dp).focusable())
@@ -260,7 +244,7 @@ fun SearchBarScreen(
         }
         val activeState = rememberCompositionActiveState()
         SearchBar(
-            modifier = Modifier.align(Alignment.TopCenter) then scrollAwayModifier
+            modifier = Modifier.align(Alignment.TopCenter).thenIf(!expanded) { offset { IntOffset(0, searchBarOffsetY()) } }
                 .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)),
             inputField = {
                 SearchBarInputField(

@@ -43,7 +43,6 @@ import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -76,7 +75,6 @@ import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
@@ -468,10 +466,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         }
     }
 
-    val refreshState = rememberPullToRefreshState {
-        data.loadState.refresh is LoadState.NotLoading
-    }
-
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
 
@@ -537,7 +531,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         onApplySearch = ::onApplySearch,
         onSearchExpanded = { fabHidden = true },
         onSearchHidden = { fabHidden = false },
-        refreshState = refreshState,
         suggestionProvider = {
             GalleryDetailUrlParser.parse(it, false)?.run {
                 GalleryDetailUrlSuggestion(gid, token)
@@ -677,7 +670,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     info = info,
                 )
             },
-            refreshState = refreshState,
+            searchBarOffsetY = { searchBarOffsetY },
             onRefresh = {
                 urlBuilder.setRange(0)
                 data.refresh()
