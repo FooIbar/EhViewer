@@ -21,6 +21,7 @@ import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
+import com.hippo.ehviewer.ui.tools.sharedBounds
 import com.hippo.ehviewer.ui.tools.shouldCrop
 
 @Composable
@@ -42,8 +43,7 @@ fun EhAsyncThumb(
     model = requestOf(model),
     contentDescription = null,
     modifier = modifier.sharedBounds(
-        rememberSharedContentState(key = model.gid),
-        this@AnimatedVisibilityScope,
+        key = model.gid,
         exit = fadeOut(),
         enter = fadeIn(),
     ).clip(ShapeDefaults.Medium),
@@ -62,8 +62,7 @@ fun EhAsyncCropThumb(
         model = requestOf(key),
         contentDescription = null,
         modifier = modifier.sharedBounds(
-            rememberSharedContentState(key = key.gid),
-            this@AnimatedVisibilityScope,
+            key = key.gid,
             exit = fadeOut(),
             enter = fadeIn(),
         ).clip(ShapeDefaults.Medium),
