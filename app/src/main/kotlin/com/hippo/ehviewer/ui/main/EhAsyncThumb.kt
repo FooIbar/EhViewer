@@ -43,7 +43,7 @@ fun EhAsyncThumb(
     model = requestOf(model),
     contentDescription = null,
     modifier = modifier.sharedBounds(
-        key = model.gid,
+        key = "${model.gid}",
         exit = fadeOut(),
         enter = fadeIn(),
     ).clip(ShapeDefaults.Medium),
@@ -62,7 +62,7 @@ fun EhAsyncCropThumb(
         model = requestOf(key),
         contentDescription = null,
         modifier = modifier.sharedBounds(
-            key = key.gid,
+            key = "${key.gid}",
             exit = fadeOut(),
             enter = fadeIn(),
         ).clip(ShapeDefaults.Medium),

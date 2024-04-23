@@ -27,16 +27,14 @@ inline fun <T> AnimatedVisibilityScope.advance(block: @Composable TransitionsVis
 context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun Modifier.sharedBounds(
-    key: Any,
+    key: String,
     enter: EnterTransition = fadeIn() + scaleInSharedContentToBounds(ContentScale.Fit),
     exit: ExitTransition = fadeOut() + scaleOutSharedContentToBounds(ContentScale.Fit),
-) = rememberSharedContentState(key = key).let { state ->
-    scopes.fold(this) { modifier, scope ->
-        modifier.sharedBounds(
-            state,
-            scope,
-            enter,
-            exit,
-        )
-    }
+) = scopes.fold(this) { modifier, scope ->
+    modifier.sharedBounds(
+        rememberSharedContentState("$key + ${scope.transition.label}"),
+        scope,
+        enter,
+        exit,
+    )
 }
