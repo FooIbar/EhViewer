@@ -30,11 +30,13 @@ fun Modifier.sharedBounds(
     key: Any,
     enter: EnterTransition = fadeIn() + scaleInSharedContentToBounds(ContentScale.Fit),
     exit: ExitTransition = fadeOut() + scaleOutSharedContentToBounds(ContentScale.Fit),
-) = scopes.fold(this) { modifier, scope ->
-    modifier.sharedBounds(
-        rememberSharedContentState(key = key),
-        scope,
-        enter,
-        exit,
-    )
+) = rememberSharedContentState(key = key).let { state ->
+    scopes.fold(this) { modifier, scope ->
+        modifier.sharedBounds(
+            state,
+            scope,
+            enter,
+            exit,
+        )
+    }
 }
