@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.screen
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -58,7 +59,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination<RootGraph>
 @Composable
-fun GalleryPreviewScreen(detail: GalleryDetail, toNextPage: Boolean, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.GalleryPreviewScreen(detail: GalleryDetail, toNextPage: Boolean, navigator: DestinationsNavigator) = composing(navigator) {
     LockDrawer(true)
     val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
     val pgSize = detail.previewList.size

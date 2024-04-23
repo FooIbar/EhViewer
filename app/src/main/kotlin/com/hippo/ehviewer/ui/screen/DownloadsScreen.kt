@@ -2,9 +2,10 @@ package com.hippo.ehviewer.ui.screen
 
 import android.content.Intent
 import android.view.ViewConfiguration
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -475,7 +476,8 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             launchIO { EhDB.putHistoryInfo(info.galleryInfo) }
             navToReader(info.galleryInfo)
         }
-        Crossfade(targetState = gridView, label = "Downloads") { showGridView ->
+        val trans = updateTransition(gridView, label = "Downloads")
+        trans.AnimatedContent { showGridView ->
             if (showGridView) {
                 val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
                 val thumbColumns by Settings.thumbColumns.collectAsState()

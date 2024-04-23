@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.main
 
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -45,6 +44,7 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
+import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.util.FileUtils
 
 private val ids = Tuple9(1, 2, 3, 4, 5, 6, 7, 8, 9)
@@ -92,7 +92,7 @@ private val constraintSet = ConstraintSet {
     }
 }
 
-context(SharedTransitionScope, AnimatedVisibilityScope)
+context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun DownloadCard(
     onClick: () -> Unit,

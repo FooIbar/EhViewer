@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.main
 
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +36,7 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
+import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 
 @Composable
 fun GalleryDetailHeaderInfoCard(
@@ -97,7 +97,7 @@ fun GalleryDetailHeaderInfoCard(
     }
 }
 
-context(SharedTransitionScope, AnimatedVisibilityScope)
+context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun GalleryDetailHeaderCard(
     info: GalleryInfo,

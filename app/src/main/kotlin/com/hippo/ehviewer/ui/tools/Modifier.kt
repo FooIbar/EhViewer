@@ -7,21 +7,27 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 
 inline fun Modifier.thenIf(condition: Boolean, crossinline block: Modifier.() -> Modifier) =
     if (condition) block() else this
 
-context(SharedTransitionScope, AnimatedVisibilityScope)
+@Stable
+class TransitionsVisibilityScope(val scopes: List<AnimatedVisibilityScope>)
+
+context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun Modifier.sharedBounds(
     key: Any,
     enter: EnterTransition = fadeIn() + scaleInSharedContentToBounds(ContentScale.Fit),
     exit: ExitTransition = fadeOut() + scaleOutSharedContentToBounds(ContentScale.Fit),
-) = sharedBounds(
-    rememberSharedContentState(key = key),
-    this@AnimatedVisibilityScope,
-    enter,
-    exit,
-)
+) = scopes.fold(this) { modifier, scope ->
+    modifier.sharedBounds(
+        rememberSharedContentState(key = key),
+        scope,
+        enter,
+        exit,
+    )
+}

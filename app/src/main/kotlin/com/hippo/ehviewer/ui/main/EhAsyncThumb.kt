@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.main
 
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -21,6 +20,7 @@ import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
+import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.ui.tools.sharedBounds
 import com.hippo.ehviewer.ui.tools.shouldCrop
 
@@ -31,7 +31,7 @@ fun requestOf(model: GalleryInfo): ImageRequest {
     return remember(model) { context.imageRequest(model) }
 }
 
-context(SharedTransitionScope, AnimatedVisibilityScope)
+context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 @NonRestartableComposable
 fun EhAsyncThumb(
@@ -51,7 +51,7 @@ fun EhAsyncThumb(
     contentScale = contentScale,
 )
 
-context(SharedTransitionScope, AnimatedVisibilityScope)
+context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun EhAsyncCropThumb(
     key: GalleryInfo,
