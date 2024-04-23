@@ -14,6 +14,8 @@ import androidx.compose.ui.layout.ContentScale
 inline fun Modifier.thenIf(condition: Boolean, crossinline block: Modifier.() -> Modifier) =
     if (condition) block() else this
 
+val NoopTransitionsVisibilityScope = TransitionsVisibilityScope(emptyList())
+
 @Stable
 class TransitionsVisibilityScope(val scopes: List<AnimatedVisibilityScope>)
 
