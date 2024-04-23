@@ -1,5 +1,24 @@
 # 变更日志
 
+## [1.11.4] - 2024-04-21
+
+### 新功能
+
+* 更新前自动备份数据
+
+### 改进
+
+* 在 设置-高级 中加入了禁用列表项目动画的选项，该功能在部分设备上导致崩溃/卡顿 [#996](https://github.com/FooIbar/EhViewer/issues/996) [#1023](https://github.com/FooIbar/EhViewer/issues/1023)
+* 下载列表多选模式下避免误触 [#1016](https://github.com/FooIbar/EhViewer/issues/1016)
+* 杂项 UI 优化
+
+### Bug 修复
+
+* 重命名下载标签后删除该标签时崩溃 [#1008](https://github.com/FooIbar/EhViewer/issues/1008)
+* 搜索栏中某些输入法长按退格无法连续删除 [#606](https://github.com/FooIbar/EhViewer/issues/606)
+* 评论/屏蔽/搜索建议/下载标签/快速搜索列表卡顿 [#1041](https://github.com/FooIbar/EhViewer/issues/1041)
+
+
 ## [1.11.3] - 2024-04-06
 
 ### 改进

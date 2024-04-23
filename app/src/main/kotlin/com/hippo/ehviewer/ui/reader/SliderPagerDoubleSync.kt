@@ -8,7 +8,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -16,7 +15,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.gallery.PageLoader2
 import kotlin.math.absoluteValue
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.filterNotNull
 
 @Stable
 class SliderPagerDoubleSync(
@@ -24,8 +23,10 @@ class SliderPagerDoubleSync(
     private val pagerState: PagerState,
     private val pageLoader: PageLoader2,
 ) {
-    private var sliderFollowPager by mutableStateOf(true)
-    var sliderValue by mutableIntStateOf(1)
+    private var requestScroll = true
+    private var sliderFollowPager = true
+    var sliderValue by mutableIntStateOf(pageLoader.startPage + 1)
+        private set
 
     fun sliderScrollTo(index: Int) {
         sliderFollowPager = false
@@ -37,52 +38,55 @@ class SliderPagerDoubleSync(
         val fling by lazyListState.interactionSource.collectIsDraggedAsState()
         val pagerFling by pagerState.interactionSource.collectIsDraggedAsState()
         if (fling || pagerFling) sliderFollowPager = true
-        val startPage = remember { pageLoader.startPage }
         val currentIndexFlow = remember(webtoon) {
+            requestScroll = true
             if (webtoon) {
-                snapshotFlow { lazyListState.layoutInfo }.mapNotNull { info ->
-                    info.visibleItemsInfo.lastOrNull {
-                        it.offset <= maxOf(info.viewportStartOffset, info.viewportEndOffset - it.size)
-                    }?.index
-                }
+                snapshotFlow {
+                    with(lazyListState.layoutInfo) {
+                        visibleItemsInfo.lastOrNull {
+                            it.offset <= maxOf(viewportStartOffset, viewportEndOffset - it.size)
+                        }?.index
+                    }
+                }.filterNotNull()
             } else {
                 snapshotFlow { pagerState.currentPage }
             }
         }
-        if (sliderFollowPager) {
-            LaunchedEffect(currentIndexFlow) {
-                currentIndexFlow.collect { index ->
+        LaunchedEffect(currentIndexFlow) {
+            currentIndexFlow.collect { index ->
+                if (sliderFollowPager && !requestScroll) {
                     sliderValue = index + 1
                     pageLoader.startPage = index
                 }
             }
-        } else {
-            LaunchedEffect(webtoon) {
-                snapshotFlow { sliderValue - 1 }.collectLatest { index ->
-                    if (webtoon) {
-                        val noAnim = (index - lazyListState.firstVisibleItemIndex).absoluteValue > SMOOTH_SCROLL_THRESHOLD || !Settings.pageTransitions.value
-                        if (noAnim) {
-                            lazyListState.scrollToItem(index)
-                        } else {
-                            lazyListState.animateScrollToItem(index)
-                        }
+        }
+        LaunchedEffect(webtoon) {
+            snapshotFlow { sliderValue - 1 }.collectLatest { index ->
+                if (sliderFollowPager && !requestScroll) return@collectLatest
+                if (webtoon) {
+                    if (requestScroll) {
+                        lazyListState.requestScrollToItem(index)
+                        requestScroll = false
                     } else {
-                        val noAnim = (index - pagerState.currentPage).absoluteValue > SMOOTH_SCROLL_THRESHOLD || !Settings.pageTransitions.value
-                        if (noAnim) {
-                            pagerState.scrollToPage(index)
+                        if (smoothScroll((index - lazyListState.firstVisibleItemIndex))) {
+                            lazyListState.animateScrollToItem(index)
                         } else {
-                            pagerState.animateScrollToPage(index)
+                            lazyListState.scrollToItem(index)
                         }
                     }
-                    pageLoader.startPage = index
+                } else {
+                    if (requestScroll) {
+                        pagerState.requestScrollToPage(index)
+                        requestScroll = false
+                    } else {
+                        if (smoothScroll((index - pagerState.currentPage))) {
+                            pagerState.animateScrollToPage(index)
+                        } else {
+                            pagerState.scrollToPage(index)
+                        }
+                    }
                 }
-            }
-        }
-        LaunchedEffect(Unit) {
-            if (webtoon) {
-                lazyListState.scrollToItem(startPage)
-            } else {
-                pagerState.scrollToPage(startPage)
+                pageLoader.startPage = index
             }
         }
     }
@@ -99,5 +103,8 @@ fun rememberSliderPagerDoubleSyncState(
         SliderPagerDoubleSync(lazyListState, pagerState, pageLoader)
     }
 }
+
+private fun smoothScroll(distance: Int) =
+    distance.absoluteValue < SMOOTH_SCROLL_THRESHOLD && Settings.pageTransitions.value
 
 private const val SMOOTH_SCROLL_THRESHOLD = 50

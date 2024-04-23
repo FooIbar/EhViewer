@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -30,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.hippo.ehviewer.ui.tools.PredictiveBackEasing
@@ -140,69 +141,69 @@ fun FabLayout(
             },
         )
     }
-    val appearState by state.appearProgress.asState()
+    val animatedProgress by state.expandProgress.asState()
+    PredictiveBackHandler(updatedExpanded) { flow ->
+        try {
+            state.mutatorMutex.mutate(MutatePriority.UserInput) {
+                flow.collect {
+                    val eased = PredictiveBackEasing.transform(it.progress)
+                    state.expandProgress.snapTo(1 - eased)
+                }
+            }
+            onExpandChanged(false)
+        } catch (e: CancellationException) {
+            coroutineScope.launch {
+                state.expand()
+            }
+        }
+    }
     Box(
-        modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(16.dp).snackBarPadding(),
+        modifier = Modifier.fillMaxSize().navigationBarsPadding().snackBarPadding(),
         contentAlignment = Alignment.BottomEnd,
     ) {
-        Box(
-            modifier = Modifier.graphicsLayer {
+        if (!state.appearProgress.isRunning && !updatedHidden) {
+            Box(
+                modifier = Modifier.fillMaxSize().graphicsLayer { alpha = animatedProgress },
+                contentAlignment = Alignment.BottomEnd,
+            ) {
+                with(secondaryFab) {
+                    forEachIndexed { index, (imageVector, onClick) ->
+                        SmallFloatingActionButton(
+                            onClick = {
+                                coroutineScope.launchIO {
+                                    runSuspendCatching {
+                                        onClick()
+                                    }
+                                    onExpandChanged(false)
+                                }
+                            },
+                            modifier = Modifier.padding(20.dp).offset {
+                                val distance = lerp(0, 150 * (size - index) + 50, animatedProgress)
+                                IntOffset(0, -distance)
+                            },
+                        ) {
+                            Icon(imageVector = imageVector, contentDescription = null)
+                        }
+                    }
+                }
+            }
+        }
+        val appearState by state.appearProgress.asState()
+        FloatingActionButton(
+            onClick = { onExpandChanged(!updatedExpanded) },
+            modifier = Modifier.padding(16.dp).graphicsLayer {
                 rotationZ = lerp(-90f, 0f, appearState)
                 scaleX = appearState
                 scaleY = appearState
             },
-            contentAlignment = Alignment.Center,
         ) {
-            val animatedProgress by state.expandProgress.asState()
-            PredictiveBackHandler(updatedExpanded) { flow ->
-                try {
-                    state.mutatorMutex.mutate(MutatePriority.UserInput) {
-                        flow.collect {
-                            val eased = PredictiveBackEasing.transform(it.progress)
-                            state.expandProgress.snapTo(1 - eased)
-                        }
-                    }
-                    onExpandChanged(false)
-                } catch (e: CancellationException) {
-                    coroutineScope.launch {
-                        state.expand()
-                    }
-                }
-            }
-            FloatingActionButton(onClick = { onExpandChanged(!updatedExpanded) }) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = null,
-                    modifier = Modifier.graphicsLayer {
-                        rotationZ = lerp(-135f, 0f, animatedProgress)
-                    },
-                )
-            }
-            secondaryFab.run {
-                forEachIndexed { index, (imageVector, onClick) ->
-                    SmallFloatingActionButton(
-                        onClick = {
-                            coroutineScope.launchIO {
-                                runSuspendCatching {
-                                    onClick()
-                                }
-                                onExpandChanged(false)
-                            }
-                        },
-                        modifier = Modifier.layout { measurable, constraints ->
-                            val placeable = measurable.measure(constraints)
-                            layout(placeable.width, placeable.height) {
-                                val distance = lerp(0, 150 * (size - index) + 50, animatedProgress)
-                                placeable.placeRelative(0, -distance, -(size - index).toFloat())
-                            }
-                        }.graphicsLayer {
-                            alpha = animatedProgress
-                        },
-                    ) {
-                        Icon(imageVector = imageVector, contentDescription = null)
-                    }
-                }
-            }
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = null,
+                modifier = Modifier.graphicsLayer {
+                    rotationZ = lerp(-135f, 0f, animatedProgress)
+                },
+            )
         }
     }
 }

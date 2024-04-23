@@ -10,15 +10,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -142,7 +138,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val filterMode by Settings.downloadFilterMode.collectAsState { DownloadsFilterMode.from(it) }
     var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(filterMode, Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
-    var searchBarOffsetY by remember(filterState.label) { mutableIntStateOf(0) }
+    var searchBarOffsetY by remember { mutableIntStateOf(0) }
     val animateItems by Settings.animateItems.collectAsState()
 
     var fabExpanded by remember { mutableStateOf(false) }
@@ -205,6 +201,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     fun switchLabel(label: String?) {
         Settings.recentDownloadLabel.value = label
         filterState = filterState.copy(label = label)
+    }
+
+    LaunchedEffect(filterState) {
+        searchBarOffsetY = 0
     }
 
     with(activity) {
@@ -296,9 +296,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = labelsListState,
-                contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
+                // Workaround for https://issuetracker.google.com/332939169
+                // contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
             ) {
-                stickyHeader {
+                item {
                     ListItem(
                         modifier = Modifier.clickable {
                             switchLabel("")
@@ -311,7 +312,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         },
                     )
                 }
-                stickyHeader {
+                item {
                     ListItem(
                         modifier = Modifier.clickable {
                             switchLabel(null)

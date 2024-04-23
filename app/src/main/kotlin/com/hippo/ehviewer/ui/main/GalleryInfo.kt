@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
+import androidx.constraintlayout.compose.Dimension
 import arrow.core.Tuple7
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
@@ -60,15 +61,15 @@ private val constraintSet = ConstraintSet {
         createRefsFor(1, 2, 3, 4, 5, 6, 7)
     constrain(titleRef) {
         top.linkTo(parent.top)
-        start.linkTo(parent.start)
+        width = Dimension.matchParent
     }
     constrain(uploaderRef) {
         start.linkTo(parent.start)
-        bottom.linkTo(ratingRef.top)
+        bottom.linkTo(iconsRef.top)
     }
     constrain(ratingRef) {
         start.linkTo(parent.start)
-        bottom.linkTo(categoryRef.top)
+        top.linkTo(iconsRef.top, 1.dp)
     }
     constrain(categoryRef) {
         start.linkTo(parent.start)
@@ -76,7 +77,7 @@ private val constraintSet = ConstraintSet {
     }
     constrain(iconsRef) {
         end.linkTo(parent.end)
-        bottom.linkTo(postedRef.top)
+        bottom.linkTo(categoryRef.top)
     }
     constrain(favRef) {
         end.linkTo(parent.end)
@@ -84,7 +85,7 @@ private val constraintSet = ConstraintSet {
     }
     constrain(postedRef) {
         end.linkTo(parent.end)
-        bottom.linkTo(parent.bottom)
+        linkTo(categoryRef.top, parent.bottom)
     }
 }
 
@@ -110,12 +111,15 @@ fun GalleryInfoListItem(
                 modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
             )
         }
-        ConstraintLayout(modifier = Modifier.padding(8.dp, 4.dp).fillMaxSize(), constraintSet = constraintSet) {
+        ConstraintLayout(
+            modifier = Modifier.padding(start = 8.dp, top = 2.dp, end = 4.dp, bottom = 4.dp).fillMaxSize(),
+            constraintSet = constraintSet,
+        ) {
             val (titleRef, uploaderRef, ratingRef, categoryRef, postedRef, favRef, iconsRef) = ids
             Text(
                 text = EhUtils.getSuitableTitle(info),
                 maxLines = 2,
-                modifier = Modifier.layoutId(titleRef).fillMaxWidth(),
+                modifier = Modifier.layoutId(titleRef),
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.titleSmall,
             )
@@ -145,6 +149,8 @@ fun GalleryInfoListItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.layoutId(iconsRef),
                 ) {
+                    // Placeholder to reserve minimum height
+                    Text(text = "")
                     val download by DownloadManager.collectContainDownloadInfo(info.gid)
                     if (download) {
                         Icon(
@@ -153,7 +159,9 @@ fun GalleryInfoListItem(
                             modifier = Modifier.size(16.dp),
                         )
                     }
-                    Text(text = info.simpleLanguage.orEmpty())
+                    info.simpleLanguage?.let {
+                        Text(text = it)
+                    }
                     if (info.pages != 0 && showPages) {
                         Text(text = "${info.pages}P")
                     }
@@ -163,11 +171,12 @@ fun GalleryInfoListItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.layoutId(favRef),
                 ) {
+                    // Placeholder to reserve minimum height
+                    Text(text = "")
                     if (isInFavScene) {
-                        Text(
-                            text = info.favoriteNote.orEmpty(),
-                            fontStyle = FontStyle.Italic,
-                        )
+                        info.favoriteNote?.let {
+                            Text(text = it, fontStyle = FontStyle.Italic)
+                        }
                     } else {
                         val showFav by FavouriteStatusRouter.collectAsState(info) { it != NOT_FAVORITED }
                         if (showFav) {
@@ -176,7 +185,9 @@ fun GalleryInfoListItem(
                                 contentDescription = null,
                                 modifier = Modifier.size(16.dp),
                             )
-                            Text(text = info.favoriteName.orEmpty())
+                            info.favoriteName?.let {
+                                Text(text = it)
+                            }
                         }
                     }
                 }

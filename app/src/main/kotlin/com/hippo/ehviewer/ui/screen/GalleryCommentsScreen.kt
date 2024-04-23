@@ -303,10 +303,13 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
                 modifier = Modifier.padding(horizontal = keylineMargin),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(
-                    top = paddingValues.calculateTopPadding(),
+                    // top = paddingValues.calculateTopPadding(),
                     bottom = paddingValues.calculateBottomPadding() + additionalPadding,
                 ),
             ) {
+                item {
+                    Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding()))
+                }
                 items(
                     items = comments.comments,
                     key = { it.id },

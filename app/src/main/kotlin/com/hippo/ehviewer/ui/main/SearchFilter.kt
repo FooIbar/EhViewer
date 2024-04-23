@@ -3,8 +3,8 @@ package com.hippo.ehviewer.ui.main
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -74,12 +74,16 @@ fun SearchFilter(
     fun isCategoryChecked(bit: Int) = category and bit != 0
     val categories = remember(category) { categoryTable.sortedBy { !isCategoryChecked(it.first) } }
     LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        // Workaround for https://issuetracker.google.com/332939169
+        // contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        modifier = Modifier.padding(top = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         // Workaround for the first item's animation
         // https://github.com/Calvin-LL/Reorderable/issues/4#issuecomment-1853131769
-        item {}
+        item {
+            Spacer(modifier = Modifier.width(8.dp))
+        }
         items(categories, { it.first }) {
             FilterChip(
                 selected = isCategoryChecked(it.first),
@@ -87,6 +91,9 @@ fun SearchFilter(
                 label = { Text(text = stringResource(id = it.second)) },
                 modifier = Modifier.thenIf(animateItems) { animateItem() },
             )
+        }
+        item {
+            Spacer(modifier = Modifier.width(8.dp))
         }
     }
     var languageFilter by Settings.languageFilter.asMutableState()

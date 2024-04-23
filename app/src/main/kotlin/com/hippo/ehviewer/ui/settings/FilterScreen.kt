@@ -215,8 +215,9 @@ fun FilterScreen(navigator: DestinationsNavigator) {
     ) { paddingValues ->
         Deferred({ allFilterMap.await() }) { filters ->
             LazyColumn(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-                contentPadding = paddingValues,
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).padding(paddingValues),
+                // Workaround for https://issuetracker.google.com/332939169
+                // contentPadding = paddingValues,
             ) {
                 var showTip = true
                 filters.forEach { (filterMode, filters) ->
@@ -229,7 +230,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                         FilterMode.COMMENT -> R.string.filter_comment
                     }
                     if (filters.isNotEmpty()) {
-                        stickyHeader(key = filterMode) {
+                        item(key = filterMode) {
                             Text(
                                 text = stringResource(id = title),
                                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp).thenIf(animateItems) { animateItem() },
