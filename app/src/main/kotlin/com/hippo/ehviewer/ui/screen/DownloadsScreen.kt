@@ -5,6 +5,9 @@ import android.view.ViewConfiguration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -476,7 +479,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             launchIO { EhDB.putHistoryInfo(info.galleryInfo) }
             navToReader(info.galleryInfo)
         }
-        AnimatedContent(gridView, label = "Downloads") { showGridView ->
+        AnimatedContent(gridView, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "Downloads") { showGridView ->
             advance {
                 if (showGridView) {
                     val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
@@ -488,7 +491,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         horizontalArrangement = Arrangement.spacedBy(gridInterval),
                         contentPadding = realPadding,
                     ) {
-                        items(list) { info ->
+                        items(list, key = { it.gid }) { info ->
                             GalleryInfoGridItem(
                                 onClick = ::onItemClick.partially1(info),
                                 onLongClick = { navigator.navigate(info.galleryInfo.asDst()) },
