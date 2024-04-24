@@ -547,7 +547,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
                     contentPadding = realPadding,
                 ) {
-                    items(list) { info ->
+                    items(list, key = { it.gid }) { info ->
                         GalleryInfoGridItem(
                             onClick = ::onItemClick.partially1(info),
                             onLongClick = { navigate(info.galleryInfo.asDst()) },
