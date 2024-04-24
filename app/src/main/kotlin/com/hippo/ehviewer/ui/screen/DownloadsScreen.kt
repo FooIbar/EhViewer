@@ -151,6 +151,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val activity = remember { findActivity<MainActivity>() }
     val density = LocalDensity.current
     val view = LocalView.current
+    val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(context) && EhTagDatabase.initialized
+    val ehTags = EhTagDatabase.takeIf { canTranslate }
+    fun String.translateArtist() = ehTags?.getTranslation(TagNamespace.Artist.toPrefix(), this) ?: this
     val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
@@ -371,16 +374,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                 tonalElevation = 1.dp,
                                 shadowElevation = elevation,
                                 headlineContent = {
-                                    val name = when (filterMode) {
-                                        DownloadsFilterMode.CUSTOM -> item
-                                        DownloadsFilterMode.ARTIST -> {
-                                            if (EhTagDatabase.initialized && EhTagDatabase.isTranslatable(context)) {
-                                                EhTagDatabase.getTranslation(TagNamespace.Artist.toPrefix(), item) ?: item
-                                            } else {
-                                                item
-                                            }
-                                        }
-                                    }
+                                    val name = if (filterMode == DownloadsFilterMode.ARTIST) label.translateArtist() else label
                                     Text("$name [${downloadsCount.getOrDefault(item, 0)}]")
                                 },
                                 trailingContent = editEnable.ifTrueThen {
