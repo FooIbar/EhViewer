@@ -34,14 +34,9 @@ object DocumentsContractApi21 {
     fun createDirectory(self: Uri, displayName: String) = createFile(self, DocumentsContract.Document.MIME_TYPE_DIR, displayName)
 
     fun prepareTreeUri(treeUri: Uri): Uri {
-        val documentId = if (treeUri.pathSegments.size == 2) {
-            DocumentsContract.getTreeDocumentId(treeUri)
-        } else {
-            DocumentsContract.getDocumentId(treeUri)
-        }
         return DocumentsContract.buildDocumentUriUsingTree(
             treeUri,
-            documentId,
+            DocumentsContract.getTreeDocumentId(treeUri),
         )
     }
 
@@ -54,7 +49,7 @@ object DocumentsContractApi21 {
 
     fun listFiles(self: Uri) = sequence {
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(self, DocumentsContract.getDocumentId(self))
-        resolver.query(childrenUri, projection, null, null, null, null)?.use {
+        resolver.query(childrenUri, projection, null, null, null)?.use {
             while (it.moveToNext()) {
                 val documentId = it.getString(0)
                 val documentUri = DocumentsContract.buildDocumentUriUsingTree(self, documentId)
