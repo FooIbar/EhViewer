@@ -164,7 +164,13 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     }
     val title = stringResource(
         R.string.scene_download_title,
-        with(filterState) { if (label == "") allName else label ?: emptyLabelName },
+        with(filterState) {
+            when (label) {
+                "" -> allName
+                null -> emptyLabelName
+                else -> if (mode == DownloadsFilterMode.ARTIST) label.translateArtist() else label
+            }
+        },
     )
     val hint = stringResource(R.string.search_bar_hint, title)
     val sortModes = stringArrayResource(id = R.array.download_sort_modes)
