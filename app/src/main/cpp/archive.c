@@ -54,8 +54,9 @@ static archive_ctx **ctx_pool;
 
 static void *mempool = NULL;
 static size_t *mempoolofs = NULL;
+static int page_size = 0;
 
-#define PAGE_ALIGN(x) ((x + ~PAGE_MASK) & PAGE_MASK)
+#define PAGE_ALIGN(x) ((x + page_size - 1) & ~(page_size - 1))
 
 #define MEMPOOL_ADDR_BY_SORTED_IDX(x) (mempool + (index ? mempoolofs[index - 1] : 0))
 #define MEMPOOL_SIZE (mempoolofs[entryCount - 1])
@@ -282,6 +283,7 @@ JNIEXPORT jint JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint fd, jlong size, jboolean sort_entries) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
+    page_size = getpagesize();
     archive_ctx *ctx = NULL;
     archiveAddr = mmap(0, size, PROT_READ, MAP_PRIVATE, fd, 0);
     if (archiveAddr == MAP_FAILED) {

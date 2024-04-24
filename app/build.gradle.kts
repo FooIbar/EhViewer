@@ -21,7 +21,7 @@ plugins {
 
 android {
     compileSdk = 34
-    ndkVersion = "26.2.11394342"
+    ndkVersion = "27.0.11718014-beta1"
 
     splits {
         abi {
@@ -87,6 +87,11 @@ android {
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
         ndk {
             debugSymbolLevel = "FULL"
+        }
+        externalNativeBuild {
+            cmake {
+                arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+            }
         }
     }
 
