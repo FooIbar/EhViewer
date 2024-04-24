@@ -1,5 +1,7 @@
 package com.hippo.ehviewer.ui.screen
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.view.ViewConfiguration
 import androidx.compose.animation.Crossfade
@@ -66,7 +68,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
@@ -92,7 +93,6 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.Download
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.LockDrawer
-import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.main.DownloadCard
@@ -111,7 +111,6 @@ import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
-import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
 import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
@@ -145,11 +144,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val selectMode by rememberUpdatedState(checkedInfoMap.isNotEmpty())
     LockDrawer(selectMode)
 
-    val context = LocalContext.current
-    val activity = remember { findActivity<MainActivity>() }
     val density = LocalDensity.current
     val view = LocalView.current
-    val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(context) && EhTagDatabase.initialized
+    val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
     fun String.translateArtist() = ehTags?.getTranslation(TagNamespace.Artist.toPrefix(), this) ?: this
     val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
@@ -459,9 +456,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     text = { Text(text = stringResource(id = R.string.download_start_all)) },
                     onClick = {
                         expanded = false
-                        val intent = Intent(activity, DownloadService::class.java)
+                        val intent = Intent(implicit<Activity>(), DownloadService::class.java)
                         intent.action = DownloadService.ACTION_START_ALL
-                        ContextCompat.startForegroundService(activity, intent)
+                        ContextCompat.startForegroundService(implicit<Activity>(), intent)
                     },
                 )
                 DropdownMenuItem(
@@ -493,10 +490,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     onClick = {
                         expanded = false
                         val gidList = list.filter { it.state != DownloadInfo.STATE_FINISH }.asReversed().mapToLongArray(DownloadInfo::gid)
-                        val intent = Intent(activity, DownloadService::class.java)
+                        val intent = Intent(implicit<Activity>(), DownloadService::class.java)
                         intent.action = DownloadService.ACTION_START_RANGE
                         intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
-                        ContextCompat.startForegroundService(activity, intent)
+                        ContextCompat.startForegroundService(implicit<Activity>(), intent)
                     },
                 )
             }
@@ -505,7 +502,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         val height by collectListThumbSizeAsState()
         val realPadding = contentPadding + PaddingValues(dimensionResource(id = R.dimen.gallery_list_margin_h), dimensionResource(id = R.dimen.gallery_list_margin_v))
         val searchBarConnection = remember {
-            val slop = ViewConfiguration.get(context).scaledTouchSlop
+            val slop = ViewConfiguration.get(implicit<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
@@ -578,10 +575,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                     checkedInfoMap[info.gid] = info
                                 },
                                 onStart = {
-                                    val intent = Intent(activity, DownloadService::class.java)
+                                    val intent = Intent(implicit<Activity>(), DownloadService::class.java)
                                     intent.action = DownloadService.ACTION_START
                                     intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                                    ContextCompat.startForegroundService(activity, intent)
+                                    ContextCompat.startForegroundService(implicit<Activity>(), intent)
                                 },
                                 onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
                                 info = info,
@@ -671,10 +668,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
             onClick(Icons.Default.PlayArrow) {
                 val gidList = checkedInfoMap.run { toMap().values.also { clear() } }
                     .mapToLongArray(DownloadInfo::gid)
-                val intent = Intent(activity, DownloadService::class.java)
+                val intent = Intent(implicit<Activity>(), DownloadService::class.java)
                 intent.action = DownloadService.ACTION_START_RANGE
                 intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
-                ContextCompat.startForegroundService(context, intent)
+                ContextCompat.startForegroundService(implicit<Context>(), intent)
             }
             onClick(Icons.Default.Pause) {
                 val gidList = checkedInfoMap.run { toMap().values.also { clear() } }
