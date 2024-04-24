@@ -479,7 +479,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         const val SPIDER_INFO_FILENAME = ".ehviewer"
         private val sQueenMap = LongSparseArray<SpiderQueen>()
 
-        fun obtainSpiderQueen(galleryInfo: GalleryInfo, @Mode mode: Int, writeComicInfoCallback: (suspend (ComicInfo) -> Unit)? = null): SpiderQueen {
+        fun obtainSpiderQueen(galleryInfo: GalleryInfo, @Mode mode: Int): SpiderQueen {
             val gid = galleryInfo.gid
             return (sQueenMap[gid] ?: SpiderQueen(galleryInfo).also { sQueenMap[gid] = it }).apply {
                 setMode(mode)
@@ -487,9 +487,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     // Will create download dir if not exists
                     updateMode()
                     if (mode == MODE_DOWNLOAD) {
-                        mSpiderDen.writeComicInfo()?.also {
-                            writeComicInfoCallback?.invoke(it)
-                        }
+                        mSpiderDen.writeComicInfo()
                     }
                 }
             }

@@ -32,6 +32,8 @@ import com.hippo.ehviewer.client.executeSafely
 import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.coil.suspendEdit
+import com.hippo.ehviewer.dao.DownloadArtist
+import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.image.UniFileSource
@@ -316,16 +318,22 @@ class SpiderDen(val info: GalleryInfo) {
         check(downloadDir!!.ensureDir())
     }
 
-    suspend fun writeComicInfo(fetchMetadata: Boolean = true): ComicInfo? {
-        return downloadDir?.run {
-            createFile(COMIC_INFO_FILE)?.let {
+    suspend fun writeComicInfo(fetchMetadata: Boolean = true) {
+        downloadDir?.run {
+            createFile(COMIC_INFO_FILE)?.also {
                 runCatching {
                     if (info !is GalleryDetail && fetchMetadata) {
                         withNonCancellableContext {
                             EhEngine.fillGalleryListByApi(listOf(info))
                         }
                     }
-                    info.getComicInfo().apply { write(it) }
+                    info.getComicInfo().apply {
+                        write(it)
+                        DownloadManager.getDownloadInfo(gid)?.let { downloadInfo ->
+                            downloadInfo.artistInfoList = DownloadArtist.from(gid, penciller.orEmpty())
+                            EhDB.putDownloadArtist(gid, downloadInfo.artistInfoList)
+                        }
+                    }
                 }.onFailure {
                     logcat(it)
                 }.getOrNull()

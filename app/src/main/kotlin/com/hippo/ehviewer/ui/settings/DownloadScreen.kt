@@ -36,7 +36,6 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
-import com.hippo.ehviewer.dao.DownloadArtist
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
@@ -204,11 +203,8 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                         val count = result.parMap {
                             if (it.pages != 0) {
                                 EhDB.putDownloadDirname(it.gid, it.dirname)
-                                val comicInfo = SpiderDen(it.galleryInfo, it.dirname).writeComicInfo(false)
-                                val artistInfoList = comicInfo?.penciller?.let { penciller ->
-                                    DownloadArtist.from(it.gid, penciller)
-                                } ?: emptyList()
-                                DownloadManager.restoreDownload(it.galleryInfo, it.dirname, artistInfoList)
+                                DownloadManager.restoreDownload(it.galleryInfo, it.dirname)
+                                SpiderDen(it.galleryInfo, it.dirname).writeComicInfo(false)
                             }
                         }.size
                         launchSnackBar(RESTORE_COUNT_MSG(count + restoreDirCount))

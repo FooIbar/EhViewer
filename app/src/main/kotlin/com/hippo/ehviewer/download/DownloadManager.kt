@@ -134,12 +134,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                     downloaded = 0
                     legacy = -1
                 }
-                val spider = SpiderQueen.obtainSpiderQueen(info, SpiderQueen.MODE_DOWNLOAD) {
-                    info.artistInfoList = it.penciller?.let { penciller ->
-                        DownloadArtist.from(info.gid, penciller)
-                    } ?: emptyList()
-                    EhDB.putDownloadArtist(info.gid, info.artistInfoList)
-                }
+                val spider = SpiderQueen.obtainSpiderQueen(info, SpiderQueen.MODE_DOWNLOAD)
                 mCurrentSpider = spider
                 spider.addOnSpiderListener(this)
                 // Update in DB
@@ -285,8 +280,8 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         }
     }
 
-    suspend fun restoreDownload(galleryInfo: BaseGalleryInfo, dirname: String, artistInfoList: List<DownloadArtist>) {
-        val info = DownloadInfo(galleryInfo, dirname, artistInfoList)
+    suspend fun restoreDownload(galleryInfo: BaseGalleryInfo, dirname: String) {
+        val info = DownloadInfo(galleryInfo, dirname)
         info.state = DownloadInfo.STATE_NONE
 
         // Add to all download list and map
@@ -295,7 +290,6 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
         // Save to
         EhDB.putDownloadInfo(info)
-        EhDB.putDownloadArtist(galleryInfo.gid, artistInfoList)
 
         // Notify
         mutableNotifyFlow.emit(info)
