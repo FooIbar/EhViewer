@@ -27,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.GridView
@@ -50,6 +51,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -80,11 +82,14 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
+import com.hippo.ehviewer.client.EhTagDatabase
+import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
-import com.hippo.ehviewer.download.DownloadManager.labelList
+import com.hippo.ehviewer.download.DownloadManager.downloadInfoList
 import com.hippo.ehviewer.download.DownloadService
+import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.Download
@@ -110,6 +115,7 @@ import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.mapToLongArray
+import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -129,7 +135,8 @@ import sh.calvin.reorderable.rememberReorderableLazyColumnState
 fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
-    var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(Settings.recentDownloadLabel.value)) }
+    val filterMode by Settings.downloadFilterMode.collectAsState { DownloadsFilterMode.from(it) }
+    var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(filterMode, Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     val animateItems by Settings.animateItems.collectAsState()
@@ -144,18 +151,32 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val activity = remember { findActivity<MainActivity>() }
     val density = LocalDensity.current
     val view = LocalView.current
+    val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(context) && EhTagDatabase.initialized
+    val ehTags = EhTagDatabase.takeIf { canTranslate }
+    fun String.translateArtist() = ehTags?.getTranslation(TagNamespace.Artist.toPrefix(), this) ?: this
     val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
+    val unknownName = stringResource(R.string.unknown_artists)
+    val emptyLabelName = when (filterMode) {
+        DownloadsFilterMode.ARTIST -> unknownName
+        DownloadsFilterMode.CUSTOM -> defaultName
+    }
     val title = stringResource(
         R.string.scene_download_title,
-        with(filterState) { if (label == "") allName else label ?: defaultName },
+        with(filterState) {
+            when (label) {
+                "" -> allName
+                null -> emptyLabelName
+                else -> if (mode == DownloadsFilterMode.ARTIST) label.translateArtist() else label
+            }
+        },
     )
     val hint = stringResource(R.string.search_bar_hint, title)
     val sortModes = stringArrayResource(id = R.array.download_sort_modes)
     val downloadStates = stringArrayResource(id = R.array.download_state)
     val list = remember(filterState, invalidateKey) {
-        DownloadManager.downloadInfoList.filterTo(mutableStateListOf()) { info ->
+        downloadInfoList.filterTo(mutableStateListOf()) { info ->
             filterState.take(info)
         }
     }
@@ -166,8 +187,25 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val labelEmpty = stringResource(R.string.label_text_is_empty)
     val defaultInvalid = stringResource(R.string.label_text_is_invalid)
     val labelExists = stringResource(R.string.label_text_exist)
-    val downloadsCount by rememberInVM { EhDB.downloadsCount }.collectAsState(emptyMap())
-    val totalCount = remember(downloadsCount) { downloadsCount.values.sum() }
+    val downloadsCountGroupByArtist by rememberInVM { EhDB.downloadsCountByArtist }.collectAsState(emptyMap())
+    val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCountByLabel }.collectAsState(emptyMap())
+    val downloadsCount = when (filterMode) {
+        DownloadsFilterMode.CUSTOM -> downloadsCountGroupByLabel
+        DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist
+    }
+    val artistList = remember(downloadsCountGroupByArtist) {
+        downloadsCountGroupByArtist.keys.mapNotNull { artist -> artist?.let { it to it } }
+    }
+    val labelList by remember {
+        derivedStateOf {
+            DownloadManager.labelList.map { it.id!! to it.label }
+        }
+    }
+    val groupList = when (filterMode) {
+        DownloadsFilterMode.CUSTOM -> labelList
+        DownloadsFilterMode.ARTIST -> artistList
+    }
+    val totalCount = remember(downloadsCountGroupByLabel) { downloadsCountGroupByLabel.values.sum() }
 
     fun switchLabel(label: String?) {
         Settings.recentDownloadLabel.value = label
@@ -185,46 +223,67 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 title = { Text(text = labelsStr) },
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 actions = {
-                    IconButton(
-                        onClick = {
-                            launch {
-                                val text = awaitInputText(title = newLabel, hint = labelsStr) { text ->
-                                    when {
-                                        text.isBlank() -> labelEmpty
-                                        text == defaultName -> defaultInvalid
-                                        DownloadManager.containLabel(text) -> labelExists
-                                        else -> null
-                                    }
-                                }
-                                DownloadManager.addLabel(text)
-                            }
-                        },
-                    ) {
-                        Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
-                    }
-                    val letMeSelect = stringResource(R.string.let_me_select)
-                    IconButton(
-                        onClick = {
-                            launch {
-                                val selected = if (!Settings.hasDefaultDownloadLabel) {
-                                    0
-                                } else {
-                                    labelList.indexOfFirst { it.label == Settings.defaultDownloadLabel } + 2
-                                }
-                                showSelectActions(R.string.default_download_label, selected) {
-                                    onSelect(letMeSelect) {
-                                        Settings.hasDefaultDownloadLabel = false
-                                    }
-                                    onSelect(defaultName) {
-                                        Settings.hasDefaultDownloadLabel = true
-                                        Settings.defaultDownloadLabel = null
-                                    }
-                                    labelList.forEach { (label) ->
-                                        onSelect(label) {
-                                            Settings.hasDefaultDownloadLabel = true
-                                            Settings.defaultDownloadLabel = label
+                    if (DownloadsFilterMode.CUSTOM == filterMode) {
+                        IconButton(
+                            onClick = {
+                                launch {
+                                    val text = awaitInputText(title = newLabel, hint = labelsStr) { text ->
+                                        when {
+                                            text.isBlank() -> labelEmpty
+                                            text == defaultName -> defaultInvalid
+                                            DownloadManager.containLabel(text) -> labelExists
+                                            else -> null
                                         }
                                     }
+                                    DownloadManager.addLabel(text)
+                                }
+                            },
+                        ) {
+                            Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
+                        }
+                        val letMeSelect = stringResource(R.string.let_me_select)
+                        IconButton(
+                            onClick = {
+                                launch {
+                                    val selected = if (!Settings.hasDefaultDownloadLabel) {
+                                        0
+                                    } else {
+                                        DownloadManager.labelList.indexOfFirst { it.label == Settings.defaultDownloadLabel } + 2
+                                    }
+                                    showSelectActions(R.string.default_download_label, selected) {
+                                        onSelect(letMeSelect) {
+                                            Settings.hasDefaultDownloadLabel = false
+                                        }
+                                        onSelect(defaultName) {
+                                            Settings.hasDefaultDownloadLabel = true
+                                            Settings.defaultDownloadLabel = null
+                                        }
+                                        DownloadManager.labelList.forEach { (label) ->
+                                            onSelect(label) {
+                                                Settings.hasDefaultDownloadLabel = true
+                                                Settings.defaultDownloadLabel = label
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                        ) {
+                            Icon(imageVector = Icons.Default.Download, contentDescription = null)
+                        }
+                    }
+                    val custom = stringResource(R.string.select_grouping_mode_custom)
+                    val artist = stringResource(R.string.select_grouping_mode_artist)
+                    IconButton(
+                        onClick = {
+                            launch {
+                                showSelectActions(R.string.select_grouping_mode) {
+                                    val select = { mode: DownloadsFilterMode ->
+                                        filterState = filterState.copy(mode = mode, label = "")
+                                        Settings.downloadFilterMode.value = mode.flag
+                                        Settings.recentDownloadLabel.value = ""
+                                    }
+                                    onSelect(custom) { select(DownloadsFilterMode.CUSTOM) }
+                                    onSelect(artist) { select(DownloadsFilterMode.ARTIST) }
                                 }
                             }
                         },
@@ -235,10 +294,11 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
             )
 
             val labelsListState = rememberLazyListState()
+            val editEnable = DownloadsFilterMode.CUSTOM == filterMode
             val reorderableLabelState = rememberReorderableLazyColumnState(labelsListState) { from, to ->
                 val fromPosition = from.index - 2
                 val toPosition = to.index - 2
-                labelList.apply { add(toPosition, removeAt(fromPosition)) }
+                DownloadManager.labelList.apply { add(toPosition, removeAt(fromPosition)) }
                 view.performHapticFeedback(draggingHapticFeedback)
             }
             var fromIndex by remember { mutableIntStateOf(-1) }
@@ -270,11 +330,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         tonalElevation = 1.dp,
                         shadowElevation = 1.dp,
                         headlineContent = {
-                            Text("$defaultName [${downloadsCount.getOrDefault(null, 0)}]")
+                            Text("$emptyLabelName [${downloadsCount.getOrDefault(null, 0)}]")
                         },
                     )
                 }
-                itemsIndexed(labelList, key = { _, item -> item.id!! }) { index, (label, _, id) ->
+
+                itemsIndexed(groupList, key = { _, (id) -> id }) { index, (id, label) ->
                     val item by rememberUpdatedState(label)
                     // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                     val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
@@ -297,10 +358,11 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             }
                         }
                     }
-                    ReorderableItem(reorderableLabelState, key = id!!) { isDragging ->
+                    ReorderableItem(reorderableLabelState, enabled = editEnable, key = id) { isDragging ->
                         SwipeToDismissBox2(
                             state = dismissState,
                             backgroundContent = {},
+                            gesturesEnabled = editEnable,
                         ) {
                             val elevation by animateDpAsState(
                                 if (isDragging) {
@@ -318,9 +380,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                 tonalElevation = 1.dp,
                                 shadowElevation = elevation,
                                 headlineContent = {
-                                    Text("$item [${downloadsCount.getOrDefault(item, 0)}]")
+                                    val name = if (filterMode == DownloadsFilterMode.ARTIST) label.translateArtist() else label
+                                    Text("$name [${downloadsCount.getOrDefault(item, 0)}]")
                                 },
-                                trailingContent = {
+                                trailingContent = editEnable.ifTrueThen {
                                     Row {
                                         IconButton(
                                             onClick = {
@@ -350,7 +413,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                                 if (fromIndex != -1) {
                                                     if (fromIndex != index) {
                                                         val range = if (fromIndex < index) fromIndex..index else index..fromIndex
-                                                        val toUpdate = labelList.slice(range)
+                                                        val toUpdate = DownloadManager.labelList.slice(range)
                                                         toUpdate.zip(range).forEach { it.first.position = it.second }
                                                         launchIO { EhDB.updateDownloadLabel(toUpdate) }
                                                     }

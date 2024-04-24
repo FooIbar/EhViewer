@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
@@ -118,6 +119,7 @@ object Settings : DataStorePreferences(null) {
     val security = boolPref("require_unlock", false)
     val animateItems = boolPref("animate_items", true)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
+    val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)

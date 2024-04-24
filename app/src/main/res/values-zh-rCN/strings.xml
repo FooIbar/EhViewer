@@ -236,6 +236,10 @@
     <string name="remember_download_label">记住下载标签</string>
     <string name="default_download_label">默认下载标签</string>
     <string name="added_to_download_list">已添加至下载列表</string>
+    <string name="select_grouping_mode">选择分组依据</string>
+    <string name="select_grouping_mode_custom">自定义标签</string>
+    <string name="select_grouping_mode_artist">作者</string>
+    <string name="unknown_artists">未知</string>
     <!-- Download label -->
     <string name="add">添加</string>
     <string name="new_label_title">新标签</string>
