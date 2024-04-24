@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.screen
 
+import android.content.Context
 import android.net.Uri
 import android.view.ViewConfiguration
 import androidx.activity.result.contract.ActivityResultContracts
@@ -632,9 +633,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
 
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
-        val context = LocalContext.current
         val searchBarConnection = remember {
-            val slop = ViewConfiguration.get(context).scaledTouchSlop
+            val slop = ViewConfiguration.get(implicit<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {

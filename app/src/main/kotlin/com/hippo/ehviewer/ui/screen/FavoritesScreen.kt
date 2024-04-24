@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.screen
 
+import android.content.Context
 import android.view.ViewConfiguration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -43,7 +44,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
@@ -119,7 +119,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
     } else {
         stringResource(R.string.favorites_title_2, favCatName, keyword)
     }
-    val context = LocalContext.current
     val density = LocalDensity.current
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
     val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
@@ -246,7 +245,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         val searchBarConnection = remember {
-            val slop = ViewConfiguration.get(context).scaledTouchSlop
+            val slop = ViewConfiguration.get(implicit<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
@@ -376,7 +375,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
             }
             onClick(Icons.Default.Download) {
                 val info = checkedInfoMap.run { toMap().values.also { clear() } }
-                startDownload(context, false, *info.toTypedArray())
+                startDownload(implicit<Context>(), false, *info.toTypedArray())
             }
             onClick(Icons.Default.Delete) {
                 val info = checkedInfoMap.run { toMap().values.also { clear() } }
