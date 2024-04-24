@@ -99,15 +99,10 @@ class DialogState {
         content = null
     }
 
-    suspend inline fun <R> dialog(crossinline block: @Composable (CancellableContinuation<R>) -> Unit) = suspendCancellableCoroutine { cont ->
-        cont.invokeOnCancellation { dismiss() }
-        val realContinuation = object : CancellableContinuation<R> by cont {
-            override fun resumeWith(result: Result<R>) {
-                dismiss()
-                cont.resumeWith(result)
-            }
-        }
-        content = { block(realContinuation) }
+    suspend inline fun <R> dialog(crossinline block: @Composable (CancellableContinuation<R>) -> Unit) = try {
+        suspendCancellableCoroutine { cont -> content = { block(cont) } }
+    } finally {
+        dismiss()
     }
 
     suspend fun <R> awaitResult(
