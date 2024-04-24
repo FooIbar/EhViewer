@@ -336,7 +336,7 @@ class SpiderDen(val info: GalleryInfo) {
                     }
                 }.onFailure {
                     logcat(it)
-                }.getOrNull()
+                }
             }
         }
     }
