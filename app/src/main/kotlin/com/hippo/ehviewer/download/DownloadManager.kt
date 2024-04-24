@@ -578,19 +578,16 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             }
         }
 
-        with(list) {
-            mapNotNull { it.first }.let {
-                if (it.isNotEmpty()) EhDB.updateGalleryInfo(it)
+        val galleryInfoList = mutableListOf<BaseGalleryInfo>()
+        list.forEach { (info, artists) ->
+            info?.let {
+                galleryInfoList.add(it)
             }
-
-            mapNotNull { it.second }.let {
-                if (it.isNotEmpty()) {
-                    it.forEach { (gid, updateList) ->
-                        EhDB.putDownloadArtist(gid, updateList)
-                    }
-                }
+            artists?.let { (gid, updateList) ->
+                EhDB.putDownloadArtist(gid, updateList)
             }
         }
+        if (galleryInfoList.isNotEmpty()) EhDB.updateGalleryInfo(galleryInfoList)
     }
 
     val isIdle: Boolean
