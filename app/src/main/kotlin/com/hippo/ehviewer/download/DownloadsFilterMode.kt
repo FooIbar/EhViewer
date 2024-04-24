@@ -12,9 +12,9 @@ enum class DownloadsFilterMode(
     }),
     ARTIST(flag = 1, take = { info, label ->
         if (null == label) {
-            null == info.artists
+            info.artistInfoList.isEmpty()
         } else {
-            label == "" || info.artists?.contains(label) ?: false
+            label == "" || info.artists.contains(label)
         }
     }),
     ;
