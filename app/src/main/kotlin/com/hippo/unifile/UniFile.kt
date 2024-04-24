@@ -220,17 +220,18 @@ sealed class UniFile {
     companion object {
         fun fromFile(file: File) = RawFile(null, file)
 
-        private fun fromSingleUri(singleUri: Uri) = SingleDocumentFile(singleUri)
-
-        private fun fromTreeUri(treeUri: Uri) = TreeDocumentFile(null, DocumentsContractApi21.prepareTreeUri(treeUri))
-
-        private fun fromMediaUri(mediaUri: Uri) = MediaFile(mediaUri)
-
         fun fromUri(uri: Uri) = when {
             isFileUri(uri) -> fromFile(uri.toFile())
-            isTreeUri(uri) -> fromTreeUri(uri)
-            isDocumentUri(uri) -> fromSingleUri(uri)
-            isMediaUri(uri) -> fromMediaUri(uri)
+            isTreeUri(uri) -> {
+                if (isDocumentUri(uri)) {
+                    TreeDocumentFile(null, uri)
+                } else {
+                    TreeDocumentFile(null, DocumentsContractApi21.prepareTreeUri(uri))
+                }
+            }
+
+            isDocumentUri(uri) -> SingleDocumentFile(uri)
+            isMediaUri(uri) -> MediaFile(uri)
             else -> null
         }
 
@@ -238,9 +239,9 @@ sealed class UniFile {
 
         fun isDocumentUri(uri: Uri) = DocumentsContract.isDocumentUri(appCtx, uri)
 
-        fun isTreeUri(uri: Uri) = DocumentsContractCompat.isTreeUri(uri)
+        private fun isTreeUri(uri: Uri) = DocumentsContractCompat.isTreeUri(uri)
 
-        fun isMediaUri(uri: Uri) = null != MediaContract.getName(uri)
+        private fun isMediaUri(uri: Uri) = null != MediaContract.getName(uri)
 
         val Stub = fromFile(File(""))
     }
