@@ -174,12 +174,12 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     return downloadTime > stableTime
                 }
 
-                DownloadManager.downloadInfoList.parMapNotNull(concurrency = 5) {
+                DownloadManager.downloadInfoList.parMapNotNull {
                     if (it.state == DownloadInfo.STATE_FINISH && !it.isStable()) it else null
                 }.apply {
                     runSuspendCatching {
                         fillGalleryListByApi(this, EhUrl.referer)
-                        val toUpdate = parMap(concurrency = 5) { di ->
+                        val toUpdate = parMap { di ->
                             di.galleryInfo.also { SpiderDen(it, di.dirname!!).writeComicInfo(false) }
                         }
                         EhDB.updateGalleryInfo(toUpdate)
