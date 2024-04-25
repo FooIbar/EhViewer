@@ -41,6 +41,10 @@ object ParserUtils {
         return formatter.format(time.toLocalDateTime())
     }
 
+    fun parseDate(str: String): LocalDateTime {
+        return formatter.parse(str)
+    }
+
     fun trim(str: String?): String {
         return str?.unescapeXml()?.trim() ?: ""
     }
