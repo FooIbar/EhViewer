@@ -189,7 +189,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         DownloadsFilterMode.ARTIST -> downloadsCountGroupByArtist
     }
     val artistList = remember(downloadsCountGroupByArtist) {
-        downloadsCountGroupByArtist.entries.sortedBy { it.value }.mapNotNull { (artist) -> artist?.let { it to it } }
+        downloadsCountGroupByArtist.keys.mapNotNull { artist -> artist?.let { it to it } }
     }
     val labelList by remember {
         derivedStateOf {
