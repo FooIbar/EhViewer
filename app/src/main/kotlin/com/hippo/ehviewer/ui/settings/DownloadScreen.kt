@@ -28,6 +28,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import arrow.fx.coroutines.parMap
+import arrow.fx.coroutines.parMapNotNull
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -36,6 +37,7 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
+import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
@@ -157,6 +159,26 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                 summary = stringResource(id = R.string.settings_download_archive_metadata_summary),
                 value = Settings::archiveMetadata,
             )
+            WorkPreference(
+                title = stringResource(id = R.string.settings_download_reload_metadata),
+                summary = stringResource(id = R.string.settings_download_reload_metadata_summary),
+            ) {
+                DownloadManager.downloadInfoList.filter { it.state == DownloadInfo.STATE_FINISH }.apply {
+                    runSuspendCatching {
+                        fillGalleryListByApi(this, EhUrl.referer)
+                        parMapNotNull {
+                            if (it.pages != 0) {
+                                SpiderDen(it.galleryInfo, it.dirname!!).writeComicInfo(false)
+                                it.galleryInfo
+                            } else {
+                                null
+                            }
+                        }.also { EhDB.updateGalleryInfo(it) }
+                    }.onFailure {
+                        logcat(it)
+                    }
+                }
+            }
             WorkPreference(
                 title = stringResource(id = R.string.settings_download_restore_download_items),
                 summary = stringResource(id = R.string.settings_download_restore_download_items_summary),
