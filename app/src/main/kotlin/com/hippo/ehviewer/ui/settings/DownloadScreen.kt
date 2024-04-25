@@ -28,6 +28,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import arrow.fx.coroutines.parMap
+import arrow.fx.coroutines.parMapNotNull
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -171,10 +172,12 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     return downloadTime > stableTime
                 }
 
-                DownloadManager.downloadInfoList.filter { it.state == DownloadInfo.STATE_FINISH && !it.isStable() }.apply {
+                DownloadManager.downloadInfoList.parMapNotNull(concurrency = 5) {
+                    if (it.state == DownloadInfo.STATE_FINISH && !it.isStable()) it else null
+                }.apply {
                     runSuspendCatching {
                         fillGalleryListByApi(this, EhUrl.referer)
-                        val toUpdate = parMap { di ->
+                        val toUpdate = parMap(concurrency = 5) { di ->
                             di.galleryInfo.also { SpiderDen(it, di.dirname!!).writeComicInfo(false) }
                         }
                         EhDB.updateGalleryInfo(toUpdate)
