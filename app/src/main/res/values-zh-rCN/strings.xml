@@ -329,8 +329,8 @@
     <string name="settings_download_save_as_cbz">保存为 CBZ 压缩包</string>
     <string name="settings_download_archive_metadata">压缩包元数据</string>
     <string name="settings_download_archive_metadata_summary">下载压缩包时生成 ComicInfo.xml</string>
-    <string name="settings_download_reload_metadata">重新载入元数据</string>
-    <string name="settings_download_reload_metadata_summary">为所有已下载画廊重新生成 ComicInfo.xml</string>
+    <string name="settings_download_reload_metadata">重新加载元数据</string>
+    <string name="settings_download_reload_metadata_summary">为标签可能发生变动的下载项更新 ComicInfo.xml</string>
     <string name="settings_download_media_scan">允许媒体扫描</string>
     <string name="settings_download_media_scan_summary_on">请避免他人翻看你的图库应用</string>
     <string name="settings_download_media_scan_summary_off">大多数图库应用将不会显示下载目录中的图片</string>
