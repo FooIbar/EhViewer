@@ -214,6 +214,8 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.graphics.path)
+
     // https://developer.android.com/jetpack/androidx/releases/lifecycle
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.lifecycle.compose)
