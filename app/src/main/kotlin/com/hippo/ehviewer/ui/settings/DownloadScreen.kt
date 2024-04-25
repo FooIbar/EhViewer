@@ -35,9 +35,11 @@ import com.hippo.ehviewer.client.EhEngine.fillGalleryListByApi
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.data.postedTime
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
 import com.hippo.ehviewer.spider.SpiderDen
@@ -162,7 +164,14 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_download_reload_metadata),
                 summary = stringResource(id = R.string.settings_download_reload_metadata_summary),
             ) {
-                DownloadManager.downloadInfoList.filter { it.state == DownloadInfo.STATE_FINISH }.apply {
+                fun DownloadInfo.isStable(): Boolean {
+                    val downloadTime = downloadDir?.findFile(COMIC_INFO_FILE)?.lastModified() ?: return false
+                    // stable after 30 days
+                    val stableTime = postedTime?.plus(30L * 24L * 60L * 60L * 1000L) ?: return false
+                    return downloadTime > stableTime
+                }
+
+                DownloadManager.downloadInfoList.filter { it.state == DownloadInfo.STATE_FINISH && !it.isStable() }.apply {
                     runSuspendCatching {
                         fillGalleryListByApi(this, EhUrl.referer)
                         val toUpdate = parMap { di ->

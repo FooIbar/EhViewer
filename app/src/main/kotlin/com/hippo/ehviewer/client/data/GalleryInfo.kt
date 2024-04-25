@@ -15,6 +15,8 @@
  */
 package com.hippo.ehviewer.client.data
 
+import com.hippo.ehviewer.util.DATE_FORMAT_WITHOUT_SECONDS
+import com.hippo.ehviewer.util.toEpochMillis
 import moe.tarsin.kt.unreachable
 
 interface GalleryInfo {
@@ -145,3 +147,6 @@ fun GalleryInfo.findBaseInfo(): BaseGalleryInfo {
 fun GalleryInfo.asGalleryDetail(): GalleryDetail? {
     return this as? GalleryDetail
 }
+
+val GalleryInfo.postedTime
+    get() = posted?.run { DATE_FORMAT_WITHOUT_SECONDS.parse(this).toEpochMillis() }
