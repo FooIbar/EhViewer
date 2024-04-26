@@ -40,6 +40,8 @@ object DocumentsContractApi21 {
         )
     }
 
+    // This is not a good approach as the document identifier is an opaque implementation detail of
+    // the provider, but works for ExternalStorageProvider
     fun buildChildUri(uri: Uri, displayName: String): Uri {
         return DocumentsContract.buildDocumentUriUsingTree(
             uri,

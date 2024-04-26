@@ -23,22 +23,26 @@ import android.webkit.MimeTypeMap
 import java.io.File
 import java.util.Locale
 
-class RawFile(private val parent: RawFile?, private var file: File) : UniFile() {
+class RawFile(override val parent: RawFile?, private var file: File) : UniFile {
 
     private var cachePresent = false
     private val allChildren by lazy {
-        val current = this
         cachePresent = true
-        mutableListOf<RawFile>().apply {
-            val fs = file.listFiles()?.map { RawFile(current, it) }
-            if (fs != null) addAll(fs)
-        }
+        file.listFiles().orEmpty().mapTo(mutableListOf()) { RawFile(this, it) }
     }
 
-    private fun popCacheIfPresent(file: RawFile) = apply {
+    private fun popCacheIfPresent(file: RawFile) {
         if (cachePresent) {
             synchronized(allChildren) {
                 allChildren.add(file)
+            }
+        }
+    }
+
+    private fun evictCacheIfPresent(file: RawFile) {
+        if (cachePresent) {
+            synchronized(allChildren) {
+                allChildren.remove(file)
             }
         }
     }
@@ -101,7 +105,9 @@ class RawFile(private val parent: RawFile?, private var file: File) : UniFile() 
 
     override fun resolve(displayName: String) = RawFile(this, File(file, displayName))
 
-    override fun delete() = file.deleteRecursively()
+    override fun delete() = file.deleteRecursively().also {
+        if (it) parent?.evictCacheIfPresent(this)
+    }
 
     override fun exists() = file.exists()
 
