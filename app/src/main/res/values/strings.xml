@@ -376,7 +376,7 @@
     <string name="settings_download_archive_metadata">Archive metadata</string>
     <string name="settings_download_archive_metadata_summary">Generate ComicInfo.xml on archive download</string>
     <string name="settings_download_reload_metadata">Reload metadata</string>
-    <string name="settings_download_reload_metadata_summary">Regenerate the ComicInfo.xml for download items that may change tags</string>
+    <string name="settings_download_reload_metadata_summary">Regenerate the ComicInfo.xml for download items whose tags may have changed</string>
     <string name="settings_download_restore_download_items">Restore download items</string>
     <string name="settings_download_restore_download_items_summary">Restore all download items in download location</string>
     <string name="settings_download_restore_not_found">Not found download items to restore</string>
