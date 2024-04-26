@@ -1,6 +1,8 @@
 package com.hippo.ehviewer.ui.screen
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
@@ -244,6 +247,9 @@ fun SearchBarScreen(
                     .padding(top = 48.dp) then scrollAwayModifier,
             )
         }
+        // https://issuetracker.google.com/337191298
+        // Workaround for can't exit SearchBar due to refocus in non-touch mode
+        Box(Modifier.size(1.dp).focusable())
         val onExpandedChange = { v: Boolean ->
             if (v) {
                 onSearchViewExpanded()
