@@ -107,7 +107,7 @@ fun DownloadCard(
             movableContentOf<DownloadInfo> {
                 EhAsyncCropThumb(
                     key = it,
-                    modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
+                    modifier = Modifier.aspectRatio(DEFAULT_RATIO).fillMaxSize(),
                 )
             }
         }

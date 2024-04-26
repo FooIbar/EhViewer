@@ -90,7 +90,7 @@ fun EhPreviewItem(
     Box(contentAlignment = Alignment.Center) {
         CrystalCard(
             onClick = onClick,
-            modifier = Modifier.aspectRatio(DEFAULT_ASPECT),
+            modifier = Modifier.aspectRatio(DEFAULT_RATIO),
         ) {
             if (galleryPreview != null) {
                 EhAsyncPreview(
