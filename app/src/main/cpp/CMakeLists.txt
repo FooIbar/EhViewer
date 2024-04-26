@@ -63,15 +63,15 @@ option(ENABLE_CPIO OFF)
 option(ENABLE_CAT OFF)
 option(ENABLE_UNZIP OFF)
 option(ENABLE_TEST OFF)
-option(ENABLE_WERROR OFF)
 
 # Configure libarchive link's static lib
 SET(LIBARCHIVE_CUSTOM_LIBS "nettle" "liblzma")
 
 FetchContent_Declare(
         libarchive
-        GIT_REPOSITORY https://github.com/FooIbar/libarchive.git
-        GIT_TAG v3.7.3
+        GIT_REPOSITORY https://github.com/libarchive/libarchive.git
+        GIT_TAG v3.7.4
+        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/0001-Hide-symbols.patch ${CMAKE_CURRENT_LIST_DIR}/0002-Insert-link-libs.patch || cd .
 )
 
 FetchContent_MakeAvailable(libarchive)
