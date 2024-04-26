@@ -7,11 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import coil3.Image
 import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
@@ -29,13 +28,15 @@ fun requestOf(model: GalleryInfo): ImageRequest {
 fun EhAsyncThumb(
     model: GalleryInfo,
     modifier: Modifier = Modifier,
-    placeholder: Painter? = null,
+    onSuccess: ((Image) -> Unit)? = null,
     contentScale: ContentScale = ContentScale.Fit,
 ) = AsyncImage(
     model = requestOf(model),
     contentDescription = null,
     modifier = modifier,
-    placeholder = placeholder,
+    onSuccess = onSuccess?.let { callback ->
+        { callback(it.result.image) }
+    },
     contentScale = contentScale,
 )
 
@@ -49,11 +50,9 @@ fun EhAsyncCropThumb(
         model = requestOf(key),
         contentDescription = null,
         modifier = modifier,
-        onState = {
-            if (it is AsyncImagePainter.State.Success) {
-                if (it.result.image.shouldCrop) {
-                    contentScale = ContentScale.Crop
-                }
+        onSuccess = {
+            if (it.result.image.shouldCrop) {
+                contentScale = ContentScale.Crop
             }
         },
         contentScale = contentScale,
