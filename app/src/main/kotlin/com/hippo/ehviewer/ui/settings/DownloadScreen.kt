@@ -183,9 +183,9 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                             di.galleryInfo.also { SpiderDen(it, di.dirname!!).writeComicInfo(false) }
                         }
                         EhDB.updateGalleryInfo(toUpdate)
-                        launchSnackBar(appCtx.getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
+                        launchSnackBar(context.getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
                     }.onFailure {
-                        launchSnackBar(appCtx.getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
+                        launchSnackBar(context.getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
                     }
                 }
             }
