@@ -121,7 +121,6 @@ android {
             // https://kotlinlang.org/docs/compiler-reference.html#progressive
             "-progressive",
             "-Xjvm-default=all",
-            "-Xlambdas=indy",
             "-Xcontext-receivers",
 
             "-opt-in=coil3.annotation.ExperimentalCoilApi",
