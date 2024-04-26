@@ -174,19 +174,19 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     return downloadTime > stableTime
                 }
 
-                DownloadManager.downloadInfoList.parMapNotNull {
-                    if (it.state == DownloadInfo.STATE_FINISH && !it.isStable()) it else null
-                }.apply {
-                    runSuspendCatching {
+                runSuspendCatching {
+                    DownloadManager.downloadInfoList.parMapNotNull {
+                        if (it.state == DownloadInfo.STATE_FINISH && !it.isStable()) it else null
+                    }.apply {
                         fillGalleryListByApi(this, EhUrl.referer)
                         val toUpdate = parMap { di ->
                             di.galleryInfo.also { SpiderDen(it, di.dirname!!).writeComicInfo(false) }
                         }
                         EhDB.updateGalleryInfo(toUpdate)
                         launchSnackBar(context.getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
-                    }.onFailure {
-                        launchSnackBar(context.getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
                     }
+                }.onFailure {
+                    launchSnackBar(context.getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
                 }
             }
             WorkPreference(
