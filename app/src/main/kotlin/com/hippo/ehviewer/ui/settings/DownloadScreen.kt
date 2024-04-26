@@ -50,6 +50,7 @@ import com.hippo.ehviewer.spider.readCompatFromUniFile
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
+import com.hippo.ehviewer.util.displayString
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.displayPath
@@ -182,8 +183,9 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                             di.galleryInfo.also { SpiderDen(it, di.dirname!!).writeComicInfo(false) }
                         }
                         EhDB.updateGalleryInfo(toUpdate)
+                        launchSnackBar(appCtx.getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
                     }.onFailure {
-                        logcat(it)
+                        launchSnackBar(appCtx.getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
                     }
                 }
             }
