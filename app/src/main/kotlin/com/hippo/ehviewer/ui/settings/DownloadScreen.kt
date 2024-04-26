@@ -168,7 +168,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
             ) {
                 fun DownloadInfo.isStable(): Boolean {
                     val downloadTime = downloadDir?.findFile(COMIC_INFO_FILE)?.lastModified() ?: return false
-                    val postedTime = posted?.let { ParserUtils.parseDate(it).toEpochMillis() } ?: return false
+                    val postedTime = posted?.let { ParserUtils.parseDate(it) } ?: return false
                     // stable 30 days after posted
                     val stableTime = postedTime + 30L * 24L * 60L * 60L * 1000L
                     return downloadTime > stableTime
