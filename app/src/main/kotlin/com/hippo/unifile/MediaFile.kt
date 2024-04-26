@@ -18,7 +18,7 @@ package com.hippo.unifile
 import android.net.Uri
 import java.io.IOException
 
-class MediaFile(override val uri: Uri) : UniFile() {
+class MediaFile(override val uri: Uri) : UniFile {
     override fun createFile(displayName: String) = null
 
     override fun createDirectory(displayName: String) = null
@@ -27,6 +27,7 @@ class MediaFile(override val uri: Uri) : UniFile() {
         get() = MediaContract.getName(uri)
     override val type: String?
         get() = MediaContract.getType(uri)
+    override val parent = null
     override val isDirectory = false
     override val isFile: Boolean
         get() = DocumentsContractApi19.isFile(uri)
