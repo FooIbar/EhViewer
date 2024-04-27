@@ -54,7 +54,7 @@ class TreeDocumentFile(
         if (child != null) {
             if (child.isFile) return child
         } else {
-            val extension = displayName.substringAfterLast('.', "")
+            val extension = displayName.substringAfterLast('.', "").ifEmpty { null }?.lowercase()
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
             val result = DocumentsContractApi21.createFile(uri, mimeType, displayName)
             if (result != null) {

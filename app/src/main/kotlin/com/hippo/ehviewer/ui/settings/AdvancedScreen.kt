@@ -169,7 +169,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     userAgent = dialogState.awaitInputText(
                         initial = userAgent,
                         title = userAgentTitle,
-                    ).trim().takeUnless { it.isBlank() } ?: CHROME_USER_AGENT
+                    ).trim().ifBlank { null } ?: CHROME_USER_AGENT
                 }
             }
             val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)

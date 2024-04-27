@@ -129,7 +129,7 @@ object FileUtils {
      * @return null for can't find extension
      */
     fun getExtensionFromFilename(filename: String?) =
-        filename?.substringAfterLast('.', "").takeUnless { it.isNullOrEmpty() }
+        filename?.substringAfterLast('.', "")?.ifEmpty { null }
 
     /**
      * Get name from filename
@@ -138,7 +138,7 @@ object FileUtils {
      * @return null for start with . dot
      */
     fun getNameFromFilename(filename: String?) =
-        filename?.substringBeforeLast('.').takeUnless { it.isNullOrEmpty() }
+        filename?.substringBeforeLast('.')?.ifEmpty { null }
 
     /**
      * Create a temp file, you need to delete it by you self.

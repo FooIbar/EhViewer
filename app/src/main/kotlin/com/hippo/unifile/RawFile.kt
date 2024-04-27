@@ -21,7 +21,6 @@ import android.os.ParcelFileDescriptor.open
 import android.os.ParcelFileDescriptor.parseMode
 import android.webkit.MimeTypeMap
 import java.io.File
-import java.util.Locale
 
 class RawFile(override val parent: RawFile?, private var file: File) : UniFile {
 
@@ -71,7 +70,8 @@ class RawFile(override val parent: RawFile?, private var file: File) : UniFile {
         get() = if (file.isDirectory) {
             null
         } else {
-            getTypeForName(file.name)
+            val extension = file.extension.ifEmpty { null }?.lowercase()
+            MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
         }
     override val isDirectory: Boolean
         get() = file.isDirectory
@@ -129,16 +129,4 @@ class RawFile(override val parent: RawFile?, private var file: File) : UniFile {
     }
 
     override fun openFileDescriptor(mode: String): ParcelFileDescriptor = open(file, parseMode(mode))
-}
-
-private fun getTypeForName(name: String): String {
-    val lastDot = name.lastIndexOf('.')
-    if (lastDot >= 0) {
-        val extension = name.substring(lastDot + 1).lowercase(Locale.getDefault())
-        val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-        if (mime != null) {
-            return mime
-        }
-    }
-    return "application/octet-stream"
 }

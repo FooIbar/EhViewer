@@ -76,7 +76,7 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
     }
     return ComicInfo(
         series = title,
-        alternateSeries = titleJpn.takeUnless { it.isNullOrBlank() },
+        alternateSeries = titleJpn?.ifBlank { null },
         writer = groups.ifEmpty { null },
         penciller = artists.ifEmpty { null },
         genre = otherTags.ifEmpty { null },
