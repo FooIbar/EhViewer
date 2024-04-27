@@ -45,22 +45,19 @@ static void doRewrite(byte *addr, size_t size) {
     }
 }
 
-JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_GifUtilsKt_isGif(JNIEnv *env, jclass clazz, jint fd) {
+jboolean is_gif(JNIEnv *env, jclass clazz, jint fd) {
     byte buffer[GIF_HEADER_LENGTH];
     return read(fd, buffer, GIF_HEADER_LENGTH) == GIF_HEADER_LENGTH &&
            isGif(buffer);
 }
 
-JNIEXPORT void JNICALL
-Java_com_hippo_ehviewer_jni_GifUtilsKt_rewriteGifSource(JNIEnv *env, jclass clazz, jobject buffer) {
+void rewrite_gif_source(JNIEnv *env, jclass clazz, jobject buffer) {
     byte *addr = (*env)->GetDirectBufferAddress(env, buffer);
     size_t size = (*env)->GetDirectBufferCapacity(env, buffer);
     doRewrite(addr, size);
 }
 
-JNIEXPORT jobject JNICALL
-Java_com_hippo_ehviewer_jni_GifUtilsKt_mmap(JNIEnv *env, jclass clazz, jint fd) {
+jobject mmap_wrapper(JNIEnv *env, jclass clazz, jint fd) {
     struct stat64 st;
     fstat64(fd, &st);
     size_t size = st.st_size;
@@ -69,9 +66,22 @@ Java_com_hippo_ehviewer_jni_GifUtilsKt_mmap(JNIEnv *env, jclass clazz, jint fd) 
     return (*env)->NewDirectByteBuffer(env, addr, size);
 }
 
-JNIEXPORT void JNICALL
-Java_com_hippo_ehviewer_jni_GifUtilsKt_munmap(JNIEnv *env, jclass clazz, jobject buffer) {
+void munmap_wrapper(JNIEnv *env, jclass clazz, jobject buffer) {
     byte *addr = (*env)->GetDirectBufferAddress(env, buffer);
     size_t size = (*env)->GetDirectBufferCapacity(env, buffer);
     munmap(addr, size);
+}
+
+static const JNINativeMethod gif_utils_methods[] = {
+        {"isGif",            "(I)Z",                     is_gif},
+        {"rewriteGifSource", "(Ljava/nio/ByteBuffer;)V", rewrite_gif_source},
+        {"mmap",             "(I)Ljava/nio/ByteBuffer;", mmap_wrapper},
+        {"munmap",           "(Ljava/nio/ByteBuffer;)V", munmap_wrapper},
+};
+
+int register_gif_utils_methods(JNIEnv *env) {
+    jclass class = (*env)->FindClass(env, "com/hippo/ehviewer/jni/GifUtilsKt");
+    if (class == NULL) return JNI_ERR;
+    int result = (*env)->RegisterNatives(env, class, gif_utils_methods, sizeof(gif_utils_methods) / sizeof(JNINativeMethod));
+    return result;
 }

@@ -220,8 +220,7 @@ uint32_t findBorderBottom(uint32_t *pixels, uint32_t width, uint32_t height) {
     return height;
 }
 
-JNIEXPORT jintArray JNICALL
-Java_com_hippo_ehviewer_image_ImageKt_detectBorder(JNIEnv *env, jclass clazz, jobject bitmap) {
+jintArray detect_border(JNIEnv *env, jclass clazz, jobject bitmap) {
     void *pixels = NULL;
     AndroidBitmapInfo info;
     memset(&info, 0, sizeof(info));
@@ -238,4 +237,15 @@ Java_com_hippo_ehviewer_image_ImageKt_detectBorder(JNIEnv *env, jclass clazz, jo
     jintArray ret = (*env)->NewIntArray(env, 4);
     (*env)->SetIntArrayRegion(env, ret, 0, 4, array);
     return ret;
+}
+
+static const JNINativeMethod image_methods[] = {
+        {"detectBorder", "(Landroid/graphics/Bitmap;)[I", detect_border},
+};
+
+int register_image_methods(JNIEnv *env) {
+    jclass class = (*env)->FindClass(env, "com/hippo/ehviewer/image/ImageKt");
+    if (class == NULL) return JNI_ERR;
+    int result = (*env)->RegisterNatives(env, class, image_methods, sizeof(image_methods) / sizeof(JNINativeMethod));
+    return result;
 }

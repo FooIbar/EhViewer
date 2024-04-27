@@ -102,6 +102,7 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         }
         super.onCreate()
         System.loadLibrary("ehviewer")
+        System.loadLibrary("ehviewer_rust")
         lifecycleScope.launchIO {
             launch {
                 EhTagDatabase

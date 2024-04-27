@@ -91,6 +91,7 @@ android {
         externalNativeBuild {
             cmake {
                 arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+                targets += listOf("ehviewer", "cargo-build_ehviewer_rust")
             }
         }
     }

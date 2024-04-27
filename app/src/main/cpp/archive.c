@@ -279,8 +279,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
     return 0;
 }
 
-JNIEXPORT jint JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint fd, jlong size, jboolean sort_entries) {
+jint open_archive(JNIEnv *env, jclass thiz, jint fd, jlong size, jboolean sort_entries) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     page_size = getpagesize();
@@ -358,8 +357,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
     return r;
 }
 
-JNIEXPORT jobject JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass thiz, jint index) {
+jobject extract_to_byte_buffer(JNIEnv *env, jclass thiz, jint index) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     void *addr = MEMPOOL_ADDR_BY_SORTED_IDX(index);
@@ -399,8 +397,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
     return 0;
 }
 
-JNIEXPORT void JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_closeArchive(JNIEnv *env, jclass thiz) {
+void close_archive(JNIEnv *env, jclass thiz) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     for (int i = 0; i < CTX_POOL_SIZE; i++)
@@ -418,15 +415,13 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_closeArchive(JNIEnv *env, jclass thiz) {
     free(entries);
 }
 
-JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_needPassword(JNIEnv *env, jclass thiz) {
+jboolean need_password(JNIEnv *env, jclass thiz) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     return need_encrypt;
 }
 
-JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz, jstring str) {
+jboolean provide_password(JNIEnv *env, jclass thiz, jstring str) {
     EH_UNUSED(thiz);
     struct archive_entry *entry;
     archive_ctx *ctx;
@@ -455,16 +450,14 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz, 
     return ret;
 }
 
-JNIEXPORT jstring JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_getExtension(JNIEnv *env, jclass thiz, jint index) {
+jstring get_extension(JNIEnv *env, jclass thiz, jint index) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     const char *ext = strrchr(entries[index].filename, '.') + 1;
     return (*env)->NewStringUTF(env, ext);
 }
 
-JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_extractToFd(JNIEnv *env, jclass thiz, jint index, jint fd) {
+jboolean extract_to_fd(JNIEnv *env, jclass thiz, jint index, jint fd) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
     index = entries[index].index;
@@ -478,16 +471,14 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToFd(JNIEnv *env, jclass thiz, jint
     return ret == ARCHIVE_OK;
 }
 
-JNIEXPORT void JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz, jobject buffer) {
+void release_byte_buffer(JNIEnv *env, jclass thiz, jobject buffer) {
     EH_UNUSED(thiz);
     void *addr = (*env)->GetDirectBufferAddress(env, buffer);
     size_t size = (*env)->GetDirectBufferCapacity(env, buffer);
     if (!ADDR_IN_FILE_MAPPING(addr)) mempool_release_pages(addr, size);
 }
 
-JNIEXPORT jboolean JNICALL
-Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, jintArray fd_batch, jobjectArray names, jint arc_fd, jint size) {
+jboolean archive_fd_batch(JNIEnv *env, jclass clazz, jintArray fd_batch, jobjectArray names, jint arc_fd, jint size) {
     EH_UNUSED(clazz);
     struct archive *arc = archive_write_new();
     struct stat st;
@@ -519,4 +510,23 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, 
     archive_write_close(arc);
     archive_write_free(arc);
     return true;
+}
+
+static const JNINativeMethod archive_methods[] = {
+        {"releaseByteBuffer",   "(Ljava/nio/ByteBuffer;)V",   release_byte_buffer},
+        {"openArchive",         "(IJZ)I",                     open_archive},
+        {"extractToByteBuffer", "(I)Ljava/nio/ByteBuffer;",   extract_to_byte_buffer},
+        {"extractToFd",         "(II)Z",                      extract_to_fd},
+        {"getExtension",        "(I)Ljava/lang/String;",      get_extension},
+        {"needPassword",        "()Z",                        need_password},
+        {"providePassword",     "(Ljava/lang/String;)Z",      provide_password},
+        {"closeArchive",        "()V",                        close_archive},
+        {"archiveFdBatch",      "([I[Ljava/lang/String;II)Z", archive_fd_batch},
+};
+
+int register_archive_methods(JNIEnv *env) {
+    jclass class = (*env)->FindClass(env, "com/hippo/ehviewer/jni/ArchiveKt");
+    if (class == NULL) return JNI_ERR;
+    int result = (*env)->RegisterNatives(env, class, archive_methods, sizeof(archive_methods) / sizeof(JNINativeMethod));
+    return result;
 }
