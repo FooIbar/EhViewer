@@ -1,1 +1,1 @@
-mod sha1;
+pub(crate) mod sha1;

@@ -5,7 +5,6 @@ extern crate android_logger;
 extern crate anyhow;
 extern crate base16ct;
 extern crate jni;
-extern crate jni_fn;
 extern crate log;
 extern crate once_cell;
 extern crate quick_xml;
@@ -17,8 +16,9 @@ extern crate tl;
 use android_logger::Config;
 use anyhow::{anyhow, ensure, Result};
 use jni::objects::JByteBuffer;
-use jni::sys::{jint, jobject, JavaVM, JNI_VERSION_1_6};
-use jni::JNIEnv;
+use jni::strings::JNIString;
+use jni::sys::{jint, jobject, JNI_ERR, JNI_VERSION_1_6};
+use jni::{JNIEnv, JavaVM, NativeMethod};
 use log::LevelFilter;
 use serde::Serialize;
 use std::ffi::c_void;
@@ -148,7 +148,66 @@ fn query_childs_first_match_attr<'a>(
 }
 
 #[no_mangle]
-pub extern "system" fn JNI_OnLoad(_: JavaVM, _: *mut c_void) -> jint {
+pub extern "system" fn JNI_OnLoad(vm: JavaVM, _: *mut c_void) -> jint {
     android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
+    let Ok(mut env) = vm.get_env() else {
+        return JNI_ERR;
+    };
+    let native_methods = [
+        (
+            "com/hippo/ehviewer/jni/HashKt",
+            [NativeMethod {
+                name: JNIString::from("sha1"),
+                sig: JNIString::from("(I)Ljava/lang/String;"),
+                fn_ptr: hash::sha1::sha1 as *mut c_void,
+            }],
+        ),
+        (
+            "com/hippo/ehviewer/client/parser/GalleryListParserKt",
+            [NativeMethod {
+                name: JNIString::from("parseGalleryInfoList"),
+                sig: JNIString::from("(Ljava/nio/ByteBuffer;I)I"),
+                fn_ptr: parser::list::parse_gallery_list as *mut c_void,
+            }],
+        ),
+        (
+            "com/hippo/ehviewer/client/parser/FavoritesParserKt",
+            [NativeMethod {
+                name: JNIString::from("parseFav"),
+                sig: JNIString::from("(Ljava/nio/ByteBuffer;I)I"),
+                fn_ptr: parser::fav::parse_favorites as *mut c_void,
+            }],
+        ),
+        (
+            "com/hippo/ehviewer/client/parser/HomeParserKt",
+            [NativeMethod {
+                name: JNIString::from("parseLimit"),
+                sig: JNIString::from("(Ljava/nio/ByteBuffer;I)I"),
+                fn_ptr: parser::home::parse_image_limit as *mut c_void,
+            }],
+        ),
+        (
+            "com/hippo/ehviewer/client/parser/TorrentParserKt",
+            [NativeMethod {
+                name: JNIString::from("parseTorrent"),
+                sig: JNIString::from("(Ljava/nio/ByteBuffer;I)I"),
+                fn_ptr: parser::torrent::parse_torrents as *mut c_void,
+            }],
+        ),
+        (
+            "com/hippo/ehviewer/client/parser/UserConfigParser",
+            [NativeMethod {
+                name: JNIString::from("parseFavCat"),
+                sig: JNIString::from("(Ljava/nio/ByteBuffer;I)I"),
+                fn_ptr: parser::config::parse_fav_cat as *mut c_void,
+            }],
+        )
+    ];
+    for (class_name, methods) in native_methods {
+        let Ok(class) = env.find_class(class_name) else {
+            return JNI_ERR;
+        };
+        env.register_native_methods(class, &methods).unwrap();
+    }
     JNI_VERSION_1_6
 }

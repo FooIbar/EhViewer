@@ -2,7 +2,6 @@ use anyhow::{anyhow, bail, Result};
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
-use jni_fn::jni_fn;
 use parse_marshal_inplace;
 use quick_xml::escape::unescape;
 use serde::Serialize;
@@ -238,10 +237,7 @@ pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Result<Gallery
     f().ok_or(anyhow!("No content"))
 }
 
-#[no_mangle]
-#[allow(non_snake_case)]
-#[jni_fn("com.hippo.ehviewer.client.parser.GalleryListParserKt")]
-pub fn parseGalleryInfoList(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+pub fn parse_gallery_list(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |dom, str| {
         parse_info_list(dom, dom.parser(), str)
     })

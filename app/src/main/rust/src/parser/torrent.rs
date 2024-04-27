@@ -2,7 +2,6 @@ use anyhow::{anyhow, Result};
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
-use jni_fn::jni_fn;
 use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::{Parser, VDom};
@@ -45,10 +44,7 @@ fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>> {
     Ok(list)
 }
 
-#[no_mangle]
-#[allow(non_snake_case)]
-#[jni_fn("com.hippo.ehviewer.client.parser.TorrentParserKt")]
-pub fn parseTorrent(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
+pub fn parse_torrents(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, buffer, limit, |dom, _| {
         parse_torrent_list(dom, dom.parser())
     })

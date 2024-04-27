@@ -1,5 +1,5 @@
-mod config;
-mod fav;
-mod home;
-mod list;
-mod torrent;
+pub(crate) mod config;
+pub(crate) mod fav;
+pub(crate) mod home;
+pub(crate) mod list;
+pub(crate) mod torrent;

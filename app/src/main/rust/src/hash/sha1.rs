@@ -3,7 +3,6 @@ use base16ct::lower::encode_str;
 use jni::objects::JClass;
 use jni::sys::{jint, jstring};
 use jni::JNIEnv;
-use jni_fn::jni_fn;
 use jni_throwing;
 use sha1::{Digest, Sha1};
 use std::mem::forget;
@@ -16,9 +15,6 @@ fn file_sha1<'a>(file: &mut File, digest: &'a mut [u8; 40]) -> Result<&'a str> {
     Ok(encode_str(&sha.finalize(), digest)?)
 }
 
-#[no_mangle]
-#[allow(non_snake_case)]
-#[jni_fn("com.hippo.ehviewer.jni.HashKt")]
 pub fn sha1(mut env: JNIEnv, _class: JClass, fd: jint) -> jstring {
     jni_throwing(&mut env, |env| {
         let mut hex_digest = [0u8; 40];
