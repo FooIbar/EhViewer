@@ -62,7 +62,7 @@ abstract class PageLoader2(private val gid: Long, var startPage: Int) : PageLoad
     protected abstract fun getImageExtension(index: Int): String
 
     fun getImageFilename(index: Int): String {
-        return "$title - ${index + 1}.${getImageExtension(index)}"
+        return "$title - ${index + 1}.${getImageExtension(index).lowercase()}"
     }
 
     abstract fun save(index: Int, file: UniFile): Boolean
