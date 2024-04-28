@@ -298,7 +298,7 @@ class DialogState {
         }
     }
 
-    suspend fun showDatePicker(
+    suspend fun awaitUserSelectDate(
         @StringRes title: Int,
         initialSelectedDateMillis: Long? = null,
         initialDisplayedMonthMillis: Long? = initialSelectedDateMillis,
