@@ -23,7 +23,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -38,6 +37,7 @@ import com.hippo.ehviewer.ui.tools.PredictiveBackEasing
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.snackBarPadding
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -99,6 +99,7 @@ fun interface FabBuilder {
     fun onClick(icon: ImageVector, that: suspend () -> Unit) = onClick(icon, true, that)
 }
 
+context(CoroutineScope)
 @Composable
 fun FabLayout(
     hidden: Boolean,
@@ -131,7 +132,7 @@ fun FabLayout(
         record { buildFab(builder) }
         transform { onEachLatest { state.waitCollapse() } }
     }
-    val coroutineScope = rememberCoroutineScope()
+
     if (updatedExpanded && autoCancel) {
         Spacer(
             modifier = Modifier.fillMaxSize().pointerInput(Unit) {
@@ -139,6 +140,7 @@ fun FabLayout(
             },
         )
     }
+
     val animatedProgress by state.expandProgress.asState()
     PredictiveBackHandler(updatedExpanded) { flow ->
         try {
@@ -150,9 +152,7 @@ fun FabLayout(
             }
             onExpandChanged(false)
         } catch (e: CancellationException) {
-            coroutineScope.launch {
-                state.expand()
-            }
+            launch { state.expand() }
         }
     }
     Box(
@@ -168,7 +168,7 @@ fun FabLayout(
                     forEachIndexed { index, (imageVector, autoClose, onClick) ->
                         SmallFloatingActionButton(
                             onClick = {
-                                coroutineScope.launch(Dispatchers.Default) {
+                                launch(Dispatchers.Default) {
                                     onClick()
                                     if (autoClose) onExpandChanged(false)
                                 }
