@@ -121,7 +121,6 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
@@ -661,10 +660,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 filterState = filterState.copy(state = state)
             }
         } else {
-            onClick(Icons.Default.DoneAll) {
+            onClick(Icons.Default.DoneAll, autoClose = false) {
                 val info = list.associateBy { it.gid }
                 checkedInfoMap.putAll(info)
-                throw CancellationException()
             }
             onClick(Icons.Default.PlayArrow) {
                 val gidList = checkedInfoMap.takeAndClear().mapToLongArray(DownloadInfo::gid)
