@@ -430,7 +430,7 @@ suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>
     return label
 }
 
-suspend fun DialogState.awaitUserSelectDate(): String? {
+suspend fun DialogState.awaitSelectDate(): String? {
     val initial = LocalDate(2007, 3, 21)
     val yesterday = Clock.System.todayIn(TimeZone.UTC).minus(1, DateTimeUnit.DAY)
     val initialMillis = initial.toEpochMillis()

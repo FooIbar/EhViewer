@@ -66,7 +66,7 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.LockDrawer
-import com.hippo.ehviewer.ui.awaitUserSelectDate
+import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
@@ -354,7 +354,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 }
             }
             onClick(EhIcons.Default.GoTo) {
-                val date = awaitUserSelectDate()
+                val date = awaitSelectDate()
                 refresh(urlBuilder.copy(jumpTo = date))
             }
             onClick(Icons.Default.Refresh) {

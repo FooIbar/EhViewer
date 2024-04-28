@@ -106,7 +106,7 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.LocalSideSheetState
-import com.hippo.ehviewer.ui.awaitUserSelectDate
+import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
@@ -730,7 +730,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     }.trim().toInt() - 1
                     urlBuilder.setJumpTo(text)
                 } else {
-                    val date = awaitUserSelectDate()
+                    val date = awaitSelectDate()
                     urlBuilder.mJumpTo = date
                 }
                 data.refresh()
