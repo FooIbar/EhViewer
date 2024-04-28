@@ -382,13 +382,17 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
                 }
                 val srcCat = urlBuilder.favCat
-                if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) { // Delete local fav
-                    EhDB.removeLocalFavorites(info)
-                } else {
-                    val delList = info.mapToLongArray(BaseGalleryInfo::gid)
-                    EhEngine.modifyFavorites(delList, srcCat, -1)
+                val result = runSuspendCatching {
+                    if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) { // Delete local fav
+                        EhDB.removeLocalFavorites(info)
+                    } else {
+                        val delList = info.mapToLongArray(BaseGalleryInfo::gid)
+                        EhEngine.modifyFavorites(delList, srcCat, -1)
+                    }
                 }
+                // We refresh anyway as cloud data maybe partially modified
                 data.refresh()
+                result.onFailure { showSnackbar(it.displayString()) }
             }
             onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 // First is local favorite, the other 10 is cloud favorite
@@ -403,7 +407,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
                 val info = checkedInfoMap.takeAndClear()
                 if (srcCat != dstCat) {
-                    runSuspendCatching {
+                    val result = runSuspendCatching {
                         if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
                             // Move from local to cloud
                             val galleryList = info.map { it.gid to it.token }
@@ -417,11 +421,10 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             val gidArray = info.mapToLongArray(BaseGalleryInfo::gid)
                             EhEngine.modifyFavorites(gidArray, srcCat, dstCat)
                         }
-                    }.onSuccess {
-                        data.refresh()
-                    }.onFailure {
-                        showSnackbar(it.displayString())
                     }
+                    // We refresh anyway as cloud data maybe partially modified
+                    data.refresh()
+                    result.onFailure { showSnackbar(it.displayString()) }
                 }
             }
         }
