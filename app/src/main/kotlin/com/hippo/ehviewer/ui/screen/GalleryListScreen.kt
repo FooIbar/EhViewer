@@ -722,13 +722,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     val page = urlBuilder.mJumpTo?.toIntOrNull() ?: 0
                     val hint = getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
                     val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
-                        val text = oriText.trim()
-                        val goTo = runCatching {
-                            text.toInt() - 1
-                        }.onFailure {
-                            return@awaitInputText invalidNum
-                        }.getOrThrow()
-                        if (goTo !in 0..<TOPLIST_PAGES) outOfRange else null
+                        when (oriText.trim().toIntOrNull()?.let { it - 1 }) {
+                            null -> invalidNum
+                            !in 0..<TOPLIST_PAGES -> outOfRange
+                            else -> null
+                        }
                     }.trim().toInt() - 1
                     urlBuilder.setJumpTo(text)
                     data.refresh()
