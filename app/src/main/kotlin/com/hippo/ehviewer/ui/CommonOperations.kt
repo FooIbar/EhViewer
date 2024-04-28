@@ -436,7 +436,7 @@ suspend fun DialogState.awaitUserSelectDate(): String? {
     val initialMillis = initial.toEpochMillis()
     val yesterdayMillis = yesterday.toEpochMillis()
     val dateRange = initialMillis..yesterdayMillis
-    val dateMillis = awaitUserSelectDate(
+    val dateMillis = awaitSelectDate(
         title = R.string.go_to,
         yearRange = initial.year..yesterday.year,
         selectableDates = object : SelectableDates {

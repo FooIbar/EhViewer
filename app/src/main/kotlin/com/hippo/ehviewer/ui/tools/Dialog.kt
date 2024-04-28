@@ -298,7 +298,7 @@ class DialogState {
         }
     }
 
-    suspend fun awaitUserSelectDate(
+    suspend fun awaitSelectDate(
         @StringRes title: Int,
         initialSelectedDateMillis: Long? = null,
         initialDisplayedMonthMillis: Long? = initialSelectedDateMillis,
@@ -365,7 +365,7 @@ class DialogState {
         }
     }
 
-    suspend fun awaitUserSelectTime(
+    suspend fun awaitSelectTime(
         title: String,
         initialHour: Int,
         initialMinute: Int,
@@ -466,14 +466,14 @@ class DialogState {
         }
     }
 
-    suspend inline fun awaitSelectActions(
+    suspend inline fun awaitSelectAction(
         @StringRes title: Int? = null,
         selected: Int = -1,
         builder: ActionScope.() -> Unit,
-    ) {
+    ): suspend () -> Unit {
         val (items, actions) = buildList { builder(ActionScope { action, that -> add(action to that) }) }.unzip()
         val index = awaitSelectItem(items, title, selected)
-        actions[index].invoke()
+        return actions[index]
     }
 
     suspend fun awaitSelectItemWithCheckBox(

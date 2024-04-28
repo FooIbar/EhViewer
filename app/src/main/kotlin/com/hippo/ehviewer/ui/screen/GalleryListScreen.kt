@@ -729,21 +729,19 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                         }
                     }.trim().toInt() - 1
                     urlBuilder.setJumpTo(text)
-                    data.refresh()
                 } else {
                     val date = awaitUserSelectDate()
                     urlBuilder.mJumpTo = date
-                    data.refresh()
                 }
+                data.refresh()
             }
             onClick(Icons.AutoMirrored.Default.LastPage) {
                 if (isTopList) {
                     urlBuilder.setJumpTo(TOPLIST_PAGES - 1)
-                    data.refresh()
                 } else {
                     urlBuilder.setIndex("1", false)
-                    data.refresh()
                 }
+                data.refresh()
             }
         }
     }

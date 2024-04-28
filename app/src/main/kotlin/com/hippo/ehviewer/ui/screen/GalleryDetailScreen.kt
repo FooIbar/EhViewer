@@ -733,7 +733,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         tag
                     }
                     launchIO {
-                        awaitSelectActions {
+                        awaitSelectAction {
                             with(activity) {
                                 onSelect(copy) {
                                     addTextToClipboard(tag)
@@ -756,7 +756,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                     onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
                                 }
                             }
-                        }
+                        }()
                     }
                 },
             )

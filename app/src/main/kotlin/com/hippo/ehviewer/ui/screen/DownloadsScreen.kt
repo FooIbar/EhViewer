@@ -244,7 +244,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                 } else {
                                     DownloadManager.labelList.indexOfFirst { it.label == Settings.defaultDownloadLabel } + 2
                                 }
-                                awaitSelectActions(R.string.default_download_label, selected) {
+                                awaitSelectAction(R.string.default_download_label, selected) {
                                     onSelect(letMeSelect) {
                                         Settings.hasDefaultDownloadLabel = false
                                     }
@@ -258,7 +258,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                             Settings.defaultDownloadLabel = label
                                         }
                                     }
-                                }
+                                }()
                             }
                         },
                     ) {
@@ -270,7 +270,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 IconButton(
                     onClick = {
                         launch {
-                            awaitSelectActions(R.string.select_grouping_mode) {
+                            awaitSelectAction(R.string.select_grouping_mode) {
                                 val select = { mode: DownloadsFilterMode ->
                                     filterState = filterState.copy(mode = mode, label = "")
                                     Settings.downloadFilterMode.value = mode.flag
@@ -278,7 +278,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                 }
                                 onSelect(custom) { select(DownloadsFilterMode.CUSTOM) }
                                 onSelect(artist) { select(DownloadsFilterMode.ARTIST) }
-                            }
+                            }()
                         }
                     },
                 ) {

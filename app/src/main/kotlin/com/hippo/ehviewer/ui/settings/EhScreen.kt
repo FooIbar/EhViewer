@@ -371,7 +371,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                     Preference(title = pickerTitle) {
                         coroutineScope.launch {
                             val time = LocalTime.fromSecondOfDay(Settings.requestNewsTime)
-                            val (hour, minute) = dialogState.awaitUserSelectTime(pickerTitle, time.hour, time.minute)
+                            val (hour, minute) = dialogState.awaitSelectTime(pickerTitle, time.hour, time.minute)
                             Settings.requestNewsTime = LocalTime(hour, minute).toSecondOfDay()
                         }
                     }
