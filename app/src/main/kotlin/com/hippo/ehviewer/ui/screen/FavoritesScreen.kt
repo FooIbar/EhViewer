@@ -78,7 +78,6 @@ import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
-import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.takeAndClear
 import com.ramcosta.composedestinations.annotation.Destination
@@ -371,10 +370,8 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
             }
             onClick(Icons.Default.Download) {
                 val info = checkedInfoMap.takeAndClear()
-                runSuspendCatching {
+                runSwallowingWithUI {
                     startDownload(implicit<Context>(), false, *info.toTypedArray())
-                }.onFailure {
-                    showSnackbar(it.displayString())
                 }
             }
             onClick(Icons.Default.Delete) {
