@@ -21,6 +21,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import arrow.atomic.AtomicInt
+import com.hippo.ehviewer.R
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import kotlin.coroutines.resume
@@ -93,15 +94,12 @@ suspend fun Context.requestInstallPermission(): Boolean {
 
 suspend fun Context.installPackage(file: File) {
     val canInstall = !isAtLeastO || requestInstallPermission()
-    if (canInstall) {
-        val contentUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            setDataAndType(contentUri, "application/vnd.android.package-archive")
-        }
-        if (packageManager.queryIntentActivities(intent, 0).size > 0) {
-            startActivity(intent)
-        }
+    check(canInstall) { getString(R.string.permission_denied) }
+    val contentUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+    val intent = Intent(Intent.ACTION_VIEW).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        setDataAndType(contentUri, "application/vnd.android.package-archive")
     }
+    startActivity(intent)
 }
