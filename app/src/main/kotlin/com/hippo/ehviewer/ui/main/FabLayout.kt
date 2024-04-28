@@ -37,12 +37,11 @@ import androidx.compose.ui.util.lerp
 import com.hippo.ehviewer.ui.tools.PredictiveBackEasing
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.snackBarPadding
-import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
-import moe.tarsin.coroutines.runSuspendCatching
 
 @Stable
 enum class FabLayoutValue { Hidden, Primary, Expand }
@@ -96,7 +95,8 @@ class FabLayoutState(
 }
 
 fun interface FabBuilder {
-    fun onClick(icon: ImageVector, that: suspend () -> Unit)
+    fun onClick(icon: ImageVector, autoClose: Boolean, that: suspend () -> Unit)
+    fun onClick(icon: ImageVector, that: suspend () -> Unit) = onClick(icon, true, that)
 }
 
 @Composable
@@ -165,14 +165,12 @@ fun FabLayout(
                 contentAlignment = Alignment.BottomEnd,
             ) {
                 with(secondaryFab) {
-                    forEachIndexed { index, (imageVector, onClick) ->
+                    forEachIndexed { index, (imageVector, autoClose, onClick) ->
                         SmallFloatingActionButton(
                             onClick = {
-                                coroutineScope.launchIO {
-                                    runSuspendCatching {
-                                        onClick()
-                                    }
-                                    onExpandChanged(false)
+                                coroutineScope.launch(Dispatchers.Default) {
+                                    onClick()
+                                    if (autoClose) onExpandChanged(false)
                                 }
                             },
                             modifier = Modifier.padding(20.dp).offset {
@@ -207,8 +205,8 @@ fun FabLayout(
 }
 
 private fun buildFab(builder: FabBuilder.() -> Unit) = buildList {
-    builder { icon, action ->
-        add(icon to action)
+    builder { icon, autoClose, action ->
+        add(Triple(icon, autoClose, action))
     }
 }
 
