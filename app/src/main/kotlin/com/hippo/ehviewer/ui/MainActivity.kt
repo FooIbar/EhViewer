@@ -127,7 +127,6 @@ import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
 import com.hippo.ehviewer.ui.screen.asDst
 import com.hippo.ehviewer.ui.screen.asDstWith
 import com.hippo.ehviewer.ui.screen.navWithUrl
-import com.hippo.ehviewer.ui.screen.navigateTo
 import com.hippo.ehviewer.ui.settings.showNewVersion
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
@@ -147,6 +146,7 @@ import com.hippo.unifile.sha1
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
+import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
@@ -218,6 +218,7 @@ class MainActivity : EhActivity() {
             val snackbarState = remember { SnackbarHostState() }
             val scope = rememberCoroutineScope()
             val navController = rememberNavController()
+            val navigator = navController.rememberDestinationsNavigator()
             fun closeDrawer(callback: () -> Unit = {}) = scope.launch {
                 navDrawerState.close()
                 callback()
@@ -236,7 +237,7 @@ class MainActivity : EhActivity() {
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
-                    navController.navigateTo(DownloadScreenDestination)
+                    navigator.navigate(DownloadScreenDestination)
                 }
             }
 
@@ -260,7 +261,7 @@ class MainActivity : EhActivity() {
                     when (intent.action) {
                         Intent.ACTION_VIEW -> {
                             val url = intent.data?.toString()
-                            if (url != null && !navController.navWithUrl(url)) {
+                            if (url != null && !navigator.navWithUrl(url)) {
                                 val new = dialogState.awaitInputText(initial = url, title = cannotParse)
                                 addTextToClipboard(new)
                             }
@@ -269,14 +270,14 @@ class MainActivity : EhActivity() {
                             val type = intent.type
                             if ("text/plain" == type) {
                                 val keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
-                                if (keyword != null && !navController.navWithUrl(keyword)) {
-                                    navController.navigateTo(ListUrlBuilder(mKeyword = keyword).asDst())
+                                if (keyword != null && !navigator.navWithUrl(keyword)) {
+                                    navigator.navigate(ListUrlBuilder(mKeyword = keyword).asDst())
                                 }
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
                                 if (null != uri) {
                                     val hash = withIOContext { uri.asUniFile().sha1() }
-                                    navController.navigateTo(
+                                    navigator.navigate(
                                         ListUrlBuilder(
                                             mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
                                             hash = hash,
@@ -287,7 +288,7 @@ class MainActivity : EhActivity() {
                         }
                         DownloadService.ACTION_START_DOWNLOADSCENE -> {
                             val args = intent.getBundleExtra(DownloadService.ACTION_START_DOWNLOADSCENE_ARGS)
-                            navController.navigateTo(DownloadsScreenDestination)
+                            navigator.navigate(DownloadsScreenDestination)
                         }
                     }
                 }
@@ -327,11 +328,11 @@ class MainActivity : EhActivity() {
                         val result1 = GalleryDetailUrlParser.parse(text, false)
                         var launch: (() -> Unit)? = null
                         if (result1 != null) {
-                            launch = { navController.navigateTo(result1.gid asDstWith result1.token) }
+                            launch = { navigator.navigate(result1.gid asDstWith result1.token) }
                         }
                         val result2 = GalleryPageUrlParser.parse(text, false)
                         if (result2 != null) {
-                            launch = { navController.navigateTo(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
+                            launch = { navigator.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
                         }
                         launch?.let {
                             val ret = snackbarState.showSnackbar(snackMessage, snackAction, true)
