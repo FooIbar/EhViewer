@@ -1,7 +1,6 @@
 package com.hippo.ehviewer.ui.screen
 
 import androidx.annotation.MainThread
-import androidx.navigation.NavController
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
@@ -34,18 +33,8 @@ fun DestinationsNavigator.navWithUrl(url: String): Boolean {
 
 @MainThread
 fun DestinationsNavigator.popNavigate(direction: Direction) = navigate(direction) {
-    popUpTo(NavGraphs.root.route)
+    popUpTo(NavGraphs.root)
 }
-
-@MainThread
-fun NavController.navWithUrl(url: String): Boolean {
-    val dest = urlToDestination(url) ?: return false
-    navigateTo(dest)
-    return true
-}
-
-@MainThread
-fun NavController.navigateTo(direction: Direction) = navigate(direction.route)
 
 fun BaseGalleryInfo.asDst() = GalleryDetailScreenDestination(GalleryInfoArgs(this))
 
