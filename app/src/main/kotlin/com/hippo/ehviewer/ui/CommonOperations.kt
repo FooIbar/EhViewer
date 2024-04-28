@@ -161,7 +161,7 @@ suspend fun DialogState.startDownload(
                 add(it.label)
             }
         }
-        val (selected, checked) = showSelectItemWithCheckBox(
+        val (selected, checked) = awaitSelectItemWithCheckBox(
             items,
             title = R.string.download,
             checkBoxText = R.string.remember_download_label,
@@ -206,7 +206,7 @@ suspend fun DialogState.modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
                 add(localFav)
                 addAll(cloudFav)
             }
-            val (slot, note) = showSelectItemWithIconAndTextField(
+            val (slot, note) = awaitSelectItemWithIconAndTextField(
                 items,
                 title = R.string.add_favorites_dialog_title,
                 hint = R.string.favorite_note,
@@ -311,7 +311,7 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
             add(Icons.AutoMirrored.Default.DriveFileMove to R.string.download_move_dialog_title)
         }
     }
-    val selected = showSelectItemWithIcon(items, EhUtils.getSuitableTitle(info))
+    val selected = awaitSelectItemWithIcon(items, EhUtils.getSuitableTitle(info))
     with(findActivity<MainActivity>()) {
         when (selected) {
             0 -> {
@@ -410,7 +410,7 @@ suspend fun DialogState.showMoveDownloadLabel(info: GalleryInfo) {
             add(it.label)
         }
     }
-    val selected = showSelectItem(labels, R.string.download_move_dialog_title)
+    val selected = awaitSelectItem(labels, R.string.download_move_dialog_title)
     val downloadInfo = DownloadManager.getDownloadInfo(info.gid) ?: return
     val label = if (selected == 0) null else labels[selected]
     DownloadManager.changeLabel(listOf(downloadInfo), label)
@@ -424,7 +424,7 @@ suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>
             add(it.label)
         }
     }
-    val selected = showSelectItem(labels, R.string.download_move_dialog_title)
+    val selected = awaitSelectItem(labels, R.string.download_move_dialog_title)
     val label = if (selected == 0) null else labels[selected]
     DownloadManager.changeLabel(list, label)
     return label

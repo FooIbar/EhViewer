@@ -244,7 +244,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                 } else {
                                     DownloadManager.labelList.indexOfFirst { it.label == Settings.defaultDownloadLabel } + 2
                                 }
-                                showSelectActions(R.string.default_download_label, selected) {
+                                awaitSelectActions(R.string.default_download_label, selected) {
                                     onSelect(letMeSelect) {
                                         Settings.hasDefaultDownloadLabel = false
                                     }
@@ -270,7 +270,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 IconButton(
                     onClick = {
                         launch {
-                            showSelectActions(R.string.select_grouping_mode) {
+                            awaitSelectActions(R.string.select_grouping_mode) {
                                 val select = { mode: DownloadsFilterMode ->
                                     filterState = filterState.copy(mode = mode, label = "")
                                     Settings.downloadFilterMode.value = mode.flag
@@ -639,7 +639,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
                 val oldMode = SortMode.from(sortMode)
-                val (selected, checked) = showSelectItemWithCheckBox(
+                val (selected, checked) = awaitSelectItemWithCheckBox(
                     sortModes.toList(),
                     R.string.sort_by,
                     R.string.group_by_download_label,
@@ -652,7 +652,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 invalidateKey = !invalidateKey
             }
             onClick(Icons.Default.FilterList) {
-                val state = showSingleChoice(
+                val state = awaitSingleChoice(
                     downloadStates.toList(),
                     filterState.state + 1,
                     R.string.download_filter,

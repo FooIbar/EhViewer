@@ -332,7 +332,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
                         }
                     }
 
-                    suspend fun doCommentAction(comment: GalleryComment) = showSelectActions {
+                    suspend fun doCommentAction(comment: GalleryComment) = awaitSelectActions {
                         onSelect(copyComment) {
                             addTextToClipboard(comment.comment.parseAsHtml())
                         }

@@ -402,7 +402,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         addAll(Settings.favCat)
                     }
                 }
-                val index = showSelectItem(items, R.string.move_favorites_dialog_title)
+                val index = awaitSelectItem(items, R.string.move_favorites_dialog_title)
                 val srcCat = urlBuilder.favCat
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
                 val info = checkedInfoMap.takeAndClear()

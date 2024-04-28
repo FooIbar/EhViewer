@@ -343,7 +343,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             fundsGP += "+"
                         }
                         val title = getString(R.string.current_funds, fundsGP, mCurrentFunds!!.fundsC)
-                        val selected = showSelectItem(items, title.left())
+                        val selected = awaitSelectItem(items, title.left())
                         val res = mArchiveList!![selected].res
                         val isHAtH = mArchiveList!![selected].isHAtH
                         EhEngine.downloadArchive(gid, token, mArchiveFormParamOr!!, res, isHAtH)?.let {
@@ -477,7 +477,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             val items = galleryDetail.newerVersions.map {
                 getString(R.string.newer_version_title, it.title, it.posted)
             }
-            val selected = showSelectItem(items)
+            val selected = awaitSelectItem(items)
             val info = galleryDetail.newerVersions[selected]
             withUIContext {
                 // Can't use GalleryInfoArgs as thumbKey is null
@@ -602,7 +602,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     showSnackbar(noCurrentTorrents)
                 } else {
                     val items = mTorrentList!!.map { it.format() }
-                    val selected = showSelectItem(items, R.string.torrents, respectDefaultWidth = false)
+                    val selected = awaitSelectItem(items, R.string.torrents, respectDefaultWidth = false)
                     val url = mTorrentList!![selected].url
                     val name = "${mTorrentList!![selected].name}.torrent"
                     val r = DownloadManager.Request(Uri.parse(url))
@@ -733,7 +733,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         tag
                     }
                     launchIO {
-                        showSelectActions {
+                        awaitSelectActions {
                             with(activity) {
                                 onSelect(copy) {
                                     addTextToClipboard(tag)
