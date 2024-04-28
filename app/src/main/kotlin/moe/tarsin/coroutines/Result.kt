@@ -1,14 +1,16 @@
 package moe.tarsin.coroutines
 
+import androidx.compose.material3.SnackbarHostState
+import com.hippo.ehviewer.util.displayString
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
-inline fun <reified T : Throwable> Result<*>.except(): Result<*> =
-    onFailure { if (it is T) throw it }
+inline fun <T, reified E : Throwable> Result<T>.except() = onFailure { if (it is E) throw it }
 
-inline fun <R> runSuspendCatching(block: () -> R): Result<R> {
-    return runCatching(block).apply { except<CancellationException>() }
-}
+inline fun <R> runSuspendCatching(block: () -> R) = runCatching(block).except<R, CancellationException>()
 
-inline fun <T, R> T.runSuspendCatching(block: T.() -> R): Result<R> {
-    return runCatching(block).apply { except<CancellationException>() }
-}
+inline fun <T, R> T.runSuspendCatching(block: T.() -> R) = runCatching(block).except<R, CancellationException>()
+
+context(SnackbarHostState, CoroutineScope)
+inline fun <R> runSwallowingWithUI(block: () -> R) = runSuspendCatching(block).onFailure { e -> launch { showSnackbar(e.displayString()) } }

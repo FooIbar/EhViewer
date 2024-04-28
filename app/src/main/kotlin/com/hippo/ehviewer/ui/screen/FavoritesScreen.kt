@@ -91,6 +91,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.coroutines.runSwallowingWithUI
 
 @Destination<RootGraph>
 @Composable
@@ -382,7 +383,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
                 }
                 val srcCat = urlBuilder.favCat
-                val result = runSuspendCatching {
+                runSwallowingWithUI {
                     if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) { // Delete local fav
                         EhDB.removeLocalFavorites(info)
                     } else {
@@ -392,7 +393,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 }
                 // We refresh anyway as cloud data maybe partially modified
                 data.refresh()
-                result.onFailure { showSnackbar(it.displayString()) }
             }
             onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 // First is local favorite, the other 10 is cloud favorite
@@ -407,7 +407,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
                 val info = checkedInfoMap.takeAndClear()
                 if (srcCat != dstCat) {
-                    val result = runSuspendCatching {
+                    runSwallowingWithUI {
                         if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
                             // Move from local to cloud
                             val galleryList = info.map { it.gid to it.token }
@@ -424,7 +424,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     }
                     // We refresh anyway as cloud data maybe partially modified
                     data.refresh()
-                    result.onFailure { showSnackbar(it.displayString()) }
                 }
             }
         }
