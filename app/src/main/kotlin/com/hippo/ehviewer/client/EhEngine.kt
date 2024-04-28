@@ -46,6 +46,7 @@ import com.hippo.ehviewer.client.parser.ProfileParser
 import com.hippo.ehviewer.client.parser.RateGalleryResult
 import com.hippo.ehviewer.client.parser.TorrentParser
 import com.hippo.ehviewer.client.parser.TorrentResult
+import com.hippo.ehviewer.client.parser.UserConfigParser
 import com.hippo.ehviewer.client.parser.VoteCommentResult
 import com.hippo.ehviewer.client.parser.VoteTagParser
 import com.hippo.ehviewer.dailycheck.showEventNotification
@@ -79,8 +80,6 @@ import splitties.init.appCtx
 private const val MAX_REQUEST_SIZE = 25
 private const val MAX_SEQUENTIAL_REQUESTS = 5
 private const val REQUEST_INTERVAL = 5000L
-
-private const val U_CONFIG_TEXT = "Selected Profile"
 
 fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
     val dir = AppConfig.externalParseErrorDir ?: return
@@ -197,12 +196,12 @@ object EhEngine {
 
     suspend fun getUConfig(url: String = EhUrl.uConfigUrl) {
         runSuspendCatching {
-            ehRequest(url).fetchUsingAsText { check(U_CONFIG_TEXT in this) { "Unable to load config from $url!" } }
+            ehRequest(url).fetchUsingAsByteBuffer(UserConfigParser::parse)
         }.onFailure { throwable ->
             // It may get redirected when accessing ex for the first time
             if (url == EhUrl.URL_UCONFIG_EX) {
                 logcat(throwable)
-                ehRequest(url).fetchUsingAsText { check(U_CONFIG_TEXT in this) { "Unable to load config from $url!" } }
+                ehRequest(url).fetchUsingAsByteBuffer(UserConfigParser::parse)
             } else {
                 throw throwable
             }
