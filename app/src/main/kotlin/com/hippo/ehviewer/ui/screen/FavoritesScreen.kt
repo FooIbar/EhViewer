@@ -356,10 +356,8 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 }
             }
             onClick(EhIcons.Default.GoTo) {
-                launch {
-                    val date = awaitUserSelectDate()
-                    refresh(urlBuilder.copy(jumpTo = date))
-                }
+                val date = awaitUserSelectDate()
+                refresh(urlBuilder.copy(jumpTo = date))
             }
             onClick(Icons.Default.Refresh) {
                 refresh()
