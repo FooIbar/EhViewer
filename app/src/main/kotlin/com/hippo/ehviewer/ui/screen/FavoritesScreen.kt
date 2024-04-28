@@ -80,6 +80,7 @@ import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.mapToLongArray
+import com.hippo.ehviewer.util.takeAndClear
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -374,11 +375,11 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 throw CancellationException()
             }
             onClick(Icons.Default.Download) {
-                val info = checkedInfoMap.run { toMap().values.also { clear() } }
+                val info = checkedInfoMap.takeAndClear()
                 startDownload(implicit<Context>(), false, *info.toTypedArray())
             }
             onClick(Icons.Default.Delete) {
-                val info = checkedInfoMap.run { toMap().values.also { clear() } }
+                val info = checkedInfoMap.takeAndClear()
                 awaitPermissionOrCancel(title = R.string.delete_favorites_dialog_title) {
                     Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
                 }
@@ -402,7 +403,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 val index = showSelectItem(items, R.string.move_favorites_dialog_title)
                 val srcCat = urlBuilder.favCat
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
-                val info = checkedInfoMap.run { toMap().values.also { clear() } }
+                val info = checkedInfoMap.takeAndClear()
                 if (srcCat != dstCat) {
                     runSuspendCatching {
                         if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {

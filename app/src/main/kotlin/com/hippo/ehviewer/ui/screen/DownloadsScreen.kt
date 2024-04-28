@@ -112,6 +112,7 @@ import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.mapToLongArray
+import com.hippo.ehviewer.util.takeAndClear
 import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -666,25 +667,23 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 throw CancellationException()
             }
             onClick(Icons.Default.PlayArrow) {
-                val gidList = checkedInfoMap.run { toMap().values.also { clear() } }
-                    .mapToLongArray(DownloadInfo::gid)
+                val gidList = checkedInfoMap.takeAndClear().mapToLongArray(DownloadInfo::gid)
                 val intent = Intent(implicit<Activity>(), DownloadService::class.java)
                 intent.action = DownloadService.ACTION_START_RANGE
                 intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
                 ContextCompat.startForegroundService(implicit<Context>(), intent)
             }
             onClick(Icons.Default.Pause) {
-                val gidList = checkedInfoMap.run { toMap().values.also { clear() } }
-                    .mapToLongArray(DownloadInfo::gid)
+                val gidList = checkedInfoMap.takeAndClear().mapToLongArray(DownloadInfo::gid)
                 DownloadManager.stopRangeDownload(gidList)
             }
             onClick(Icons.Default.Delete) {
-                val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
+                val infoList = checkedInfoMap.takeAndClear()
                 confirmRemoveDownloadRange(infoList)
                 list.removeAll(infoList)
             }
             onClick(Icons.AutoMirrored.Default.DriveFileMove) {
-                val infoList = checkedInfoMap.run { toMap().values.also { clear() } }
+                val infoList = checkedInfoMap.takeAndClear()
                 val toLabel = showMoveDownloadLabelList(infoList)
                 with(filterState) {
                     if (label != "" && label != toLabel) {
