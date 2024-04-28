@@ -44,15 +44,13 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 
-enum class FabLayoutValue {
-    Hidden,
-    Primary,
-    Expand,
-}
+@Stable
+enum class FabLayoutValue { Hidden, Primary, Expand }
 
+@Stable
 @Composable
-fun rememberFabLayoutState(initialValue: FabLayoutValue = FabLayoutValue.Primary): FabLayoutState {
-    return remember { FabLayoutState(initialValue) }
+fun rememberFabLayoutState(initialValue: FabLayoutValue = FabLayoutValue.Primary) = remember {
+    FabLayoutState(initialValue)
 }
 
 @Stable
