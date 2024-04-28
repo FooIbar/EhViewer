@@ -731,11 +731,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     urlBuilder.setJumpTo(text)
                     data.refresh()
                 } else {
-                    launch {
-                        val date = showDatePicker()
-                        urlBuilder.mJumpTo = date
-                        data.refresh()
-                    }
+                    val date = showDatePicker()
+                    urlBuilder.mJumpTo = date
+                    data.refresh()
                 }
             }
             onClick(Icons.AutoMirrored.Default.LastPage) {
