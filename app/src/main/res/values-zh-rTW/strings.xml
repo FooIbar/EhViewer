@@ -28,7 +28,7 @@
     <string name="text_is_empty">文字是空的</string>
     <string name="waring">警告</string>
     <string name="invalid_download_location">看來下載路徑似乎沒辦法使用。請至設定重新設定下載路徑。</string>
-    <string name="clipboard_gallery_url_snack_message">剪貼簿裡有相簿連結</string>
+    <string name="clipboard_gallery_url_snack_message">剪貼簿裡有畫廊連結</string>
     <string name="clipboard_gallery_url_snack_action">檢視</string>
     <string name="error_bad_status_code">錯誤狀態碼：%d</string>
     <string name="error_timeout">逾時</string>
@@ -53,7 +53,7 @@
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">在 ExHentai 搜尋</string>
     <string name="gallery_list_search_bar_hint_e_hentai">在 E-Hentai 搜尋</string>
-    <string name="gallery_list_search_bar_open_gallery">開啟相簿</string>
+    <string name="gallery_list_search_bar_open_gallery">開啟畫廊</string>
     <string name="gallery_list_empty_hit">什麼都沒找到</string>
     <string name="gallery_list_empty_hit_subscription">請至 設定-&gt;EH-&gt;我的標籤 訂閱標籤</string>
     <string name="keyword_search">關鍵字搜尋</string>
@@ -79,7 +79,7 @@
     <string name="add_quick_search_dialog_title">新增快速搜尋</string>
     <string name="name_is_empty">名稱是空的</string>
     <string name="delete">刪除</string>
-    <string name="add_quick_search_tip">相簿列表的狀態將被儲存為快速搜尋。如果你想儲存搜尋面板的狀態，請先進行搜尋。</string>
+    <string name="add_quick_search_tip">畫廊列表的狀態將被儲存為快速搜尋。如果你想儲存搜尋面板的狀態，請先進行搜尋。</string>
     <string name="readme">ReadMe</string>
     <string name="image_search_not_quick_search">無法將圖片搜尋加入快速搜尋</string>
     <string name="duplicate_quick_search">已存在相同的快速搜尋，名稱為“%s”。</string>
@@ -101,7 +101,7 @@
     <string name="torrent_count">種子 (%d)</string>
     <string name="share">分享</string>
     <string name="rate">評分</string>
-    <string name="similar_gallery">類似相簿</string>
+    <string name="similar_gallery">類似畫廊</string>
     <string name="search_cover">以封面搜尋</string>
     <string name="no_tags">還沒有標籤</string>
     <string name="no_comments">沒有留言</string>
@@ -114,12 +114,12 @@
     <string name="refresh_original">重新整理 (原圖)</string>
     <string name="open_in_other_app">在其他應用程式中開啟</string>
     <string name="clear_image_cache">清除圖片快取</string>
-    <string name="clear_image_cache_confirm">為該相簿清除所有快取圖片？</string>
+    <string name="clear_image_cache_confirm">為該畫廊清除所有快取圖片？</string>
     <string name="image_cache_cleared">已清除圖片快取</string>
     <string name="rate_successfully">評分成功</string>
     <string name="rate_failed">評分失敗</string>
     <string name="no_torrents">沒有種子</string>
-      <string name="no_current_torrents">沒有當前版本相簿的種子</string>
+      <string name="no_current_torrents">沒有當前版本畫廊的種子</string>
     <string name="download_torrent_started">開始下載種子</string>
     <string name="download_torrent_failure">無法下載種子</string>
     <string name="torrents">種子</string>
@@ -132,7 +132,7 @@
     <string name="filter_the_uploader">把上傳者“%s”加入過濾列表？</string>
     <string name="filter_the_tag">隱藏標籤“%s”？</string>
     <string name="filter_added">已經新增篩選條件</string>
-    <string name="newer_version_available">此相簿有新版本可以使用。</string>
+    <string name="newer_version_available">此畫廊有新版本可以使用。</string>
     <string name="newer_version_title">%1$s, 於 %2$s 加入</string>
     <!-- Rating -->
     <string name="rating10">太神啦！</string>
@@ -147,7 +147,7 @@
     <string name="rating1">快要窒息了</string>
     <string name="rating0">下去！</string>
     <!-- Gallery Info -->
-    <string name="gallery_info">相簿資訊</string>
+    <string name="gallery_info">畫廊資訊</string>
     <string name="copied_to_clipboard">已複製到剪貼簿</string>
     <string name="key_gid">GID</string>
     <string name="key_token">Token</string>
@@ -158,7 +158,7 @@
     <string name="key_category">分類</string>
     <string name="key_uploader">上傳者</string>
     <string name="key_posted">上傳時間</string>
-    <string name="key_parent">上層相簿</string>
+    <string name="key_parent">上層畫廊</string>
     <string name="key_visible">可見</string>
     <string name="key_language">語言</string>
     <string name="key_pages">頁數</string>
@@ -170,7 +170,7 @@
     <string name="key_torrents">種子數</string>
     <string name="key_torrent_url">種子連結</string>
     <!-- Gallery Comments -->
-    <string name="gallery_comments">相簿留言</string>
+    <string name="gallery_comments">畫廊留言</string>
     <string name="comment_successfully">留言成功</string>
     <string name="comment_failed">留言失敗</string>
     <string name="copy_comment_text">複製留言文字</string>
@@ -198,7 +198,7 @@
     <string name="format_url">連結</string>
     <string name="format_plain">純文字</string>
     <!-- Gallery Previews -->
-    <string name="gallery_previews">相簿預覽</string>
+    <string name="gallery_previews">畫廊預覽</string>
     <string name="go_to">跳到</string>
     <!-- Download -->
     <string name="scene_download_title">正在下載 - %s</string>
@@ -229,7 +229,7 @@
     <string name="download_start_all">全部開始</string>
     <string name="download_stop_all">全部停止</string>
     <string name="download_reset_reading_progress">重置閱讀進度</string>
-    <string name="reset_reading_progress_message">重置所有已下載相簿的閱讀進度？</string>
+    <string name="reset_reading_progress_message">重置所有已下載畫廊的閱讀進度？</string>
     <string name="download_service_label">EhViewer 下載服務</string>
     <string name="download_speed_text">%s</string>
     <string name="download_speed_text_2">%1$s，剩餘 %2$s</string>
@@ -253,7 +253,7 @@
     <string name="clear_all">全部清除</string>
     <string name="clear_all_history">清除所有歷史紀錄？</string>
     <!-- Filter -->
-    <string name="filter">隱藏相簿</string>
+    <string name="filter">隱藏畫廊</string>
     <string name="filter_title">標題</string>
     <string name="filter_uploader">上傳者</string>
     <string name="filter_tag">標籤</string>
@@ -264,7 +264,7 @@
     <string name="add_filter">新增隱藏項</string>
     <string name="show_definition">檢視定義</string>
     <string name="filter_text">隱藏項文字</string>
-    <string name="filter_tip">該隱藏系統會在 EHentai 網站隱藏系統的基礎上繼續隱藏相簿。\n\n標題隱藏項：排除標題含有該關鍵字的相簿。\n\n上傳者隱藏項：排除該上傳者上傳的相簿。\n\n標籤隱藏項：排除包含該標籤的相簿，這會使獲取相簿列表花費更多時間。\n\n標籤組隱藏項：排除包含該標籤組的相簿，這會使獲取相簿列表花費更多時間。</string>
+    <string name="filter_tip">該隱藏系統會在 EHentai 網站隱藏系統的基礎上繼續隱藏畫廊。\n\n標題隱藏項：排除標題含有該關鍵字的畫廊。\n\n上傳者隱藏項：排除該上傳者上傳的畫廊。\n\n標籤隱藏項：排除包含該標籤的畫廊，這會使獲取畫廊列表花費更多時間。\n\n標籤組隱藏項：排除包含該標籤組的畫廊，這會使獲取畫廊列表花費更多時間。</string>
     <!-- Set Security -->
     <!-- UConfig Activity -->
     <string name="u_config">EHentai 設定</string>
@@ -285,7 +285,7 @@
     <string name="settings_u_config_summary">EHentai 網站上的設定</string>
     <string name="settings_my_tags">我的標籤</string>
     <string name="settings_my_tags_summary">EHentai 網站上的我的標籤</string>
-    <string name="settings_eh_gallery_site">相簿站臺</string>
+    <string name="settings_eh_gallery_site">畫廊站臺</string>
     <string name="settings_eh_launch_page">啟動頁</string>
     <string name="settings_eh_list_mode">列表模式</string>
     <string name="settings_eh_list_mode_detail">詳細資料</string>
@@ -301,8 +301,8 @@
     <string name="settings_eh_force_eh_thumb_summary">若exhentai載入遇到問題可嘗試此項\n注意，此項將使用 e-hentai 設定來載入圖片。</string>
     <string name="settings_eh_show_jpn_title">顯示日文標題</string>
     <string name="settings_eh_show_jpn_title_summary">需同時在 EHentai 網站設定中啟用 Japanese Title</string>
-    <string name="settings_eh_show_gallery_pages">顯示相簿頁數</string>
-    <string name="settings_eh_show_gallery_pages_summary">在相簿列表中顯示頁數</string>
+    <string name="settings_eh_show_gallery_pages">顯示畫廊頁數</string>
+    <string name="settings_eh_show_gallery_pages_summary">在畫廊列表中顯示頁數</string>
     <string name="settings_eh_show_gallery_comments">顯示畫廊評論</string>
     <string name="settings_eh_show_gallery_comments_summary">在畫廊詳情頁中顯示評論</string>
     <string name="settings_eh_show_gallery_comment_threshold">評論分數閥值</string>
@@ -311,8 +311,8 @@
     <string name="settings_eh_show_tag_translations_summary">顯示翻譯後的標籤而非原始文字（需花費時間來下載資料檔案）</string>
     <string name="settings_eh_tag_translations_source">補充翻譯（由 EhTagTranslation 提供）</string>
     <string name="settings_eh_tag_translations_source_url">https://github.com/EhTagTranslation/Editor/wiki</string>
-    <string name="settings_eh_filter">隱藏相簿</string>
-    <string name="settings_eh_filter_summary">根據標題、上傳者、標籤、評論者隱藏相簿或評論</string>
+    <string name="settings_eh_filter">隱藏畫廊</string>
+    <string name="settings_eh_filter_summary">根據標題、上傳者、標籤、評論者隱藏畫廊或評論</string>
     <string name="settings_read_volume_page">使用音量鍵翻頁</string>
     <string name="settings_read_volume_page_fast">快</string>
     <string name="settings_read_volume_page_slow">慢</string>
@@ -334,8 +334,8 @@
     <string name="settings_download_reload_metadata_successfully">成功載入 %d 項</string>
     <string name="settings_download_reload_metadata_failed">載入中繼資料失敗: %s</string>
     <string name="settings_download_media_scan">允許其他程式進行媒體掃描</string>
-    <string name="settings_download_media_scan_summary_on">請別讓別人看到你的相簿</string>
-    <string name="settings_download_media_scan_summary_off">大部分相簿軟體將會忽略顯示下載路徑中的影像</string>
+    <string name="settings_download_media_scan_summary_on">請別讓別人看到你的畫廊</string>
+    <string name="settings_download_media_scan_summary_off">大部分畫廊軟體將會忽略顯示下載路徑中的影像</string>
     <string name="settings_download_restore_download_items">復原下載的檔案</string>
     <string name="settings_download_restore_download_items_summary">復原下載路徑中的所有下載的檔案</string>
     <string name="settings_download_restore_not_found">未尋獲可復原的已下載檔案</string>
@@ -429,7 +429,7 @@
     <string name="clear_search_history_confirm">清除搜尋記錄？</string>
     <string name="search_history_cleared">已清除搜尋記錄</string>
     <string name="download_service">下載服務</string>
-    <string name="favorite_name">收藏相簿</string>
+    <string name="favorite_name">收藏畫廊</string>
     <string name="black_dark_theme">純黑深色主題</string>
     <string name="harmonize_category_color">以動態顏色為分類顏色配色</string>
     <string name="backup_before_update">更新前備份資料</string>
@@ -499,7 +499,7 @@
     <string name="new_version_available">有新版本可用！</string>
     <string name="already_latest_version">已是最新版本</string>
     <string name="permission_denied">沒有許可權</string>
-    <string name="download_gallery_first">請先下載相簿！</string>
+    <string name="download_gallery_first">請先下載畫廊！</string>
     <string name="export_as_archive">匯出成壓縮檔</string>
     <string name="export_as_archive_success">匯出成功</string>
     <string name="export_as_archive_failed">匯出失敗</string>
