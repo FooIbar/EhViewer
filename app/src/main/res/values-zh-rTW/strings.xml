@@ -119,6 +119,7 @@
     <string name="rate_successfully">評分成功</string>
     <string name="rate_failed">評分失敗</string>
     <string name="no_torrents">沒有種子</string>
+      <string name="no_current_torrents">沒有當前版本圖庫的種子</string>
     <string name="download_torrent_started">開始下載種子</string>
     <string name="download_torrent_failure">無法下載種子</string>
     <string name="torrents">種子</string>
@@ -235,6 +236,10 @@
     <string name="remember_download_label">記住下載標籤</string>
     <string name="default_download_label">預設下載標籤</string>
     <string name="added_to_download_list">已新增至下載列表</string>
+    <string name="select_grouping_mode">選擇分組依據</string>
+    <string name="select_grouping_mode_custom">自定義標籤</string>
+    <string name="select_grouping_mode_artist">作者</string>
+    <string name="unknown_artists">未知</string>
     <!-- Download label -->
     <string name="add">新增</string>
     <string name="new_label_title">新標籤</string>
@@ -324,6 +329,10 @@
     <string name="settings_download_save_as_cbz">儲存為 CBZ 壓縮檔</string>
     <string name="settings_download_archive_metadata">壓縮檔中繼資料</string>
     <string name="settings_download_archive_metadata_summary">下載壓縮檔時產生 ComicInfo.xml</string>
+    <string name="settings_download_reload_metadata">重新載入中繼資料</string>
+    <string name="settings_download_reload_metadata_summary">為標籤可能發生變動的下載項更新 ComicInfo.xml</string>
+    <string name="settings_download_reload_metadata_successfully">成功載入 %d 項</string>
+    <string name="settings_download_reload_metadata_failed">載入中繼資料失敗: %s</string>
     <string name="settings_download_media_scan">允許其他程式進行媒體掃描</string>
     <string name="settings_download_media_scan_summary_on">請別讓別人看到你的相簿</string>
     <string name="settings_download_media_scan_summary_off">大部分相簿軟體將會忽略顯示下載路徑中的影像</string>
@@ -423,6 +432,7 @@
     <string name="favorite_name">收藏圖庫</string>
     <string name="black_dark_theme">純黑深色主題</string>
     <string name="harmonize_category_color">以動態顏色為分類顏色配色</string>
+    <string name="backup_before_update">更新前備份資料</string>
     <string name="use_ci_update_channel">使用 CI 更新頻道</string>
     <string name="sort_by">排序方式</string>
     <string name="added_time_desc">加入時間 (遞減)</string>
@@ -476,6 +486,8 @@
     <string name="list_tile_thumb_size">詳情模式下縮圖大小</string>
     <string name="account_name">帳號</string>
     <string name="preload_thumb_aggressively">積極地預載入縮圖</string>
+    <string name="animate_items">列表專案動畫</string>
+    <string name="animate_items_summary">如遇崩潰/掉幀請嘗試禁用此項</string>
     <string name="auto_updates">自動檢查更新</string>
     <string name="update_frequency_never">從不</string>
     <string name="update_frequency_daily">每天</string>
