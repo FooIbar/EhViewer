@@ -372,7 +372,11 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
             }
             onClick(Icons.Default.Download) {
                 val info = checkedInfoMap.takeAndClear()
-                startDownload(implicit<Context>(), false, *info.toTypedArray())
+                runSuspendCatching {
+                    startDownload(implicit<Context>(), false, *info.toTypedArray())
+                }.onFailure {
+                    showSnackbar(it.displayString())
+                }
             }
             onClick(Icons.Default.Delete) {
                 val info = checkedInfoMap.takeAndClear()
