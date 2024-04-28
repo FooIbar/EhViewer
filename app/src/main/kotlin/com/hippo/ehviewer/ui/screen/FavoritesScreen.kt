@@ -87,7 +87,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
@@ -369,10 +368,9 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 refresh(urlBuilder.copy(jumpTo = null, prev = "1-0", next = null))
             }
         } else {
-            onClick(Icons.Default.DoneAll) {
+            onClick(Icons.Default.DoneAll, autoClose = false) {
                 val info = data.itemSnapshotList.items.associateBy { it.gid }
                 checkedInfoMap.putAll(info)
-                throw CancellationException()
             }
             onClick(Icons.Default.Download) {
                 val info = checkedInfoMap.takeAndClear()
