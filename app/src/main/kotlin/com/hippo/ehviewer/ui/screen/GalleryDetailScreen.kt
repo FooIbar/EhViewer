@@ -46,6 +46,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -76,10 +77,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LocalPinnableContainer
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.text.parseAsHtml
-import arrow.core.left
 import arrow.core.partially1
 import coil3.imageLoader
 import com.hippo.ehviewer.EhApplication.Companion.galleryDetailCache
@@ -297,6 +298,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
     var mArchiveList by remember { mutableStateOf<List<ArchiveParser.Archive>?>(null) }
     var mCurrentFunds by remember { mutableStateOf<HomeParser.Funds?>(null) }
 
+    val currentFunds = stringResource(R.string.current_funds)
     val archiveFree = stringResource(R.string.archive_free)
     val archiveOriginal = stringResource(R.string.archive_original)
     val archiveResample = stringResource(R.string.archive_resample)
@@ -311,7 +313,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             if (galleryDetail.apiUid < 0) {
                 showSnackbar(signInFirst)
             } else {
-                Unit.runSuspendCatching {
+                runSuspendCatching {
                     if (mArchiveList == null) {
                         val result = bgWork {
                             withIOContext {
@@ -325,28 +327,83 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     if (mArchiveList!!.isEmpty()) {
                         showSnackbar(noArchive)
                     } else {
-                        val items = mArchiveList!!.map {
-                            it.run {
-                                if (isHAtH) {
-                                    val costStr = if (cost == "Free") archiveFree else cost
-                                    "[H@H] $name [$size] [$costStr]"
-                                } else {
-                                    val nameStr = if (res == "org") archiveOriginal else archiveResample
-                                    val costStr = if (cost == "Free!") archiveFree else cost
-                                    "$nameStr [$size] [$costStr]"
+                        val fundsGP = buildString {
+                            append("%,d".format(mCurrentFunds!!.fundsGP))
+                            // Ex GP numbers are rounded down to the nearest thousand
+                            if (EhUtils.isExHentai) {
+                                append('+')
+                            }
+                            append(" GP")
+                        }
+                        val fundsC = "%,d C".format(mCurrentFunds!!.fundsC)
+                        val (hAtH, nonHAtH) = mArchiveList!!.partition { it.isHAtH }
+                        val selected = showNoButton {
+                            val labelStyle = MaterialTheme.typography.labelMedium
+                            val fundsStyle = MaterialTheme.typography.labelLarge
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                item(span = { GridItemSpan(maxLineSpan) }, contentType = "funds") {
+                                    Text(
+                                        text = currentFunds,
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
+                                item(contentType = "funds") {
+                                    Text(
+                                        text = fundsGP,
+                                        textAlign = TextAlign.Center,
+                                        style = fundsStyle,
+                                    )
+                                }
+                                item(contentType = "funds") {
+                                    Text(
+                                        text = fundsC,
+                                        textAlign = TextAlign.Center,
+                                        style = fundsStyle,
+                                    )
+                                }
+                                items(nonHAtH, contentType = { "archive" }) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = if (it.cost == "Free!") archiveFree else it.cost,
+                                            style = labelStyle,
+                                        )
+                                        Button(onClick = { dismissWith(it) }) {
+                                            Text(if (it.res == "org") archiveOriginal else archiveResample)
+                                        }
+                                        Text(
+                                            text = it.size,
+                                            style = labelStyle,
+                                        )
+                                    }
+                                }
+                                item(span = { GridItemSpan(maxLineSpan) }, contentType = "divider") {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                                        Text(text = "H@H")
+                                    }
+                                }
+                                items(hAtH, contentType = { "archive" }) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = if (it.cost == "Free") archiveFree else it.cost,
+                                            style = labelStyle,
+                                        )
+                                        Button(onClick = { dismissWith(it) }) {
+                                            Text(if (it.res == "org") archiveOriginal else it.name)
+                                        }
+                                        Text(
+                                            text = it.size,
+                                            style = labelStyle,
+                                        )
+                                    }
                                 }
                             }
                         }
-                        var fundsGP = mCurrentFunds!!.fundsGP.toString()
-                        // Ex GP numbers are rounded down to the nearest thousand
-                        if (EhUtils.isExHentai) {
-                            fundsGP += "+"
-                        }
-                        val title = getString(R.string.current_funds, fundsGP, mCurrentFunds!!.fundsC)
-                        val selected = awaitSelectItem(items, title.left())
-                        val res = mArchiveList!![selected].res
-                        val isHAtH = mArchiveList!![selected].isHAtH
-                        EhEngine.downloadArchive(gid, token, mArchiveFormParamOr!!, res, isHAtH)?.let {
+                        EhEngine.downloadArchive(gid, token, mArchiveFormParamOr!!, selected.res, selected.isHAtH)?.let {
                             val uri = Uri.parse(it)
                             val intent = Intent().apply {
                                 action = Intent.ACTION_VIEW

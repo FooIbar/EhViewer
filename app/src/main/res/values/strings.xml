@@ -468,10 +468,10 @@
     <string name="download_archive_started">Archive download started</string>
     <string name="download_archive_failure">Failed to download archive</string>
     <string name="archive_free">Free</string>
-    <string name="archive_original">Original archive</string>
-    <string name="archive_resample">Resample archive</string>
+    <string name="archive_original">Original</string>
+    <string name="archive_resample">Resample</string>
     <string name="download_archive_failure_no_hath">Need H@H client for archive download</string>
-    <string name="current_funds">Funds: %1$s GP, %2$d Credits</string>
+    <string name="current_funds">Current Funds:</string>
     <string name="insufficient_funds">Insufficient Funds</string>
     <string name="image_limits">Image Limits</string>
     <string name="image_limits_summary">Used: %1$d / %2$d</string>
