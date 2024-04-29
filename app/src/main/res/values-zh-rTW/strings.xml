@@ -486,7 +486,7 @@
     <string name="list_tile_thumb_size">詳情模式下縮圖大小</string>
     <string name="account_name">帳號</string>
     <string name="preload_thumb_aggressively">積極地預載入縮圖</string>
-    <string name="animate_items">列表專案動畫</string>
+    <string name="animate_items">列表項目動畫</string>
     <string name="animate_items_summary">如遇崩潰/低幀率請嘗試停用此項</string>
     <string name="auto_updates">自動檢查更新</string>
     <string name="update_frequency_never">從不</string>
