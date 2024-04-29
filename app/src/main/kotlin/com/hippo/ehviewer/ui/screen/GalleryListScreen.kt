@@ -106,6 +106,7 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.LocalSideSheetState
+import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.doGalleryInfoAction
@@ -117,7 +118,6 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.SearchFilter
-import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
@@ -722,32 +722,26 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     val page = urlBuilder.mJumpTo?.toIntOrNull() ?: 0
                     val hint = getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
                     val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
-                        val text = oriText.trim()
-                        val goTo = runCatching {
-                            text.toInt() - 1
-                        }.onFailure {
-                            return@awaitInputText invalidNum
-                        }.getOrThrow()
-                        if (goTo !in 0..<TOPLIST_PAGES) outOfRange else null
+                        when (oriText.trim().toIntOrNull()?.let { it - 1 }) {
+                            null -> invalidNum
+                            !in 0..<TOPLIST_PAGES -> outOfRange
+                            else -> null
+                        }
                     }.trim().toInt() - 1
                     urlBuilder.setJumpTo(text)
-                    data.refresh()
                 } else {
-                    launch {
-                        val date = showDatePicker()
-                        urlBuilder.mJumpTo = date
-                        data.refresh()
-                    }
+                    val date = awaitSelectDate()
+                    urlBuilder.mJumpTo = date
                 }
+                data.refresh()
             }
             onClick(Icons.AutoMirrored.Default.LastPage) {
                 if (isTopList) {
                     urlBuilder.setJumpTo(TOPLIST_PAGES - 1)
-                    data.refresh()
                 } else {
                     urlBuilder.setIndex("1", false)
-                    data.refresh()
                 }
+                data.refresh()
             }
         }
     }

@@ -150,11 +150,9 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 var result by rememberSaveable { mutableStateOf<HomeParser.Result?>(null) }
                 var error by rememberSaveable { mutableStateOf<String?>(null) }
                 val summary by rememberUpdatedState(
-                    stringResource(
-                        id = R.string.image_limits_summary,
-                        result?.run { limits.current } ?: 0,
-                        result?.run { limits.maximum } ?: 0,
-                    ),
+                    result?.run {
+                        stringResource(id = R.string.image_limits_summary, limits.current, limits.maximum)
+                    } ?: placeholder,
                 )
                 suspend fun getImageLimits() {
                     result = EhEngine.getImageLimits()
@@ -242,7 +240,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                             addAll(Settings.favCat)
                         }
                     }
-                    defaultFavSlot = dialogState.showSelectItem(
+                    defaultFavSlot = dialogState.awaitSelectItem(
                         items = items,
                         title = R.string.default_favorites_collection,
                         selected = defaultFavSlot + 2,
@@ -371,7 +369,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                     Preference(title = pickerTitle) {
                         coroutineScope.launch {
                             val time = LocalTime.fromSecondOfDay(Settings.requestNewsTime)
-                            val (hour, minute) = dialogState.showTimePicker(pickerTitle, time.hour, time.minute)
+                            val (hour, minute) = dialogState.awaitSelectTime(pickerTitle, time.hour, time.minute)
                             Settings.requestNewsTime = LocalTime(hour, minute).toSecondOfDay()
                         }
                     }

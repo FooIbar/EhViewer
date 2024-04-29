@@ -66,31 +66,31 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.LockDrawer
+import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
-import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
-import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.mapToLongArray
+import com.hippo.ehviewer.util.takeAndClear
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.coroutines.runSwallowingWithUI
 
 @Destination<RootGraph>
 @Composable
@@ -280,7 +280,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigator.navigate(info.asDst())
+                                navigate(info.asDst())
                             }
                         },
                         onLongClick = {
@@ -309,7 +309,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigator.navigate(info.asDst())
+                                navigate(info.asDst())
                             }
                         },
                         onLongClick = {
@@ -350,16 +350,12 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
             if (isLocalFav) {
                 onClick(Icons.Default.Shuffle) {
                     val random = EhDB.randomLocalFav()
-                    withUIContext {
-                        navigator.navigate(random.asDst())
-                    }
+                    withUIContext { navigate(random.asDst()) }
                 }
             }
             onClick(EhIcons.Default.GoTo) {
-                launch {
-                    val date = showDatePicker()
-                    refresh(urlBuilder.copy(jumpTo = date))
-                }
+                val date = awaitSelectDate()
+                refresh(urlBuilder.copy(jumpTo = date))
             }
             onClick(Icons.Default.Refresh) {
                 refresh()
@@ -368,27 +364,31 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 refresh(urlBuilder.copy(jumpTo = null, prev = "1-0", next = null))
             }
         } else {
-            onClick(Icons.Default.DoneAll) {
+            onClick(Icons.Default.DoneAll, autoClose = false) {
                 val info = data.itemSnapshotList.items.associateBy { it.gid }
                 checkedInfoMap.putAll(info)
-                throw CancellationException()
             }
             onClick(Icons.Default.Download) {
-                val info = checkedInfoMap.run { toMap().values.also { clear() } }
-                startDownload(implicit<Context>(), false, *info.toTypedArray())
+                val info = checkedInfoMap.takeAndClear()
+                runSwallowingWithUI {
+                    startDownload(implicit<Context>(), false, *info.toTypedArray())
+                }
             }
             onClick(Icons.Default.Delete) {
-                val info = checkedInfoMap.run { toMap().values.also { clear() } }
+                val info = checkedInfoMap.takeAndClear()
                 awaitPermissionOrCancel(title = R.string.delete_favorites_dialog_title) {
                     Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
                 }
                 val srcCat = urlBuilder.favCat
-                if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) { // Delete local fav
-                    EhDB.removeLocalFavorites(info)
-                } else {
-                    val delList = info.mapToLongArray(BaseGalleryInfo::gid)
-                    EhEngine.modifyFavorites(delList, srcCat, -1)
+                runSwallowingWithUI {
+                    if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) { // Delete local fav
+                        EhDB.removeLocalFavorites(info)
+                    } else {
+                        val delList = info.mapToLongArray(BaseGalleryInfo::gid)
+                        EhEngine.modifyFavorites(delList, srcCat, -1)
+                    }
                 }
+                // We refresh anyway as cloud data maybe partially modified
                 data.refresh()
             }
             onClick(Icons.AutoMirrored.Default.DriveFileMove) {
@@ -399,12 +399,12 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         addAll(Settings.favCat)
                     }
                 }
-                val index = showSelectItem(items, R.string.move_favorites_dialog_title)
+                val index = awaitSelectItem(items, R.string.move_favorites_dialog_title)
                 val srcCat = urlBuilder.favCat
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
-                val info = checkedInfoMap.run { toMap().values.also { clear() } }
+                val info = checkedInfoMap.takeAndClear()
                 if (srcCat != dstCat) {
-                    runSuspendCatching {
+                    runSwallowingWithUI {
                         if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
                             // Move from local to cloud
                             val galleryList = info.map { it.gid to it.token }
@@ -418,11 +418,9 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             val gidArray = info.mapToLongArray(BaseGalleryInfo::gid)
                             EhEngine.modifyFavorites(gidArray, srcCat, dstCat)
                         }
-                    }.onSuccess {
-                        data.refresh()
-                    }.onFailure {
-                        showSnackbar(it.displayString())
                     }
+                    // We refresh anyway as cloud data maybe partially modified
+                    data.refresh()
                 }
             }
         }

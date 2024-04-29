@@ -23,7 +23,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -37,22 +36,20 @@ import androidx.compose.ui.util.lerp
 import com.hippo.ehviewer.ui.tools.PredictiveBackEasing
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.snackBarPadding
-import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
-import moe.tarsin.coroutines.runSuspendCatching
 
-enum class FabLayoutValue {
-    Hidden,
-    Primary,
-    Expand,
-}
+@Stable
+enum class FabLayoutValue { Hidden, Primary, Expand }
 
+@Stable
 @Composable
-fun rememberFabLayoutState(initialValue: FabLayoutValue = FabLayoutValue.Primary): FabLayoutState {
-    return remember { FabLayoutState(initialValue) }
+fun rememberFabLayoutState(initialValue: FabLayoutValue = FabLayoutValue.Primary) = remember {
+    FabLayoutState(initialValue)
 }
 
 @Stable
@@ -98,9 +95,11 @@ class FabLayoutState(
 }
 
 fun interface FabBuilder {
-    fun onClick(icon: ImageVector, that: suspend () -> Unit)
+    fun onClick(icon: ImageVector, autoClose: Boolean, that: suspend () -> Unit)
+    fun onClick(icon: ImageVector, that: suspend () -> Unit) = onClick(icon, true, that)
 }
 
+context(CoroutineScope)
 @Composable
 fun FabLayout(
     hidden: Boolean,
@@ -133,7 +132,7 @@ fun FabLayout(
         record { buildFab(builder) }
         transform { onEachLatest { state.waitCollapse() } }
     }
-    val coroutineScope = rememberCoroutineScope()
+
     if (updatedExpanded && autoCancel) {
         Spacer(
             modifier = Modifier.fillMaxSize().pointerInput(Unit) {
@@ -141,6 +140,7 @@ fun FabLayout(
             },
         )
     }
+
     val animatedProgress by state.expandProgress.asState()
     PredictiveBackHandler(updatedExpanded) { flow ->
         try {
@@ -152,9 +152,7 @@ fun FabLayout(
             }
             onExpandChanged(false)
         } catch (e: CancellationException) {
-            coroutineScope.launch {
-                state.expand()
-            }
+            launch { state.expand() }
         }
     }
     Box(
@@ -167,14 +165,12 @@ fun FabLayout(
                 contentAlignment = Alignment.BottomEnd,
             ) {
                 with(secondaryFab) {
-                    forEachIndexed { index, (imageVector, onClick) ->
+                    forEachIndexed { index, (imageVector, autoClose, onClick) ->
                         SmallFloatingActionButton(
                             onClick = {
-                                coroutineScope.launchIO {
-                                    runSuspendCatching {
-                                        onClick()
-                                    }
-                                    onExpandChanged(false)
+                                launch(Dispatchers.Default) {
+                                    onClick()
+                                    if (autoClose) onExpandChanged(false)
                                 }
                             },
                             modifier = Modifier.padding(20.dp).offset {
@@ -209,8 +205,8 @@ fun FabLayout(
 }
 
 private fun buildFab(builder: FabBuilder.() -> Unit) = buildList {
-    builder { icon, action ->
-        add(icon to action)
+    builder { icon, autoClose, action ->
+        add(Triple(icon, autoClose, action))
     }
 }
 

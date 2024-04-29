@@ -332,7 +332,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
                         }
                     }
 
-                    suspend fun doCommentAction(comment: GalleryComment) = showSelectActions {
+                    suspend fun doCommentAction(comment: GalleryComment) = awaitSelectAction {
                         onSelect(copyComment) {
                             addTextToClipboard(comment.comment.parseAsHtml())
                         }
@@ -361,7 +361,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
                                 showCommentVoteStatus(comment)
                             }
                         }
-                    }
+                    }()
 
                     GalleryCommentCard(
                         modifier = Modifier.thenIf(animateItems) { animateItem() },
