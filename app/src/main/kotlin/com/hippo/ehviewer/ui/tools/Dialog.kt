@@ -298,7 +298,7 @@ class DialogState {
         }
     }
 
-    suspend fun showDatePicker(
+    suspend fun awaitSelectDate(
         @StringRes title: Int,
         initialSelectedDateMillis: Long? = null,
         initialDisplayedMonthMillis: Long? = initialSelectedDateMillis,
@@ -365,7 +365,7 @@ class DialogState {
         }
     }
 
-    suspend fun showTimePicker(
+    suspend fun awaitSelectTime(
         title: String,
         initialHour: Int,
         initialMinute: Int,
@@ -407,7 +407,7 @@ class DialogState {
         }
     }
 
-    suspend fun showSingleChoice(
+    suspend fun awaitSingleChoice(
         items: List<String>,
         selected: Int,
         @StringRes title: Int? = null,
@@ -433,14 +433,14 @@ class DialogState {
         }
     }
 
-    suspend fun showSelectItem(
+    suspend fun awaitSelectItem(
         items: List<String>,
         @StringRes title: Int? = null,
         selected: Int = -1,
         respectDefaultWidth: Boolean = true,
-    ) = showSelectItem(items, title?.right(), selected, respectDefaultWidth)
+    ) = awaitSelectItem(items, title?.right(), selected, respectDefaultWidth)
 
-    suspend fun showSelectItem(
+    suspend fun awaitSelectItem(
         items: List<String>,
         title: Either<String, Int>?,
         selected: Int = -1,
@@ -466,17 +466,17 @@ class DialogState {
         }
     }
 
-    suspend inline fun showSelectActions(
+    suspend inline fun awaitSelectAction(
         @StringRes title: Int? = null,
         selected: Int = -1,
         builder: ActionScope.() -> Unit,
-    ) {
+    ): suspend () -> Unit {
         val (items, actions) = buildList { builder(ActionScope { action, that -> add(action to that) }) }.unzip()
-        val index = showSelectItem(items, title, selected)
-        actions[index].invoke()
+        val index = awaitSelectItem(items, title, selected)
+        return actions[index]
     }
 
-    suspend fun showSelectItemWithCheckBox(
+    suspend fun awaitSelectItemWithCheckBox(
         items: List<String>,
         @StringRes title: Int,
         @StringRes checkBoxText: Int,
@@ -508,7 +508,7 @@ class DialogState {
         }
     }
 
-    suspend fun showSelectItemWithIcon(
+    suspend fun awaitSelectItemWithIcon(
         items: List<Pair<ImageVector, Int>>,
         title: String,
     ): Int = showNoButton {
@@ -531,7 +531,7 @@ class DialogState {
         }
     }
 
-    suspend fun showSelectItemWithIconAndTextField(
+    suspend fun awaitSelectItemWithIconAndTextField(
         items: List<Pair<ImageVector, String>>,
         @StringRes title: Int,
         @StringRes hint: Int,

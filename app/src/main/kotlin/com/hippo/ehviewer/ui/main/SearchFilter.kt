@@ -119,7 +119,7 @@ fun SearchFilter(
             onClick = {
                 scope.launch {
                     val items = listOf(any, *languages.toTypedArray())
-                    languageFilter = dialogState.showSingleChoice(items, languageFilter + 1) - 1
+                    languageFilter = dialogState.awaitSingleChoice(items, languageFilter + 1) - 1
                 }
             },
             label = {
@@ -218,7 +218,7 @@ fun SearchFilter(
             selected = advancedOption.minRating != 0,
             onClick = {
                 scope.launch {
-                    val selected = dialogState.showSingleChoice(minRatingItems.toList(), minRatingIndex)
+                    val selected = dialogState.awaitSingleChoice(minRatingItems.toList(), minRatingIndex)
                     onAdvancedOptionChanged(advancedOption.copy(minRating = if (selected == 0) 0 else selected + 1))
                 }
             },
