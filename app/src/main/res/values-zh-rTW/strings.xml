@@ -334,7 +334,7 @@
     <string name="settings_download_reload_metadata_successfully">成功載入 %d 項</string>
     <string name="settings_download_reload_metadata_failed">載入中繼資料失敗: %s</string>
     <string name="settings_download_media_scan">允許其他程式進行媒體掃描</string>
-    <string name="settings_download_media_scan_summary_on">請別讓別人看到你的圖庫</string>
+    <string name="settings_download_media_scan_summary_on">請別讓別人看到你的相簿</string>
     <string name="settings_download_media_scan_summary_off">大部分相簿軟體將會忽略顯示下載路徑中的影像</string>
     <string name="settings_download_restore_download_items">復原下載的檔案</string>
     <string name="settings_download_restore_download_items_summary">復原下載路徑中的所有下載的檔案</string>
