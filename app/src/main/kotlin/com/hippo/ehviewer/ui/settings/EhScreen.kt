@@ -150,11 +150,9 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 var result by rememberSaveable { mutableStateOf<HomeParser.Result?>(null) }
                 var error by rememberSaveable { mutableStateOf<String?>(null) }
                 val summary by rememberUpdatedState(
-                    stringResource(
-                        id = R.string.image_limits_summary,
-                        result?.run { limits.current } ?: 0,
-                        result?.run { limits.maximum } ?: 0,
-                    ),
+                    result?.run {
+                        stringResource(id = R.string.image_limits_summary, limits.current, limits.maximum)
+                    } ?: placeholder,
                 )
                 suspend fun getImageLimits() {
                     result = EhEngine.getImageLimits()
