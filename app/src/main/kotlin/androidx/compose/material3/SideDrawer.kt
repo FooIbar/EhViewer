@@ -63,7 +63,6 @@ import kotlinx.coroutines.launch
 private val AnimationSpec = TweenSpec<Float>(durationMillis = 256)
 private const val DrawerPositionalThreshold = 0.5f
 private val DrawerVelocityThreshold = 400.dp
-private val ContainerWidth = 360.0.dp
 
 @Suppress("NotCloseable")
 @Stable
@@ -256,15 +255,15 @@ fun ModalSideDrawer(
 ) {
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
-    var minValue by remember { mutableFloatStateOf(with(density) { ContainerWidth.toPx() }) }
-    val maxValue = 0f
+    var maxValue by remember { mutableFloatStateOf(with(density) { DrawerDefaults.MaximumDrawerWidth.toPx() }) }
+    val minValue = 0f
 
     SideEffect {
         drawerState.density = density
         drawerState.anchoredDraggableState.updateAnchors(
             DraggableAnchors {
-                DrawerValue.Closed at minValue
-                DrawerValue.Open at maxValue
+                DrawerValue.Closed at maxValue
+                DrawerValue.Open at minValue
             },
         )
     }
@@ -309,7 +308,7 @@ fun ModalSideDrawer(
     Box(modifier.fillMaxSize().then(dragModifier)) {
         val radius by remember {
             snapshotFlow {
-                val step = calculateFraction(minValue, maxValue, drawerState.currentOffset)
+                val step = calculateFraction(maxValue, minValue, drawerState.currentOffset)
                 lerp(0, 10, step).dp
             }
         }.collectAsState(0.dp)
@@ -331,7 +330,7 @@ fun ModalSideDrawer(
                 }
             },
             fraction = {
-                calculateFraction(minValue, maxValue, drawerState.requireOffset())
+                calculateFraction(maxValue, minValue, drawerState.requireOffset())
             },
             color = scrimColor,
         )
@@ -349,7 +348,7 @@ fun ModalSideDrawer(
                     val scaledHeight = (multiplierY * placeable.height).roundToInt()
                     val reMeasured = measurable.measure(Constraints.fixed(scaledWidth, scaledHeight))
                     layout(scaledWidth, scaledHeight) {
-                        reMeasured.placeRelative(-(scaledWidth - placeable.width), 0)
+                        reMeasured.placeRelative(placeable.width - scaledWidth, 0)
                     }
                 }.background(
                     color = MaterialTheme.colorScheme.surfaceColorAtElevation(absoluteElevation),
@@ -361,14 +360,20 @@ fun ModalSideDrawer(
                     scaleX = scale
                     scaleY = scale
                 }.offset {
-                    IntOffset(lerp(0f, minValue * 0.05f, predictiveState).roundToInt(), 0)
+                    IntOffset(lerp(0f, maxValue * 0.05f, predictiveState).roundToInt(), 0)
                 }
             }
         } else {
             Modifier.onGloballyPositioned {
-                val w = it.size.width
-                if (w != 0) {
-                    minValue = it.size.width.toFloat()
+                val width = it.size.width
+                if (width != 0) {
+                    maxValue = width.toFloat()
+                    drawerState.anchoredDraggableState.updateAnchors(
+                        DraggableAnchors {
+                            DrawerValue.Closed at maxValue
+                            DrawerValue.Open at minValue
+                        },
+                    )
                 }
             }
         }

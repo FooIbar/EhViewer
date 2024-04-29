@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerState2
 import androidx.compose.material3.DrawerValue
@@ -369,7 +370,8 @@ class MainActivity : EhActivity() {
                     },
                 ) {
                     LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
-                        val minOffset = -with(density) { 360.dp.toPx() }
+                        // TODO: Correctly calculate it after https://android-review.googlesource.com/3017366
+                        val minOffset = -with(density) { DrawerDefaults.MaximumDrawerWidth.toPx() }
                         ModalNavigationDrawer(
                             drawerContent = {
                                 ModalDrawerSheet(
