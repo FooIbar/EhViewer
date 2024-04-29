@@ -119,7 +119,7 @@
     <string name="rate_successfully">評分成功</string>
     <string name="rate_failed">評分失敗</string>
     <string name="no_torrents">沒有種子</string>
-      <string name="no_current_torrents">沒有當前版本圖庫的種子</string>
+    <string name="no_current_torrents">沒有當前版本圖庫的種子</string>
     <string name="download_torrent_started">開始下載種子</string>
     <string name="download_torrent_failure">無法下載種子</string>
     <string name="torrents">種子</string>
