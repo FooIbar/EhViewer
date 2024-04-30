@@ -25,7 +25,7 @@ import java.io.File
 import splitties.init.appCtx
 
 /**
- * In Android files can be accessed via [java.io.File] and [android.net.Uri].
+ * In Android files can be accessed via [File] and [Uri].
  * The UniFile is designed to emulate File interface for both File and Uri.
  */
 sealed interface UniFile {
@@ -50,7 +50,7 @@ sealed interface UniFile {
     /**
      * Return a Uri for the underlying document represented by this file. This
      * can be used with other platform APIs to manipulate or share the
-     * underlying content. You can use [.isTreeUri] to
+     * underlying content. You can use [isTreeUri] to
      * test if the returned Uri is backed by a
      * [android.provider.DocumentsProvider].
      *
@@ -218,18 +218,18 @@ sealed interface UniFile {
      *
      *
      * Some providers may need to create a new file to reflect the rename,
-     * potentially with a different MIME type, so [.getUri] and
-     * [.getType] may change to reflect the rename.
+     * potentially with a different MIME type, so [uri] and
+     * [type] may change to reflect the rename.
      *
      *
      * When renaming a directory, children previously enumerated through
-     * [.listFiles] may no longer be valid.
+     * [listFiles] may no longer be valid.
      *
      * @param displayName the new display name.
-     * @return true on success.
+     * @return the renamed file on success, or `null`.
      * @see android.provider.DocumentsContract.renameDocument
      */
-    fun renameTo(displayName: String): Boolean
+    fun renameTo(displayName: String): UniFile?
 
     companion object {
         fun fromFile(file: File) = RawFile(null, file)

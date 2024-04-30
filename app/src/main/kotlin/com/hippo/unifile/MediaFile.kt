@@ -62,5 +62,5 @@ class MediaFile(override val uri: Uri) : UniFile {
 
     override fun findFirst(filter: (String) -> Boolean) = null
 
-    override fun renameTo(displayName: String) = false
+    override fun renameTo(displayName: String) = null
 }

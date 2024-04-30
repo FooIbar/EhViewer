@@ -22,7 +22,7 @@ object DownloadThumbInterceptor : Interceptor {
                 val thumb = withIOContext {
                     val legacyThumb = downloadLocation / location / LEGACY_THUMB_FILE
                     if (legacyThumb.isFile) {
-                        legacyThumb.apply { renameTo(THUMB_FILE) }
+                        legacyThumb.renameTo(THUMB_FILE) ?: legacyThumb
                     } else {
                         downloadLocation / location / THUMB_FILE
                     }

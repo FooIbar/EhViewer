@@ -23,8 +23,8 @@ import splitties.init.appCtx
 
 class TreeDocumentFile(
     override val parent: TreeDocumentFile?,
-    uri: Uri,
-    name: String = getFilenameForUri(uri),
+    override val uri: Uri,
+    override val name: String = getFilenameForUri(uri),
     mimeType: String? = null,
 ) : UniFile {
     private var cachePresent = false
@@ -81,18 +81,10 @@ class TreeDocumentFile(
         return null
     }
 
-    private var mimeType = mimeType
-        get() {
-            if (field == null) {
-                field = DocumentsContractApi19.getRawType(uri)
-            }
-            return field
-        }
+    private val mimeType by lazy {
+        mimeType ?: DocumentsContractApi19.getRawType(uri)
+    }
 
-    override var uri = uri
-        private set
-    override var name = name
-        private set
     override val type: String?
         get() = mimeType.takeUnless { isDirectory }
     override val isDirectory: Boolean
@@ -147,15 +139,9 @@ class TreeDocumentFile(
         allChildren.firstOrNull { filter(it.name) }
     }
 
-    override fun renameTo(displayName: String): Boolean {
+    override fun renameTo(displayName: String): UniFile? {
         val result = DocumentsContractApi21.renameTo(uri, displayName)
-        if (result != null) {
-            uri = result
-            name = displayName
-            mimeType = null
-            return true
-        }
-        return false
+        return result?.let { TreeDocumentFile(parent, it, displayName) }
     }
 }
 

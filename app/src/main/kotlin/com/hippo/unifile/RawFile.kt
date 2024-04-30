@@ -22,8 +22,7 @@ import android.os.ParcelFileDescriptor.parseMode
 import android.webkit.MimeTypeMap
 import java.io.File
 
-class RawFile(override val parent: RawFile?, private var file: File) : UniFile {
-
+class RawFile(override val parent: RawFile?, private val file: File) : UniFile {
     private var cachePresent = false
     private val allChildren by lazy {
         cachePresent = true
@@ -119,13 +118,13 @@ class RawFile(override val parent: RawFile?, private var file: File) : UniFile {
         allChildren.firstOrNull { filter(it.name) }
     }
 
-    override fun renameTo(displayName: String): Boolean {
+    override fun renameTo(displayName: String): UniFile? {
         val target = File(file.parentFile, displayName)
-        if (file.renameTo(target)) {
-            file = target
-            return true
+        return if (file.renameTo(target)) {
+            RawFile(parent, target)
+        } else {
+            null
         }
-        return false
     }
 
     override fun openFileDescriptor(mode: String): ParcelFileDescriptor = open(file, parseMode(mode))
