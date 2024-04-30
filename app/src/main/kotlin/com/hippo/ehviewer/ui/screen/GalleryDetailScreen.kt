@@ -10,7 +10,9 @@ import android.os.Parcelable
 import android.text.TextUtils.TruncateAt.END
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.annotation.StringRes
+import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.MutatorMutex
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -26,11 +28,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -57,6 +61,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -72,6 +77,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LocalPinnableContainer
@@ -80,6 +86,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
 import arrow.core.partially1
 import coil3.imageLoader
@@ -658,11 +665,68 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 if (mTorrentList!!.isEmpty()) {
                     showSnackbar(noCurrentTorrents)
                 } else {
-                    val items = mTorrentList!!.map { it.format() }
-                    val selected = awaitSelectItem(items, R.string.torrents, respectDefaultWidth = false)
-                    val url = mTorrentList!![selected].url
-                    val name = "${mTorrentList!![selected].name}.torrent"
-                    val r = DownloadManager.Request(Uri.parse(url))
+                    val selected = showNoButton(false) {
+                        Column(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(text = torrentText, style = MaterialTheme.typography.headlineSmall)
+                            val labelStyle = MaterialTheme.typography.labelLarge
+                            LazyColumn(
+                                contentPadding = PaddingValues(vertical = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                items(mTorrentList!!) {
+                                    Column(
+                                        modifier = Modifier.clickable { dismissWith(it) }.minimumInteractiveComponentSize()
+                                            .padding(horizontal = 8.dp),
+                                    ) {
+                                        Text(
+                                            text = it.name,
+                                            modifier = Modifier.basicMarquee(
+                                                spacing = MarqueeSpacing(16.dp),
+                                                velocity = 60.dp,
+                                            ),
+                                            color = MaterialTheme.colorScheme.primary,
+                                        )
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Text(
+                                                text = it.posted,
+                                                modifier = Modifier.weight(2.5f),
+                                                color = if (it.outdated) MaterialTheme.colorScheme.error else Color.Unspecified,
+                                                style = labelStyle,
+                                            )
+                                            Text(
+                                                text = it.uploader,
+                                                modifier = Modifier.weight(2.5f),
+                                                overflow = TextOverflow.Ellipsis,
+                                                maxLines = 1,
+                                                style = labelStyle,
+                                            )
+                                            Text(
+                                                text = it.size,
+                                                modifier = Modifier.weight(2f),
+                                                style = labelStyle,
+                                                textAlign = TextAlign.End,
+                                            )
+                                            Text(
+                                                text = it.format(),
+                                                modifier = Modifier.weight(3f),
+                                                style = labelStyle,
+                                                textAlign = TextAlign.End,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    val url = selected.url
+                    val name = "${selected.name}.torrent"
+                    val r = DownloadManager.Request(url.toUri())
                     r.setDestinationInExternalPublicDir(
                         Environment.DIRECTORY_DOWNLOADS,
                         AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
