@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,34 +26,20 @@ import kotlin.math.roundToInt
 
 private val colorYellow800 = Color(0xfff9a825)
 
+@Stable
+private fun getImageVector(index: Int, rating: Int) = when {
+    index * 2 + 1 < rating -> Icons.Default.Star
+    index * 2 + 1 == rating -> Icons.AutoMirrored.Default.StarHalf
+    else -> Icons.Default.StarOutline
+}
+
 @Composable
 fun MetaRatingWidgetReuse(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier: Modifier = Modifier) {
     val r = (rating * 2).roundToInt().coerceIn(0, 10)
-    val fullStar = r / 2
-    val halfStar = r % 2
-    val outlineStar = 5 - fullStar - halfStar
     Row(modifier = modifier) {
-        repeat(fullStar) {
+        repeat(5) {
             IconCached(
-                imageVector = Icons.Default.Star,
-                contentDescription = null,
-                modifier = Modifier.size(ratingSize),
-                tint = colorYellow800,
-            )
-            Spacer(modifier = Modifier.width(ratingInterval))
-        }
-        repeat(halfStar) {
-            IconCached(
-                imageVector = Icons.AutoMirrored.Default.StarHalf,
-                contentDescription = null,
-                modifier = Modifier.size(ratingSize),
-                tint = colorYellow800,
-            )
-            Spacer(modifier = Modifier.width(ratingInterval))
-        }
-        repeat(outlineStar) {
-            IconCached(
-                imageVector = Icons.Default.StarOutline,
+                imageVector = getImageVector(it, r),
                 contentDescription = null,
                 modifier = Modifier.size(ratingSize),
                 tint = colorYellow800,
@@ -65,9 +52,6 @@ fun MetaRatingWidgetReuse(rating: Float, ratingSize: Dp, ratingInterval: Dp, mod
 @Composable
 fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier: Modifier = Modifier, onRatingChange: ((Float) -> Unit)? = null) {
     val r = (rating * 2).roundToInt().coerceIn(0, 10)
-    val fullStar = r / 2
-    val halfStar = r % 2
-    val outlineStar = 5 - fullStar - halfStar
     val density = LocalDensity.current
     val ratingSizePx = remember { with(density) { ratingSize.toPx() } }
     val ratingIntervalPx = remember { with(density) { ratingInterval.toPx() } }
@@ -93,27 +77,9 @@ fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier
                 }
         } ?: modifier,
     ) {
-        repeat(fullStar) {
+        repeat(5) {
             Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = null,
-                modifier = Modifier.size(ratingSize),
-                tint = colorYellow800,
-            )
-            Spacer(modifier = Modifier.width(ratingInterval))
-        }
-        repeat(halfStar) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Default.StarHalf,
-                contentDescription = null,
-                modifier = Modifier.size(ratingSize),
-                tint = colorYellow800,
-            )
-            Spacer(modifier = Modifier.width(ratingInterval))
-        }
-        repeat(outlineStar) {
-            Icon(
-                imageVector = Icons.Default.StarOutline,
+                imageVector = getImageVector(it, r),
                 contentDescription = null,
                 modifier = Modifier.size(ratingSize),
                 tint = colorYellow800,
