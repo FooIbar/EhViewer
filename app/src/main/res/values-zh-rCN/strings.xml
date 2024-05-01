@@ -418,7 +418,7 @@
     <string name="insufficient_funds">余额不足</string>
     <string name="image_limits">图片配额</string>
     <string name="image_limits_summary">已用：%1$d / %2$d</string>
-    <string name="current_limits">%1$s\n重置花费：%2$d GP</string>
+    <string name="reset_cost">重置花费：%d GP</string>
     <string name="reset_limits_succeed">成功重置图片配额</string>
     <string name="reset">重置</string>
     <string name="settings_privacy">隐私</string>
