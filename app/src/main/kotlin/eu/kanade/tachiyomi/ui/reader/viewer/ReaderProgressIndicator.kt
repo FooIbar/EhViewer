@@ -34,7 +34,9 @@ class ReaderProgressIndicator @JvmOverloads constructor(
     override fun Content() {
         EhTheme {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (visible) CombinedCircularProgressIndicator(progress = progress)
+                // Workaround for https://issuetracker.google.com/338179884
+                // if (visible)
+                CombinedCircularProgressIndicator(progress = progress)
             }
         }
     }
