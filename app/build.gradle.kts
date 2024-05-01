@@ -283,7 +283,6 @@ kotlin {
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
-    arg("room.generateKotlin", "true")
     arg("compose-destinations.codeGenPackageName", "com.hippo.ehviewer.ui")
 }
 
