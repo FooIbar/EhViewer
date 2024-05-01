@@ -11,7 +11,7 @@ regex-lite = { version = "0.1.5" }
 jni = "0.21.1"
 jni_fn = "0.1.2"
 quick-xml = { default-features = false, version = "0.31" }
-tl = "0.7"
+tl = "0.7.8"
 log = "0.4.21"
 android_logger = { default-features = false, version = "0.13.3" }
 once_cell = { default-features = false, version = "1.19" }
