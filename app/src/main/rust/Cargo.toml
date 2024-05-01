@@ -13,7 +13,7 @@ jni_fn = "0.1.2"
 quick-xml = { default-features = false, version = "0.31" }
 tl = "0.7"
 log = "0.4"
-android_logger = { default-features = false, version = "0.13" }
+android_logger = { default-features = false, version = "0.13.3" }
 once_cell = { default-features = false, version = "1.19" }
 serde_cbor = "0.11"
 serde = { version = "1.0", features = ["derive"] }
