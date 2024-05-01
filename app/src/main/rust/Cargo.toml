@@ -7,7 +7,7 @@ resolver = "2"
 crate_type = ["cdylib"]
 
 [dependencies]
-regex-lite = { version = "0.1" }
+regex-lite = { version = "0.1.5" }
 jni = "0.21.1"
 jni_fn = "0.1.2"
 quick-xml = { default-features = false, version = "0.31" }
