@@ -475,7 +475,7 @@
     <string name="insufficient_funds">Insufficient Funds</string>
     <string name="image_limits">Image Limits</string>
     <string name="image_limits_summary">Used: %1$d / %2$d</string>
-    <string name="current_limits">%1$s\nReset Cost: %2$d GP</string>
+    <string name="reset_cost">Reset Cost: %d GP</string>
     <string name="reset_limits_succeed">Image limit was successfully reset</string>
     <string name="reset">Reset</string>
     <string name="settings_privacy">Privacy</string>
