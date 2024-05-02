@@ -14,13 +14,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.parser.Archive
 import com.hippo.ehviewer.client.parser.Funds
 
@@ -36,15 +36,7 @@ fun ArchiveList(
     val archiveOriginal = stringResource(R.string.archive_original)
     val archiveResample = stringResource(R.string.archive_resample)
     val fundsStyle = MaterialTheme.typography.labelLarge
-    val fundsGP = buildString {
-        append("%,d".format(funds.fundsGP))
-        // Ex GP numbers are rounded down to the nearest thousand
-        if (EhUtils.isExHentai) {
-            append('+')
-        }
-    }
-    val fundsC = "%,d".format(funds.fundsC)
-    val (hAtH, nonHAtH) = items.partition { it.isHAtH }
+    val (hAtH, nonHAtH) = remember(items) { items.partition { it.isHAtH } }
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier,
@@ -57,7 +49,7 @@ fun ArchiveList(
         item(contentType = "funds") {
             FundsItem(
                 type = "GP",
-                amount = fundsGP,
+                amount = funds.gp,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = fundsStyle,
             )
@@ -65,7 +57,7 @@ fun ArchiveList(
         item(contentType = "funds") {
             FundsItem(
                 type = "C",
-                amount = fundsC,
+                amount = funds.credit,
                 modifier = Modifier.fillMaxWidth(),
                 textStyle = fundsStyle,
             )

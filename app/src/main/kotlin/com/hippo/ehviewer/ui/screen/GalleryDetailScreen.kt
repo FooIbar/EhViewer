@@ -105,9 +105,6 @@ import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.NoHAtHClientException
 import com.hippo.ehviewer.client.getImageKey
-import com.hippo.ehviewer.client.parser.Archive
-import com.hippo.ehviewer.client.parser.Funds
-import com.hippo.ehviewer.client.parser.TorrentResult
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
@@ -165,6 +162,9 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
@@ -294,9 +294,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         }
     }
 
-    var archiveFormParamOr by remember { mutableStateOf<String?>(null) }
-    var archiveList by remember { mutableStateOf<List<Archive>?>(null) }
-    var currentFunds by remember { mutableStateOf<Funds?>(null) }
+    val archiveResult = remember(galleryInfo) {
+        async(Dispatchers.IO, CoroutineStart.LAZY) {
+            val detail = galleryInfo as GalleryDetail
+            EhEngine.getArchiveList(detail.archiveUrl!!, gid, token)
+        }
+    }
 
     val failureNoHath = stringResource(R.string.download_archive_failure_no_hath)
     val noArchive = stringResource(R.string.no_archives)
@@ -310,27 +313,18 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 showSnackbar(signInFirst)
             } else {
                 runSuspendCatching {
-                    if (archiveList == null) {
-                        val result = bgWork {
-                            withIOContext {
-                                EhEngine.getArchiveList(galleryDetail.archiveUrl!!, gid, token)
-                            }
-                        }
-                        archiveFormParamOr = result.paramOr
-                        archiveList = result.archiveList
-                        currentFunds = result.funds
-                    }
-                    if (archiveList!!.isEmpty()) {
+                    val (paramOr, archiveList, funds) = bgWork { archiveResult.await() }
+                    if (archiveList.isEmpty()) {
                         showSnackbar(noArchive)
                     } else {
                         val selected = showNoButton {
                             ArchiveList(
-                                funds = currentFunds!!,
-                                items = archiveList!!,
+                                funds = funds,
+                                items = archiveList,
                                 onItemClick = { dismissWith(it) },
                             )
                         }
-                        EhEngine.downloadArchive(gid, token, archiveFormParamOr!!, selected.res, selected.isHAtH)?.let {
+                        EhEngine.downloadArchive(gid, token, paramOr, selected.res, selected.isHAtH)?.let {
                             val uri = Uri.parse(it)
                             val intent = Intent().apply {
                                 action = Intent.ACTION_VIEW
@@ -573,22 +567,20 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             val downloadTorrentStarted = stringResource(R.string.download_torrent_started)
             val noTorrents = stringResource(R.string.no_torrents)
             val noCurrentTorrents = stringResource(R.string.no_current_torrents)
-            var torrentList by remember { mutableStateOf<TorrentResult?>(null) }
-            suspend fun showTorrentDialog() {
-                if (torrentList == null) {
-                    torrentList = bgWork {
-                        withIOContext {
-                            EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
-                        }
-                    }
+            val torrentResult = remember(galleryDetail) {
+                async(Dispatchers.IO, CoroutineStart.LAZY) {
+                    EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
                 }
-                if (torrentList!!.isEmpty()) {
+            }
+            suspend fun showTorrentDialog() {
+                val torrentList = bgWork { torrentResult.await() }
+                if (torrentList.isEmpty()) {
                     showSnackbar(noCurrentTorrents)
                 } else {
                     val selected = showNoButton(false) {
                         TorrentList(
                             title = torrentText,
-                            items = torrentList!!,
+                            items = torrentList,
                             onItemClick = { dismissWith(it) },
                         )
                     }
