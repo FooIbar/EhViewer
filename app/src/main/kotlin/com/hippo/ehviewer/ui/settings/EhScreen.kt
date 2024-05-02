@@ -200,11 +200,11 @@ fun EhScreen(navigator: DestinationsNavigator) {
                                     ) {
                                         FundsItem(
                                             type = "GP",
-                                            amount = "%,d+".format(funds.fundsGP),
+                                            amount = funds.gp,
                                         )
                                         FundsItem(
                                             type = "C",
-                                            amount = "%,d".format(funds.fundsC),
+                                            amount = funds.credit,
                                         )
                                     }
                                 }

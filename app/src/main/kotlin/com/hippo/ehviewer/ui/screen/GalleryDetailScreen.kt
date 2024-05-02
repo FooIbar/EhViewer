@@ -10,9 +10,7 @@ import android.os.Parcelable
 import android.text.TextUtils.TruncateAt.END
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.annotation.StringRes
-import androidx.compose.foundation.MarqueeSpacing
 import androidx.compose.foundation.MutatorMutex
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -28,13 +26,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -50,7 +46,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
@@ -61,7 +56,6 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -77,13 +71,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LocalPinnableContainer
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -113,10 +105,6 @@ import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.NoHAtHClientException
 import com.hippo.ehviewer.client.getImageKey
-import com.hippo.ehviewer.client.parser.ArchiveParser
-import com.hippo.ehviewer.client.parser.HomeParser
-import com.hippo.ehviewer.client.parser.TorrentResult
-import com.hippo.ehviewer.client.parser.format
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
@@ -135,11 +123,13 @@ import com.hippo.ehviewer.ui.destinations.GalleryPreviewScreenDestination
 import com.hippo.ehviewer.ui.getFavoriteIcon
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
+import com.hippo.ehviewer.ui.main.ArchiveList
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
 import com.hippo.ehviewer.ui.main.GalleryDetailHeaderCard
 import com.hippo.ehviewer.ui.main.GalleryTags
+import com.hippo.ehviewer.ui.main.TorrentList
 import com.hippo.ehviewer.ui.modifyFavorites
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
@@ -172,6 +162,9 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
@@ -301,14 +294,13 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         }
     }
 
-    var mArchiveFormParamOr by remember { mutableStateOf<String?>(null) }
-    var mArchiveList by remember { mutableStateOf<List<ArchiveParser.Archive>?>(null) }
-    var mCurrentFunds by remember { mutableStateOf<HomeParser.Funds?>(null) }
+    val archiveResult = remember(galleryInfo) {
+        async(Dispatchers.IO, CoroutineStart.LAZY) {
+            val detail = galleryInfo as GalleryDetail
+            EhEngine.getArchiveList(detail.archiveUrl!!, gid, token)
+        }
+    }
 
-    val currentFunds = stringResource(R.string.current_funds)
-    val archiveFree = stringResource(R.string.archive_free)
-    val archiveOriginal = stringResource(R.string.archive_original)
-    val archiveResample = stringResource(R.string.archive_resample)
     val failureNoHath = stringResource(R.string.download_archive_failure_no_hath)
     val noArchive = stringResource(R.string.no_archives)
     val downloadStarted = stringResource(R.string.download_archive_started)
@@ -321,96 +313,18 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 showSnackbar(signInFirst)
             } else {
                 runSuspendCatching {
-                    if (mArchiveList == null) {
-                        val result = bgWork {
-                            withIOContext {
-                                EhEngine.getArchiveList(galleryDetail.archiveUrl!!, gid, token)
-                            }
-                        }
-                        mArchiveFormParamOr = result.paramOr
-                        mArchiveList = result.archiveList
-                        mCurrentFunds = result.funds
-                    }
-                    if (mArchiveList!!.isEmpty()) {
+                    val (paramOr, archiveList, funds) = bgWork { archiveResult.await() }
+                    if (archiveList.isEmpty()) {
                         showSnackbar(noArchive)
                     } else {
-                        val fundsGP = buildString {
-                            append("%,d".format(mCurrentFunds!!.fundsGP))
-                            // Ex GP numbers are rounded down to the nearest thousand
-                            if (EhUtils.isExHentai) {
-                                append('+')
-                            }
-                            append(" GP")
-                        }
-                        val fundsC = "%,d C".format(mCurrentFunds!!.fundsC)
-                        val (hAtH, nonHAtH) = mArchiveList!!.partition { it.isHAtH }
                         val selected = showNoButton {
-                            val labelStyle = MaterialTheme.typography.labelMedium
-                            val fundsStyle = MaterialTheme.typography.labelLarge
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(2),
-                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                item(span = { GridItemSpan(maxLineSpan) }, contentType = "funds") {
-                                    Text(
-                                        text = currentFunds,
-                                        textAlign = TextAlign.Center,
-                                    )
-                                }
-                                item(contentType = "funds") {
-                                    Text(
-                                        text = fundsGP,
-                                        textAlign = TextAlign.Center,
-                                        style = fundsStyle,
-                                    )
-                                }
-                                item(contentType = "funds") {
-                                    Text(
-                                        text = fundsC,
-                                        textAlign = TextAlign.Center,
-                                        style = fundsStyle,
-                                    )
-                                }
-                                items(nonHAtH, contentType = { "archive" }) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(
-                                            text = if (it.cost == "Free!") archiveFree else it.cost,
-                                            style = labelStyle,
-                                        )
-                                        Button(onClick = { dismissWith(it) }) {
-                                            Text(if (it.res == "org") archiveOriginal else archiveResample)
-                                        }
-                                        Text(
-                                            text = it.size,
-                                            style = labelStyle,
-                                        )
-                                    }
-                                }
-                                item(span = { GridItemSpan(maxLineSpan) }, contentType = "divider") {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                                        Text(text = "H@H")
-                                    }
-                                }
-                                items(hAtH, contentType = { "archive" }) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(
-                                            text = if (it.cost == "Free") archiveFree else it.cost,
-                                            style = labelStyle,
-                                        )
-                                        Button(onClick = { dismissWith(it) }) {
-                                            Text(if (it.res == "org") archiveOriginal else it.name)
-                                        }
-                                        Text(
-                                            text = it.size,
-                                            style = labelStyle,
-                                        )
-                                    }
-                                }
-                            }
+                            ArchiveList(
+                                funds = funds,
+                                items = archiveList,
+                                onItemClick = { dismissWith(it) },
+                            )
                         }
-                        EhEngine.downloadArchive(gid, token, mArchiveFormParamOr!!, selected.res, selected.isHAtH)?.let {
+                        EhEngine.downloadArchive(gid, token, paramOr, selected.res, selected.isHAtH)?.let {
                             val uri = Uri.parse(it)
                             val intent = Intent().apply {
                                 action = Intent.ACTION_VIEW
@@ -653,76 +567,22 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             val downloadTorrentStarted = stringResource(R.string.download_torrent_started)
             val noTorrents = stringResource(R.string.no_torrents)
             val noCurrentTorrents = stringResource(R.string.no_current_torrents)
-            var mTorrentList by remember { mutableStateOf<TorrentResult?>(null) }
-            suspend fun showTorrentDialog() {
-                if (mTorrentList == null) {
-                    mTorrentList = bgWork {
-                        withIOContext {
-                            EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
-                        }
-                    }
+            val torrentResult = remember(galleryDetail) {
+                async(Dispatchers.IO, CoroutineStart.LAZY) {
+                    EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
                 }
-                if (mTorrentList!!.isEmpty()) {
+            }
+            suspend fun showTorrentDialog() {
+                val torrentList = bgWork { torrentResult.await() }
+                if (torrentList.isEmpty()) {
                     showSnackbar(noCurrentTorrents)
                 } else {
                     val selected = showNoButton(false) {
-                        Column(
-                            modifier = Modifier.padding(vertical = 8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Text(text = torrentText, style = MaterialTheme.typography.headlineSmall)
-                            val labelStyle = MaterialTheme.typography.labelLarge
-                            LazyColumn(
-                                contentPadding = PaddingValues(vertical = 16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                items(mTorrentList!!) {
-                                    Column(
-                                        modifier = Modifier.clickable { dismissWith(it) }.minimumInteractiveComponentSize()
-                                            .padding(horizontal = 8.dp),
-                                    ) {
-                                        Text(
-                                            text = it.name,
-                                            modifier = Modifier.basicMarquee(
-                                                spacing = MarqueeSpacing(16.dp),
-                                                velocity = 60.dp,
-                                            ),
-                                            color = MaterialTheme.colorScheme.primary,
-                                        )
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                        ) {
-                                            Text(
-                                                text = it.posted,
-                                                modifier = Modifier.weight(2.5f),
-                                                color = if (it.outdated) MaterialTheme.colorScheme.error else Color.Unspecified,
-                                                style = labelStyle,
-                                            )
-                                            Text(
-                                                text = it.uploader,
-                                                modifier = Modifier.weight(2.5f),
-                                                overflow = TextOverflow.Ellipsis,
-                                                maxLines = 1,
-                                                style = labelStyle,
-                                            )
-                                            Text(
-                                                text = it.size,
-                                                modifier = Modifier.weight(2f),
-                                                style = labelStyle,
-                                                textAlign = TextAlign.End,
-                                            )
-                                            Text(
-                                                text = it.format(),
-                                                modifier = Modifier.weight(3f),
-                                                style = labelStyle,
-                                                textAlign = TextAlign.End,
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        TorrentList(
+                            title = torrentText,
+                            items = torrentList,
+                            onItemClick = { dismissWith(it) },
+                        )
                     }
                     val url = selected.url
                     val name = "${selected.name}.torrent"

@@ -17,6 +17,7 @@ package com.hippo.ehviewer.client
 
 import arrow.core.Either
 import arrow.core.left
+import arrow.core.partially2
 import arrow.core.right
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
@@ -176,15 +177,19 @@ object EhEngine {
         return ehRequest(url, referer).fetchUsingAsByteBuffer(TorrentParser::parse)
     }
 
-    suspend fun getArchiveList(url: String, gid: Long, token: String) = ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
-        .fetchUsingAsText(ArchiveParser::parse)
-        .apply { funds = funds ?: ehRequest(EhUrl.URL_FUNDS).fetchUsingAsText(HomeParser::parseFunds) }
+    suspend fun getArchiveList(url: String, gid: Long, token: String): ArchiveParser.Result {
+        val funds = if (EhUtils.isExHentai) getFunds() else null
+        return ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
+            .fetchUsingAsText(ArchiveParser::parse.partially2(funds))
+    }
 
     suspend fun getImageLimits() = parZip(
         { ehRequest(EhUrl.URL_HOME).fetchUsingAsByteBuffer(HomeParser::parse) },
-        { ehRequest(EhUrl.URL_FUNDS).fetchUsingAsText(HomeParser::parseFunds) },
+        { getFunds() },
         { limits, funds -> HomeParser.Result(limits, funds) },
     )
+
+    private suspend fun getFunds() = ehRequest(EhUrl.URL_FUNDS).fetchUsingAsText(HomeParser::parseFunds)
 
     suspend fun getNews(parse: Boolean) = ehRequest(EhUrl.URL_NEWS, EhUrl.REFERER_E)
         .fetchUsingAsText { if (parse) EventPaneParser.parse(this) else null }
