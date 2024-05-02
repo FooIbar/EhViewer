@@ -12,10 +12,14 @@
       "ignoreUnstable": false
     },
     {
-      "groupName": "AndroidX & Jetpack Compose",
+      "groupName": "AndroidX",
       "matchDepPrefixes": [
         "androidx."
       ],
+      "ignoreUnstable": false
+    },
+    {
+      "groupName": "Compose BOM",
       "matchDepNames": [
         "dev.chrisbanes.compose:compose-bom"
       ],
@@ -28,13 +32,12 @@
       ],
       "matchDepNames": [
         "com.google.devtools.ksp"
-      ],
-      "recreateWhen": "never"
+      ]
     },
     {
       "description": "Disable updates for SNAPSHOTs",
-      "matchCategories": [
-        "java"
+      "matchDatasources": [
+        "maven"
       ],
       "allowedVersions": "!/SNAPSHOT$/"
     }
