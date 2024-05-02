@@ -32,7 +32,8 @@
       ],
       "matchDepNames": [
         "com.google.devtools.ksp"
-      ]
+      ],
+      "recreateWhen": "never"
     },
     {
       "description": "Disable updates for SNAPSHOTs",
