@@ -31,11 +31,11 @@ object HomeParser {
     }
 
     @Parcelize
-    data class Funds(val fundsGP: Int, val fundsC: Int) : Parcelable
-
-    @Parcelize
     data class Result(val limits: Limits, val funds: Funds) : Parcelable
 }
+
+@Parcelize
+data class Funds(val fundsGP: Int, val fundsC: Int) : Parcelable
 
 @Parcelize
 @Serializable

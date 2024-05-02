@@ -63,7 +63,7 @@ object ArchiveParser {
         PATTERN_CURRENT_FUNDS.find(body)?.groupValues?.run {
             val fundsGP = ParserUtils.parseInt(get(1), 0)
             val fundsC = ParserUtils.parseInt(get(2), 0)
-            val funds = HomeParser.Funds(fundsGP, fundsC)
+            val funds = Funds(fundsGP, fundsC)
             result.funds = funds
         }
         return result
@@ -80,13 +80,13 @@ object ArchiveParser {
         // TODO: Check more errors
     }
 
-    class Archive(
-        val res: String,
-        val name: String,
-        val size: String,
-        val cost: String,
-        val isHAtH: Boolean,
-    )
-
-    class Result(val paramOr: String, val archiveList: List<Archive>, var funds: HomeParser.Funds?)
+    class Result(val paramOr: String, val archiveList: List<Archive>, var funds: Funds?)
 }
+
+class Archive(
+    val res: String,
+    val name: String,
+    val size: String,
+    val cost: String,
+    val isHAtH: Boolean,
+)
