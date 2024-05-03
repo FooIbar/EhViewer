@@ -11,7 +11,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -19,6 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.hippo.ehviewer.R.string
 import com.hippo.ehviewer.ui.tools.DialogState
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
 @Composable
 fun ProgressDialog() {
@@ -44,10 +46,13 @@ fun ProgressDialog() {
     }
 }
 
-suspend fun <R> DialogState.bgWork(work: suspend () -> R) = dialog { cont ->
-    ProgressDialog()
-    LaunchedEffect(work) {
-        val result = runCatching { work() }
-        cont.resumeWith(result)
+suspend fun <R> DialogState.bgWork(work: suspend () -> R) = try {
+    suspendCoroutineUninterceptedOrReturn { cont ->
+        @Suppress("UNCHECKED_CAST")
+        (work as (Continuation<R>) -> Any?)(cont).also { r ->
+            if (r == COROUTINE_SUSPENDED) content = { ProgressDialog() }
+        }
     }
+} finally {
+    dismiss()
 }
