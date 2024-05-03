@@ -12,7 +12,6 @@
       "ignoreUnstable": false
     },
     {
-      "groupName": "AndroidX",
       "matchDepPrefixes": [
         "androidx."
       ],
