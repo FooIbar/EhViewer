@@ -11,10 +11,10 @@ import androidx.compose.ui.platform.LocalView
 import com.hippo.ehviewer.util.isAtLeastOMR1
 import com.hippo.ehviewer.util.isAtLeastR
 import com.hippo.ehviewer.util.isAtLeastU
-import sh.calvin.reorderable.ReorderableItemScope
+import sh.calvin.reorderable.ReorderableCollectionItemScope
 
 @Composable
-fun ReorderableItemScope.DragHandle(
+fun ReorderableCollectionItemScope.DragHandle(
     modifier: Modifier = Modifier,
     onDragStarted: () -> Unit = {},
     onDragStopped: () -> Unit = {},
