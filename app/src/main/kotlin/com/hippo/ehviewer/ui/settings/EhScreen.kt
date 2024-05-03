@@ -118,6 +118,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                         dismissText = R.string.settings_eh_clear_igneous,
                         showCancelButton = cookies.last().second != null,
                         onCancelButtonClick = { EhCookieStore.clearIgneous() },
+                        secure = signin,
                     ) {
                         if (signin) {
                             Column {
