@@ -197,7 +197,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                 var restoreDirCount = 0
                 suspend fun getRestoreItem(file: UniFile): RestoreItem? {
                     if (!file.isDirectory) return null
-                    return runCatching {
+                    return runSuspendCatching {
                         val (gid, token) = file.findFile(SPIDER_INFO_FILENAME)?.let {
                             readCompatFromUniFile(it)?.run {
                                 GalleryDetailUrlParser.Result(gid, token)
@@ -223,7 +223,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     }.getOrNull()
                 }
                 runCatching {
-                    val result = downloadLocation.listFiles().mapNotNull { getRestoreItem(it) }.also {
+                    val result = downloadLocation.listFiles().parMapNotNull { getRestoreItem(it) }.also {
                         fillGalleryListByApi(it, EhUrl.referer)
                     }
                     if (result.isEmpty()) {
