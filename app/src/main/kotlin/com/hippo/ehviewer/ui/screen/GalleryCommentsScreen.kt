@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -89,6 +88,7 @@ import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
+import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.normalizeSpan
@@ -289,12 +289,16 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
                     isRefreshing = false
                 }
             },
-            modifier = Modifier.fillMaxSize().imePadding().padding(top = paddingValues.calculateTopPadding()),
+            modifier = Modifier.fillMaxSize().imePadding(),
         ) {
             val additionalPadding = if (commenting) {
                 editTextMeasured
             } else {
-                0.dp
+                if (!comments.hasMore) {
+                    MinimumContentPaddingEditText
+                } else {
+                    0.dp
+                }
             }
             val voteUpSucceed = stringResource(R.string.vote_up_successfully)
             val cancelVoteUpSucceed = stringResource(R.string.cancel_vote_up_successfully)
@@ -304,9 +308,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
             LazyColumn(
                 modifier = Modifier.padding(horizontal = keylineMargin),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(
-                    bottom = paddingValues.calculateBottomPadding() + additionalPadding,
-                ),
+                contentPadding = paddingValues + PaddingValues(bottom = additionalPadding),
             ) {
                 items(
                     items = comments.comments,
@@ -403,12 +405,6 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
                                 }
                             }
                         }
-                    }
-                } else {
-                    // Workaround for comment list lagging when reaching the bottom
-                    // https://github.com/FooIbar/EhViewer/issues/994
-                    item {
-                        Spacer(modifier = Modifier.height(MinimumContentPaddingEditText))
                     }
                 }
             }
