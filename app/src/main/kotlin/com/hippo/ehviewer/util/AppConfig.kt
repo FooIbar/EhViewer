@@ -33,7 +33,7 @@ object AppConfig {
     private const val CRASH = "crash"
 
     private val abi = Build.SUPPORTED_ABIS[0].takeIf {
-        it in setOf("arm64-v8a", "x86_64", "armeabi-v7a", "x86")
+        it in setOf("arm64-v8a", "x86_64", "armeabi-v7a")
     } ?: "universal"
 
     fun matchVariant(name: String) = name.contains(BuildConfig.FLAVOR) && name.contains(abi)
