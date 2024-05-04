@@ -189,6 +189,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     launchSnackBar(context.getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
                 }
             }
+            val restoreFailed = stringResource(id = R.string.settings_download_restore_failed)
             WorkPreference(
                 title = stringResource(id = R.string.settings_download_restore_download_items),
                 summary = stringResource(id = R.string.settings_download_restore_download_items_summary),
@@ -222,12 +223,8 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     }.getOrNull()
                 }
                 runCatching {
-                    val result = downloadLocation.listFiles().mapNotNull { getRestoreItem(it) }.apply {
-                        runSuspendCatching {
-                            fillGalleryListByApi(this, EhUrl.referer)
-                        }.onFailure {
-                            logcat(it)
-                        }
+                    val result = downloadLocation.listFiles().mapNotNull { getRestoreItem(it) }.also {
+                        fillGalleryListByApi(it, EhUrl.referer)
                     }
                     if (result.isEmpty()) {
                         launchSnackBar(RESTORE_COUNT_MSG(restoreDirCount))
@@ -243,6 +240,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     }
                 }.onFailure {
                     logcat(it)
+                    launchSnackBar(restoreFailed)
                 }
             }
             WorkPreference(

@@ -330,6 +330,7 @@
     <string name="settings_download_restore_download_items">復原下載的檔案</string>
     <string name="settings_download_restore_download_items_summary">復原下載路徑中的所有下載的檔案</string>
     <string name="settings_download_restore_not_found">未尋獲可復原的已下載檔案</string>
+    <string name="settings_download_restore_failed">復原失敗</string>
     <string name="settings_download_restore_successfully">成功復原 %d 項</string>
     <string name="settings_download_clean_redundancy">清除冗餘的檔案</string>
     <string name="settings_download_clean_redundancy_summary">清除已下載但不在下載列表中的圖檔</string>
