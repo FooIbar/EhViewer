@@ -215,9 +215,8 @@ fun FilterScreen(navigator: DestinationsNavigator) {
     ) { paddingValues ->
         Deferred({ allFilterMap.await() }) { filters ->
             LazyColumn(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).padding(paddingValues),
-                // Workaround for https://issuetracker.google.com/332939169
-                // contentPadding = paddingValues,
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                contentPadding = paddingValues,
             ) {
                 var showTip = true
                 filters.forEach { (filterMode, filters) ->
