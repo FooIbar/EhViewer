@@ -97,7 +97,7 @@ abstract class Suggestion {
 }
 
 suspend fun SearchDao.suggestions(prefix: String, limit: Int) =
-    (if (prefix.isBlank()) list(limit) else rawSuggestions(prefix, limit)).map { it.query }
+    (if (prefix.isBlank()) list(limit) else rawSuggestions(prefix, limit))
 
 @Composable
 fun SearchBarScreen(
