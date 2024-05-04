@@ -5,9 +5,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetDefaults
@@ -102,8 +105,9 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                                 val state = rememberModalBottomSheetState()
                                 ModalBottomSheet(
                                     onDismissRequest = { dispose() },
+                                    modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
                                     sheetState = state,
-                                    windowInsets = WindowInsets.statusBarsIgnoringVisibility,
+                                    contentWindowInsets = { WindowInsets(0) },
                                 ) {
                                     ReaderPageSheetMeta(
                                         retry = { pageLoader.retryPage(page.index) },
@@ -170,10 +174,11 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                             )
                             ModalBottomSheet(
                                 onDismissRequest = { dispose() },
+                                modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
                                 // Yeah, I know color state should not be read here, but we have to do it...
                                 scrimColor = scrim,
                                 dragHandle = null,
-                                windowInsets = WindowInsets.statusBarsIgnoringVisibility,
+                                contentWindowInsets = { WindowInsets(0) },
                             ) {
                                 SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
                                     isColorFilter = page == 2

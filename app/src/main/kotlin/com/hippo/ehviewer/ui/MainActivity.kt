@@ -77,6 +77,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -93,6 +94,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
@@ -370,13 +372,15 @@ class MainActivity : EhActivity() {
                     },
                 ) {
                     LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
-                        // TODO: Correctly calculate it after https://android-review.googlesource.com/3017366
-                        val minOffset = -with(density) { DrawerDefaults.MaximumDrawerWidth.toPx() }
+                        var minOffset by remember {
+                            mutableFloatStateOf(-with(density) { DrawerDefaults.MaximumDrawerWidth.toPx() })
+                        }
                         ModalNavigationDrawer(
                             drawerContent = {
                                 ModalDrawerSheet(
                                     drawerState = navDrawerState,
-                                    modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp),
+                                    modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp)
+                                        .onSizeChanged { minOffset = -it.width.toFloat() },
                                     windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Start),
                                 ) {
                                     val scrollState = rememberScrollState()
@@ -425,7 +429,7 @@ class MainActivity : EhActivity() {
                                         ModalDrawerSheet(
                                             modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
                                             drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
-                                            windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Vertical + WindowInsetsSides.End),
+                                            windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
                                         ) {
                                             CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
                                                 sheet(sideSheetState)
