@@ -277,6 +277,11 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
 }
 
+// TODO: Remove once Annotation 1.8.0 is out
+configurations.all {
+    resolutionStrategy.force("androidx.annotation:annotation:1.8.0-rc01")
+}
+
 kotlin {
     jvmToolchain(21)
 }
