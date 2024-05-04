@@ -46,7 +46,7 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Constraints
@@ -364,8 +364,8 @@ fun ModalSideDrawer(
                 }
             }
         } else {
-            Modifier.onGloballyPositioned {
-                val width = it.size.width
+            Modifier.onSizeChanged {
+                val width = it.width
                 if (width != 0) {
                     maxValue = width.toFloat()
                     drawerState.anchoredDraggableState.updateAnchors(
