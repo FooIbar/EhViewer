@@ -11,7 +11,6 @@ androidx-core = "1.14.0-alpha01"
 androidx-core-splashscreen = "1.2.0-alpha01"
 androidx-graphics-path = "1.0.1"
 androidx-lifecycle = "2.8.0-rc01"
-androidx-navigation = "2.8.0-alpha08"
 androidx-paging = "3.3.0-rc01"
 androidx-recyclerview = "1.4.0-alpha01"
 androidx-room = "2.7.0-alpha01"
@@ -46,8 +45,6 @@ androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", versi
 androidx-graphics-path = { module = "androidx.graphics:graphics-path", version.ref = "androidx-graphics-path" }
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
-
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
 
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "androidx-paging" }
 

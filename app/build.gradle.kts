@@ -219,9 +219,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.lifecycle.compose)
 
-    // https://developer.android.com/jetpack/androidx/releases/navigation
-    implementation(libs.androidx.navigation.compose)
-
     // https://developer.android.com/jetpack/androidx/releases/paging
     implementation(libs.androidx.paging.compose)
 
