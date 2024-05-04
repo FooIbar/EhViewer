@@ -12,11 +12,11 @@ interface SearchDao {
     @Query("DELETE FROM suggestions WHERE `query` = :query")
     suspend fun deleteQuery(query: String)
 
-    @Query("SELECT * FROM suggestions WHERE `query` LIKE :prefix || '%' ORDER BY date DESC LIMIT :limit")
-    suspend fun rawSuggestions(prefix: String, limit: Int): Array<Search>
+    @Query("SELECT DISTINCT `query` FROM suggestions WHERE `query` LIKE :prefix || '%' ORDER BY date DESC LIMIT :limit")
+    suspend fun rawSuggestions(prefix: String, limit: Int): List<String>
 
-    @Query("SELECT * FROM suggestions ORDER BY date DESC LIMIT :limit")
-    suspend fun list(limit: Int): Array<Search>
+    @Query("SELECT DISTINCT `query` FROM suggestions ORDER BY date DESC LIMIT :limit")
+    suspend fun list(limit: Int): List<String>
 
     @Insert
     suspend fun insert(search: Search)
