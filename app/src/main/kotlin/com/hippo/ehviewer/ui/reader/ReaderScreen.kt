@@ -147,7 +147,7 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
                 colorBlendMode = colorOverlayMode,
             )
             val showPageNumber by Settings.showPageNumber.collectAsState()
-            if (showPageNumber) {
+            if (showPageNumber && !appbarVisible) {
                 CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
                     PageIndicatorText(
                         currentPage = syncState.sliderValue,
