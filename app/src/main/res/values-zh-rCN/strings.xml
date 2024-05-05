@@ -119,7 +119,6 @@
     <string name="rate_successfully">评分成功</string>
     <string name="rate_failed">评分失败</string>
     <string name="no_torrents">没有种子</string>
-    <string name="no_current_torrents">没有当前版本画廊的种子</string>
     <string name="download_torrent_started">开始下载种子</string>
     <string name="download_torrent_failure">无法下载种子</string>
     <string name="torrents">种子</string>

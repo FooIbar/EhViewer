@@ -561,12 +561,11 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     )
                 },
             )
-            val torrentText = stringResource(R.string.torrents)
+            val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
             val permissionDenied = stringResource(R.string.permission_denied)
             val downloadTorrentFailed = stringResource(R.string.download_torrent_failure)
             val downloadTorrentStarted = stringResource(R.string.download_torrent_started)
             val noTorrents = stringResource(R.string.no_torrents)
-            val noCurrentTorrents = stringResource(R.string.no_current_torrents)
             val torrentResult = remember(galleryDetail) {
                 async(Dispatchers.IO, CoroutineStart.LAZY) {
                     EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
@@ -575,11 +574,10 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             suspend fun showTorrentDialog() {
                 val torrentList = bgWork { torrentResult.await() }
                 if (torrentList.isEmpty()) {
-                    showSnackbar(noCurrentTorrents)
+                    showSnackbar(noTorrents)
                 } else {
                     val selected = showNoButton(false) {
                         TorrentList(
-                            title = torrentText,
                             items = torrentList,
                             onItemClick = { dismissWith(it) },
                         )
