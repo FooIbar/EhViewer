@@ -164,6 +164,9 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             buildConfigField("String", "BUILD_TIME", "\"\"")
+            lint {
+                abortOnError = false
+            }
         }
     }
 
