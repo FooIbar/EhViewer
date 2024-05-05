@@ -69,6 +69,7 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
     init {
         recycler.isVisible = false // Don't let the recycler layout yet
         recycler.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        recycler.clipToPadding = false
         recycler.isFocusable = false
         recycler.itemAnimator = null
         recycler.layoutManager = layoutManager
@@ -124,6 +125,10 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
 
         frame.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         frame.addView(recycler)
+    }
+
+    override fun getViewForInsets(): View {
+        return recycler
     }
 
     /**

@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
  * Interface for implementing a viewer.
  */
 interface BaseViewer {
+    fun getViewForInsets() = getView()
 
     /**
      * Returns the view this viewer uses.

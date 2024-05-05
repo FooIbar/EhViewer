@@ -7,7 +7,12 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
@@ -25,7 +30,10 @@ fun ReaderAppBars(
     onSliderValueChange: (Int) -> Unit,
     onClickSettings: () -> Unit,
     modifier: Modifier = Modifier,
-) = Column(modifier = modifier.fillMaxHeight(), verticalArrangement = Arrangement.SpaceBetween) {
+) = Column(
+    modifier = modifier.fillMaxHeight().windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)),
+    verticalArrangement = Arrangement.SpaceBetween,
+) {
     Spacer(modifier = Modifier.weight(1f))
 
     AnimatedVisibility(

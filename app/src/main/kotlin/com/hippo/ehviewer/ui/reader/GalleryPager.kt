@@ -3,7 +3,10 @@ package com.hippo.ehviewer.ui.reader
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -46,6 +49,7 @@ fun GalleryPager(
             HorizontalPager(
                 state = pagerState,
                 modifier = modifier,
+                contentPadding = WindowInsets.systemBars.asPaddingValues(),
                 reverseLayout = type == RIGHT_TO_LEFT,
                 key = { it },
             ) { index ->
@@ -82,6 +86,7 @@ fun GalleryPager(
             VerticalPager(
                 state = pagerState,
                 modifier = modifier,
+                contentPadding = WindowInsets.systemBars.asPaddingValues(),
                 key = { it },
             ) { index ->
                 val page = items[index]
@@ -132,6 +137,7 @@ fun GalleryPager(
                     },
                 ),
                 state = lazyListState,
+                contentPadding = WindowInsets.systemBars.asPaddingValues(),
                 verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
             ) {
                 items(items, key = { it.index }) { page ->

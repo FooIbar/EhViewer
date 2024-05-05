@@ -17,7 +17,6 @@
 package eu.kanade.tachiyomi.ui.reader
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.assist.AssistContent
 import android.content.ClipData
 import android.content.ContentValues
@@ -42,10 +41,10 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -53,7 +52,6 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,10 +62,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
@@ -265,14 +260,6 @@ class ReaderActivity : EhActivity() {
         }
         binding = ReaderActivityBinding.inflate(layoutInflater)
         binding.dialogStub.setMD3Content {
-            val surfaceElevation = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-            val alpha = if (isSystemInDarkTheme()) 230 else 242 // 90% dark 95% light
-            LaunchedEffect(surfaceElevation, alpha) {
-                val toolbarColor = surfaceElevation.copy(alpha = alpha / 255f).toArgb()
-                window.statusBarColor = toolbarColor
-                window.navigationBarColor = toolbarColor
-            }
-
             val brightness by Settings.customBrightness.collectAsState()
             val brightnessValue by Settings.customBrightnessValue.collectAsState()
             val colorOverlayEnabled by Settings.colorFilter.collectAsState()
@@ -376,7 +363,7 @@ class ReaderActivity : EhActivity() {
         viewer?.destroy()
         viewer = ReadingModeType.toViewer(ReaderPreferences.defaultReadingMode().get(), this)
         isRtl = viewer is R2LPagerViewer
-        updateViewerInset(ReaderPreferences.fullscreen().get())
+        updateViewerInsets(ReaderPreferences.fullscreen().get())
         binding.viewerContainer.removeAllViews()
         setOrientation(ReaderPreferences.defaultOrientationType().get())
         binding.viewerContainer.addView(viewer?.getView())
@@ -551,10 +538,9 @@ class ReaderActivity : EhActivity() {
     }
 
     /**
-     * Sets the visibility of the menu according to [visible] and with an optional parameter to
-     * [animate] the views.
+     * Sets the visibility of the menu according to [visible].
      */
-    fun setMenuVisibility(visible: Boolean) {
+    private fun setMenuVisibility(visible: Boolean) {
         menuVisible = visible
         if (visible) {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
@@ -582,14 +568,7 @@ class ReaderActivity : EhActivity() {
     /**
      * Initializes the reader menu. It sets up click listeners and the initial visibility.
      */
-    @SuppressLint("PrivateResource")
     private fun initializeMenu() {
-        binding.dialogStub.applyInsetter {
-            type(navigationBars = true) {
-                margin(vertical = true, horizontal = true)
-            }
-        }
-
         binding.pageNumber.setMD3Content {
             CompositionLocalProvider(
                 LocalTextStyle provides MaterialTheme.typography.bodySmall,
@@ -597,6 +576,7 @@ class ReaderActivity : EhActivity() {
                 PageIndicatorText(
                     currentPage = currentPage,
                     totalPages = totalPage,
+                    modifier = Modifier.navigationBarsPadding(),
                 )
             }
         }
@@ -689,11 +669,17 @@ class ReaderActivity : EhActivity() {
     }
 
     /**
-     * Updates viewer inset depending on fullscreen reader preferences.
+     * Updates viewer insets depending on fullscreen reader preferences.
      */
-    fun updateViewerInset(fullscreen: Boolean) {
-        viewer?.getView()?.applyInsetter {
-            if (!fullscreen) {
+    fun updateViewerInsets(fullscreen: Boolean) {
+        viewer?.getViewForInsets()?.applyInsetter {
+            if (fullscreen) {
+                // https://github.com/chrisbanes/insetter/issues/120#issuecomment-1311808030
+                // Hack to remove insets
+                type(1 shl 31) {
+                    padding()
+                }
+            } else {
                 type(navigationBars = true, statusBars = true) {
                     padding()
                 }
@@ -798,8 +784,7 @@ class ReaderActivity : EhActivity() {
 
             ReaderPreferences.fullscreen().changes()
                 .onEach {
-                    WindowCompat.setDecorFitsSystemWindows(window, !it)
-                    updateViewerInset(it)
+                    updateViewerInsets(it)
                 }
                 .launchIn(lifecycleScope)
         }
