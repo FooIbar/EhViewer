@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
+import com.hippo.ehviewer.util.isAtLeastP
 
 @Composable
 fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
@@ -39,11 +40,13 @@ fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberS
         title = stringResource(id = R.string.pref_fullscreen),
         field = fullscreen,
     )
-    AnimatedVisibility(visible = fullscreen.value) {
-        SwitchChoice(
-            title = stringResource(id = R.string.pref_cutout_short),
-            field = Settings.cutoutShort.asMutableState(),
-        )
+    if (isAtLeastP) {
+        AnimatedVisibility(visible = fullscreen.value) {
+            SwitchChoice(
+                title = stringResource(id = R.string.pref_cutout_short),
+                field = Settings.cutoutShort.asMutableState(),
+            )
+        }
     }
     SwitchChoice(
         title = stringResource(id = R.string.pref_keep_screen_on),
