@@ -70,7 +70,7 @@
 
     <string name="search_sh">Montrer les galeries supprimées</string>
     <string name="search_sto">Seulement montrer galeries avec des fiches torrent</string>
-    <string name="search_sr">Minimum note :</string>
+    <string name="search_sr">Minimum note</string>
     <string name="search_sp_to">à</string>
     <string name="search_sf">Désactiver le filtre par défaut pour les items suivants :</string>
     <string name="search_sfl">Langue</string>

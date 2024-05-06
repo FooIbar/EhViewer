@@ -61,7 +61,7 @@
     <string name="search_image">图片搜索</string>
     <string name="search_sh">已删除</string>
     <string name="search_sto">有种子</string>
-    <string name="search_sr">最低评分：</string>
+    <string name="search_sr">最低评分</string>
     <string name="search_sp_to">到</string>
     <string name="search_sp_err1">页数最大值至少为 10</string>
     <string name="search_sp_err2">页数范围差至少为 20</string>

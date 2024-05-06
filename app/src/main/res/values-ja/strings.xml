@@ -68,7 +68,7 @@
 
     <string name="search_sh">削除済みのギャラリーを表示</string>
     <string name="search_sto">Torrentのあるギャラリーのみを表示</string>
-    <string name="search_sr">評価の下限：</string>
+    <string name="search_sr">評価の下限</string>
     <string name="search_sp_to">から</string>
     <string name="search_sp_suffix">まで</string>
     <string name="search_sf">既定フィルターから下記のものを例外とする：</string>
