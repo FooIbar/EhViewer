@@ -54,7 +54,7 @@
     <string name="search_image">Suche nach einem Bild</string>
     <string name="search_sh">Gelöschte Galerien anzeigen</string>
     <string name="search_sto">Nur die Galerien mit Torrentdateien anzeigen</string>
-    <string name="search_sr">Mindestpunktzahl: </string>
+    <string name="search_sr">Mindestpunktzahl</string>
     <string name="search_sp_to">zu</string>
     <string name="search_sf">Standard-Filter deaktivieren für: </string>
     <string name="search_sfl">Sprache</string>

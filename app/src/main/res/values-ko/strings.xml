@@ -71,7 +71,7 @@
 
     <string name="search_sh">Expunged 갤러리 표시</string>
     <string name="search_sto">토렌트 파일이 있는 갤러리만 검색</string>
-    <string name="search_sr">최소 평점:</string>
+    <string name="search_sr">최소 평점</string>
 
     <string name="select_image">이미지 선택</string>
     <string name="select_image_first">먼저 이미지를 선택해 주세요.</string>

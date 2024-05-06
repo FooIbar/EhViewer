@@ -99,7 +99,7 @@
     <string name="search_image">Image Search</string>
     <string name="search_sh">Expunged</string>
     <string name="search_sto">Has Torrent</string>
-    <string name="search_sr">Minimum Rating:</string>
+    <string name="search_sr">Minimum Rating</string>
     <string name="search_sp_to">to</string>
     <string name="search_sp_err1">The page range maximum cannot be below 10</string>
     <string name="search_sp_err2">The page range must be at least 20</string>

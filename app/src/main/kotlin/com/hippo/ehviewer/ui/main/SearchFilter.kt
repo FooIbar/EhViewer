@@ -12,9 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -39,8 +37,9 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.data.GalleryInfo.Companion.S_LANG_TAGS
 import com.hippo.ehviewer.collectAsState
+import com.hippo.ehviewer.ui.tools.DropdownFilterChip
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.toIntOrDefault
@@ -89,40 +88,44 @@ fun SearchFilter(
             )
         }
     }
-    var languageFilter by Settings.languageFilter.asMutableState()
-    val languages = remember {
-        GalleryInfo.S_LANG_TAGS.map { tag ->
-            tag.substringAfter(':').let {
-                if (EhTagDatabase.initialized && EhTagDatabase.isTranslatable(context)) {
-                    EhTagDatabase.getTranslation("l", it) ?: it
-                } else {
-                    it
-                }
-            }
-        }
-    }
     Row(
         modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         val any = stringResource(id = R.string.any)
         val languageStr = stringResource(id = R.string.key_language)
-        FilterChip(
-            selected = languageFilter != -1,
-            onClick = {
-                scope.launch {
-                    val items = listOf(any, *languages.toTypedArray())
-                    languageFilter = dialogState.awaitSingleChoice(items, languageFilter + 1) - 1
+        val languages = remember {
+            val translatable = EhTagDatabase.initialized && EhTagDatabase.isTranslatable(context)
+            List(S_LANG_TAGS.size + 1) { i ->
+                if (i == 0) {
+                    any
+                } else {
+                    val tag = S_LANG_TAGS[i - 1].substringAfter(':')
+                    if (translatable) {
+                        EhTagDatabase.getTranslation("l", tag) ?: tag
+                    } else {
+                        tag
+                    }
                 }
+            }
+        }
+        var languageFilter by Settings.languageFilter.asMutableState()
+        DropdownFilterChip(
+            label = languageStr,
+            menuItems = languages,
+            selectedItemIndex = languageFilter + 1,
+            onSelectedItemIndexChange = {
+                languageFilter = it - 1
             },
-            label = {
-                Text(text = if (languageFilter == -1) languageStr else languages[languageFilter])
-            },
-            trailingIcon = {
-                Icon(
-                    imageVector = if (languageFilter == -1) Icons.Outlined.FilterAlt else Icons.Default.FilterAlt,
-                    contentDescription = null,
-                )
+        )
+        val minRatingItems = stringArrayResource(id = R.array.search_min_rating)
+        val minRatingStr = stringResource(id = R.string.search_sr)
+        DropdownFilterChip(
+            label = minRatingStr,
+            menuItems = minRatingItems.asList(),
+            selectedItemIndex = (advancedOption.minRating - 1).coerceAtLeast(0),
+            onSelectedItemIndexChange = {
+                onAdvancedOptionChanged(advancedOption.copy(minRating = if (it == 0) 0 else it + 1))
             },
         )
         val pageErr1 = stringResource(R.string.search_sp_err1)
@@ -203,19 +206,6 @@ fun SearchFilter(
                 }
             },
             label = { Text(text = pagesText) },
-        )
-        val minRatingItems = stringArrayResource(id = R.array.search_min_rating)
-        val minRatingStr = stringResource(id = R.string.search_sr)
-        val minRatingIndex = (advancedOption.minRating - 1).coerceAtLeast(0)
-        FilterChip(
-            selected = advancedOption.minRating != 0,
-            onClick = {
-                scope.launch {
-                    val selected = dialogState.awaitSingleChoice(minRatingItems.toList(), minRatingIndex)
-                    onAdvancedOptionChanged(advancedOption.copy(minRating = if (selected == 0) 0 else selected + 1))
-                }
-            },
-            label = { Text(text = minRatingStr + minRatingItems[minRatingIndex]) },
         )
         fun checked(bit: Int) = advancedOption.advanceSearch and bit != 0
         fun AdvancedSearchOption.inv(bit: Int) = onAdvancedOptionChanged(copy(advanceSearch = advanceSearch xor bit))

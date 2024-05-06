@@ -71,7 +71,7 @@
 
     <string name="search_sh">แสดงแกลเลอรี่ที่ถูกลบออก</string>
     <string name="search_sto">แสดงผลเฉพาะแกลเลอรี่ที่มีไฟล์ Torrents</string>
-    <string name="search_sr">เรตติ้งขั้นต่ำ:</string>
+    <string name="search_sr">เรตติ้งขั้นต่ำ</string>
 
     <string name="select_image">เลือกรูปภาพ</string>
     <string name="select_image_first">โปรดเลือกรูปภาพก่อน</string>

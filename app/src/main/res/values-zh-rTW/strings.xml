@@ -61,7 +61,7 @@
     <string name="search_image">圖片搜尋</string>
     <string name="search_sh">已被移除</string>
     <string name="search_sto">有種子</string>
-    <string name="search_sr">最低評分：</string>
+    <string name="search_sr">最低評分</string>
     <string name="search_sp_to">到</string>
     <string name="search_sp_err1">頁數最大值至少為 10</string>
     <string name="search_sp_err2">頁數範圍差至少為 20</string>

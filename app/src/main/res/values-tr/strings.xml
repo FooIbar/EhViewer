@@ -37,7 +37,7 @@
     <string name="search_image">Görsel Arama</string>
     <string name="search_sh">Yalnızca Silinen Galerileri Gösteri</string>
     <string name="search_sto">Yalnızca Torrent\'li Galerileri Göster</string>
-    <string name="search_sr">En Az Derecelendirme:</string>
+    <string name="search_sr">En Az Derecelendirme</string>
     <string name="search_sp_to">/</string>
     <string name="search_sp_err2">Sayfa oranı en az 20 olmalı</string>
     <string name="search_sf">Varsayılan filtreleri şunlar için devre dışı bırak:</string>
