@@ -32,7 +32,7 @@ fun DropdownFilterChip(
             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
         )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, matchTextFieldWidth = false) {
             menuItems.forEachIndexed { index, item ->
                 DropdownMenuItem(
                     text = { Text(text = item) },
