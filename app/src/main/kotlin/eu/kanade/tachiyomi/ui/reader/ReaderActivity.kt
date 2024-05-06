@@ -25,7 +25,6 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -37,8 +36,6 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.activity.viewModels
-import androidx.annotation.ChecksSdkIntAtLeast
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.WindowInsets
@@ -90,7 +87,6 @@ import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getValue
-import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.requestPermission
@@ -363,7 +359,7 @@ class ReaderActivity : EhActivity() {
         viewer?.destroy()
         viewer = ReadingModeType.toViewer(ReaderPreferences.defaultReadingMode().get(), this)
         isRtl = viewer is R2LPagerViewer
-        updateViewerInsets(ReaderPreferences.fullscreen().get())
+        updateViewerInsets(ReaderPreferences.cutoutShort().get())
         binding.viewerContainer.removeAllViews()
         setOrientation(ReaderPreferences.defaultOrientationType().get())
         binding.viewerContainer.addView(viewer?.getView())
@@ -524,10 +520,6 @@ class ReaderActivity : EhActivity() {
     var viewer: BaseViewer? = null
         private set
 
-    // We don't know if the device has cutout since the insets are not applied yet
-    @get:ChecksSdkIntAtLeast(Build.VERSION_CODES.P)
-    val hasCutout = isAtLeastP
-
     private var config: ReaderConfig? = null
 
     private val windowInsetsController by lazy {
@@ -671,18 +663,10 @@ class ReaderActivity : EhActivity() {
     /**
      * Updates viewer insets depending on fullscreen reader preferences.
      */
-    fun updateViewerInsets(fullscreen: Boolean) {
+    fun updateViewerInsets(drawInCutout: Boolean) {
         viewer?.getViewForInsets()?.applyInsetter {
-            if (fullscreen) {
-                // https://github.com/chrisbanes/insetter/issues/120#issuecomment-1311808030
-                // Hack to remove insets
-                type(1 shl 31) {
-                    padding()
-                }
-            } else {
-                type(navigationBars = true, statusBars = true) {
-                    padding()
-                }
+            type(navigationBars = true, statusBars = true, displayCutout = !drawInCutout) {
+                padding()
             }
         }
     }
@@ -751,16 +735,9 @@ class ReaderActivity : EhActivity() {
                 .onEach { setPageNumberVisibility(it) }
                 .launchIn(lifecycleScope)
 
-            if (hasCutout) {
-                setCutoutShort(ReaderPreferences.cutoutShort().get())
-                ReaderPreferences.cutoutShort().changes()
-                    .drop(1)
-                    .onEach {
-                        setCutoutShort(it)
-                        recreate()
-                    }
-                    .launchIn(lifecycleScope)
-            }
+            ReaderPreferences.cutoutShort().changes()
+                .onEach { updateViewerInsets(it) }
+                .launchIn(lifecycleScope)
 
             ReaderPreferences.keepScreenOn().changes()
                 .onEach { setKeepScreenOn(it) }
@@ -781,12 +758,6 @@ class ReaderActivity : EhActivity() {
                     )
                 }
                 .launchIn(lifecycleScope)
-
-            ReaderPreferences.fullscreen().changes()
-                .onEach {
-                    updateViewerInsets(it)
-                }
-                .launchIn(lifecycleScope)
         }
 
         /**
@@ -805,14 +776,6 @@ class ReaderActivity : EhActivity() {
          */
         fun setPageNumberVisibility(visible: Boolean) {
             binding.pageNumber.isVisible = visible
-        }
-
-        @RequiresApi(Build.VERSION_CODES.P)
-        private fun setCutoutShort(enabled: Boolean) {
-            window.attributes.layoutInDisplayCutoutMode = when (enabled) {
-                true -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-                false -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
-            }
         }
 
         /**

@@ -10,16 +10,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -222,10 +220,7 @@ fun SearchBarScreen(
         Scaffold(
             topBar = {
                 // Placeholder, fill immutable SearchBar padding
-                Spacer(
-                    modifier = Modifier.statusBarsPadding().displayCutoutPadding()
-                        .height(SearchBarDefaults.InputFieldHeight + 16.dp),
-                )
+                Spacer(modifier = Modifier.statusBarsPadding().height(SearchBarDefaults.InputFieldHeight + 16.dp))
             },
             floatingActionButton = floatingActionButton,
             content = content,
@@ -296,8 +291,7 @@ fun SearchBarScreen(
             filter?.invoke()
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime)
-                    .only(WindowInsetsSides.Bottom).asPaddingValues(),
+                contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues(),
             ) {
                 // Workaround for prepending before the first item
                 item {}
