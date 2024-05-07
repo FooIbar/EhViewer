@@ -695,9 +695,3 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         }
     }
 }
-
-object DownloadsFragment {
-    const val KEY_GID = "gid"
-    const val KEY_ACTION = "action"
-    const val ACTION_CLEAR_DOWNLOAD_SERVICE = "clear_download_service"
-}
