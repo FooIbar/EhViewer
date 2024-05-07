@@ -86,7 +86,12 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             },
         )
         recycler.tapListener = { event ->
-            val pos = PointF(event.rawX / recycler.width, event.rawY / recycler.height)
+            val windowOffset = IntArray(2)
+            activity.window.decorView.getLocationOnScreen(windowOffset)
+            val pos = PointF(
+                (event.rawX - windowOffset[0]) / recycler.width,
+                (event.rawY - windowOffset[1]) / recycler.height,
+            )
             val navigator = config.navigator
 
             when (navigator.getAction(pos)) {

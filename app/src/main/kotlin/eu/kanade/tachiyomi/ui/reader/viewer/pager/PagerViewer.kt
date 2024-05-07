@@ -96,7 +96,12 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             },
         )
         pager.tapListener = { event ->
-            val pos = PointF(event.rawX / pager.width, event.rawY / pager.height)
+            val windowOffset = IntArray(2)
+            activity.window.decorView.getLocationOnScreen(windowOffset)
+            val pos = PointF(
+                (event.rawX - windowOffset[0]) / pager.width,
+                (event.rawY - windowOffset[1]) / pager.height,
+            )
             val navigator = config.navigator
 
             when (navigator.getAction(pos)) {
