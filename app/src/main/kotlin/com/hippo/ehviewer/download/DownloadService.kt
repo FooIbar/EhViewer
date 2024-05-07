@@ -34,7 +34,6 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.screen.DownloadsFragment
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.SimpleHandler
@@ -187,7 +186,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         clearIntent.action = ACTION_CLEAR
         val piClear = PendingIntent.getService(this, 0, clearIntent, PendingIntent.FLAG_IMMUTABLE)
         val bundle = Bundle()
-        bundle.putString(DownloadsFragment.KEY_ACTION, DownloadsFragment.ACTION_CLEAR_DOWNLOAD_SERVICE)
+        bundle.putString(KEY_ACTION, ACTION_CLEAR_DOWNLOAD_SERVICE)
         val activityIntent = Intent(this, MainActivity::class.java)
         activityIntent.action = ACTION_START_DOWNLOADSCENE
         activityIntent.putExtra(ACTION_START_DOWNLOADSCENE_ARGS, bundle)
@@ -243,7 +242,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         }
         ensureDownloadingBuilder()
         val bundle = Bundle()
-        bundle.putLong(DownloadsFragment.KEY_GID, info.gid)
+        bundle.putLong(KEY_GID, info.gid)
         val activityIntent = Intent(this, MainActivity::class.java)
         activityIntent.action = ACTION_START_DOWNLOADSCENE
         activityIntent.putExtra(ACTION_START_DOWNLOADSCENE_ARGS, bundle)
@@ -540,6 +539,8 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         const val KEY_LABEL = "label"
         const val KEY_GID = "gid"
         const val KEY_GID_LIST = "gid_list"
+        const val KEY_ACTION = "action"
+        const val ACTION_CLEAR_DOWNLOAD_SERVICE = "clear_download_service"
         private const val ID_DOWNLOADING = 1
         private const val ID_DOWNLOADED = 2
         private const val ID_509 = 3

@@ -290,7 +290,10 @@ class MainActivity : EhActivity() {
                             }
                         }
                         DownloadService.ACTION_START_DOWNLOADSCENE -> {
-                            val args = intent.getBundleExtra(DownloadService.ACTION_START_DOWNLOADSCENE_ARGS)
+                            val args = intent.getBundleExtra(DownloadService.ACTION_START_DOWNLOADSCENE_ARGS)!!
+                            if (args.getString(DownloadService.KEY_ACTION) == DownloadService.ACTION_CLEAR_DOWNLOAD_SERVICE) {
+                                DownloadService.clear()
+                            }
                             navigator.navigate(DownloadsScreenDestination)
                         }
                     }
@@ -401,7 +404,7 @@ class MainActivity : EhActivity() {
                                                 },
                                                 selected = currentDestination === direction,
                                                 onClick = {
-                                                    navController.navigate(direction.route)
+                                                    navigator.navigate(direction)
                                                     closeDrawer()
                                                 },
                                                 modifier = Modifier.padding(horizontal = 12.dp),
