@@ -129,7 +129,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyColumnState
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Destination<RootGraph>
 @Composable
@@ -293,7 +293,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
 
         val labelsListState = rememberLazyListState()
         val editEnable = DownloadsFilterMode.CUSTOM == filterMode
-        val reorderableLabelState = rememberReorderableLazyColumnState(labelsListState) { from, to ->
+        val reorderableLabelState = rememberReorderableLazyListState(labelsListState) { from, to ->
             val fromPosition = from.index - 2
             val toPosition = to.index - 2
             DownloadManager.labelList.apply { add(toPosition, removeAt(fromPosition)) }

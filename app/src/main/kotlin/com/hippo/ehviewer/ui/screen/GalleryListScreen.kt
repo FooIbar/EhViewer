@@ -148,7 +148,7 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyColumnState
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Destination<RootGraph>
 @Composable
@@ -366,7 +366,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
             val view = LocalView.current
             Box(modifier = Modifier.fillMaxSize()) {
                 val quickSearchListState = rememberLazyListState()
-                val reorderableLazyListState = rememberReorderableLazyColumnState(quickSearchListState) { from, to ->
+                val reorderableLazyListState = rememberReorderableLazyListState(quickSearchListState) { from, to ->
                     val fromIndex = from.index - 1
                     val toIndex = to.index - 1
                     quickSearchList.apply { add(toIndex, removeAt(fromIndex)) }
