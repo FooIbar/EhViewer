@@ -90,7 +90,7 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             activity.window.decorView.getLocationOnScreen(windowOffset)
             val pos = PointF(
                 (event.rawX - windowOffset[0]) / recycler.width,
-                (event.rawY - windowOffset[1]) / recycler.height,
+                (event.rawY - windowOffset[1]) / recycler.originalHeight,
             )
             val navigator = config.navigator
 
