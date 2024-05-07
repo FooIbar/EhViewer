@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Settings
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -57,6 +59,7 @@ fun BottomReaderBar(onClickSettings: () -> Unit) {
             onSelectedItemChange = {
                 Settings.readingMode.value = it.flagValue
             },
+            minMenuWidth = 192.dp,
         )
         val orientationMode by Settings.orientationMode.collectAsState { OrientationType.fromPreference(it) }
         DropdownIconButton(
@@ -66,6 +69,7 @@ fun BottomReaderBar(onClickSettings: () -> Unit) {
             onSelectedItemChange = {
                 Settings.orientationMode.value = it.flagValue
             },
+            minMenuWidth = 192.dp,
         )
         var cropBorder by Settings.cropBorder.asMutableState()
         IconButton(onClick = { cropBorder = !cropBorder }) {
@@ -90,6 +94,7 @@ private fun DropdownIconButton(
     selectedItem: PreferenceType,
     onSelectedItemChange: (PreferenceType) -> Unit,
     modifier: Modifier = Modifier,
+    minMenuWidth: Dp = Dp.Unspecified,
 ) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(
@@ -109,6 +114,7 @@ private fun DropdownIconButton(
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
+            modifier = Modifier.widthIn(min = minMenuWidth),
             matchTextFieldWidth = false,
         ) {
             menuItems.forEach {
