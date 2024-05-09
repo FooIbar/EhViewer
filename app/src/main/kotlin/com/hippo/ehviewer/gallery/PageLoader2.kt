@@ -60,16 +60,15 @@ abstract class PageLoader2(private val gid: Long, var startPage: Int) : PageLoad
 
     protected abstract val title: String
 
-    protected abstract fun getImageExtension(index: Int): String
+    protected abstract fun getImageExtension(index: Int): String?
 
-    fun getImageFilename(index: Int): String {
-        return FileUtils.sanitizeFilename("$title - ${index + 1}.${getImageExtension(index).lowercase()}")
+    fun getImageFilename(index: Int): String? = getImageExtension(index)?.let {
+        FileUtils.sanitizeFilename("$title - ${index + 1}.${it.lowercase()}")
     }
 
     abstract fun save(index: Int, file: UniFile): Boolean
 
-    fun saveToDir(index: Int, dir: UniFile): UniFile? {
-        val filename = getImageFilename(index)
-        return (dir / filename).takeIf { save(index, it) }
+    fun saveToDir(index: Int, dir: UniFile): UniFile? = getImageFilename(index)?.let { filename ->
+        (dir / filename).takeIf { save(index, it) }
     }
 }

@@ -430,7 +430,7 @@ class ReaderActivity : EhActivity() {
         lifecycleScope.launchIO {
             val granted = isAtLeastQ || requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             if (granted) {
-                val filename = mGalleryProvider!!.getImageFilename(index)
+                val filename = mGalleryProvider!!.getImageFilename(index) ?: return@launchIO makeToast(R.string.error_cant_save_image)
                 val extension = FileUtils.getExtensionFromFilename(filename)
                 val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
 
@@ -477,7 +477,7 @@ class ReaderActivity : EhActivity() {
 
     fun saveImageTo(index: Int) {
         lifecycleScope.launchIO {
-            val filename = mGalleryProvider?.getImageFilename(index) ?: return@launchIO
+            val filename = mGalleryProvider?.getImageFilename(index) ?: return@launchIO makeToast(R.string.error_cant_save_image)
             val extension = FileUtils.getExtensionFromFilename(filename)
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
             runSuspendCatching {
