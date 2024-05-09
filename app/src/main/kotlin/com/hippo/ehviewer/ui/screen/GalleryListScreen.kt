@@ -33,6 +33,7 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.Bookmarks
@@ -122,7 +123,6 @@ import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.tools.Deferred
-import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
@@ -439,23 +439,29 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                                         Text(text = item.name)
                                     },
                                     trailingContent = {
-                                        DragHandle(
-                                            hapticFeedback = hapticFeedback,
-                                            onDragStarted = {
-                                                fromIndex = index
-                                            },
-                                            onDragStopped = {
-                                                if (fromIndex != -1) {
-                                                    if (fromIndex != index) {
-                                                        val range = if (fromIndex < index) fromIndex..index else index..fromIndex
-                                                        val toUpdate = quickSearchList.slice(range)
-                                                        toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                        launchIO { EhDB.updateQuickSearch(toUpdate) }
+                                        IconButton(
+                                            onClick = {},
+                                            modifier = Modifier.draggableHandle(
+                                                onDragStarted = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.START)
+                                                    fromIndex = index
+                                                },
+                                                onDragStopped = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.END)
+                                                    if (fromIndex != -1) {
+                                                        if (fromIndex != index) {
+                                                            val range = if (fromIndex < index) fromIndex..index else index..fromIndex
+                                                            val toUpdate = quickSearchList.slice(range)
+                                                            toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                            launchIO { EhDB.updateQuickSearch(toUpdate) }
+                                                        }
+                                                        fromIndex = -1
                                                     }
-                                                    fromIndex = -1
-                                                }
-                                            },
-                                        )
+                                                },
+                                            ),
+                                        ) {
+                                            Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
+                                        }
                                     },
                                 )
                             }

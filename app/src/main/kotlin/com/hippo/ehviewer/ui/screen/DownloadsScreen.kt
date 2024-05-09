@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.NewLabel
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.DropdownMenu
@@ -107,7 +108,6 @@ import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.showMoveDownloadLabelList
 import com.hippo.ehviewer.ui.tools.Deferred
-import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
@@ -403,23 +403,29 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                     ) {
                                         Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                     }
-                                    DragHandle(
-                                        hapticFeedback = hapticFeedback,
-                                        onDragStarted = {
-                                            fromIndex = index
-                                        },
-                                        onDragStopped = {
-                                            if (fromIndex != -1) {
-                                                if (fromIndex != index) {
-                                                    val range = if (fromIndex < index) fromIndex..index else index..fromIndex
-                                                    val toUpdate = DownloadManager.labelList.slice(range)
-                                                    toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                    launchIO { EhDB.updateDownloadLabel(toUpdate) }
+                                    IconButton(
+                                        onClick = {},
+                                        modifier = Modifier.draggableHandle(
+                                            onDragStarted = {
+                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.START)
+                                                fromIndex = index
+                                            },
+                                            onDragStopped = {
+                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.END)
+                                                if (fromIndex != -1) {
+                                                    if (fromIndex != index) {
+                                                        val range = if (fromIndex < index) fromIndex..index else index..fromIndex
+                                                        val toUpdate = DownloadManager.labelList.slice(range)
+                                                        toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                        launchIO { EhDB.updateDownloadLabel(toUpdate) }
+                                                    }
+                                                    fromIndex = -1
                                                 }
-                                                fromIndex = -1
-                                            }
-                                        },
-                                    )
+                                            },
+                                        ),
+                                    ) {
+                                        Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
+                                    }
                                 }
                             },
                         )
