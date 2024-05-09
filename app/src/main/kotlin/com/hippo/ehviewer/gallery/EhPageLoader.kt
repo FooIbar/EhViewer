@@ -45,8 +45,8 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
         EhUtils.getSuitableTitle(mGalleryInfo)
     }
 
-    override fun getImageExtension(index: Int): String {
-        return mSpiderQueen.getExtension(index)!!
+    override fun getImageExtension(index: Int): String? {
+        return mSpiderQueen.getExtension(index)
     }
 
     override fun save(index: Int, file: UniFile): Boolean {
