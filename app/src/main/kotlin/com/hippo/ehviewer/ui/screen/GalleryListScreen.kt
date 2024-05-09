@@ -71,7 +71,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -124,10 +123,11 @@ import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
+import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
-import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
+import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -363,14 +363,14 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 },
                 windowInsets = WindowInsets(0),
             )
-            val view = LocalView.current
             Box(modifier = Modifier.fillMaxSize()) {
                 val quickSearchListState = rememberLazyListState()
+                val hapticFeedback = rememberHapticFeedback()
                 val reorderableLazyListState = rememberReorderableLazyListState(quickSearchListState) { from, to ->
                     val fromIndex = from.index - 1
                     val toIndex = to.index - 1
                     quickSearchList.apply { add(toIndex, removeAt(fromIndex)) }
-                    view.performHapticFeedback(draggingHapticFeedback)
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.MOVE)
                 }
                 var fromIndex by remember { mutableIntStateOf(-1) }
                 LazyColumn(
@@ -440,6 +440,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                                     },
                                     trailingContent = {
                                         DragHandle(
+                                            hapticFeedback = hapticFeedback,
                                             onDragStarted = {
                                                 fromIndex = index
                                             },

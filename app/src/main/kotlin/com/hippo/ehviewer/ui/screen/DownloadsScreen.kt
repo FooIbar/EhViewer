@@ -74,7 +74,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -111,8 +110,9 @@ import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.DragHandle
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
+import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
-import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
+import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.mapToLongArray
@@ -149,7 +149,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     LockDrawer(selectMode)
 
     val density = LocalDensity.current
-    val view = LocalView.current
     val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
     fun String.translateArtist() = ehTags?.getTranslation(TagNamespace.Artist.toPrefix(), this) ?: this
@@ -293,11 +292,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
 
         val labelsListState = rememberLazyListState()
         val editEnable = DownloadsFilterMode.CUSTOM == filterMode
+        val hapticFeedback = rememberHapticFeedback()
         val reorderableLabelState = rememberReorderableLazyListState(labelsListState) { from, to ->
             val fromPosition = from.index - 2
             val toPosition = to.index - 2
             DownloadManager.labelList.apply { add(toPosition, removeAt(fromPosition)) }
-            view.performHapticFeedback(draggingHapticFeedback)
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.MOVE)
         }
         var fromIndex by remember { mutableIntStateOf(-1) }
         LazyColumn(
@@ -404,6 +404,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                         Icon(imageVector = Icons.Default.Edit, contentDescription = null)
                                     }
                                     DragHandle(
+                                        hapticFeedback = hapticFeedback,
                                         onDragStarted = {
                                             fromIndex = index
                                         },
