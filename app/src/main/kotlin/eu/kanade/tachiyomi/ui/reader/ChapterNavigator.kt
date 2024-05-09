@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.reader
 
-import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
@@ -25,9 +24,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.hippo.ehviewer.ui.tools.HapticFeedbackType
+import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import eu.kanade.tachiyomi.util.system.isTabletUi
 import kotlin.math.roundToInt
 
@@ -41,13 +41,13 @@ fun ChapterNavigator(
     val isTabletUi = LocalConfiguration.current.isTabletUi()
     val horizontalPadding = if (isTabletUi) 24.dp else 16.dp
     val layoutDirection = if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
-    val view = LocalView.current
     val configuration = LocalConfiguration.current
     val maxTickCount = configuration.screenWidthDp / (SliderDefaults.TickSize.value * 2.5f).roundToInt()
     val showTicks = totalPages < maxTickCount
 
     // Match with toolbar background color set in ReaderActivity
-    val backgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp).copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
+    val backgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
+        .copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
 
     // We explicitly handle direction based on the reader viewer rather than the system direction
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
@@ -66,9 +66,10 @@ fun ChapterNavigator(
                         val interactionSource = remember { MutableInteractionSource() }
                         if (showTicks) {
                             val sliderDragged by interactionSource.collectIsDraggedAsState()
+                            val hapticFeedback = rememberHapticFeedback()
                             LaunchedEffect(currentPage) {
                                 if (sliderDragged) {
-                                    view.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.MOVE)
                                 }
                             }
                         }
