@@ -168,7 +168,6 @@ object Settings : DataStorePreferences(null) {
     var userAgent by stringPref("user_agent", CHROME_USER_AGENT)
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
     var displayName by stringOrNullPref("display_name", null)
-    var avatar by stringOrNullPref("avatar", null)
     var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
     var lastUpdateTime by longPref("last_update_time", 0)
     var favDialogTheta by floatPref("fav_select_dialog_delta", 0F)
