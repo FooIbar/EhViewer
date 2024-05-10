@@ -59,7 +59,7 @@ inline fun <reified T : Any> rememberInVM(
 
 // Find out how make this work with any generic `Serializable` type
 @Composable
-inline fun <reified T> rememberInDataStore(
+inline fun <reified T> rememberMutableStateInDataStore(
     key: String,
     crossinline defaultValue: @DisallowComposableCalls () -> T,
 ) = with(dataStateFlow) {

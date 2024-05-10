@@ -35,7 +35,7 @@ fun CircularLayout(
     content: @Composable () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var delta by rememberInDataStore("FavDialogTheta") { 0F }
+    var delta by rememberMutableStateInDataStore("FavDialogTheta") { 0F }
     val state = rememberDraggable2DState {
         val prevOfs = currentOfs
         val prevTheta = currentTheta
