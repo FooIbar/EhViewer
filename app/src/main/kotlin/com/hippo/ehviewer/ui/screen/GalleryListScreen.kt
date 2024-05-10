@@ -175,7 +175,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
 
-    var category by rememberInDataStore("SearchCategory") { mutableIntStateOf(EhUtils.ALL_CATEGORY) }
+    var category by rememberInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
     var searchMethod by rememberSaveable { mutableIntStateOf(1) }
     var advancedSearchOption by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
