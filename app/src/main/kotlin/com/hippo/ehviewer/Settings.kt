@@ -170,7 +170,6 @@ object Settings : DataStorePreferences(null) {
     var displayName by stringOrNullPref("display_name", null)
     var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
     var lastUpdateTime by longPref("last_update_time", 0)
-    var favDialogTheta by floatPref("fav_select_dialog_delta", 0F)
 
     // TODO: Remove this after swipe gestures are correctly handled in compose
     var touchSlopFactor = intPref("touch_slop", 3)
