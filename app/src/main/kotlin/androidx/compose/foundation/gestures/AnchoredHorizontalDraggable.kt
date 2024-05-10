@@ -17,7 +17,7 @@
 package androidx.compose.foundation.gestures
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.gestures.DragEvent.DragDelta
+import androidx.compose.foundation.gestures.HorizontalDragEvent.DragDelta
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputChange
