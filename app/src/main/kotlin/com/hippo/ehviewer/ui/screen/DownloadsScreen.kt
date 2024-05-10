@@ -551,7 +551,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             onLongClick = { navigate(info.galleryInfo.asDst()) },
                             info = info,
                             modifier = Modifier.thenIf(animateItems) { animateItem() },
-                            badgeText = info.pages.takeIf { it > 0 }?.toString(),
+                            showLanguage = false,
                         )
                     }
                 }
