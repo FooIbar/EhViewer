@@ -171,9 +171,6 @@ object Settings : DataStorePreferences(null) {
     var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
     var lastUpdateTime by longPref("last_update_time", 0)
 
-    // TODO: Remove this after swipe gestures are correctly handled in compose
-    var touchSlopFactor = intPref("touch_slop", 3)
-
     // Tachiyomi Reader
     var newReader by boolPref("new_compose_reader", false)
 
