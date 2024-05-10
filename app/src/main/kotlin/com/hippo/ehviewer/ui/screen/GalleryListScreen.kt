@@ -128,6 +128,7 @@ import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
+import com.hippo.ehviewer.ui.tools.rememberInDataStore
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -174,7 +175,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
 
-    var category by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
+    var category by rememberInDataStore("SearchCategory") { mutableIntStateOf(EhUtils.ALL_CATEGORY) }
     var searchMethod by rememberSaveable { mutableIntStateOf(1) }
     var advancedSearchOption by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
@@ -571,10 +572,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         filter = {
             SearchFilter(
                 category = category,
-                onCategoryChanged = {
-                    Settings.searchCategory = it
-                    category = it
-                },
+                onCategoryChanged = { category = it },
                 advancedOption = advancedSearchOption,
                 onAdvancedOptionChanged = { advancedSearchOption = it },
             )

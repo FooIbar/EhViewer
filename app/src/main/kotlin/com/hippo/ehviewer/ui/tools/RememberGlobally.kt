@@ -32,7 +32,7 @@ import kotlinx.serialization.encodeToByteArray
 import splitties.init.appCtx
 
 val dataStoreScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-val dataStore = PreferenceDataStoreFactory.create { appCtx.dataStoreFile("Remembered") }
+val dataStore = PreferenceDataStoreFactory.create { appCtx.dataStoreFile("Remembered.preferences_pb") }
 val dataStateFlow = dataStore.data.stateIn(dataStoreScope, SharingStarted.Eagerly, emptyPreferences())
 
 class StateMapViewModel : ViewModel() {
@@ -59,7 +59,7 @@ inline fun <reified T : Any> rememberInVM(
 }
 
 @Composable
-inline fun <reified T : MutableState<T>> rememberInDataStore(
+inline fun <reified T> rememberInDataStore(
     key: String,
     crossinline defaultValue: @DisallowComposableCalls () -> MutableState<T>,
 ) = with(dataStateFlow) {
