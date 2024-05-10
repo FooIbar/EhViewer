@@ -67,13 +67,13 @@ inline fun <reified T> rememberMutableStateInDataStore(
         val keyObj = byteArrayPreferencesKey(key)
         val r = value[keyObj]?.let { bytes -> Cbor.decodeFromByteArray(bytes) } ?: defaultValue()
         mutableStateOf(r)
-    }.also { value ->
+    }.also { mutableState ->
         DisposableEffect(key) {
             onDispose {
                 dataStoreScope.launch {
                     val keyObj = byteArrayPreferencesKey(key)
                     dataStore.edit { p ->
-                        p[keyObj] = Cbor.encodeToByteArray(value.value)
+                        p[keyObj] = Cbor.encodeToByteArray(mutableState.value)
                     }
                 }
             }
