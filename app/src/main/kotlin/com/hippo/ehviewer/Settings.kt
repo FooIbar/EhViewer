@@ -10,7 +10,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
-import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
@@ -162,7 +161,6 @@ object Settings : DataStorePreferences(null) {
     var defaultFavSlot by intPref("default_favorite_slot", -2)
     var securityDelay by intPref("require_unlock_delay", 0)
     var clipboardTextHashCode by intPref("clipboard_text_hash_code", 0)
-    var searchCategory by intPref("search_pref", EhUtils.ALL_CATEGORY)
     var requestNewsTime by intPref("request_news_time", 0).observed { updateWhenRequestNewsChanges() }
     var updateIntervalDays by intPref("update_interval_days", 7)
     var lastDawnDays by intPref("last_dawn_days", 0)
