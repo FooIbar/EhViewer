@@ -175,6 +175,9 @@ object Settings : DataStorePreferences(null) {
     var lastUpdateTime by longPref("last_update_time", 0)
     var favDialogTheta by floatPref("fav_select_dialog_delta", 0F)
 
+    // TODO: Remove this after swipe gestures are correctly handled in compose
+    var touchSlopFactor = intPref("touch_slop", 3)
+
     // Tachiyomi Reader
     var newReader by boolPref("new_compose_reader", false)
 

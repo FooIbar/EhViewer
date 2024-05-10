@@ -97,6 +97,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -133,6 +134,7 @@ import com.hippo.ehviewer.ui.settings.showNewVersion
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.LocalTouchSlopProvider
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.addTextToClipboard
@@ -351,6 +353,7 @@ class MainActivity : EhActivity() {
             val lockDrawerHandle = remember { mutableStateListOf<Int>() }
             var snackbarFabPadding by remember { mutableStateOf(0.dp) }
             val drawerLocked = lockDrawerHandle.isNotEmpty()
+            val viewConfiguration = LocalViewConfiguration.current
             val density = LocalDensity.current
             val windowSizeClass = calculateWindowSizeClass(this)
             CompositionLocalProvider(
@@ -373,85 +376,92 @@ class MainActivity : EhActivity() {
                         )
                     },
                 ) {
-                    var minOffset by remember {
-                        mutableFloatStateOf(-with(density) { DrawerDefaults.MaximumDrawerWidth.toPx() })
-                    }
-                    ModalNavigationDrawer(
-                        drawerContent = {
-                            ModalDrawerSheet(
-                                drawerState = navDrawerState,
-                                modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp)
-                                    .onSizeChanged { minOffset = -it.width.toFloat() },
-                                windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Start),
-                            ) {
-                                val scrollState = rememberScrollState()
-                                Column(
-                                    modifier = Modifier.verticalScroll(scrollState)
-                                        .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.sadpanda_low_poly),
-                                        contentDescription = null,
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                        contentScale = ContentScale.FillWidth,
-                                    )
-                                    navItems.forEach { (direction, stringId, icon) ->
-                                        NavigationDrawerItem(
-                                            label = {
-                                                Text(text = stringResource(id = stringId))
-                                            },
-                                            selected = currentDestination === direction,
-                                            onClick = {
-                                                navigator.navigate(direction)
-                                                closeDrawer()
-                                            },
-                                            modifier = Modifier.padding(horizontal = 12.dp),
-                                            icon = {
-                                                Icon(imageVector = icon, contentDescription = null)
-                                            },
-                                        )
-                                    }
-                                }
-                            }
-                        },
-                        drawerState = navDrawerState,
-                        gesturesEnabled = !drawerLocked || navDrawerState.isOpen,
-                    ) {
-                        val sheet = sideSheet.firstOrNull()
-                        val radius by remember {
-                            snapshotFlow {
-                                val step = calculateFraction(minOffset, 0f, navDrawerState.currentOffset)
-                                with(density) { lerp(0, 10, step).dp.toPx() }
-                            }
-                        }.collectAsState(0f)
-                        ModalSideDrawer(
+                    val touchSlopFactor by Settings.touchSlopFactor.collectAsState { it.toFloat() }
+                    LocalTouchSlopProvider(touchSlopFactor) {
+                        var minOffset by remember {
+                            mutableFloatStateOf(-with(density) { DrawerDefaults.MaximumDrawerWidth.toPx() })
+                        }
+                        ModalNavigationDrawer(
                             drawerContent = {
-                                if (sheet != null) {
-                                    ModalDrawerSheet(
-                                        modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
-                                        drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
-                                        windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
+                                ModalDrawerSheet(
+                                    drawerState = navDrawerState,
+                                    modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 56).dp)
+                                        .onSizeChanged { minOffset = -it.width.toFloat() },
+                                    windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Start),
+                                ) {
+                                    val scrollState = rememberScrollState()
+                                    Column(
+                                        modifier = Modifier.verticalScroll(scrollState)
+                                            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom)),
                                     ) {
-                                        sheet(sideSheetState)
+                                        Image(
+                                            painter = painterResource(id = R.drawable.sadpanda_low_poly),
+                                            contentDescription = null,
+                                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                            contentScale = ContentScale.FillWidth,
+                                        )
+                                        navItems.forEach { (direction, stringId, icon) ->
+                                            NavigationDrawerItem(
+                                                label = {
+                                                    Text(text = stringResource(id = stringId))
+                                                },
+                                                selected = currentDestination === direction,
+                                                onClick = {
+                                                    navigator.navigate(direction)
+                                                    closeDrawer()
+                                                },
+                                                modifier = Modifier.padding(horizontal = 12.dp),
+                                                icon = {
+                                                    Icon(imageVector = icon, contentDescription = null)
+                                                },
+                                            )
+                                        }
                                     }
                                 }
                             },
-                            modifier = Modifier.graphicsLayer {
-                                if (radius != 0f) {
-                                    renderEffect = BlurEffect(radius, radius, TileMode.Clamp)
-                                    shape = RectangleShape
-                                    clip = true
-                                }
-                            },
-                            drawerState = sideSheetState,
-                            gesturesEnabled = sheet != null && !drawerLocked,
+                            drawerState = navDrawerState,
+                            gesturesEnabled = !drawerLocked || navDrawerState.isOpen,
                         ) {
-                            DestinationsNavHost(
-                                navGraph = NavGraphs.root,
-                                startRoute = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
-                                defaultTransitions = rememberEhNavAnim(),
-                                navController = navController,
-                            )
+                            val sheet = sideSheet.firstOrNull()
+                            val radius by remember {
+                                snapshotFlow {
+                                    val step = calculateFraction(minOffset, 0f, navDrawerState.currentOffset)
+                                    with(density) { lerp(0, 10, step).dp.toPx() }
+                                }
+                            }.collectAsState(0f)
+                            ModalSideDrawer(
+                                drawerContent = {
+                                    if (sheet != null) {
+                                        ModalDrawerSheet(
+                                            modifier = Modifier.widthIn(max = (configuration.screenWidthDp - 112).dp),
+                                            drawerShape = ShapeDefaults.Large.copy(topEnd = CornerSize(0), bottomEnd = CornerSize(0)),
+                                            windowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Top + WindowInsetsSides.End),
+                                        ) {
+                                            CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
+                                                sheet(sideSheetState)
+                                            }
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.graphicsLayer {
+                                    if (radius != 0f) {
+                                        renderEffect = BlurEffect(radius, radius, TileMode.Clamp)
+                                        shape = RectangleShape
+                                        clip = true
+                                    }
+                                },
+                                drawerState = sideSheetState,
+                                gesturesEnabled = sheet != null && !drawerLocked,
+                            ) {
+                                CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
+                                    DestinationsNavHost(
+                                        navGraph = NavGraphs.root,
+                                        startRoute = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
+                                        defaultTransitions = rememberEhNavAnim(),
+                                        navController = navController,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
