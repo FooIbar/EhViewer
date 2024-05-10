@@ -3,7 +3,6 @@ package com.hippo.ehviewer.ui.tools
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,16 +57,16 @@ inline fun <reified T : Any> rememberInVM(
     }
 }
 
+// Find out how make this work with any generic `Serializable` type
 @Composable
 inline fun <reified T> rememberInDataStore(
     key: String,
-    crossinline defaultValue: @DisallowComposableCalls () -> MutableState<T>,
+    crossinline defaultValue: @DisallowComposableCalls () -> T,
 ) = with(dataStateFlow) {
     remember {
         val keyObj = byteArrayPreferencesKey(key)
-        value[keyObj]?.let { bytes ->
-            mutableStateOf(Cbor.decodeFromByteArray(bytes))
-        } ?: defaultValue()
+        val r = value[keyObj]?.let { bytes -> Cbor.decodeFromByteArray(bytes) } ?: defaultValue()
+        mutableStateOf(r)
     }.also { value ->
         DisposableEffect(key) {
             onDispose {

@@ -6,7 +6,6 @@ import androidx.compose.foundation.gestures.draggable2D
 import androidx.compose.foundation.gestures.rememberDraggable2DState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -36,7 +35,7 @@ fun CircularLayout(
     content: @Composable () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var delta by rememberInDataStore("FavDialogTheta") { mutableFloatStateOf(0F) }
+    var delta by rememberInDataStore("FavDialogTheta") { 0F }
     val state = rememberDraggable2DState {
         val prevOfs = currentOfs
         val prevTheta = currentTheta
