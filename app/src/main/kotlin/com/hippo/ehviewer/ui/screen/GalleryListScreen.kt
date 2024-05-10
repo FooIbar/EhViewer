@@ -177,7 +177,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
 
     var category by rememberMutableStateInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
     var searchMethod by rememberSaveable { mutableIntStateOf(1) }
-    var advancedSearchOption by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
+    var advancedSearchOption by rememberMutableStateInDataStore("AdvancedSearchOption") { AdvancedSearchOption() }
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     LaunchedEffect(urlBuilder) {
@@ -574,7 +574,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 category = category,
                 onCategoryChanged = { category = it },
                 advancedOption = advancedSearchOption,
-                onAdvancedOptionChanged = { advancedSearchOption = it },
+                onAdvancedOptionChanged = {
+                    advancedSearchOption = it
+                },
             )
         },
         floatingActionButton = {
