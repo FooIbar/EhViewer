@@ -41,5 +41,9 @@
       ],
       "allowedVersions": "!/SNAPSHOT$/"
     }
-  ]
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "rangeStrategy": "replace"
 }
