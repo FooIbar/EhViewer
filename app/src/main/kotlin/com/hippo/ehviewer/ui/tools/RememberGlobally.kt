@@ -14,6 +14,7 @@ import androidx.datastore.preferences.core.byteArrayPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlin.coroutines.CoroutineContext
@@ -68,8 +69,8 @@ inline fun <reified T> rememberMutableStateInDataStore(
         val r = value[keyObj]?.let { bytes -> Cbor.decodeFromByteArray(bytes) } ?: defaultValue()
         mutableStateOf(r)
     }.also { mutableState ->
-        DisposableEffect(key) {
-            onDispose {
+        LifecycleResumeEffect(key) {
+            onPauseOrDispose {
                 dataStoreScope.launch {
                     val keyObj = byteArrayPreferencesKey(key)
                     dataStore.edit { p ->
