@@ -16,10 +16,10 @@
 
 package androidx.compose.foundation.gestures
 
-import androidx.compose.foundation.gestures.DragEvent.DragCancelled
-import androidx.compose.foundation.gestures.DragEvent.DragDelta
-import androidx.compose.foundation.gestures.DragEvent.DragStarted
-import androidx.compose.foundation.gestures.DragEvent.DragStopped
+import androidx.compose.foundation.gestures.HorizontalDragEvent.DragCancelled
+import androidx.compose.foundation.gestures.HorizontalDragEvent.DragDelta
+import androidx.compose.foundation.gestures.HorizontalDragEvent.DragStarted
+import androidx.compose.foundation.gestures.HorizontalDragEvent.DragStopped
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -51,7 +51,7 @@ internal abstract class HorizontalDragGestureNode(
     protected var enabled = enabled
         private set
 
-    private var channel: Channel<DragEvent>? = null
+    private var channel: Channel<HorizontalDragEvent>? = null
     private var isListeningForEvents = false
 
     abstract fun canDrag(change: PointerInputChange): Boolean
@@ -220,9 +220,9 @@ internal abstract class HorizontalDragGestureNode(
     }
 }
 
-internal sealed class DragEvent {
-    class DragStarted(val startPoint: Offset) : DragEvent()
-    class DragStopped(val velocity: Velocity) : DragEvent()
-    object DragCancelled : DragEvent()
-    class DragDelta(val delta: Offset) : DragEvent()
+internal sealed class HorizontalDragEvent {
+    class DragStarted(val startPoint: Offset) : HorizontalDragEvent()
+    class DragStopped(val velocity: Velocity) : HorizontalDragEvent()
+    object DragCancelled : HorizontalDragEvent()
+    class DragDelta(val delta: Offset) : HorizontalDragEvent()
 }
