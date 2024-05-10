@@ -675,6 +675,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     onClick = { navigate(info.asDst()) },
                     onLongClick = { launch { doGalleryInfoAction(info) } },
                     info = info,
+                    showPages = showPages,
                 )
             },
             searchBarOffsetY = { searchBarOffsetY },

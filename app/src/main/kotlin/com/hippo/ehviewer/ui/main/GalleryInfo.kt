@@ -5,11 +5,13 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
@@ -203,7 +205,8 @@ fun GalleryInfoGridItem(
     onLongClick: () -> Unit,
     info: GalleryInfo,
     modifier: Modifier = Modifier,
-    badgeText: String? = info.simpleLanguage,
+    showLanguage: Boolean = true,
+    showPages: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) = ElevatedCard(
     modifier = modifier,
@@ -233,8 +236,14 @@ fun GalleryInfoGridItem(
             containerColor = categoryColor,
             contentColor = if (Settings.harmonizeCategoryColor) contentColorFor(categoryColor) else EhUtils.categoryTextColor,
         ) {
-            if (badgeText != null) {
-                Text(text = badgeText)
+            if (showPages && info.pages > 0) {
+                Text(text = "${info.pages}")
+                if (showLanguage && info.simpleLanguage != null) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+            }
+            if (showLanguage && info.simpleLanguage != null) {
+                Text(text = "${info.simpleLanguage}")
             }
         }
     }

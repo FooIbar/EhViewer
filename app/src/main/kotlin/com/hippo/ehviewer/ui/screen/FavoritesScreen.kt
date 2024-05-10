@@ -309,6 +309,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             checkedInfoMap[info.gid] = info
                         },
                         info = info,
+                        showPages = showPages,
                         interactionSource = interactionSource,
                     )
                 }
