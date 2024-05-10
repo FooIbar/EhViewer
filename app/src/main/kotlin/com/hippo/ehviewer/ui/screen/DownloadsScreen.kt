@@ -48,6 +48,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -110,7 +111,6 @@ import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
-import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
@@ -356,9 +356,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     }
                 }
                 ReorderableItem(reorderableLabelState, enabled = editEnable, key = id) { isDragging ->
-                    SwipeToDismissBox2(
+                    SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {},
+                        enableDismissFromStartToEnd = false,
                         gesturesEnabled = editEnable,
                     ) {
                         val elevation by animateDpAsState(
