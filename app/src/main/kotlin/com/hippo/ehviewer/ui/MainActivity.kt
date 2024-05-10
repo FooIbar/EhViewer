@@ -355,12 +355,14 @@ class MainActivity : EhActivity() {
             val drawerLocked = lockDrawerHandle.isNotEmpty()
             val viewConfiguration = LocalViewConfiguration.current
             val density = LocalDensity.current
+            val windowSizeClass = calculateWindowSizeClass(this)
             CompositionLocalProvider(
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
                 LocalDrawerLockHandle provides lockDrawerHandle,
                 LocalSnackBarHostState provides snackbarState,
                 LocalSnackBarFabPadding provides animateDpAsState(snackbarFabPadding, label = "SnackbarFabPadding"),
+                LocalWindowSizeClass provides windowSizeClass,
             ) {
                 Scaffold(
                     snackbarHost = {
@@ -374,7 +376,8 @@ class MainActivity : EhActivity() {
                         )
                     },
                 ) {
-                    LocalTouchSlopProvider(Settings.touchSlopFactor.toFloat()) {
+                    val touchSlopFactor by Settings.touchSlopFactor.collectAsState { it.toFloat() }
+                    LocalTouchSlopProvider(touchSlopFactor) {
                         var minOffset by remember {
                             mutableFloatStateOf(-with(density) { DrawerDefaults.MaximumDrawerWidth.toPx() })
                         }
@@ -450,11 +453,7 @@ class MainActivity : EhActivity() {
                                 drawerState = sideSheetState,
                                 gesturesEnabled = sheet != null && !drawerLocked,
                             ) {
-                                val windowSizeClass = calculateWindowSizeClass(this)
-                                CompositionLocalProvider(
-                                    LocalViewConfiguration provides viewConfiguration,
-                                    LocalWindowSizeClass provides windowSizeClass,
-                                ) {
+                                CompositionLocalProvider(LocalViewConfiguration provides viewConfiguration) {
                                     DestinationsNavHost(
                                         navGraph = NavGraphs.root,
                                         startRoute = if (Settings.needSignIn) SignInScreenDestination else StartDestination,

@@ -157,7 +157,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 minValue = 1,
                 title = stringResource(id = R.string.settings_advanced_touch_slop),
                 summary = stringResource(id = R.string.settings_advanced_touch_slop_summary),
-                value = Settings::touchSlopFactor,
+                value = Settings.touchSlopFactor::value,
             )
             var userAgent by Settings::userAgent.observed
             val userAgentTitle = stringResource(id = R.string.user_agent)
