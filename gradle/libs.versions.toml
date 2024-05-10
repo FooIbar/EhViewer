@@ -9,6 +9,7 @@ androidx-browser = "1.8.0"
 androidx-constraintlayout-compose = "1.1.0-alpha13"
 androidx-core = "1.14.0-alpha01"
 androidx-core-splashscreen = "1.2.0-alpha01"
+androidx-datastore = "1.1.1"
 androidx-graphics-path = "1.0.1"
 androidx-lifecycle = "2.8.0-rc01"
 androidx-paging = "3.3.0-rc01"
@@ -42,6 +43,7 @@ androidx-browser = { module = "androidx.browser:browser", version.ref = "android
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "androidx-constraintlayout-compose" }
 androidx-core = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "androidx-core-splashscreen" }
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidx-datastore" }
 androidx-graphics-path = { module = "androidx.graphics:graphics-path", version.ref = "androidx-graphics-path" }
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
