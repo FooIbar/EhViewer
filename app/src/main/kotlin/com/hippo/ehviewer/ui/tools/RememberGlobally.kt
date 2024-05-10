@@ -3,8 +3,8 @@ package com.hippo.ehviewer.ui.tools
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.currentCompositeKeyHash
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -18,28 +18,27 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 
 class StateMapViewModel : ViewModel() {
-    val states: MutableMap<Int, ArrayDeque<Any>> = mutableMapOf()
+    val statesMap = mutableMapOf<Int, ArrayDeque<Any>>()
 }
 
 @Composable
 inline fun <T : Any> rememberInVM(
     vararg inputs: Any?,
     crossinline init: @DisallowComposableCalls ViewModel.() -> T,
-): T {
-    val vm: StateMapViewModel = viewModel()
+) = with(viewModel<StateMapViewModel>()) {
     val key = currentCompositeKeyHash
-    val value = remember(*inputs) {
-        val states = vm.states[key] ?: ArrayDeque<Any>().also { vm.states[key] = it }
+    remember(*inputs) {
+        val states = statesMap[key] ?: ArrayDeque<Any>().also { statesMap[key] = it }
         @Suppress("UNCHECKED_CAST")
-        states.removeLastOrNull() as T? ?: init(vm)
-    }
-    val valueState = rememberUpdatedState(value)
-    DisposableEffect(key) {
-        onDispose {
-            vm.states[key]?.addFirst(valueState.value)
+        states.removeLastOrNull() as T? ?: init()
+    }.also { value ->
+        val valueState by rememberUpdatedState(value)
+        DisposableEffect(key) {
+            onDispose {
+                statesMap[key]?.addFirst(valueState)
+            }
         }
     }
-    return value
 }
 
 @Composable
@@ -52,6 +51,4 @@ fun launchInVM(
 }
 
 @Composable
-fun <T> rememberUpdatedStateInVM(newValue: T): State<T> = rememberInVM {
-    mutableStateOf(newValue)
-}.apply { value = newValue }
+fun <T> rememberUpdatedStateInVM(newValue: T) = rememberInVM { mutableStateOf(newValue) }.apply { value = newValue }
