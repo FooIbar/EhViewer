@@ -236,13 +236,14 @@ fun GalleryInfoGridItem(
             containerColor = categoryColor,
             contentColor = if (Settings.harmonizeCategoryColor) contentColorFor(categoryColor) else EhUtils.categoryTextColor,
         ) {
+            val shouldShowLanguage = showLanguage && info.simpleLanguage != null
             if (showPages && info.pages > 0) {
                 Text(text = "${info.pages}")
-                if (showLanguage && info.simpleLanguage != null) {
+                if (shouldShowLanguage) {
                     Spacer(modifier = Modifier.width(4.dp))
                 }
             }
-            if (showLanguage && info.simpleLanguage != null) {
+            if (shouldShowLanguage) {
                 Text(text = "${info.simpleLanguage}")
             }
         }
