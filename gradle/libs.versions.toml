@@ -1,7 +1,7 @@
 [versions]
 aboutlibraries = "11.1.4"
 accompanist = "0.34.0"
-agp = "8.5.0-beta01"
+agp = "8.5.0-alpha08"
 androidx-activity = "1.9.0"
 androidx-appcompat = "1.7.0-beta01"
 androidx-biometric = "1.2.0-alpha05"
