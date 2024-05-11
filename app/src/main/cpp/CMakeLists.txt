@@ -80,7 +80,7 @@ include_directories(${libarchive_SOURCE_DIR}/libarchive)
 FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
-        GIT_TAG 0a3bdf452995803c334d79dc9a2affbfad51b720
+        GIT_TAG v0.5
 )
 
 FetchContent_MakeAvailable(Corrosion)
