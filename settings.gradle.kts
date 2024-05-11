@@ -12,8 +12,8 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven("https://jitpack.io")
-        // TODO: Remove on Compose 1.7.0-beta01
-        maven("https://androidx.dev/snapshots/builds/11816118/artifacts/repository")
+        // TODO: Remove on Compose 1.7.0-beta02
+        maven("https://androidx.dev/snapshots/builds/11827948/artifacts/repository")
     }
 }
 
