@@ -59,6 +59,9 @@ android {
     }.standardOutput.asText.get().trim().removePrefix("https://github.com/").removePrefix("git@github.com:")
         .removeSuffix(".git")
 
+    val chromeVersion = rootProject.layout.projectDirectory.file("chrome-for-testing/LATEST_RELEASE_STABLE").asFile
+        .readText().substringBefore('.')
+
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
         minSdk = 26
@@ -85,6 +88,7 @@ android {
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
+        buildConfigField("String", "CHROME_VERSION", "\"$chromeVersion\"")
         ndk {
             debugSymbolLevel = "FULL"
         }
