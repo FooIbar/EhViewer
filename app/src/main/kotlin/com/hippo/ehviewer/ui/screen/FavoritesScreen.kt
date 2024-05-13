@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.screen
 
 import android.content.Context
 import android.view.ViewConfiguration
+import androidx.collection.MutableLongSet
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -52,6 +53,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.filter
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -85,6 +87,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
@@ -161,7 +164,14 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     }
                 }
             }
-        }.flow.cachedIn(viewModelScope)
+        }.flow.map { pagingData ->
+            // https://github.com/FooIbar/EhViewer/issues/1190
+            // Workaround for duplicate items when sorting by favorited time
+            val gidSet = MutableLongSet(50)
+            pagingData.filter {
+                gidSet.add(it.gid)
+            }
+        }.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
 
     fun refresh(newUrlBuilder: FavListUrlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null)) {
