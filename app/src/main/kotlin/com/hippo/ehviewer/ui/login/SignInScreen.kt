@@ -126,7 +126,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                             Text(
                                 """
                                 ${it.displayString()}
-                                ${stringResource(R.string.sign_in_failed_tip)}
+                                ${stringResource(R.string.sign_in_failed_tip, stringResource(R.string.sign_in_via_webview))}
                                 """.trimIndent(),
                             )
                         },

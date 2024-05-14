@@ -68,7 +68,7 @@
     <string name="error_unknown_host">Bilinmeyen host</string>
     <string name="app_waring">Bu uygulamadaki içerikler internetten alınmaktadır. Bazı içerikler fiziksel veya zihinsel olarak size zararlı gelebilir.Yukarıda, riskleri öğrendiniz ve üstleneceksiniz.
 \nKullanmaya devam ederek, yukarıdaki koşulları kabul edersiniz.</string>
-    <string name="sign_in_failed_tip">Bu sorun devam ederse, \"WebView aracılığıyla giriş yap\" seçeneğini veya \"Çerez aracılığıyla giriş yap\" seçeneğini deneyin.</string>
+    <string name="sign_in_failed_tip">Bu sorun devam ederse, \"%s\" seçeneğini deneyin.</string>
     <string name="gallery_list_search_bar_open_gallery">Galeriyi aç</string>
     <string name="gallery_list_search_bar_hint_e_hentai">E-Hentai\'de Arayın</string>
     <string name="gallery_list_empty_hit_subscription">Etiketlere Ayarlar-&gt;EH-&gt;Etiketlerim yerinden abone olun</string>
