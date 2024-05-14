@@ -43,10 +43,10 @@ fun ArchiveList(
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }, contentType = "funds") {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Text(text = currentFunds, textAlign = TextAlign.Center)
         }
-        item(contentType = "funds") {
+        item {
             FundsItem(
                 type = "GP",
                 amount = funds.gp,
@@ -54,7 +54,7 @@ fun ArchiveList(
                 textStyle = fundsStyle,
             )
         }
-        item(contentType = "funds") {
+        item {
             FundsItem(
                 type = "C",
                 amount = funds.credit,
@@ -62,7 +62,7 @@ fun ArchiveList(
                 textStyle = fundsStyle,
             )
         }
-        items(nonHAtH, contentType = { "archive" }) {
+        items(nonHAtH) {
             ArchiveItem(
                 name = if (it.res == "org") archiveOriginal else archiveResample,
                 cost = if (it.cost == "Free!") archiveFree else it.cost,
@@ -70,13 +70,13 @@ fun ArchiveList(
                 onClick = { onItemClick(it) },
             )
         }
-        item(span = { GridItemSpan(maxLineSpan) }, contentType = "divider") {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                 Text(text = "H@H")
             }
         }
-        items(hAtH, contentType = { "archive" }) {
+        items(hAtH) {
             ArchiveItem(
                 name = if (it.res == "org") archiveOriginal else it.name,
                 cost = if (it.cost == "Free") archiveFree else it.cost,
