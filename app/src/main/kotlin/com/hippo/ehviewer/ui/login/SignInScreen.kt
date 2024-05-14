@@ -196,9 +196,9 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                     Text(
                         text = stringResource(id = R.string.app_waring_2),
                         modifier = Modifier.widthIn(max = dimensionResource(id = R.dimen.single_max_width)).padding(top = 12.dp),
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.titleLarge,
                     )
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.keyline_margin)))
                     Row(modifier = Modifier.padding(top = dimensionResource(R.dimen.keyline_margin))) {
                         FilledTonalButton(
                             onClick = { context.openBrowser(EhUrl.URL_REGISTER) },
@@ -213,10 +213,10 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                             Text(text = stringResource(id = R.string.sign_in))
                         }
                     }
-                    Row(modifier = Modifier.padding(horizontal = 4.dp)) {
+                    Row(modifier = Modifier.padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(
                             onClick = { navigator.navigate(WebViewSignInScreenDestination) },
-                            modifier = Modifier.padding(horizontal = 8.dp),
+                            modifier = Modifier.weight(1f),
                         ) {
                             Text(
                                 text = buildAnnotatedString {
@@ -234,6 +234,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                                 Settings.gallerySite = EhUrl.SITE_E
                                 navigator.popNavigate(StartDestination)
                             },
+                            modifier = Modifier.weight(1f),
                         ) {
                             Text(
                                 text = buildAnnotatedString {
@@ -271,7 +272,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                         Text(
                             text = stringResource(id = R.string.app_waring_2),
                             modifier = Modifier.widthIn(max = 360.dp),
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.titleLarge,
                         )
                     }
                     Column(
@@ -298,7 +299,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                         Row(horizontalArrangement = Arrangement.Center) {
                             TextButton(
                                 onClick = { navigator.navigate(WebViewSignInScreenDestination) },
-                                modifier = Modifier.padding(horizontal = 4.dp),
+                                modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(
                                     text = buildAnnotatedString {
@@ -316,7 +317,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                                     Settings.gallerySite = EhUrl.SITE_E
                                     navigator.popNavigate(StartDestination)
                                 },
-                                modifier = Modifier.padding(horizontal = 4.dp),
+                                modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(
                                     text = buildAnnotatedString {
