@@ -17,26 +17,19 @@ package com.hippo.ehviewer.client.parser
 
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.ParseException
-import java.util.regex.Pattern
 
 object SignInParser {
-    private val NAME_PATTERN = Pattern.compile("<p>You are now logged in as: (.+?)<")
-    private val ERROR_PATTERN = Pattern.compile(
+    private val NAME_PATTERN = Regex("<p>You are now logged in as: (.+?)<")
+    private val ERROR_PATTERN = Regex(
         "<h4>The error returned was:</h4>\\s*<p>(.+?)</p>" +
             "|<span class=\"postcolor\">(.+?)</span>",
     )
 
     fun parse(body: String): String {
-        var m = NAME_PATTERN.matcher(body)
-        return if (m.find()) {
-            m.group(1)!!
-        } else {
-            m = ERROR_PATTERN.matcher(body)
-            if (m.find()) {
-                throw EhException(m.group(1) ?: m.group(2))
-            } else {
-                throw ParseException("Can't parse sign in")
-            }
-        }
+        return NAME_PATTERN.find(body)?.let {
+            it.groupValues[1]
+        } ?: ERROR_PATTERN.find(body)?.let {
+            throw EhException(it.groupValues[1].ifEmpty { it.groupValues[2] })
+        } ?: throw ParseException("Can't parse sign in")
     }
 }
