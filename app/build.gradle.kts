@@ -184,11 +184,8 @@ android {
 }
 
 composeCompiler {
-    // https://youtrack.jetbrains.com/issue/KT-67216
-    suppressKotlinVersionCompatibilityCheck = libs.versions.kotlin.get()
-    enableIntrinsicRemember = true
     enableNonSkippingGroupOptimization = true
-    enableExperimentalStrongSkippingMode = true
+    enableStrongSkippingMode = true
 }
 
 androidComponents {
