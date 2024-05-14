@@ -40,6 +40,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.AutofillType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
@@ -66,6 +67,7 @@ import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
+import com.hippo.ehviewer.ui.tools.autofill
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -143,7 +145,10 @@ fun SignInScreen(navigator: DestinationsNavigator) {
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
-            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width)),
+            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width)).autofill(
+                autofillTypes = listOf(AutofillType.Username),
+                onFill = { username = it },
+            ),
             label = { Text(stringResource(R.string.username)) },
             supportingText = { if (showUsernameError) Text(stringResource(R.string.error_username_cannot_empty)) },
             trailingIcon = { if (showUsernameError) Icon(imageVector = Icons.Filled.Info, contentDescription = null) },
@@ -154,7 +159,10 @@ fun SignInScreen(navigator: DestinationsNavigator) {
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            Modifier.width(dimensionResource(id = R.dimen.single_max_width)),
+            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width)).autofill(
+                autofillTypes = listOf(AutofillType.Password),
+                onFill = { password = it },
+            ),
             label = { Text(stringResource(R.string.password)) },
             visualTransformation = if (passwordHidden) PasswordVisualTransformation() else VisualTransformation.None,
             supportingText = { if (showPasswordError) Text(stringResource(R.string.error_password_cannot_empty)) },
