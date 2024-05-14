@@ -56,7 +56,7 @@
     <string name="error_password_cannot_empty">密码不可为空</string>
     <string name="guest_mode">游客模式</string>
     <string name="sign_in_failed">登录失败</string>
-    <string name="sign_in_failed_tip">若持续出错，请尝试“通过网页登录”或“通过 Cookie 登录”。</string>
+    <string name="sign_in_failed_tip">若持续出错，请尝试“%s”。</string>
     <string name="get_it">知道了</string>
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">搜索 ExHentai</string>
