@@ -282,7 +282,7 @@ dependencies {
 // TODO: Remove once Annotation 1.8.0 and Lifecycle 2.8.0 are out
 configurations.all {
     resolutionStrategy.force(
-        "androidx.annotation:annotation:1.8.0-rc01",
+        "androidx.annotation:annotation:1.8.0",
         "androidx.lifecycle:lifecycle-runtime-compose:2.8.0-rc01",
     )
 }
