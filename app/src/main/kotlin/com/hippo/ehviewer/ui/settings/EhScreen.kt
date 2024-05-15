@@ -52,6 +52,7 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.parser.HomeParser
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
 import com.hippo.ehviewer.ui.destinations.MyTagsScreenDestination
 import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
@@ -107,9 +108,10 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues),
         ) {
+            val displayName by Settings.displayName.collectAsState()
             Preference(
                 title = stringResource(id = R.string.account_name),
-                summary = Settings.displayName ?: guestMode,
+                summary = displayName ?: guestMode,
             ) {
                 coroutineScope.launch {
                     val cookies = EhCookieStore.getIdentityCookies()

@@ -117,6 +117,7 @@ object Settings : DataStorePreferences(null) {
     val qSSaveProgress = boolPref("qs_save_progress", true)
     val security = boolPref("require_unlock", false)
     val animateItems = boolPref("animate_items", true)
+    val displayName = stringOrNullPref("display_name", null)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
     val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
 
@@ -167,7 +168,6 @@ object Settings : DataStorePreferences(null) {
     var recentToplist by stringPref("recent_toplist", "11")
     var userAgent by stringPref("user_agent", CHROME_USER_AGENT)
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
-    var displayName by stringOrNullPref("display_name", null)
     var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
     var lastUpdateTime by longPref("last_update_time", 0)
 

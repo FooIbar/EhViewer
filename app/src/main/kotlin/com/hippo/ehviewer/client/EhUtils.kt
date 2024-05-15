@@ -153,7 +153,7 @@ object EhUtils {
 
     fun signOut() {
         EhCookieStore.signOut()
-        Settings.displayName = null
+        Settings.displayName.value = null
         Settings.gallerySite = EhUrl.SITE_E
         Settings.needSignIn = true
     }
