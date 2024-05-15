@@ -176,12 +176,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
 
     var category by rememberMutableStateInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
-    var searchMethod by rememberSaveable { mutableIntStateOf(1) }
     var advancedSearchOption by rememberMutableStateInDataStore("AdvancedSearchOption") { AdvancedSearchOption() }
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     LaunchedEffect(urlBuilder) {
-        if (urlBuilder.mode == MODE_SUBSCRIPTION) searchMethod = 2
         if (urlBuilder.category != EhUtils.NONE) category = urlBuilder.category
         if (urlBuilder.mode != MODE_TOPLIST) {
             var keyword = urlBuilder.keyword.orEmpty()
