@@ -100,7 +100,7 @@ fun GalleryList(
         modifier = modifier.fillMaxSize().pullToRefresh(
             isRefreshing = isRefreshing,
             state = refreshState,
-            enabled = { data.loadState.refresh is LoadState.NotLoading },
+            enabled = data.loadState.refresh is LoadState.NotLoading,
         ) {
             isRefreshing = true
             launch {
