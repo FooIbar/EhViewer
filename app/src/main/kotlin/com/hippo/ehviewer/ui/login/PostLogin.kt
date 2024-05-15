@@ -12,7 +12,7 @@ suspend fun postLogin() = coroutineScope {
     launch {
         runCatching {
             EhEngine.getProfile().run {
-                Settings.displayName = displayName
+                Settings.displayName.value = displayName
             }
         }.onFailure {
             logcat(it)
