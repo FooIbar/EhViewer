@@ -37,6 +37,8 @@ object AppConfig {
         it in setOf("arm64-v8a", "x86_64", "armeabi-v7a")
     } ?: "universal"
 
+    val isBenchmark = "nonMinified" in BuildConfig.BUILD_TYPE || "benchmark" in BuildConfig.BUILD_TYPE
+
     fun matchVariant(name: String) = name.contains(BuildConfig.FLAVOR) && name.contains(abi)
 
     val commitTime = ParserUtils.formatDate(BuildConfig.COMMIT_TIME * 1000)

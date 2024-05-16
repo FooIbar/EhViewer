@@ -14,6 +14,7 @@ plugins {
     alias(libs.plugins.spotless)
     alias(libs.plugins.aboutlibrariesPlugin)
     alias(libs.plugins.composeCompilerReportGenerator)
+    alias(libs.plugins.baselineprofile)
 }
 
 val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
@@ -178,6 +179,10 @@ androidComponents {
     }
 }
 
+baselineProfile {
+    mergeIntoMain = true
+}
+
 dependencies {
     // https://developer.android.com/jetpack/androidx/releases/activity
     implementation(libs.androidx.activity.compose)
@@ -254,6 +259,9 @@ dependencies {
     coreLibraryDesugaring(libs.desugar)
 
     implementation(libs.cronet.embedded)
+
+    implementation(libs.androidx.profileinstaller)
+    "baselineProfile"(project(":benchmark"))
 
     debugImplementation(libs.compose.ui.tooling)
     implementation(libs.compose.ui.tooling.preview)
