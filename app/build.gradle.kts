@@ -19,6 +19,9 @@ plugins {
     alias(libs.plugins.composeCompilerReportGenerator)
 }
 
+// Workaround for renovate false positive
+val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
+
 android {
     compileSdk = 34
     ndkVersion = "27.0.11718014-beta1"
@@ -28,7 +31,7 @@ android {
             isEnable = true
             reset()
             if (isRelease) {
-                include("arm64-v8a", "x86_64", "armeabi-v7a")
+                include(*supportedAbis)
                 isUniversalApk = true
             } else {
                 include("arm64-v8a", "x86_64")
