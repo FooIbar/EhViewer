@@ -22,6 +22,7 @@ plugins {
 android {
     compileSdk = 34
     ndkVersion = "27.0.11718014-beta1"
+    androidResources.generateLocaleConfig = true
 
     splits {
         abi {
