@@ -65,6 +65,7 @@ import io.ktor.utils.io.pool.useInstance
 import java.io.File
 import java.nio.ByteBuffer
 import kotlin.math.ceil
+import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.serialization.SerializationException
@@ -452,13 +453,13 @@ object EhEngine {
     }
 
     suspend fun addFavorites(galleryList: List<Pair<Long, String>>, dstCat: Int) {
-        galleryList.chunked(MAX_SEQUENTIAL_REQUESTS).forEachIndexed { index, chunk ->
-            if (index != 0) {
-                delay(REQUEST_INTERVAL)
-            }
-            chunk.parMap { (gid, token) ->
+        galleryList.forEach { (gid, token) ->
+            // https://github.com/FooIbar/EhViewer/issues/1190
+            // Workaround for duplicate items when sorting by favorited time
+            val timeTaken = measureTimeMillis {
                 modifyFavorites(gid, token, dstCat)
             }
+            delay(1000 - timeTaken)
         }
     }
 }
