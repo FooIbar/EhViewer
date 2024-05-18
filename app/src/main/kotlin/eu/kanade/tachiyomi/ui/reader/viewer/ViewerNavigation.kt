@@ -29,17 +29,18 @@ abstract class ViewerNavigation {
         }
     }
 
-    private var constantMenuRegion: RectF = RectF(0f, 0f, 1f, 0.05f)
+    private val constantMenuRegion: RectF = RectF(0f, 0f, 1f, 0.05f)
 
-    abstract var regions: List<Region>
+    protected abstract val originalRegions: List<Region>
+
+    val regions get() = originalRegions.map { it.invert(invertMode) }
 
     var invertMode: PreferenceValues.TappingInvertMode = PreferenceValues.TappingInvertMode.NONE
 
     fun getAction(pos: PointF): NavigationRegion {
         val x = pos.x
         val y = pos.y
-        val region = regions.map { it.invert(invertMode) }
-            .find { it.rectF.contains(x, y) }
+        val region = regions.find { it.rectF.contains(x, y) }
         return when {
             region != null -> region.type
             constantMenuRegion.contains(x, y) -> NavigationRegion.MENU
