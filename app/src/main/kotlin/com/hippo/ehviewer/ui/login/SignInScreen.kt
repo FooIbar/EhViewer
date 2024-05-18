@@ -30,7 +30,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +54,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -184,8 +184,8 @@ fun SignInScreen(navigator: DestinationsNavigator) {
     }
 
     Box(contentAlignment = Alignment.Center) {
-        when (windowSizeClass.widthSizeClass) {
-            WindowWidthSizeClass.Compact, WindowWidthSizeClass.Medium -> {
+        when (windowSizeClass.windowWidthSizeClass) {
+            WindowWidthSizeClass.COMPACT, WindowWidthSizeClass.MEDIUM -> {
                 Column(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).systemBarsPadding().padding(dimensionResource(id = R.dimen.keyline_margin)),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -257,7 +257,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                     }
                 }
             }
-            WindowWidthSizeClass.Expanded -> {
+            WindowWidthSizeClass.EXPANDED -> {
                 Row(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).systemBarsPadding().padding(dimensionResource(id = R.dimen.keyline_margin)),
                     verticalAlignment = Alignment.CenterVertically,

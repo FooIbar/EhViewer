@@ -65,9 +65,9 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberDrawerState2
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -352,14 +352,14 @@ class MainActivity : EhActivity() {
             var snackbarFabPadding by remember { mutableStateOf(0.dp) }
             val drawerLocked = lockDrawerHandle.isNotEmpty()
             val density = LocalDensity.current
-            val windowSizeClass = calculateWindowSizeClass(this)
+            val adaptiveInfo = currentWindowAdaptiveInfo()
             CompositionLocalProvider(
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
                 LocalDrawerLockHandle provides lockDrawerHandle,
                 LocalSnackBarHostState provides snackbarState,
                 LocalSnackBarFabPadding provides animateDpAsState(snackbarFabPadding, label = "SnackbarFabPadding"),
-                LocalWindowSizeClass provides windowSizeClass,
+                LocalWindowSizeClass provides adaptiveInfo.windowSizeClass,
             ) {
                 Scaffold(
                     snackbarHost = {

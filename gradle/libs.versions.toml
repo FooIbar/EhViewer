@@ -69,7 +69,7 @@ compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "co
 compose-foundation = { module = "androidx.compose.foundation:foundation", version = "1.7.0-SNAPSHOT" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 compose-material3 = { module = "androidx.compose.material3:material3", version = "1.3.0-SNAPSHOT" }
-compose-material3-windowsizeclass = { module = "androidx.compose.material3:material3-window-size-class" }
+compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 compose-ui-util = { module = "androidx.compose.ui:ui-util" }
@@ -117,7 +117,7 @@ telephoto-zoomable = { module = "me.saket.telephoto:zoomable", version.ref = "te
 
 [bundles]
 coil = ["coil-compose", "coil-gif", "coil-network"]
-compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-windowsizeclass", "compose-ui-util"]
+compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-adaptive", "compose-ui-util"]
 kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-okio", "serialization-xml-core", "serialization-xml"]
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
 

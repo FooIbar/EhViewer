@@ -56,8 +56,6 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -80,6 +78,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
+import androidx.window.core.layout.WindowWidthSizeClass
 import arrow.core.partially1
 import coil3.imageLoader
 import com.hippo.ehviewer.EhApplication.Companion.galleryDetailCache
@@ -139,6 +138,7 @@ import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
 import com.hippo.ehviewer.ui.tools.GalleryRatingBar
+import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.rememberLambda
 import com.hippo.ehviewer.util.AppConfig
@@ -754,7 +754,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         modifier: Modifier,
     ) {
         val galleryDetail = galleryInfo.asGalleryDetail()
-        val windowSizeClass = calculateWindowSizeClass(activity)
+        val windowSizeClass = LocalWindowSizeClass.current
         val thumbColumns by Settings.thumbColumns.collectAsState()
         val readText = stringResource(R.string.read)
         val startPage by rememberInVM {
@@ -835,8 +835,8 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             }
         }
 
-        when (windowSizeClass.widthSizeClass) {
-            WindowWidthSizeClass.Medium, WindowWidthSizeClass.Compact -> LazyVerticalGrid(
+        when (windowSizeClass.windowWidthSizeClass) {
+            WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.COMPACT -> LazyVerticalGrid(
                 columns = GridCells.Fixed(thumbColumns),
                 contentPadding = contentPadding,
                 modifier = modifier.padding(horizontal = keylineMargin),
@@ -887,7 +887,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 }
             }
 
-            WindowWidthSizeClass.Expanded -> LazyVerticalGrid(
+            WindowWidthSizeClass.EXPANDED -> LazyVerticalGrid(
                 columns = GridCells.Fixed(thumbColumns),
                 contentPadding = contentPadding,
                 modifier = modifier.padding(horizontal = keylineMargin),
