@@ -68,6 +68,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.SecureFlagPolicy
 import arrow.core.Either
 import arrow.core.right
 import com.jamal.composeprefs3.ui.ifNotNullThen
@@ -274,6 +275,7 @@ class DialogState {
         confirmButtonEnabled: Boolean = true,
         showCancelButton: Boolean = true,
         onCancelButtonClick: () -> Unit = {},
+        secure: Boolean = false,
         text: @Composable (() -> Unit)? = null,
     ) {
         return dialog { cont ->
@@ -294,6 +296,11 @@ class DialogState {
                 },
                 title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
                 text = text,
+                properties = if (secure) {
+                    DialogProperties(securePolicy = SecureFlagPolicy.SecureOn)
+                } else {
+                    DialogProperties()
+                },
             )
         }
     }

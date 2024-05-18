@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.screen
 
 import android.content.Context
 import android.view.ViewConfiguration
+import androidx.collection.MutableLongSet
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -27,7 +28,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -47,13 +47,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.filter
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -87,6 +87,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
@@ -163,7 +164,14 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     }
                 }
             }
-        }.flow.cachedIn(viewModelScope)
+        }.flow.map { pagingData ->
+            // https://github.com/FooIbar/EhViewer/issues/1190
+            // Workaround for duplicate items when sorting by favorited time
+            val gidSet = MutableLongSet(50)
+            pagingData.filter {
+                gidSet.add(it.gid)
+            }
+        }.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
 
     fun refresh(newUrlBuilder: FavListUrlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null)) {
@@ -212,10 +220,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
         }
     }
 
-    val refreshState = rememberPullToRefreshState {
-        data.loadState.refresh is LoadState.NotLoading
-    }
-
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
@@ -231,7 +235,6 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
             fabHidden = true
         },
         onSearchHidden = { fabHidden = false },
-        refreshState = refreshState,
         tagNamespace = !isLocalFav,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
@@ -316,11 +319,12 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             checkedInfoMap[info.gid] = info
                         },
                         info = info,
+                        showPages = showPages,
                         interactionSource = interactionSource,
                     )
                 }
             },
-            refreshState = refreshState,
+            searchBarOffsetY = { searchBarOffsetY },
             scrollToTopOnRefresh = urlBuilder.favCat != FavListUrlBuilder.FAV_CAT_LOCAL,
             onRefresh = { refresh() },
             onLoading = { searchBarOffsetY = 0 },

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -25,19 +26,24 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -54,7 +60,10 @@ import com.hippo.ehviewer.ui.screen.collectDetailSizeAsState
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.util.displayString
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 @Stable
 operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
@@ -65,6 +74,7 @@ operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
     override fun calculateTopPadding() = l.calculateTopPadding() + r.calculateTopPadding()
 }
 
+context(CoroutineScope)
 @Composable
 fun GalleryList(
     modifier: Modifier = Modifier,
@@ -76,20 +86,41 @@ fun GalleryList(
     detailItemContent: @Composable (LazyGridItemScope.(BaseGalleryInfo) -> Unit),
     thumbListState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit),
-    refreshState: PullToRefreshState,
+    searchBarOffsetY: () -> Int,
     scrollToTopOnRefresh: Boolean = true,
     onRefresh: () -> Unit,
     onLoading: () -> Unit,
 ) {
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
     val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
-    val combinedModifier = contentModifier.nestedScroll(refreshState.nestedScrollConnection)
-    Box(modifier = modifier.fillMaxSize()) {
+
+    var isRefreshing by remember { mutableStateOf(false) }
+    val refreshState = rememberPullToRefreshState()
+    Box(
+        modifier = modifier.fillMaxSize().pullToRefresh(
+            isRefreshing = isRefreshing,
+            state = refreshState,
+            enabled = data.loadState.refresh is LoadState.NotLoading,
+        ) {
+            isRefreshing = true
+            launch {
+                if (data.loadState.prepend.endOfPaginationReached) {
+                    onRefresh()
+                } else {
+                    data.retry()
+                }
+                snapshotFlow { data.loadState }.drop(1).first { state ->
+                    state.prepend !is LoadState.Loading && state.refresh !is LoadState.Loading
+                }
+                isRefreshing = false
+            }
+        },
+    ) {
         if (listMode == 0) {
             val columnWidth by collectDetailSizeAsState()
             FastScrollLazyVerticalGrid(
                 columns = GridCells.Adaptive(columnWidth),
-                modifier = combinedModifier,
+                modifier = contentModifier,
                 state = detailListState,
                 contentPadding = contentPadding + PaddingValues(marginH, marginV),
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
@@ -118,7 +149,7 @@ fun GalleryList(
             val thumbColumns by Settings.thumbColumns.collectAsState()
             FastScrollLazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(thumbColumns),
-                modifier = combinedModifier,
+                modifier = contentModifier,
                 state = thumbListState,
                 verticalItemSpacing = gridInterval,
                 horizontalArrangement = Arrangement.spacedBy(gridInterval),
@@ -144,23 +175,8 @@ fun GalleryList(
             }
         }
 
-        if (refreshState.isRefreshing) {
-            LaunchedEffect(Unit) {
-                if (data.loadState.prepend.endOfPaginationReached) {
-                    onRefresh()
-                } else {
-                    data.retry()
-                }
-                snapshotFlow { data.loadState }.drop(1).collect { state ->
-                    if (state.prepend !is LoadState.Loading && state.refresh !is LoadState.Loading) {
-                        refreshState.endRefresh()
-                    }
-                }
-            }
-        }
-
         when (val state = data.loadState.refresh) {
-            is LoadState.Loading -> if (!refreshState.isRefreshing && scrollToTopOnRefresh) {
+            is LoadState.Loading -> if (!isRefreshing && scrollToTopOnRefresh) {
                 LaunchedEffect(Unit) {
                     onLoading()
                 }
@@ -195,6 +211,13 @@ fun GalleryList(
                 ErrorTip(modifier = Modifier.widthIn(max = 228.dp), text = stringResource(id = R.string.gallery_list_empty_hit))
             }
         }
+
+        PullToRefreshDefaults.Indicator(
+            state = refreshState,
+            isRefreshing = isRefreshing,
+            modifier = Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding())
+                .offset { IntOffset(0, searchBarOffsetY()) },
+        )
     }
 }
 

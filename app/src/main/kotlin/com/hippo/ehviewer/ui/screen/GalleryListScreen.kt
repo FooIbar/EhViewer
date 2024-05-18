@@ -11,12 +11,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -29,21 +33,23 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBoxDefaults
-import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.fork.SwipeToDismissBox
+import androidx.compose.material3.fork.SwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -66,7 +72,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -76,7 +81,6 @@ import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
@@ -119,13 +123,13 @@ import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.tools.Deferred
-import com.hippo.ehviewer.ui.tools.DragHandle
-import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
+import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
-import com.hippo.ehviewer.ui.tools.draggingHapticFeedback
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
+import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
+import com.hippo.ehviewer.ui.tools.rememberMutableStateInDataStore
 import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.pickVisualMedia
@@ -145,11 +149,14 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyColumnState
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Destination<RootGraph>
 @Composable
-fun HomePageScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(), navigator)
+fun HomePageScreen(navigator: DestinationsNavigator) {
+    val displayName by Settings.displayName.collectAsState()
+    GalleryListScreen(ListUrlBuilder(category = displayName?.let { EhUtils.NONE } ?: EhUtils.NON_H), navigator)
+}
 
 @Destination<RootGraph>
 @Composable
@@ -171,13 +178,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
 
-    var category by rememberSaveable { mutableIntStateOf(Settings.searchCategory) }
-    var searchMethod by rememberSaveable { mutableIntStateOf(1) }
-    var advancedSearchOption by rememberSaveable { mutableStateOf(AdvancedSearchOption()) }
+    var category by rememberMutableStateInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
+    var advancedSearchOption by rememberMutableStateInDataStore("AdvancedSearchOption") { AdvancedSearchOption() }
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     LaunchedEffect(urlBuilder) {
-        if (urlBuilder.mode == MODE_SUBSCRIPTION) searchMethod = 2
         if (urlBuilder.category != EhUtils.NONE) category = urlBuilder.category
         if (urlBuilder.mode != MODE_TOPLIST) {
             var keyword = urlBuilder.keyword.orEmpty()
@@ -360,24 +365,25 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 },
                 windowInsets = WindowInsets(0),
             )
-            val view = LocalView.current
             Box(modifier = Modifier.fillMaxSize()) {
                 val quickSearchListState = rememberLazyListState()
-                val reorderableLazyListState = rememberReorderableLazyColumnState(quickSearchListState) { from, to ->
+                val hapticFeedback = rememberHapticFeedback()
+                val reorderableLazyListState = rememberReorderableLazyListState(quickSearchListState) { from, to ->
                     val fromIndex = from.index - 1
                     val toIndex = to.index - 1
                     quickSearchList.apply { add(toIndex, removeAt(fromIndex)) }
-                    view.performHapticFeedback(draggingHapticFeedback)
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.MOVE)
                 }
                 var fromIndex by remember { mutableIntStateOf(-1) }
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     state = quickSearchListState,
-                    // Workaround for https://issuetracker.google.com/332939169
-                    // contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
+                    contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
                 ) {
                     // Fix the first item's reorder animation
-                    item {}
+                    stickyHeader {
+                        HorizontalDivider()
+                    }
                     itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { index, item ->
                         ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
                             // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
@@ -404,9 +410,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                                     }
                                 }
                             }
-                            SwipeToDismissBox2(
+                            SwipeToDismissBox(
                                 state = dismissState,
                                 backgroundContent = {},
+                                enableDismissFromStartToEnd = false,
                             ) {
                                 val elevation by animateDpAsState(
                                     if (isDragging) {
@@ -434,22 +441,29 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                                         Text(text = item.name)
                                     },
                                     trailingContent = {
-                                        DragHandle(
-                                            onDragStarted = {
-                                                fromIndex = index
-                                            },
-                                            onDragStopped = {
-                                                if (fromIndex != -1) {
-                                                    if (fromIndex != index) {
-                                                        val range = if (fromIndex < index) fromIndex..index else index..fromIndex
-                                                        val toUpdate = quickSearchList.slice(range)
-                                                        toUpdate.zip(range).forEach { it.first.position = it.second }
-                                                        launchIO { EhDB.updateQuickSearch(toUpdate) }
+                                        IconButton(
+                                            onClick = {},
+                                            modifier = Modifier.draggableHandle(
+                                                onDragStarted = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.START)
+                                                    fromIndex = index
+                                                },
+                                                onDragStopped = {
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.END)
+                                                    if (fromIndex != -1) {
+                                                        if (fromIndex != index) {
+                                                            val range = if (fromIndex < index) fromIndex..index else index..fromIndex
+                                                            val toUpdate = quickSearchList.slice(range)
+                                                            toUpdate.zip(range).forEach { it.first.position = it.second }
+                                                            launchIO { EhDB.updateQuickSearch(toUpdate) }
+                                                        }
+                                                        fromIndex = -1
                                                     }
-                                                    fromIndex = -1
-                                                }
-                                            },
-                                        )
+                                                },
+                                            ),
+                                        ) {
+                                            Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
+                                        }
                                     },
                                 )
                             }
@@ -466,10 +480,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 }
             }
         }
-    }
-
-    val refreshState = rememberPullToRefreshState {
-        data.loadState.refresh is LoadState.NotLoading
     }
 
     var fabExpanded by remember { mutableStateOf(false) }
@@ -537,7 +547,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         onApplySearch = ::onApplySearch,
         onSearchExpanded = { fabHidden = true },
         onSearchHidden = { fabHidden = false },
-        refreshState = refreshState,
         suggestionProvider = {
             GalleryDetailUrlParser.parse(it, false)?.run {
                 GalleryDetailUrlSuggestion(gid, token)
@@ -565,12 +574,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         filter = {
             SearchFilter(
                 category = category,
-                onCategoryChanged = {
-                    Settings.searchCategory = it
-                    category = it
-                },
+                onCategoryChanged = { category = it },
                 advancedOption = advancedSearchOption,
-                onAdvancedOptionChanged = { advancedSearchOption = it },
+                onAdvancedOptionChanged = {
+                    advancedSearchOption = it
+                },
             )
         },
         floatingActionButton = {
@@ -675,9 +683,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     onClick = { navigate(info.asDst()) },
                     onLongClick = { launch { doGalleryInfoAction(info) } },
                     info = info,
+                    showPages = showPages,
                 )
             },
-            refreshState = refreshState,
+            searchBarOffsetY = { searchBarOffsetY },
             onRefresh = {
                 urlBuilder.setRange(0)
                 data.refresh()

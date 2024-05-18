@@ -75,6 +75,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     init {
         pager.isVisible = false // Don't layout the pager yet
         pager.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        pager.clipToPadding = false
         pager.isFocusable = false
         pager.offscreenPageLimit = 1
         pager.id = R.id.reader_pager
@@ -95,7 +96,12 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             },
         )
         pager.tapListener = { event ->
-            val pos = PointF(event.rawX / pager.width, event.rawY / pager.height)
+            val windowOffset = IntArray(2)
+            activity.window.decorView.getLocationOnScreen(windowOffset)
+            val pos = PointF(
+                (event.rawX - windowOffset[0]) / pager.width,
+                (event.rawY - windowOffset[1]) / pager.height,
+            )
             val navigator = config.navigator
 
             when (navigator.getAction(pos)) {

@@ -291,49 +291,39 @@ object EhDB {
             it.close()
             context.deleteDatabase(tempDBName)
         } use { oldDB ->
-            runCatching {
-                db.galleryDao().insertOrIgnore(oldDB.galleryDao().list())
+            db.galleryDao().insertOrIgnore(oldDB.galleryDao().list())
+
+            db.progressDao().insertOrIgnore(oldDB.progressDao().list())
+
+            val downloadLabelList = oldDB.downloadLabelDao().list()
+            DownloadManager.addDownloadLabel(downloadLabelList)
+
+            oldDB.downloadDirnameDao().list().let {
+                importDownloadDirname(it)
             }
-            runCatching {
-                db.progressDao().insertOrIgnore(oldDB.progressDao().list())
+
+            val downloadInfoList = oldDB.downloadsDao().joinList().asReversed()
+            DownloadManager.addDownload(downloadInfoList)
+
+            val historyInfoList = oldDB.historyDao().list()
+            importHistoryInfo(historyInfoList)
+
+            val quickSearchList = oldDB.quickSearchDao().list()
+            val currentQuickSearchList = db.quickSearchDao().list()
+            val offset = currentQuickSearchList.size
+            val importList = quickSearchList.filter { newQS ->
+                currentQuickSearchList.none { it.name == newQS.name }
+            }.onEachIndexed { index, q -> q.position = index + offset }
+            importQuickSearch(importList)
+
+            oldDB.localFavoritesDao().list().let {
+                importLocalFavorites(it)
             }
-            runCatching {
-                val downloadLabelList = oldDB.downloadLabelDao().list()
-                DownloadManager.addDownloadLabel(downloadLabelList)
-            }
-            runCatching {
-                oldDB.downloadDirnameDao().list().let {
-                    importDownloadDirname(it)
-                }
-            }
-            runCatching {
-                val downloadInfoList = oldDB.downloadsDao().joinList().asReversed()
-                DownloadManager.addDownload(downloadInfoList)
-            }
-            runCatching {
-                val historyInfoList = oldDB.historyDao().list()
-                importHistoryInfo(historyInfoList)
-            }
-            runCatching {
-                val quickSearchList = oldDB.quickSearchDao().list()
-                val currentQuickSearchList = db.quickSearchDao().list()
-                val offset = currentQuickSearchList.size
-                val importList = quickSearchList.filter { newQS ->
-                    currentQuickSearchList.none { it.name == newQS.name }
-                }.onEachIndexed { index, q -> q.position = index + offset }
-                importQuickSearch(importList)
-            }
-            runCatching {
-                oldDB.localFavoritesDao().list().let {
-                    importLocalFavorites(it)
-                }
-            }
-            runCatching {
-                val filterList = oldDB.filterDao().list()
-                val currentFilterList = db.filterDao().list()
-                filterList.forEach {
-                    if (it !in currentFilterList) addFilter(it)
-                }
+
+            val filterList = oldDB.filterDao().list()
+            val currentFilterList = db.filterDao().list()
+            filterList.forEach {
+                if (it !in currentFilterList) addFilter(it)
             }
         }
     }

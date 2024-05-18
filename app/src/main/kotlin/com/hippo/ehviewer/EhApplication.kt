@@ -52,6 +52,7 @@ import com.hippo.ehviewer.ktor.CronetEngine
 import com.hippo.ehviewer.legacy.cleanObsoleteCache
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
+import com.hippo.ehviewer.ui.tools.dataStateFlow
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -103,15 +104,10 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         super.onCreate()
         System.loadLibrary("ehviewer")
         lifecycleScope.launchIO {
-            launch {
-                EhTagDatabase
-            }
-            launch {
-                EhDB
-            }
-            launch {
-                DownloadManager.readMetadataFromLocal()
-            }
+            launch { EhTagDatabase }
+            launch { EhDB }
+            dataStateFlow.value
+            launch { DownloadManager.readMetadataFromLocal() }
             launch {
                 FileUtils.cleanupDirectory(AppConfig.externalCrashDir)
                 FileUtils.cleanupDirectory(AppConfig.externalParseErrorDir)

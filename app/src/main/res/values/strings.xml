@@ -36,8 +36,11 @@
     <string name="history">History</string>
     <string name="downloads">Downloads</string>
     <string name="settings">Settings</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
     <string name="sign_in">Sign in</string>
     <string name="register">Register</string>
+    <string name="sign_in_via_webview">Sign in via WebView</string>
     <string name="sign_in_first">Please sign in first</string>
     <string name="text_is_empty">Text is empty</string>
     <string name="waring">Warning</string>
@@ -87,7 +90,12 @@
     <string name="error_invalid_number">Invalid number</string>
     <string name="app_waring">The content of this application is from the Internet. Some of it may do physical or mental harm to you. You have learnt the risks above and would like to undertake them. By continuing to use it, you agree to the above terms.</string>
     <string name="app_waring_2">By continuing to use it, you agree to the above terms.</string>
-    <string name="guest_mode">Continue without signing in</string>
+    <string name="error_username_cannot_empty">Username cannot be empty</string>
+    <string name="error_password_cannot_empty">Password cannot be empty</string>
+    <string name="guest_mode">Guest mode</string>
+    <string name="sign_in_failed">Sign in failed</string>
+    <string name="sign_in_failed_tip">If this issue continues, try \"%s\".</string>
+    <string name="get_it">Got it</string>
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">Search ExHentai</string>
     <string name="gallery_list_search_bar_hint_e_hentai">Search E-Hentai</string>
@@ -99,7 +107,7 @@
     <string name="search_image">Image Search</string>
     <string name="search_sh">Expunged</string>
     <string name="search_sto">Has Torrent</string>
-    <string name="search_sr">Minimum Rating:</string>
+    <string name="search_sr">Minimum Rating</string>
     <string name="search_sp_to">to</string>
     <string name="search_sp_err1">The page range maximum cannot be below 10</string>
     <string name="search_sp_err2">The page range must be at least 20</string>
@@ -159,7 +167,6 @@
     <string name="rate_successfully">Rate successfully</string>
     <string name="rate_failed">Rate failed</string>
     <string name="no_torrents">No torrents</string>
-    <string name="no_current_torrents">No torrents for the current version of the gallery</string>
     <string name="download_torrent_started">Torrent download started</string>
     <string name="download_torrent_failure">Failed to download torrent</string>
     <string name="torrents">Torrents</string>
@@ -382,6 +389,7 @@
     <string name="settings_download_restore_download_items">Restore download items</string>
     <string name="settings_download_restore_download_items_summary">Restore all download items in download location</string>
     <string name="settings_download_restore_not_found">Not found download items to restore</string>
+    <string name="settings_download_restore_failed">Restore failed</string>
     <string name="settings_download_restore_successfully">Restore %d items successfully</string>
     <string name="settings_download_clean_redundancy">Clear download redundancy</string>
     <string name="settings_download_clean_redundancy_summary">Remove gallery images which are not in download list but in download location</string>
@@ -398,8 +406,6 @@
     <string name="settings_advanced_dump_logcat_to">Logcat dumped to %s</string>
     <string name="settings_advanced_read_cache_size">Read cache size</string>
     <string name="settings_advanced_app_language_title">App language</string>
-    <string name="settings_advanced_touch_slop">[Experimental] Touch slop factor</string>
-    <string name="settings_advanced_touch_slop_summary">Increasing this will reduce swipe gesture sensitivity</string>
     <string name="settings_advanced_export_data">Export data</string>
     <string name="settings_advanced_export_data_summary">Save data like download list, quick search list, to external storage</string>
     <string name="settings_advanced_export_data_to">Exported data to %s</string>
@@ -468,14 +474,14 @@
     <string name="download_archive_started">Archive download started</string>
     <string name="download_archive_failure">Failed to download archive</string>
     <string name="archive_free">Free</string>
-    <string name="archive_original">Original archive</string>
-    <string name="archive_resample">Resample archive</string>
+    <string name="archive_original">Original</string>
+    <string name="archive_resample">Resample</string>
     <string name="download_archive_failure_no_hath">Need H@H client for archive download</string>
-    <string name="current_funds">Funds: %1$s GP, %2$d Credits</string>
+    <string name="current_funds">Current Funds:</string>
     <string name="insufficient_funds">Insufficient Funds</string>
     <string name="image_limits">Image Limits</string>
     <string name="image_limits_summary">Used: %1$d / %2$d</string>
-    <string name="current_limits">%1$s\nReset Cost: %2$d GP</string>
+    <string name="reset_cost">Reset Cost: %d GP</string>
     <string name="reset_limits_succeed">Image limit was successfully reset</string>
     <string name="reset">Reset</string>
     <string name="settings_privacy">Privacy</string>

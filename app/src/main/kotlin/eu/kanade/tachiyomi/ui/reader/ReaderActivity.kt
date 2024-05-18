@@ -17,7 +17,6 @@
 package eu.kanade.tachiyomi.ui.reader
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.assist.AssistContent
 import android.content.ClipData
 import android.content.ContentValues
@@ -26,7 +25,6 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
@@ -38,19 +36,19 @@ import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.activity.viewModels
-import androidx.annotation.ChecksSdkIntAtLeast
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,10 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
@@ -92,7 +87,6 @@ import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getValue
-import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.requestPermission
@@ -262,14 +256,6 @@ class ReaderActivity : EhActivity() {
         }
         binding = ReaderActivityBinding.inflate(layoutInflater)
         binding.dialogStub.setMD3Content {
-            val surfaceElevation = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-            val alpha = if (isSystemInDarkTheme()) 230 else 242 // 90% dark 95% light
-            LaunchedEffect(surfaceElevation, alpha) {
-                val toolbarColor = surfaceElevation.copy(alpha = alpha / 255f).toArgb()
-                window.statusBarColor = toolbarColor
-                window.navigationBarColor = toolbarColor
-            }
-
             val brightness by Settings.customBrightness.collectAsState()
             val brightnessValue by Settings.customBrightnessValue.collectAsState()
             val colorOverlayEnabled by Settings.colorFilter.collectAsState()
@@ -315,10 +301,11 @@ class ReaderActivity : EhActivity() {
                             )
                             ModalBottomSheet(
                                 onDismissRequest = { dispose() },
+                                modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
                                 dragHandle = null,
                                 // Yeah, I know color state should not be read here, but we have to do it...
                                 scrimColor = scrim,
-                                windowInsets = WindowInsets.statusBarsIgnoringVisibility,
+                                contentWindowInsets = { WindowInsets(0) },
                             ) {
                                 SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
                                     isColorFilter = page == 2
@@ -372,7 +359,7 @@ class ReaderActivity : EhActivity() {
         viewer?.destroy()
         viewer = ReadingModeType.toViewer(ReaderPreferences.defaultReadingMode().get(), this)
         isRtl = viewer is R2LPagerViewer
-        updateViewerInset(ReaderPreferences.fullscreen().get())
+        updateViewerInsets(ReaderPreferences.cutoutShort().get())
         binding.viewerContainer.removeAllViews()
         setOrientation(ReaderPreferences.defaultOrientationType().get())
         binding.viewerContainer.addView(viewer?.getView())
@@ -443,7 +430,7 @@ class ReaderActivity : EhActivity() {
         lifecycleScope.launchIO {
             val granted = isAtLeastQ || requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             if (granted) {
-                val filename = mGalleryProvider!!.getImageFilename(index)
+                val filename = mGalleryProvider!!.getImageFilename(index) ?: return@launchIO makeToast(R.string.error_cant_save_image)
                 val extension = FileUtils.getExtensionFromFilename(filename)
                 val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
 
@@ -490,7 +477,7 @@ class ReaderActivity : EhActivity() {
 
     fun saveImageTo(index: Int) {
         lifecycleScope.launchIO {
-            val filename = mGalleryProvider?.getImageFilename(index) ?: return@launchIO
+            val filename = mGalleryProvider?.getImageFilename(index) ?: return@launchIO makeToast(R.string.error_cant_save_image)
             val extension = FileUtils.getExtensionFromFilename(filename)
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
             runSuspendCatching {
@@ -533,10 +520,6 @@ class ReaderActivity : EhActivity() {
     var viewer: BaseViewer? = null
         private set
 
-    // We don't know if the device has cutout since the insets are not applied yet
-    @get:ChecksSdkIntAtLeast(Build.VERSION_CODES.P)
-    val hasCutout = isAtLeastP
-
     private var config: ReaderConfig? = null
 
     private val windowInsetsController by lazy {
@@ -547,10 +530,9 @@ class ReaderActivity : EhActivity() {
     }
 
     /**
-     * Sets the visibility of the menu according to [visible] and with an optional parameter to
-     * [animate] the views.
+     * Sets the visibility of the menu according to [visible].
      */
-    fun setMenuVisibility(visible: Boolean) {
+    private fun setMenuVisibility(visible: Boolean) {
         menuVisible = visible
         if (visible) {
             windowInsetsController.show(WindowInsetsCompat.Type.systemBars())
@@ -578,14 +560,7 @@ class ReaderActivity : EhActivity() {
     /**
      * Initializes the reader menu. It sets up click listeners and the initial visibility.
      */
-    @SuppressLint("PrivateResource")
     private fun initializeMenu() {
-        binding.dialogStub.applyInsetter {
-            type(navigationBars = true) {
-                margin(vertical = true, horizontal = true)
-            }
-        }
-
         binding.pageNumber.setMD3Content {
             CompositionLocalProvider(
                 LocalTextStyle provides MaterialTheme.typography.bodySmall,
@@ -593,6 +568,7 @@ class ReaderActivity : EhActivity() {
                 PageIndicatorText(
                     currentPage = currentPage,
                     totalPages = totalPage,
+                    modifier = Modifier.navigationBarsPadding(),
                 )
             }
         }
@@ -648,7 +624,8 @@ class ReaderActivity : EhActivity() {
             dialogState.dialog {
                 ModalBottomSheet(
                     onDismissRequest = { it.cancel() },
-                    windowInsets = WindowInsets.statusBarsIgnoringVisibility,
+                    modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+                    contentWindowInsets = { WindowInsets(0) },
                 ) {
                     ReaderPageSheet(page) { it.cancel() }
                 }
@@ -684,14 +661,12 @@ class ReaderActivity : EhActivity() {
     }
 
     /**
-     * Updates viewer inset depending on fullscreen reader preferences.
+     * Updates viewer insets depending on fullscreen reader preferences.
      */
-    fun updateViewerInset(fullscreen: Boolean) {
-        viewer?.getView()?.applyInsetter {
-            if (!fullscreen) {
-                type(navigationBars = true, statusBars = true) {
-                    padding()
-                }
+    fun updateViewerInsets(drawInCutout: Boolean) {
+        viewer?.getViewForInsets()?.applyInsetter {
+            type(navigationBars = true, statusBars = true, displayCutout = !drawInCutout) {
+                padding()
             }
         }
     }
@@ -760,16 +735,9 @@ class ReaderActivity : EhActivity() {
                 .onEach { setPageNumberVisibility(it) }
                 .launchIn(lifecycleScope)
 
-            if (hasCutout) {
-                setCutoutShort(ReaderPreferences.cutoutShort().get())
-                ReaderPreferences.cutoutShort().changes()
-                    .drop(1)
-                    .onEach {
-                        setCutoutShort(it)
-                        recreate()
-                    }
-                    .launchIn(lifecycleScope)
-            }
+            ReaderPreferences.cutoutShort().changes()
+                .onEach { updateViewerInsets(it) }
+                .launchIn(lifecycleScope)
 
             ReaderPreferences.keepScreenOn().changes()
                 .onEach { setKeepScreenOn(it) }
@@ -790,13 +758,6 @@ class ReaderActivity : EhActivity() {
                     )
                 }
                 .launchIn(lifecycleScope)
-
-            ReaderPreferences.fullscreen().changes()
-                .onEach {
-                    WindowCompat.setDecorFitsSystemWindows(window, !it)
-                    updateViewerInset(it)
-                }
-                .launchIn(lifecycleScope)
         }
 
         /**
@@ -815,14 +776,6 @@ class ReaderActivity : EhActivity() {
          */
         fun setPageNumberVisibility(visible: Boolean) {
             binding.pageNumber.isVisible = visible
-        }
-
-        @RequiresApi(Build.VERSION_CODES.P)
-        private fun setCutoutShort(enabled: Boolean) {
-            window.attributes.layoutInDisplayCutoutMode = when (enabled) {
-                true -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-                false -> WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
-            }
         }
 
         /**

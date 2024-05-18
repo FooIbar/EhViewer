@@ -21,11 +21,6 @@ import splitties.init.appCtx
 
 object DocumentsContractApi21 {
     private val resolver = appCtx.contentResolver
-    private val projection = arrayOf(
-        DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-        DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-        DocumentsContract.Document.COLUMN_MIME_TYPE,
-    )
 
     fun createFile(self: Uri, mimeType: String, displayName: String) = runCatching {
         DocumentsContract.createDocument(resolver, self, mimeType, displayName)
@@ -47,19 +42,6 @@ object DocumentsContractApi21 {
             uri,
             DocumentsContract.getDocumentId(uri) + "/" + displayName,
         )
-    }
-
-    fun listFiles(self: Uri) = sequence {
-        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(self, DocumentsContract.getDocumentId(self))
-        resolver.query(childrenUri, projection, null, null, null)?.use {
-            while (it.moveToNext()) {
-                val documentId = it.getString(0)
-                val documentUri = DocumentsContract.buildDocumentUriUsingTree(self, documentId)
-                val displayName = it.getString(1)
-                val mimeType = it.getString(2)
-                yield(Triple(documentUri, displayName, mimeType))
-            }
-        }
     }
 
     fun renameTo(self: Uri, displayName: String) = runCatching {

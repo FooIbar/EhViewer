@@ -14,48 +14,178 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.AutofillType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
+import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.StartDestination
 import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.screen.popNavigate
+import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
+import com.hippo.ehviewer.ui.tools.autofill
+import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
+import eu.kanade.tachiyomi.util.lang.withUIContext
+import kotlinx.coroutines.Job
 
 @Destination<RootGraph>(start = true)
 @Composable
 fun SignInScreen(navigator: DestinationsNavigator) {
     LockDrawer(true)
     val windowSizeClass = LocalWindowSizeClass.current
+    val coroutineScope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
+    var isProgressIndicatorVisible by rememberSaveable { mutableStateOf(false) }
+    var showUsernameError by rememberSaveable { mutableStateOf(false) }
+    var showPasswordError by rememberSaveable { mutableStateOf(false) }
+    var username by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var passwordHidden by rememberSaveable { mutableStateOf(true) }
     val context = LocalContext.current
+    var signInJob by remember { mutableStateOf<Job?>(null) }
+    val dialogState = LocalDialogState.current
+
+    fun signIn() {
+        if (signInJob?.isActive == true) return
+        if (username.isEmpty()) {
+            showUsernameError = true
+            return
+        } else {
+            showUsernameError = false
+        }
+        if (password.isEmpty()) {
+            showPasswordError = true
+            return
+        } else {
+            showPasswordError = false
+        }
+        focusManager.clearFocus()
+        isProgressIndicatorVisible = true
+
+        EhUtils.signOut()
+        signInJob = coroutineScope.launchIO {
+            runCatching {
+                EhEngine.signIn(username, password)
+            }.onFailure {
+                withUIContext {
+                    focusManager.clearFocus()
+                    dialogState.awaitPermissionOrCancel(
+                        confirmText = R.string.get_it,
+                        title = R.string.sign_in_failed,
+                        showCancelButton = false,
+                        text = {
+                            Text(
+                                """
+                                ${it.displayString()}
+                                ${stringResource(R.string.sign_in_failed_tip, stringResource(R.string.sign_in_via_webview))}
+                                """.trimIndent(),
+                            )
+                        },
+                    )
+                    isProgressIndicatorVisible = false
+                }
+            }.onSuccess {
+                withNonCancellableContext { postLogin() }
+                withUIContext { navigator.popNavigate(StartDestination) }
+            }
+        }
+    }
+
+    @Composable
+    fun UsernameAndPasswordTextField() {
+        OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width)).autofill(
+                autofillTypes = listOf(AutofillType.Username),
+                onFill = { username = it },
+            ),
+            label = { Text(stringResource(R.string.username)) },
+            supportingText = { if (showUsernameError) Text(stringResource(R.string.error_username_cannot_empty)) },
+            trailingIcon = { if (showUsernameError) Icon(imageVector = Icons.Filled.Info, contentDescription = null) },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            singleLine = true,
+            isError = showUsernameError,
+        )
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width)).autofill(
+                autofillTypes = listOf(AutofillType.Password),
+                onFill = { password = it },
+            ),
+            label = { Text(stringResource(R.string.password)) },
+            visualTransformation = if (passwordHidden) PasswordVisualTransformation() else VisualTransformation.None,
+            supportingText = { if (showPasswordError) Text(stringResource(R.string.error_password_cannot_empty)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            keyboardActions = KeyboardActions(onDone = { signIn() }),
+            trailingIcon = {
+                if (showPasswordError) {
+                    Icon(imageVector = Icons.Filled.Info, contentDescription = null)
+                } else {
+                    IconButton(onClick = { passwordHidden = !passwordHidden }) {
+                        val visibilityIcon = if (passwordHidden) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        Icon(imageVector = visibilityIcon, contentDescription = null)
+                    }
+                }
+            },
+            singleLine = true,
+            isError = showPasswordError,
+        )
+    }
 
     Box(contentAlignment = Alignment.Center) {
-        when (windowSizeClass.widthSizeClass) {
-            WindowWidthSizeClass.Compact, WindowWidthSizeClass.Medium -> {
+        when (windowSizeClass.windowWidthSizeClass) {
+            WindowWidthSizeClass.COMPACT, WindowWidthSizeClass.MEDIUM -> {
                 Column(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).systemBarsPadding().padding(dimensionResource(id = R.dimen.keyline_margin)),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -65,6 +195,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                         contentDescription = null,
                         modifier = Modifier.padding(dimensionResource(id = R.dimen.keyline_margin)),
                     )
+                    UsernameAndPasswordTextField()
                     Text(
                         text = stringResource(id = R.string.app_waring),
                         modifier = Modifier.widthIn(max = dimensionResource(id = R.dimen.single_max_width)).padding(top = 24.dp),
@@ -73,7 +204,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                     Text(
                         text = stringResource(id = R.string.app_waring_2),
                         modifier = Modifier.widthIn(max = dimensionResource(id = R.dimen.single_max_width)).padding(top = 12.dp),
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.titleLarge,
                     )
                     Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.keyline_margin)))
                     Row(modifier = Modifier.padding(top = dimensionResource(R.dimen.keyline_margin))) {
@@ -84,32 +215,49 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                             Text(text = stringResource(id = R.string.register))
                         }
                         Button(
-                            onClick = { navigator.navigate(WebViewSignInScreenDestination) },
+                            onClick = ::signIn,
                             modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
                         ) {
                             Text(text = stringResource(id = R.string.sign_in))
                         }
                     }
-                    TextButton(
-                        onClick = {
-                            Settings.needSignIn = false
-                            Settings.gallerySite = EhUrl.SITE_E
-                            navigator.popNavigate(StartDestination)
-                        },
-                    ) {
-                        Text(
-                            text = buildAnnotatedString {
-                                withStyle(
-                                    style = SpanStyle(textDecoration = TextDecoration.Underline),
-                                ) {
-                                    append(stringResource(id = R.string.guest_mode))
-                                }
+                    Row(modifier = Modifier.padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(
+                            onClick = { navigator.navigate(WebViewSignInScreenDestination) },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(
+                                text = buildAnnotatedString {
+                                    withStyle(
+                                        style = SpanStyle(textDecoration = TextDecoration.Underline),
+                                    ) {
+                                        append(stringResource(id = R.string.sign_in_via_webview))
+                                    }
+                                },
+                            )
+                        }
+                        TextButton(
+                            onClick = {
+                                Settings.needSignIn = false
+                                Settings.gallerySite = EhUrl.SITE_E
+                                navigator.popNavigate(StartDestination)
                             },
-                        )
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(
+                                text = buildAnnotatedString {
+                                    withStyle(
+                                        style = SpanStyle(textDecoration = TextDecoration.Underline),
+                                    ) {
+                                        append(stringResource(id = R.string.guest_mode))
+                                    }
+                                },
+                            )
+                        }
                     }
                 }
             }
-            WindowWidthSizeClass.Expanded -> {
+            WindowWidthSizeClass.EXPANDED -> {
                 Row(
                     modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).systemBarsPadding().padding(dimensionResource(id = R.dimen.keyline_margin)),
                     verticalAlignment = Alignment.CenterVertically,
@@ -132,17 +280,18 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                         Text(
                             text = stringResource(id = R.string.app_waring_2),
                             modifier = Modifier.widthIn(max = 360.dp),
-                            style = MaterialTheme.typography.headlineMedium,
+                            style = MaterialTheme.typography.titleLarge,
                         )
                     }
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Spacer(modifier = Modifier.height(48.dp))
+                        UsernameAndPasswordTextField()
+                        Spacer(modifier = Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.Center) {
                             Button(
-                                onClick = { navigator.navigate(WebViewSignInScreenDestination) },
+                                onClick = ::signIn,
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
                                 Text(text = stringResource(id = R.string.sign_in))
@@ -155,27 +304,46 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        TextButton(
-                            onClick = {
-                                Settings.needSignIn = false
-                                Settings.gallerySite = EhUrl.SITE_E
-                                navigator.popNavigate(StartDestination)
-                            },
-                            modifier = Modifier.padding(horizontal = 4.dp),
-                        ) {
-                            Text(
-                                text = buildAnnotatedString {
-                                    withStyle(
-                                        style = SpanStyle(textDecoration = TextDecoration.Underline),
-                                    ) {
-                                        append(stringResource(id = R.string.guest_mode))
-                                    }
+                        Row(horizontalArrangement = Arrangement.Center) {
+                            TextButton(
+                                onClick = { navigator.navigate(WebViewSignInScreenDestination) },
+                                modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
+                            ) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        withStyle(
+                                            style = SpanStyle(textDecoration = TextDecoration.Underline),
+                                        ) {
+                                            append(stringResource(id = R.string.sign_in_via_webview))
+                                        }
+                                    },
+                                )
+                            }
+                            TextButton(
+                                onClick = {
+                                    Settings.needSignIn = false
+                                    Settings.gallerySite = EhUrl.SITE_E
+                                    navigator.popNavigate(StartDestination)
                                 },
-                            )
+                                modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
+                            ) {
+                                Text(
+                                    text = buildAnnotatedString {
+                                        withStyle(
+                                            style = SpanStyle(textDecoration = TextDecoration.Underline),
+                                        ) {
+                                            append(stringResource(id = R.string.guest_mode))
+                                        }
+                                    },
+                                )
+                            }
                         }
                     }
                 }
             }
+        }
+        if (isProgressIndicatorVisible) {
+            CircularProgressIndicator()
         }
     }
 }

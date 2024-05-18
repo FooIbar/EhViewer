@@ -22,13 +22,14 @@ plugins {
 android {
     compileSdk = 34
     ndkVersion = "27.0.11718014-beta1"
+    androidResources.generateLocaleConfig = true
 
     splits {
         abi {
             isEnable = true
             reset()
             if (isRelease) {
-                include("arm64-v8a", "x86_64", "armeabi-v7a", "x86")
+                include("arm64-v8a", "x86_64", "armeabi-v7a")
                 isUniversalApk = true
             } else {
                 include("arm64-v8a", "x86_64")
@@ -59,6 +60,9 @@ android {
     }.standardOutput.asText.get().trim().removePrefix("https://github.com/").removePrefix("git@github.com:")
         .removeSuffix(".git")
 
+    val chromeVersion = rootProject.layout.projectDirectory.file("chrome-for-testing/LATEST_RELEASE_STABLE").asFile
+        .readText().substringBefore('.')
+
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
         minSdk = 26
@@ -85,6 +89,7 @@ android {
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
+        buildConfigField("String", "CHROME_VERSION", "\"$chromeVersion\"")
         ndk {
             debugSymbolLevel = "FULL"
         }
@@ -126,7 +131,7 @@ android {
             "-opt-in=coil3.annotation.ExperimentalCoilApi",
             "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi",
+            "-opt-in=androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
             "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
             "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
             "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
@@ -164,6 +169,9 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             buildConfigField("String", "BUILD_TIME", "\"\"")
+            lint {
+                abortOnError = false
+            }
         }
     }
 
@@ -177,11 +185,8 @@ android {
 }
 
 composeCompiler {
-    // https://youtrack.jetbrains.com/issue/KT-67216
-    suppressKotlinVersionCompatibilityCheck = libs.versions.kotlin.get()
-    enableIntrinsicRemember = true
     enableNonSkippingGroupOptimization = true
-    enableExperimentalStrongSkippingMode = true
+    enableStrongSkippingMode = true
 }
 
 androidComponents {
@@ -213,14 +218,12 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.datastore)
     implementation(libs.androidx.graphics.path)
 
     // https://developer.android.com/jetpack/androidx/releases/lifecycle
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.lifecycle.compose)
-
-    // https://developer.android.com/jetpack/androidx/releases/navigation
-    implementation(libs.androidx.navigation.compose)
 
     // https://developer.android.com/jetpack/androidx/releases/paging
     implementation(libs.androidx.paging.compose)
@@ -283,7 +286,6 @@ kotlin {
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
-    arg("room.generateKotlin", "true")
     arg("compose-destinations.codeGenPackageName", "com.hippo.ehviewer.ui")
 }
 

@@ -34,7 +34,7 @@ object ArchiveParser {
     private const val ERROR_INSUFFICIENT_FUNDS =
         "You do not have enough funds to download this archive."
 
-    fun parse(body: String): Result {
+    fun parse(body: String, maybeFunds: Funds?): Result {
         val m = PATTERN_HATH_FORM.find(body)!!
         val paramOr = m.groupValues[1]
         val archiveList = ArrayList<Archive>()
@@ -59,14 +59,12 @@ object ArchiveParser {
             val item = Archive(res, name, size, cost, true)
             archiveList.add(item)
         }
-        val result = Result(paramOr, archiveList, null)
-        PATTERN_CURRENT_FUNDS.find(body)?.groupValues?.run {
+        val funds = maybeFunds ?: PATTERN_CURRENT_FUNDS.find(body)!!.groupValues.run {
             val fundsGP = ParserUtils.parseInt(get(1), 0)
             val fundsC = ParserUtils.parseInt(get(2), 0)
-            val funds = HomeParser.Funds(fundsGP, fundsC)
-            result.funds = funds
+            Funds("%,d".format(fundsGP), "%,d".format(fundsC))
         }
-        return result
+        return Result(paramOr, archiveList, funds)
     }
 
     fun parseArchiveUrl(body: String): String? {
@@ -80,13 +78,13 @@ object ArchiveParser {
         // TODO: Check more errors
     }
 
-    class Archive(
-        val res: String,
-        val name: String,
-        val size: String,
-        val cost: String,
-        val isHAtH: Boolean,
-    )
-
-    class Result(val paramOr: String, val archiveList: List<Archive>, var funds: HomeParser.Funds?)
+    data class Result(val paramOr: String, val archiveList: List<Archive>, val funds: Funds)
 }
+
+class Archive(
+    val res: String,
+    val name: String,
+    val size: String,
+    val cost: String,
+    val isHAtH: Boolean,
+)

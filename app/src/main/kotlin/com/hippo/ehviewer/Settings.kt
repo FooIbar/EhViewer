@@ -10,7 +10,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
-import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
@@ -118,6 +117,7 @@ object Settings : DataStorePreferences(null) {
     val qSSaveProgress = boolPref("qs_save_progress", true)
     val security = boolPref("require_unlock", false)
     val animateItems = boolPref("animate_items", true)
+    val displayName = stringOrNullPref("display_name", null)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
     val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
 
@@ -162,21 +162,14 @@ object Settings : DataStorePreferences(null) {
     var defaultFavSlot by intPref("default_favorite_slot", -2)
     var securityDelay by intPref("require_unlock_delay", 0)
     var clipboardTextHashCode by intPref("clipboard_text_hash_code", 0)
-    var searchCategory by intPref("search_pref", EhUtils.ALL_CATEGORY)
     var requestNewsTime by intPref("request_news_time", 0).observed { updateWhenRequestNewsChanges() }
     var updateIntervalDays by intPref("update_interval_days", 7)
     var lastDawnDays by intPref("last_dawn_days", 0)
     var recentToplist by stringPref("recent_toplist", "11")
     var userAgent by stringPref("user_agent", CHROME_USER_AGENT)
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
-    var displayName by stringOrNullPref("display_name", null)
-    var avatar by stringOrNullPref("avatar", null)
     var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
     var lastUpdateTime by longPref("last_update_time", 0)
-    var favDialogTheta by floatPref("fav_select_dialog_delta", 0F)
-
-    // TODO: Remove this after swipe gestures are correctly handled in compose
-    var touchSlopFactor by intPref("touch_slop", 3)
 
     // Tachiyomi Reader
     var newReader by boolPref("new_compose_reader", false)
@@ -205,7 +198,8 @@ object Settings : DataStorePreferences(null) {
     val invertedColors = boolPref("pref_inverted_colors", false)
     val readerWebtoonNav = intPref("reader_navigation_mode_webtoon", 0)
     val readerPagerNav = intPref("reader_navigation_mode_pager", 0)
-    val readerWebtoonNavInverted = intPref("reader_tapping_inverted_webtoon", 0)
+    val readerPagerNavInverted = intPref("reader_tapping_inverted_2", 0)
+    val readerWebtoonNavInverted = intPref("reader_tapping_inverted_webtoon_2", 0)
     val webtoonSidePadding = intPref("webtoon_side_padding", 0)
     val navigateToPan = boolPref("navigate_pan", true)
     val imageScaleType = intPref("pref_image_scale_type_key", 1)

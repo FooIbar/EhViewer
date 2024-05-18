@@ -25,8 +25,12 @@
     <string name="downloads">ดาวน์โหลด</string>
     <string name="settings">การตั้งค่า</string>
 
+    <string name="username">ชื่อผู้ใช้</string>
+    <string name="password">รหัสผ่าน</string>
+
     <string name="sign_in">ลงชื่อเข้าใช้</string>
     <string name="register">ลงทะเบียน</string>
+    <string name="sign_in_via_webview">ลงชื่อเข้าใช้ผ่านมุมมองเว็บไซต์</string>
     <string name="sign_in_first">โปรดลงชื่อเข้าใช้ก่อนเป็นอันดับแรก</string>
 
     <string name="text_is_empty">ข้อความห้ามเว้นว่างไว้</string>
@@ -56,7 +60,11 @@
     <string name="error_invalid_number">จำนวนไม่ถูกต้อง</string>
 
     <string name="app_waring">เนื้อหาภายในแอปพลิเคชั่นนี้มาจากอินเทอร์เน็ตทั้งหมด อาจมีเนื้อหาบางอย่างที่มีผลต่อร่างกายหรือจิตใจของคุณ คุณจะต้องยอมรับความเสี่ยงที่ดังกล่าว และดำเนินการต่อไป</string>
+    <string name="error_username_cannot_empty">ชื่อผู้ใช้ห้ามเว้นว่างไว้</string>
+    <string name="error_password_cannot_empty">รหัสผ่านห้ามเว้นว่างไว้</string>
     <string name="guest_mode">ดำเนินการต่อโดยไม่ต้องลงชื่อเข้าระบบ</string>
+    <string name="sign_in_failed">การลงชื่อเข้าใช้ล้มเหลว</string>
+    <string name="get_it">เข้าใจแล้ว ไม่ต้องแสดงอีก</string>
 
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">ค้นหาใน ExHentai</string>
@@ -71,7 +79,7 @@
 
     <string name="search_sh">แสดงแกลเลอรี่ที่ถูกลบออก</string>
     <string name="search_sto">แสดงผลเฉพาะแกลเลอรี่ที่มีไฟล์ Torrents</string>
-    <string name="search_sr">เรตติ้งขั้นต่ำ:</string>
+    <string name="search_sr">เรตติ้งขั้นต่ำ</string>
 
     <string name="select_image">เลือกรูปภาพ</string>
     <string name="select_image_first">โปรดเลือกรูปภาพก่อน</string>
@@ -294,6 +302,7 @@
     <string name="settings_download_restore_download_items">คืนรายการดาวน์โหลด</string>
     <string name="settings_download_restore_download_items_summary">คืนรายการดาวน์โหลดทั้งหมดในแหล่งดาวน์โหลด</string>
     <string name="settings_download_restore_not_found">ไม่พบรายการดาวน์โหลดที่จะคืนค่า</string>
+    <string name="settings_download_restore_failed">การคืนค่าล้มเหลว</string>
     <string name="settings_download_restore_successfully">การคืนค่า %d รายการสำเร็จแล้ว</string>
     <string name="settings_download_clean_redundancy">ลบการดาวน์โหลดที่ไม่จำเป็น</string>
     <string name="settings_download_clean_redundancy_summary">ลบรูปภาพแกลเลอรี่ที่ไม่ได้อยู่ในรายการดาวน์โหลด แต่อยู่ในแหล่งดาวน์โหลด</string>

@@ -69,6 +69,7 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
     init {
         recycler.isVisible = false // Don't let the recycler layout yet
         recycler.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        recycler.clipToPadding = false
         recycler.isFocusable = false
         recycler.itemAnimator = null
         recycler.layoutManager = layoutManager
@@ -85,7 +86,12 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
             },
         )
         recycler.tapListener = { event ->
-            val pos = PointF(event.rawX / recycler.width, event.rawY / recycler.height)
+            val windowOffset = IntArray(2)
+            activity.window.decorView.getLocationOnScreen(windowOffset)
+            val pos = PointF(
+                (event.rawX - windowOffset[0]) / recycler.width,
+                (event.rawY - windowOffset[1]) / recycler.originalHeight,
+            )
             val navigator = config.navigator
 
             when (navigator.getAction(pos)) {
@@ -124,6 +130,10 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
 
         frame.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
         frame.addView(recycler)
+    }
+
+    override fun getViewForInsets(): View {
+        return recycler
     }
 
     /**

@@ -86,6 +86,10 @@ suspend fun save(page: ReaderPage) {
     val cannotSave = getString(R.string.error_cant_save_image)
     if (granted) {
         val filename = getImageFilename(page.index)
+        if (filename == null) {
+            showSnackbar(cannotSave)
+            return
+        }
         val extension = FileUtils.getExtensionFromFilename(filename)
         val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
         val values = ContentValues()
@@ -133,6 +137,10 @@ suspend fun save(page: ReaderPage) {
 context(SnackbarHostState, Context, PageLoader2)
 suspend fun saveTo(page: ReaderPage) {
     val filename = getImageFilename(page.index)
+    if (filename == null) {
+        showSnackbar(getString(R.string.error_cant_save_image))
+        return
+    }
     val extension = FileUtils.getExtensionFromFilename(filename)
     val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
     page.runSuspendCatching {

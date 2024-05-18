@@ -22,8 +22,11 @@
     <string name="history">歷史</string>
     <string name="downloads">下載</string>
     <string name="settings">設定</string>
+    <string name="username">使用者名稱</string>
+    <string name="password">密碼</string>
     <string name="sign_in">登入</string>
     <string name="register">註冊</string>
+    <string name="sign_in_via_webview">透過網頁登入</string>
     <string name="sign_in_first">請先登入</string>
     <string name="text_is_empty">文字是空的</string>
     <string name="waring">警告</string>
@@ -49,7 +52,12 @@
     <string name="error_invalid_number">無效的數字</string>
     <string name="app_waring">本應用程式中內容來自網際網路，部分內容可能對您的生理及心理造成難以恢復的傷害。本應用程式的作者不會對由其所造成的任何影響負責。\n\n未成年人應在監護人指導下使用本應用程式。\n\n繼續使用即代表您同意上述條款。</string>
     <string name="app_waring_2">繼續使用即表示您同意上述條款。</string>
+    <string name="error_username_cannot_empty">使用者名稱欄位不能為空</string>
+    <string name="error_password_cannot_empty">密碼欄位不能為空</string>
     <string name="guest_mode">略過登入</string>
+    <string name="sign_in_failed">登入失敗</string>
+    <string name="sign_in_failed_tip">若持續出錯，請嘗試“%s”。</string>
+    <string name="get_it">知道了</string>
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">在 ExHentai 搜尋</string>
     <string name="gallery_list_search_bar_hint_e_hentai">在 E-Hentai 搜尋</string>
@@ -61,7 +69,7 @@
     <string name="search_image">圖片搜尋</string>
     <string name="search_sh">已被移除</string>
     <string name="search_sto">有種子</string>
-    <string name="search_sr">最低評分：</string>
+    <string name="search_sr">最低評分</string>
     <string name="search_sp_to">到</string>
     <string name="search_sp_err1">頁數最大值至少為 10</string>
     <string name="search_sp_err2">頁數範圍差至少為 20</string>
@@ -339,6 +347,7 @@
     <string name="settings_download_restore_download_items">復原下載的檔案</string>
     <string name="settings_download_restore_download_items_summary">復原下載路徑中的所有下載的檔案</string>
     <string name="settings_download_restore_not_found">未尋獲可復原的已下載檔案</string>
+    <string name="settings_download_restore_failed">復原失敗</string>
     <string name="settings_download_restore_successfully">成功復原 %d 項</string>
     <string name="settings_download_clean_redundancy">清除冗餘的檔案</string>
     <string name="settings_download_clean_redundancy_summary">清除已下載但不在下載列表中的圖檔</string>
@@ -355,8 +364,6 @@
     <string name="settings_advanced_dump_logcat_to">已將紀錄檔儲存至 %s</string>
     <string name="settings_advanced_read_cache_size">閱讀快取大小</string>
     <string name="settings_advanced_app_language_title">應用程式介面語言</string>
-    <string name="settings_advanced_touch_slop">[測試] 觸控溢位係數</string>
-    <string name="settings_advanced_touch_slop_summary">提高係數將降低滑動手勢敏感度</string>
     <string name="settings_advanced_export_data">匯出檔案</string>
     <string name="settings_advanced_export_data_summary">儲存資料至外接儲存裝置，例如下載列表，快速搜尋列表</string>
     <string name="settings_advanced_export_data_to">已匯出資料至 %s</string>
@@ -414,11 +421,11 @@
     <string name="archive_original">原始檔案</string>
     <string name="archive_resample">重新取樣檔案</string>
     <string name="download_archive_failure_no_hath">下載壓縮檔需要 H@H 客戶端</string>
-    <string name="current_funds">資金：%1$s GP，%2$d Credits</string>
+    <string name="current_funds">目前資金：</string>
     <string name="insufficient_funds">餘額不足</string>
     <string name="image_limits">圖片配額</string>
     <string name="image_limits_summary">已用：%1$d / %2$d</string>
-    <string name="current_limits">%1$s\n重置花費：%2$d GP</string>
+    <string name="reset_cost">重置花費：%d GP</string>
     <string name="reset_limits_succeed">成功重置圖片配額</string>
     <string name="reset">重置</string>
     <string name="settings_privacy">隱私</string>
