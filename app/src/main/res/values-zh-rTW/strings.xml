@@ -498,7 +498,7 @@
     <string name="update_failed">更新失敗：%s</string>
     <string name="new_version_available">有新版本可用！</string>
     <string name="already_latest_version">已是最新版本</string>
-    <string name="permission_denied">沒有許可權</string>
+    <string name="permission_denied">沒有權限</string>
     <string name="download_gallery_first">請先下載圖庫！</string>
     <string name="export_as_archive">匯出成壓縮檔</string>
     <string name="export_as_archive_success">匯出成功</string>
