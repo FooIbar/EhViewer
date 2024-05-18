@@ -102,9 +102,9 @@ object ReaderPreferences {
 
     fun navigationModeWebtoon() = preferenceStore.getInt("reader_navigation_mode_webtoon", 0)
 
-    fun pagerNavInverted() = preferenceStore.getEnum("reader_tapping_inverted", PreferenceValues.TappingInvertMode.NONE)
+    fun pagerNavInverted() = preferenceStore.getInt("reader_tapping_inverted_2", 0)
 
-    fun webtoonNavInverted() = preferenceStore.getEnum("reader_tapping_inverted_webtoon", PreferenceValues.TappingInvertMode.NONE)
+    fun webtoonNavInverted() = preferenceStore.getInt("reader_tapping_inverted_webtoon_2", 0)
 
     fun showNavigationOverlayNewUser() = preferenceStore.getBoolean("reader_navigation_overlay_new_user", true)
 
