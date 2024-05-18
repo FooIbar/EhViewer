@@ -478,7 +478,7 @@
     <string name="settings_privacy_require_unlock_delay">鎖定延遲</string>
     <string name="settings_privacy_require_unlock_delay_summary">離開程式並在 %s 分鐘內返回時不需要解鎖</string>
     <string name="settings_privacy_require_unlock_delay_summary_immediately">無論何時回到程式均要求解鎖</string>
-    <string name="filter_label">隱藏項型別</string>
+    <string name="filter_label">隱藏項類型</string>
     <string name="archive_passwd">壓縮檔密碼</string>
     <string name="archive_need_passwd">壓縮檔需要密碼</string>
     <string name="passwd_wrong">密碼錯誤</string>
