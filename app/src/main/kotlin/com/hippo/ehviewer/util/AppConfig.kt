@@ -39,7 +39,7 @@ object AppConfig {
 
     fun matchVariant(name: String) = name.contains(BuildConfig.FLAVOR) && name.contains(abi)
 
-    val buildTime = ParserUtils.formatDate(BuildConfig.BUILD_TIME)
+    val buildTime = ParserUtils.formatDate(BuildConfig.BUILD_TIME * 1000)
 
     private val externalAppDir: File?
         get() {
