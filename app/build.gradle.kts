@@ -17,6 +17,8 @@ plugins {
     alias(libs.plugins.composeCompilerReportGenerator)
 }
 
+val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
+
 android {
     compileSdk = 34
     ndkVersion = "27.0.11718014-beta1"
@@ -27,7 +29,7 @@ android {
             isEnable = true
             reset()
             if (isRelease) {
-                include("arm64-v8a", "x86_64", "armeabi-v7a")
+                include(*supportedAbis)
                 isUniversalApk = true
             } else {
                 include("arm64-v8a", "x86_64")
@@ -84,6 +86,9 @@ android {
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
         buildConfigField("String", "CHROME_VERSION", "\"$chromeVersion\"")
         ndk {
+            if (isRelease) {
+                abiFilters.addAll(supportedAbis)
+            }
             debugSymbolLevel = "FULL"
         }
         externalNativeBuild {
