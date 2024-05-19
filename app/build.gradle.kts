@@ -1,8 +1,6 @@
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
 import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 val isRelease: Boolean
     get() = gradle.startParameter.taskNames.any { it.contains("Release") }
@@ -49,11 +47,6 @@ android {
     val commitSha = providers.exec {
         commandLine = "git rev-parse --short=7 HEAD".split(' ')
     }.standardOutput.asText.get().trim()
-
-    val buildTime by lazy {
-        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm").withZone(ZoneOffset.UTC)
-        formatter.format(Instant.now())
-    }
 
     val repoName = providers.exec {
         commandLine = "git remote get-url origin".split(' ')
@@ -164,11 +157,11 @@ android {
             isShrinkResources = true
             proguardFiles("proguard-rules.pro")
             signingConfig = signConfig
-            buildConfigField("String", "BUILD_TIME", "\"$buildTime\"")
+            buildConfigField("long", "BUILD_TIME", "${Instant.now().epochSecond}")
         }
         debug {
             applicationIdSuffix = ".debug"
-            buildConfigField("String", "BUILD_TIME", "\"\"")
+            buildConfigField("long", "BUILD_TIME", "0")
             lint {
                 abortOnError = false
             }

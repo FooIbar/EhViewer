@@ -146,7 +146,7 @@ object Settings : DataStorePreferences(null) {
     var appLinkVerifyTip by boolPref("app_link_verify_tip", false)
     var enabledSecurity by boolPref("enable_secure", false)
     var backupBeforeUpdate by boolPref("backup_before_update", true)
-    var useCIUpdateChannel by boolPref("ci_update_channel", false)
+    var useCIUpdateChannel by boolPref("ci_update_channel", "SNAPSHOT" in BuildConfig.VERSION_NAME)
     var mediaScan by boolPref("media_scan", false).observed { updateWhenKeepMediaStatusChanges() }
     var hasDefaultDownloadLabel by boolPref("has_default_download_label", false)
     var saveParseErrorBody by boolPref("save_parse_error_body", true)
@@ -168,7 +168,7 @@ object Settings : DataStorePreferences(null) {
     var recentToplist by stringPref("recent_toplist", "11")
     var userAgent by stringPref("user_agent", CHROME_USER_AGENT)
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
-    var lastUpdateTime by longPref("last_update_time", 0)
+    var lastUpdateTime by longPref("last_update_time", BuildConfig.BUILD_TIME)
 
     // Tachiyomi Reader
     var newReader by boolPref("new_compose_reader", false)
