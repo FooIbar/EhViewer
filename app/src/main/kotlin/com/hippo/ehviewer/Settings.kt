@@ -110,6 +110,7 @@ object Settings : DataStorePreferences(null) {
     val listThumbSize = intPref("list_tile_size", 40)
     val languageFilter = intPref("language_filter", -1)
     val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
+    val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
     val blackDarkTheme = boolPref("black_dark_theme", false)
     val gridView = boolPref("grid_view", false)
@@ -119,7 +120,6 @@ object Settings : DataStorePreferences(null) {
     val animateItems = boolPref("animate_items", true)
     val displayName = stringOrNullPref("display_name", null)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
-    val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)
