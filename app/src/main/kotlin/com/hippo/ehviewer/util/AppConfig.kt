@@ -18,6 +18,7 @@ package com.hippo.ehviewer.util
 import android.os.Build
 import android.os.Environment
 import com.hippo.ehviewer.BuildConfig
+import com.hippo.ehviewer.client.parser.ParserUtils
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import java.io.File
@@ -37,6 +38,8 @@ object AppConfig {
     } ?: "universal"
 
     fun matchVariant(name: String) = name.contains(BuildConfig.FLAVOR) && name.contains(abi)
+
+    val buildTime = ParserUtils.formatDate(BuildConfig.BUILD_TIME)
 
     private val externalAppDir: File?
         get() {

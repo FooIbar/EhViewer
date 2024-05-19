@@ -26,7 +26,7 @@ object Crash {
         writer.write("VersionName=${BuildConfig.VERSION_NAME}\n")
         writer.write("VersionCode=${BuildConfig.VERSION_CODE}\n")
         writer.write("CommitSha=${BuildConfig.COMMIT_SHA}\n")
-        writer.write("BuildTime=${BuildConfig.BUILD_TIME}\n")
+        writer.write("BuildTime=${AppConfig.buildTime}\n")
         writer.write("\n")
 
         // Device info
