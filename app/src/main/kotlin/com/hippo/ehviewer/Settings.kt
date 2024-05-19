@@ -168,7 +168,6 @@ object Settings : DataStorePreferences(null) {
     var recentToplist by stringPref("recent_toplist", "11")
     var userAgent by stringPref("user_agent", CHROME_USER_AGENT)
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
-    var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
     var lastUpdateTime by longPref("last_update_time", 0)
 
     // Tachiyomi Reader

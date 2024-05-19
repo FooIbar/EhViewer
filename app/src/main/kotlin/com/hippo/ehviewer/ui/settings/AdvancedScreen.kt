@@ -43,7 +43,11 @@ import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.ReadableTime
+import com.hippo.ehviewer.util.getAppLanguage
+import com.hippo.ehviewer.util.getLanguages
+import com.hippo.ehviewer.util.setAppLanguage
 import com.hippo.unifile.asUniFile
+import com.jamal.composeprefs3.ui.prefs.DropDownPref
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -135,11 +139,14 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 entryValueRes = R.array.read_cache_size_entry_values,
                 value = Settings::readCacheSize.observed,
             )
-            SimpleMenuPreference(
+            val currentLanguage = remember { getAppLanguage() }
+            val languages = remember { context.getLanguages() }
+            DropDownPref(
                 title = stringResource(id = R.string.settings_advanced_app_language_title),
-                entry = R.array.app_language_entries,
-                entryValueRes = R.array.app_language_entry_values,
-                value = Settings::language,
+                defaultValue = currentLanguage,
+                onValueChange = { setAppLanguage(it) },
+                useSelectedAsSummary = true,
+                entries = languages,
             )
             SwitchPreference(
                 title = stringResource(id = R.string.preload_thumb_aggressively),
