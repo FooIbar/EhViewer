@@ -83,7 +83,7 @@
     <string name="remove_from_favourites">移除收藏</string>
     <string name="delete_downloads">刪除下載</string>
     <string name="quick_search">快速搜尋</string>
-    <string name="quick_search_tip">點擊“+”以新增快速搜尋</string>
+    <string name="quick_search_tip">點選“+”以新增快速搜尋</string>
     <string name="add_quick_search_dialog_title">新增快速搜尋</string>
     <string name="name_is_empty">名稱是空的</string>
     <string name="delete">刪除</string>
@@ -127,6 +127,7 @@
     <string name="rate_successfully">評分成功</string>
     <string name="rate_failed">評分失敗</string>
     <string name="no_torrents">沒有種子</string>
+    <string name="no_current_torrents">沒有當前版本圖庫的種子</string>
     <string name="download_torrent_started">開始下載種子</string>
     <string name="download_torrent_failure">無法下載種子</string>
     <string name="torrents">種子</string>
@@ -243,6 +244,10 @@
     <string name="remember_download_label">記住下載標籤</string>
     <string name="default_download_label">預設下載標籤</string>
     <string name="added_to_download_list">已新增至下載列表</string>
+    <string name="select_grouping_mode">選擇分組依據</string>
+    <string name="select_grouping_mode_custom">自定義標籤</string>
+    <string name="select_grouping_mode_artist">作者</string>
+    <string name="unknown_artists">未知</string>
     <!-- Download label -->
     <string name="add">新增</string>
     <string name="new_label_title">新標籤</string>
@@ -288,7 +293,7 @@
     <string name="settings_u_config_summary">EHentai 網站上的設定</string>
     <string name="settings_my_tags">我的標籤</string>
     <string name="settings_my_tags_summary">EHentai 網站上的我的標籤</string>
-    <string name="settings_eh_gallery_site">圖庫站台</string>
+    <string name="settings_eh_gallery_site">圖庫站臺</string>
     <string name="settings_eh_launch_page">啟動頁</string>
     <string name="settings_eh_list_mode">列表模式</string>
     <string name="settings_eh_list_mode_detail">詳細資料</string>
@@ -306,8 +311,8 @@
     <string name="settings_eh_show_jpn_title_summary">需同時在 EHentai 網站設定中啟用 Japanese Title</string>
     <string name="settings_eh_show_gallery_pages">顯示圖庫頁數</string>
     <string name="settings_eh_show_gallery_pages_summary">在圖庫列表中顯示頁數</string>
-    <string name="settings_eh_show_gallery_comments">顯示畫廊評論</string>
-    <string name="settings_eh_show_gallery_comments_summary">在畫廊詳情頁中顯示評論</string>
+    <string name="settings_eh_show_gallery_comments">顯示圖庫評論</string>
+    <string name="settings_eh_show_gallery_comments_summary">在圖庫詳情頁中顯示評論</string>
     <string name="settings_eh_show_gallery_comment_threshold">評論分數閥值</string>
     <string name="settings_eh_show_gallery_comment_threshold_summary">隱藏小於或等於設定分數的評論（-101 為停用）</string>
     <string name="settings_eh_show_tag_translations">顯示標籤翻譯</string>
@@ -315,7 +320,7 @@
     <string name="settings_eh_tag_translations_source">補充翻譯（由 EhTagTranslation 提供）</string>
     <string name="settings_eh_tag_translations_source_url">https://github.com/EhTagTranslation/Editor/wiki</string>
     <string name="settings_eh_filter">隱藏圖庫</string>
-    <string name="settings_eh_filter_summary">根據標題、上傳者、標籤、评论者隱藏圖庫或评论</string>
+    <string name="settings_eh_filter_summary">根據標題、上傳者、標籤、評論者隱藏圖庫或評論</string>
     <string name="settings_read_volume_page">使用音量鍵翻頁</string>
     <string name="settings_read_volume_page_fast">快</string>
     <string name="settings_read_volume_page_slow">慢</string>
@@ -332,6 +337,10 @@
     <string name="settings_download_save_as_cbz">儲存為 CBZ 壓縮檔</string>
     <string name="settings_download_archive_metadata">壓縮檔中繼資料</string>
     <string name="settings_download_archive_metadata_summary">下載壓縮檔時產生 ComicInfo.xml</string>
+    <string name="settings_download_reload_metadata">重新載入中繼資料</string>
+    <string name="settings_download_reload_metadata_summary">為標籤可能發生變動的下載項更新 ComicInfo.xml</string>
+    <string name="settings_download_reload_metadata_successfully">成功載入 %d 項</string>
+    <string name="settings_download_reload_metadata_failed">載入中繼資料失敗: %s</string>
     <string name="settings_download_media_scan">允許其他程式進行媒體掃描</string>
     <string name="settings_download_media_scan_summary_on">請別讓別人看到你的相簿</string>
     <string name="settings_download_media_scan_summary_off">大部分相簿軟體將會忽略顯示下載路徑中的影像</string>
@@ -356,7 +365,7 @@
     <string name="settings_advanced_read_cache_size">閱讀快取大小</string>
     <string name="settings_advanced_app_language_title">應用程式介面語言</string>
     <string name="settings_advanced_export_data">匯出檔案</string>
-    <string name="settings_advanced_export_data_summary">儲存資料至外接儲存設備，例如下載列表，快速搜尋列表</string>
+    <string name="settings_advanced_export_data_summary">儲存資料至外接儲存裝置，例如下載列表，快速搜尋列表</string>
     <string name="settings_advanced_export_data_to">已匯出資料至 %s</string>
     <string name="settings_advanced_export_data_failed">無法匯出資料</string>
     <string name="settings_advanced_import_data">匯入檔案</string>
@@ -369,7 +378,7 @@
     <string name="settings_advanced_backup_favorite_success">備份收藏列表成功</string>
     <string name="settings_advanced_backup_favorite_failed">備份收藏列表失敗</string>
     <string name="settings_about">關於</string>
-    <string name="settings_about_declaration_summary">EhViewer 與 E-Hentai.org 無任何聯繫</string>
+    <string name="settings_about_declaration_summary">EhViewer 與 E-Hentai.org 無任何關聯</string>
     <string name="settings_about_author">作者</string>
     <string name="settings_about_latest_release">最新版本</string>
     <string name="settings_about_source">原始碼</string>
@@ -393,7 +402,7 @@
     <string name="delete_favorites_dialog_message">將 %d 項收藏移除？</string>
     <string name="move_favorites_dialog_title">移動收藏</string>
     <string name="default_favorites_collection">預設收藏夾</string>
-    <string name="default_favorites_warning">若啟用此項將無法添加收藏備註</string>
+    <string name="default_favorites_warning">若啟用此項將無法新增收藏備註</string>
     <string name="let_me_select">讓我每次都選擇</string>
     <string name="favorite_note">收藏備註</string>
     <string name="collections">收藏夾</string>
@@ -430,6 +439,7 @@
     <string name="favorite_name">收藏圖庫</string>
     <string name="black_dark_theme">純黑深色主題</string>
     <string name="harmonize_category_color">以動態顏色為分類顏色配色</string>
+    <string name="backup_before_update">更新前備份資料</string>
     <string name="use_ci_update_channel">使用 CI 更新頻道</string>
     <string name="sort_by">排序方式</string>
     <string name="added_time_desc">加入時間 (遞減)</string>
@@ -467,10 +477,10 @@
     <string name="settings_eh_hide_hv_events">隱藏 HV 事件通知</string>
     <string name="copy_trans">複製翻譯</string>
     <string name="dont_show_again">不再顯示</string>
-    <string name="open_settings">打開設定</string>
-    <string name="app_link_not_verified_message">對於 Android 12 及更新的版本，您需要手動增加連結到已驗證連結才能在 EhViewer 中打開 E-Hentai 連結。</string>
+    <string name="open_settings">開啟設定</string>
+    <string name="app_link_not_verified_message">對於 Android 12 及更新的版本，您需要手動增加連結到已驗證連結才能在 EhViewer 中開啟 E-Hentai 連結。</string>
     <string name="app_link_not_verified_title">應用程式連結未驗證</string>
-    <string name="open_by_default">預設打開</string>
+    <string name="open_by_default">預設開啟</string>
     <string name="settings_privacy_require_unlock">需要解鎖</string>
     <string name="settings_privacy_require_unlock_delay">鎖定延遲</string>
     <string name="settings_privacy_require_unlock_delay_summary">離開程式並在 %s 分鐘內返回時不需要解鎖</string>
@@ -483,6 +493,8 @@
     <string name="list_tile_thumb_size">詳情模式下縮圖大小</string>
     <string name="account_name">帳號</string>
     <string name="preload_thumb_aggressively">積極地預載入縮圖</string>
+    <string name="animate_items">列表項目動畫</string>
+    <string name="animate_items_summary">如遇崩潰/低幀率請嘗試停用此項</string>
     <string name="auto_updates">自動檢查更新</string>
     <string name="update_frequency_never">從不</string>
     <string name="update_frequency_daily">每天</string>
@@ -490,7 +502,7 @@
     <string name="update_frequency_weekly">每週</string>
     <string name="update_frequency_biweekly">每兩週</string>
     <string name="update_frequency_monthly">每月</string>
-    <string name="update_failed">更新失败：%s</string>
+    <string name="update_failed">更新失敗：%s</string>
     <string name="new_version_available">有新版本可用！</string>
     <string name="already_latest_version">已是最新版本</string>
     <string name="permission_denied">沒有權限</string>
