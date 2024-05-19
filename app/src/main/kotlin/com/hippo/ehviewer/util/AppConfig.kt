@@ -41,6 +41,8 @@ object AppConfig {
 
     val buildTime = ParserUtils.formatDate(BuildConfig.BUILD_TIME * 1000)
 
+    val isSnapshot = "SNAPSHOT" in BuildConfig.VERSION_NAME
+
     private val externalAppDir: File?
         get() {
             if (Environment.MEDIA_MOUNTED == Environment.getExternalStorageState()) {

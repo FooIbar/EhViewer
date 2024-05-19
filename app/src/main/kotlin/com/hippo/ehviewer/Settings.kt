@@ -13,6 +13,7 @@ import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
+import com.hippo.ehviewer.util.AppConfig
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import java.util.Locale
@@ -146,7 +147,7 @@ object Settings : DataStorePreferences(null) {
     var appLinkVerifyTip by boolPref("app_link_verify_tip", false)
     var enabledSecurity by boolPref("enable_secure", false)
     var backupBeforeUpdate by boolPref("backup_before_update", true)
-    var useCIUpdateChannel by boolPref("ci_update_channel", "SNAPSHOT" in BuildConfig.VERSION_NAME)
+    var useCIUpdateChannel by boolPref("ci_update_channel", AppConfig.isSnapshot)
     var mediaScan by boolPref("media_scan", false).observed { updateWhenKeepMediaStatusChanges() }
     var hasDefaultDownloadLabel by boolPref("has_default_download_label", false)
     var saveParseErrorBody by boolPref("save_parse_error_body", true)
