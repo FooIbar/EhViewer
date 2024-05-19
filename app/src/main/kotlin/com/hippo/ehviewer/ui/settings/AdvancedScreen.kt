@@ -22,6 +22,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -139,12 +140,15 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 entryValueRes = R.array.read_cache_size_entry_values,
                 value = Settings::readCacheSize.observed,
             )
-            val currentLanguage = remember { getAppLanguage() }
+            var currentLanguage by remember { mutableStateOf(getAppLanguage()) }
             val languages = remember { context.getLanguages() }
             DropDownPref(
                 title = stringResource(id = R.string.settings_advanced_app_language_title),
                 defaultValue = currentLanguage,
-                onValueChange = { setAppLanguage(it) },
+                onValueChange = {
+                    setAppLanguage(it)
+                    currentLanguage = it
+                },
                 useSelectedAsSummary = true,
                 entries = languages,
             )
