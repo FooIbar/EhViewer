@@ -37,7 +37,6 @@ object ParserUtils {
         minute()
     }
 
-    @Synchronized
     fun formatDate(time: Long): String {
         return formatter.format(time.toLocalDateTime())
     }

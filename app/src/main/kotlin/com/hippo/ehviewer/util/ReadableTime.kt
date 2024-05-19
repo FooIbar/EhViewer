@@ -49,7 +49,6 @@ object ReadableTime {
         R.plurals.minute,
         R.plurals.second,
     )
-    private val sCalendarLock = Any()
     private val DATE_FORMAT_WITHOUT_YEAR = LocalDate.Format {
         monthName(MonthNames.ENGLISH_ABBREVIATED)
         char(' ')
@@ -93,7 +92,6 @@ object ReadableTime {
         char('-')
         secondFraction(3)
     }
-    private val sDateFormatLock = Any()
     private val resources = appCtx.resources
 
     fun getTimeAgo(time: Long): String {
@@ -128,7 +126,7 @@ object ReadableTime {
                 val days = (diff / DAY_MILLIS).toInt()
                 resources.getString(R.string.some_days_ago, days)
             }
-            else -> synchronized(sCalendarLock) {
+            else -> {
                 val timeZone = TimeZone.currentSystemDefault()
                 val nowDate = nowInstant.toLocalDateTime(timeZone).date
                 val timeDate = time.toLocalDateTime(timeZone).date
@@ -159,11 +157,6 @@ object ReadableTime {
         }
     }
 
-    fun getFilenamableTime(time: Long): String {
-        synchronized(sDateFormatLock) {
-            return FILENAMABLE_DATE_FORMAT.format(
-                time.toLocalDateTime(TimeZone.currentSystemDefault()),
-            )
-        }
-    }
+    fun getFilenamableTime(time: Long): String =
+        FILENAMABLE_DATE_FORMAT.format(time.toLocalDateTime(TimeZone.currentSystemDefault()))
 }
