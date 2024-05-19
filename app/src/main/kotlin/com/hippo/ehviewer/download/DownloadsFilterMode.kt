@@ -20,7 +20,7 @@ enum class DownloadsFilterMode(
     ;
 
     companion object {
-        val Default = CUSTOM
+        val Default = ARTIST
         fun from(flag: Int) = DownloadsFilterMode.entries[flag]
     }
 }
