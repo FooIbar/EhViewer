@@ -60,7 +60,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -639,23 +638,22 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     showSnackbar(signInFirst)
                     return@launchIO
                 }
-                awaitPermissionOrCancel(title = R.string.rate) {
+                val pendingRating = awaitResult(galleryDetail.rating.coerceAtLeast(.5f), title = R.string.rate) {
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                        var rating by remember { mutableFloatStateOf(galleryDetail.rating.coerceAtLeast(.5f)) }
-                        var text by remember { mutableIntStateOf(getRatingText(rating)) }
+                        var text by remember { mutableIntStateOf(getRatingText(expectedValue)) }
                         Text(text = stringResource(id = text), style = MaterialTheme.typography.bodyLarge)
                         Spacer(modifier = Modifier.size(keylineMargin))
                         GalleryRatingBar(
-                            rating = rating,
+                            rating = expectedValue,
                             onRatingChange = {
-                                rating = it.coerceAtLeast(.5f)
-                                text = getRatingText(rating)
+                                expectedValue = it.coerceAtLeast(.5f)
+                                text = getRatingText(expectedValue)
                             },
                         )
                     }
                 }
                 galleryDetail.runSuspendCatching {
-                    EhEngine.rateGallery(apiUid, apiKey, gid, token, rating)
+                    EhEngine.rateGallery(apiUid, apiKey, gid, token, pendingRating)
                 }.onSuccess { result ->
                     galleryInfo = galleryDetail.apply {
                         rating = result.rating
