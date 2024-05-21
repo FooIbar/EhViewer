@@ -3,6 +3,9 @@
   "extends": [
     "config:base"
   ],
+  "ignorePaths": [
+    "**.gradle.kts"
+  ],
   "packageRules": [
     {
       "groupName": "AGP",
@@ -26,11 +29,9 @@
     },
     {
       "groupName": "Kotlin & KSP",
-      "matchDepPrefixes": [
-        "org.jetbrains.kotlin."
-      ],
-      "matchDepNames": [
-        "com.google.devtools.ksp"
+      "matchSourceUrls": [
+        "https://github.com/JetBrains/kotlin",
+        "https://github.com/google/ksp"
       ],
       "recreateWhen": "never"
     },
