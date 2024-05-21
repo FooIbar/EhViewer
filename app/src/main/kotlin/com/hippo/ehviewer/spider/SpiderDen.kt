@@ -43,7 +43,6 @@ import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.openOutputStream
-import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.statement.HttpResponse
@@ -323,9 +322,7 @@ class SpiderDen(val info: GalleryInfo) {
             createFile(COMIC_INFO_FILE)?.also {
                 runCatching {
                     if (info !is GalleryDetail && fetchMetadata) {
-                        withNonCancellableContext {
-                            EhEngine.fillGalleryListByApi(listOf(info))
-                        }
+                        EhEngine.fillGalleryListByApi(listOf(info))
                     }
                     info.getComicInfo().apply {
                         write(it)
