@@ -646,15 +646,15 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                                 pToken,
                                 localShowKey,
                                 previousPToken,
-                            ).let {
-                                check509(it.imageUrl)
-                                imageUrl = it.imageUrl
-                                skipHathKey = it.skipHathKey
-                                originImageUrl = it.originImageUrl
-                            }
-                        }.onFailure {
+                            )
+                        }.getOrElse {
                             forceHtml = true
                             return@repeat
+                        }.let {
+                            check509(it.imageUrl)
+                            imageUrl = it.imageUrl
+                            skipHathKey = it.skipHathKey
+                            originImageUrl = it.originImageUrl
                         }
                     }
 
