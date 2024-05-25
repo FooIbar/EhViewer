@@ -59,7 +59,7 @@ private const val RELEASE_URL = "$REPO_URL/releases"
 
 @Composable
 @Stable
-private fun versionCode() = "${BuildConfig.VERSION_NAME} (${BuildConfig.COMMIT_SHA})\n" + stringResource(R.string.settings_about_build_time, AppConfig.buildTime)
+private fun versionCode() = "${BuildConfig.VERSION_NAME} (${BuildConfig.COMMIT_SHA})\n" + stringResource(R.string.settings_about_commit_time, AppConfig.commitTime)
 
 @Composable
 @Stable

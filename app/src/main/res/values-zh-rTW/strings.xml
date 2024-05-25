@@ -382,7 +382,7 @@
     <string name="settings_about_latest_release">最新版本</string>
     <string name="settings_about_source">原始碼</string>
     <string name="settings_about_version">版本號碼</string>
-    <string name="settings_about_build_time">於 %s 建置</string>
+    <string name="settings_about_commit_time">於 %s 提交</string>
     <string name="settings_about_check_for_updates">檢查更新</string>
     <string name="license">授權條款</string>
     <!-- ExcludedLanguagesScene -->
