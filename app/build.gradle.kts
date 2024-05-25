@@ -1,6 +1,5 @@
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
-import java.time.Instant
 
 val isRelease: Boolean
     get() = gradle.startParameter.taskNames.any { it.contains("Release") }
@@ -50,6 +49,10 @@ android {
         commandLine = "git rev-parse --short=7 HEAD".split(' ')
     }.standardOutput.asText.get().trim()
 
+    val commitTime = providers.exec {
+        commandLine = "git log -1 --format=%ct".split(' ')
+    }.standardOutput.asText.get().trim()
+
     val repoName = providers.exec {
         commandLine = "git remote get-url origin".split(' ')
     }.standardOutput.asText.get().trim().removePrefix("https://github.com/").removePrefix("git@github.com:")
@@ -83,6 +86,7 @@ android {
         )
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
+        buildConfigField("long", "COMMIT_TIME", commitTime)
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
         buildConfigField("String", "CHROME_VERSION", "\"$chromeVersion\"")
         ndk {
@@ -138,11 +142,9 @@ android {
             isShrinkResources = true
             proguardFiles("proguard-rules.pro")
             signingConfig = signConfig
-            buildConfigField("long", "BUILD_TIME", "${Instant.now().epochSecond}")
         }
         debug {
             applicationIdSuffix = ".debug"
-            buildConfigField("long", "BUILD_TIME", "0")
             lint {
                 abortOnError = false
             }
