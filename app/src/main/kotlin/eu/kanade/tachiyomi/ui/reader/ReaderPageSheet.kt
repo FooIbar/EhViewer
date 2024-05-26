@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -51,7 +52,10 @@ fun ReaderPageSheetMeta(
         Spacer(modifier = Modifier.size(32.dp))
         Text(text = stringResource(id = text))
     }
-    Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
+    Column(
+        modifier = Modifier.fillMaxSize() // Workaround for https://issuetracker.google.com/341594885
+            .verticalScroll(rememberScrollState()).navigationBarsPadding(),
+    ) {
         Item(icon = Icons.Default.Refresh, text = R.string.refresh, onClick = retry)
         Item(icon = Icons.Default.Refresh, text = R.string.refresh_original, onClick = retryOrigin)
         Item(icon = Icons.Default.Share, text = R.string.action_share, onClick = share)
