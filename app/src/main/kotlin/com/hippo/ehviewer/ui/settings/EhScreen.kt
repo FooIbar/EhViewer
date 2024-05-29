@@ -84,7 +84,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
     fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
-    val signin = EhCookieStore.hasSignedIn()
+    val hasSignedIn by Settings.hasSignedIn.collectAsState()
     val dialogState = LocalDialogState.current
     Scaffold(
         topBar = {
@@ -120,9 +120,9 @@ fun EhScreen(navigator: DestinationsNavigator) {
                         dismissText = R.string.settings_eh_clear_igneous,
                         showCancelButton = cookies.last().second != null,
                         onCancelButtonClick = { EhCookieStore.clearIgneous() },
-                        secure = signin,
+                        secure = hasSignedIn,
                     ) {
-                        if (signin) {
+                        if (hasSignedIn) {
                             Column {
                                 val warning = stringResource(id = R.string.settings_eh_identity_cookies_signed)
                                 val str = cookies.joinToString("\n") { (k, v) -> "$k: $v" }
@@ -153,7 +153,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                     }
                 }
             }
-            if (signin) {
+            if (hasSignedIn) {
                 val placeholder = stringResource(id = R.string.please_wait)
                 val resetImageLimitSucceed = stringResource(id = R.string.reset_limits_succeed)
                 var result by rememberSaveable { mutableStateOf<HomeParser.Result?>(null) }
@@ -263,7 +263,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                     val items = buildList {
                         add(disabled)
                         add(localFav)
-                        if (signin) {
+                        if (hasSignedIn) {
                             addAll(Settings.favCat)
                         }
                     }
@@ -380,7 +380,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_eh_metered_network_warning),
                 value = Settings.meteredNetworkWarning::value,
             )
-            if (signin) {
+            if (hasSignedIn) {
                 SwitchPreference(
                     title = stringResource(id = R.string.settings_eh_show_jpn_title),
                     summary = stringResource(id = R.string.settings_eh_show_jpn_title_summary),

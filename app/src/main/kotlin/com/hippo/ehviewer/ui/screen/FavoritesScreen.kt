@@ -57,7 +57,6 @@ import androidx.paging.filter
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
@@ -100,6 +99,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val localFavName = stringResource(R.string.local_favorites)
     val cloudFavName = stringResource(R.string.cloud_favorites)
     val animateItems by Settings.animateItems.collectAsState()
+    val hasSignedIn by Settings.hasSignedIn.collectAsState()
 
     // Meta State
     var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
@@ -192,7 +192,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
             }
         }
         val localFav = stringResource(id = R.string.local_favorites) to localFavCount
-        val faves = if (EhCookieStore.hasSignedIn()) {
+        val faves = if (hasSignedIn) {
             arrayOf(
                 localFav,
                 stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
@@ -399,7 +399,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 // First is local favorite, the other 10 is cloud favorite
                 val items = buildList {
                     add(localFavName)
-                    if (EhCookieStore.hasSignedIn()) {
+                    if (hasSignedIn) {
                         addAll(Settings.favCat)
                     }
                 }
