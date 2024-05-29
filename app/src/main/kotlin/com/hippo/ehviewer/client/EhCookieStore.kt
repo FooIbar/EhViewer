@@ -12,13 +12,8 @@ import io.ktor.http.renderSetCookieHeader
 
 object EhCookieStore : CookiesStorage {
     private val manager = CookieManager.getInstance()
-    fun signOut() = manager.removeAllCookies(null)
+    fun removeAllCookies() = manager.removeAllCookies(null)
     fun contains(url: String, name: String) = load(Url(url)).fastAny { it.name == name }
-
-    fun hasSignedIn(): Boolean {
-        val url = EhUrl.HOST_E
-        return contains(url, KEY_IPB_MEMBER_ID) && contains(url, KEY_IPB_PASS_HASH)
-    }
 
     const val KEY_IPB_MEMBER_ID = "ipb_member_id"
     const val KEY_IPB_PASS_HASH = "ipb_pass_hash"

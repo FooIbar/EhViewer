@@ -2,7 +2,6 @@ package com.hippo.ehviewer
 
 import android.app.UiModeManager
 import androidx.appcompat.app.AppCompatDelegate
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dailycheck.updateDailyCheckWork
@@ -54,7 +53,7 @@ fun updateWhenRequestNewsChanges() {
 }
 
 fun updateWhenGallerySiteChanges() {
-    if (!Settings.needSignIn && EhCookieStore.hasSignedIn()) {
+    if (Settings.hasSignedIn.value) {
         collectScope.launchIO {
             runCatching {
                 EhEngine.getUConfig()

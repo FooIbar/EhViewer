@@ -74,7 +74,6 @@ import androidx.core.text.parseAsHtml
 import com.hippo.ehviewer.EhApplication
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
 import com.hippo.ehviewer.client.EhUrl
@@ -244,7 +243,7 @@ fun GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composi
             }
         }
     }
-    val hasSignedIn = remember { EhCookieStore.hasSignedIn() }
+    val hasSignedIn by Settings.hasSignedIn.collectAsState()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {

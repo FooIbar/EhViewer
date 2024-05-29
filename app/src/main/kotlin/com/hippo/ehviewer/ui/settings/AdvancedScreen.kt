@@ -36,9 +36,9 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.util.AppConfig
@@ -215,7 +215,8 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     }
                 }
             }
-            if (EhCookieStore.hasSignedIn()) {
+            val hasSignedIn by Settings.hasSignedIn.collectAsState()
+            if (hasSignedIn) {
                 val backupNothing = stringResource(id = R.string.settings_advanced_backup_favorite_nothing)
                 val backupFailed = stringResource(id = R.string.settings_advanced_backup_favorite_failed)
                 val backupSucceed = stringResource(id = R.string.settings_advanced_backup_favorite_success)
