@@ -153,10 +153,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Destination<RootGraph>
 @Composable
-fun HomePageScreen(navigator: DestinationsNavigator) {
-    val hasSignedIn by Settings.hasSignedIn.collectAsState()
-    GalleryListScreen(ListUrlBuilder(category = if (hasSignedIn) EhUtils.NONE else EhUtils.NON_H), navigator)
-}
+fun HomePageScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(), navigator)
 
 @Destination<RootGraph>
 @Composable

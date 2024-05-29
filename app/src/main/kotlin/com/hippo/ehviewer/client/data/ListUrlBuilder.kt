@@ -262,6 +262,7 @@ data class ListUrlBuilder(
     fun build(): String {
         return when (mode) {
             MODE_NORMAL, MODE_SUBSCRIPTION -> ehUrl(EhUrl.WATCHED_PATH.takeIf { mode == MODE_SUBSCRIPTION }) {
+                val category = if (!Settings.hasSignedIn.value && category <= 0) EhUtils.NON_H else category
                 if (category > 0) {
                     addQueryParameter("f_cats", (category.inv() and EhUtils.ALL_CATEGORY).toString())
                 }
