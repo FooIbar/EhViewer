@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
@@ -133,6 +134,10 @@ fun FabLayout(
         transform { onEachLatest { state.waitCollapse() } }
     }
 
+    val density = LocalDensity.current
+    val interval = remember(density) { with(density) { FabInterval.roundToPx() } }
+    val padding = remember(density) { with(density) { FabPadding.roundToPx() } }
+
     if (updatedExpanded && autoCancel) {
         Spacer(
             modifier = Modifier.fillMaxSize().pointerInput(Unit) {
@@ -174,7 +179,7 @@ fun FabLayout(
                                 }
                             },
                             modifier = Modifier.padding(20.dp).offset {
-                                val distance = lerp(0, 150 * (size - index) + 50, animatedProgress)
+                                val distance = lerp(0, interval * (size - index) + padding, animatedProgress)
                                 IntOffset(0, -distance)
                             },
                         ) {
@@ -210,4 +215,6 @@ private fun buildFab(builder: FabBuilder.() -> Unit) = buildList {
     }
 }
 
+private val FabInterval = 56.dp // Small FAB height + 16 dp
+private val FabPadding = 8.dp // (FAB height - small FAB height) / 2
 const val FAB_ANIMATE_TIME = 300
