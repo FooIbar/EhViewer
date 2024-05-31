@@ -193,7 +193,8 @@ fun SearchBarScreen(
     }
 
     fun onApplySearch() {
-        val query = searchFieldState.text.trim().toString()
+        // May have invalid whitespaces if pasted from clipboard, replace them with spaces
+        val query = searchFieldState.text.trim().replace(WhitespaceRegex, " ")
         if (query.isNotEmpty()) {
             scope.launchIO {
                 mSearchDatabase.deleteQuery(query)
@@ -340,3 +341,5 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String {
         }
     }
 }
+
+private val WhitespaceRegex = Regex("\\s+")
