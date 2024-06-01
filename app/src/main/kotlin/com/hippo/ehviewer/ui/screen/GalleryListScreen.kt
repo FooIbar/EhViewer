@@ -385,7 +385,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     stickyHeader {
                         HorizontalDivider()
                     }
-                    itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { index, item ->
+                    itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { itemIndex, item ->
+                        val index by rememberUpdatedState(itemIndex)
                         ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
                             // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                             val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
@@ -399,11 +400,10 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                                         }.onSuccess {
                                             EhDB.deleteQuickSearch(item)
                                             with(quickSearchList) {
-                                                val removeIndex = indexOf(item)
-                                                subList(removeIndex + 1, size).forEach {
+                                                subList(index + 1, size).forEach {
                                                     it.position--
                                                 }
-                                                removeAt(removeIndex)
+                                                removeAt(index)
                                             }
                                         }.onFailure {
                                             dismissState.reset()
