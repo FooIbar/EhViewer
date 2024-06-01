@@ -536,8 +536,7 @@ val LocalSnackBarFabPadding = compositionLocalOf<State<Dp>> { error("Composition
 
 @Composable
 fun DrawerHandle(enabled: Boolean) {
-    val updated by rememberUpdatedState(enabled)
-    if (updated) {
+    if (enabled) {
         val current = currentCompositeKeyHash
         val handle = LocalDrawerHandle.current
         DisposableEffect(current) {
