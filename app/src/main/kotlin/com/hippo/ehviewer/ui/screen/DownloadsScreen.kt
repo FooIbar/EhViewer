@@ -333,7 +333,8 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 )
             }
 
-            itemsIndexed(groupList, key = { _, (id) -> id }) { index, (id, label) ->
+            itemsIndexed(groupList, key = { _, (id) -> id }) { itemIndex, (id, label) ->
+                val index by rememberUpdatedState(itemIndex)
                 val item by rememberUpdatedState(label)
                 // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                 val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
