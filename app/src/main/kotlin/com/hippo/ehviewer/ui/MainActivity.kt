@@ -415,7 +415,7 @@ class MainActivity : EhActivity() {
                             }
                         },
                         drawerState = navDrawerState,
-                        gesturesEnabled = !drawerLocked || navDrawerState.isOpen,
+                        gesturesEnabled = !drawerLocked && sideSheetState.isClosed || navDrawerState.isOpen,
                     ) {
                         val sheet = sideSheet.firstOrNull()
                         val radius by remember {
