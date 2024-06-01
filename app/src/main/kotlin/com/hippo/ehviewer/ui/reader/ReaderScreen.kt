@@ -48,7 +48,6 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
 import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
-import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.ramcosta.composedestinations.annotation.Destination
@@ -67,7 +66,6 @@ import moe.tarsin.kt.unreachable
 @Destination<RootGraph>
 @Composable
 fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsNavigator) = composing(navigator) {
-    LockDrawer(true)
     ConfigureKeepScreenOn()
     val pageLoader = remember {
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile

@@ -47,7 +47,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -67,7 +66,6 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
-import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberCompositionActiveState
 import com.hippo.ehviewer.ui.tools.thenIf
@@ -99,23 +97,22 @@ suspend fun SearchDao.suggestions(prefix: String, limit: Int) =
 
 @Composable
 fun SearchBarScreen(
+    onApplySearch: (String) -> Unit,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
     title: String? = null,
     searchFieldState: TextFieldState = rememberTextFieldState(),
     searchFieldHint: String? = null,
-    onApplySearch: (String) -> Unit,
-    onSearchExpanded: () -> Unit,
-    onSearchHidden: () -> Unit,
     suggestionProvider: SuggestionProvider? = null,
     tagNamespace: Boolean = false,
-    searchBarOffsetY: () -> Int,
-    trailingIcon: @Composable () -> Unit,
+    searchBarOffsetY: () -> Int = { 0 },
+    trailingIcon: @Composable () -> Unit = {},
     filter: @Composable (() -> Unit)? = null,
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     var mSuggestionList by remember { mutableStateOf(emptyList<Suggestion>()) }
     val mSearchDatabase = searchDatabase.searchDao()
-    var expanded by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
     val dialogState = LocalDialogState.current
@@ -166,19 +163,6 @@ fun SearchBarScreen(
         mSuggestionList = mergedSuggestionFlow().toList()
     }
 
-    var shouldLockDrawer by remember { mutableStateOf(false) }
-    LockDrawer(shouldLockDrawer)
-
-    fun onSearchViewExpanded() {
-        onSearchExpanded()
-        shouldLockDrawer = true
-    }
-
-    fun onSearchViewHidden() {
-        shouldLockDrawer = false
-        onSearchHidden()
-    }
-
     if (expanded) {
         LaunchedEffect(Unit) {
             snapshotFlow { searchFieldState.text }.collectLatest {
@@ -188,8 +172,7 @@ fun SearchBarScreen(
     }
 
     fun hideSearchView() {
-        onSearchViewHidden()
-        expanded = false
+        onExpandedChange(false)
     }
 
     fun onApplySearch() {
@@ -229,14 +212,6 @@ fun SearchBarScreen(
         // https://issuetracker.google.com/337191298
         // Workaround for can't exit SearchBar due to refocus in non-touch mode
         Box(Modifier.size(1.dp).focusable())
-        val onExpandedChange = { v: Boolean ->
-            if (v) {
-                onSearchViewExpanded()
-            } else {
-                onSearchViewHidden()
-            }
-            expanded = v
-        }
         val activeState = rememberCompositionActiveState()
         SearchBar(
             modifier = Modifier.align(Alignment.TopCenter).thenIf(!expanded) { offset { IntOffset(0, searchBarOffsetY()) } }

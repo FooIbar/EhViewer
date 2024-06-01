@@ -96,8 +96,8 @@ import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.Download
+import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.LocalSideSheetState
-import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.confirmRemoveDownloadRange
 import com.hippo.ehviewer.ui.main.DownloadCard
@@ -139,6 +139,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val filterMode by Settings.downloadFilterMode.collectAsState { DownloadsFilterMode.from(it) }
     var filterState by rememberSaveable { mutableStateOf(DownloadsFilterState(filterMode, Settings.recentDownloadLabel.value)) }
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
+    var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     val animateItems by Settings.animateItems.collectAsState()
 
@@ -146,7 +147,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, DownloadInfo>() }
     val selectMode by rememberUpdatedState(checkedInfoMap.isNotEmpty())
-    LockDrawer(selectMode)
+    DrawerHandle(!selectMode && !searchBarExpanded)
 
     val density = LocalDensity.current
     val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
@@ -436,14 +437,15 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     }
 
     SearchBarScreen(
+        onApplySearch = { filterState = filterState.copy(keyword = it) },
+        expanded = searchBarExpanded,
+        onExpandedChange = {
+            searchBarExpanded = it
+            fabHidden = it
+            if (it) checkedInfoMap.clear()
+        },
         title = title,
         searchFieldHint = hint,
-        onApplySearch = { filterState = filterState.copy(keyword = it) },
-        onSearchExpanded = {
-            checkedInfoMap.clear()
-            fabHidden = true
-        },
-        onSearchHidden = { fabHidden = false },
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             var expanded by remember { mutableStateOf(false) }

@@ -39,7 +39,6 @@ import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ktbuilder.launchIn
-import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.navToReader
@@ -59,7 +58,6 @@ import moe.tarsin.coroutines.runSuspendCatching
 @Destination<RootGraph>
 @Composable
 fun GalleryPreviewScreen(detail: GalleryDetail, toNextPage: Boolean, navigator: DestinationsNavigator) = composing(navigator) {
-    LockDrawer(true)
     val scrollBehaviour = TopAppBarDefaults.pinnedScrollBehavior()
     val pgSize = detail.previewList.size
     val state = rememberLazyGridState(initialFirstVisibleItemIndex = if (toNextPage) pgSize else 0)
