@@ -348,15 +348,15 @@ class MainActivity : EhActivity() {
                 onPauseOrDispose { job.cancel() }
             }
             val currentDestination by navController.currentDestinationAsState()
-            val lockDrawerHandle = remember { mutableStateListOf<Int>() }
+            val drawerHandle = remember { mutableStateListOf<Int>() }
             var snackbarFabPadding by remember { mutableStateOf(0.dp) }
-            val drawerLocked = lockDrawerHandle.isNotEmpty()
+            val drawerEnabled = drawerHandle.isNotEmpty()
             val density = LocalDensity.current
             val adaptiveInfo = currentWindowAdaptiveInfo()
             CompositionLocalProvider(
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
-                LocalDrawerLockHandle provides lockDrawerHandle,
+                LocalDrawerHandle provides drawerHandle,
                 LocalSnackBarHostState provides snackbarState,
                 LocalSnackBarFabPadding provides animateDpAsState(snackbarFabPadding, label = "SnackbarFabPadding"),
                 LocalWindowSizeClass provides adaptiveInfo.windowSizeClass,
@@ -415,7 +415,7 @@ class MainActivity : EhActivity() {
                             }
                         },
                         drawerState = navDrawerState,
-                        gesturesEnabled = !drawerLocked && sideSheetState.isClosed || navDrawerState.isOpen,
+                        gesturesEnabled = drawerEnabled && sideSheetState.isClosed || navDrawerState.isOpen,
                     ) {
                         val sheet = sideSheet.firstOrNull()
                         val radius by remember {
@@ -444,7 +444,7 @@ class MainActivity : EhActivity() {
                                 }
                             },
                             drawerState = sideSheetState,
-                            gesturesEnabled = sheet != null && !drawerLocked,
+                            gesturesEnabled = sheet != null && drawerEnabled,
                         ) {
                             DestinationsNavHost(
                                 navGraph = NavGraphs.root,
@@ -530,16 +530,16 @@ class MainActivity : EhActivity() {
 
 val LocalNavDrawerState = compositionLocalOf<DrawerState> { error("CompositionLocal LocalNavDrawerState not present!") }
 val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }
-val LocalDrawerLockHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerLockHandle not present!") }
+val LocalDrawerHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerHandle not present!") }
 val LocalSnackBarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackBarHostState not present!") }
 val LocalSnackBarFabPadding = compositionLocalOf<State<Dp>> { error("CompositionLocal LocalSnackBarFabPadding not present!") }
 
 @Composable
-fun LockDrawer(value: Boolean) {
-    val updated by rememberUpdatedState(value)
+fun DrawerHandle(enabled: Boolean) {
+    val updated by rememberUpdatedState(enabled)
     if (updated) {
         val current = currentCompositeKeyHash
-        val handle = LocalDrawerLockHandle.current
+        val handle = LocalDrawerHandle.current
         DisposableEffect(current) {
             handle.add(current)
             onDispose {

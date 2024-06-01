@@ -109,6 +109,7 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
+import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.composing
@@ -172,12 +173,15 @@ fun ToplistScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlB
 fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = composing(navigator) {
     val searchFieldState = rememberTextFieldState()
     var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
+    var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
 
     var category by rememberMutableStateInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
     var advancedSearchOption by rememberMutableStateInDataStore("AdvancedSearchOption") { AdvancedSearchOption() }
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+
+    DrawerHandle(!searchBarExpanded)
 
     LaunchedEffect(urlBuilder) {
         if (urlBuilder.category != EhUtils.NONE) category = urlBuilder.category
@@ -538,12 +542,15 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     }
 
     SearchBarScreen(
+        onApplySearch = ::onApplySearch,
+        expanded = searchBarExpanded,
+        onExpandedChange = {
+            searchBarExpanded = it
+            fabHidden = it
+        },
         title = suitableTitle,
         searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
-        onApplySearch = ::onApplySearch,
-        onSearchExpanded = { fabHidden = true },
-        onSearchHidden = { fabHidden = false },
         suggestionProvider = {
             GalleryDetailUrlParser.parse(it, false)?.run {
                 GalleryDetailUrlSuggestion(gid, token)

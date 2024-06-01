@@ -63,8 +63,8 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
+import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.LocalSideSheetState
-import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
@@ -103,6 +103,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
 
     // Meta State
     var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
+    var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
 
     // Derived State
@@ -224,17 +225,18 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
     var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
     val selectMode = checkedInfoMap.isNotEmpty()
-    LockDrawer(selectMode)
+    DrawerHandle(!selectMode && !searchBarExpanded)
 
     SearchBarScreen(
+        onApplySearch = { refresh(FavListUrlBuilder(urlBuilder.favCat, it)) },
+        expanded = searchBarExpanded,
+        onExpandedChange = {
+            searchBarExpanded = it
+            fabHidden = it
+            if (it) checkedInfoMap.clear()
+        },
         title = title,
         searchFieldHint = searchBarHint,
-        onApplySearch = { refresh(FavListUrlBuilder(urlBuilder.favCat, it)) },
-        onSearchExpanded = {
-            checkedInfoMap.clear()
-            fabHidden = true
-        },
-        onSearchHidden = { fabHidden = false },
         tagNamespace = !isLocalFav,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
