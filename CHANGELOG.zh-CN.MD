@@ -1,5 +1,22 @@
 # 变更日志
 
+## [1.11.6-RC1] - 2024-06-02
+
+### 改进
+
+* 下载列表默认显示全部下载项目
+* 替换搜索文本中的换行符为空格 [#1258](https://github.com/FooIbar/EhViewer/issues/1258)
+
+### Bug 修复
+
+* 评价画廊时未使用输入的评分
+* 搜索时意外选择 Non-H 类别 [#1246](https://github.com/FooIbar/EhViewer/issues/1246)
+* 侧边栏与导航抽屉重叠 [#1262](https://github.com/FooIbar/EhViewer/issues/1262)
+* 快速搜索/下载标签排序失效 [#1267](https://github.com/FooIbar/EhViewer/issues/1267)
+* 加载压缩包/种子列表出错时 UI 冻结
+* 低版本 Android 上某些 UI 被遮挡
+
+
 ## [1.11.5] - 2024-05-19
 
 ### 重大变更
