@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.hippo.ehviewer.R.string
 import com.hippo.ehviewer.ui.tools.DialogState
-import kotlin.coroutines.Continuation
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
 @Composable
@@ -48,8 +48,7 @@ fun ProgressDialog() {
 
 suspend fun <R> DialogState.bgWork(work: suspend () -> R) = try {
     suspendCoroutineUninterceptedOrReturn { cont ->
-        @Suppress("UNCHECKED_CAST")
-        (work as (Continuation<R>) -> Any?)(cont).also { r ->
+        work.startCoroutineUninterceptedOrReturn(cont).also { r ->
             if (r == COROUTINE_SUSPENDED) content = { ProgressDialog() }
         }
     }
