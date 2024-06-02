@@ -108,7 +108,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_advanced_dump_logcat),
                 summary = stringResource(id = R.string.settings_advanced_dump_logcat_summary),
                 contract = ActivityResultContracts.CreateDocument("application/zip"),
-                key = "log-" + ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".zip",
+                key = "log-" + ReadableTime.getFilenamableTime() + ".zip",
             ) { uri ->
                 uri?.run {
                     context.runCatching {
@@ -124,7 +124,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                                     zipOs.putNextEntry(entry)
                                     file.inputStream().use { it.copyTo(zipOs) }
                                 }
-                                val logcatEntry = ZipEntry("logcat-" + ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".txt")
+                                val logcatEntry = ZipEntry("logcat-" + ReadableTime.getFilenamableTime() + ".txt")
                                 zipOs.putNextEntry(logcatEntry)
                                 Crash.collectInfo(zipOs.writer())
                                 Runtime.getRuntime().exec("logcat -d").inputStream.use { it.copyTo(zipOs) }
@@ -180,7 +180,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 }
             }
             val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)
-            val now = ReadableTime.getFilenamableTime(System.currentTimeMillis())
+            val now = ReadableTime.getFilenamableTime()
             LauncherPreference(
                 title = stringResource(id = R.string.settings_advanced_export_data),
                 summary = stringResource(id = R.string.settings_advanced_export_data_summary),

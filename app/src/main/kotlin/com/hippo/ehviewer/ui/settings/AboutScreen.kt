@@ -51,7 +51,6 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import moe.tarsin.coroutines.runSuspendCatching
 
 private const val REPO_URL = "https://github.com/${BuildConfig.REPO_NAME}"
@@ -154,7 +153,7 @@ suspend fun DialogState.showNewVersion(context: Context, release: Release) {
         }
     }
     if (Settings.backupBeforeUpdate) {
-        val time = ReadableTime.getFilenamableTime(Clock.System.now().toEpochMilliseconds())
+        val time = ReadableTime.getFilenamableTime()
         downloadLocation.createFile("$time.db")?.let {
             EhDB.exportDB(context, it)
         }
