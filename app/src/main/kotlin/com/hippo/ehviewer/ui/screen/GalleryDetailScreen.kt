@@ -162,6 +162,7 @@ import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -292,7 +293,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
     }
 
     val archiveResult = remember(galleryInfo) {
-        async(Dispatchers.IO, CoroutineStart.LAZY) {
+        async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
             val detail = galleryInfo as GalleryDetail
             EhEngine.getArchiveList(detail.archiveUrl!!, gid, token)
         }
@@ -564,7 +565,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             val downloadTorrentStarted = stringResource(R.string.download_torrent_started)
             val noTorrents = stringResource(R.string.no_torrents)
             val torrentResult = remember(galleryDetail) {
-                async(Dispatchers.IO, CoroutineStart.LAZY) {
+                async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
                     EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
                 }
             }
