@@ -1074,7 +1074,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                     } else {
                                         val info = galleryInfo!!
                                         val uri = awaitActivityResult(
-                                            CreateDocument("application/x-cbz"),
+                                            CreateDocument("application/vnd.comicbook+zip"),
                                             EhUtils.getSuitableTitle(info) + ".cbz",
                                         )
                                         val dirname = downloadInfo?.dirname
