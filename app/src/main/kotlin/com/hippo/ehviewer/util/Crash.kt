@@ -62,7 +62,7 @@ object Crash {
 
     fun saveCrashLog(t: Throwable) {
         val dir = AppConfig.externalCrashDir ?: return
-        val nowString = ReadableTime.getFilenamableTime(System.currentTimeMillis())
+        val nowString = ReadableTime.getFilenamableTime()
         val fileName = "crash-$nowString.log"
         val file = File(dir, fileName)
         runCatching {

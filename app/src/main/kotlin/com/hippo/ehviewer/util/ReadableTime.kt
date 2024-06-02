@@ -18,6 +18,7 @@ package com.hippo.ehviewer.util
 import com.hippo.ehviewer.R
 import java.util.Locale
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -157,6 +158,6 @@ object ReadableTime {
         }
     }
 
-    fun getFilenamableTime(time: Long): String =
+    fun getFilenamableTime(time: Instant = Clock.System.now()): String =
         FILENAMABLE_DATE_FORMAT.format(time.toLocalDateTime(TimeZone.currentSystemDefault()))
 }
