@@ -46,6 +46,7 @@ import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.getAppLanguage
 import com.hippo.ehviewer.util.getLanguages
+import com.hippo.ehviewer.util.isAtLeastV
 import com.hippo.ehviewer.util.setAppLanguage
 import com.hippo.unifile.asUniFile
 import com.jamal.composeprefs3.ui.prefs.DropDownPref
@@ -179,11 +180,12 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 }
             }
             val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)
+            val now = ReadableTime.getFilenamableTime(System.currentTimeMillis())
             LauncherPreference(
                 title = stringResource(id = R.string.settings_advanced_export_data),
                 summary = stringResource(id = R.string.settings_advanced_export_data_summary),
                 contract = ActivityResultContracts.CreateDocument("application/vnd.sqlite3"),
-                key = ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".db",
+                key = if (isAtLeastV) now else "$now.db",
             ) { uri ->
                 uri?.let {
                     context.runCatching {
@@ -202,7 +204,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_advanced_import_data),
                 summary = stringResource(id = R.string.settings_advanced_import_data_summary),
                 contract = ActivityResultContracts.GetContent(),
-                key = "application/octet-stream",
+                key = if (isAtLeastV) "application/vnd.sqlite3" else "application/octet-stream",
             ) { uri ->
                 uri?.let {
                     context.runCatching {
