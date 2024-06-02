@@ -77,7 +77,7 @@ compose-ui-util = { module = "androidx.compose.ui:ui-util" }
 compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "compose-destinations" }
 compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "compose-destinations" }
 
-material-motion-core = "io.github.fornewid:material-motion-compose-core:1.2.0"
+material-motion-core = "io.github.fornewid:material-motion-compose-core:1.2.1"
 
 cronet-embedded = "org.chromium.net:cronet-embedded:119.6045.31"
 
