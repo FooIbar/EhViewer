@@ -453,7 +453,7 @@ class MainActivity : EhActivity() {
                                     DestinationsNavHost(
                                         navGraph = NavGraphs.root,
                                         startRoute = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
-                                        defaultTransitions = rememberEhNavAnim(),
+                                        // defaultTransitions = rememberEhNavAnim(),
                                         navController = navController,
                                     )
                                 }
