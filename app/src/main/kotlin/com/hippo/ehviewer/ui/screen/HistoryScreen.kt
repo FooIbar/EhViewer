@@ -16,7 +16,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
+import androidx.compose.material3.fork.SwipeToDismissBox
+import androidx.compose.material3.fork.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -47,13 +48,13 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.History
+import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
-import com.hippo.ehviewer.ui.tools.SwipeToDismissBox2
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -71,8 +72,11 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
     val hint = stringResource(R.string.search_bar_hint, title)
     val animateItems by Settings.animateItems.collectAsState()
 
+    var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     var keyword by rememberSaveable { mutableStateOf("") }
+
+    DrawerHandle(!searchBarExpanded)
 
     val density = LocalDensity.current
     val historyData = rememberInVM {
@@ -86,14 +90,14 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
     }.collectAsLazyPagingItems()
     FavouriteStatusRouter.Observe(historyData)
     SearchBarScreen(
-        title = title,
-        searchFieldHint = hint,
         onApplySearch = {
             keyword = it
             historyData.refresh()
         },
-        onSearchExpanded = {},
-        onSearchHidden = {},
+        expanded = searchBarExpanded,
+        onExpandedChange = { searchBarExpanded = it },
+        title = title,
+        searchFieldHint = hint,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             IconButton(onClick = {
@@ -142,10 +146,11 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
                             true
                         },
                     )
-                    SwipeToDismissBox2(
+                    SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {},
                         modifier = Modifier.thenIf(animateItems) { animateItem() },
+                        enableDismissFromStartToEnd = false,
                     ) {
                         GalleryInfoListItem(
                             onClick = { navigate(info.asDst()) },

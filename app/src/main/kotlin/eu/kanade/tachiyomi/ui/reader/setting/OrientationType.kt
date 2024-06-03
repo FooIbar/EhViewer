@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.setting
 
 import android.content.pm.ActivityInfo
-import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.icons.EhIcons
@@ -11,7 +10,13 @@ import com.hippo.ehviewer.icons.reader.Portrait
 import com.hippo.ehviewer.icons.reader.PortraitLocked
 import com.hippo.ehviewer.icons.reader.ScreenRotation
 
-enum class OrientationType(val prefValue: Int, val flag: Int, @StringRes val stringRes: Int, val icon: ImageVector, val flagValue: Int) {
+enum class OrientationType(
+    override val prefValue: Int,
+    val flag: Int,
+    override val stringRes: Int,
+    override val icon: ImageVector,
+    override val flagValue: Int,
+) : PreferenceType {
     DEFAULT(0, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, R.string.label_default, EhIcons.Reader.ScreenRotation, 0x00000000),
     FREE(1, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, R.string.rotation_free, EhIcons.Reader.ScreenRotation, 0x00000008),
     PORTRAIT(2, ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT, R.string.rotation_portrait, EhIcons.Reader.Portrait, 0x00000010),

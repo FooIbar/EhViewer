@@ -152,9 +152,9 @@ object EhUtils {
     val categoryTextColor = Color(0xffe6e0e9)
 
     fun signOut() {
-        EhCookieStore.signOut()
-        Settings.avatar = null
-        Settings.displayName = null
+        EhCookieStore.removeAllCookies()
+        Settings.displayName.value = null
+        Settings.hasSignedIn.value = false
         Settings.gallerySite = EhUrl.SITE_E
         Settings.needSignIn = true
     }

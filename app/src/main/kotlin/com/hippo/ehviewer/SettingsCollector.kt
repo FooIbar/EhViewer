@@ -2,8 +2,6 @@ package com.hippo.ehviewer
 
 import android.app.UiModeManager
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dailycheck.updateDailyCheckWork
@@ -26,15 +24,6 @@ fun <T, R : PrefDelegate<T>> R.observed(func: (Unit) -> Unit) = apply { collectS
 fun <T, R : Settings.Delegate<T>> R.observed(func: (Unit) -> Unit) = apply { collectScope.launch { flowGetter().collect(func) } }
 fun <T, R : Settings.Delegate<T>> R.emitTo(flow: MutableSharedFlow<Unit>) = apply { collectScope.launch { flowGetter().collect { flow.emit(Unit) } } }
 fun <T, R : PrefDelegate<T>> R.emitTo(flow: MutableSharedFlow<Unit>) = apply { collectScope.launch { changesFlow().collect { flow.emit(Unit) } } }
-
-fun updateWhenLocaleChanges() {
-    val newValue = Settings.language
-    if ("system" == newValue) {
-        AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
-    } else {
-        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(newValue))
-    }
-}
 
 fun updateWhenKeepMediaStatusChanges() {
     collectScope.launchIO {
@@ -64,7 +53,7 @@ fun updateWhenRequestNewsChanges() {
 }
 
 fun updateWhenGallerySiteChanges() {
-    if (!Settings.needSignIn && EhCookieStore.hasSignedIn()) {
+    if (Settings.hasSignedIn.value) {
         collectScope.launchIO {
             runCatching {
                 EhEngine.getUConfig()

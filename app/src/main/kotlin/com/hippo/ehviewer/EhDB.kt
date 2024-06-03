@@ -20,6 +20,7 @@ import android.net.Uri
 import arrow.fx.coroutines.release
 import arrow.fx.coroutines.resource
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.dao.DownloadArtist
 import com.hippo.ehviewer.dao.DownloadDirname
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
@@ -113,8 +114,11 @@ object EhDB {
         dao.insertOrIgnore(downloadDirnameList)
     }
 
-    val downloadsCount
-        get() = db.downloadsDao().count()
+    val downloadsCountByLabel
+        get() = db.downloadsDao().countByLabel()
+
+    val downloadsCountByArtist
+        get() = db.downloadsDao().countByArtist()
 
     suspend fun getAllDownloadLabelList() = db.downloadLabelDao().list()
 
@@ -140,6 +144,14 @@ object EhDB {
         val dao = db.downloadLabelDao()
         dao.delete(raw)
         dao.fill(raw.position)
+    }
+
+    suspend fun putDownloadArtist(gid: Long, artists: List<DownloadArtist>) {
+        if (artists.isNotEmpty()) {
+            val dao = db.downloadArtistDao()
+            dao.deleteByGid(gid)
+            dao.insert(artists)
+        }
     }
 
     suspend fun removeLocalFavorites(galleryInfo: BaseGalleryInfo) {
@@ -279,49 +291,39 @@ object EhDB {
             it.close()
             context.deleteDatabase(tempDBName)
         } use { oldDB ->
-            runCatching {
-                db.galleryDao().insertOrIgnore(oldDB.galleryDao().list())
+            db.galleryDao().insertOrIgnore(oldDB.galleryDao().list())
+
+            db.progressDao().insertOrIgnore(oldDB.progressDao().list())
+
+            val downloadLabelList = oldDB.downloadLabelDao().list()
+            DownloadManager.addDownloadLabel(downloadLabelList)
+
+            oldDB.downloadDirnameDao().list().let {
+                importDownloadDirname(it)
             }
-            runCatching {
-                db.progressDao().insertOrIgnore(oldDB.progressDao().list())
+
+            val downloadInfoList = oldDB.downloadsDao().joinList().asReversed()
+            DownloadManager.addDownload(downloadInfoList)
+
+            val historyInfoList = oldDB.historyDao().list()
+            importHistoryInfo(historyInfoList)
+
+            val quickSearchList = oldDB.quickSearchDao().list()
+            val currentQuickSearchList = db.quickSearchDao().list()
+            val offset = currentQuickSearchList.size
+            val importList = quickSearchList.filter { newQS ->
+                currentQuickSearchList.none { it.name == newQS.name }
+            }.onEachIndexed { index, q -> q.position = index + offset }
+            importQuickSearch(importList)
+
+            oldDB.localFavoritesDao().list().let {
+                importLocalFavorites(it)
             }
-            runCatching {
-                val downloadLabelList = oldDB.downloadLabelDao().list()
-                DownloadManager.addDownloadLabel(downloadLabelList)
-            }
-            runCatching {
-                oldDB.downloadDirnameDao().list().let {
-                    importDownloadDirname(it)
-                }
-            }
-            runCatching {
-                val downloadInfoList = oldDB.downloadsDao().joinList().asReversed()
-                DownloadManager.addDownload(downloadInfoList)
-            }
-            runCatching {
-                val historyInfoList = oldDB.historyDao().list()
-                importHistoryInfo(historyInfoList)
-            }
-            runCatching {
-                val quickSearchList = oldDB.quickSearchDao().list()
-                val currentQuickSearchList = db.quickSearchDao().list()
-                val offset = currentQuickSearchList.size
-                val importList = quickSearchList.filter { newQS ->
-                    currentQuickSearchList.none { it.name == newQS.name }
-                }.onEachIndexed { index, q -> q.position = index + offset }
-                importQuickSearch(importList)
-            }
-            runCatching {
-                oldDB.localFavoritesDao().list().let {
-                    importLocalFavorites(it)
-                }
-            }
-            runCatching {
-                val filterList = oldDB.filterDao().list()
-                val currentFilterList = db.filterDao().list()
-                filterList.forEach {
-                    if (it !in currentFilterList) addFilter(it)
-                }
+
+            val filterList = oldDB.filterDao().list()
+            val currentFilterList = db.filterDao().list()
+            filterList.forEach {
+                if (it !in currentFilterList) addFilter(it)
             }
         }
     }

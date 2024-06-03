@@ -244,12 +244,15 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             if (archiveJob.isActive) {
                 archiveJob.join()
             }
-            runCatching {
-                if (!mSpiderDen.postArchive()) {
-                    writeSpiderInfoToLocal()
+            if (!mSpiderDen.postArchive()) {
+                if (mWorkerScope.isDownloadMode) {
+                    mSpiderDen.writeComicInfo()
                 }
-            }.onFailure {
-                logcat(it)
+                runCatching {
+                    writeSpiderInfoToLocal()
+                }.onFailure {
+                    logcat(it)
+                }
             }
             queenScope.cancel()
         }
@@ -483,13 +486,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             val gid = galleryInfo.gid
             return (sQueenMap[gid] ?: SpiderQueen(galleryInfo).also { sQueenMap[gid] = it }).apply {
                 setMode(mode)
-                launch {
-                    // Will create download dir if not exists
-                    updateMode()
-                    if (mode == MODE_DOWNLOAD) {
-                        mSpiderDen.writeComicInfo()
-                    }
-                }
+                launch { updateMode() }
             }
         }
 
@@ -516,7 +513,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         private val downloadTimeout = Settings.downloadTimeout.seconds
         private val delayLock = Mutex()
         private var lastRequestTime = TimeSource.Monotonic.markNow()
-        private var isDownloadMode = false
+        var isDownloadMode = false
+            private set
 
         fun cancelDecode(index: Int) {
             decoder.cancel(index)
@@ -648,15 +646,15 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                                 pToken,
                                 localShowKey,
                                 previousPToken,
-                            ).let {
-                                check509(it.imageUrl)
-                                imageUrl = it.imageUrl
-                                skipHathKey = it.skipHathKey
-                                originImageUrl = it.originImageUrl
-                            }
-                        }.onFailure {
+                            )
+                        }.getOrElse {
                             forceHtml = true
                             return@repeat
+                        }.let {
+                            check509(it.imageUrl)
+                            imageUrl = it.imageUrl
+                            skipHathKey = it.skipHathKey
+                            originImageUrl = it.originImageUrl
                         }
                     }
 

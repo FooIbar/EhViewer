@@ -21,7 +21,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -42,6 +42,9 @@ jobs:
         with:
           cache-read-only: true
 
+      - name: Install NDK
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
+
       - name: Spotless Check
         run: ./gradlew spotlessCheck
 
@@ -57,8 +60,11 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Install NDK
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
+
       - name: Install Rust Toolchain
-        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -101,12 +107,6 @@ jobs:
           name: default-armeabi-v7a-${{ github.sha }}
           path: app/build/outputs/apk/default/release/app-default-armeabi-v7a-release.apk
 
-      - name: Upload x86
-        uses: actions/upload-artifact@v4
-        with:
-          name: default-x86-${{ github.sha }}
-          path: app/build/outputs/apk/default/release/app-default-x86-release.apk
-
       - name: Upload mapping
         uses: actions/upload-artifact@v4
         with:
@@ -131,8 +131,11 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Install NDK
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
+
       - name: Install Rust Toolchain
-        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android i686-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -174,12 +177,6 @@ jobs:
         with:
           name: marshmallow-armeabi-v7a-${{ github.sha }}
           path: app/build/outputs/apk/marshmallow/release/app-marshmallow-armeabi-v7a-release.apk
-
-      - name: Upload x86
-        uses: actions/upload-artifact@v4
-        with:
-          name: marshmallow-x86-${{ github.sha }}
-          path: app/build/outputs/apk/marshmallow/release/app-marshmallow-x86-release.apk
 
       - name: Upload mapping
         uses: actions/upload-artifact@v4

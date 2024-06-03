@@ -32,6 +32,8 @@ import com.hippo.ehviewer.client.executeSafely
 import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.coil.suspendEdit
+import com.hippo.ehviewer.dao.DownloadArtist
+import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.image.UniFileSource
@@ -41,7 +43,6 @@ import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.openOutputStream
-import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.statement.HttpResponse
@@ -321,11 +322,15 @@ class SpiderDen(val info: GalleryInfo) {
             createFile(COMIC_INFO_FILE)?.also {
                 runCatching {
                     if (info !is GalleryDetail && fetchMetadata) {
-                        withNonCancellableContext {
-                            EhEngine.fillGalleryListByApi(listOf(info))
+                        EhEngine.fillGalleryListByApi(listOf(info))
+                    }
+                    info.getComicInfo().apply {
+                        write(it)
+                        DownloadManager.getDownloadInfo(gid)?.let { downloadInfo ->
+                            downloadInfo.artistInfoList = DownloadArtist.from(gid, penciller.orEmpty())
+                            EhDB.putDownloadArtist(gid, downloadInfo.artistInfoList)
                         }
                     }
-                    info.getComicInfo().write(it)
                 }.onFailure {
                     logcat(it)
                 }

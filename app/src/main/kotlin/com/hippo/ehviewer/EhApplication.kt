@@ -46,12 +46,14 @@ import com.hippo.ehviewer.coil.MergeInterceptor
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.imageLoader
 import com.hippo.ehviewer.ktor.CronetEngine
 import com.hippo.ehviewer.legacy.cleanObsoleteCache
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
+import com.hippo.ehviewer.ui.tools.dataStateFlow
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -103,13 +105,13 @@ class EhApplication : Application(), SingletonImageLoader.Factory {
         super.onCreate()
         System.loadLibrary("ehviewer")
         lifecycleScope.launchIO {
+            launch { EhTagDatabase }
+            launch { EhDB }
+            dataStateFlow.value
             launch {
-                EhTagDatabase
-            }
-            launch {
-                EhDB
-            }
-            launch {
+                if (DownloadManager.labelList.isNotEmpty() && Settings.downloadFilterMode.key !in Settings.prefs) {
+                    Settings.downloadFilterMode.value = DownloadsFilterMode.CUSTOM.flag
+                }
                 DownloadManager.readMetadataFromLocal()
             }
             launch {

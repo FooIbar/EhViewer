@@ -70,7 +70,7 @@ private fun PagerSetting() = Column {
                 title = stringResource(id = R.string.pref_read_with_tapping_inverted),
                 entries = stringArrayResource(id = R.array.invert_tapping_mode),
                 values = arrayOf("0", "1", "2", "3"),
-                field = Settings.readerWebtoonNavInverted.asMutableState(),
+                field = Settings.readerPagerNavInverted.asMutableState(),
             )
             SwitchChoice(
                 title = stringResource(id = R.string.pref_navigate_pan),

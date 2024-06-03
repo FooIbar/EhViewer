@@ -1,8 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
@@ -12,11 +10,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import coil3.Image
 import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
@@ -37,17 +34,17 @@ context(SharedTransitionScope, TransitionsVisibilityScope)
 fun EhAsyncThumb(
     model: GalleryInfo,
     modifier: Modifier = Modifier,
-    placeholder: Painter? = null,
+    onSuccess: ((Image) -> Unit)? = null,
     contentScale: ContentScale = ContentScale.Fit,
 ) = AsyncImage(
     model = requestOf(model),
     contentDescription = null,
     modifier = modifier.sharedBounds(
         key = "${model.gid}",
-        exit = fadeOut(),
-        enter = fadeIn(),
     ).clip(ShapeDefaults.Medium),
-    placeholder = placeholder,
+    onSuccess = onSuccess?.let { callback ->
+        { callback(it.result.image) }
+    },
     contentScale = contentScale,
 )
 
@@ -63,14 +60,10 @@ fun EhAsyncCropThumb(
         contentDescription = null,
         modifier = modifier.sharedBounds(
             key = "${key.gid}",
-            exit = fadeOut(),
-            enter = fadeIn(),
         ).clip(ShapeDefaults.Medium),
-        onState = {
-            if (it is AsyncImagePainter.State.Success) {
-                if (it.result.image.shouldCrop) {
-                    contentScale = ContentScale.Crop
-                }
+        onSuccess = {
+            if (it.result.image.shouldCrop) {
+                contentScale = ContentScale.Crop
             }
         },
         contentScale = contentScale,

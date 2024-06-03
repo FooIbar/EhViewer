@@ -1,23 +1,23 @@
 package com.hippo.ehviewer.ui.screen
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.displayCutoutPadding
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,15 +41,12 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarHorizontalPadding
 import androidx.compose.material3.SearchBarInputField
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -69,7 +66,6 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
-import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.rememberCompositionActiveState
 import com.hippo.ehviewer.ui.tools.thenIf
@@ -97,28 +93,26 @@ abstract class Suggestion {
 }
 
 suspend fun SearchDao.suggestions(prefix: String, limit: Int) =
-    (if (prefix.isBlank()) list(limit) else rawSuggestions(prefix, limit)).map { it.query }
+    (if (prefix.isBlank()) list(limit) else rawSuggestions(prefix, limit))
 
 @Composable
 fun SearchBarScreen(
+    onApplySearch: (String) -> Unit,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
     title: String? = null,
     searchFieldState: TextFieldState = rememberTextFieldState(),
     searchFieldHint: String? = null,
-    onApplySearch: (String) -> Unit,
-    onSearchExpanded: () -> Unit,
-    onSearchHidden: () -> Unit,
-    refreshState: PullToRefreshState? = null,
     suggestionProvider: SuggestionProvider? = null,
     tagNamespace: Boolean = false,
-    searchBarOffsetY: () -> Int,
-    trailingIcon: @Composable () -> Unit,
+    searchBarOffsetY: () -> Int = { 0 },
+    trailingIcon: @Composable () -> Unit = {},
     filter: @Composable (() -> Unit)? = null,
     floatingActionButton: @Composable () -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
     var mSuggestionList by remember { mutableStateOf(emptyList<Suggestion>()) }
     val mSearchDatabase = searchDatabase.searchDao()
-    var expanded by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
     val dialogState = LocalDialogState.current
@@ -169,19 +163,6 @@ fun SearchBarScreen(
         mSuggestionList = mergedSuggestionFlow().toList()
     }
 
-    var shouldLockDrawer by remember { mutableStateOf(false) }
-    LockDrawer(shouldLockDrawer)
-
-    fun onSearchViewExpanded() {
-        onSearchExpanded()
-        shouldLockDrawer = true
-    }
-
-    fun onSearchViewHidden() {
-        shouldLockDrawer = false
-        onSearchHidden()
-    }
-
     if (expanded) {
         LaunchedEffect(Unit) {
             snapshotFlow { searchFieldState.text }.collectLatest {
@@ -191,12 +172,12 @@ fun SearchBarScreen(
     }
 
     fun hideSearchView() {
-        onSearchViewHidden()
-        expanded = false
+        onExpandedChange(false)
     }
 
     fun onApplySearch() {
-        val query = searchFieldState.text.trim().toString()
+        // May have invalid whitespaces if pasted from clipboard, replace them with spaces
+        val query = searchFieldState.text.trim().replace(WhitespaceRegex, " ")
         if (query.isNotEmpty()) {
             scope.launchIO {
                 mSearchDatabase.deleteQuery(query)
@@ -219,42 +200,21 @@ fun SearchBarScreen(
         }
     }
 
-    val scrollAwayModifier = if (!expanded) {
-        Modifier.offset { IntOffset(0, searchBarOffsetY()) }
-    } else {
-        Modifier
-    }
-
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
                 // Placeholder, fill immutable SearchBar padding
-                Spacer(
-                    modifier = Modifier.statusBarsPadding().displayCutoutPadding()
-                        .height(SearchBarDefaults.InputFieldHeight + 16.dp),
-                )
+                Spacer(modifier = Modifier.statusBarsPadding().height(SearchBarDefaults.InputFieldHeight + 16.dp))
             },
             floatingActionButton = floatingActionButton,
             content = content,
         )
-        if (refreshState != null) {
-            PullToRefreshContainer(
-                state = refreshState,
-                modifier = Modifier.align(Alignment.TopCenter).safeDrawingPadding()
-                    .padding(top = 48.dp) then scrollAwayModifier,
-            )
-        }
-        val onExpandedChange = { v: Boolean ->
-            if (v) {
-                onSearchViewExpanded()
-            } else {
-                onSearchViewHidden()
-            }
-            expanded = v
-        }
+        // https://issuetracker.google.com/337191298
+        // Workaround for can't exit SearchBar due to refocus in non-touch mode
+        Box(Modifier.size(1.dp).focusable())
         val activeState = rememberCompositionActiveState()
         SearchBar(
-            modifier = Modifier.align(Alignment.TopCenter) then scrollAwayModifier
+            modifier = Modifier.align(Alignment.TopCenter).thenIf(!expanded) { offset { IntOffset(0, searchBarOffsetY()) } }
                 .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)),
             inputField = {
                 SearchBarInputField(
@@ -306,11 +266,8 @@ fun SearchBarScreen(
             activeState.Anchor()
             filter?.invoke()
             LazyColumn(
-                modifier = Modifier.fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime).only(WindowInsetsSides.Bottom)),
-                // Workaround for https://issuetracker.google.com/332939169
-                // contentPadding = WindowInsets.navigationBars.union(WindowInsets.ime)
-                //     .only(WindowInsetsSides.Bottom).asPaddingValues(),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues(),
             ) {
                 // Workaround for prepending before the first item
                 item {}
@@ -359,3 +316,5 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String {
         }
     }
 }
+
+private val WhitespaceRegex = Regex("\\s+")

@@ -1,8 +1,5 @@
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
-import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 val isRelease: Boolean
     get() = gradle.startParameter.taskNames.any { it.contains("Release") }
@@ -19,16 +16,19 @@ plugins {
     alias(libs.plugins.composeCompilerReportGenerator)
 }
 
+val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
+
 android {
     compileSdk = 34
-    ndkVersion = "26.2.11394342"
+    ndkVersion = "27.0.11718014-beta1"
+    androidResources.generateLocaleConfig = true
 
     splits {
         abi {
             isEnable = true
             reset()
             if (isRelease) {
-                include("arm64-v8a", "x86_64", "armeabi-v7a", "x86")
+                include(*supportedAbis)
                 isUniversalApk = true
             } else {
                 include("arm64-v8a", "x86_64")
@@ -49,21 +49,23 @@ android {
         commandLine = "git rev-parse --short=7 HEAD".split(' ')
     }.standardOutput.asText.get().trim()
 
-    val buildTime by lazy {
-        val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm").withZone(ZoneOffset.UTC)
-        formatter.format(Instant.now())
-    }
+    val commitTime = providers.exec {
+        commandLine = "git log -1 --format=%ct".split(' ')
+    }.standardOutput.asText.get().trim()
 
     val repoName = providers.exec {
         commandLine = "git remote get-url origin".split(' ')
     }.standardOutput.asText.get().trim().removePrefix("https://github.com/").removePrefix("git@github.com:")
         .removeSuffix(".git")
 
+    val chromeVersion = rootProject.layout.projectDirectory.file("chrome-for-testing/LATEST_RELEASE_STABLE").asFile
+        .readText().substringBefore('.')
+
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
         minSdk = 26
         targetSdk = 34
-        versionCode = 180055
+        versionCode = 180056
         versionName = "1.12.0"
         versionNameSuffix = "-SNAPSHOT"
         resourceConfigurations.addAll(
@@ -84,9 +86,19 @@ android {
         )
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
+        buildConfigField("long", "COMMIT_TIME", commitTime)
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
+        buildConfigField("String", "CHROME_VERSION", "\"$chromeVersion\"")
         ndk {
+            if (isRelease) {
+                abiFilters.addAll(supportedAbis)
+            }
             debugSymbolLevel = "FULL"
+        }
+        externalNativeBuild {
+            cmake {
+                arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+            }
         }
     }
 
@@ -111,32 +123,6 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
-    kotlinOptions {
-        freeCompilerArgs = listOf(
-            // https://kotlinlang.org/docs/compiler-reference.html#progressive
-            "-progressive",
-            "-Xjvm-default=all",
-            "-Xlambdas=indy",
-            "-Xcontext-receivers",
-
-            "-opt-in=coil3.annotation.ExperimentalCoilApi",
-            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi",
-            "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
-            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-            "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
-            "-opt-in=androidx.compose.animation.ExperimentalSharedTransitionApi",
-            "-opt-in=androidx.paging.ExperimentalPagingApi",
-            "-opt-in=kotlin.contracts.ExperimentalContracts",
-            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-opt-in=kotlinx.coroutines.FlowPreview",
-            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
-            "-opt-in=splitties.experimental.ExperimentalSplittiesApi",
-            "-opt-in=splitties.preferences.DataStorePreferencesPreview",
-        )
-    }
-
     lint {
         disable += setOf("MissingTranslation", "MissingQuantity")
         fatal += setOf("NewApi", "InlinedApi")
@@ -156,11 +142,12 @@ android {
             isShrinkResources = true
             proguardFiles("proguard-rules.pro")
             signingConfig = signConfig
-            buildConfigField("String", "BUILD_TIME", "\"$buildTime\"")
         }
         debug {
             applicationIdSuffix = ".debug"
-            buildConfigField("String", "BUILD_TIME", "\"\"")
+            lint {
+                abortOnError = false
+            }
         }
     }
 
@@ -174,11 +161,8 @@ android {
 }
 
 composeCompiler {
-    // https://youtrack.jetbrains.com/issue/KT-67216
-    suppressKotlinVersionCompatibilityCheck = libs.versions.kotlin.get()
-    enableIntrinsicRemember = true
     enableNonSkippingGroupOptimization = true
-    enableExperimentalStrongSkippingMode = true
+    enableStrongSkippingMode = true
 }
 
 androidComponents {
@@ -210,12 +194,12 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.datastore)
+    implementation(libs.androidx.graphics.path)
+
     // https://developer.android.com/jetpack/androidx/releases/lifecycle
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.lifecycle.compose)
-
-    // https://developer.android.com/jetpack/androidx/releases/navigation
-    implementation(libs.androidx.navigation.compose)
 
     // https://developer.android.com/jetpack/androidx/releases/paging
     implementation(libs.androidx.paging.compose)
@@ -274,11 +258,34 @@ dependencies {
 
 kotlin {
     jvmToolchain(21)
+    compilerOptions {
+        freeCompilerArgs = listOf(
+            // https://kotlinlang.org/docs/compiler-reference.html#progressive
+            "-progressive",
+            "-Xjvm-default=all",
+            "-Xcontext-receivers",
+
+            "-opt-in=coil3.annotation.ExperimentalCoilApi",
+            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+            "-opt-in=androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
+            "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+            "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
+            "-opt-in=androidx.compose.animation.ExperimentalSharedTransitionApi",
+            "-opt-in=androidx.paging.ExperimentalPagingApi",
+            "-opt-in=kotlin.contracts.ExperimentalContracts",
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=kotlinx.coroutines.FlowPreview",
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+            "-opt-in=splitties.experimental.ExperimentalSplittiesApi",
+            "-opt-in=splitties.preferences.DataStorePreferencesPreview",
+        )
+    }
 }
 
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
-    arg("room.generateKotlin", "true")
     arg("compose-destinations.codeGenPackageName", "com.hippo.ehviewer.ui")
 }
 

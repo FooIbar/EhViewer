@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.reader
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -39,6 +40,7 @@ fun GalleryPager(
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val items = pageLoader.pages
     when (type) {
@@ -46,6 +48,7 @@ fun GalleryPager(
             HorizontalPager(
                 state = pagerState,
                 modifier = modifier,
+                contentPadding = contentPadding,
                 reverseLayout = type == RIGHT_TO_LEFT,
                 key = { it },
             ) { index ->
@@ -82,6 +85,7 @@ fun GalleryPager(
             VerticalPager(
                 state = pagerState,
                 modifier = modifier,
+                contentPadding = contentPadding,
                 key = { it },
             ) { index ->
                 val page = items[index]
@@ -132,6 +136,7 @@ fun GalleryPager(
                     },
                 ),
                 state = lazyListState,
+                contentPadding = contentPadding,
                 verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
             ) {
                 items(items, key = { it.index }) { page ->

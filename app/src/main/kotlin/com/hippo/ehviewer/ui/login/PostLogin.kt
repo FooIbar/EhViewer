@@ -12,8 +12,7 @@ suspend fun postLogin() = coroutineScope {
     launch {
         runCatching {
             EhEngine.getProfile().run {
-                Settings.displayName = displayName
-                Settings.avatar = avatar
+                Settings.displayName.value = displayName
             }
         }.onFailure {
             logcat(it)
@@ -41,5 +40,6 @@ suspend fun postLogin() = coroutineScope {
     }.onFailure {
         Settings.gallerySite = EhUrl.SITE_E
     }
+    Settings.hasSignedIn.value = true
     Settings.needSignIn = false
 }

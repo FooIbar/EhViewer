@@ -10,9 +10,11 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
-import com.hippo.ehviewer.client.EhUtils
+import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.download.SortMode
+import com.hippo.ehviewer.util.AppConfig
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import java.util.Locale
@@ -110,6 +112,8 @@ object Settings : DataStorePreferences(null) {
     val listThumbSize = intPref("list_tile_size", 40)
     val languageFilter = intPref("language_filter", -1)
     val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
+    val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
+    val hasSignedIn = boolPref("has_signed_in", EhCookieStore.hasSignedIn())
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
     val blackDarkTheme = boolPref("black_dark_theme", false)
     val gridView = boolPref("grid_view", false)
@@ -117,7 +121,8 @@ object Settings : DataStorePreferences(null) {
     val qSSaveProgress = boolPref("qs_save_progress", true)
     val security = boolPref("require_unlock", false)
     val animateItems = boolPref("animate_items", true)
-    val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
+    val displayName = stringOrNullPref("display_name", null)
+    val recentDownloadLabel = stringOrNullPref("recent_download_label", "")
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)
@@ -144,7 +149,7 @@ object Settings : DataStorePreferences(null) {
     var appLinkVerifyTip by boolPref("app_link_verify_tip", false)
     var enabledSecurity by boolPref("enable_secure", false)
     var backupBeforeUpdate by boolPref("backup_before_update", true)
-    var useCIUpdateChannel by boolPref("ci_update_channel", false)
+    var useCIUpdateChannel by boolPref("ci_update_channel", AppConfig.isSnapshot)
     var mediaScan by boolPref("media_scan", false).observed { updateWhenKeepMediaStatusChanges() }
     var hasDefaultDownloadLabel by boolPref("has_default_download_label", false)
     var saveParseErrorBody by boolPref("save_parse_error_body", true)
@@ -160,21 +165,13 @@ object Settings : DataStorePreferences(null) {
     var defaultFavSlot by intPref("default_favorite_slot", -2)
     var securityDelay by intPref("require_unlock_delay", 0)
     var clipboardTextHashCode by intPref("clipboard_text_hash_code", 0)
-    var searchCategory by intPref("search_pref", EhUtils.ALL_CATEGORY)
     var requestNewsTime by intPref("request_news_time", 0).observed { updateWhenRequestNewsChanges() }
     var updateIntervalDays by intPref("update_interval_days", 7)
     var lastDawnDays by intPref("last_dawn_days", 0)
     var recentToplist by stringPref("recent_toplist", "11")
     var userAgent by stringPref("user_agent", CHROME_USER_AGENT)
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
-    var displayName by stringOrNullPref("display_name", null)
-    var avatar by stringOrNullPref("avatar", null)
-    var language by stringPref("app_language", "system").observed { updateWhenLocaleChanges() }
-    var lastUpdateTime by longPref("last_update_time", 0)
-    var favDialogTheta by floatPref("fav_select_dialog_delta", 0F)
-
-    // TODO: Remove this after swipe gestures are correctly handled in compose
-    var touchSlopFactor by intPref("touch_slop", 3)
+    var lastUpdateTime by longPref("last_update_time", BuildConfig.COMMIT_TIME)
 
     // Tachiyomi Reader
     var newReader by boolPref("new_compose_reader", false)
@@ -203,7 +200,8 @@ object Settings : DataStorePreferences(null) {
     val invertedColors = boolPref("pref_inverted_colors", false)
     val readerWebtoonNav = intPref("reader_navigation_mode_webtoon", 0)
     val readerPagerNav = intPref("reader_navigation_mode_pager", 0)
-    val readerWebtoonNavInverted = intPref("reader_tapping_inverted_webtoon", 0)
+    val readerPagerNavInverted = intPref("reader_tapping_inverted_2", 0)
+    val readerWebtoonNavInverted = intPref("reader_tapping_inverted_webtoon_2", 0)
     val webtoonSidePadding = intPref("webtoon_side_padding", 0)
     val navigateToPan = boolPref("navigate_pan", true)
     val imageScaleType = intPref("pref_image_scale_type_key", 1)

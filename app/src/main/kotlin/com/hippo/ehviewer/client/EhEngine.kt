@@ -17,6 +17,7 @@ package com.hippo.ehviewer.client
 
 import arrow.core.Either
 import arrow.core.left
+import arrow.core.partially2
 import arrow.core.right
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
@@ -44,8 +45,10 @@ import com.hippo.ehviewer.client.parser.GalleryTokenApiParser
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.client.parser.ProfileParser
 import com.hippo.ehviewer.client.parser.RateGalleryResult
+import com.hippo.ehviewer.client.parser.SignInParser
 import com.hippo.ehviewer.client.parser.TorrentParser
 import com.hippo.ehviewer.client.parser.TorrentResult
+import com.hippo.ehviewer.client.parser.UserConfigParser
 import com.hippo.ehviewer.client.parser.VoteCommentResult
 import com.hippo.ehviewer.client.parser.VoteTagParser
 import com.hippo.ehviewer.dailycheck.showEventNotification
@@ -62,6 +65,7 @@ import io.ktor.utils.io.pool.useInstance
 import java.io.File
 import java.nio.ByteBuffer
 import kotlin.math.ceil
+import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.serialization.SerializationException
@@ -80,11 +84,9 @@ private const val MAX_REQUEST_SIZE = 25
 private const val MAX_SEQUENTIAL_REQUESTS = 5
 private const val REQUEST_INTERVAL = 5000L
 
-private const val U_CONFIG_TEXT = "Selected Profile"
-
 fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
     val dir = AppConfig.externalParseErrorDir ?: return
-    val file = File(dir, ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".txt")
+    val file = File(dir, ReadableTime.getFilenamableTime() + ".txt")
     file.sink().buffer().use { sink ->
         with(sink) {
             writeUtf8(e.message + "\n")
@@ -177,15 +179,19 @@ object EhEngine {
         return ehRequest(url, referer).fetchUsingAsByteBuffer(TorrentParser::parse)
     }
 
-    suspend fun getArchiveList(url: String, gid: Long, token: String) = ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
-        .fetchUsingAsText(ArchiveParser::parse)
-        .apply { funds = funds ?: ehRequest(EhUrl.URL_FUNDS).fetchUsingAsText(HomeParser::parseFunds) }
+    suspend fun getArchiveList(url: String, gid: Long, token: String): ArchiveParser.Result {
+        val funds = if (EhUtils.isExHentai) getFunds() else null
+        return ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
+            .fetchUsingAsText(ArchiveParser::parse.partially2(funds))
+    }
 
     suspend fun getImageLimits() = parZip(
         { ehRequest(EhUrl.URL_HOME).fetchUsingAsByteBuffer(HomeParser::parse) },
-        { ehRequest(EhUrl.URL_FUNDS).fetchUsingAsText(HomeParser::parseFunds) },
+        { getFunds() },
         { limits, funds -> HomeParser.Result(limits, funds) },
     )
+
+    private suspend fun getFunds() = ehRequest(EhUrl.URL_FUNDS).fetchUsingAsText(HomeParser::parseFunds)
 
     suspend fun getNews(parse: Boolean) = ehRequest(EhUrl.URL_NEWS, EhUrl.REFERER_E)
         .fetchUsingAsText { if (parse) EventPaneParser.parse(this) else null }
@@ -197,12 +203,12 @@ object EhEngine {
 
     suspend fun getUConfig(url: String = EhUrl.uConfigUrl) {
         runSuspendCatching {
-            ehRequest(url).fetchUsingAsText { check(U_CONFIG_TEXT in this) { "Unable to load config from $url!" } }
+            ehRequest(url).fetchUsingAsByteBuffer(UserConfigParser::parse)
         }.onFailure { throwable ->
             // It may get redirected when accessing ex for the first time
             if (url == EhUrl.URL_UCONFIG_EX) {
                 logcat(throwable)
-                ehRequest(url).fetchUsingAsText { check(U_CONFIG_TEXT in this) { "Unable to load config from $url!" } }
+                ehRequest(url).fetchUsingAsByteBuffer(UserConfigParser::parse)
             } else {
                 throw throwable
             }
@@ -233,6 +239,22 @@ object EhEngine {
 
     suspend fun getFavorites(url: String) = ehRequest(url, EhUrl.referer).fetchUsingAsByteBuffer(FavoritesParser::parse)
         .apply { galleryInfoList.fillInfo(url) }
+
+    suspend fun signIn(username: String, password: String): String {
+        val referer = "https://forums.e-hentai.org/index.php?act=Login&CODE=00"
+        val url = EhUrl.API_SIGN_IN
+        val origin = "https://forums.e-hentai.org"
+        return ehRequest(url, referer, origin) {
+            formBody {
+                append("referer", referer)
+                append("b", "")
+                append("bt", "")
+                append("UserName", username)
+                append("PassWord", password)
+                append("CookieDate", "1")
+            }
+        }.fetchUsingAsText(SignInParser::parse)
+    }
 
     suspend fun commentGallery(url: String, comment: String, id: Long = -1) = ehRequest(url, url, EhUrl.origin) {
         formBody {
@@ -431,13 +453,13 @@ object EhEngine {
     }
 
     suspend fun addFavorites(galleryList: List<Pair<Long, String>>, dstCat: Int) {
-        galleryList.chunked(MAX_SEQUENTIAL_REQUESTS).forEachIndexed { index, chunk ->
-            if (index != 0) {
-                delay(REQUEST_INTERVAL)
-            }
-            chunk.parMap { (gid, token) ->
+        galleryList.forEach { (gid, token) ->
+            // https://github.com/FooIbar/EhViewer/issues/1190
+            // Workaround for duplicate items when sorting by favorited time
+            val timeTaken = measureTimeMillis {
                 modifyFavorites(gid, token, dstCat)
             }
+            delay(1000 - timeTaken)
         }
     }
 }

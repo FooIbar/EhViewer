@@ -21,7 +21,6 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
@@ -83,7 +82,7 @@ val today
     get() = (Clock.System.now().epochSeconds / 86400).toInt()
 
 suspend fun checkDawn() = runCatching {
-    if (EhCookieStore.hasSignedIn() && Settings.lastDawnDays != today) {
+    if (Settings.hasSignedIn.value && Settings.lastDawnDays != today) {
         EhEngine.getNews(true)?.let {
             Settings.lastDawnDays = today
             showEventNotification(it)

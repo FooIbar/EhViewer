@@ -22,6 +22,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -35,15 +36,20 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.ReadableTime
+import com.hippo.ehviewer.util.getAppLanguage
+import com.hippo.ehviewer.util.getLanguages
+import com.hippo.ehviewer.util.isAtLeastV
+import com.hippo.ehviewer.util.setAppLanguage
 import com.hippo.unifile.asUniFile
+import com.jamal.composeprefs3.ui.prefs.DropDownPref
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -81,10 +87,12 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
-            SwitchPreference(
-                title = "New Compose Reader [WIP!!!]",
-                value = Settings::newReader,
-            )
+            if (AppConfig.isSnapshot) {
+                SwitchPreference(
+                    title = "New Compose Reader [WIP!!!]",
+                    value = Settings::newReader,
+                )
+            }
             SwitchPreference(
                 title = stringResource(id = R.string.settings_advanced_save_parse_error_body),
                 summary = stringResource(id = R.string.settings_advanced_save_parse_error_body_summary),
@@ -100,7 +108,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_advanced_dump_logcat),
                 summary = stringResource(id = R.string.settings_advanced_dump_logcat_summary),
                 contract = ActivityResultContracts.CreateDocument("application/zip"),
-                key = "log-" + ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".zip",
+                key = "log-" + ReadableTime.getFilenamableTime() + ".zip",
             ) { uri ->
                 uri?.run {
                     context.runCatching {
@@ -116,7 +124,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                                     zipOs.putNextEntry(entry)
                                     file.inputStream().use { it.copyTo(zipOs) }
                                 }
-                                val logcatEntry = ZipEntry("logcat-" + ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".txt")
+                                val logcatEntry = ZipEntry("logcat-" + ReadableTime.getFilenamableTime() + ".txt")
                                 zipOs.putNextEntry(logcatEntry)
                                 Crash.collectInfo(zipOs.writer())
                                 Runtime.getRuntime().exec("logcat -d").inputStream.use { it.copyTo(zipOs) }
@@ -135,11 +143,17 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 entryValueRes = R.array.read_cache_size_entry_values,
                 value = Settings::readCacheSize.observed,
             )
-            SimpleMenuPreference(
+            var currentLanguage by remember { mutableStateOf(getAppLanguage()) }
+            val languages = remember { context.getLanguages() }
+            DropDownPref(
                 title = stringResource(id = R.string.settings_advanced_app_language_title),
-                entry = R.array.app_language_entries,
-                entryValueRes = R.array.app_language_entry_values,
-                value = Settings::language,
+                defaultValue = currentLanguage,
+                onValueChange = {
+                    setAppLanguage(it)
+                    currentLanguage = it
+                },
+                useSelectedAsSummary = true,
+                entries = languages,
             )
             SwitchPreference(
                 title = stringResource(id = R.string.preload_thumb_aggressively),
@@ -152,13 +166,6 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.animate_items),
                 summary = stringResource(id = R.string.animate_items_summary),
             )
-            IntSliderPreference(
-                maxValue = 5,
-                minValue = 1,
-                title = stringResource(id = R.string.settings_advanced_touch_slop),
-                summary = stringResource(id = R.string.settings_advanced_touch_slop_summary),
-                value = Settings::touchSlopFactor,
-            )
             var userAgent by Settings::userAgent.observed
             val userAgentTitle = stringResource(id = R.string.user_agent)
             Preference(
@@ -169,15 +176,16 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     userAgent = dialogState.awaitInputText(
                         initial = userAgent,
                         title = userAgentTitle,
-                    ).trim().takeUnless { it.isBlank() } ?: CHROME_USER_AGENT
+                    ).trim().ifBlank { null } ?: CHROME_USER_AGENT
                 }
             }
             val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)
+            val now = ReadableTime.getFilenamableTime()
             LauncherPreference(
                 title = stringResource(id = R.string.settings_advanced_export_data),
                 summary = stringResource(id = R.string.settings_advanced_export_data_summary),
                 contract = ActivityResultContracts.CreateDocument("application/vnd.sqlite3"),
-                key = ReadableTime.getFilenamableTime(System.currentTimeMillis()) + ".db",
+                key = if (isAtLeastV) now else "$now.db",
             ) { uri ->
                 uri?.let {
                     context.runCatching {
@@ -196,7 +204,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_advanced_import_data),
                 summary = stringResource(id = R.string.settings_advanced_import_data_summary),
                 contract = ActivityResultContracts.GetContent(),
-                key = "application/octet-stream",
+                key = if (isAtLeastV) "application/vnd.sqlite3" else "application/octet-stream",
             ) { uri ->
                 uri?.let {
                     context.runCatching {
@@ -209,7 +217,8 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     }
                 }
             }
-            if (EhCookieStore.hasSignedIn()) {
+            val hasSignedIn by Settings.hasSignedIn.collectAsState()
+            if (hasSignedIn) {
                 val backupNothing = stringResource(id = R.string.settings_advanced_backup_favorite_nothing)
                 val backupFailed = stringResource(id = R.string.settings_advanced_backup_favorite_failed)
                 val backupSucceed = stringResource(id = R.string.settings_advanced_backup_favorite_success)

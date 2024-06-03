@@ -1,9 +1,12 @@
 package com.hippo.ehviewer.ui.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +17,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -39,6 +43,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
+import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
@@ -47,10 +52,12 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.parser.HomeParser
+import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
 import com.hippo.ehviewer.ui.destinations.MyTagsScreenDestination
 import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.destinations.UConfigScreenDestination
+import com.hippo.ehviewer.ui.main.FundsItem
 import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
@@ -77,7 +84,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
     fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
-    val signin = EhCookieStore.hasSignedIn()
+    val hasSignedIn by Settings.hasSignedIn.collectAsState()
     val dialogState = LocalDialogState.current
     Scaffold(
         topBar = {
@@ -101,9 +108,10 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues),
         ) {
+            val displayName by Settings.displayName.collectAsState()
             Preference(
                 title = stringResource(id = R.string.account_name),
-                summary = Settings.displayName ?: guestMode,
+                summary = displayName ?: guestMode,
             ) {
                 coroutineScope.launch {
                     val cookies = EhCookieStore.getIdentityCookies()
@@ -112,8 +120,9 @@ fun EhScreen(navigator: DestinationsNavigator) {
                         dismissText = R.string.settings_eh_clear_igneous,
                         showCancelButton = cookies.last().second != null,
                         onCancelButtonClick = { EhCookieStore.clearIgneous() },
+                        secure = hasSignedIn,
                     ) {
-                        if (signin) {
+                        if (hasSignedIn) {
                             Column {
                                 val warning = stringResource(id = R.string.settings_eh_identity_cookies_signed)
                                 val str = cookies.joinToString("\n") { (k, v) -> "$k: $v" }
@@ -144,17 +153,15 @@ fun EhScreen(navigator: DestinationsNavigator) {
                     }
                 }
             }
-            if (signin) {
+            if (hasSignedIn) {
                 val placeholder = stringResource(id = R.string.please_wait)
                 val resetImageLimitSucceed = stringResource(id = R.string.reset_limits_succeed)
                 var result by rememberSaveable { mutableStateOf<HomeParser.Result?>(null) }
                 var error by rememberSaveable { mutableStateOf<String?>(null) }
                 val summary by rememberUpdatedState(
-                    stringResource(
-                        id = R.string.image_limits_summary,
-                        result?.run { limits.current } ?: 0,
-                        result?.run { limits.maximum } ?: 0,
-                    ),
+                    result?.run {
+                        stringResource(id = R.string.image_limits_summary, limits.current, limits.maximum)
+                    } ?: placeholder,
                 )
                 suspend fun getImageLimits() {
                     result = EhEngine.getImageLimits()
@@ -182,10 +189,28 @@ fun EhScreen(navigator: DestinationsNavigator) {
                             error?.let {
                                 Text(text = it)
                             } ?: result?.let { (limits, funds) ->
-                                Text(
-                                    text = stringResource(id = R.string.current_limits, summary, limits.resetCost) +
-                                        "\n" + stringResource(id = R.string.current_funds, "${funds.fundsGP}+", funds.fundsC),
-                                )
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    LinearProgressIndicator(
+                                        progress = { limits.current.toFloat() / limits.maximum },
+                                        modifier = Modifier.height(12.dp).fillMaxWidth(),
+                                    )
+                                    Text(text = summary)
+                                    Text(text = stringResource(id = R.string.reset_cost, limits.resetCost))
+                                    Text(text = stringResource(id = R.string.current_funds))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceAround,
+                                    ) {
+                                        FundsItem(
+                                            type = "GP",
+                                            amount = funds.gp,
+                                        )
+                                        FundsItem(
+                                            type = "C",
+                                            amount = funds.credit,
+                                        )
+                                    }
+                                }
                             } ?: run {
                                 Column(
                                     modifier = Modifier.fillMaxWidth(),
@@ -238,11 +263,11 @@ fun EhScreen(navigator: DestinationsNavigator) {
                     val items = buildList {
                         add(disabled)
                         add(localFav)
-                        if (signin) {
+                        if (hasSignedIn) {
                             addAll(Settings.favCat)
                         }
                     }
-                    defaultFavSlot = dialogState.showSelectItem(
+                    defaultFavSlot = dialogState.awaitSelectItem(
                         items = items,
                         title = R.string.default_favorites_collection,
                         selected = defaultFavSlot + 2,
@@ -355,7 +380,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_eh_metered_network_warning),
                 value = Settings.meteredNetworkWarning::value,
             )
-            if (signin) {
+            if (hasSignedIn) {
                 SwitchPreference(
                     title = stringResource(id = R.string.settings_eh_show_jpn_title),
                     summary = stringResource(id = R.string.settings_eh_show_jpn_title_summary),
@@ -371,7 +396,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                     Preference(title = pickerTitle) {
                         coroutineScope.launch {
                             val time = LocalTime.fromSecondOfDay(Settings.requestNewsTime)
-                            val (hour, minute) = dialogState.showTimePicker(pickerTitle, time.hour, time.minute)
+                            val (hour, minute) = dialogState.awaitSelectTime(pickerTitle, time.hour, time.minute)
                             Settings.requestNewsTime = LocalTime(hour, minute).toSecondOfDay()
                         }
                     }

@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,8 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -77,7 +75,6 @@ import androidx.core.text.parseAsHtml
 import com.hippo.ehviewer.EhApplication
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
 import com.hippo.ehviewer.client.EhUrl
@@ -86,11 +83,11 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
-import com.hippo.ehviewer.ui.LockDrawer
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
+import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.normalizeSpan
@@ -107,7 +104,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
@@ -153,7 +149,6 @@ private val MinimumContentPaddingEditText = 88.dp
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: DestinationsNavigator) = composing(navigator) {
-    LockDrawer(true)
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var commenting by rememberSaveable { mutableStateOf(false) }
     val animationProgress by animateFloatMergePredictiveBackAsState(enable = commenting) { commenting = false }
@@ -247,7 +242,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
             }
         }
     }
-    val hasSignedIn = remember { EhCookieStore.hasSignedIn() }
+    val hasSignedIn by Settings.hasSignedIn.collectAsState()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -280,20 +275,28 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
     ) { paddingValues ->
         val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
         var editTextMeasured by remember { mutableStateOf(MinimumContentPaddingEditText) }
-        val refreshState = rememberPullToRefreshState()
-        if (refreshState.isRefreshing) {
-            LaunchedEffect(Unit) {
-                runSuspendCatching {
-                    withIOContext { refreshComment(true) }
+        var isRefreshing by remember { mutableStateOf(false) }
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                launchIO {
+                    runSuspendCatching {
+                        refreshComment(true)
+                    }
+                    isRefreshing = false
                 }
-                refreshState.endRefresh()
-            }
-        }
-        Box(modifier = Modifier.fillMaxSize().imePadding().nestedScroll(refreshState.nestedScrollConnection)) {
+            },
+            modifier = Modifier.fillMaxSize().imePadding(),
+        ) {
             val additionalPadding = if (commenting) {
                 editTextMeasured
             } else {
-                0.dp
+                if (!comments.hasMore) {
+                    MinimumContentPaddingEditText
+                } else {
+                    0.dp
+                }
             }
             val voteUpSucceed = stringResource(R.string.vote_up_successfully)
             val cancelVoteUpSucceed = stringResource(R.string.cancel_vote_up_successfully)
@@ -303,14 +306,8 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
             LazyColumn(
                 modifier = Modifier.padding(horizontal = keylineMargin),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(
-                    // top = paddingValues.calculateTopPadding(),
-                    bottom = paddingValues.calculateBottomPadding() + additionalPadding,
-                ),
+                contentPadding = paddingValues + PaddingValues(bottom = additionalPadding),
             ) {
-                item {
-                    Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding()))
-                }
                 items(
                     items = comments.comments,
                     key = { it.id },
@@ -333,7 +330,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                         }
                     }
 
-                    suspend fun doCommentAction(comment: GalleryComment) = showSelectActions {
+                    suspend fun doCommentAction(comment: GalleryComment) = awaitSelectAction {
                         onSelect(copyComment) {
                             addTextToClipboard(comment.comment.parseAsHtml())
                         }
@@ -362,7 +359,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                                 showCommentVoteStatus(comment)
                             }
                         }
-                    }
+                    }()
 
                     GalleryCommentCard(
                         modifier = Modifier.thenIf(animateItems) { animateItem() },
@@ -407,18 +404,8 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                             }
                         }
                     }
-                } else {
-                    // Workaround for comment list lagging when reaching the bottom
-                    // https://github.com/FooIbar/EhViewer/issues/994
-                    item {
-                        Spacer(modifier = Modifier.height(MinimumContentPaddingEditText))
-                    }
                 }
             }
-            PullToRefreshContainer(
-                state = refreshState,
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = paddingValues.calculateTopPadding()),
-            )
             Surface(
                 modifier = Modifier.align(Alignment.BottomCenter).layout { measurable, constraints ->
                     val origin = measurable.measure(constraints)

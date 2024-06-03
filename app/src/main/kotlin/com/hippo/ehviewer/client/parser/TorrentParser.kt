@@ -14,16 +14,18 @@ object TorrentParser {
 
 @Serializable
 data class Torrent(
+    val outdated: Boolean,
     val posted: String,
     val size: String,
     val seeds: Int,
     val peers: Int,
     val downloads: Int,
+    val uploader: String,
     val url: String,
     val name: String,
 )
 
-fun Torrent.format() = "[$posted] $name [$size] [↑$seeds ↓$peers ✓$downloads]"
+fun Torrent.format() = "↑$seeds ↓$peers ✓$downloads"
 
 typealias TorrentResult = List<Torrent>
 

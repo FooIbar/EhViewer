@@ -10,11 +10,13 @@ use {parse_marshal_inplace, regex};
 
 #[derive(Serialize)]
 struct Torrent {
+    outdated: bool,
     posted: String,
     size: String,
     seeds: i32,
     peers: i32,
     downloads: i32,
+    uploader: String,
     url: String,
     name: String,
 }
@@ -25,15 +27,17 @@ fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>> {
         if html.contains("Expunged") {
             None
         } else {
-            let grp = regex!("<span>([0-9-]+) [0-9:]+</span>[\\s\\S]+</span> ([0-9.]+ [KMGT]iB)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([^<]+)</td>[\\s\\S]+onclick=\"document.location='([^\"]+)'[^<]+>([^<]+)</a>").captures(&html)?;
-            let name = unescape(&grp[8]).ok()?;
+            let grp = regex!("<span( style=\"color:red\")?>([0-9-]+) [0-9:]+</span>[\\s\\S]+</span> ([0-9.]+ [KMGT]iB)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([0-9]+)</td>[\\s\\S]+</span> ([^<]+)</td>[\\s\\S]+onclick=\"document.location='([^\"]+)'[^<]+>([^<]+)</a>").captures(&html)?;
+            let name = unescape(&grp[9]).ok()?;
             Some(Torrent {
-                posted: grp[1].to_string(),
-                size: grp[2].to_string(),
-                seeds: grp[3].parse().ok()?,
-                peers: grp[4].parse().ok()?,
-                downloads: grp[5].parse().ok()?,
-                url: grp[7].to_string(),
+                outdated: grp.get(1).is_some(),
+                posted: grp[2].to_string(),
+                size: grp[3].to_string(),
+                seeds: grp[4].parse().ok()?,
+                peers: grp[5].parse().ok()?,
+                downloads: grp[6].parse().ok()?,
+                uploader: grp[7].to_string(),
+                url: grp[8].to_string(),
                 name: name.to_string()
             })
         }

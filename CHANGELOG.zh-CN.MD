@@ -1,5 +1,64 @@
 # 变更日志
 
+## [1.11.6-RC1] - 2024-06-02
+
+### 改进
+
+* 下载列表默认显示全部下载项目
+* 替换搜索文本中的换行符为空格 [#1258](https://github.com/FooIbar/EhViewer/issues/1258)
+
+### Bug 修复
+
+* 评价画廊时未使用输入的评分
+* 搜索时意外选择 Non-H 类别 [#1246](https://github.com/FooIbar/EhViewer/issues/1246)
+* 侧边栏与导航抽屉重叠 [#1262](https://github.com/FooIbar/EhViewer/issues/1262)
+* 快速搜索/下载标签排序失效 [#1267](https://github.com/FooIbar/EhViewer/issues/1267)
+* 加载压缩包/种子列表出错时 UI 冻结
+* 低版本 Android 上某些 UI 被遮挡
+
+
+## [1.11.5] - 2024-05-19
+
+### 重大变更
+
+* 不再支持 32 位 x86
+
+### 新功能
+
+* 支持按作者对下载分组
+* 由于 E 站不再强制要求人机验证，重新支持账号密码登录
+
+### 改进
+
+* 在登录时加载收藏名称 [#1077](https://github.com/FooIbar/EhViewer/issues/1077)
+* 优化归档和种子界面 UI
+* 禁止在 cookie 界面截图以防止泄露
+* 在缩略图模式下显示画廊页数
+* 记住最低评分和页数搜索参数
+* 更新 User-Agent 以缓解 IP 封禁 [#1182](https://github.com/FooIbar/EhViewer/issues/1182)
+* 账号密码登录支持自动填充
+* 更新中文（台灣）翻译
+
+### Bug 修复
+
+* 非触摸模式下无法退出搜索界面 [#1060](https://github.com/FooIbar/EhViewer/issues/1060)
+* 某些设备上无法安装更新 [#1067](https://github.com/FooIbar/EhViewer/issues/1067)
+* 某些设备上崩溃/卡顿 [#996](https://github.com/FooIbar/EhViewer/issues/996) [#1023](https://github.com/FooIbar/EhViewer/issues/1023)
+* 搜索记录中存在重复条目时崩溃 [#1130](https://github.com/FooIbar/EhViewer/issues/1130)
+* 条漫模式下缩小后点按区域偏移 [#127](https://github.com/FooIbar/EhViewer/issues/127)
+* 多窗口模式下点按区域偏移
+* 点击下载通知时未清除状态
+* 保存未完成加载的图片时崩溃 [#1154](https://github.com/FooIbar/EhViewer/issues/1154)
+* 历史记录界面无法在项目上滑动打开抽屉 [#464](https://github.com/FooIbar/EhViewer/issues/464)
+* 导入数据失败时显示导入成功 [#1174](https://github.com/FooIbar/EhViewer/issues/1174)
+* 某些条件下收藏界面崩溃 [#1190](https://github.com/FooIbar/EhViewer/issues/1190)
+* 反转点按区域功能失效 [#1217](https://github.com/FooIbar/EhViewer/issues/1217)
+
+### 已知问题
+
+* 某些设备上从后台返回时某些 UI 消失，可通过关闭列表项目动画部分缓解 [#1184](https://github.com/FooIbar/EhViewer/issues/1184)
+
+
 ## [1.11.4] - 2024-04-21
 
 ### 新功能

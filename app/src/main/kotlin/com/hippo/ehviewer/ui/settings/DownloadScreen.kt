@@ -28,6 +28,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import arrow.fx.coroutines.parMap
+import arrow.fx.coroutines.parMapNotNull
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -36,7 +37,10 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.parser.GalleryDetailUrlParser
+import com.hippo.ehviewer.client.parser.ParserUtils
+import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
 import com.hippo.ehviewer.spider.SpiderDen
@@ -46,6 +50,7 @@ import com.hippo.ehviewer.spider.readCompatFromUniFile
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
+import com.hippo.ehviewer.util.displayString
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.displayPath
@@ -158,13 +163,41 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                 value = Settings::archiveMetadata,
             )
             WorkPreference(
+                title = stringResource(id = R.string.settings_download_reload_metadata),
+                summary = stringResource(id = R.string.settings_download_reload_metadata_summary),
+            ) {
+                fun DownloadInfo.isStable(): Boolean {
+                    val downloadTime = downloadDir?.findFile(COMIC_INFO_FILE)?.lastModified() ?: return false
+                    val postedTime = posted?.let { ParserUtils.parseDate(it) } ?: return false
+                    // stable 30 days after posted
+                    val stableTime = postedTime + 30L * 24L * 60L * 60L * 1000L
+                    return downloadTime > stableTime
+                }
+
+                runSuspendCatching {
+                    DownloadManager.downloadInfoList.parMapNotNull {
+                        if (it.state == DownloadInfo.STATE_FINISH && !it.isStable()) it else null
+                    }.apply {
+                        fillGalleryListByApi(this, EhUrl.referer)
+                        val toUpdate = parMap { di ->
+                            di.galleryInfo.also { SpiderDen(it, di.dirname!!).writeComicInfo(false) }
+                        }
+                        EhDB.updateGalleryInfo(toUpdate)
+                        launchSnackBar(context.getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
+                    }
+                }.onFailure {
+                    launchSnackBar(context.getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
+                }
+            }
+            val restoreFailed = stringResource(id = R.string.settings_download_restore_failed)
+            WorkPreference(
                 title = stringResource(id = R.string.settings_download_restore_download_items),
                 summary = stringResource(id = R.string.settings_download_restore_download_items_summary),
             ) {
                 var restoreDirCount = 0
                 suspend fun getRestoreItem(file: UniFile): RestoreItem? {
                     if (!file.isDirectory) return null
-                    return runCatching {
+                    return runSuspendCatching {
                         val (gid, token) = file.findFile(SPIDER_INFO_FILENAME)?.let {
                             readCompatFromUniFile(it)?.run {
                                 GalleryDetailUrlParser.Result(gid, token)
@@ -190,12 +223,8 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     }.getOrNull()
                 }
                 runCatching {
-                    val result = downloadLocation.listFiles().mapNotNull { getRestoreItem(it) }.apply {
-                        runSuspendCatching {
-                            fillGalleryListByApi(this, EhUrl.referer)
-                        }.onFailure {
-                            logcat(it)
-                        }
+                    val result = downloadLocation.listFiles().parMapNotNull { getRestoreItem(it) }.also {
+                        fillGalleryListByApi(it, EhUrl.referer)
                     }
                     if (result.isEmpty()) {
                         launchSnackBar(RESTORE_COUNT_MSG(restoreDirCount))
@@ -211,6 +240,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     }
                 }.onFailure {
                     logcat(it)
+                    launchSnackBar(restoreFailed)
                 }
             }
             WorkPreference(

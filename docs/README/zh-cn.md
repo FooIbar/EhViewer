@@ -84,13 +84,13 @@
 本项目受到了诸多开源项目的帮助
 
 - [Arrow](https://arrow-kt.io/)
-- [AOSP & AndroidX](http://source.android.com/)
+- [AOSP & AndroidX](https://source.android.com/)
 - [Kotlin & KotlinX](https://kotlinlang.org/)
 - [Material Icons](https://github.com/google/material-design-icons)
 - [Ktor](https://ktor.io/)
 - [Coil](https://coil-kt.github.io/coil/)
 - [Compose Destinations](https://composedestinations.rafaelcosta.xyz/)
-- [libarchive](http://www.libarchive.org/)
+- [libarchive](https://www.libarchive.org/)
 - [jsoup](https://jsoup.org/)
 
 特别感谢[Tachiyomi](https://tachiyomi.org/)的阅读器实现

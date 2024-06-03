@@ -20,27 +20,28 @@ import android.os.ParcelFileDescriptor
 import android.os.ParcelFileDescriptor.open
 import android.os.ParcelFileDescriptor.parseMode
 import android.webkit.MimeTypeMap
-import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
-import java.util.Locale
 
-class RawFile(private val parent: RawFile?, private var file: File) : UniFile() {
+class RawFile(override val parent: RawFile?, private var file: File) : UniFile {
 
     private var cachePresent = false
     private val allChildren by lazy {
-        val current = this
         cachePresent = true
-        logcat { "Directory lookup cache created for $name" }
-        mutableListOf<RawFile>().apply {
-            val fs = file.listFiles()?.map { RawFile(current, it) }
-            if (fs != null) addAll(fs)
-        }
+        file.listFiles().orEmpty().mapTo(mutableListOf()) { RawFile(this, it) }
     }
 
-    private fun popCacheIfPresent(file: RawFile) = apply {
+    private fun popCacheIfPresent(file: RawFile) {
         if (cachePresent) {
             synchronized(allChildren) {
                 allChildren.add(file)
+            }
+        }
+    }
+
+    private fun evictCacheIfPresent(file: RawFile) {
+        if (cachePresent) {
+            synchronized(allChildren) {
+                allChildren.remove(file)
             }
         }
     }
@@ -69,7 +70,8 @@ class RawFile(private val parent: RawFile?, private var file: File) : UniFile() 
         get() = if (file.isDirectory) {
             null
         } else {
-            getTypeForName(file.name)
+            val extension = file.extension.ifEmpty { null }?.lowercase()
+            MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
         }
     override val isDirectory: Boolean
         get() = file.isDirectory
@@ -103,7 +105,9 @@ class RawFile(private val parent: RawFile?, private var file: File) : UniFile() 
 
     override fun resolve(displayName: String) = RawFile(this, File(file, displayName))
 
-    override fun delete() = file.deleteRecursively()
+    override fun delete() = file.deleteRecursively().also {
+        if (it) parent?.evictCacheIfPresent(this)
+    }
 
     override fun exists() = file.exists()
 
@@ -125,16 +129,4 @@ class RawFile(private val parent: RawFile?, private var file: File) : UniFile() 
     }
 
     override fun openFileDescriptor(mode: String): ParcelFileDescriptor = open(file, parseMode(mode))
-}
-
-private fun getTypeForName(name: String): String {
-    val lastDot = name.lastIndexOf('.')
-    if (lastDot >= 0) {
-        val extension = name.substring(lastDot + 1).lowercase(Locale.getDefault())
-        val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-        if (mime != null) {
-            return mime
-        }
-    }
-    return "application/octet-stream"
 }

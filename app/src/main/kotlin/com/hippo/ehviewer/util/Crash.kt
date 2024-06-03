@@ -26,7 +26,7 @@ object Crash {
         writer.write("VersionName=${BuildConfig.VERSION_NAME}\n")
         writer.write("VersionCode=${BuildConfig.VERSION_CODE}\n")
         writer.write("CommitSha=${BuildConfig.COMMIT_SHA}\n")
-        writer.write("BuildTime=${BuildConfig.BUILD_TIME}\n")
+        writer.write("CommitTime=${AppConfig.commitTime}\n")
         writer.write("\n")
 
         // Device info
@@ -62,7 +62,7 @@ object Crash {
 
     fun saveCrashLog(t: Throwable) {
         val dir = AppConfig.externalCrashDir ?: return
-        val nowString = ReadableTime.getFilenamableTime(System.currentTimeMillis())
+        val nowString = ReadableTime.getFilenamableTime()
         val fileName = "crash-$nowString.log"
         val file = File(dir, fileName)
         runCatching {

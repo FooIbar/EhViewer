@@ -16,27 +16,35 @@
 package com.hippo.unifile
 
 import android.net.Uri
-import android.provider.DocumentsContract.Document.MIME_TYPE_DIR
+import android.provider.DocumentsContract
+import android.provider.DocumentsContract.Document
 import android.webkit.MimeTypeMap
+import splitties.init.appCtx
 
 class TreeDocumentFile(
-    private val parent: UniFile?,
-    override var uri: Uri,
-    override var name: String = getFilenameForUri(uri),
+    override val parent: TreeDocumentFile?,
+    uri: Uri,
+    name: String = getFilenameForUri(uri),
     mimeType: String? = null,
-) : UniFile() {
+) : UniFile {
     private var cachePresent = false
     private val allChildren by lazy {
         cachePresent = true
-        DocumentsContractApi21.listFiles(uri).mapTo(mutableListOf()) { (uri, name, mimeType) ->
-            TreeDocumentFile(this, uri, name, mimeType)
-        }
+        queryChildren()
     }
 
-    private fun popCacheIfPresent(file: TreeDocumentFile) = apply {
+    private fun popCacheIfPresent(file: TreeDocumentFile) {
         if (cachePresent) {
             synchronized(allChildren) {
                 allChildren.add(file)
+            }
+        }
+    }
+
+    private fun evictCacheIfPresent(file: TreeDocumentFile) {
+        if (cachePresent) {
+            synchronized(allChildren) {
+                allChildren.remove(file)
             }
         }
     }
@@ -46,7 +54,7 @@ class TreeDocumentFile(
         if (child != null) {
             if (child.isFile) return child
         } else {
-            val extension = displayName.substringAfterLast('.', "")
+            val extension = displayName.substringAfterLast('.', "").ifEmpty { null }?.lowercase()
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
             val result = DocumentsContractApi21.createFile(uri, mimeType, displayName)
             if (result != null) {
@@ -65,7 +73,7 @@ class TreeDocumentFile(
         } else {
             val result = DocumentsContractApi21.createDirectory(uri, displayName)
             if (result != null) {
-                val d = TreeDocumentFile(this, result, displayName, MIME_TYPE_DIR)
+                val d = TreeDocumentFile(this, result, displayName, Document.MIME_TYPE_DIR)
                 popCacheIfPresent(d)
                 return d
             }
@@ -73,14 +81,22 @@ class TreeDocumentFile(
         return null
     }
 
-    private val rawType by lazy {
-        mimeType ?: DocumentsContractApi19.getRawType(uri)
-    }
+    private var mimeType = mimeType
+        get() {
+            if (field == null) {
+                field = DocumentsContractApi19.getRawType(uri)
+            }
+            return field
+        }
 
+    override var uri = uri
+        private set
+    override var name = name
+        private set
     override val type: String?
-        get() = rawType.takeUnless { isDirectory }
+        get() = mimeType.takeUnless { isDirectory }
     override val isDirectory: Boolean
-        get() = rawType == MIME_TYPE_DIR
+        get() = mimeType == Document.MIME_TYPE_DIR
     override val isFile: Boolean
         get() = !type.isNullOrEmpty()
 
@@ -117,7 +133,9 @@ class TreeDocumentFile(
         return TreeDocumentFile(this, childUri, displayName)
     }
 
-    override fun delete() = DocumentsContractApi19.delete(uri)
+    override fun delete() = DocumentsContractApi19.delete(uri).also {
+        if (it) parent?.evictCacheIfPresent(this)
+    }
 
     override fun exists() = DocumentsContractApi19.exists(uri)
 
@@ -134,18 +152,36 @@ class TreeDocumentFile(
         if (result != null) {
             uri = result
             name = displayName
+            mimeType = null
             return true
         }
         return false
     }
 }
 
+// Technically the Uris should be treated as opaque, but it works for ExternalStorageProvider
 private fun getFilenameForUri(uri: Uri): String {
     val path = requireNotNull(uri.path)
-    val index = path.lastIndexOf('/')
-    return if (index >= 0) {
-        path.substring(index + 1)
-    } else {
-        return path
-    }
+    return path.substringAfterLast('/')
+}
+
+private val projection = arrayOf(
+    Document.COLUMN_DOCUMENT_ID,
+    Document.COLUMN_DISPLAY_NAME,
+    Document.COLUMN_MIME_TYPE,
+)
+
+private fun TreeDocumentFile.queryChildren(): MutableList<TreeDocumentFile> {
+    val self = uri
+    val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(self, DocumentsContract.getDocumentId(self))
+    return appCtx.contentResolver.query(childrenUri, projection, null, null, null)?.use { c ->
+        MutableList(c.count) {
+            c.moveToNext()
+            val documentId = c.getString(0)
+            val documentUri = DocumentsContract.buildDocumentUriUsingTree(self, documentId)
+            val displayName = c.getString(1)
+            val mimeType = c.getString(2)
+            TreeDocumentFile(this, documentUri, displayName, mimeType)
+        }
+    } ?: mutableListOf()
 }

@@ -25,17 +25,17 @@ object HomeParser {
         PATTERN_FUNDS.find(body)?.groupValues?.run {
             val fundsC = ParserUtils.parseInt(get(1), 0)
             val fundsGP = ParserUtils.parseInt(get(2), 0) * 1000
-            return Funds(fundsGP, fundsC)
+            return Funds("%,d+".format(fundsGP), "%,d".format(fundsC))
         }
         throw ParseException("Parse funds error")
     }
 
     @Parcelize
-    data class Funds(val fundsGP: Int, val fundsC: Int) : Parcelable
-
-    @Parcelize
     data class Result(val limits: Limits, val funds: Funds) : Parcelable
 }
+
+@Parcelize
+data class Funds(val gp: String, val credit: String) : Parcelable
 
 @Parcelize
 @Serializable

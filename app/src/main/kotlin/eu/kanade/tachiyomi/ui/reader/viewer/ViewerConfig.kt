@@ -4,6 +4,7 @@ import eu.kanade.tachiyomi.core.preference.Preference
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.TappingInvertMode
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -90,4 +91,12 @@ abstract class ViewerConfig(readerPreferences: ReaderPreferences, private val sc
             .onEach { onChanged(it) }
             .launchIn(scope)
     }
+
+    fun <T> Flow<T>.register(
+        valueAssignment: (T) -> Unit,
+        onChanged: (T) -> Unit = {},
+    ) = onEach { valueAssignment(it) }
+        .distinctUntilChanged()
+        .onEach { onChanged(it) }
+        .launchIn(scope)
 }

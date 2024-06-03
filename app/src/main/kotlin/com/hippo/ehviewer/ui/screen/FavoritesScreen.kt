@@ -1,6 +1,8 @@
 package com.hippo.ehviewer.ui.screen
 
+import android.content.Context
 import android.view.ViewConfiguration
+import androidx.collection.MutableLongSet
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -27,7 +29,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -44,54 +45,53 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
-import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.filter
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
+import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.LocalSideSheetState
-import com.hippo.ehviewer.ui.LockDrawer
+import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
-import com.hippo.ehviewer.ui.showDatePicker
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
-import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.mapToLongArray
+import com.hippo.ehviewer.util.takeAndClear
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.coroutines.runSwallowingWithUI
 
 @Destination<RootGraph>
 @Composable
@@ -100,9 +100,11 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     val localFavName = stringResource(R.string.local_favorites)
     val cloudFavName = stringResource(R.string.cloud_favorites)
     val animateItems by Settings.animateItems.collectAsState()
+    val hasSignedIn by Settings.hasSignedIn.collectAsState()
 
     // Meta State
     var urlBuilder by rememberSaveable { mutableStateOf(FavListUrlBuilder(favCat = Settings.recentFavCat)) }
+    var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
 
     // Derived State
@@ -120,7 +122,6 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     } else {
         stringResource(R.string.favorites_title_2, favCatName, keyword)
     }
-    val context = LocalContext.current
     val density = LocalDensity.current
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
     val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
@@ -165,7 +166,14 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                     }
                 }
             }
-        }.flow.cachedIn(viewModelScope)
+        }.flow.map { pagingData ->
+            // https://github.com/FooIbar/EhViewer/issues/1190
+            // Workaround for duplicate items when sorting by favorited time
+            val gidSet = MutableLongSet(50)
+            pagingData.filter {
+                gidSet.add(it.gid)
+            }
+        }.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
 
     fun refresh(newUrlBuilder: FavListUrlBuilder = urlBuilder.copy(jumpTo = null, prev = null, next = null)) {
@@ -186,7 +194,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             }
         }
         val localFav = stringResource(id = R.string.local_favorites) to localFavCount
-        val faves = if (EhCookieStore.hasSignedIn()) {
+        val faves = if (hasSignedIn) {
             arrayOf(
                 localFav,
                 stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
@@ -214,26 +222,22 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         }
     }
 
-    val refreshState = rememberPullToRefreshState {
-        data.loadState.refresh is LoadState.NotLoading
-    }
-
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
     val selectMode = checkedInfoMap.isNotEmpty()
-    LockDrawer(selectMode)
+    DrawerHandle(!selectMode && !searchBarExpanded)
 
     SearchBarScreen(
+        onApplySearch = { refresh(FavListUrlBuilder(urlBuilder.favCat, it)) },
+        expanded = searchBarExpanded,
+        onExpandedChange = {
+            searchBarExpanded = it
+            fabHidden = it
+            if (it) checkedInfoMap.clear()
+        },
         title = title,
         searchFieldHint = searchBarHint,
-        onApplySearch = { refresh(FavListUrlBuilder(urlBuilder.favCat, it)) },
-        onSearchExpanded = {
-            checkedInfoMap.clear()
-            fabHidden = true
-        },
-        onSearchHidden = { fabHidden = false },
-        refreshState = refreshState,
         tagNamespace = !isLocalFav,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
@@ -247,7 +251,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         val searchBarConnection = remember {
-            val slop = ViewConfiguration.get(context).scaledTouchSlop
+            val slop = ViewConfiguration.get(implicit<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
@@ -282,7 +286,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigator.navigate(info.asDst())
+                                navigate(info.asDst())
                             }
                         },
                         onLongClick = {
@@ -311,18 +315,19 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigator.navigate(info.asDst())
+                                navigate(info.asDst())
                             }
                         },
                         onLongClick = {
                             checkedInfoMap[info.gid] = info
                         },
                         info = info,
+                        showPages = showPages,
                         interactionSource = interactionSource,
                     )
                 }
             },
-            refreshState = refreshState,
+            searchBarOffsetY = { searchBarOffsetY },
             scrollToTopOnRefresh = urlBuilder.favCat != FavListUrlBuilder.FAV_CAT_LOCAL,
             onRefresh = { refresh() },
             onLoading = { searchBarOffsetY = 0 },
@@ -352,16 +357,12 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             if (isLocalFav) {
                 onClick(Icons.Default.Shuffle) {
                     val random = EhDB.randomLocalFav()
-                    withUIContext {
-                        navigator.navigate(random.asDst())
-                    }
+                    withUIContext { navigate(random.asDst()) }
                 }
             }
             onClick(EhIcons.Default.GoTo) {
-                launch {
-                    val date = showDatePicker()
-                    refresh(urlBuilder.copy(jumpTo = date))
-                }
+                val date = awaitSelectDate()
+                refresh(urlBuilder.copy(jumpTo = date))
             }
             onClick(Icons.Default.Refresh) {
                 refresh()
@@ -370,43 +371,47 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                 refresh(urlBuilder.copy(jumpTo = null, prev = "1-0", next = null))
             }
         } else {
-            onClick(Icons.Default.DoneAll) {
+            onClick(Icons.Default.DoneAll, autoClose = false) {
                 val info = data.itemSnapshotList.items.associateBy { it.gid }
                 checkedInfoMap.putAll(info)
-                throw CancellationException()
             }
             onClick(Icons.Default.Download) {
-                val info = checkedInfoMap.run { toMap().values.also { clear() } }
-                startDownload(context, false, *info.toTypedArray())
+                val info = checkedInfoMap.takeAndClear()
+                runSwallowingWithUI {
+                    startDownload(implicit<Context>(), false, *info.toTypedArray())
+                }
             }
             onClick(Icons.Default.Delete) {
-                val info = checkedInfoMap.run { toMap().values.also { clear() } }
+                val info = checkedInfoMap.takeAndClear()
                 awaitPermissionOrCancel(title = R.string.delete_favorites_dialog_title) {
                     Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
                 }
                 val srcCat = urlBuilder.favCat
-                if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) { // Delete local fav
-                    EhDB.removeLocalFavorites(info)
-                } else {
-                    val delList = info.mapToLongArray(BaseGalleryInfo::gid)
-                    EhEngine.modifyFavorites(delList, srcCat, -1)
+                runSwallowingWithUI {
+                    if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) { // Delete local fav
+                        EhDB.removeLocalFavorites(info)
+                    } else {
+                        val delList = info.mapToLongArray(BaseGalleryInfo::gid)
+                        EhEngine.modifyFavorites(delList, srcCat, -1)
+                    }
                 }
+                // We refresh anyway as cloud data maybe partially modified
                 data.refresh()
             }
             onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 // First is local favorite, the other 10 is cloud favorite
                 val items = buildList {
                     add(localFavName)
-                    if (EhCookieStore.hasSignedIn()) {
+                    if (hasSignedIn) {
                         addAll(Settings.favCat)
                     }
                 }
-                val index = showSelectItem(items, R.string.move_favorites_dialog_title)
+                val index = awaitSelectItem(items, R.string.move_favorites_dialog_title)
                 val srcCat = urlBuilder.favCat
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
-                val info = checkedInfoMap.run { toMap().values.also { clear() } }
+                val info = checkedInfoMap.takeAndClear()
                 if (srcCat != dstCat) {
-                    runSuspendCatching {
+                    runSwallowingWithUI {
                         if (srcCat == FavListUrlBuilder.FAV_CAT_LOCAL) {
                             // Move from local to cloud
                             val galleryList = info.map { it.gid to it.token }
@@ -420,11 +425,9 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                             val gidArray = info.mapToLongArray(BaseGalleryInfo::gid)
                             EhEngine.modifyFavorites(gidArray, srcCat, dstCat)
                         }
-                    }.onSuccess {
-                        data.refresh()
-                    }.onFailure {
-                        showSnackbar(it.displayString())
                     }
+                    // We refresh anyway as cloud data maybe partially modified
+                    data.refresh()
                 }
             }
         }

@@ -9,7 +9,7 @@ crate_type = ["cdylib"]
 [dependencies]
 regex-lite = { version = "0.1" }
 jni = "0.21"
-jni_fn = "0.1.2"
+jni_fn = "0.1"
 quick-xml = { default-features = false, version = "0.31" }
 tl = "0.7"
 log = "0.4"

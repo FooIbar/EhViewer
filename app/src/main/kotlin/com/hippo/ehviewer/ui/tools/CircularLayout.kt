@@ -6,14 +6,11 @@ import androidx.compose.foundation.gestures.draggable2D
 import androidx.compose.foundation.gestures.rememberDraggable2DState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.Layout
-import com.hippo.ehviewer.Settings
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -38,7 +35,7 @@ fun CircularLayout(
     content: @Composable () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var delta by remember { mutableFloatStateOf(Settings.favDialogTheta) }
+    var delta by rememberMutableStateInDataStore("FavDialogTheta") { 0F }
     val state = rememberDraggable2DState {
         val prevOfs = currentOfs
         val prevTheta = currentTheta
@@ -72,12 +69,10 @@ fun CircularLayout(
                         animateDecay(delta, omega, rotateDecay) { d, _ ->
                             delta = d
                         }
-                        Settings.favDialogTheta = delta
                     }
                 }
                 currentOfs = null
                 currentTheta = null
-                Settings.favDialogTheta = delta
             },
         ),
         content = content,

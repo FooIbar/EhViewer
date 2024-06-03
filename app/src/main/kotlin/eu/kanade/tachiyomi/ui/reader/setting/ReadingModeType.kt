@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.reader.setting
 
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.hippo.ehviewer.R
@@ -19,7 +18,12 @@ import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 
 @Stable
-enum class ReadingModeType(val prefValue: Int, @StringRes val stringRes: Int, val icon: ImageVector, val flagValue: Int) {
+enum class ReadingModeType(
+    override val prefValue: Int,
+    override val stringRes: Int,
+    override val icon: ImageVector,
+    override val flagValue: Int,
+) : PreferenceType {
     DEFAULT(0, R.string.label_default, EhIcons.Reader.Default, 0x00000000),
     LEFT_TO_RIGHT(1, R.string.left_to_right_viewer, EhIcons.Reader.LeftToRight, 0x00000001),
     RIGHT_TO_LEFT(2, R.string.right_to_left_viewer, EhIcons.Reader.RightToLeft, 0x00000002),

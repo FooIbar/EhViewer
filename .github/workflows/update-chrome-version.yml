@@ -1,0 +1,29 @@
+name: 'Update Chrome Version'
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update Chrome Version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd chrome-for-testing
+          curl -OLf https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config push.autoSetupRemote true
+          git switch -c chore/chrome
+          if git commit -am "Update Chrome version for default User-Agent"; then
+            git push
+            gh pr create -f
+            gh pr merge chore/chrome --auto -dr
+          fi

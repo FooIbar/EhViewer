@@ -3,40 +3,48 @@
   "extends": [
     "config:base"
   ],
+  "ignorePaths": [
+    "app/build.gradle.kts"
+  ],
   "packageRules": [
     {
       "groupName": "AGP",
-      "matchPackageNames": [
+      "matchDepNames": [
         "com.android.application"
       ],
       "ignoreUnstable": false
     },
     {
-      "groupName": "AndroidX & Jetpack Compose",
-      "matchPackagePrefixes": [
+      "matchDepPrefixes": [
         "androidx."
       ],
-      "matchPackageNames": [
+      "ignoreUnstable": false
+    },
+    {
+      "groupName": "Compose BOM",
+      "matchDepNames": [
         "dev.chrisbanes.compose:compose-bom"
       ],
       "ignoreUnstable": false
     },
     {
       "groupName": "Kotlin & KSP",
-      "matchPackagePrefixes": [
-        "org.jetbrains.kotlin."
-      ],
-      "matchPackageNames": [
-        "com.google.devtools.ksp"
+      "matchSourceUrls": [
+        "https://github.com/JetBrains/kotlin",
+        "https://github.com/google/ksp"
       ],
       "recreateWhen": "never"
     },
     {
       "description": "Disable updates for SNAPSHOTs",
-      "matchCategories": [
-        "java"
+      "matchDatasources": [
+        "maven"
       ],
       "allowedVersions": "!/SNAPSHOT$/"
     }
-  ]
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "rangeStrategy": "replace"
 }

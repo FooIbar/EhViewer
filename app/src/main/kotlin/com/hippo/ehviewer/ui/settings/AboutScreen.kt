@@ -51,7 +51,6 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import moe.tarsin.coroutines.runSuspendCatching
 
 private const val REPO_URL = "https://github.com/${BuildConfig.REPO_NAME}"
@@ -59,7 +58,7 @@ private const val RELEASE_URL = "$REPO_URL/releases"
 
 @Composable
 @Stable
-private fun versionCode() = "${BuildConfig.VERSION_NAME} (${BuildConfig.COMMIT_SHA})\n" + stringResource(R.string.settings_about_build_time, BuildConfig.BUILD_TIME)
+private fun versionCode() = "${BuildConfig.VERSION_NAME} (${BuildConfig.COMMIT_SHA})\n" + stringResource(R.string.settings_about_commit_time, AppConfig.commitTime)
 
 @Composable
 @Stable
@@ -154,7 +153,7 @@ suspend fun DialogState.showNewVersion(context: Context, release: Release) {
         }
     }
     if (Settings.backupBeforeUpdate) {
-        val time = ReadableTime.getFilenamableTime(Clock.System.now().toEpochMilliseconds())
+        val time = ReadableTime.getFilenamableTime()
         downloadLocation.createFile("$time.db")?.let {
             EhDB.exportDB(context, it)
         }

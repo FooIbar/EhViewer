@@ -6,12 +6,13 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
@@ -26,16 +27,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.BrushPainter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -111,7 +110,7 @@ fun GalleryInfoListItem(
         Card {
             EhAsyncCropThumb(
                 key = info,
-                modifier = Modifier.aspectRatio(DEFAULT_ASPECT).fillMaxSize(),
+                modifier = Modifier.aspectRatio(DEFAULT_RATIO).fillMaxSize(),
             )
         }
         ConstraintLayout(
@@ -210,7 +209,8 @@ fun GalleryInfoGridItem(
     onLongClick: () -> Unit,
     info: GalleryInfo,
     modifier: Modifier = Modifier,
-    badgeText: String? = info.simpleLanguage,
+    showLanguage: Boolean = true,
+    showPages: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) = ElevatedCard(
     modifier = modifier,
@@ -219,19 +219,20 @@ fun GalleryInfoGridItem(
     interactionSource = interactionSource,
 ) {
     Box {
-        val placeholder = remember {
-            val aspect = if (info.thumbHeight != 0) {
-                (info.thumbWidth.toFloat() / info.thumbHeight).coerceIn(MIN_ASPECT, MAX_ASPECT)
+        var ratio by remember(info) {
+            val ratio = if (info.thumbHeight != 0) {
+                (info.thumbWidth.toFloat() / info.thumbHeight).coerceIn(MIN_RATIO, MAX_RATIO)
             } else {
-                DEFAULT_ASPECT
+                DEFAULT_RATIO
             }
-            BrushPainter(Brush.linearGradient(PlaceholderColors, end = Offset(aspect, 1f)))
+            mutableFloatStateOf(ratio)
         }
         EhAsyncThumb(
             model = info,
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = placeholder,
-            contentScale = ContentScale.Crop,
+            modifier = Modifier.aspectRatio(ratio),
+            onSuccess = {
+                ratio = (it.width.toFloat() / it.height).coerceIn(MIN_RATIO, MAX_RATIO)
+            },
         )
         val categoryColor = EhUtils.getCategoryColor(info.category)
         Badge(
@@ -239,15 +240,20 @@ fun GalleryInfoGridItem(
             containerColor = categoryColor,
             contentColor = if (Settings.harmonizeCategoryColor) contentColorFor(categoryColor) else EhUtils.categoryTextColor,
         ) {
-            if (badgeText != null) {
-                Text(text = badgeText)
+            val shouldShowLanguage = showLanguage && info.simpleLanguage != null
+            if (showPages && info.pages > 0) {
+                Text(text = "${info.pages}")
+                if (shouldShowLanguage) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
+            }
+            if (shouldShowLanguage) {
+                Text(text = "${info.simpleLanguage}")
             }
         }
     }
 }
 
-private val PlaceholderColors = listOf(Color.Transparent, Color.Transparent)
-
-private const val MIN_ASPECT = 0.33F
-private const val MAX_ASPECT = 1.5F
-const val DEFAULT_ASPECT = 0.67F
+private const val MIN_RATIO = 0.5F
+private const val MAX_RATIO = 1.5F
+const val DEFAULT_RATIO = 0.67F

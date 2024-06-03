@@ -24,17 +24,9 @@ import kotlin.math.ln
 import kotlin.math.pow
 
 object FileUtils {
-    private val FORBIDDEN_FILENAME_CHARACTERS = charArrayOf(
-        '\\',
-        '/',
-        ':',
-        '*',
-        '?',
-        '"',
-        '<',
-        '>',
-        '|',
-    )
+    // Even though vfat allows 255 UCS-2 chars, we might eventually write to
+    // ext4 through a FUSE layer, so use that limit.
+    private const val MAX_FILENAME_BYTES = 255
 
     fun ensureDirectory(file: File?) =
         file?.let { if (it.exists()) it.isDirectory else it.mkdirs() } ?: false
@@ -89,38 +81,53 @@ object FileUtils {
         }
     }
 
-    fun sanitizeFilename(rawFilename: String): String {
-        // Remove forbidden_filename_characters
-        var filename = rawFilename
-        filename = filename.filterNot { FORBIDDEN_FILENAME_CHARACTERS.contains(it) }
-
-        // Ensure utf-8 byte count <= 255
-        var byteCount = 0
-        var length = 0
-        val len = filename.length
-        while (length < len) {
-            val ch = filename[length]
-            if (ch.code <= 0x7F) {
-                byteCount++
-            } else if (ch.code <= 0x7FF) {
-                byteCount += 2
-            } else if (Character.isHighSurrogate(ch)) {
-                byteCount += 4
-                ++length
-            } else {
-                byteCount += 3
-            }
-            // Meet max byte count
-            if (byteCount > 255) {
-                filename = filename.substring(0, length)
-                break
-            }
-            length++
+    private fun isValidFatFilenameChar(c: Char) =
+        when (c.code) {
+            in 0x00..0x1F,
+            '"'.code,
+            '*'.code,
+            '/'.code,
+            ':'.code,
+            '<'.code,
+            '>'.code,
+            '?'.code,
+            '\\'.code,
+            '|'.code,
+            0x7F,
+            -> false
+            else -> true
         }
 
-        // Trim
-        return filename.trim()
+    // From https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/FileUtils.java;l=1142;drc=7b647e4ea0e92f33c19b315eaed364ee067ba0aa
+    /**
+     * Mutate the given filename to make it valid for a FAT filesystem,
+     * replacing any invalid characters with "_".
+     *
+     * @param name the original filename
+     */
+    fun sanitizeFilename(name: String): String {
+        if (name.isEmpty() || "." == name || ".." == name) {
+            return "(invalid)"
+        }
+        return buildString(name.length) {
+            name.forEach {
+                if (isValidFatFilenameChar(it)) {
+                    append(it)
+                } else {
+                    append('_')
+                }
+            }
+            if (sizeInBytes > MAX_FILENAME_BYTES) {
+                do {
+                    deleteCharAt(length / 2)
+                } while (sizeInBytes >= MAX_FILENAME_BYTES)
+                insert(length / 2, '…')
+            }
+        }
     }
+
+    private val StringBuilder.sizeInBytes
+        get() = toString().toByteArray().size
 
     /**
      * Get extension from filename
@@ -129,7 +136,7 @@ object FileUtils {
      * @return null for can't find extension
      */
     fun getExtensionFromFilename(filename: String?) =
-        filename?.substringAfterLast('.', "").takeUnless { it.isNullOrEmpty() }
+        filename?.substringAfterLast('.', "")?.ifEmpty { null }
 
     /**
      * Get name from filename
@@ -138,7 +145,7 @@ object FileUtils {
      * @return null for start with . dot
      */
     fun getNameFromFilename(filename: String?) =
-        filename?.substringBeforeLast('.').takeUnless { it.isNullOrEmpty() }
+        filename?.substringBeforeLast('.')?.ifEmpty { null }
 
     /**
      * Create a temp file, you need to delete it by you self.
