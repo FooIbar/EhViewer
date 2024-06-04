@@ -43,6 +43,7 @@ import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
 import com.hippo.unifile.openOutputStream
+import com.hippo.unifile.sha1
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.statement.HttpResponse
@@ -195,6 +196,9 @@ class SpiderDen(val info: GalleryInfo) {
             outFile.openOutputStream().use {
                 response.bodyAsChannel().copyTo(it.channel)
             }
+            val expected = FileHashRegex.find(url)?.run { groupValues[0] }
+            val actual = outFile.sha1()
+            check(expected == actual) { "File hash mismatch: expected $expected, but got $actual\nURL: $url" }
         }
     }
 
@@ -275,7 +279,7 @@ class SpiderDen(val info: GalleryInfo) {
         val archived = saveAsCbz && dir?.findFile(archiveName) != null
         if (archived) {
             dir.listFiles().parMap(concurrency = 10) {
-                if (it.name?.matches(filenamePattern) == true) {
+                if (it.name?.matches(FileNameRegex) == true) {
                     it.delete()
                 }
             }
@@ -339,7 +343,8 @@ class SpiderDen(val info: GalleryInfo) {
     }
 }
 
-private val filenamePattern = Regex("^\\d{8}\\.\\w{3,4}")
+private val FileNameRegex = Regex("^\\d{8}\\.\\w{3,4}")
+private val FileHashRegex = Regex("[0-9a-f]{40}")
 
 fun perFilename(index: Int, extension: String = ""): String {
     return "%08d.%s".format(index + 1, extension)
