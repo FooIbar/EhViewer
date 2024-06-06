@@ -3,6 +3,8 @@ package com.hippo.ehviewer.ui.tools
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +19,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import arrow.core.memoize
+import com.hippo.ehviewer.ui.screen.implicit
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -26,9 +30,13 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.serialization.BinaryFormat
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromByteArray
-import kotlinx.serialization.encodeToByteArray
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.serializer
 import splitties.init.appCtx
 
 val dataStoreScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -58,23 +66,48 @@ inline fun <reified T : Any> rememberInVM(
     }
 }
 
-// Find out how make this work with any generic `Serializable` type
+// TODO: break change: record [SnapshotMutationPolicy] as well
+class MutableStateSerializer<T>(private val ser: KSerializer<T>) : KSerializer<MutableState<T>> {
+    override val descriptor: SerialDescriptor = ser.descriptor
+    override fun serialize(encoder: Encoder, value: MutableState<T>) = ser.serialize(encoder, value.value)
+    override fun deserialize(decoder: Decoder) = mutableStateOf(ser.deserialize(decoder))
+}
+
+private val cachedGetter = { p: KSerializer<*> -> MutableStateSerializer(p) }.memoize()
+
+@Suppress("UNCHECKED_CAST")
+fun <T> mutableStateSerializer(ser: KSerializer<T>) = cachedGetter(ser) as MutableStateSerializer<T>
+
 @Composable
 inline fun <reified T> rememberMutableStateInDataStore(
     key: String,
     crossinline defaultValue: @DisallowComposableCalls () -> T,
+) = with(mutableStateSerializer(serializer<T>())) {
+    Cbor.rememberInDataStoreWithExplicitKSerializer(key) {
+        mutableStateOf(defaultValue())
+    }
+}
+
+context(KSerializer<T>)
+@Stable
+@Composable
+inline fun <reified T> BinaryFormat.rememberInDataStoreWithExplicitKSerializer(
+    key: String,
+    crossinline defaultValue: @DisallowComposableCalls () -> T,
 ) = with(dataStateFlow) {
     remember {
-        val keyObj = byteArrayPreferencesKey(key)
-        val r = value[keyObj]?.let { bytes -> Cbor.decodeFromByteArray(bytes) } ?: defaultValue()
-        mutableStateOf(r)
-    }.also { mutableState ->
+        value[byteArrayPreferencesKey(key)]?.let { bytes ->
+            decodeFromByteArray(implicit<KSerializer<T>>(), bytes)
+        } ?: defaultValue()
+    }.also { value ->
         LifecycleResumeEffect(key) {
             onPauseOrDispose {
                 dataStoreScope.launch {
-                    val keyObj = byteArrayPreferencesKey(key)
                     dataStore.edit { p ->
-                        p[keyObj] = Cbor.encodeToByteArray(mutableState.value)
+                        p[byteArrayPreferencesKey(key)] = encodeToByteArray(
+                            implicit<KSerializer<T>>(),
+                            value,
+                        )
                     }
                 }
             }
