@@ -58,6 +58,7 @@ androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "an
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "androidx-work" }
 
 arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines" }
+arrow-resilience = { module = "io.arrow-kt:arrow-resilience" }
 arrow-stack = { module = "io.arrow-kt:arrow-stack", version.ref = "arrow" }
 
 coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil" }
