@@ -77,7 +77,6 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.viewModelScope
@@ -342,20 +341,15 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                                     checkBoxText = R.string.save_progress,
                                 ) { input, checked ->
                                     var text = input.trim()
-                                    nameEmpty.takeIf {
-                                        text.isEmpty()
-                                    } ?: dupName.takeIf {
-                                        if (checked) text += "@$next"
-                                        quickSearchList.fastAny { it.name == text }
-                                    } ?: run {
-                                        val quickSearch = urlBuilder.toQuickSearch(text)
-                                        quickSearch.position = quickSearchList.size
-                                        // Insert to DB first to update the id
-                                        EhDB.insertQuickSearch(quickSearch)
-                                        quickSearchList.add(quickSearch)
-                                        saveProgress = checked
-                                        null
-                                    }
+                                    ensure(text.isNotBlank()) { nameEmpty }
+                                    if (checked) text += "@$next"
+                                    ensure(quickSearchList.none { it.name == text }) { dupName }
+                                    val quickSearch = urlBuilder.toQuickSearch(text)
+                                    quickSearch.position = quickSearchList.size
+                                    // Insert to DB first to update the id
+                                    EhDB.insertQuickSearch(quickSearch)
+                                    quickSearchList.add(quickSearch)
+                                    saveProgress = checked
                                 }
                             }
                         }
