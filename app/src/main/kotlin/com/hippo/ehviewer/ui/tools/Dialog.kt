@@ -113,7 +113,7 @@ class DialogState {
         @StringRes title: Int? = null,
         invalidator: (suspend Raise<String>.(R) -> Unit)? = null,
         block: @Composable DialogScope<R>.(String?) -> Unit,
-    ) = dialog { cont ->
+    ): R = dialog { cont ->
         val coroutineScope = rememberCoroutineScope()
         val state = remember(cont) { mutableStateOf(initial) }
         var errorMsg by remember(cont) { mutableStateOf<String?>(null) }
