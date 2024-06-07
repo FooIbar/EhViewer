@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import arrow.core.raise.ensure
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
@@ -153,12 +154,13 @@ fun SearchFilter(
                     val (from, to) = dialogState.awaitResult(
                         initial = advancedOption.fromPage to advancedOption.toPage,
                         title = R.string.key_pages,
-                        invalidator = { (from, to) ->
-                            if (to != 0 && to < 10) {
-                                raise(pageErr1)
-                            }
-                            if (from != 0 && to != 0 && to - from < 20) {
-                                raise(pageErr2)
+                        invalidator = { (min, _max) ->
+                            // 0 means max pages not filled, though +inf
+                            val max = if (_max == 0) Int.MAX_VALUE else _max
+                            if (min != 0) {
+                                ensure(max - min >= 20) { pageErr2 }
+                            } else {
+                                ensure(max >= 10) { pageErr1 }
                             }
                         },
                     ) { error ->
