@@ -87,6 +87,8 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
+import arrow.core.raise.ensure
+import arrow.core.raise.ensureNotNull
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -735,10 +737,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     val page = urlBuilder.mJumpTo?.toIntOrNull() ?: 0
                     val hint = getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
                     val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
-                        when (oriText.trim().toIntOrNull()?.let { it - 1 }) {
-                            null -> raise(invalidNum)
-                            !in 0..<TOPLIST_PAGES -> raise(outOfRange)
-                        }
+                        val goto = ensureNotNull(oriText.trim().toIntOrNull()) { invalidNum } - 1
+                        ensure(goto in 0..<TOPLIST_PAGES) { outOfRange }
                     }.trim().toInt() - 1
                     urlBuilder.setJumpTo(text)
                 } else {
