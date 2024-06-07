@@ -208,7 +208,7 @@ class DialogState {
         checked: Boolean,
         @StringRes checkBoxText: Int,
         isNumber: Boolean = false,
-        invalidator: (suspend (String, Boolean) -> String?)? = null,
+        invalidator: (suspend Raise<String>.(String, Boolean) -> Unit)? = null,
     ): Pair<String, Boolean> {
         return dialog { cont ->
             val coroutineScope = rememberCoroutineScope()
@@ -223,7 +223,7 @@ class DialogState {
                             cont.resume(state to checkedState)
                         } else {
                             coroutineScope.launch {
-                                error = invalidator.invoke(state, checkedState)
+                                error = either { invalidator(state, checkedState) }.leftOrNull()
                                 error ?: cont.resume(state to checkedState)
                             }
                         }
