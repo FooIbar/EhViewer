@@ -70,6 +70,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.SecureFlagPolicy
 import arrow.core.Either
+import arrow.core.raise.Raise
+import arrow.core.raise.either
 import arrow.core.right
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
@@ -109,13 +111,13 @@ class DialogState {
     suspend fun <R> awaitResult(
         initial: R,
         @StringRes title: Int? = null,
-        invalidator: (suspend (R) -> String?)? = null,
+        invalidator: (suspend Raise<String>.(R) -> Unit)? = null,
         block: @Composable DialogScope<R>.(String?) -> Unit,
     ): R {
         return dialog { cont ->
             val coroutineScope = rememberCoroutineScope()
             val state = remember(cont) { mutableStateOf(initial) }
-            var error by remember(cont) { mutableStateOf<String?>(null) }
+            var errorMsg by remember(cont) { mutableStateOf<String?>(null) }
             val impl = remember(cont) {
                 object : DialogScope<R> {
                     override var expectedValue by state
@@ -129,8 +131,8 @@ class DialogState {
                             cont.resume(state.value)
                         } else {
                             coroutineScope.launch {
-                                error = invalidator.invoke(state.value)
-                                error ?: cont.resume(state.value)
+                                errorMsg = either { invalidator(state.value) }.leftOrNull()
+                                errorMsg ?: cont.resume(state.value)
                             }
                         }
                     }) {
@@ -145,7 +147,7 @@ class DialogState {
                     }
                 },
                 title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
-                text = { block(impl, error) },
+                text = { block(impl, errorMsg) },
             )
         }
     }
