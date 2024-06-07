@@ -113,43 +113,41 @@ class DialogState {
         @StringRes title: Int? = null,
         invalidator: (suspend Raise<String>.(R) -> Unit)? = null,
         block: @Composable DialogScope<R>.(String?) -> Unit,
-    ): R {
-        return dialog { cont ->
-            val coroutineScope = rememberCoroutineScope()
-            val state = remember(cont) { mutableStateOf(initial) }
-            var errorMsg by remember(cont) { mutableStateOf<String?>(null) }
-            val impl = remember(cont) {
-                object : DialogScope<R> {
-                    override var expectedValue by state
-                }
+    ) = dialog { cont ->
+        val coroutineScope = rememberCoroutineScope()
+        val state = remember(cont) { mutableStateOf(initial) }
+        var errorMsg by remember(cont) { mutableStateOf<String?>(null) }
+        val impl = remember(cont) {
+            object : DialogScope<R> {
+                override var expectedValue by state
             }
-            AlertDialog(
-                onDismissRequest = { cont.cancel() },
-                confirmButton = {
-                    TextButton(onClick = {
-                        if (invalidator == null) {
-                            cont.resume(state.value)
-                        } else {
-                            coroutineScope.launch {
-                                errorMsg = either { invalidator(state.value) }.leftOrNull()
-                                errorMsg ?: cont.resume(state.value)
-                            }
-                        }
-                    }) {
-                        Text(text = stringResource(id = android.R.string.ok))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        cont.cancel()
-                    }) {
-                        Text(text = stringResource(id = android.R.string.cancel))
-                    }
-                },
-                title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
-                text = { block(impl, errorMsg) },
-            )
         }
+        AlertDialog(
+            onDismissRequest = { cont.cancel() },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (invalidator == null) {
+                        cont.resume(state.value)
+                    } else {
+                        coroutineScope.launch {
+                            errorMsg = either { invalidator(state.value) }.leftOrNull()
+                            errorMsg ?: cont.resume(state.value)
+                        }
+                    }
+                }) {
+                    Text(text = stringResource(id = android.R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    cont.cancel()
+                }) {
+                    Text(text = stringResource(id = android.R.string.cancel))
+                }
+            },
+            title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+            text = { block(impl, errorMsg) },
+        )
     }
 
     suspend fun awaitInputText(
