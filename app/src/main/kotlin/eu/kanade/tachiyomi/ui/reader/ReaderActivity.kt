@@ -65,6 +65,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import arrow.core.raise.ensure
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -173,12 +174,8 @@ class ReaderActivity : EhActivity() {
                                 title = getString(R.string.archive_need_passwd),
                                 hint = getString(R.string.archive_passwd),
                             ) { text ->
-                                if (text.isBlank()) {
-                                    raise(getString(R.string.passwd_cannot_be_empty))
-                                }
-                                if (!invalidator(text)) {
-                                    raise(getString(R.string.passwd_wrong))
-                                }
+                                ensure(text.isNotBlank()) { getString(R.string.passwd_cannot_be_empty) }
+                                ensure(invalidator(text)) { getString(R.string.passwd_wrong) }
                             }
                         }.onFailure {
                             finish()
