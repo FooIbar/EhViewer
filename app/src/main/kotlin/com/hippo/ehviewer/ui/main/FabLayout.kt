@@ -33,9 +33,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import arrow.resilience.Schedule
+import arrow.resilience.retry
 import com.hippo.ehviewer.ui.tools.PredictiveBackEasing
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.snackBarPadding
+import kotlin.time.Duration.Companion.microseconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -88,6 +91,8 @@ class FabLayoutState(
     suspend fun expand(priority: MutatePriority = MutatePriority.Default) = upTo(FabLayoutValue.Expand, priority)
 }
 
+private val fabSyncSchedule = Schedule.linear<Throwable>(100.microseconds)
+
 fun interface FabBuilder {
     fun onClick(icon: ImageVector, autoClose: Boolean, that: suspend () -> Unit)
     fun onClick(icon: ImageVector, that: suspend () -> Unit) = onClick(icon, true, that)
@@ -111,12 +116,14 @@ fun FabLayout(
     }
     val state = rememberFabLayoutState(newState)
     LaunchedEffect(newState) {
-        when (newState) {
-            FabLayoutValue.Expand -> state.expand()
-            FabLayoutValue.Hidden -> state.hide()
-            FabLayoutValue.Primary -> {
-                state.collapse()
-                state.show()
+        fabSyncSchedule.retry {
+            when (newState) {
+                FabLayoutValue.Expand -> state.expand()
+                FabLayoutValue.Hidden -> state.hide()
+                FabLayoutValue.Primary -> {
+                    state.collapse()
+                    state.show()
+                }
             }
         }
     }
