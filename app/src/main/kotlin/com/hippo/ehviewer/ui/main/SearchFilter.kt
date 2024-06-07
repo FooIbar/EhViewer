@@ -155,11 +155,10 @@ fun SearchFilter(
                         title = R.string.key_pages,
                         invalidator = { (from, to) ->
                             if (to != 0 && to < 10) {
-                                pageErr1
-                            } else if (from != 0 && to != 0 && to - from < 20) {
-                                pageErr2
-                            } else {
-                                null
+                                raise(pageErr1)
+                            }
+                            if (from != 0 && to != 0 && to - from < 20) {
+                                raise(pageErr2)
                             }
                         },
                     ) { error ->
