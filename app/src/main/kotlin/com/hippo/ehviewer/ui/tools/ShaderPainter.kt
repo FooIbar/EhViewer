@@ -14,24 +14,41 @@ import androidx.compose.ui.graphics.painter.Painter
 import com.hippo.ehviewer.util.isAtLeastT
 
 private val sksl = """
-uniform float uTime;
-uniform vec3 uResolution;
+uniform float t;
+uniform vec2 dimen;
 
-vec4 main( vec2 fragCoord )
+vec3 toGLColor(vec3 color) 
 {
-    float mr = min(uResolution.x, uResolution.y);
-    vec2 uv = (fragCoord * 2.0 - uResolution.xy) / mr;
+	return color * 0.00392156862;
+}
 
-    float d = -uTime * 0.5;
-    float a = 0.0;
-    for (float i = 0.0; i < 8.0; ++i) {
-        a += cos(i - d - a * uv.x);
-        d += sin(uv.y * i + a);
-    }
-    d += uTime * 0.5;
-    vec3 col = vec3(cos(uv * vec2(d, a)) * 0.6 + 0.4, cos(a + d) * 0.5 + 0.5);
-    col = cos(col * cos(vec3(d, a, 2.5)) * 0.5 + 0.5);
-    return vec4(col,1.0);
+vec4 main(vec2 fragCoord)
+{
+    float smoothness = 0.008;
+    vec2 uv = fragCoord / dimen;
+    
+    // TODO: Uniform
+    vec3 primary = toGLColor(vec3(203, 136, 180));
+    vec3 surface = toGLColor(vec3(149, 165, 166));
+    vec3 waveAppleColor = toGLColor(vec3(52, 152, 219));
+    vec3 waveButterColor = toGLColor(vec3(14, 122, 160));
+    
+    float realtic = smoothstep(0, smoothness, uv.x) * smoothstep(0, smoothness, 1 - uv.x);
+    realtic *= smoothstep(0, smoothness, uv.y) * smoothstep(0, smoothness, 1 - uv.y);
+    vec3 mixed = mix(surface, primary, realtic);
+    
+    // Wave Apple
+    float waveProgress = sin(t) * 0.35 + 0.5;
+    waveProgress += (0.01 * sin(uv.x * 35. + t*2.)) + (0.005 * sin(uv.x * 20. + t*0.5));
+    float waveOp = smoothstep(waveProgress, waveProgress + smoothness, uv.y);
+    mixed = mix(mixed, waveAppleColor, waveOp);
+    
+    // Wave Butter
+    waveProgress = sin(t) * 0.35 + 0.5;
+    waveProgress += (0.02 * sin(uv.x * 20. + t*2.)) + (0.005 * sin(uv.x * 30. + t*0.7));
+    waveOp = smoothstep(waveProgress, waveProgress + smoothness, uv.y);
+    mixed = mix(mixed, waveButterColor, waveOp);
+	return vec4(mixed, 1);
 }
 """
 
@@ -45,8 +62,8 @@ val thumbPlaceholder = if (isAtLeastT) {
         override val intrinsicSize = Size.Unspecified
         override fun DrawScope.onDraw() {
             val (width, height) = size
-            shader.setFloatUniform("uResolution", width, height, width / height)
-            shader.setFloatUniform("uTime", draws++ / 100)
+            shader.setFloatUniform("dimen", width, height)
+            shader.setFloatUniform("t", draws++ / 120)
             drawRect(brush = brush)
         }
     }
