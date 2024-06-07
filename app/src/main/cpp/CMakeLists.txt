@@ -29,20 +29,28 @@ FetchContent_MakeAvailable(liblzma)
 include_directories(${liblzma_SOURCE_DIR}/src/liblzma/api)
 
 # Build GNUTLS libnettle
+if (CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
+    execute_process(
+            COMMAND wsl wslpath ${CMAKE_CURRENT_LIST_DIR}
+            OUTPUT_VARIABLE CURRENT_DIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+else ()
+    set(CURRENT_DIR ${CMAKE_CURRENT_LIST_DIR})
+endif ()
+set(NDK_VERSION "${ANDROID_NDK_MAJOR}.${ANDROID_NDK_MINOR}.${ANDROID_NDK_BUILD}")
 FetchContent_Declare(
         nettle
         URL https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
         URL_MD5 29fcd2dec6bf5b48e5e3ffb3cbc4779e
         SOURCE_DIR nettle-src/nettle
+        PATCH_COMMAND bash ${CURRENT_DIR}/build_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET} ${CMAKE_C_FLAGS}
 )
 
 FetchContent_MakeAvailable(nettle)
-set(NETTLE_DIR ${nettle_SOURCE_DIR})
-add_subdirectory(nettle)
+include_directories(${nettle_SOURCE_DIR}/..)
 
 # Configure libnettle support for libarchive
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/nettle-src)
-include_directories(.)
 set(HAVE_LIBNETTLE 1)
 set(HAVE_NETTLE_AES_H 1)
 set(HAVE_NETTLE_HMAC_H 1)
@@ -65,7 +73,7 @@ option(ENABLE_UNZIP OFF)
 option(ENABLE_TEST OFF)
 
 # Configure libarchive link's static lib
-SET(LIBARCHIVE_CUSTOM_LIBS "nettle" "liblzma")
+SET(LIBARCHIVE_CUSTOM_LIBS ${nettle_SOURCE_DIR}/libnettle.a "liblzma")
 
 FetchContent_Declare(
         libarchive
