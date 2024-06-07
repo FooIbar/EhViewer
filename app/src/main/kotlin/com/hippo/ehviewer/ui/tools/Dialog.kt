@@ -158,51 +158,49 @@ class DialogState {
         hint: String? = null,
         isNumber: Boolean = false,
         @StringRes confirmText: Int = android.R.string.ok,
-        invalidator: (suspend (String) -> String?)? = null,
-    ): String {
-        return dialog { cont ->
-            val coroutineScope = rememberCoroutineScope()
-            var state by remember(cont) { mutableStateOf(initial) }
-            var error by remember(cont) { mutableStateOf<String?>(null) }
-            AlertDialog(
-                onDismissRequest = { cont.cancel() },
-                confirmButton = {
-                    TextButton(onClick = {
-                        if (invalidator == null) {
-                            cont.resume(state)
-                        } else {
-                            coroutineScope.launch {
-                                error = invalidator.invoke(state)
-                                error ?: cont.resume(state)
-                            }
+        invalidator: (suspend Raise<String>.(String) -> Unit)? = null,
+    ) = dialog { cont ->
+        val coroutineScope = rememberCoroutineScope()
+        var state by remember(cont) { mutableStateOf(initial) }
+        var error by remember(cont) { mutableStateOf<String?>(null) }
+        AlertDialog(
+            onDismissRequest = { cont.cancel() },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (invalidator == null) {
+                        cont.resume(state)
+                    } else {
+                        coroutineScope.launch {
+                            error = either { invalidator(state) }.leftOrNull()
+                            error ?: cont.resume(state)
                         }
-                    }) {
-                        Text(text = stringResource(id = confirmText))
                     }
-                },
-                title = title.ifNotNullThen { Text(text = title!!) },
-                text = {
-                    OutlinedTextField(
-                        value = state,
-                        onValueChange = { state = it },
-                        label = hint.ifNotNullThen {
-                            Text(text = hint!!)
-                        },
-                        trailingIcon = error.ifNotNullThen {
-                            Icon(
-                                imageVector = Icons.Filled.Info,
-                                contentDescription = null,
-                            )
-                        },
-                        supportingText = error.ifNotNullThen {
-                            Text(text = error!!)
-                        },
-                        isError = error != null,
-                        keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
-                    )
-                },
-            )
-        }
+                }) {
+                    Text(text = stringResource(id = confirmText))
+                }
+            },
+            title = title.ifNotNullThen { Text(text = title!!) },
+            text = {
+                OutlinedTextField(
+                    value = state,
+                    onValueChange = { state = it },
+                    label = hint.ifNotNullThen {
+                        Text(text = hint!!)
+                    },
+                    trailingIcon = error.ifNotNullThen {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = null,
+                        )
+                    },
+                    supportingText = error.ifNotNullThen {
+                        Text(text = error!!)
+                    },
+                    isError = error != null,
+                    keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
+                )
+            },
+        )
     }
 
     suspend fun awaitInputTextWithCheckBox(
