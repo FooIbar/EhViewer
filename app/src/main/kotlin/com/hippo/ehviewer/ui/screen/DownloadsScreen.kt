@@ -227,10 +227,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             launch {
                                 val text = awaitInputText(title = newLabel, hint = labelsStr) { text ->
                                     when {
-                                        text.isBlank() -> labelEmpty
-                                        text == defaultName -> defaultInvalid
-                                        DownloadManager.containLabel(text) -> labelExists
-                                        else -> null
+                                        text.isBlank() -> raise(labelEmpty)
+                                        text == defaultName -> raise(defaultInvalid)
+                                        DownloadManager.containLabel(text) -> raise(labelExists)
                                     }
                                 }
                                 DownloadManager.addLabel(text)
@@ -390,10 +389,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                                             launch {
                                                 val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
                                                     when {
-                                                        text.isBlank() -> labelEmpty
-                                                        text == defaultName -> defaultInvalid
-                                                        DownloadManager.containLabel(text) -> labelExists
-                                                        else -> null
+                                                        text.isBlank() -> raise(labelEmpty)
+                                                        text == defaultName -> raise(defaultInvalid)
+                                                        DownloadManager.containLabel(text) -> raise(labelExists)
                                                     }
                                                 }
                                                 DownloadManager.renameLabel(item, new)

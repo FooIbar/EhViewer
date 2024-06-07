@@ -172,13 +172,12 @@ class ReaderActivity : EhActivity() {
                             dialogState.awaitInputText(
                                 title = getString(R.string.archive_need_passwd),
                                 hint = getString(R.string.archive_passwd),
-                            ) {
-                                if (it.isBlank()) {
-                                    getString(R.string.passwd_cannot_be_empty)
-                                } else if (invalidator(it)) {
-                                    null
-                                } else {
-                                    getString(R.string.passwd_wrong)
+                            ) { text ->
+                                if (text.isBlank()) {
+                                    raise(getString(R.string.passwd_cannot_be_empty))
+                                }
+                                if (!invalidator(text)) {
+                                    raise(getString(R.string.passwd_wrong))
                                 }
                             }
                         }.onFailure {
