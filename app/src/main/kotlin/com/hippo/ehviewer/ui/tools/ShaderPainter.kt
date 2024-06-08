@@ -27,31 +27,20 @@ uniform vec3 primary;
 uniform vec3 secondary;
 uniform vec3 tertiary;
 
-vec3 toGLColor(vec3 color) 
-{
-	return color * 0.00392156862;
-}
-
 vec4 main(vec2 fragCoord)
 {
     float smoothness = 0.002;
     vec2 uv = fragCoord / dimen;
-    
-    // TODO: Uniform
-    vec3 surface = toGLColor(vec3(149, 165, 166));
+
     vec3 waveAppleColor = primary;
     vec3 waveButterColor = tertiary;
     vec3 deepWaterColor = secondary;
-    
-    float realtic = smoothstep(0, smoothness, uv.x) * smoothstep(0, smoothness, 1 - uv.x);
-    realtic *= smoothstep(0, smoothness, uv.y) * smoothstep(0, smoothness, 1 - uv.y);
-    vec3 mixed = mix(surface, primaryContainer, realtic);
     
     // Wave Apple
     float waveProgress = sin(t) * 0.35 + 0.5;
     waveProgress += (0.01 * sin(uv.x * 35. + t*2.)) + (0.005 * sin(uv.x * 20. + t*0.5));
     float waveOp = smoothstep(waveProgress, waveProgress + smoothness, uv.y);
-    mixed = mix(mixed, waveAppleColor, waveOp);
+    vec3 mixed = mix(primaryContainer, waveAppleColor, waveOp);
     
     // Wave Butter
     waveProgress = sin(t) * 0.35 + 0.5;
