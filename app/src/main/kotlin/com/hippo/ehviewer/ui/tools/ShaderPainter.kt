@@ -1,6 +1,10 @@
 package com.hippo.ehviewer.ui.tools
 
 import android.graphics.RuntimeShader
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
@@ -16,6 +20,7 @@ import com.hippo.ehviewer.util.isAtLeastT
 private val sksl = """
 uniform float t;
 uniform vec2 dimen;
+uniform vec3 primaryContainer;
 
 vec3 toGLColor(vec3 color) 
 {
@@ -28,7 +33,6 @@ vec4 main(vec2 fragCoord)
     vec2 uv = fragCoord / dimen;
     
     // TODO: Uniform
-    vec3 primary = toGLColor(vec3(203, 136, 180));
     vec3 surface = toGLColor(vec3(149, 165, 166));
     vec3 waveAppleColor = toGLColor(vec3(52, 152, 219));
     vec3 waveButterColor = toGLColor(vec3(14, 122, 160));
@@ -36,7 +40,7 @@ vec4 main(vec2 fragCoord)
     
     float realtic = smoothstep(0, smoothness, uv.x) * smoothstep(0, smoothness, 1 - uv.x);
     realtic *= smoothstep(0, smoothness, uv.y) * smoothstep(0, smoothness, 1 - uv.y);
-    vec3 mixed = mix(surface, primary, realtic);
+    vec3 mixed = mix(surface, primaryContainer, realtic);
     
     // Wave Apple
     float waveProgress = sin(t) * 0.35 + 0.5;
@@ -56,11 +60,21 @@ vec4 main(vec2 fragCoord)
 }
 """
 
+@Composable
+fun UpdateShaderColor() {
+    if (isAtLeastT) {
+        fun configure(name: String, color: Color) = shader.setFloatUniform(name, color.red, color.green, color.blue)
+        configure("primaryContainer", MaterialTheme.colorScheme.primaryContainer)
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+private val shader = RuntimeShader(sksl)
+
 val thumbPlaceholder = if (isAtLeastT) {
     object : Painter() {
-        private var draws by mutableFloatStateOf(0f)
-        private val shader = RuntimeShader(sksl)
-        private val brush = object : ShaderBrush() {
+        var draws by mutableFloatStateOf(0f)
+        val brush = object : ShaderBrush() {
             override fun createShader(size: Size) = shader
         }
         override val intrinsicSize = Size.Unspecified
