@@ -40,26 +40,26 @@ else ()
     set(CURRENT_DIR ${CMAKE_CURRENT_LIST_DIR})
 endif ()
 set(NDK_VERSION "${ANDROID_NDK_MAJOR}.${ANDROID_NDK_MINOR}.${ANDROID_NDK_BUILD}")
-set(NETTLE_DIR ${CMAKE_CURRENT_BINARY_DIR}/nettle-src/nettle)
 ExternalProject_Add(
         nettle
+        PREFIX nettle
         URL https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
         URL_MD5 29fcd2dec6bf5b48e5e3ffb3cbc4779e
-        SOURCE_DIR ${NETTLE_DIR}
         PATCH_COMMAND bash -c "patch -p1 < ${CURRENT_DIR}/nettle.patch"
         CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
         BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS}'"
         INSTALL_COMMAND ""
-        BUILD_IN_SOURCE TRUE
-        BUILD_BYPRODUCTS ${NETTLE_DIR}/libnettle.a
+        BUILD_IN_SOURCE 1
+        BUILD_BYPRODUCTS nettle/src/nettle/libnettle.a
 )
 
+ExternalProject_Get_Property(nettle SOURCE_DIR)
+include_directories(${SOURCE_DIR}/..)
 add_library(libnettle STATIC IMPORTED)
-set_property(TARGET libnettle PROPERTY IMPORTED_LOCATION ${NETTLE_DIR}/libnettle.a)
+set_property(TARGET libnettle PROPERTY IMPORTED_LOCATION ${SOURCE_DIR}/libnettle.a)
 add_dependencies(libnettle nettle)
 
 # Configure libnettle support for libarchive
-include_directories(${NETTLE_DIR}/..)
 set(HAVE_LIBNETTLE 1)
 set(HAVE_NETTLE_AES_H 1)
 set(HAVE_NETTLE_HMAC_H 1)
