@@ -20,7 +20,12 @@ import com.hippo.ehviewer.util.isAtLeastT
 private val sksl = """
 uniform float t;
 uniform vec2 dimen;
+
+// Dyn colors
 uniform vec3 primaryContainer;
+uniform vec3 primary;
+uniform vec3 secondary;
+uniform vec3 tertiary;
 
 vec3 toGLColor(vec3 color) 
 {
@@ -34,9 +39,9 @@ vec4 main(vec2 fragCoord)
     
     // TODO: Uniform
     vec3 surface = toGLColor(vec3(149, 165, 166));
-    vec3 waveAppleColor = toGLColor(vec3(52, 152, 219));
-    vec3 waveButterColor = toGLColor(vec3(14, 122, 160));
-    vec3 deepWaterColor = toGLColor(vec3(14, 12, 60));
+    vec3 waveAppleColor = primary;
+    vec3 waveButterColor = tertiary;
+    vec3 deepWaterColor = secondary;
     
     float realtic = smoothstep(0, smoothness, uv.x) * smoothstep(0, smoothness, 1 - uv.x);
     realtic *= smoothstep(0, smoothness, uv.y) * smoothstep(0, smoothness, 1 - uv.y);
@@ -65,6 +70,9 @@ fun UpdateShaderColor() {
     if (isAtLeastT) {
         fun configure(name: String, color: Color) = shader.setFloatUniform(name, color.red, color.green, color.blue)
         configure("primaryContainer", MaterialTheme.colorScheme.primaryContainer)
+        configure("primary", MaterialTheme.colorScheme.primary)
+        configure("secondary", MaterialTheme.colorScheme.secondary)
+        configure("tertiary", MaterialTheme.colorScheme.tertiary)
     }
 }
 
