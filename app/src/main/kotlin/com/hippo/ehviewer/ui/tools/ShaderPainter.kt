@@ -24,7 +24,7 @@ vec3 toGLColor(vec3 color)
 
 vec4 main(vec2 fragCoord)
 {
-    float smoothness = 0.008;
+    float smoothness = 0.002;
     vec2 uv = fragCoord / dimen;
     
     // TODO: Uniform
@@ -32,6 +32,7 @@ vec4 main(vec2 fragCoord)
     vec3 surface = toGLColor(vec3(149, 165, 166));
     vec3 waveAppleColor = toGLColor(vec3(52, 152, 219));
     vec3 waveButterColor = toGLColor(vec3(14, 122, 160));
+    vec3 deepWaterColor = toGLColor(vec3(14, 12, 60));
     
     float realtic = smoothstep(0, smoothness, uv.x) * smoothstep(0, smoothness, 1 - uv.x);
     realtic *= smoothstep(0, smoothness, uv.y) * smoothstep(0, smoothness, 1 - uv.y);
@@ -46,9 +47,12 @@ vec4 main(vec2 fragCoord)
     // Wave Butter
     waveProgress = sin(t) * 0.35 + 0.5;
     waveProgress += (0.02 * sin(uv.x * 20. + t*2.)) + (0.005 * sin(uv.x * 30. + t*0.7));
+    float waveTop = smoothstep(waveProgress, waveProgress + 0.005, uv.y);
+    vec3 gradDeepWater = mix(deepWaterColor, waveButterColor, 1. - uv.y * 0.5);
+    vec3 harmonized = mix(waveAppleColor, gradDeepWater, waveTop);
     waveOp = smoothstep(waveProgress, waveProgress + smoothness, uv.y);
-    mixed = mix(mixed, waveButterColor, waveOp);
-	return vec4(mixed, 1);
+    mixed = mix(mixed, harmonized, waveOp);
+    return vec4(mixed, 1);
 }
 """
 
