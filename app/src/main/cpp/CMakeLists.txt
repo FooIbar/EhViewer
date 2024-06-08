@@ -47,12 +47,13 @@ ExternalProject_Add(
         URL_MD5 29fcd2dec6bf5b48e5e3ffb3cbc4779e
         SOURCE_DIR ${NETTLE_DIR}
         PATCH_COMMAND bash -c "patch -p1 < ${CURRENT_DIR}/nettle.patch"
-        CONFIGURE_COMMAND bash ${CURRENT_DIR}/build_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
+        CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
         BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS}'"
         INSTALL_COMMAND ""
         BUILD_IN_SOURCE TRUE
         BUILD_BYPRODUCTS ${NETTLE_DIR}/libnettle.a
 )
+
 add_library(libnettle STATIC IMPORTED)
 set_property(TARGET libnettle PROPERTY IMPORTED_LOCATION ${NETTLE_DIR}/libnettle.a)
 add_dependencies(libnettle nettle)
