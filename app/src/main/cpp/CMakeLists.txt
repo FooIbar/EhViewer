@@ -44,7 +44,8 @@ FetchContent_Declare(
         URL https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
         URL_MD5 29fcd2dec6bf5b48e5e3ffb3cbc4779e
         SOURCE_DIR nettle-src/nettle
-        PATCH_COMMAND bash ${CURRENT_DIR}/build_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET} ${CMAKE_C_FLAGS}
+        PATCH_COMMAND bash ${CURRENT_DIR}/build_nettle.sh ${CURRENT_DIR}/nettle.patch
+        ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET} ${CMAKE_C_FLAGS}
 )
 
 FetchContent_MakeAvailable(nettle)
