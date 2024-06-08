@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(ehviewer C)
+include(ExternalProject)
 include(FetchContent)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -39,19 +40,25 @@ else ()
     set(CURRENT_DIR ${CMAKE_CURRENT_LIST_DIR})
 endif ()
 set(NDK_VERSION "${ANDROID_NDK_MAJOR}.${ANDROID_NDK_MINOR}.${ANDROID_NDK_BUILD}")
-FetchContent_Declare(
+set(NETTLE_DIR ${CMAKE_CURRENT_BINARY_DIR}/nettle-src/nettle)
+ExternalProject_Add(
         nettle
         URL https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
         URL_MD5 29fcd2dec6bf5b48e5e3ffb3cbc4779e
-        SOURCE_DIR nettle-src/nettle
-        PATCH_COMMAND bash ${CURRENT_DIR}/build_nettle.sh ${CURRENT_DIR}/nettle.patch
-        ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET} ${CMAKE_C_FLAGS}
+        SOURCE_DIR ${NETTLE_DIR}
+        PATCH_COMMAND bash -c "patch -p1 < ${CURRENT_DIR}/nettle.patch"
+        CONFIGURE_COMMAND bash ${CURRENT_DIR}/build_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
+        BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS}'"
+        INSTALL_COMMAND ""
+        BUILD_IN_SOURCE TRUE
+        BUILD_BYPRODUCTS ${NETTLE_DIR}/libnettle.a
 )
-
-FetchContent_MakeAvailable(nettle)
-include_directories(${nettle_SOURCE_DIR}/..)
+add_library(libnettle STATIC IMPORTED)
+set_property(TARGET libnettle PROPERTY IMPORTED_LOCATION ${NETTLE_DIR}/libnettle.a)
+add_dependencies(libnettle nettle)
 
 # Configure libnettle support for libarchive
+include_directories(${NETTLE_DIR}/..)
 set(HAVE_LIBNETTLE 1)
 set(HAVE_NETTLE_AES_H 1)
 set(HAVE_NETTLE_HMAC_H 1)
@@ -74,7 +81,7 @@ option(ENABLE_UNZIP OFF)
 option(ENABLE_TEST OFF)
 
 # Configure libarchive link's static lib
-SET(LIBARCHIVE_CUSTOM_LIBS ${nettle_SOURCE_DIR}/libnettle.a "liblzma")
+SET(LIBARCHIVE_CUSTOM_LIBS "libnettle" "liblzma")
 
 FetchContent_Declare(
         libarchive
