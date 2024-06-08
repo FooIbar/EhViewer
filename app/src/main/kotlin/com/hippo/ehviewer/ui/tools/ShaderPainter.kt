@@ -5,9 +5,11 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -16,9 +18,12 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.graphics.painter.Painter
 import com.hippo.ehviewer.util.isAtLeastT
+import kotlin.time.Duration.Companion.microseconds
+import kotlinx.coroutines.flow.collectIndexed
+import kotlinx.coroutines.flow.sample
 
 private val sksl = """
-uniform float t;
+uniform int ms;
 uniform vec2 dimen;
 
 // Dyn colors
@@ -31,6 +36,7 @@ vec4 main(vec2 fragCoord)
 {
     float smoothness = 0.002;
     vec2 uv = fragCoord / dimen;
+    float t = float(ms) / 300;
 
     vec3 waveAppleColor = primary;
     vec3 waveButterColor = tertiary;
@@ -62,26 +68,35 @@ fun UpdateShaderColor() {
         configure("primary", MaterialTheme.colorScheme.primary)
         configure("secondary", MaterialTheme.colorScheme.secondary)
         configure("tertiary", MaterialTheme.colorScheme.tertiary)
+        LaunchedEffect(Unit) {
+            shaderPainter.updateTime()
+        }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 private val shader = RuntimeShader(sksl)
 
-val thumbPlaceholder = if (isAtLeastT) {
-    object : Painter() {
-        var draws by mutableFloatStateOf(0f)
-        val brush = object : ShaderBrush() {
-            override fun createShader(size: Size) = shader
-        }
-        override val intrinsicSize = Size.Unspecified
-        override fun DrawScope.onDraw() {
-            val (width, height) = size
-            shader.setFloatUniform("dimen", width, height)
-            shader.setFloatUniform("t", draws++ / 120)
-            drawRect(brush = brush)
-        }
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+private val shaderPainter = object : Painter() {
+    var invalidation by mutableIntStateOf(0)
+    val brush = object : ShaderBrush() {
+        override fun createShader(size: Size) = shader
     }
+    suspend fun updateTime() = snapshotFlow { invalidation }.sample(1.microseconds).collectIndexed { index, _ ->
+        shader.setIntUniform("ms", index)
+    }
+    override val intrinsicSize = Size.Unspecified
+    override fun DrawScope.onDraw() {
+        val (width, height) = size
+        shader.setFloatUniform("dimen", width, height)
+        invalidation++
+        drawRect(brush = brush)
+    }
+}
+
+val thumbPlaceholder = if (isAtLeastT) {
+    shaderPainter
 } else {
     BrushPainter(Brush.linearGradient(listOf(Color.Transparent)))
 }
