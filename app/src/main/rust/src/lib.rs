@@ -1,9 +1,7 @@
-mod hash;
 mod parser;
 
 extern crate android_logger;
 extern crate anyhow;
-extern crate base16ct;
 extern crate jni;
 extern crate jni_fn;
 extern crate log;
@@ -11,7 +9,6 @@ extern crate once_cell;
 extern crate quick_xml;
 extern crate regex_lite;
 extern crate serde;
-extern crate sha1;
 extern crate tl;
 
 use android_logger::Config;
