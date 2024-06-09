@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(ehviewer C)
+include(ExternalProject)
 include(FetchContent)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -29,20 +30,36 @@ FetchContent_MakeAvailable(liblzma)
 include_directories(${liblzma_SOURCE_DIR}/src/liblzma/api)
 
 # Build GNUTLS libnettle
-FetchContent_Declare(
+if (CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
+    execute_process(
+            COMMAND wsl wslpath ${CMAKE_CURRENT_LIST_DIR}
+            OUTPUT_VARIABLE CURRENT_DIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+else ()
+    set(CURRENT_DIR ${CMAKE_CURRENT_LIST_DIR})
+endif ()
+set(NDK_VERSION "${ANDROID_NDK_MAJOR}.${ANDROID_NDK_MINOR}.${ANDROID_NDK_BUILD}")
+ExternalProject_Add(
         nettle
+        PREFIX nettle
         URL https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
         URL_MD5 29fcd2dec6bf5b48e5e3ffb3cbc4779e
-        SOURCE_DIR nettle-src/nettle
+        PATCH_COMMAND bash -c "patch -p1 < ${CURRENT_DIR}/nettle.patch"
+        CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
+        BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS}'"
+        INSTALL_COMMAND ""
+        BUILD_IN_SOURCE 1
+        BUILD_BYPRODUCTS nettle/src/nettle/libnettle.a
 )
 
-FetchContent_MakeAvailable(nettle)
-set(NETTLE_DIR ${nettle_SOURCE_DIR})
-add_subdirectory(nettle)
+ExternalProject_Get_Property(nettle SOURCE_DIR)
+include_directories(${SOURCE_DIR}/..)
+add_library(libnettle STATIC IMPORTED)
+set_property(TARGET libnettle PROPERTY IMPORTED_LOCATION ${SOURCE_DIR}/libnettle.a)
+add_dependencies(libnettle nettle)
 
 # Configure libnettle support for libarchive
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/nettle-src)
-include_directories(.)
 set(HAVE_LIBNETTLE 1)
 set(HAVE_NETTLE_AES_H 1)
 set(HAVE_NETTLE_HMAC_H 1)
@@ -65,7 +82,7 @@ option(ENABLE_UNZIP OFF)
 option(ENABLE_TEST OFF)
 
 # Configure libarchive link's static lib
-SET(LIBARCHIVE_CUSTOM_LIBS "nettle" "liblzma")
+SET(LIBARCHIVE_CUSTOM_LIBS "libnettle" "liblzma")
 
 FetchContent_Declare(
         libarchive
