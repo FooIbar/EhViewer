@@ -588,7 +588,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
                     )
                     r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                    r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(url))
+                    EhCookieStore.getCookieHeader(url)?.let { r.addRequestHeader("Cookie", it) }
                     downloadManager.enqueue(r)
                     showSnackbar(downloadTorrentStarted)
                 }
