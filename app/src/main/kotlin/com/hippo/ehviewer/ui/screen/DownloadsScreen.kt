@@ -76,7 +76,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -172,8 +171,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         },
     )
     val hint = stringResource(R.string.search_bar_hint, title)
-    val sortModes = stringArrayResource(id = R.array.download_sort_modes)
-    val downloadStates = stringArrayResource(id = R.array.download_state)
     val list = remember(filterState, invalidateKey) {
         downloadInfoList.filterTo(mutableStateListOf()) { info ->
             filterState.take(info)
@@ -651,8 +648,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
                 val oldMode = SortMode.from(sortMode)
+                val sortModes = resources.getStringArray(R.array.download_sort_modes).toList()
                 val (selected, checked) = awaitSelectItemWithCheckBox(
-                    sortModes.toList(),
+                    sortModes,
                     R.string.sort_by,
                     R.string.group_by_download_label,
                     SortMode.All.indexOfFirst { it.field == oldMode.field && it.order == oldMode.order },
@@ -664,8 +662,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 invalidateKey = !invalidateKey
             }
             onClick(Icons.Default.FilterList) {
+                val downloadStates = resources.getStringArray(R.array.download_state).toList()
                 val state = awaitSingleChoice(
-                    downloadStates.toList(),
+                    downloadStates,
                     filterState.state + 1,
                     R.string.download_filter,
                 ) - 1
