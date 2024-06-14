@@ -12,6 +12,8 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven("https://jitpack.io")
+        // Hold until https://issuetracker.google.com/343750859 is fixed
+        maven("https://androidx.dev/snapshots/builds/11851351/artifacts/repository")
     }
 }
 
