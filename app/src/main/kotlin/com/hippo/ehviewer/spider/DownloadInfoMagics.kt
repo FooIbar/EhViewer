@@ -18,12 +18,10 @@ object DownloadInfoMagics {
         }
     }
 
-    fun decodeMagicRequestOrUrl(encoded: String): Pair<String, String?> {
-        return if (encoded.startsWith(DOWNLOAD_INFO_DIRNAME_URL_MAGIC)) {
-            val (a, b) = encoded.removePrefix(DOWNLOAD_INFO_DIRNAME_URL_MAGIC).split(DOWNLOAD_INFO_DIRNAME_URL_SEPARATOR)
-            a to b
-        } else {
-            encoded to null
-        }
+    fun decodeMagicRequestOrUrl(encoded: String): Pair<String, String?> = if (encoded.startsWith(DOWNLOAD_INFO_DIRNAME_URL_MAGIC)) {
+        val (a, b) = encoded.removePrefix(DOWNLOAD_INFO_DIRNAME_URL_MAGIC).split(DOWNLOAD_INFO_DIRNAME_URL_SEPARATOR)
+        a to b
+    } else {
+        encoded to null
     }
 }

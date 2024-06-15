@@ -88,7 +88,8 @@ data class BaseGalleryInfo(
 
     @Ignore
     override var favoriteNote: String? = null,
-) : GalleryInfo, Parcelable {
+) : GalleryInfo,
+    Parcelable {
     constructor() : this(0, "")
 }
 

@@ -149,19 +149,15 @@ class ArchivePageLoader(
         FileUtils.getNameFromFilename(file.name)!!
     }
 
-    override fun getImageExtension(index: Int): String {
-        return getExtension(index)
-    }
+    override fun getImageExtension(index: Int): String = getExtension(index)
 
-    override fun save(index: Int, file: UniFile): Boolean {
-        return runCatching {
-            file.openFileDescriptor("w").use {
-                extractToFd(index, it.fd)
-            }
-        }.getOrElse {
-            logcat(it)
-            false
+    override fun save(index: Int, file: UniFile): Boolean = runCatching {
+        file.openFileDescriptor("w").use {
+            extractToFd(index, it.fd)
         }
+    }.getOrElse {
+        logcat(it)
+        false
     }
 
     override fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {}

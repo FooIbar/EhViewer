@@ -22,14 +22,12 @@ import eu.kanade.tachiyomi.util.system.logcat
 import org.jsoup.Jsoup
 
 object GalleryNotAvailableParser {
-    fun parse(body: String): String? {
-        return runCatching {
-            val e = Jsoup.parse(body).getElementsByClass("d").first()
-            e!!.child(0).html().replace("<br>", "\n")
-        }.getOrElse {
-            ExceptionUtils.throwIfFatal(it)
-            logcat(it)
-            null
-        }
+    fun parse(body: String): String? = runCatching {
+        val e = Jsoup.parse(body).getElementsByClass("d").first()
+        e!!.child(0).html().replace("<br>", "\n")
+    }.getOrElse {
+        ExceptionUtils.throwIfFatal(it)
+        logcat(it)
+        null
     }
 }

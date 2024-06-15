@@ -286,9 +286,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
         this@ReaderPageImageView.onImageLoaded()
     }
 
-    private fun Int.getSystemScaledDuration(): Int {
-        return (this * context.animatorDurationScale).toInt().coerceAtLeast(1)
-    }
+    private fun Int.getSystemScaledDuration(): Int = (this * context.animatorDurationScale).toInt().coerceAtLeast(1)
 
     /**
      * All of the config except [zoomDuration] will only be used for non-animated image.

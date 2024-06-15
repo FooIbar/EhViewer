@@ -48,11 +48,8 @@ fun <T> Modifier.anchoredHorizontalDraggable(
 ): Modifier = this then AnchoredHorizontalDraggableElement(
     state = state,
     canDrag = { (x, y) ->
-        if (x > 0) {
-            enableDragFromStartToEnd
-        } else {
-            enableDragFromEndToStart
-        } && x.absoluteValue > y.absoluteValue * 2f
+        val enableDrag = if (x > 0) enableDragFromStartToEnd else enableDragFromEndToStart
+        enableDrag && x.absoluteValue > y.absoluteValue * 2f
     },
     enabled = enabled,
     startDragImmediately = startDragImmediately,
@@ -124,9 +121,7 @@ private class AnchoredHorizontalDraggableNode<T>(
     private val isReverseDirection: Boolean
         get() = requireLayoutDirection() == LayoutDirection.Rtl
 
-    override fun canDrag(change: PointerInputChange): Boolean {
-        return canDrag(change.positionChange().reverseIfNeeded())
-    }
+    override fun canDrag(change: PointerInputChange): Boolean = canDrag(change.positionChange().reverseIfNeeded())
 
     override suspend fun drag(forEachDelta: suspend ((dragDelta: DragDelta) -> Unit) -> Unit) {
         state.anchoredDrag {
@@ -240,7 +235,8 @@ private class DraggableAnchorsNode<T>(
     var state: AnchoredDraggableState<T>,
     var anchors: (size: IntSize, constraints: Constraints) -> Pair<DraggableAnchors<T>, T>,
     var orientation: Orientation,
-) : Modifier.Node(), LayoutModifierNode {
+) : Modifier.Node(),
+    LayoutModifierNode {
     private var didLookahead: Boolean = false
 
     override fun onDetach() {

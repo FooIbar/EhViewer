@@ -37,8 +37,7 @@ import splitties.init.appCtx
 
 private const val CHANNEL_ID = "DailyCheckNotification"
 
-class DailyCheckWork(context: Context, workerParams: WorkerParameters) :
-    CoroutineWorker(context, workerParams) {
+class DailyCheckWork(context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
     override suspend fun doWork(): Result = withIOContext {
         checkDawn().onFailure {
             return@withIOContext Result.retry()

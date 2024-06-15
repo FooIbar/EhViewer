@@ -25,11 +25,9 @@ object SignInParser {
             "|<span class=\"postcolor\">(.+?)</span>",
     )
 
-    fun parse(body: String): String {
-        return NAME_PATTERN.find(body)?.let {
-            it.groupValues[1]
-        } ?: ERROR_PATTERN.find(body)?.let {
-            throw EhException(it.groupValues[1].ifEmpty { it.groupValues[2] })
-        } ?: throw ParseException("Can't parse sign in")
-    }
+    fun parse(body: String): String = NAME_PATTERN.find(body)?.let {
+        it.groupValues[1]
+    } ?: ERROR_PATTERN.find(body)?.let {
+        throw EhException(it.groupValues[1].ifEmpty { it.groupValues[2] })
+    } ?: throw ParseException("Can't parse sign in")
 }

@@ -88,21 +88,18 @@ object EhUtils {
 
     fun getCategory(type: String?): Int {
         for (entry in CATEGORY_STRINGS) {
-            for (str in entry.first)
+            for (str in entry.first) {
                 if (str.equals(type, ignoreCase = true)) {
                     return entry.second
                 }
+            }
         }
         return UNKNOWN
     }
 
-    fun getCategory(type: Int): String {
-        return CATEGORY_VALUES.getOrDefault(type, CATEGORY_VALUES[UNKNOWN])!![0]
-    }
+    fun getCategory(type: Int): String = CATEGORY_VALUES.getOrDefault(type, CATEGORY_VALUES[UNKNOWN])!![0]
 
-    private fun differenceDegrees(a: Float, b: Float): Float {
-        return 180.0f - abs(abs(a - b) - 180.0f)
-    }
+    private fun differenceDegrees(a: Float, b: Float): Float = 180.0f - abs(abs(a - b) - 180.0f)
 
     private fun sanitizeDegreesDouble(degrees: Float): Float {
         val deg = degrees % 360.0f
@@ -159,13 +156,11 @@ object EhUtils {
         Settings.needSignIn = true
     }
 
-    fun getSuitableTitle(gi: GalleryInfo): String {
-        return if (Settings.showJpnTitle) {
-            if (gi.titleJpn.isNullOrEmpty()) gi.title else gi.titleJpn
-        } else {
-            if (gi.title.isNullOrEmpty()) gi.titleJpn else gi.title
-        }.orEmpty()
-    }
+    fun getSuitableTitle(gi: GalleryInfo): String = if (Settings.showJpnTitle) {
+        if (gi.titleJpn.isNullOrEmpty()) gi.title else gi.titleJpn
+    } else {
+        if (gi.title.isNullOrEmpty()) gi.titleJpn else gi.title
+    }.orEmpty()
 
     fun extractTitle(fullTitle: String?): String? {
         var title: String = fullTitle ?: return null

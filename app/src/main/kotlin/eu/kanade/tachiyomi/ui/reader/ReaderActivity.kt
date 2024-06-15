@@ -376,15 +376,13 @@ class ReaderActivity : EhActivity() {
 
     private suspend fun makeToast(@StringRes resId: Int) = makeToast(getString(resId))
 
-    private fun provideImage(index: Int): Uri? {
-        return AppConfig.externalTempDir?.let { dir ->
-            mGalleryProvider?.saveToDir(index, dir.asUniFile())?.name?.let {
-                FileProvider.getUriForFile(
-                    this,
-                    BuildConfig.APPLICATION_ID + ".fileprovider",
-                    File(dir, it),
-                )
-            }
+    private fun provideImage(index: Int): Uri? = AppConfig.externalTempDir?.let { dir ->
+        mGalleryProvider?.saveToDir(index, dir.asUniFile())?.name?.let {
+            FileProvider.getUriForFile(
+                this,
+                BuildConfig.APPLICATION_ID + ".fileprovider",
+                File(dir, it),
+            )
         }
     }
 
@@ -672,28 +670,26 @@ class ReaderActivity : EhActivity() {
      */
     private inner class ReaderConfig {
 
-        private fun getCombinedPaint(grayscale: Boolean, invertedColors: Boolean): Paint {
-            return Paint().apply {
-                colorFilter = ColorMatrixColorFilter(
-                    ColorMatrix().apply {
-                        if (grayscale) {
-                            setSaturation(0f)
-                        }
-                        if (invertedColors) {
-                            postConcat(
-                                ColorMatrix(
-                                    floatArrayOf(
-                                        -1f, 0f, 0f, 0f, 255f,
-                                        0f, -1f, 0f, 0f, 255f,
-                                        0f, 0f, -1f, 0f, 255f,
-                                        0f, 0f, 0f, 1f, 0f,
-                                    ),
+        private fun getCombinedPaint(grayscale: Boolean, invertedColors: Boolean): Paint = Paint().apply {
+            colorFilter = ColorMatrixColorFilter(
+                ColorMatrix().apply {
+                    if (grayscale) {
+                        setSaturation(0f)
+                    }
+                    if (invertedColors) {
+                        postConcat(
+                            ColorMatrix(
+                                floatArrayOf(
+                                    -1f, 0f, 0f, 0f, 255f,
+                                    0f, -1f, 0f, 0f, 255f,
+                                    0f, 0f, -1f, 0f, 255f,
+                                    0f, 0f, 0f, 1f, 0f,
                                 ),
-                            )
-                        }
-                    },
-                )
-            }
+                            ),
+                        )
+                    }
+                },
+            )
         }
 
         /**
@@ -759,12 +755,10 @@ class ReaderActivity : EhActivity() {
         /**
          * Picks background color for [ReaderActivity] based on light/dark theme preference
          */
-        private fun automaticBackgroundColor(): Int {
-            return if (baseContext.isNightMode()) {
-                R.color.reader_background_dark
-            } else {
-                android.R.color.white
-            }
+        private fun automaticBackgroundColor(): Int = if (baseContext.isNightMode()) {
+            R.color.reader_background_dark
+        } else {
+            android.R.color.white
         }
 
         /**

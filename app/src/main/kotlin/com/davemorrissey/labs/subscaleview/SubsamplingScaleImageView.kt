@@ -912,16 +912,12 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     /**
      * Convert screen to source x coordinate.
      */
-    private fun viewToSourceX(vx: Float): Float {
-        return if (vTranslate == null) Float.NaN else (vx - vTranslate!!.x) / scale
-    }
+    private fun viewToSourceX(vx: Float): Float = if (vTranslate == null) Float.NaN else (vx - vTranslate!!.x) / scale
 
     /**
      * Convert screen to source y coordinate.
      */
-    private fun viewToSourceY(vy: Float): Float {
-        return if (vTranslate == null) Float.NaN else (vy - vTranslate!!.y) / scale
-    }
+    private fun viewToSourceY(vy: Float): Float = if (vTranslate == null) Float.NaN else (vy - vTranslate!!.y) / scale
 
     /**
      * Convert screen coordinate to source coordinate.
@@ -929,9 +925,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      * @param vxy view X/Y coordinate.
      * @return a coordinate representing the corresponding source coordinate.
      */
-    fun viewToSourceCoord(vxy: PointF): PointF? {
-        return viewToSourceCoord(vxy.x, vxy.y, PointF())
-    }
+    fun viewToSourceCoord(vxy: PointF): PointF? = viewToSourceCoord(vxy.x, vxy.y, PointF())
 
     /**
      * Convert screen coordinate to source coordinate.
@@ -952,16 +946,12 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     /**
      * Convert source to view x coordinate.
      */
-    private fun sourceToViewX(sx: Float): Float {
-        return if (vTranslate == null) Float.NaN else sx * scale + vTranslate!!.x
-    }
+    private fun sourceToViewX(sx: Float): Float = if (vTranslate == null) Float.NaN else sx * scale + vTranslate!!.x
 
     /**
      * Convert source to view y coordinate.
      */
-    private fun sourceToViewY(sy: Float): Float {
-        return if (vTranslate == null) Float.NaN else sy * scale + vTranslate!!.y
-    }
+    private fun sourceToViewY(sy: Float): Float = if (vTranslate == null) Float.NaN else sy * scale + vTranslate!!.y
 
     /**
      * Convert source coordinate to view coordinate.
@@ -969,9 +959,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      * @param sxy source coordinates to convert.
      * @return view coordinates.
      */
-    fun sourceToViewCoord(sxy: PointF?): PointF? {
-        return sourceToViewCoord(sxy!!.x, sxy.y, PointF())
-    }
+    fun sourceToViewCoord(sxy: PointF?): PointF? = sourceToViewCoord(sxy!!.x, sxy.y, PointF())
 
     /**
      * Convert source coordinate to view coordinate.
@@ -1053,9 +1041,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
     /**
      * Adjust a requested scale to be within the allowed limits.
      */
-    private fun limitedScale(targetScale: Float): Float {
-        return targetScale.coerceIn(minScale(), maxScale)
-    }
+    private fun limitedScale(targetScale: Float): Float = targetScale.coerceIn(minScale(), maxScale)
 
     /**
      * Apply a selected type of easing.
@@ -1067,12 +1053,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      * @param duration Anm duration
      * @return Current value
      */
-    private fun ease(type: Int, time: Long, from: Float, change: Float, duration: Long): Float {
-        return when (type) {
-            EASE_IN_OUT_QUAD -> easeInOutQuad(time, from, change, duration)
-            EASE_OUT_QUAD -> easeOutQuad(time, from, change, duration)
-            else -> throw IllegalStateException("Unexpected easing type: $type")
-        }
+    private fun ease(type: Int, time: Long, from: Float, change: Float, duration: Long): Float = when (type) {
+        EASE_IN_OUT_QUAD -> easeInOutQuad(time, from, change, duration)
+        EASE_OUT_QUAD -> easeOutQuad(time, from, change, duration)
+        else -> throw IllegalStateException("Unexpected easing type: $type")
     }
 
     /**
@@ -1199,9 +1183,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      *
      * @return the minimum scale as a source/view pixels ratio.
      */
-    fun getMinScale(): Float {
-        return minScale()
-    }
+    fun getMinScale(): Float = minScale()
 
     /**
      * Set the minimum scale allowed. A value of 1 means 1:1 pixels at minimum scale. You may wish to set this according
@@ -1325,9 +1307,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      * @param sCenter Target center point
      * @return [AnimationBuilder] instance. Call [SubsamplingScaleImageView.AnimationBuilder.start] to start the anim.
      */
-    fun animateCenter(sCenter: PointF): AnimationBuilder? {
-        return if (isReady) AnimationBuilder(sCenter) else null
-    }
+    fun animateCenter(sCenter: PointF): AnimationBuilder? = if (isReady) AnimationBuilder(sCenter) else null
 
     /**
      * Creates a scale animation builder, that when started will animate a zoom in or out. If this would move the image
@@ -1337,9 +1317,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(
      * @param sCenter Target source center.
      * @return [AnimationBuilder] instance. Call [SubsamplingScaleImageView.AnimationBuilder.start] to start the anim.
      */
-    fun animateScaleAndCenter(scale: Float, sCenter: PointF?): AnimationBuilder? {
-        return if (isReady) AnimationBuilder(scale, sCenter) else null
-    }
+    fun animateScaleAndCenter(scale: Float, sCenter: PointF?): AnimationBuilder? = if (isReady) AnimationBuilder(scale, sCenter) else null
 
     /**
      * An event listener, allowing subclasses and activities to be notified of significant events.

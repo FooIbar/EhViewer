@@ -21,15 +21,13 @@ import com.hippo.ehviewer.util.ExceptionUtils
 import org.jsoup.Jsoup
 
 object ForumsParser {
-    fun parse(body: String): String {
-        return runCatching {
-            val d = Jsoup.parse(body, EhUrl.URL_FORUMS)
-            val userlinks = d.getElementById("userlinks")
-            val child = userlinks!!.child(0).child(0).child(0)
-            child.attr("href")
-        }.getOrElse {
-            ExceptionUtils.throwIfFatal(it)
-            throw NotLoggedInException()
-        }
+    fun parse(body: String): String = runCatching {
+        val d = Jsoup.parse(body, EhUrl.URL_FORUMS)
+        val userlinks = d.getElementById("userlinks")
+        val child = userlinks!!.child(0).child(0).child(0)
+        child.attr("href")
+    }.getOrElse {
+        ExceptionUtils.throwIfFatal(it)
+        throw NotLoggedInException()
     }
 }

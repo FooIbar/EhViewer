@@ -34,7 +34,9 @@ package com.hippo.ehviewer.util
  *
  * @param T the type of ranges in this set
  */
-abstract class RangeSet<T : Comparable<T>> : MutableSet<ClosedRange<T>>, Cloneable {
+abstract class RangeSet<T : Comparable<T>> :
+    MutableSet<ClosedRange<T>>,
+    Cloneable {
     private val ranges = ArrayDeque<ClosedRange<T>>()
 
     /**
@@ -93,10 +95,11 @@ abstract class RangeSet<T : Comparable<T>> : MutableSet<ClosedRange<T>>, Cloneab
      * @return whether all values are all contained within the set
      */
     override fun contains(element: ClosedRange<T>): Boolean {
-        for (range in ranges)
+        for (range in ranges) {
             if (element.start >= range.start && element.endInclusive <= range.endInclusive) {
                 return true
             }
+        }
 
         return false
     }
@@ -218,9 +221,7 @@ abstract class RangeSet<T : Comparable<T>> : MutableSet<ClosedRange<T>>, Cloneab
      * @param elements ranges of values to add
      * @return whether any values were added
      */
-    override fun addAll(elements: Collection<ClosedRange<T>>): Boolean {
-        return elements.map { add(it) }.any()
-    }
+    override fun addAll(elements: Collection<ClosedRange<T>>): Boolean = elements.map { add(it) }.any()
 
     /**
      * Removes all values from the set.
@@ -319,9 +320,7 @@ abstract class RangeSet<T : Comparable<T>> : MutableSet<ClosedRange<T>>, Cloneab
      * @param elements ranges of values to remove
      * @return whether any values were removed
      */
-    override fun removeAll(elements: Collection<ClosedRange<T>>): Boolean {
-        return elements.map { remove(it) }.any { it }
-    }
+    override fun removeAll(elements: Collection<ClosedRange<T>>): Boolean = elements.map { remove(it) }.any { it }
 
     /**
      * Removes all values from set except those contained in the specified range; intersection set logic.
@@ -441,9 +440,7 @@ abstract class RangeSet<T : Comparable<T>> : MutableSet<ClosedRange<T>>, Cloneab
      *
      * @return new set containing values not present in this set within the specified range
      */
-    fun difference(element: ClosedRange<T>): RangeSet<T> {
-        return differenceAll(listOf(element))
-    }
+    fun difference(element: ClosedRange<T>): RangeSet<T> = differenceAll(listOf(element))
 
     /**
      * Creates a new [RangeSet] containing values not present in this set within the specified ranges.
@@ -476,19 +473,13 @@ abstract class RangeSet<T : Comparable<T>> : MutableSet<ClosedRange<T>>, Cloneab
      *
      * @return new set containing missing values between the ranges of this set
      */
-    fun gaps(): RangeSet<T> {
-        return if (ranges.isEmpty()) clone().apply { clear() } else difference(ranges.first().endInclusive..ranges.last().start)
-    }
+    fun gaps(): RangeSet<T> = if (ranges.isEmpty()) clone().apply { clear() } else difference(ranges.first().endInclusive..ranges.last().start)
 
     override fun iterator(): MutableIterator<ClosedRange<T>> = ranges.iterator()
 
-    override fun hashCode(): Int {
-        return ranges.hashCode()
-    }
+    override fun hashCode(): Int = ranges.hashCode()
 
-    override fun equals(other: Any?): Boolean {
-        return this === other || (other is RangeSet<*> && ranges == other.ranges)
-    }
+    override fun equals(other: Any?): Boolean = this === other || (other is RangeSet<*> && ranges == other.ranges)
 
     protected abstract fun createRange(start: T, endInclusive: T): ClosedRange<T>
 

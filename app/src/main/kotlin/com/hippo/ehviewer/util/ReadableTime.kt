@@ -143,17 +143,15 @@ object ReadableTime {
         }
     }
 
-    fun getShortTimeInterval(time: Long): String {
-        return buildString {
-            for (i in 0 until SIZE) {
-                val multiple = MULTIPLES[i]
-                val quotient = time / multiple
-                if (time > multiple * 1.5 || i == SIZE - 1) {
-                    append(quotient)
-                        .append(" ")
-                        .append(resources.getQuantityString(UNITS[i], quotient.toInt()))
-                    break
-                }
+    fun getShortTimeInterval(time: Long): String = buildString {
+        for (i in 0 until SIZE) {
+            val multiple = MULTIPLES[i]
+            val quotient = time / multiple
+            if (time > multiple * 1.5 || i == SIZE - 1) {
+                append(quotient)
+                    .append(" ")
+                    .append(resources.getQuantityString(UNITS[i], quotient.toInt()))
+                break
             }
         }
     }

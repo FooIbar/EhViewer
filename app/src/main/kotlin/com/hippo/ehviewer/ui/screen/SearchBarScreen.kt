@@ -298,22 +298,20 @@ fun SearchBarScreen(
     }
 }
 
-fun wrapTagKeyword(keyword: String, translate: Boolean = false): String {
-    return if (keyword.endsWith(':')) {
-        keyword
+fun wrapTagKeyword(keyword: String, translate: Boolean = false): String = if (keyword.endsWith(':')) {
+    keyword
+} else {
+    val tag = keyword.substringAfter(':')
+    val prefix = keyword.dropLast(tag.length + 1)
+    if (translate) {
+        val namespacePrefix = TagNamespace(prefix).toPrefix()
+        val newPrefix = EhTagDatabase.getTranslation(tag = prefix) ?: prefix
+        val newTag = EhTagDatabase.getTranslation(namespacePrefix, tag) ?: tag
+        "$newPrefix：$newTag"
+    } else if (keyword.contains(' ')) {
+        "$prefix:\"$tag$\""
     } else {
-        val tag = keyword.substringAfter(':')
-        val prefix = keyword.dropLast(tag.length + 1)
-        if (translate) {
-            val namespacePrefix = TagNamespace(prefix).toPrefix()
-            val newPrefix = EhTagDatabase.getTranslation(tag = prefix) ?: prefix
-            val newTag = EhTagDatabase.getTranslation(namespacePrefix, tag) ?: tag
-            "$newPrefix：$newTag"
-        } else if (keyword.contains(' ')) {
-            "$prefix:\"$tag$\""
-        } else {
-            "$keyword$"
-        }
+        "$keyword$"
     }
 }
 

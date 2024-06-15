@@ -7,17 +7,11 @@ import okio.source
 
 fun readLegacySpiderInfo(inputStream: InputStream): SpiderInfo {
     val source = inputStream.source().buffer()
-    fun read(): String {
-        return source.readUtf8LineStrict()
-    }
+    fun read(): String = source.readUtf8LineStrict()
 
-    fun readInt(): Int {
-        return read().toInt()
-    }
+    fun readInt(): Int = read().toInt()
 
-    fun readLong(): Long {
-        return read().toLong()
-    }
+    fun readLong(): Long = read().toLong()
     repeat(2) { read() } // We assert that only info v2
     val gid = readLong()
     val token = read()

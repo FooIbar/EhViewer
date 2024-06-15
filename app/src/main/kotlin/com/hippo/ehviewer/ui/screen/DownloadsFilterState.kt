@@ -15,8 +15,10 @@ data class DownloadsFilterState(
 ) : Parcelable
 
 fun DownloadsFilterState.take(info: DownloadInfo) =
-    mode.take(info, label) && (state == -1 || info.state == state) &&
+    mode.take(info, label) &&
+        (state == -1 || info.state == state) &&
         with(info) {
-            title.containsIgnoreCase(keyword) || titleJpn.containsIgnoreCase(keyword) ||
+            title.containsIgnoreCase(keyword) ||
+                titleJpn.containsIgnoreCase(keyword) ||
                 simpleTags?.any { it.containsIgnoreCase(keyword) } ?: false
         }

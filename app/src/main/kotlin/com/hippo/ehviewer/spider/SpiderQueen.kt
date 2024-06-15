@@ -320,16 +320,14 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    private fun readSpiderInfoFromLocal(): SpiderInfo? {
-        return mSpiderDen.downloadDir?.run {
-            findFile(SPIDER_INFO_FILENAME)?.let { file ->
-                readCompatFromUniFile(file)?.takeIf {
-                    it.gid == galleryInfo.gid && it.token == galleryInfo.token
-                }
+    private fun readSpiderInfoFromLocal(): SpiderInfo? = mSpiderDen.downloadDir?.run {
+        findFile(SPIDER_INFO_FILENAME)?.let { file ->
+            readCompatFromUniFile(file)?.takeIf {
+                it.gid == galleryInfo.gid && it.token == galleryInfo.token
             }
         }
-            ?: readFromCache(galleryInfo.gid)?.takeIf { it.gid == galleryInfo.gid && it.token == galleryInfo.token }
     }
+        ?: readFromCache(galleryInfo.gid)?.takeIf { it.gid == galleryInfo.gid && it.token == galleryInfo.token }
 
     private fun readPreviews(body: String, index: Int, spiderInfo: SpiderInfo) {
         spiderInfo.previewPages = parsePreviewPages(body)
@@ -349,21 +347,19 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    private suspend fun readSpiderInfoFromInternet(): SpiderInfo? {
-        return runSuspendCatching {
-            ehRequest(
-                getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
-                referer,
-            ).fetchUsingAsText {
-                val pages = parsePages(this)
-                val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, pages)
-                readPreviews(this, 0, spiderInfo)
-                spiderInfo
-            }
-        }.onFailure {
-            logcat(it)
-        }.getOrNull()
-    }
+    private suspend fun readSpiderInfoFromInternet(): SpiderInfo? = runSuspendCatching {
+        ehRequest(
+            getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
+            referer,
+        ).fetchUsingAsText {
+            val pages = parsePages(this)
+            val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, pages)
+            readPreviews(this, 0, spiderInfo)
+            spiderInfo
+        }
+    }.onFailure {
+        logcat(it)
+    }.getOrNull()
 
     suspend fun getPTokenFromMultiPageViewer(index: Int): String? {
         val spiderInfo = mSpiderInfo
@@ -421,9 +417,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         mSpiderInfo.saveToCache()
     }
 
-    private fun isStateDone(state: Int): Boolean {
-        return state == STATE_FINISHED || state == STATE_FAILED
-    }
+    private fun isStateDone(state: Int): Boolean = state == STATE_FINISHED || state == STATE_FAILED
 
     fun updatePageState(index: Int, @State state: Int, error: String? = null) {
         var oldState: Int
