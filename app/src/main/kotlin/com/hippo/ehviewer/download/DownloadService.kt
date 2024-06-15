@@ -46,7 +46,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineScope {
+class DownloadService :
+    Service(),
+    DownloadManager.DownloadListener,
+    CoroutineScope {
     override val coroutineContext = Dispatchers.IO + SupervisorJob()
     private val deferredMgr = async { DownloadManager.apply { setDownloadListener(this@DownloadService) } }
     private var mNotifyManager: NotificationManagerCompat? = null

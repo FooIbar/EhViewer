@@ -22,16 +22,12 @@ val Context.animatorDurationScale: Float
 
 private const val TABLET_UI_REQUIRED_SCREEN_WIDTH_DP = 720
 
-fun Configuration.isTabletUi(): Boolean {
-    return smallestScreenWidthDp >= TABLET_UI_REQUIRED_SCREEN_WIDTH_DP
-}
+fun Configuration.isTabletUi(): Boolean = smallestScreenWidthDp >= TABLET_UI_REQUIRED_SCREEN_WIDTH_DP
 
 /**
  * Returns true if current context is in night mode
  */
-fun Context.isNightMode(): Boolean {
-    return resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-}
+fun Context.isNightMode(): Boolean = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
 
 /**
  * Creates night mode Context depending on reader theme/background

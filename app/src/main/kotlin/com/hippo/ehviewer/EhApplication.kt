@@ -77,7 +77,9 @@ import splitties.init.appCtx
 private val lifecycle = ProcessLifecycleOwner.get().lifecycle
 private val lifecycleScope = lifecycle.coroutineScope
 
-class EhApplication : Application(), SingletonImageLoader.Factory {
+class EhApplication :
+    Application(),
+    SingletonImageLoader.Factory {
     override fun onCreate() {
         // Initialize Settings on first access
         lifecycleScope.launchIO {

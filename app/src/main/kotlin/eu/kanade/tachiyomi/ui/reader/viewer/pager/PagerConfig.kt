@@ -115,11 +115,9 @@ class PagerConfig(
             field = value.also { it.invertMode = this.tappingInverted }
         }
 
-    override fun defaultNavigation(): ViewerNavigation {
-        return when (viewer) {
-            is VerticalPagerViewer -> LNavigation()
-            else -> RightAndLeftNavigation()
-        }
+    override fun defaultNavigation(): ViewerNavigation = when (viewer) {
+        is VerticalPagerViewer -> LNavigation()
+        else -> RightAndLeftNavigation()
     }
 
     override fun updateNavigation(navigationMode: Int) {

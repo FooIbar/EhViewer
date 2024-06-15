@@ -46,7 +46,9 @@ import kotlinx.coroutines.launch
  */
 internal abstract class HorizontalDragGestureNode(
     enabled: Boolean,
-) : DelegatingNode(), PointerInputModifierNode, CompositionLocalConsumerModifierNode {
+) : DelegatingNode(),
+    PointerInputModifierNode,
+    CompositionLocalConsumerModifierNode {
 
     protected var enabled = enabled
         private set
@@ -132,65 +134,63 @@ internal abstract class HorizontalDragGestureNode(
         pointerInputNode?.onPointerEvent(pointerEvent, pass, bounds)
     }
 
-    private fun initializePointerInputNode(): SuspendingPointerInputModifierNode {
-        return SuspendingPointerInputModifierNode {
-            // re-create tracker when pointer input block restarts. This lazily creates the tracker
-            // only when it is need.
-            val velocityTracker = VelocityTracker()
-            val onDragStart: (change: PointerInputChange, initialDelta: Offset) -> Unit =
-                { startEvent, initialDelta ->
-                    if (!isListeningForEvents) {
-                        if (channel == null) {
-                            channel = Channel(capacity = Channel.UNLIMITED)
-                        }
-                        startListeningForEvents()
+    private fun initializePointerInputNode(): SuspendingPointerInputModifierNode = SuspendingPointerInputModifierNode {
+        // re-create tracker when pointer input block restarts. This lazily creates the tracker
+        // only when it is need.
+        val velocityTracker = VelocityTracker()
+        val onDragStart: (change: PointerInputChange, initialDelta: Offset) -> Unit =
+            { startEvent, initialDelta ->
+                if (!isListeningForEvents) {
+                    if (channel == null) {
+                        channel = Channel(capacity = Channel.UNLIMITED)
                     }
-                    val xSign = sign(startEvent.position.x)
-                    val ySign = sign(startEvent.position.y)
-                    val adjustedStart = startEvent.position -
-                        Offset(initialDelta.x * xSign, initialDelta.y * ySign)
-
-                    channel?.trySend(DragStarted(adjustedStart))
+                    startListeningForEvents()
                 }
+                val xSign = sign(startEvent.position.x)
+                val ySign = sign(startEvent.position.y)
+                val adjustedStart = startEvent.position -
+                    Offset(initialDelta.x * xSign, initialDelta.y * ySign)
 
-            val onDragEnd: () -> Unit = {
-                val maximumVelocity = currentValueOf(LocalViewConfiguration)
-                    .maximumFlingVelocity
-                val velocity = velocityTracker.calculateVelocity(
-                    Velocity(maximumVelocity, maximumVelocity),
+                channel?.trySend(DragStarted(adjustedStart))
+            }
+
+        val onDragEnd: () -> Unit = {
+            val maximumVelocity = currentValueOf(LocalViewConfiguration)
+                .maximumFlingVelocity
+            val velocity = velocityTracker.calculateVelocity(
+                Velocity(maximumVelocity, maximumVelocity),
+            )
+            velocityTracker.resetTracking()
+            channel?.trySend(DragStopped(velocity))
+        }
+
+        val onDragCancel: () -> Unit = {
+            channel?.trySend(DragCancelled)
+        }
+
+        val shouldAwaitTouchSlop: () -> Boolean = {
+            !startDragImmediately()
+        }
+
+        val onDrag: (change: PointerInputChange, dragAmount: Offset) -> Unit =
+            { change, delta ->
+                velocityTracker.addPointerInputChange(change)
+                channel?.trySend(DragDelta(delta))
+            }
+
+        coroutineScope {
+            try {
+                detectHorizontalDragGestures(
+                    canDrag = ::canDrag,
+                    onDragStart = onDragStart,
+                    onDragEnd = onDragEnd,
+                    onDragCancel = onDragCancel,
+                    shouldAwaitTouchSlop = shouldAwaitTouchSlop,
+                    onDrag = onDrag,
                 )
-                velocityTracker.resetTracking()
-                channel?.trySend(DragStopped(velocity))
-            }
-
-            val onDragCancel: () -> Unit = {
+            } catch (cancellation: CancellationException) {
                 channel?.trySend(DragCancelled)
-            }
-
-            val shouldAwaitTouchSlop: () -> Boolean = {
-                !startDragImmediately()
-            }
-
-            val onDrag: (change: PointerInputChange, dragAmount: Offset) -> Unit =
-                { change, delta ->
-                    velocityTracker.addPointerInputChange(change)
-                    channel?.trySend(DragDelta(delta))
-                }
-
-            coroutineScope {
-                try {
-                    detectHorizontalDragGestures(
-                        canDrag = ::canDrag,
-                        onDragStart = onDragStart,
-                        onDragEnd = onDragEnd,
-                        onDragCancel = onDragCancel,
-                        shouldAwaitTouchSlop = shouldAwaitTouchSlop,
-                        onDrag = onDrag,
-                    )
-                } catch (cancellation: CancellationException) {
-                    channel?.trySend(DragCancelled)
-                    if (!isActive) throw cancellation
-                }
+                if (!isActive) throw cancellation
             }
         }
     }

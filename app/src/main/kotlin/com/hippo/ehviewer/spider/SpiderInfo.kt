@@ -58,24 +58,20 @@ private val spiderInfoCache by lazy {
     }
 }
 
-fun readFromCache(gid: Long): SpiderInfo? {
-    return spiderInfoCache.read(gid.toString()) {
-        runCatching {
-            cbor.decodeFromByteArray<SpiderInfo>(data.toFile().readBytes())
-        }.onFailure {
-            logcat(it)
-        }.getOrNull()
-    }
-}
-
-fun readCompatFromUniFile(file: UniFile): SpiderInfo? {
-    return runCatching {
-        file.openInputStream().use {
-            cbor.decodeFromByteArray<SpiderInfo>(it.readBytes())
-        }
-    }.getOrNull() ?: runCatching {
-        file.openInputStream().use { readLegacySpiderInfo(it) }
+fun readFromCache(gid: Long): SpiderInfo? = spiderInfoCache.read(gid.toString()) {
+    runCatching {
+        cbor.decodeFromByteArray<SpiderInfo>(data.toFile().readBytes())
+    }.onFailure {
+        logcat(it)
     }.getOrNull()
 }
+
+fun readCompatFromUniFile(file: UniFile): SpiderInfo? = runCatching {
+    file.openInputStream().use {
+        cbor.decodeFromByteArray<SpiderInfo>(it.readBytes())
+    }
+}.getOrNull() ?: runCatching {
+    file.openInputStream().use { readLegacySpiderInfo(it) }
+}.getOrNull()
 
 const val TOKEN_FAILED = "failed"

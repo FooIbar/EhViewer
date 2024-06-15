@@ -184,21 +184,19 @@ data class TokenArgs(
 ) : GalleryDetailScreenArgs
 
 @StringRes
-private fun getRatingText(rating: Float): Int {
-    return when ((rating * 2).roundToInt()) {
-        0 -> R.string.rating0
-        1 -> R.string.rating1
-        2 -> R.string.rating2
-        3 -> R.string.rating3
-        4 -> R.string.rating4
-        5 -> R.string.rating5
-        6 -> R.string.rating6
-        7 -> R.string.rating7
-        8 -> R.string.rating8
-        9 -> R.string.rating9
-        10 -> R.string.rating10
-        else -> R.string.rating_none
-    }
+private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt()) {
+    0 -> R.string.rating0
+    1 -> R.string.rating1
+    2 -> R.string.rating2
+    3 -> R.string.rating3
+    4 -> R.string.rating4
+    5 -> R.string.rating5
+    6 -> R.string.rating6
+    7 -> R.string.rating7
+    8 -> R.string.rating8
+    9 -> R.string.rating9
+    10 -> R.string.rating10
+    else -> R.string.rating_none
 }
 
 private fun List<GalleryTagGroup>.getArtistTag(): String? {
@@ -618,14 +616,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             )
         }
         Spacer(modifier = Modifier.size(keylineMargin))
-        fun getAllRatingText(rating: Float, ratingCount: Int): String {
-            return getString(
-                R.string.rating_text,
-                getString(getRatingText(rating)),
-                rating,
-                ratingCount,
-            )
-        }
+        fun getAllRatingText(rating: Float, ratingCount: Int): String = getString(
+            R.string.rating_text,
+            getString(getRatingText(rating)),
+            rating,
+            ratingCount,
+        )
         var ratingText by rememberSaveable {
             mutableStateOf(getAllRatingText(galleryDetail.rating, galleryDetail.ratingCount))
         }

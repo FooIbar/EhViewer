@@ -27,7 +27,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
-abstract class PageLoader2(private val gid: Long, var startPage: Int) : PageLoader(), CoroutineScope {
+abstract class PageLoader2(private val gid: Long, var startPage: Int) :
+    PageLoader(),
+    CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
     private val progressJob = launch(start = CoroutineStart.LAZY) {
         if (startPage == -1) {

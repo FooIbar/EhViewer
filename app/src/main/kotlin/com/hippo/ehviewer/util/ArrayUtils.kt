@@ -8,11 +8,10 @@ inline fun <R : Any, C : MutableCollection<in R>> LongArray.mapNotNullTo(destina
 inline fun <T> Collection<T>.mapToLongArray(transform: (T) -> Long): LongArray {
     val result = LongArray(size)
     var index = 0
-    for (element in this)
+    for (element in this) {
         result[index++] = transform(element)
+    }
     return result
 }
 
-inline fun <R : Any> LongArray.mapNotNull(transform: (Long) -> R?): List<R> {
-    return mapNotNullTo(ArrayList(), transform)
-}
+inline fun <R : Any> LongArray.mapNotNull(transform: (Long) -> R?): List<R> = mapNotNullTo(ArrayList(), transform)

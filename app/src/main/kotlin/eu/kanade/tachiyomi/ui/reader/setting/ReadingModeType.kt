@@ -50,15 +50,13 @@ enum class ReadingModeType(
 
         fun fromSpinner(position: Int?) = entries.find { value -> value.prefValue == position } ?: DEFAULT
 
-        fun toViewer(preference: Int?, activity: ReaderActivity): BaseViewer {
-            return when (fromPreference(preference)) {
-                LEFT_TO_RIGHT -> L2RPagerViewer(activity)
-                RIGHT_TO_LEFT -> R2LPagerViewer(activity)
-                VERTICAL -> VerticalPagerViewer(activity)
-                WEBTOON -> WebtoonViewer(activity)
-                CONTINUOUS_VERTICAL -> WebtoonViewer(activity, isContinuous = false)
-                DEFAULT -> L2RPagerViewer(activity)
-            }
+        fun toViewer(preference: Int?, activity: ReaderActivity): BaseViewer = when (fromPreference(preference)) {
+            LEFT_TO_RIGHT -> L2RPagerViewer(activity)
+            RIGHT_TO_LEFT -> R2LPagerViewer(activity)
+            VERTICAL -> VerticalPagerViewer(activity)
+            WEBTOON -> WebtoonViewer(activity)
+            CONTINUOUS_VERTICAL -> WebtoonViewer(activity, isContinuous = false)
+            DEFAULT -> L2RPagerViewer(activity)
         }
     }
 }

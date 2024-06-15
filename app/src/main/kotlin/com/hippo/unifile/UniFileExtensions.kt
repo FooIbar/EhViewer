@@ -14,16 +14,12 @@ import okio.Path
 /**
  * Use Native IO/NIO directly if possible, unless you need process file content on JVM!
  */
-fun UniFile.openInputStream(): FileInputStream {
-    return AutoCloseInputStream(openFileDescriptor("r"))
-}
+fun UniFile.openInputStream(): FileInputStream = AutoCloseInputStream(openFileDescriptor("r"))
 
 /**
  * Use Native IO/NIO directly if possible, unless you need process file content on JVM!
  */
-fun UniFile.openOutputStream(): FileOutputStream {
-    return AutoCloseOutputStream(openFileDescriptor("wt"))
-}
+fun UniFile.openOutputStream(): FileOutputStream = AutoCloseOutputStream(openFileDescriptor("wt"))
 
 fun UniFile.sha1() = openFileDescriptor("r").use { sha1(it.fd) }
 

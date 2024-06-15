@@ -57,9 +57,7 @@ object AppConfig {
     val defaultDownloadDir: File?
         get() = getDirInExternalAppDir(DOWNLOAD, false)
 
-    fun getTempDir(filename: String): UniFile? {
-        return getDirInExternalAppDir(TEMP)?.run { File(this, filename).asUniFile() }
-    }
+    fun getTempDir(filename: String): UniFile? = getDirInExternalAppDir(TEMP)?.run { File(this, filename).asUniFile() }
 
     val externalTempDir: File?
         get() = appCtx.externalCacheDir?.run { File(this, TEMP).takeIf { it.ensureDirectory() } }
@@ -71,9 +69,7 @@ object AppConfig {
     val tempDir: File?
         get() = appCtx.cacheDir.run { File(this, TEMP).takeIf { it.ensureDirectory() } }
 
-    fun createTempFile(): File? {
-        return FileUtils.createTempFile(tempDir, null)
-    }
+    fun createTempFile(): File? = FileUtils.createTempFile(tempDir, null)
 
     fun getFilesDir(name: String) = File(appCtx.filesDir, name).takeIf { it.ensureDirectory() }
 }

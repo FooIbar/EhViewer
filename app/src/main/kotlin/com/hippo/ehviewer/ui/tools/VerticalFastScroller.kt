@@ -199,8 +199,7 @@ private fun rememberColumnWidthSums(
     horizontalArrangement,
     contentPadding,
 ) {
-    {
-            constraints ->
+    { constraints ->
         require(constraints.maxWidth != Constraints.Infinity) {
             "LazyVerticalGrid's width should be bound by parent"
         }
@@ -230,8 +229,7 @@ private fun rememberColumnWidthSums(
     horizontalArrangement,
     contentPadding,
 ) {
-    {
-            constraints ->
+    { constraints ->
         require(constraints.maxWidth != Constraints.Infinity) {
             "LazyVerticalGrid's width should be bound by parent"
         }

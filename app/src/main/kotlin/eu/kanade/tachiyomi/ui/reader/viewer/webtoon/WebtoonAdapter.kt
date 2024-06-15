@@ -42,9 +42,7 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : RecyclerView.Adapter<RecyclerV
     /**
      * Returns the amount of items of the adapter.
      */
-    override fun getItemCount(): Int {
-        return items.size
-    }
+    override fun getItemCount(): Int = items.size
 
     /**
      * Creates a new view holder for an item with the given [viewType].

@@ -22,31 +22,29 @@ import eu.kanade.tachiyomi.util.system.logcat
 import org.jsoup.Jsoup
 
 object ProfileParser {
-    fun parse(body: String): Result {
-        return runCatching {
-            val d = Jsoup.parse(body)
-            val profilename = d.getElementById("profilename")
-            val displayName = profilename!!.child(0).text()
-            val avatar = runCatching {
-                val avatar =
-                    profilename.nextElementSibling()!!.nextElementSibling()!!.child(0).attr("src")
-                if (avatar.isEmpty()) {
-                    null
-                } else if (!avatar.startsWith("http")) {
-                    EhUrl.URL_FORUMS + avatar
-                } else {
-                    avatar
-                }
-            }.getOrElse {
-                ExceptionUtils.throwIfFatal(it)
-                logcat { "No avatar" }
+    fun parse(body: String): Result = runCatching {
+        val d = Jsoup.parse(body)
+        val profilename = d.getElementById("profilename")
+        val displayName = profilename!!.child(0).text()
+        val avatar = runCatching {
+            val avatar =
+                profilename.nextElementSibling()!!.nextElementSibling()!!.child(0).attr("src")
+            if (avatar.isEmpty()) {
                 null
+            } else if (!avatar.startsWith("http")) {
+                EhUrl.URL_FORUMS + avatar
+            } else {
+                avatar
             }
-            Result(displayName, avatar)
         }.getOrElse {
             ExceptionUtils.throwIfFatal(it)
-            throw ParseException("Parse forums error")
+            logcat { "No avatar" }
+            null
         }
+        Result(displayName, avatar)
+    }.getOrElse {
+        ExceptionUtils.throwIfFatal(it)
+        throw ParseException("Parse forums error")
     }
 
     class Result(val displayName: String?, val avatar: String?)

@@ -1,4 +1,4 @@
-@file:Suppress("ktlint:standard:property-naming", "ktlint:standard:function-naming")
+@file:Suppress("ktlint:standard:property-naming")
 
 package androidx.compose.material3
 
@@ -230,10 +230,8 @@ class DrawerState2(
 fun rememberDrawerState2(
     initialValue: DrawerValue,
     confirmStateChange: (DrawerValue) -> Boolean = { true },
-): DrawerState2 {
-    return rememberSaveable(saver = DrawerState2.Saver(confirmStateChange)) {
-        DrawerState2(initialValue, confirmStateChange)
-    }
+): DrawerState2 = rememberSaveable(saver = DrawerState2.Saver(confirmStateChange)) {
+    DrawerState2(initialValue, confirmStateChange)
 }
 
 @Composable

@@ -55,10 +55,8 @@ fun MetaRatingWidget(rating: Float, ratingSize: Dp, ratingInterval: Dp, modifier
     val density = LocalDensity.current
     val ratingSizePx = remember { with(density) { ratingSize.toPx() } }
     val ratingIntervalPx = remember { with(density) { ratingInterval.toPx() } }
-    fun calculateRating(offset: Float): Float {
-        return ((offset * 2 + ratingIntervalPx) / (ratingSizePx + ratingIntervalPx))
-            .roundToInt().coerceIn(0, 10).div(2f)
-    }
+    fun calculateRating(offset: Float): Float = ((offset * 2 + ratingIntervalPx) / (ratingSizePx + ratingIntervalPx))
+        .roundToInt().coerceIn(0, 10).div(2f)
     Row(
         modifier = onRatingChange?.let {
             modifier

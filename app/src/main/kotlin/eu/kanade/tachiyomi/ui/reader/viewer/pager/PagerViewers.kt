@@ -9,9 +9,7 @@ class L2RPagerViewer(activity: ReaderActivity) : PagerViewer(activity) {
     /**
      * Creates a new left to right pager.
      */
-    override fun createPager(): Pager {
-        return Pager(activity)
-    }
+    override fun createPager(): Pager = Pager(activity)
 }
 
 /**
@@ -21,9 +19,7 @@ class R2LPagerViewer(activity: ReaderActivity) : PagerViewer(activity) {
     /**
      * Creates a new right to left pager.
      */
-    override fun createPager(): Pager {
-        return Pager(activity)
-    }
+    override fun createPager(): Pager = Pager(activity)
 
     /**
      * Moves to the next page. On a R2L pager the next page is the one at the left.
@@ -47,7 +43,5 @@ class VerticalPagerViewer(activity: ReaderActivity) : PagerViewer(activity) {
     /**
      * Creates a new vertical pager.
      */
-    override fun createPager(): Pager {
-        return Pager(activity, isHorizontal = false)
-    }
+    override fun createPager(): Pager = Pager(activity, isHorizontal = false)
 }

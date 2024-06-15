@@ -132,16 +132,12 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
         frame.addView(recycler)
     }
 
-    override fun getViewForInsets(): View {
-        return recycler
-    }
+    override fun getViewForInsets(): View = recycler
 
     /**
      * Returns the view this viewer uses.
      */
-    override fun getView(): View {
-        return frame
-    }
+    override fun getView(): View = frame
 
     /**
      * Destroys this viewer. Called when leaving the reader or swapping viewers.
@@ -265,9 +261,7 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
      * Called from the containing activity when a generic motion [event] is received. It should
      * return true if the event was handled, false otherwise.
      */
-    override fun handleGenericMotionEvent(event: MotionEvent): Boolean {
-        return false
-    }
+    override fun handleGenericMotionEvent(event: MotionEvent): Boolean = false
 
     override fun refreshAdapter() {
         refreshAdapter(layoutManager.findLastEndVisibleItemPosition())

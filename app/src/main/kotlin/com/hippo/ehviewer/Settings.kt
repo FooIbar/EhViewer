@@ -100,6 +100,7 @@ fun <T> PrefDelegate<T>.asMutableState(): MutableState<T> {
 object Settings : DataStorePreferences(null) {
     private const val KEY_SHOW_TAG_TRANSLATIONS = "show_tag_translations"
 
+    @Suppress("ktlint:standard:backing-property-naming")
     private val _favFlow = MutableSharedFlow<Unit>()
     val favChangesFlow = _favFlow.debounce(1000)
     var favCat by stringArrayPref("fav_cat", 10, "Favorites").emitTo(_favFlow)
@@ -225,7 +226,7 @@ object Settings : DataStorePreferences(null) {
     private fun intArrayPref(key: String, count: Int) = object : Delegate<IntArray> {
         override val flowGetter: () -> Flow<Unit> = { _value.asFlow().flatMapMerge { it.changesFlow() }.conflate() }
 
-        @Suppress("ktlint:standard:property-naming")
+        @Suppress("ktlint:standard:backing-property-naming")
         private var _value = (0 until count).map { intPref("${key}_$it", 0) }.toTypedArray()
         override fun getValue(thisRef: Any?, prop: KProperty<*>?): IntArray = _value.map { it.value }.toIntArray()
         override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: IntArray) {
@@ -237,7 +238,7 @@ object Settings : DataStorePreferences(null) {
     private fun stringArrayPref(key: String, count: Int, defMetaValue: String) = object : Delegate<Array<String>> {
         override val flowGetter: () -> Flow<Unit> = { _value.asFlow().flatMapMerge { it.changesFlow() }.conflate() }
 
-        @Suppress("ktlint:standard:property-naming")
+        @Suppress("ktlint:standard:backing-property-naming")
         private var _value = (0 until count).map { stringPref("${key}_$it", "$defMetaValue $it") }.toTypedArray()
         override fun getValue(thisRef: Any?, prop: KProperty<*>?): Array<String> = _value.map { it.value }.toTypedArray()
         override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: Array<String>) {

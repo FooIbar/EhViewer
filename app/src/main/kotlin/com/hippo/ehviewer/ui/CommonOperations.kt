@@ -439,9 +439,7 @@ suspend fun DialogState.awaitSelectDate(): String? {
         title = R.string.go_to,
         yearRange = initial.year..yesterday.year,
         selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                return utcTimeMillis in dateRange
-            }
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis in dateRange
         },
     )
     val date = dateMillis?.run { toLocalDateTime().date.toString() }

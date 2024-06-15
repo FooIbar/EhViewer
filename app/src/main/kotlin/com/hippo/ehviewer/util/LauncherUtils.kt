@@ -57,7 +57,8 @@ suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<
     }
     return withUIContext {
         lifecycle.addObserver(observer)
-        suspendCoroutine { cont -> // No cancellation support here since we cannot cancel a launched Intent
+        suspendCoroutine { cont ->
+            // No cancellation support here since we cannot cancel a launched Intent
             val activity = findActivity<ComponentActivity>()
             launcher = activity.activityResultRegistry.register(key, contract) {
                 launcher?.unregister()

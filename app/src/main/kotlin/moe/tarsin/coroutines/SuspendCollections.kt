@@ -3,11 +3,12 @@ package moe.tarsin.coroutines
 inline fun <T> MutableIterable<T>.filterInPlaceInline(predicate: (T) -> Boolean, predicateResultToRemove: Boolean): Boolean {
     var result = false
     with(iterator()) {
-        while (hasNext())
+        while (hasNext()) {
             if (predicate(next()) == predicateResultToRemove) {
                 remove()
                 result = true
             }
+        }
     }
     return result
 }
@@ -31,8 +32,9 @@ private suspend inline fun <T> MutableList<T>.filterInPlaceInline(predicate: (T)
         writeIndex++
     }
     return if (writeIndex < size) {
-        for (removeIndex in lastIndex downTo writeIndex)
+        for (removeIndex in lastIndex downTo writeIndex) {
             removeAt(removeIndex)
+        }
         true
     } else {
         false

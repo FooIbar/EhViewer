@@ -69,28 +69,24 @@ open class Pager(
      * Whether the given [ev] should be intercepted. Only used to prevent crashes when child
      * views manipulate [requestDisallowInterceptTouchEvent].
      */
-    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        return try {
-            super.onInterceptTouchEvent(ev)
-        } catch (e: IllegalArgumentException) {
-            false
-        }
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean = try {
+        super.onInterceptTouchEvent(ev)
+    } catch (e: IllegalArgumentException) {
+        false
     }
 
     /**
      * Handles a touch event. Only used to prevent crashes when child views manipulate
      * [requestDisallowInterceptTouchEvent].
      */
-    override fun onTouchEvent(ev: MotionEvent): Boolean {
-        return try {
-            super.onTouchEvent(ev)
-        } catch (e: NullPointerException) {
-            false
-        } catch (e: IndexOutOfBoundsException) {
-            false
-        } catch (e: IllegalArgumentException) {
-            false
-        }
+    override fun onTouchEvent(ev: MotionEvent): Boolean = try {
+        super.onTouchEvent(ev)
+    } catch (e: NullPointerException) {
+        false
+    } catch (e: IndexOutOfBoundsException) {
+        false
+    } catch (e: IllegalArgumentException) {
+        false
     }
 
     /**

@@ -17,12 +17,10 @@ data class FavParserResult(
 }
 
 object FavoritesParser {
-    fun parse(body: ByteBuffer): FavParserResult {
-        return runSuspendCatching {
-            unmarshalParsingAs<FavParserResult>(body, ::parseFav)
-        }.getOrElse {
-            throw ParseException("Parse favorites error", it)
-        }
+    fun parse(body: ByteBuffer): FavParserResult = runSuspendCatching {
+        unmarshalParsingAs<FavParserResult>(body, ::parseFav)
+    }.getOrElse {
+        throw ParseException("Parse favorites error", it)
     }
 }
 

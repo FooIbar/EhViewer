@@ -71,9 +71,7 @@ class WebtoonConfig(
             field = value.also { it.invertMode = tappingInverted }
         }
 
-    override fun defaultNavigation(): ViewerNavigation {
-        return LNavigation()
-    }
+    override fun defaultNavigation(): ViewerNavigation = LNavigation()
 
     override fun updateNavigation(navigationMode: Int) {
         this.navigator = when (navigationMode) {

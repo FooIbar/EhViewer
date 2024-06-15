@@ -93,13 +93,9 @@ class SpiderDen(val info: GalleryInfo) {
     }
 
     // Search in both directories to maintain compatibility
-    private fun findImageFile(index: Int): UniFile? {
-        return tempDownloadDir?.findImageFile(index) ?: downloadDir?.findImageFile(index)
-    }
+    private fun findImageFile(index: Int): UniFile? = tempDownloadDir?.findImageFile(index) ?: downloadDir?.findImageFile(index)
 
-    private fun containInDownloadDir(index: Int): Boolean {
-        return findImageFile(index) != null
-    }
+    private fun containInDownloadDir(index: Int): Boolean = findImageFile(index) != null
 
     private fun copyFromCacheToDownloadDir(index: Int): Boolean {
         val dir = imageDir ?: return false
@@ -116,19 +112,17 @@ class SpiderDen(val info: GalleryInfo) {
         }.getOrDefault(false)
     }
 
-    operator fun contains(index: Int): Boolean {
-        return when (mode) {
-            SpiderQueen.MODE_READ -> {
-                containInCache(index) || containInDownloadDir(index)
-            }
+    operator fun contains(index: Int): Boolean = when (mode) {
+        SpiderQueen.MODE_READ -> {
+            containInCache(index) || containInDownloadDir(index)
+        }
 
-            SpiderQueen.MODE_DOWNLOAD -> {
-                containInDownloadDir(index) || copyFromCacheToDownloadDir(index)
-            }
+        SpiderQueen.MODE_DOWNLOAD -> {
+            containInDownloadDir(index) || copyFromCacheToDownloadDir(index)
+        }
 
-            else -> {
-                false
-            }
+        else -> {
+            false
         }
     }
 
@@ -137,17 +131,11 @@ class SpiderDen(val info: GalleryInfo) {
         return sCache.remove(key)
     }
 
-    private fun removeFromDownloadDir(index: Int): Boolean {
-        return findImageFile(index)?.delete() ?: false
-    }
+    private fun removeFromDownloadDir(index: Int): Boolean = findImageFile(index)?.delete() ?: false
 
-    fun remove(index: Int): Boolean {
-        return removeFromCache(index) or removeFromDownloadDir(index)
-    }
+    fun remove(index: Int): Boolean = removeFromCache(index) or removeFromDownloadDir(index)
 
-    private fun findDownloadFileForIndex(index: Int, extension: String): UniFile? {
-        return imageDir?.createFile(perFilename(index, extension))
-    }
+    private fun findDownloadFileForIndex(index: Int, extension: String): UniFile? = imageDir?.createFile(perFilename(index, extension))
 
     suspend fun makeHttpCallAndSaveImage(
         index: Int,
@@ -346,9 +334,7 @@ class SpiderDen(val info: GalleryInfo) {
 private val FileNameRegex = Regex("^\\d{8}\\.\\w{3,4}")
 private val FileHashRegex = Regex("/([0-9a-f]{40})(?:-\\d+){3}-\\w+")
 
-fun perFilename(index: Int, extension: String = ""): String {
-    return "%08d.%s".format(index + 1, extension)
-}
+fun perFilename(index: Int, extension: String = ""): String = "%08d.%s".format(index + 1, extension)
 
 private fun UniFile.findImageFile(index: Int): UniFile? {
     val head = perFilename(index)

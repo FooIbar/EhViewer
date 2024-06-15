@@ -72,7 +72,8 @@ data class DownloadInfo(
 
     @Embedded
     val downloadInfo: DownloadEntity = DownloadEntity(galleryInfo.gid),
-) : GalleryInfo by galleryInfo, AbstractDownloadInfo by downloadInfo {
+) : GalleryInfo by galleryInfo,
+    AbstractDownloadInfo by downloadInfo {
 
     companion object {
         const val STATE_INVALID = -1

@@ -23,9 +23,7 @@ abstract class ViewPagerAdapter : PagerAdapter() {
         container.removeView(view)
     }
 
-    override fun isViewFromObject(view: View, obj: Any): Boolean {
-        return view === obj
-    }
+    override fun isViewFromObject(view: View, obj: Any): Boolean = view === obj
 
     interface PositionableView {
         val item: Any
