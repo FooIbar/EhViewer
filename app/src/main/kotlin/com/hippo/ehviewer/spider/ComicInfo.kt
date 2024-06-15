@@ -8,8 +8,6 @@ import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.openInputStream
 import com.hippo.unifile.openOutputStream
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -19,7 +17,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
-import nl.adaptivity.xmlutil.newGenericWriter
+import nl.adaptivity.xmlutil.newWriter
 import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.xmlStreaming
@@ -98,21 +96,17 @@ fun ComicInfo.toSimpleTags() = listOfNotNull(
 ).flatten().ifEmpty { null }
 
 fun ComicInfo.write(file: UniFile) {
-    file.openOutputStream().use {
-        OutputStreamWriter(it, Charsets.UTF_8).use { writer ->
-            xmlStreaming.newGenericWriter(writer).use { xmlWriter ->
-                xml.encodeToWriter(xmlWriter, ComicInfo.serializer(), this)
-            }
+    file.openOutputStream().bufferedWriter().use {
+        xmlStreaming.newWriter(it).use { writer ->
+            xml.encodeToWriter(writer, ComicInfo.serializer(), this)
         }
     }
 }
 
 fun readComicInfo(file: UniFile): ComicInfo? = runCatching {
-    file.openInputStream().use {
-        InputStreamReader(it, Charsets.UTF_8).use { reader ->
-            xmlStreaming.newGenericReader(reader).use { xmlReader ->
-                xml.decodeFromReader(ComicInfo.serializer(), xmlReader)
-            }
+    file.openInputStream().bufferedReader().use {
+        xmlStreaming.newReader(it).use { reader ->
+            xml.decodeFromReader(ComicInfo.serializer(), reader)
         }
     }
 }.getOrNull()
