@@ -43,9 +43,8 @@ set(NDK_VERSION "${ANDROID_NDK_MAJOR}.${ANDROID_NDK_MINOR}.${ANDROID_NDK_BUILD}"
 ExternalProject_Add(
         nettle
         PREFIX nettle
-        URL https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz
-        URL_MD5 29fcd2dec6bf5b48e5e3ffb3cbc4779e
-        PATCH_COMMAND bash -c "patch -p1 < ${CURRENT_DIR}/nettle.patch"
+        URL https://ftp.gnu.org/gnu/nettle/nettle-3.10.tar.gz
+        URL_MD5 c61453139d5fb44e9cdcc5b684b26e55
         CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
         BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS}'"
         INSTALL_COMMAND ""
