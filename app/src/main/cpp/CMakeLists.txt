@@ -19,11 +19,12 @@ endif (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 option(BUILD_TESTING OFF)
 
+set(XZ_PATCH ${CMAKE_CURRENT_LIST_DIR}/0001-Don-t-build-other-binaries.patch)
 FetchContent_Declare(
         liblzma
         GIT_REPOSITORY https://github.com/tukaani-project/xz.git
         GIT_TAG v5.6.2
-        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/0001-Don-t-build-other-binaries.patch
+        PATCH_COMMAND git apply --check -R ${XZ_PATCH} || git apply ${XZ_PATCH}
 )
 
 FetchContent_MakeAvailable(liblzma)
@@ -84,11 +85,12 @@ option(ENABLE_TEST OFF)
 # Configure libarchive link's static lib
 SET(LIBARCHIVE_CUSTOM_LIBS "libnettle" "liblzma")
 
+set(LIBARCHIVE_PATCH ${CMAKE_CURRENT_LIST_DIR}/0001-Insert-link-libs.patch)
 FetchContent_Declare(
         libarchive
         GIT_REPOSITORY https://github.com/libarchive/libarchive.git
         GIT_TAG v3.7.4
-        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/0001-Insert-link-libs.patch
+        PATCH_COMMAND git apply --check -R ${LIBARCHIVE_PATCH} || git apply ${LIBARCHIVE_PATCH}
 )
 
 FetchContent_MakeAvailable(libarchive)
