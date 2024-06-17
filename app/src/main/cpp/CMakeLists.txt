@@ -23,7 +23,7 @@ FetchContent_Declare(
         liblzma
         GIT_REPOSITORY https://github.com/tukaani-project/xz.git
         GIT_TAG v5.6.2
-        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/0001-Don-t-build-other-binaries.patch || cd .
+        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/0001-Don-t-build-other-binaries.patch
 )
 
 FetchContent_MakeAvailable(liblzma)
@@ -75,6 +75,7 @@ SET(HAVE_LZMA_STREAM_ENCODER_MT 1)
 SET(HAVE_LZMADEC_H 1)
 SET(HAVE_LIBLZMADEC 1)
 
+option(ENABLE_OPENSSL OFF)
 option(ENABLE_TAR OFF)
 option(ENABLE_CPIO OFF)
 option(ENABLE_CAT OFF)
@@ -88,7 +89,7 @@ FetchContent_Declare(
         libarchive
         GIT_REPOSITORY https://github.com/libarchive/libarchive.git
         GIT_TAG v3.7.4
-        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/0001-Hide-symbols.patch ${CMAKE_CURRENT_LIST_DIR}/0002-Insert-link-libs.patch || cd .
+        PATCH_COMMAND git apply ${CMAKE_CURRENT_LIST_DIR}/0001-Insert-link-libs.patch
 )
 
 FetchContent_MakeAvailable(libarchive)
@@ -106,4 +107,4 @@ corrosion_add_target_local_rustflags(ehviewer_rust "-Clink-args=-Wl,-z,max-page-
 
 # Build and link our app's native lib
 add_library(${PROJECT_NAME} SHARED archive.c border.c gifutils.c hash.c natsort/strnatcmp.c)
-target_link_libraries(${PROJECT_NAME} ehviewer_rust archive_static log jnigraphics)
+target_link_libraries(${PROJECT_NAME} ehviewer_rust archive_static log jnigraphics -Wl,--exclude-libs,ALL)
