@@ -49,7 +49,7 @@ jobs:
         run: ./gradlew spotlessCheck
 
       - name: Lint Check
-        run: ./gradlew lintRelease
+        run: ./gradlew lintMarshmallowRelease
 
   default:
     runs-on: ubuntu-latest
