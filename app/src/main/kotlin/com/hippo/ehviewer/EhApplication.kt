@@ -43,13 +43,14 @@ import com.hippo.ehviewer.coil.CropBorderInterceptor
 import com.hippo.ehviewer.coil.DownloadThumbInterceptor
 import com.hippo.ehviewer.coil.HardwareBitmapInterceptor
 import com.hippo.ehviewer.coil.MergeInterceptor
+import com.hippo.ehviewer.cronet.cronetHttpClient
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.imageLoader
-import com.hippo.ehviewer.ktor.CronetEngine
+import com.hippo.ehviewer.ktor.Cronet
 import com.hippo.ehviewer.legacy.cleanObsoleteCache
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
@@ -197,7 +198,10 @@ class EhApplication :
 
     companion object {
         val ktorClient by lazy {
-            HttpClient(CronetEngine) {
+            HttpClient(Cronet) {
+                engine {
+                    client = cronetHttpClient
+                }
                 install(HttpCookies) {
                     storage = EhCookieStore
                 }
@@ -205,7 +209,7 @@ class EhApplication :
         }
 
         val noRedirectKtorClient by lazy {
-            HttpClient(CronetEngine) {
+            HttpClient(ktorClient.engine) {
                 followRedirects = false
                 install(HttpCookies) {
                     storage = EhCookieStore

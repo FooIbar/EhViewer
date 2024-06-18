@@ -1,11 +1,6 @@
 package com.hippo.ehviewer.ktor
 
-import com.hippo.ehviewer.cronet.cronetDispatcher
-import com.hippo.ehviewer.cronet.cronetHttpClient
-import com.hippo.ehviewer.cronet.cronetHttpClientExecutor
-import com.hippo.ehviewer.cronet.pool
 import io.ktor.client.engine.HttpClientEngineBase
-import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.engine.callContext
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
@@ -18,12 +13,15 @@ import io.ktor.util.date.GMTDate
 import io.ktor.util.flattenForEach
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.InternalAPI
+import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import io.ktor.utils.io.writer
 import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.job
@@ -33,9 +31,12 @@ import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
 import org.chromium.net.apihelpers.UploadDataProviders
 
-object CronetEngine : HttpClientEngineBase("Cronet") {
-    override val config = HttpClientEngineConfig()
-    override val dispatcher = cronetDispatcher
+class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cronet") {
+    // Limit thread to 1 since we are async & non-blocking
+    override val dispatcher = Dispatchers.Default.limitedParallelism(1)
+    private val executor = dispatcher.asExecutor()
+    private val pool = DirectByteBufferPool(32)
+    private val client = config.client ?: error("Cronet client is not configured")
 
     @InternalAPI
     override suspend fun execute(data: HttpRequestData) = executeHttpRequest(callContext(), data)
@@ -94,12 +95,12 @@ object CronetEngine : HttpClientEngineBase("Cronet") {
             }
         }
 
-        cronetHttpClient.newUrlRequestBuilder(data.url.toString(), callback, cronetHttpClientExecutor).apply {
+        client.newUrlRequestBuilder(data.url.toString(), callback, executor).apply {
             setHttpMethod(data.method.value)
             data.headers.flattenForEach { key, value -> addHeader(key, value) }
             data.body.contentType?.let { addHeader(HttpHeaders.ContentType, it.toString()) }
             data.body.contentLength?.let { addHeader(HttpHeaders.ContentLength, it.toString()) }
-            data.body.toUploadDataProvider()?.let { setUploadDataProvider(it, cronetHttpClientExecutor) }
+            data.body.toUploadDataProvider()?.let { setUploadDataProvider(it, executor) }
         }.build().apply {
             start()
             callContext.job.invokeOnCompletion { cancel() }
