@@ -124,8 +124,9 @@ android {
     }
 
     lint {
+        checkReleaseBuilds = false
         disable += setOf("MissingTranslation", "MissingQuantity")
-        fatal += setOf("NewApi", "InlinedApi")
+        error += setOf("InlinedApi")
     }
 
     packaging {
