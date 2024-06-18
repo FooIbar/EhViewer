@@ -59,6 +59,7 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
+import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastS
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -171,8 +172,10 @@ class EhApplication :
             add(KtorNetworkFetcherFactory { ktorClient })
             add(MergeInterceptor)
             add(DownloadThumbInterceptor)
+            if (isAtLeastO) {
+                add(HardwareBitmapInterceptor)
+            }
             add(CropBorderInterceptor)
-            add(HardwareBitmapInterceptor)
             if (isAtLeastP) {
                 add(AnimatedImageDecoder.Factory(false))
             } else {

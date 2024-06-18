@@ -30,6 +30,7 @@ import coil3.imageLoader
 import coil3.request.CachePolicy
 import coil3.request.ErrorResult
 import coil3.request.SuccessResult
+import coil3.request.allowHardware
 import coil3.size.Dimension
 import coil3.size.Precision
 import com.hippo.ehviewer.Settings
@@ -81,6 +82,7 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
                 onRight { data(it.source.uri) }
                 size(Dimension(targetWidth), Dimension.Undefined)
                 precision(Precision.INEXACT)
+                allowHardware(false)
                 maybeCropBorder(Settings.cropBorder.value)
                 memoryCachePolicy(CachePolicy.DISABLED)
             }
