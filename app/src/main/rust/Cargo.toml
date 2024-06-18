@@ -4,7 +4,7 @@ version = "0.0.0"
 resolver = "2"
 
 [lib]
-crate_type = ["cdylib"]
+crate-type = ["cdylib"]
 
 [dependencies]
 regex-lite = { version = "0.1" }
