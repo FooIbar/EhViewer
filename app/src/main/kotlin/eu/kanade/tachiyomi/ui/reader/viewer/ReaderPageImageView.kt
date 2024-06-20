@@ -25,12 +25,12 @@ import coil3.DrawableImage
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView.Companion.EASE_OUT_QUAD
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView.Companion.SCALE_TYPE_CENTER_INSIDE
-import com.github.chrisbanes.photoview.PhotoView
 import com.hippo.ehviewer.image.Image
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonSubsamplingImageView
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.view.isVisibleOnScreen
+import io.getstream.photoview.PhotoView
 
 /**
  * A wrapper view for showing page image.
