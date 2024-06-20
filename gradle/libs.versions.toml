@@ -100,7 +100,7 @@ logcat = "com.squareup.logcat:logcat:0.1"
 
 okio-jvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
 
-photoview = "com.github.chrisbanes:PhotoView:2.3.0"
+photoview = "io.getstream:photoview:1.0.2"
 
 reorderable = "sh.calvin.reorderable:reorderable:2.1.1"
 

@@ -212,7 +212,7 @@ dependencies {
     implementation(libs.androidx.room.paging)
 
     implementation(libs.androidx.work.runtime)
-    implementation(libs.photoview) // Dead Dependency
+    implementation(libs.photoview)
     implementation(libs.directionalviewpager) // Dead Dependency
     implementation(libs.material.motion.core)
 
