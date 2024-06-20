@@ -6,11 +6,9 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import androidx.recyclerview.widget.RecyclerView
-import coil3.BitmapImage
 import com.hippo.ehviewer.image.Image
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
-import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.util.system.dpToPx
 import kotlinx.coroutines.CoroutineScope
@@ -167,11 +165,6 @@ class ReaderPageHolder(
     private fun setImage(image: Image) {
         progressIndicator.setProgress(0)
         frame.setImage(image, viewer.readerConfig)
-        if (viewer is PagerViewer) {
-            if (image.innerImage is BitmapImage) {
-                frame.pageBackground = frame.background
-            }
-        }
     }
 
     /**
