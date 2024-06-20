@@ -1,16 +1,18 @@
-package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
+package eu.kanade.tachiyomi.ui.reader.viewer
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
-import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.util.system.createReaderThemeContext
 
 /**
  * RecyclerView Adapter used by this [viewer] to where [PageLoader] updates are posted.
  */
-class WebtoonAdapter(val viewer: WebtoonViewer) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ReaderPageAdapter(
+    val viewer: BaseViewer,
+    private val isWebtoon: Boolean = false,
+) : RecyclerView.Adapter<ReaderPageHolder>() {
 
     /**
      * List of currently set items.
@@ -47,29 +49,25 @@ class WebtoonAdapter(val viewer: WebtoonViewer) : RecyclerView.Adapter<RecyclerV
     /**
      * Creates a new view holder for an item with the given [viewType].
      */
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val view = ReaderPageImageView(readerThemedContext, isWebtoon = true)
-        return WebtoonPageHolder(view, viewer)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReaderPageHolder {
+        val view = ReaderPageImageView(readerThemedContext, isWebtoon = isWebtoon)
+        return ReaderPageHolder(view, viewer)
     }
 
     /**
      * Binds an existing view [holder] with the item at the given [position].
      */
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ReaderPageHolder, position: Int) {
         val item = items[position]
         currentChapter!!.request(position)
-        when (holder) {
-            is WebtoonPageHolder -> holder.bind(item)
-        }
+        holder.bind(item)
     }
 
     /**
      * Recycles an existing view [holder] before adding it to the view pool.
      */
-    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+    override fun onViewRecycled(holder: ReaderPageHolder) {
         currentChapter?.cancelRequest(holder.bindingAdapterPosition)
-        when (holder) {
-            is WebtoonPageHolder -> holder.recycle()
-        }
+        holder.recycle()
     }
 }

@@ -15,6 +15,7 @@ androidx-lifecycle = "2.8.2"
 androidx-paging = "3.3.0"
 androidx-recyclerview = "1.4.0-alpha01"
 androidx-room = "2.7.0-alpha04"
+androidx-viewpager2 = "1.1.0"
 androidx-work = "2.10.0-alpha02"
 arrow = "1.2.4"
 coil = "3.0.0-alpha06"
@@ -55,6 +56,8 @@ androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
 androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "androidx-room" }
 
+androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "androidx-viewpager2" }
+
 androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "androidx-work" }
 
 arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines" }
@@ -84,7 +87,6 @@ cronet-embedded = "org.chromium.net:cronet-embedded:119.6045.31"
 
 desugar = "com.android.tools:desugar_jdk_libs_nio:2.0.4"
 
-directionalviewpager = "com.github.tachiyomiorg:DirectionalViewPager:1.0.0"
 diff = "io.github.petertrr:kotlin-multiplatform-diff:0.6.0"
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
 jsoup = "org.jsoup:jsoup:1.17.2"

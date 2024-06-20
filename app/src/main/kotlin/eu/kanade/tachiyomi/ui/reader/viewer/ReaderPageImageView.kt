@@ -14,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.annotation.AttrRes
-import androidx.annotation.CallSuper
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.compose.ui.graphics.toAndroidRect
@@ -40,7 +39,7 @@ import io.getstream.photoview.PhotoView
  * @param isWebtoon if true, [WebtoonSubsamplingImageView] will be used instead of [SubsamplingScaleImageView]
  * and [AppCompatImageView] will be used instead of [PhotoView]
  */
-open class ReaderPageImageView @JvmOverloads constructor(
+class ReaderPageImageView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     @AttrRes defStyleAttrs: Int = 0,
@@ -60,18 +59,16 @@ open class ReaderPageImageView @JvmOverloads constructor(
      */
     var pageBackground: Drawable? = null
 
-    @CallSuper
-    open fun onImageLoaded() {
+    private fun onImageLoaded() {
         onImageLoaded?.invoke()
         background = pageBackground
     }
 
-    @CallSuper
-    open fun onScaleChanged(newScale: Float) {
+    fun onScaleChanged(newScale: Float) {
         onScaleChanged?.invoke(newScale)
     }
 
-    open fun onPageSelected(forward: Boolean) {
+    fun onPageSelected(forward: Boolean) {
         with(pageView as? SubsamplingScaleImageView) {
             if (this == null) return
             if (isReady) {
@@ -126,16 +123,6 @@ open class ReaderPageImageView @JvmOverloads constructor(
     }
 
     /**
-     * Check if the image can be panned to the left
-     */
-    fun canPanLeft(): Boolean = canPan { it.left }
-
-    /**
-     * Check if the image can be panned to the right
-     */
-    fun canPanRight(): Boolean = canPan { it.right }
-
-    /**
      * Check whether the image can be panned.
      * @param fn a function that returns the direction to check for
      */
@@ -152,15 +139,23 @@ open class ReaderPageImageView @JvmOverloads constructor(
     /**
      * Pans the image to the left by a screen's width worth.
      */
-    fun panLeft() {
-        pan { center, view -> center.also { it.x -= view.width / view.scale } }
+    fun panLeft(): Boolean {
+        val canPan = canPan { it.left }
+        if (canPan) {
+            pan { center, view -> center.also { it.x -= view.width / view.scale } }
+        }
+        return canPan
     }
 
     /**
      * Pans the image to the right by a screen's width worth.
      */
-    fun panRight() {
-        pan { center, view -> center.also { it.x += view.width / view.scale } }
+    fun panRight(): Boolean {
+        val canPan = canPan { it.right }
+        if (canPan) {
+            pan { center, view -> center.also { it.x += view.width / view.scale } }
+        }
+        return canPan
     }
 
     /**

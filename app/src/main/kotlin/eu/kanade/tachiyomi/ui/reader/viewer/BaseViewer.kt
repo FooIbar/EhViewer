@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 
@@ -10,6 +11,12 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
  * Interface for implementing a viewer.
  */
 interface BaseViewer {
+    val activity: ReaderActivity
+
+    val readerConfig: ReaderPageImageView.Config
+
+    val isRtl: Boolean
+
     fun getViewForInsets() = getView()
 
     /**
@@ -20,7 +27,7 @@ interface BaseViewer {
     /**
      * Destroys this viewer. Called when leaving the reader or swapping viewers.
      */
-    fun destroy() {}
+    fun destroy()
 
     /**
      * Tells this viewer to set the given [provider] as active.

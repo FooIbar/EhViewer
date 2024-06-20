@@ -1,21 +1,17 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.HapticFeedbackConstants
-import android.view.KeyEvent
 import android.view.MotionEvent
-import androidx.viewpager.widget.DirectionalViewPager
+import android.widget.FrameLayout
+import androidx.viewpager2.widget.ViewPager2
 import eu.kanade.tachiyomi.ui.reader.viewer.GestureDetectorWithLongTap
 
 /**
- * Pager implementation that listens for tap and long tap and allows temporarily disabling touch
- * events in order to work with child views that need to disable touch events on this parent. The
- * pager can also be declared to be vertical by creating it with [isHorizontal] to false.
+ * Frame layout that wraps a [ViewPager2] to handle touch events because [ViewPager2] is final.
  */
-open class Pager(
-    context: Context,
-    isHorizontal: Boolean = true,
-) : DirectionalViewPager(context, isHorizontal) {
+class PagerFrame(context: Context) : FrameLayout(context) {
 
     /**
      * Tap listener function to execute when a tap is detected.
@@ -79,6 +75,7 @@ open class Pager(
      * Handles a touch event. Only used to prevent crashes when child views manipulate
      * [requestDisallowInterceptTouchEvent].
      */
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(ev: MotionEvent): Boolean = try {
         super.onTouchEvent(ev)
     } catch (e: NullPointerException) {
@@ -87,15 +84,6 @@ open class Pager(
         false
     } catch (e: IllegalArgumentException) {
         false
-    }
-
-    /**
-     * Executes the given key event when this pager has focus. Just do nothing because the reader
-     * already dispatches key events to the viewer and has more control than this method.
-     */
-    override fun executeKeyEvent(event: KeyEvent): Boolean {
-        // Disable viewpager's default key event handling
-        return false
     }
 
     /**
