@@ -48,7 +48,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -152,7 +151,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
     fun String.translateArtist() = ehTags?.getTranslation(TagNamespace.Artist.toPrefix(), this) ?: this
-    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
     val unknownName = stringResource(R.string.unknown_artists)
@@ -333,7 +331,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 val index by rememberUpdatedState(itemIndex)
                 val item by rememberUpdatedState(label)
                 // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
-                val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
+                val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
                 LaunchedEffect(dismissState) {
                     snapshotFlow { dismissState.currentValue }.collect {
                         if (it == SwipeToDismissBoxValue.EndToStart) {
@@ -353,7 +351,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         }
                     }
                 }
-                ReorderableItem(reorderableLabelState, enabled = editEnable, key = id) { isDragging ->
+                ReorderableItem(reorderableLabelState, id, enabled = editEnable, animated = animateItems) { isDragging ->
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {},

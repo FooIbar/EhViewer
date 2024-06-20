@@ -39,12 +39,10 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -177,6 +175,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
+    val animateItems by Settings.animateItems.collectAsState()
 
     var category by rememberMutableStateInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
     var advancedSearchOption by rememberMutableStateInDataStore("AdvancedSearchOption") { AdvancedSearchOption() }
@@ -203,7 +202,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         onBack = { showSearchLayout = false },
     )
     val density = LocalDensity.current
-    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val listState = rememberLazyGridState()
     val gridState = rememberLazyStaggeredGridState()
     val isTopList = remember(urlBuilder) { urlBuilder.mode == MODE_TOPLIST }
@@ -366,9 +364,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 val quickSearchListState = rememberLazyListState()
                 val hapticFeedback = rememberHapticFeedback()
                 val reorderableLazyListState = rememberReorderableLazyListState(quickSearchListState) { from, to ->
-                    val fromIndex = from.index - 1
-                    val toIndex = to.index - 1
-                    quickSearchList.apply { add(toIndex, removeAt(fromIndex)) }
+                    quickSearchList.apply { add(to.index, removeAt(from.index)) }
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.MOVE)
                 }
                 var fromIndex by remember { mutableIntStateOf(-1) }
@@ -377,15 +373,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                     state = quickSearchListState,
                     contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
                 ) {
-                    // Fix the first item's reorder animation
-                    stickyHeader {
-                        HorizontalDivider()
-                    }
                     itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { itemIndex, item ->
                         val index by rememberUpdatedState(itemIndex)
-                        ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
+                        ReorderableItem(reorderableLazyListState, item.id!!, animated = animateItems) { isDragging ->
                             // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
-                            val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
+                            val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
                             LaunchedEffect(dismissState) {
                                 snapshotFlow { dismissState.currentValue }.collect { value ->
                                     if (value == SwipeToDismissBoxValue.EndToStart) {
