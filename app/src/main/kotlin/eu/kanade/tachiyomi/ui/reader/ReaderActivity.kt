@@ -100,7 +100,6 @@ import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
-import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.isNightMode
@@ -354,7 +353,7 @@ class ReaderActivity : EhActivity() {
         totalPage = mGalleryProvider!!.size
         viewer?.destroy()
         viewer = ReadingModeType.toViewer(ReaderPreferences.defaultReadingMode().get(), this)
-        isRtl = viewer is R2LPagerViewer
+        isRtl = viewer!!.isRtl
         updateViewerInsets(ReaderPreferences.cutoutShort().get())
         binding.viewerContainer.removeAllViews()
         setOrientation(ReaderPreferences.defaultOrientationType().get())

@@ -1,16 +1,15 @@
-package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
+package eu.kanade.tachiyomi.ui.reader.viewer
 
+import android.content.Context
 import android.content.res.Resources
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import androidx.recyclerview.widget.RecyclerView
 import com.hippo.ehviewer.image.Image
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
-import eu.kanade.tachiyomi.ui.reader.viewer.ReaderErrorLayout
-import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
-import eu.kanade.tachiyomi.ui.reader.viewer.ReaderProgressIndicator
+import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 import eu.kanade.tachiyomi.util.system.dpToPx
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,16 +18,21 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
- * Holder of the webtoon reader for a single page of a chapter.
+ * Holder of the reader for a single page of a chapter.
  *
  * @param frame the root view for this holder.
- * @param viewer the webtoon viewer.
- * @constructor creates a new webtoon holder.
+ * @param viewer the page viewer.
+ * @constructor creates a new page holder.
  */
-class WebtoonPageHolder(
+class ReaderPageHolder(
     private val frame: ReaderPageImageView,
-    viewer: WebtoonViewer,
-) : WebtoonBaseHolder(frame, viewer) {
+    private val viewer: BaseViewer,
+) : RecyclerView.ViewHolder(frame) {
+
+    /**
+     * Context getter because it's used often.
+     */
+    val context: Context get() = frame.context
 
     /**
      * Loading progress bar to indicate the current progress.
@@ -43,12 +47,6 @@ class WebtoonPageHolder(
     private var errorLayout: ReaderErrorLayout? = null
 
     /**
-     * The default height when image not available.
-     */
-    private val defaultHeight
-        get() = (viewer.recycler.width * 1.4125).toInt()
-
-    /**
      * Page of a chapter.
      */
     private lateinit var page: ReaderPage
@@ -61,10 +59,16 @@ class WebtoonPageHolder(
     private var statusJob: Job? = null
 
     init {
-        frame.addView(progressIndicator, MATCH_PARENT, defaultHeight)
-        refreshLayoutParams()
+        if (viewer is WebtoonViewer) {
+            val defaultHeight = (viewer.recycler.width * 1.4125).toInt()
+            frame.addView(progressIndicator, MATCH_PARENT, defaultHeight)
+            refreshLayoutParams()
+        } else {
+            frame.addView(progressIndicator)
+            frame.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+        }
 
-        frame.onImageLoaded = { onImageDecoded() }
+        frame.onImageLoaded = ::onImageLoaded
         frame.onScaleChanged = { viewer.activity.hideMenu() }
     }
 
@@ -83,21 +87,26 @@ class WebtoonPageHolder(
     }
 
     private fun refreshLayoutParams() {
-        frame.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-            if (!viewer.isContinuous) {
-                bottomMargin = 15.dpToPx
-            }
+        if (viewer is WebtoonViewer) {
+            frame.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                if (!viewer.isContinuous) {
+                    bottomMargin = 15.dpToPx
+                }
 
-            val margin = Resources.getSystem().displayMetrics.widthPixels * (viewer.config.sidePadding / 100f)
-            marginEnd = margin.toInt()
-            marginStart = margin.toInt()
+                val margin = Resources.getSystem().displayMetrics.widthPixels * (viewer.config.sidePadding / 100f)
+                marginEnd = margin.toInt()
+                marginStart = margin.toInt()
+            }
         }
     }
+
+    fun onPageSelected(forward: Boolean) = frame.onPageSelected(forward)
+    fun panEnd(reverse: Boolean) = if (reverse) frame.panLeft() else frame.panRight()
 
     /**
      * Called when the view is recycled and added to the view pool.
      */
-    override fun recycle() {
+    fun recycle() {
         statusJob?.cancel()
         statusJob = null
 
@@ -153,16 +162,9 @@ class WebtoonPageHolder(
     /**
      * Called when the page is ready.
      */
-    private fun setImage(drawable: Image) {
+    private fun setImage(image: Image) {
         progressIndicator.setProgress(0)
-        frame.setImage(
-            drawable,
-            ReaderPageImageView.Config(
-                zoomDuration = viewer.config.doubleTapAnimDuration,
-                minimumScaleType = SubsamplingScaleImageView.SCALE_TYPE_FIT_WIDTH,
-                cropBorders = viewer.config.imageCropBorders,
-            ),
-        )
+        frame.setImage(image, viewer.readerConfig)
     }
 
     /**
@@ -174,9 +176,9 @@ class WebtoonPageHolder(
     }
 
     /**
-     * Called when the image is decoded and going to be displayed.
+     * Called when the image is displayed.
      */
-    private fun onImageDecoded() {
+    private fun onImageLoaded() {
         progressIndicator.hide()
         removeErrorLayout()
     }

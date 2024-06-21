@@ -11,10 +11,13 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.WebtoonLayoutManager
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
+import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageAdapter
+import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.MainScope
@@ -23,7 +26,9 @@ import kotlinx.coroutines.cancel
 /**
  * Implementation of a [BaseViewer] to display pages with a [RecyclerView].
  */
-class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = true) : BaseViewer {
+class WebtoonViewer(override val activity: ReaderActivity, val isContinuous: Boolean = true) : BaseViewer {
+
+    override val isRtl: Boolean = false
 
     private val scope = MainScope()
 
@@ -50,7 +55,7 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
     /**
      * Adapter of the recycler view.
      */
-    private val adapter = WebtoonAdapter(this)
+    private val adapter = ReaderPageAdapter(this, true)
 
     /**
      * Distance to scroll when the user taps on one side of the recycler view.
@@ -132,6 +137,13 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
         frame.addView(recycler)
     }
 
+    override val readerConfig
+        get() = ReaderPageImageView.Config(
+            zoomDuration = config.doubleTapAnimDuration,
+            minimumScaleType = SubsamplingScaleImageView.SCALE_TYPE_FIT_WIDTH,
+            cropBorders = config.imageCropBorders,
+        )
+
     override fun getViewForInsets(): View = recycler
 
     /**
@@ -143,7 +155,6 @@ class WebtoonViewer(val activity: ReaderActivity, val isContinuous: Boolean = tr
      * Destroys this viewer. Called when leaving the reader or swapping viewers.
      */
     override fun destroy() {
-        super.destroy()
         scope.cancel()
     }
 

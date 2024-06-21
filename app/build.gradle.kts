@@ -206,6 +206,7 @@ dependencies {
     implementation(libs.androidx.paging.compose)
 
     implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.viewpager2)
 
     // https://developer.android.com/jetpack/androidx/releases/room
     ksp(libs.androidx.room.compiler)
@@ -213,7 +214,6 @@ dependencies {
 
     implementation(libs.androidx.work.runtime)
     implementation(libs.photoview)
-    implementation(libs.directionalviewpager) // Dead Dependency
     implementation(libs.material.motion.core)
 
     implementation(libs.bundles.splitties)
