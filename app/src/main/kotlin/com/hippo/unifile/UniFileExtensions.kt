@@ -46,3 +46,6 @@ val Uri.displayPath: String?
         }
         return toString()
     }
+
+fun UniFile.ensureDirOrThrow() =
+    check(ensureDir()) { "Failed to create directory: ${uri.displayPath}" }
