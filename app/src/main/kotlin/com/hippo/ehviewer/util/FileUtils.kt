@@ -118,10 +118,10 @@ object FileUtils {
                 }
             }
             if (sizeInBytes > MAX_FILENAME_BYTES) {
-                do {
+                while (sizeInBytes > MAX_FILENAME_BYTES - 3) {
                     deleteCharAt(length / 2)
-                } while (sizeInBytes >= MAX_FILENAME_BYTES)
-                insert(length / 2, '…')
+                }
+                insert(length / 2, "...")
             }
         }
     }

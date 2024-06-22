@@ -42,6 +42,7 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
+import com.hippo.unifile.ensureDirOrThrow
 import com.hippo.unifile.openOutputStream
 import com.hippo.unifile.sha1
 import eu.kanade.tachiyomi.util.system.logcat
@@ -79,10 +80,10 @@ class SpiderDen(val info: GalleryInfo) {
         mode = value
         if (mode == SpiderQueen.MODE_DOWNLOAD) {
             if (downloadDir == null) {
-                downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.ensureDir() }
+                downloadDir = getGalleryDownloadDir(gid)!!.apply { ensureDirOrThrow() }
             }
             if (saveAsCbz && tempDownloadDir == null) {
-                tempDownloadDir = info.tempDownloadDir?.takeIf { it.ensureDir() }
+                tempDownloadDir = info.tempDownloadDir!!.apply { ensureDirOrThrow() }
             }
         }
     }
@@ -306,7 +307,7 @@ class SpiderDen(val info: GalleryInfo) {
 
     suspend fun initDownloadDir() {
         downloadDir = getGalleryDownloadDir(gid) ?: (downloadLocation / info.putToDownloadDir())
-        check(downloadDir!!.ensureDir())
+        downloadDir!!.ensureDirOrThrow()
     }
 
     suspend fun writeComicInfo(fetchMetadata: Boolean = true) {
