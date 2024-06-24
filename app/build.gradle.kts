@@ -19,7 +19,8 @@ plugins {
 val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
 
 android {
-    compileSdk = 34
+    compileSdk = if (isRelease) 35 else 34
+    buildToolsVersion = "35.0.0"
     ndkVersion = "27.0.11902837-rc1"
     androidResources.generateLocaleConfig = true
 
@@ -64,7 +65,7 @@ android {
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 180056
         versionName = "1.12.0"
         versionNameSuffix = "-SNAPSHOT"
