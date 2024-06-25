@@ -3,6 +3,7 @@ package com.hippo.ehviewer.coil
 import android.graphics.Bitmap
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.unit.IntRect
 import coil3.BitmapImage
 import coil3.Extras
 import coil3.asCoilImage
@@ -29,19 +30,25 @@ object HardwareBitmapInterceptor : Interceptor {
         val result = chain.proceed()
         val request = result.request
         if (!request.allowHardware && result is SuccessResult) {
-            val image = when (val image = result.image) {
-                is BitmapImageWithRect -> image.image
+            var rect: IntRect? = null
+            val image = result.image
+            val bitmap = when (image) {
+                is BitmapImageWithRect -> image.image.also { rect = image.rect }
                 is BitmapImage -> image
                 else -> return result
-            }
-            val bitmap = image.bitmap
+            }.bitmap
             // Large hardware bitmaps have rendering issues (e.g. crash, empty) on some devices.
             // This is not ideal but I haven't figured out how to probe the threshold.
             // All we know is that it's less than the maximum texture size.
             if (maxOf(bitmap.width, bitmap.height) <= request.hardwareThreshold) {
-                bitmap.copy(Bitmap.Config.HARDWARE, false)?.let {
+                bitmap.copy(Bitmap.Config.HARDWARE, false)?.let { hwBitmap ->
                     bitmap.recycle()
-                    return result.copy(image = it.asCoilImage(), request = request, dataSource = result.dataSource)
+                    val newImage = hwBitmap.asCoilImage()
+                    return result.copy(
+                        image = rect?.let { BitmapImageWithRect(it, newImage as BitmapImage) } ?: newImage,
+                        request = request,
+                        dataSource = result.dataSource,
+                    )
                 }
             }
         }
