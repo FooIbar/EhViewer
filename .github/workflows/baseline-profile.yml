@@ -58,7 +58,6 @@ jobs:
 
       - name: Build
         run: ./gradlew generateBaselineProfile
-            -Pandroid.testInstrumentationRunnerArguments.androidx.benchmark.enabledRules=BaselineProfile
             -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect"
 
       - name: Update baseline profile
