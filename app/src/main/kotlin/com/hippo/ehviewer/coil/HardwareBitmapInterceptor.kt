@@ -6,7 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.ui.unit.IntRect
 import coil3.BitmapImage
 import coil3.Extras
-import coil3.asCoilImage
+import coil3.asImage
 import coil3.getExtra
 import coil3.intercept.Interceptor
 import coil3.intercept.Interceptor.Chain
@@ -43,7 +43,7 @@ object HardwareBitmapInterceptor : Interceptor {
             if (maxOf(bitmap.width, bitmap.height) <= request.hardwareThreshold) {
                 bitmap.copy(Bitmap.Config.HARDWARE, false)?.let { hwBitmap ->
                     bitmap.recycle()
-                    val newImage = hwBitmap.asCoilImage()
+                    val newImage = hwBitmap.asImage()
                     return result.copy(
                         image = rect?.let { BitmapImageWithRect(it, newImage as BitmapImage) } ?: newImage,
                         request = request,
