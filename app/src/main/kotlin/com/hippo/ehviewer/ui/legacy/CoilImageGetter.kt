@@ -4,6 +4,7 @@ import android.graphics.drawable.Animatable
 import android.graphics.drawable.DrawableWrapper
 import android.text.Html
 import android.widget.TextView
+import coil3.asDrawable
 import coil3.imageLoader
 import coil3.request.crossfade
 import com.hippo.ehviewer.ktbuilder.imageRequest
