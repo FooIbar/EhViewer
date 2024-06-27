@@ -152,7 +152,7 @@ android {
                 abortOnError = false
             }
         }
-        create("benchmark") {
+        create("benchmarkRelease") {
             initWith(buildTypes.getByName("release"))
             matchingFallbacks += listOf("release")
             applicationIdSuffix = ".benchmark"
