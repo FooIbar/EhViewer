@@ -135,6 +135,7 @@ import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.updater.AppUpdater
+import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.calculateFraction
 import com.hippo.ehviewer.util.displayString
@@ -242,17 +243,19 @@ class MainActivity : EhActivity() {
                 }
             }
 
-            LaunchedEffect(Unit) {
-                runCatching { dialogState.checkDownloadLocation() }
-                runCatching { dialogState.checkAppLinkVerify() }
-                runSuspendCatching {
-                    withIOContext {
-                        AppUpdater.checkForUpdate()?.let {
-                            dialogState.showNewVersion(this@MainActivity, it)
+            if (!AppConfig.isBenchmark) {
+                LaunchedEffect(Unit) {
+                    runCatching { dialogState.checkDownloadLocation() }
+                    runCatching { dialogState.checkAppLinkVerify() }
+                    runSuspendCatching {
+                        withIOContext {
+                            AppUpdater.checkForUpdate()?.let {
+                                dialogState.showNewVersion(this@MainActivity, it)
+                            }
                         }
+                    }.onFailure {
+                        snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
                     }
-                }.onFailure {
-                    snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
                 }
             }
 

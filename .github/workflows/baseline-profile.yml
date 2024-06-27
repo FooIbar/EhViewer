@@ -1,0 +1,82 @@
+name: Baseline profile generation
+
+on:
+  schedule:
+    - cron: '30 0 * * 0'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'benchmark/**'
+      - '.github/workflows/baseline-profile.yml'
+
+jobs:
+  baseline-profile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Free disk space
+        run: rm -rf ${ANDROID_SDK_ROOT}/ndk
+
+      - name: Install NDK
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11902837"
+
+      - name: Install Rust Toolchain
+        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./app/src/main/rust"
+          shared-key: ${{ runner.os }}
+          save-if: "false"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
+          cache-read-only: true
+
+      - name: CMake Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: app/.cxx
+          key: cmake-
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Build
+        run: ./gradlew generateBaselineProfile
+            -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect"
+
+      - name: Update baseline profile
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config push.autoSetupRemote true
+          git switch -c chore/baseline-profile
+          if git commit -am "Update baseline profile"; then
+            git push
+            gh pr create -f
+          fi
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: benchmark/build/reports

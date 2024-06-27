@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.screen
 import android.content.Context
 import android.net.Uri
 import android.view.ViewConfiguration
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -78,6 +79,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.viewModelScope
+import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
@@ -252,6 +254,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
             }
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
+    ReportDrawnWhen { data.loadState.refresh !is LoadState.Loading }
     FavouriteStatusRouter.Observe(data)
     val listMode by Settings.listMode.collectAsState()
 

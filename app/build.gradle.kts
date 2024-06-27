@@ -14,6 +14,7 @@ plugins {
     alias(libs.plugins.spotless)
     alias(libs.plugins.aboutlibrariesPlugin)
     alias(libs.plugins.composeCompilerReportGenerator)
+    alias(libs.plugins.baselineprofile)
 }
 
 val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
@@ -151,6 +152,13 @@ android {
                 abortOnError = false
             }
         }
+        create("benchmark") {
+            initWith(buildTypes.getByName("release"))
+            matchingFallbacks += listOf("release")
+            applicationIdSuffix = ".benchmark"
+            signingConfig = signingConfigs.getByName("debug")
+            isDebuggable = false
+        }
     }
 
     buildFeatures {
@@ -176,6 +184,10 @@ androidComponents {
             "**.bin",
         )
     }
+}
+
+baselineProfile {
+    mergeIntoMain = true
 }
 
 dependencies {
@@ -254,6 +266,9 @@ dependencies {
     coreLibraryDesugaring(libs.desugar)
 
     implementation(libs.cronet.embedded)
+
+    implementation(libs.androidx.profileinstaller)
+    "baselineProfile"(project(":benchmark"))
 
     debugImplementation(libs.compose.ui.tooling)
     implementation(libs.compose.ui.tooling.preview)
