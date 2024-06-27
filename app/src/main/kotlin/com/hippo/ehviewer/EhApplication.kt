@@ -27,7 +27,7 @@ import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.coroutineScope
 import coil3.EventListener
 import coil3.SingletonImageLoader
-import coil3.asCoilImage
+import coil3.asImage
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
 import coil3.network.ktor.KtorNetworkFetcherFactory
@@ -185,7 +185,7 @@ class EhApplication :
         diskCache { imageCache }
         crossfade(300)
         val drawable = AppCompatResources.getDrawable(appCtx, R.drawable.image_failed)
-        if (drawable != null) error(drawable.asCoilImage(true))
+        if (drawable != null) error(drawable.asImage(true))
         if (BuildConfig.DEBUG) {
             logger(DebugLogger())
         } else {

@@ -2,7 +2,7 @@ package com.hippo.ehviewer.coil
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import coil3.asCoilImage
+import coil3.asImage
 import coil3.decode.DecodeResult
 import coil3.decode.Decoder
 import coil3.network.NetworkHeaders
@@ -42,7 +42,7 @@ fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = apply {
     httpHeaders(header)
 }
 
-private val stubImage = ColorDrawable(Color.BLACK).asCoilImage(true)
+private val stubImage = ColorDrawable(Color.BLACK).asImage(true)
 private val stubResult = DecodeResult(stubImage, false)
 private val stubFactory = Decoder { stubResult }
 
