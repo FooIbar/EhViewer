@@ -537,9 +537,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Fixed(thumbColumns),
                     modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    contentPadding = realPadding,
                     verticalItemSpacing = gridInterval,
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
-                    contentPadding = realPadding,
                 ) {
                     items(list, key = { it.gid }) { info ->
                         GalleryInfoGridItem(

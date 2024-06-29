@@ -120,8 +120,8 @@ fun GalleryPreviewScreen(detail: GalleryDetail, toNextPage: Boolean, navigator: 
             modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection).padding(horizontal = dimensionResource(id = R.dimen.gallery_list_margin_h)),
             state = state,
             contentPadding = paddingValues,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             items(
                 count = data.itemCount,
