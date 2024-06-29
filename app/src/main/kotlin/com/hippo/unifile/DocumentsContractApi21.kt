@@ -26,18 +26,9 @@ object DocumentsContractApi21 {
         DocumentsContract.createDocument(resolver, self, mimeType, displayName)
     }.getOrNull()
 
-    fun createDirectory(self: Uri, displayName: String) = createFile(self, DocumentsContract.Document.MIME_TYPE_DIR, displayName)
-
     fun prepareTreeUri(treeUri: Uri): Uri = DocumentsContract.buildDocumentUriUsingTree(
         treeUri,
         DocumentsContract.getTreeDocumentId(treeUri),
-    )
-
-    // This is not a good approach as the document identifier is an opaque implementation detail of
-    // the provider, but works for ExternalStorageProvider
-    fun buildChildUri(uri: Uri, displayName: String): Uri = DocumentsContract.buildDocumentUriUsingTree(
-        uri,
-        DocumentsContract.getDocumentId(uri) + "/" + displayName,
     )
 
     fun renameTo(self: Uri, displayName: String) = runCatching {

@@ -42,7 +42,6 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.unifile.UniFile
 import com.hippo.unifile.asUniFile
-import com.hippo.unifile.ensureDirOrThrow
 import com.hippo.unifile.openOutputStream
 import com.hippo.unifile.sha1
 import eu.kanade.tachiyomi.util.system.logcat
@@ -80,10 +79,11 @@ class SpiderDen(val info: GalleryInfo) {
         mode = value
         if (mode == SpiderQueen.MODE_DOWNLOAD) {
             if (downloadDir == null) {
-                downloadDir = getGalleryDownloadDir(gid)!!.apply { ensureDirOrThrow() }
+                val dirname = EhDB.getDownloadDirname(gid)!!
+                downloadDir = downloadLocation.createDirectory(dirname)!!
             }
             if (saveAsCbz && tempDownloadDir == null) {
-                tempDownloadDir = info.tempDownloadDir!!.apply { ensureDirOrThrow() }
+                tempDownloadDir = info.tempDownloadDir!!.apply { check(ensureDir()) }
             }
         }
     }
@@ -283,10 +283,8 @@ class SpiderDen(val info: GalleryInfo) {
 
     private suspend fun archiveTo(file: UniFile) = resourceScope {
         val comicInfo = closeable {
-            val f = downloadDir!! / COMIC_INFO_FILE
-            if (!f.exists()) {
-                writeComicInfo()
-            } else if (info.pages == 0) {
+            val f = downloadDir!!.findFile(COMIC_INFO_FILE) ?: writeComicInfo()!!
+            if (info.pages == 0) {
                 info.pages = readComicInfo(f)!!.pageCount
             }
             f.openFileDescriptor("r")
@@ -301,32 +299,30 @@ class SpiderDen(val info: GalleryInfo) {
     }
 
     suspend fun initDownloadDirIfExist() {
-        downloadDir = getGalleryDownloadDir(gid)?.takeIf { it.isDirectory }
+        downloadDir = EhDB.getDownloadDirname(gid)?.let { downloadLocation.findFile(it) }
         tempDownloadDir = info.tempDownloadDir?.takeIf { it.isDirectory }
     }
 
     suspend fun initDownloadDir() {
-        downloadDir = getGalleryDownloadDir(gid) ?: (downloadLocation / info.putToDownloadDir())
-        downloadDir!!.ensureDirOrThrow()
+        val dirname = EhDB.getDownloadDirname(gid) ?: info.putToDownloadDir()
+        downloadDir = downloadLocation.createDirectory(dirname)!!
     }
 
-    suspend fun writeComicInfo(fetchMetadata: Boolean = true) {
-        downloadDir?.run {
-            createFile(COMIC_INFO_FILE)?.also {
-                runCatching {
-                    if (info !is GalleryDetail && fetchMetadata) {
-                        EhEngine.fillGalleryListByApi(listOf(info))
-                    }
-                    info.getComicInfo().apply {
-                        write(it)
-                        DownloadManager.getDownloadInfo(gid)?.let { downloadInfo ->
-                            downloadInfo.artistInfoList = DownloadArtist.from(gid, penciller.orEmpty())
-                            EhDB.putDownloadArtist(gid, downloadInfo.artistInfoList)
-                        }
-                    }
-                }.onFailure {
-                    logcat(it)
+    suspend fun writeComicInfo(fetchMetadata: Boolean = true): UniFile? = downloadDir?.run {
+        createFile(COMIC_INFO_FILE)?.also {
+            runCatching {
+                if (info !is GalleryDetail && fetchMetadata) {
+                    EhEngine.fillGalleryListByApi(listOf(info))
                 }
+                info.getComicInfo().apply {
+                    write(it)
+                    DownloadManager.getDownloadInfo(gid)?.let { downloadInfo ->
+                        downloadInfo.artistInfoList = DownloadArtist.from(gid, penciller.orEmpty())
+                        EhDB.putDownloadArtist(gid, downloadInfo.artistInfoList)
+                    }
+                }
+            }.onFailure {
+                logcat(it)
             }
         }
     }
@@ -347,9 +343,4 @@ suspend fun GalleryInfo.putToDownloadDir(): String {
     val dirname = FileUtils.sanitizeFilename("$gid-$title")
     EhDB.putDownloadDirname(gid, dirname)
     return dirname
-}
-
-suspend fun getGalleryDownloadDir(gid: Long): UniFile? {
-    val dirname = EhDB.getDownloadDirname(gid) ?: return null
-    return downloadLocation / dirname
 }

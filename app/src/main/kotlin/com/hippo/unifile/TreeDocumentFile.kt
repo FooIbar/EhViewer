@@ -23,8 +23,8 @@ import splitties.init.appCtx
 
 class TreeDocumentFile(
     override val parent: TreeDocumentFile?,
-    uri: Uri,
-    name: String = getFilenameForUri(uri),
+    override val uri: Uri,
+    name: String? = null,
     mimeType: String? = null,
 ) : UniFile {
     private var cachePresent = false
@@ -71,7 +71,7 @@ class TreeDocumentFile(
         if (child != null) {
             if (child.isDirectory) return null
         } else {
-            val result = DocumentsContractApi21.createDirectory(uri, displayName)
+            val result = DocumentsContractApi21.createFile(uri, Document.MIME_TYPE_DIR, displayName)
             if (result != null) {
                 val d = TreeDocumentFile(this, result, displayName, Document.MIME_TYPE_DIR)
                 popCacheIfPresent(d)
@@ -81,18 +81,14 @@ class TreeDocumentFile(
         return null
     }
 
-    private var mimeType = mimeType
-        get() {
-            if (field == null) {
-                field = DocumentsContractApi19.getRawType(uri)
-            }
-            return field
-        }
+    override val name by lazy {
+        name ?: DocumentsContractApi19.getName(uri)!!
+    }
 
-    override var uri = uri
-        private set
-    override var name = name
-        private set
+    private val mimeType by lazy {
+        mimeType ?: DocumentsContractApi19.getRawType(uri)
+    }
+
     override val type: String?
         get() = mimeType.takeUnless { isDirectory }
     override val isDirectory: Boolean
@@ -128,10 +124,7 @@ class TreeDocumentFile(
         }
     }
 
-    override fun resolve(displayName: String): UniFile {
-        val childUri = DocumentsContractApi21.buildChildUri(uri, displayName)
-        return TreeDocumentFile(this, childUri, displayName)
-    }
+    override fun resolve(displayName: String) = throw UnsupportedOperationException()
 
     override fun delete() = DocumentsContractApi19.delete(uri).also {
         if (it) parent?.evictCacheIfPresent(this)
@@ -147,22 +140,9 @@ class TreeDocumentFile(
         allChildren.firstOrNull { filter(it.name) }
     }
 
-    override fun renameTo(displayName: String): Boolean {
-        val result = DocumentsContractApi21.renameTo(uri, displayName)
-        if (result != null) {
-            uri = result
-            name = displayName
-            mimeType = null
-            return true
-        }
-        return false
-    }
-}
+    override fun findFile(displayName: String) = findFirst { it == displayName }
 
-// Technically the Uris should be treated as opaque, but it works for ExternalStorageProvider
-private fun getFilenameForUri(uri: Uri): String {
-    val path = requireNotNull(uri.path)
-    return path.substringAfterLast('/')
+    override fun renameTo(displayName: String) = TODO("Incompatible with the caching mechanism")
 }
 
 private val projection = arrayOf(
