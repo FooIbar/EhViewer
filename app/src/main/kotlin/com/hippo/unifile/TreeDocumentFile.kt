@@ -30,7 +30,7 @@ class TreeDocumentFile(
     private var cachePresent = false
     private val allChildren by lazy {
         cachePresent = true
-        queryChildren()
+        queryChildren() ?: mutableListOf()
     }
 
     private fun popCacheIfPresent(file: TreeDocumentFile) {
@@ -151,17 +151,16 @@ private val projection = arrayOf(
     Document.COLUMN_MIME_TYPE,
 )
 
-private fun TreeDocumentFile.queryChildren(): MutableList<TreeDocumentFile> {
-    val self = uri
-    val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(self, DocumentsContract.getDocumentId(self))
-    return appCtx.contentResolver.query(childrenUri, projection, null, null, null)?.use { c ->
+private fun TreeDocumentFile.queryChildren() = runCatching {
+    val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(uri))
+    appCtx.contentResolver.query(childrenUri, projection, null, null, null)?.use { c ->
         MutableList(c.count) {
             c.moveToNext()
             val documentId = c.getString(0)
-            val documentUri = DocumentsContract.buildDocumentUriUsingTree(self, documentId)
+            val documentUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
             val displayName = c.getString(1)
             val mimeType = c.getString(2)
             TreeDocumentFile(this, documentUri, displayName, mimeType)
         }
-    } ?: mutableListOf()
-}
+    }
+}.getOrNull()
