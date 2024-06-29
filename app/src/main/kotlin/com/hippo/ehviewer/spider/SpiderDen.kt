@@ -67,7 +67,7 @@ class SpiderDen(val info: GalleryInfo) {
         get() = tempDownloadDir.takeIf { saveAsCbz } ?: downloadDir
 
     constructor(info: GalleryInfo, dirname: String) : this(info) {
-        downloadDir = downloadLocation / dirname
+        downloadDir = downloadLocation.findFile(dirname)
     }
 
     @Volatile
