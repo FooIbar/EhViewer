@@ -19,8 +19,6 @@ import android.os.Build
 import android.os.Environment
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.client.parser.ParserUtils
-import com.hippo.unifile.UniFile
-import com.hippo.unifile.asUniFile
 import java.io.File
 import splitties.init.appCtx
 
@@ -59,7 +57,8 @@ object AppConfig {
     val defaultDownloadDir: File?
         get() = getDirInExternalAppDir(DOWNLOAD, false)
 
-    fun getTempDir(filename: String): UniFile? = getDirInExternalAppDir(TEMP)?.run { File(this, filename).asUniFile() }
+    fun getTempDir(filename: String): File? =
+        getDirInExternalAppDir(TEMP)?.run { File(this, filename).takeIf { it.ensureDirectory() } }
 
     val externalTempDir: File?
         get() = appCtx.externalCacheDir?.run { File(this, TEMP).takeIf { it.ensureDirectory() } }

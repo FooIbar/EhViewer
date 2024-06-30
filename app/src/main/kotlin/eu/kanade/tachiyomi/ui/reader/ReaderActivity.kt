@@ -20,6 +20,7 @@ import android.Manifest
 import android.app.assist.AssistContent
 import android.content.ClipData
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
@@ -80,6 +81,7 @@ import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.ui.EhActivity
 import com.hippo.ehviewer.ui.reader.SettingsPager
+import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.AppConfig
@@ -376,12 +378,11 @@ class ReaderActivity : EhActivity() {
     private suspend fun makeToast(@StringRes resId: Int) = makeToast(getString(resId))
 
     private fun provideImage(index: Int): Uri? = AppConfig.externalTempDir?.let { dir ->
-        mGalleryProvider?.saveToDir(index, dir.asUniFile())?.name?.let {
-            FileProvider.getUriForFile(
-                this,
-                BuildConfig.APPLICATION_ID + ".fileprovider",
-                File(dir, it),
-            )
+        mGalleryProvider?.run {
+            getImageFilename(index)?.let { filename ->
+                val file = File(dir, filename).takeIf { save(index, it.asUniFile()) } ?: return null
+                FileProvider.getUriForFile(implicit<Context>(), BuildConfig.APPLICATION_ID + ".fileprovider", file)
+            }
         }
     }
 

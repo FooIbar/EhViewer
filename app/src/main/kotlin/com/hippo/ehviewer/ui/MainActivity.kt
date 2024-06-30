@@ -227,7 +227,7 @@ class MainActivity : EhActivity() {
             }
 
             suspend fun DialogState.checkDownloadLocation() {
-                val valid = withIOContext { downloadLocation.ensureDir() }
+                val valid = withIOContext { downloadLocation.isDirectory }
                 if (!valid) {
                     awaitPermissionOrCancel(
                         confirmText = R.string.open_settings,

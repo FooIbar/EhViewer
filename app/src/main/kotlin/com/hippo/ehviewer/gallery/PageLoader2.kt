@@ -69,8 +69,4 @@ abstract class PageLoader2(private val gid: Long, var startPage: Int) :
     }
 
     abstract fun save(index: Int, file: UniFile): Boolean
-
-    fun saveToDir(index: Int, dir: UniFile): UniFile? = getImageFilename(index)?.let { filename ->
-        (dir / filename).takeIf { save(index, it) }
-    }
 }

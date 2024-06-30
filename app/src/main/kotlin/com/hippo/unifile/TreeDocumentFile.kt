@@ -26,59 +26,36 @@ class TreeDocumentFile(
     override val uri: Uri,
     name: String? = null,
     mimeType: String? = null,
-) : UniFile {
-    private var cachePresent = false
-    private val allChildren by lazy {
+) : CachingFile<TreeDocumentFile>() {
+    override var cachePresent = false
+    override val allChildren by lazy {
         cachePresent = true
         queryChildren() ?: mutableListOf()
     }
 
-    private fun popCacheIfPresent(file: TreeDocumentFile) {
-        if (cachePresent) {
-            synchronized(allChildren) {
-                allChildren.add(file)
-            }
+    private fun createFile(displayName: String, mimeType: String) =
+        DocumentsContractApi21.createFile(uri, mimeType, displayName)?.let { result ->
+            TreeDocumentFile(this, result, displayName, mimeType).also { popCacheIfPresent(it) }
         }
-    }
-
-    private fun evictCacheIfPresent(file: TreeDocumentFile) {
-        if (cachePresent) {
-            synchronized(allChildren) {
-                allChildren.remove(file)
-            }
-        }
-    }
 
     override fun createFile(displayName: String): UniFile? {
         val child = findFile(displayName)
-        if (child != null) {
-            if (child.isFile) return child
+        return if (child != null) {
+            child.takeIf { it.isFile }
         } else {
             val extension = displayName.substringAfterLast('.', "").ifEmpty { null }?.lowercase()
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
-            val result = DocumentsContractApi21.createFile(uri, mimeType, displayName)
-            if (result != null) {
-                val f = TreeDocumentFile(this, result, displayName, mimeType)
-                popCacheIfPresent(f)
-                return f
-            }
+            createFile(displayName, mimeType)
         }
-        return null
     }
 
     override fun createDirectory(displayName: String): UniFile? {
         val child = findFile(displayName)
-        if (child != null) {
-            if (child.isDirectory) return null
+        return if (child != null) {
+            child.takeIf { it.isDirectory }
         } else {
-            val result = DocumentsContractApi21.createFile(uri, Document.MIME_TYPE_DIR, displayName)
-            if (result != null) {
-                val d = TreeDocumentFile(this, result, displayName, Document.MIME_TYPE_DIR)
-                popCacheIfPresent(d)
-                return d
-            }
+            createFile(displayName, Document.MIME_TYPE_DIR)
         }
-        return null
     }
 
     override val name by lazy {
@@ -104,28 +81,6 @@ class TreeDocumentFile(
 
     override fun canWrite() = DocumentsContractApi19.canWrite(uri)
 
-    override fun ensureDir(): Boolean {
-        if (isDirectory) return true
-        if (isFile) return false
-        return if (parent != null && parent.ensureDir()) {
-            parent.createDirectory(name) != null
-        } else {
-            false
-        }
-    }
-
-    override fun ensureFile(): Boolean {
-        if (isFile) return true
-        if (isDirectory) return false
-        return if (parent != null && parent.ensureDir()) {
-            parent.createFile(name) != null
-        } else {
-            false
-        }
-    }
-
-    override fun resolve(displayName: String) = throw UnsupportedOperationException()
-
     override fun delete() = DocumentsContractApi19.delete(uri).also {
         if (it) parent?.evictCacheIfPresent(this)
     }
@@ -140,9 +95,12 @@ class TreeDocumentFile(
         allChildren.firstOrNull { filter(it.name) }
     }
 
-    override fun findFile(displayName: String) = findFirst { it == displayName }
-
-    override fun renameTo(displayName: String) = TODO("Incompatible with the caching mechanism")
+    override fun renameTo(displayName: String): UniFile? =
+        DocumentsContractApi21.renameTo(uri, displayName)?.let { result ->
+            TreeDocumentFile(parent, result, displayName).also {
+                parent?.replaceCacheIfPresent(this, it)
+            }
+        }
 }
 
 private val projection = arrayOf(

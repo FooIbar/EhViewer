@@ -153,31 +153,6 @@ sealed interface UniFile {
     fun canWrite(): Boolean
 
     /**
-     * It works like mkdirs, but it will return true if the UniFile is directory
-     *
-     * @return `true` if the directory was created
-     * or if the directory already existed.
-     */
-    fun ensureDir(): Boolean
-
-    /**
-     * Make sure the UniFile is file
-     *
-     * @return `true` if the file can be created
-     * or if the file already existed.
-     */
-    fun ensureFile(): Boolean
-
-    /**
-     * Get child file of this directory, the child might not exist.
-     *
-     * @return the child file
-     */
-    fun resolve(displayName: String): UniFile
-
-    operator fun div(name: String) = resolve(name)
-
-    /**
      * Deletes this file.
      *
      *
@@ -207,7 +182,7 @@ sealed interface UniFile {
      *
      * @return the file if found it, or `null`.
      */
-    fun findFile(displayName: String) = resolve(displayName).takeIf { it.exists() }
+    fun findFile(displayName: String) = findFirst { it.equals(displayName, true) }
 
     /**
      * Renames this file to `displayName`.
@@ -218,18 +193,18 @@ sealed interface UniFile {
      *
      *
      * Some providers may need to create a new file to reflect the rename,
-     * potentially with a different MIME type, so [.getUri] and
-     * [.getType] may change to reflect the rename.
+     * potentially with a different MIME type, so [uri] and
+     * [type] may change to reflect the rename.
      *
      *
      * When renaming a directory, children previously enumerated through
-     * [.listFiles] may no longer be valid.
+     * [listFiles] may no longer be valid.
      *
      * @param displayName the new display name.
-     * @return true on success.
+     * @return the new file after the rename, or `null` if failed.
      * @see android.provider.DocumentsContract.renameDocument
      */
-    fun renameTo(displayName: String): Boolean
+    fun renameTo(displayName: String): UniFile?
 
     companion object {
         fun fromFile(file: File) = RawFile(null, file)

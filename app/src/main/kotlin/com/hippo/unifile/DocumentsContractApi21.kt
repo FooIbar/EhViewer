@@ -26,10 +26,8 @@ object DocumentsContractApi21 {
         DocumentsContract.createDocument(resolver, self, mimeType, displayName)
     }.getOrNull()
 
-    fun prepareTreeUri(treeUri: Uri): Uri = DocumentsContract.buildDocumentUriUsingTree(
-        treeUri,
-        DocumentsContract.getTreeDocumentId(treeUri),
-    )
+    fun prepareTreeUri(treeUri: Uri): Uri =
+        DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri))
 
     fun renameTo(self: Uri, displayName: String) = runCatching {
         DocumentsContract.renameDocument(resolver, self, displayName)
