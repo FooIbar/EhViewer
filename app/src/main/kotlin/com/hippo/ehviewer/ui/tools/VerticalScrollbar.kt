@@ -7,12 +7,12 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.scrollbar.ScrollbarAdapter
 import androidx.compose.foundation.scrollbar.ScrollbarStyle
 import androidx.compose.foundation.scrollbar.VerticalScrollbar
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,16 +47,20 @@ fun VerticalScrollbar(
             }
         }
     }
+    val scrollbarModifier = if (scrollbarAlpha.value > 0f && !isDragged && !isScrollInProgress) {
+        modifier.systemGestureExclusion()
+    } else {
+        modifier
+    }
     VerticalScrollbar(
         adapter = adapter,
-        modifier = modifier
+        modifier = scrollbarModifier
             .padding(
                 start = HorizontalPadding,
                 top = contentPadding.calculateTopPadding(),
                 end = HorizontalPadding,
                 bottom = contentPadding.calculateBottomPadding(),
             )
-            .fillMaxHeight()
             .graphicsLayer { alpha = scrollbarAlpha.value },
         reverseLayout = reverseLayout,
         interactionSource = interactionSource,
