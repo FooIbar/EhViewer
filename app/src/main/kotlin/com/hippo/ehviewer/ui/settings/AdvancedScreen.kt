@@ -50,6 +50,7 @@ import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastV
 import com.hippo.ehviewer.util.setAppLanguage
 import com.hippo.unifile.asUniFile
+import com.hippo.unifile.displayPath
 import com.jamal.composeprefs3.ui.prefs.DropDownPref
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
@@ -130,7 +131,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                                 Crash.collectInfo(zipOs.writer())
                                 Runtime.getRuntime().exec("logcat -d").inputStream.use { it.copyTo(zipOs) }
                             }
-                            launchSnackBar(getString(R.string.settings_advanced_dump_logcat_to, uri.toString()))
+                            launchSnackBar(getString(R.string.settings_advanced_dump_logcat_to, uri.displayPath))
                         }
                     }.onFailure {
                         launchSnackBar(dumpLogError)
@@ -201,7 +202,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     context.runCatching {
                         grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                         EhDB.exportDB(context, uri.asUniFile())
-                        launchSnackBar(getString(R.string.settings_advanced_export_data_to, uri.toString()))
+                        launchSnackBar(getString(R.string.settings_advanced_export_data_to, uri.displayPath))
                     }.onFailure {
                         logcat(it)
                         launchSnackBar(exportFailed)

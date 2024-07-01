@@ -35,8 +35,9 @@ import splitties.systemservices.clipboardManager
 context(PageLoader2)
 private fun Context.provideImage(index: Int): Uri? {
     val dir = AppConfig.externalTempDir ?: return null
-    val name = saveToDir(index, dir.asUniFile())?.name ?: return null
-    return FileProvider.getUriForFile(this, "$APPLICATION_ID.fileprovider", File(dir, name))
+    val name = getImageFilename(index) ?: return null
+    val file = File(dir, name).takeIf { save(index, it.asUniFile()) } ?: return null
+    return FileProvider.getUriForFile(this, "$APPLICATION_ID.fileprovider", file)
 }
 
 context(SnackbarHostState, Context, PageLoader2)

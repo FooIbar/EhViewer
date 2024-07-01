@@ -22,45 +22,29 @@ import android.os.ParcelFileDescriptor.parseMode
 import android.webkit.MimeTypeMap
 import java.io.File
 
-class RawFile(override val parent: RawFile?, private var file: File) : UniFile {
-
-    private var cachePresent = false
-    private val allChildren by lazy {
-        cachePresent = true
-        file.listFiles().orEmpty().mapTo(mutableListOf()) { RawFile(this, it) }
+class RawFile(parent: RawFile?, private val file: File) : CachingFile<RawFile>(parent) {
+    override fun list() = file.listFiles()?.let { children ->
+        MutableList(children.size) { RawFile(this, children[it]) }
     }
 
-    private fun popCacheIfPresent(file: RawFile) {
-        if (cachePresent) {
-            synchronized(allChildren) {
-                allChildren.add(file)
-            }
-        }
-    }
-
-    private fun evictCacheIfPresent(file: RawFile) {
-        if (cachePresent) {
-            synchronized(allChildren) {
-                allChildren.remove(file)
-            }
-        }
-    }
-
-    override fun createFile(displayName: String): UniFile? {
-        val target = RawFile(this, File(file, displayName))
-        if (target.exists()) {
-            if (target.isFile) return target
+    private fun createFile(displayName: String, isFile: Boolean): UniFile? {
+        val child = findFile(displayName)
+        return if (child != null) {
+            child.takeIf { if (isFile) it.isFile else it.isDirectory }
         } else {
-            if (target.ensureFile()) return target
+            val target = File(file, displayName)
+            val created = if (isFile) target.createNewFile() else target.mkdir()
+            if (created) {
+                RawFile(this, target).also { popCacheIfPresent(it) }
+            } else {
+                null
+            }
         }
-        return null
     }
 
-    override fun createDirectory(displayName: String): UniFile? {
-        val target = RawFile(this, File(file, displayName))
-        if (target.ensureDir()) return target
-        return null
-    }
+    override fun createFile(displayName: String) = createFile(displayName, true)
+
+    override fun createDirectory(displayName: String) = createFile(displayName, false)
 
     override val uri: Uri
         get() = Uri.fromFile(file)
@@ -86,46 +70,19 @@ class RawFile(override val parent: RawFile?, private var file: File) : UniFile {
 
     override fun canWrite() = file.canWrite()
 
-    override fun ensureDir(): Boolean {
-        if (file.isDirectory) return true
-        if (file.mkdirs()) {
-            parent?.popCacheIfPresent(this)
-            return true
-        }
-        return false
-    }
-
-    override fun ensureFile(): Boolean {
-        if (file.exists()) return file.isFile
-        parent?.ensureDir()
-        val success = file.createNewFile()
-        if (success) parent?.popCacheIfPresent(this)
-        return success
-    }
-
-    override fun resolve(displayName: String) = RawFile(this, File(file, displayName))
-
     override fun delete() = file.deleteRecursively().also {
         if (it) parent?.evictCacheIfPresent(this)
     }
 
     override fun exists() = file.exists()
 
-    override fun listFiles() = synchronized(allChildren) {
-        allChildren.toList()
-    }
-
-    override fun findFirst(filter: (String) -> Boolean) = synchronized(allChildren) {
-        allChildren.firstOrNull { filter(it.name) }
-    }
-
-    override fun renameTo(displayName: String): Boolean {
+    override fun renameTo(displayName: String): UniFile? {
         val target = File(file.parentFile, displayName)
-        if (file.renameTo(target)) {
-            file = target
-            return true
+        return if (file.renameTo(target)) {
+            RawFile(parent, target).also { parent?.replaceCacheIfPresent(this, it) }
+        } else {
+            null
         }
-        return false
     }
 
     override fun openFileDescriptor(mode: String): ParcelFileDescriptor = open(file, parseMode(mode))

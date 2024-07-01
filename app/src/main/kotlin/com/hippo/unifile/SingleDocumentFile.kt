@@ -18,7 +18,6 @@ package com.hippo.unifile
 import android.net.Uri
 
 class SingleDocumentFile(override val uri: Uri) : UniFile {
-
     override fun createFile(displayName: String) = null
 
     override fun createDirectory(displayName: String) = null
@@ -41,12 +40,6 @@ class SingleDocumentFile(override val uri: Uri) : UniFile {
 
     override fun canWrite() = DocumentsContractApi19.canWrite(uri)
 
-    override fun ensureDir() = isDirectory
-
-    override fun ensureFile() = isFile
-
-    override fun resolve(displayName: String) = error("SingleDocumentFile never have a children")
-
     override fun delete() = DocumentsContractApi19.delete(uri)
 
     override fun exists() = DocumentsContractApi19.exists(uri)
@@ -55,5 +48,7 @@ class SingleDocumentFile(override val uri: Uri) : UniFile {
 
     override fun findFirst(filter: (String) -> Boolean) = null
 
-    override fun renameTo(displayName: String) = false
+    override fun findFile(displayName: String) = null
+
+    override fun renameTo(displayName: String) = null
 }

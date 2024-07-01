@@ -48,12 +48,6 @@ class MediaFile(override val uri: Uri) : UniFile {
         return true
     }
 
-    override fun ensureDir() = false
-
-    override fun ensureFile() = isFile
-
-    override fun resolve(displayName: String) = error("MediaFile never have a children")
-
     override fun delete() = false
 
     override fun exists() = isFile
@@ -62,5 +56,7 @@ class MediaFile(override val uri: Uri) : UniFile {
 
     override fun findFirst(filter: (String) -> Boolean) = null
 
-    override fun renameTo(displayName: String) = false
+    override fun findFile(displayName: String) = null
+
+    override fun renameTo(displayName: String) = null
 }
