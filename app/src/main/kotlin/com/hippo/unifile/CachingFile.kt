@@ -1,9 +1,14 @@
 package com.hippo.unifile
 
-abstract class CachingFile<T : UniFile> : UniFile {
-    protected abstract val cachePresent: Boolean
+abstract class CachingFile<T : UniFile>(override val parent: T?) : UniFile {
+    private var cachePresent = false
 
-    protected abstract val allChildren: MutableList<T>
+    private val allChildren by lazy {
+        cachePresent = true
+        list() ?: mutableListOf()
+    }
+
+    protected abstract fun list(): MutableList<T>?
 
     protected fun popCacheIfPresent(file: T) {
         if (cachePresent) {
@@ -31,4 +36,14 @@ abstract class CachingFile<T : UniFile> : UniFile {
             }
         }
     }
+
+    override fun listFiles() = synchronized(allChildren) {
+        allChildren.toList()
+    }
+
+    override fun findFirst(filter: (String) -> Boolean) = synchronized(allChildren) {
+        allChildren.firstOrNull { filter(it.name!!) }
+    }
+
+    override fun findFile(displayName: String) = findFirst { it.equals(displayName, true) }
 }

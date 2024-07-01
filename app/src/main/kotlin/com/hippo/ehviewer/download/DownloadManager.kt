@@ -813,17 +813,16 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     private fun comparator() = SortMode.from(Settings.downloadSortMode.value).comparator()
 }
 
-var downloadLocation: UniFile
-    get() = with(Settings) {
-        val uri = Uri.Builder().apply {
-            scheme(downloadScheme)
-            encodedAuthority(downloadAuthority)
-            encodedPath(downloadPath)
-            encodedQuery(downloadQuery)
-            encodedFragment(downloadFragment)
-        }.build()
-        uri.asUniFileOrNull() ?: AppConfig.defaultDownloadDir?.asUniFile() ?: UniFile.Stub
-    }
+var downloadLocation = with(Settings) {
+    val uri = Uri.Builder().apply {
+        scheme(downloadScheme)
+        encodedAuthority(downloadAuthority)
+        encodedPath(downloadPath)
+        encodedQuery(downloadQuery)
+        encodedFragment(downloadFragment)
+    }.build()
+    uri.asUniFileOrNull() ?: AppConfig.defaultDownloadDir?.asUniFile() ?: UniFile.Stub
+}
     set(value) = with(value.uri) {
         Settings.edit {
             downloadScheme = scheme
@@ -832,6 +831,7 @@ var downloadLocation: UniFile
             downloadQuery = encodedQuery
             downloadFragment = encodedFragment
         }
+        field = value
     }
 
 val DownloadInfo.downloadDir get() = dirname?.let { downloadLocation.findFile(it) }

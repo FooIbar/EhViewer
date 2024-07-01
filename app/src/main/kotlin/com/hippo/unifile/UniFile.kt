@@ -182,7 +182,7 @@ sealed interface UniFile {
      *
      * @return the file if found it, or `null`.
      */
-    fun findFile(displayName: String) = findFirst { it.equals(displayName, true) }
+    fun findFile(displayName: String): UniFile?
 
     /**
      * Renames this file to `displayName`.

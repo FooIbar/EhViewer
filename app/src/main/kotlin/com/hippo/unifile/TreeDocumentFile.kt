@@ -22,16 +22,24 @@ import android.webkit.MimeTypeMap
 import splitties.init.appCtx
 
 class TreeDocumentFile(
-    override val parent: TreeDocumentFile?,
+    parent: TreeDocumentFile?,
     override val uri: Uri,
     name: String? = null,
     mimeType: String? = null,
-) : CachingFile<TreeDocumentFile>() {
-    override var cachePresent = false
-    override val allChildren by lazy {
-        cachePresent = true
-        queryChildren() ?: mutableListOf()
-    }
+) : CachingFile<TreeDocumentFile>(parent) {
+    override fun list() = runCatching {
+        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(uri))
+        appCtx.contentResolver.query(childrenUri, projection, null, null, null)?.use { c ->
+            MutableList(c.count) {
+                c.moveToNext()
+                val documentId = c.getString(0)
+                val documentUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
+                val displayName = c.getString(1)
+                val mimeType = c.getString(2)
+                TreeDocumentFile(this, documentUri, displayName, mimeType)
+            }
+        }
+    }.getOrNull()
 
     private fun createFile(displayName: String, mimeType: String) =
         DocumentsContractApi21.createFile(uri, mimeType, displayName)?.let { result ->
@@ -87,14 +95,6 @@ class TreeDocumentFile(
 
     override fun exists() = DocumentsContractApi19.exists(uri)
 
-    override fun listFiles() = synchronized(allChildren) {
-        allChildren.toList()
-    }
-
-    override fun findFirst(filter: (String) -> Boolean) = synchronized(allChildren) {
-        allChildren.firstOrNull { filter(it.name) }
-    }
-
     override fun renameTo(displayName: String): UniFile? =
         DocumentsContractApi21.renameTo(uri, displayName)?.let { result ->
             TreeDocumentFile(parent, result, displayName).also {
@@ -108,17 +108,3 @@ private val projection = arrayOf(
     Document.COLUMN_DISPLAY_NAME,
     Document.COLUMN_MIME_TYPE,
 )
-
-private fun TreeDocumentFile.queryChildren() = runCatching {
-    val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(uri))
-    appCtx.contentResolver.query(childrenUri, projection, null, null, null)?.use { c ->
-        MutableList(c.count) {
-            c.moveToNext()
-            val documentId = c.getString(0)
-            val documentUri = DocumentsContract.buildDocumentUriUsingTree(uri, documentId)
-            val displayName = c.getString(1)
-            val mimeType = c.getString(2)
-            TreeDocumentFile(this, documentUri, displayName, mimeType)
-        }
-    }
-}.getOrNull()

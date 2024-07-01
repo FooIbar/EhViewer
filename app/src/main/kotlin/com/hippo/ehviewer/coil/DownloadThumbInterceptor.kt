@@ -20,7 +20,7 @@ object DownloadThumbInterceptor : Interceptor {
                 val downloadDir = withIOContext { downloadLocation.findFile(location) }
                 val thumb = withIOContext { downloadDir?.findFile(THUMB_FILE) }
                 thumb?.run {
-                    val new = chain.request.newBuilder().data(uri.toString()).build()
+                    val new = chain.request.newBuilder().data(uri).build()
                     val result = chain.withRequest(new).proceed()
                     if (result is SuccessResult) return result
                 }

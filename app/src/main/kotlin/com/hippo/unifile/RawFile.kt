@@ -22,11 +22,9 @@ import android.os.ParcelFileDescriptor.parseMode
 import android.webkit.MimeTypeMap
 import java.io.File
 
-class RawFile(override val parent: RawFile?, private val file: File) : CachingFile<RawFile>() {
-    override var cachePresent = false
-    override val allChildren by lazy {
-        cachePresent = true
-        file.listFiles().orEmpty().mapTo(mutableListOf()) { RawFile(this, it) }
+class RawFile(parent: RawFile?, private val file: File) : CachingFile<RawFile>(parent) {
+    override fun list() = file.listFiles()?.let { children ->
+        MutableList(children.size) { RawFile(this, children[it]) }
     }
 
     private fun createFile(displayName: String, isFile: Boolean): UniFile? {
@@ -77,25 +75,6 @@ class RawFile(override val parent: RawFile?, private val file: File) : CachingFi
     }
 
     override fun exists() = file.exists()
-
-    override fun listFiles() = synchronized(allChildren) {
-        allChildren.toList()
-    }
-
-    override fun findFirst(filter: (String) -> Boolean) = synchronized(allChildren) {
-        allChildren.firstOrNull { filter(it.name) }
-    }
-
-    override fun findFile(displayName: String): UniFile? = if (cachePresent) {
-        super.findFile(displayName)
-    } else {
-        val target = File(file, displayName)
-        if (target.exists()) {
-            RawFile(this, target)
-        } else {
-            null
-        }
-    }
 
     override fun renameTo(displayName: String): UniFile? {
         val target = File(file.parentFile, displayName)

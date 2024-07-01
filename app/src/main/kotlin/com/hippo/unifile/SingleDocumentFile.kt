@@ -18,7 +18,6 @@ package com.hippo.unifile
 import android.net.Uri
 
 class SingleDocumentFile(override val uri: Uri) : UniFile {
-
     override fun createFile(displayName: String) = null
 
     override fun createDirectory(displayName: String) = null
@@ -48,6 +47,8 @@ class SingleDocumentFile(override val uri: Uri) : UniFile {
     override fun listFiles() = emptyList<SingleDocumentFile>()
 
     override fun findFirst(filter: (String) -> Boolean) = null
+
+    override fun findFile(displayName: String) = null
 
     override fun renameTo(displayName: String) = null
 }
