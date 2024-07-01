@@ -38,7 +38,7 @@ import com.hippo.ehviewer.spider.COMIC_INFO_FILE
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
-import com.hippo.ehviewer.spider.putToDownloadDir
+import com.hippo.ehviewer.spider.downloadDirname
 import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromUniFile
 import com.hippo.ehviewer.spider.toSimpleTags
@@ -172,7 +172,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             }
         } else {
             // It is new download info
-            info = DownloadInfo(galleryInfo, galleryInfo.putToDownloadDir())
+            info = DownloadInfo(galleryInfo, galleryInfo.downloadDirname())
             info.label = label
             info.state = DownloadInfo.STATE_WAIT
             // Add to all download list and map

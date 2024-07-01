@@ -13,19 +13,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parMapNotNull
@@ -47,6 +42,7 @@ import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromUniFile
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
@@ -57,21 +53,18 @@ import com.hippo.unifile.displayPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.system.logcat
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
 
 @Destination<RootGraph>
 @Composable
-fun DownloadScreen(navigator: DestinationsNavigator) {
+fun DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    val snackbarHostState = remember { SnackbarHostState() }
-    fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
+    fun launchSnackBar(content: String) = launch { showSnackbar(content) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -84,18 +77,17 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             var downloadLocationState by ::downloadLocation.observed
             val cannotGetDownloadLocation = stringResource(id = R.string.settings_download_cant_get_download_location)
             val selectDownloadDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { treeUri ->
                 treeUri?.run {
-                    coroutineScope.launch {
-                        context.runCatching {
+                    launchIO {
+                        runCatching {
                             contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
                             downloadLocationState = treeUri.asUniFile()
-                            coroutineScope.launchNonCancellable {
+                            launchNonCancellable {
                                 keepNoMediaFileStatus(downloadLocationState)
                             }
                         }.onFailure {
@@ -183,10 +175,10 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                             di.galleryInfo.also { SpiderDen(it, di.dirname!!).writeComicInfo(false) }
                         }
                         EhDB.updateGalleryInfo(toUpdate)
-                        launchSnackBar(context.getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
+                        launchSnackBar(getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
                     }
                 }.onFailure {
-                    launchSnackBar(context.getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
+                    launchSnackBar(getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
                 }
             }
             val restoreFailed = stringResource(id = R.string.settings_download_restore_failed)
@@ -222,7 +214,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                         logcat(it)
                     }.getOrNull()
                 }
-                runCatching {
+                runSuspendCatching {
                     val result = downloadLocation.listFiles().parMapNotNull { getRestoreItem(it) }.also {
                         fillGalleryListByApi(it, EhUrl.referer)
                     }
@@ -247,25 +239,23 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_download_clean_redundancy),
                 summary = stringResource(id = R.string.settings_download_clean_redundancy_summary),
             ) {
-                fun clearFile(file: UniFile): Boolean {
-                    var name = file.name ?: return false
-                    val index = name.indexOf('-')
-                    if (index >= 0) {
-                        name = name.substring(0, index)
-                    }
-                    val gid = name.toLongOrNull() ?: return false
-                    if (DownloadManager.containDownloadInfo(gid)) {
-                        return false
-                    }
-                    file.delete()
-                    return true
+                fun isRedundant(file: UniFile): Boolean {
+                    if (!file.isDirectory) return false
+                    val name = file.name ?: return false
+                    val gid = name.substringBefore('-').toLongOrNull() ?: return false
+                    return name != DownloadManager.getDownloadInfo(gid)?.dirname
                 }
-                runSuspendCatching {
-                    val cnt = downloadLocation.listFiles().sumOf { clearFile(it).compareTo(false) }
-                    launchSnackBar(FINAL_CLEAR_REDUNDANCY_MSG(cnt))
-                }.onFailure {
-                    logcat(it)
+                val list = downloadLocation.listFiles().filter(::isRedundant)
+                if (list.isNotEmpty()) {
+                    awaitPermissionOrCancel(
+                        confirmText = R.string.delete,
+                        title = R.string.settings_download_clean_redundancy,
+                    ) {
+                        Text(list.joinToString(separator = "\n") { it.name!! })
+                    }
                 }
+                val cnt = list.sumOf { it.delete().compareTo(false) }
+                launchSnackBar(FINAL_CLEAR_REDUNDANCY_MSG(cnt))
             }
         }
     }
