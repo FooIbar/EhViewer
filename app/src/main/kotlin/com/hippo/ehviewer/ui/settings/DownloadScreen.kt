@@ -42,6 +42,7 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
+import com.hippo.ehviewer.download.invalidateDownloadDirCache
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
 import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
@@ -223,6 +224,8 @@ fun DownloadScreen(navigator: DestinationsNavigator) {
                     }.getOrNull()
                 }
                 runCatching {
+                    // Rescan download directory for new files added by the user
+                    invalidateDownloadDirCache()
                     val result = downloadLocation.listFiles().parMapNotNull { getRestoreItem(it) }.also {
                         fillGalleryListByApi(it, EhUrl.referer)
                     }
