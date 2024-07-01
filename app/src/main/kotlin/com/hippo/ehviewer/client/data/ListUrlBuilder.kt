@@ -263,13 +263,7 @@ data class ListUrlBuilder(
             if (category > 0) {
                 addQueryParameter("f_cats", (category.inv() and EhUtils.ALL_CATEGORY).toString())
             }
-            val query = mKeyword?.let { keyword ->
-                GalleryInfo.S_LANG_TAGS
-                    .takeUnless { keyword.startsWith("gid:", true) }
-                    ?.getOrNull(Settings.languageFilter.value)
-                    ?.plus(" $keyword") ?: keyword
-            }
-            addQueryParameterIfNotBlank("f_search", query)
+            addQueryParameterIfNotBlank("f_search", mKeyword)
             addQueryParameterIfNotBlank("prev", mPrev)
             addQueryParameterIfNotBlank("next", mNext)
             addQueryParameterIfNotBlank("seek", mJumpTo)

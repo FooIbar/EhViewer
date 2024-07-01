@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -35,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import arrow.core.raise.ensure
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.S_LANG_TAGS
@@ -63,9 +61,11 @@ private val categoryTable = arrayOf(
 fun SearchFilter(
     modifier: Modifier = Modifier,
     category: Int,
-    onCategoryChanged: (Int) -> Unit,
+    onCategoryChange: (Int) -> Unit,
+    language: Int,
+    onLanguageChange: (Int) -> Unit,
     advancedOption: AdvancedSearchOption,
-    onAdvancedOptionChanged: (AdvancedSearchOption) -> Unit,
+    onAdvancedOptionChange: (AdvancedSearchOption) -> Unit,
 ) = Column(modifier) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -83,7 +83,7 @@ fun SearchFilter(
         items(categories, { it.first }) {
             FilterChip(
                 selected = isCategoryChecked(it.first),
-                onClick = { onCategoryChanged(category xor it.first) },
+                onClick = { onCategoryChange(category xor it.first) },
                 label = { Text(text = stringResource(id = it.second)) },
                 modifier = Modifier.thenIf(animateItems) { animateItem() },
             )
@@ -110,14 +110,11 @@ fun SearchFilter(
                 }
             }
         }
-        var languageFilter by Settings.languageFilter.asMutableState()
         DropdownFilterChip(
             label = languageStr,
             menuItems = languages,
-            selectedItemIndex = languageFilter + 1,
-            onSelectedItemIndexChange = {
-                languageFilter = it - 1
-            },
+            selectedItemIndex = language + 1,
+            onSelectedItemIndexChange = { onLanguageChange(it - 1) },
         )
         val minRatingItems = stringArrayResource(id = R.array.search_min_rating)
         val minRatingStr = stringResource(id = R.string.search_sr)
@@ -126,7 +123,7 @@ fun SearchFilter(
             menuItems = minRatingItems.asList(),
             selectedItemIndex = (advancedOption.minRating - 1).coerceAtLeast(0),
             onSelectedItemIndexChange = {
-                onAdvancedOptionChanged(advancedOption.copy(minRating = if (it == 0) 0 else it + 1))
+                onAdvancedOptionChange(advancedOption.copy(minRating = if (it == 0) 0 else it + 1))
             },
         )
         val pageErr1 = stringResource(R.string.search_sp_err1)
@@ -203,13 +200,13 @@ fun SearchFilter(
                             }
                         }
                     }
-                    onAdvancedOptionChanged(advancedOption.copy(fromPage = from, toPage = to))
+                    onAdvancedOptionChange(advancedOption.copy(fromPage = from, toPage = to))
                 }
             },
             label = { Text(text = pagesText) },
         )
         fun checked(bit: Int) = advancedOption.advanceSearch and bit != 0
-        fun AdvancedSearchOption.inv(bit: Int) = onAdvancedOptionChanged(copy(advanceSearch = advanceSearch xor bit))
+        fun AdvancedSearchOption.inv(bit: Int) = onAdvancedOptionChange(copy(advanceSearch = advanceSearch xor bit))
         FilterChip(
             selected = checked(AdvanceTable.SH),
             onClick = { advancedOption.inv(AdvanceTable.SH) },

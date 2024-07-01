@@ -96,6 +96,7 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.client.data.GalleryInfo.Companion.S_LANG_TAGS
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_NORMAL
@@ -496,6 +497,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         override val destination = ProgressScreenDestination(gid, pToken, page)
     }
 
+    var languageFilter by Settings.languageFilter.asMutableState()
     val selectImageFirst = stringResource(R.string.select_image_first)
     fun onApplySearch(query: String) = launchIO {
         val builder = ListUrlBuilder()
@@ -504,7 +506,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
             // If it's MODE_SUBSCRIPTION, keep it
             val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
             builder.mode = newMode
-            builder.keyword = query
+            builder.keyword = if ("gid:" in query || "l:" in query || "language:" in query) {
+                query
+            } else {
+                S_LANG_TAGS.getOrNull(languageFilter)?.plus(" $query") ?: query
+            }
             builder.category = category
             builder.advanceSearch = advancedSearchOption.advanceSearch
             builder.minRating = advancedSearchOption.minRating
@@ -569,11 +575,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         filter = {
             SearchFilter(
                 category = category,
-                onCategoryChanged = { category = it },
+                onCategoryChange = { category = it },
+                language = languageFilter,
+                onLanguageChange = { languageFilter = it },
                 advancedOption = advancedSearchOption,
-                onAdvancedOptionChanged = {
-                    advancedSearchOption = it
-                },
+                onAdvancedOptionChange = { advancedSearchOption = it },
             )
         },
         floatingActionButton = {
