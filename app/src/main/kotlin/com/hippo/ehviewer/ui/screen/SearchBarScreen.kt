@@ -227,12 +227,14 @@ fun SearchBarScreen(
                     onExpandedChange = onExpandedChange,
                     modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2),
                     label = title.ifNotNullThen {
-                        Text(title!!, overflow = TextOverflow.Ellipsis)
+                        Text(title!!, overflow = TextOverflow.Ellipsis, maxLines = 1)
                     }.takeUnless {
                         val contentActive by activeState.state
                         expanded || contentActive || searchFieldState.text.isNotEmpty()
                     },
-                    placeholder = searchFieldHint.ifNotNullThen { Text(searchFieldHint!!) },
+                    placeholder = searchFieldHint.ifNotNullThen {
+                        Text(searchFieldHint!!, overflow = TextOverflow.Ellipsis, maxLines = 1)
+                    },
                     leadingIcon = {
                         if (expanded) {
                             IconButton(onClick = { hideSearchView() }) {
