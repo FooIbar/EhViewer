@@ -605,6 +605,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     override fun onGet509(index: Int) {
         launch {
             mDownloadListener?.onGet509()
+            stopAllDownload()
         }
     }
 
@@ -626,7 +627,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                 info.finished = finished
                 info.downloaded = downloaded
                 info.total = total
-                mDownloadListener?.onGetPage(info)
+                mDownloadListener?.onDownload(info)
                 mutableNotifyFlow.emit(info)
             } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
         }
@@ -701,11 +702,6 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
          * Update download speed
          */
         fun onDownload(info: DownloadInfo)
-
-        /**
-         * Update page downloaded
-         */
-        fun onGetPage(info: DownloadInfo)
 
         /**
          * Download done
