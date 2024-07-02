@@ -304,7 +304,7 @@ class SpiderDen(val info: GalleryInfo) {
     }
 
     suspend fun initDownloadDir() {
-        val dirname = EhDB.getDownloadDirname(gid) ?: info.putToDownloadDir()
+        val dirname = info.downloadDirname()
         downloadDir = downloadLocation.createDirectory(dirname)!!
     }
 
@@ -338,9 +338,12 @@ private fun UniFile.findImageFile(index: Int): UniFile? {
     return findFirst { name -> name.startsWith(head) }
 }
 
-suspend fun GalleryInfo.putToDownloadDir(): String {
-    val title = getSuitableTitle(this)
-    val dirname = FileUtils.sanitizeFilename("$gid-$title")
-    EhDB.putDownloadDirname(gid, dirname)
+suspend fun GalleryInfo.downloadDirname(): String {
+    var dirname = EhDB.getDownloadDirname(gid)
+    if (dirname == null) {
+        val title = getSuitableTitle(this)
+        dirname = FileUtils.sanitizeFilename("$gid-$title")
+        EhDB.putDownloadDirname(gid, dirname)
+    }
     return dirname
 }
