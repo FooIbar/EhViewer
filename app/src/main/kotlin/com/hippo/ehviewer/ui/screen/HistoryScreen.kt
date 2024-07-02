@@ -54,6 +54,7 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.tools.Deferred
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
+import com.hippo.ehviewer.ui.tools.awaitNotLoading
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -61,7 +62,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.math.roundToInt
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Destination<RootGraph>
@@ -164,7 +164,7 @@ fun HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 }
             }
         }
-        Deferred(keyword, { delay(200) }) {
+        Deferred(keyword, { historyData.awaitNotLoading() }) {
             if (historyData.itemCount == 0) {
                 Column(
                     modifier = Modifier.padding(paddingValues).padding(horizontal = marginH).fillMaxSize(),

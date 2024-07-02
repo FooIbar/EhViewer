@@ -1,11 +1,14 @@
 package com.hippo.ehviewer.ui.tools
 
+import androidx.compose.runtime.snapshotFlow
 import androidx.paging.PagingSource.LoadParams
 import androidx.paging.PagingSource.LoadParams.Append
 import androidx.paging.PagingSource.LoadParams.Prepend
 import androidx.paging.PagingSource.LoadParams.Refresh
 import androidx.paging.PagingSource.LoadResult
 import androidx.paging.PagingState
+import androidx.paging.awaitNotLoading
+import androidx.paging.compose.LazyPagingItems
 
 inline fun <K : Any, V : Any, R : LoadResult.Page<K, V>, T> Result<T>.foldToLoadResult(
     onSuccess: (value: T) -> R,
@@ -29,3 +32,5 @@ fun getLimit(params: LoadParams<Int>, key: Int) = when (params) {
     is Prepend -> if (key < params.loadSize) key else params.loadSize
     else -> params.loadSize
 }
+
+suspend fun <T : Any> LazyPagingItems<T>.awaitNotLoading() = snapshotFlow { loadState }.awaitNotLoading()

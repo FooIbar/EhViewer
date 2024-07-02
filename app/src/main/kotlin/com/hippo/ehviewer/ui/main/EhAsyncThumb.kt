@@ -15,6 +15,7 @@ import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.tools.shouldCrop
+import com.hippo.ehviewer.ui.tools.thumbPlaceholder
 
 @Composable
 @NonRestartableComposable
@@ -34,6 +35,7 @@ fun EhAsyncThumb(
     model = requestOf(model),
     contentDescription = null,
     modifier = modifier,
+    placeholder = thumbPlaceholder,
     onSuccess = onSuccess?.let { callback ->
         { callback(it.result.image) }
     },
@@ -50,6 +52,7 @@ fun EhAsyncCropThumb(
         model = requestOf(key),
         contentDescription = null,
         modifier = modifier,
+        placeholder = thumbPlaceholder,
         onSuccess = {
             if (it.result.image.shouldCrop) {
                 contentScale = ContentScale.Crop

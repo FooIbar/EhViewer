@@ -28,6 +28,7 @@ import com.hippo.ehviewer.client.data.NormalGalleryPreview
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.shouldCrop
+import com.hippo.ehviewer.ui.tools.thumbPlaceholder
 
 @Composable
 @NonRestartableComposable
@@ -47,17 +48,18 @@ fun EhAsyncPreview(
         contentDescription = null,
         modifier = modifier,
         transform = {
-            model.run {
-                if (it is AsyncImagePainter.State.Success && this is NormalGalleryPreview) {
-                    it.copy(
+            with(model) {
+                // TODO: Rewrite when pattern matching guard lands
+                when {
+                    it is AsyncImagePainter.State.Success && this is NormalGalleryPreview -> it.copy(
                         painter = BitmapPainter(
                             (it.result.image as BitmapImage).bitmap.asImageBitmap(),
                             IntOffset(offsetX, 0),
                             IntSize(clipWidth - 1, clipHeight - 1),
                         ),
                     )
-                } else {
-                    it
+                    it is AsyncImagePainter.State.Loading -> it.copy(painter = thumbPlaceholder)
+                    else -> it
                 }
             }
         },
