@@ -82,7 +82,7 @@ fun SearchBarInputField(
                 trailingIcon = trailingIcon?.let { trailing -> { Box(Modifier.offset(x = -SearchBarIconOffsetX)) { trailing() } } },
                 shape = SearchBarDefaults.inputFieldShape,
                 colors = colors,
-                contentPadding = TextFieldDefaults.contentPaddingWithoutLabel(),
+                contentPadding = TextFieldDefaults.contentPaddingWithLabel(),
                 container = {},
             )
         },
