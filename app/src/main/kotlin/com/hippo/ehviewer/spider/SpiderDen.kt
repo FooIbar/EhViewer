@@ -72,7 +72,9 @@ class SpiderDen(val info: GalleryInfo) {
 
     private fun findCached(name: String) = synchronized(fileCache) { fileCache[name] }
 
-    private fun putCached(name: String, file: UniFile) = synchronized(fileCache) { fileCache[name] = file }
+    private fun UniFile.createAndPutCache(name: String) = createFile(name)?.also { file ->
+        synchronized(fileCache) { fileCache[name] = file }
+    }
 
     private fun UniFile.deleteAndEvictCache() = name.let { name ->
         delete().also { succeed ->
@@ -128,8 +130,7 @@ class SpiderDen(val info: GalleryInfo) {
             sCache.read(key) {
                 val extension = metadata.toFile().readText()
                 val filename = perFilename(index, extension)
-                val file = dir.createFile(filename) ?: return false
-                putCached(filename, file)
+                val file = dir.createAndPutCache(filename) ?: return false
                 data.asUniFile() sendTo file
                 true
             } ?: false
@@ -161,11 +162,7 @@ class SpiderDen(val info: GalleryInfo) {
 
     fun remove(index: Int): Boolean = removeFromCache(index) or removeFromDownloadDir(index)
 
-    private fun findDownloadFileForIndex(index: Int, extension: String): UniFile? = perFilename(index, extension).let { name ->
-        imageDir?.createFile(name)?.also { file ->
-            putCached(name, file)
-        }
-    }
+    private fun findDownloadFileForIndex(index: Int, extension: String): UniFile? = imageDir?.createAndPutCache(perFilename(index, extension))
 
     suspend fun makeHttpCallAndSaveImage(
         index: Int,
@@ -278,12 +275,11 @@ class SpiderDen(val info: GalleryInfo) {
 
     suspend fun archive() {
         if (saveAsCbz && !hasArchive()) {
-            downloadDir?.createFile(archiveName)?.let { file ->
+            downloadDir?.createAndPutCache(archiveName)?.let { file ->
                 runCatching {
                     archiveTo(file)
-                    putCached(archiveName, file)
                 }.onFailure {
-                    file.delete()
+                    file.deleteAndEvictCache()
                     if (it is CancellationException) throw it
                     logcat(it)
                 }
@@ -338,8 +334,7 @@ class SpiderDen(val info: GalleryInfo) {
     }
 
     suspend fun writeComicInfo(fetchMetadata: Boolean = true): UniFile? = downloadDir?.run {
-        createFile(COMIC_INFO_FILE)?.also {
-            putCached(COMIC_INFO_FILE, it)
+        createAndPutCache(COMIC_INFO_FILE)?.also {
             runCatching {
                 if (info !is GalleryDetail && fetchMetadata) {
                     EhEngine.fillGalleryListByApi(listOf(info))
