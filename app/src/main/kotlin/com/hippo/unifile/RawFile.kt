@@ -71,7 +71,7 @@ class RawFile(parent: RawFile?, private val file: File) : CachingFile<RawFile>(p
 
     override fun canWrite() = file.canWrite()
 
-    override fun resolve(displayName: String) = RawFile(this, File(file, displayName))
+    override fun resolve(displayName: String) = (if (cachePresent) findFile(displayName) else null) ?: RawFile(this, File(file, displayName))
 
     override fun delete() = file.deleteRecursively().also {
         if (it) parent?.evictCacheIfPresent(name)

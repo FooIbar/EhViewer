@@ -102,7 +102,7 @@ class TreeDocumentFile(
 
     override fun canWrite() = DocumentsContractApi19.canWrite(uri)
 
-    override fun resolve(displayName: String) = TreeDocumentFile(this, givenName = displayName)
+    override fun resolve(displayName: String) = (if (cachePresent) findFile(displayName) else null) ?: TreeDocumentFile(this, givenName = displayName)
 
     override fun delete() = name.let { name ->
         DocumentsContractApi19.delete(uri).also {

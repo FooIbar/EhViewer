@@ -1,7 +1,7 @@
 package com.hippo.unifile
 
 abstract class CachingFile<T : UniFile>(override val parent: T?) : UniFile {
-    private var cachePresent = false
+    protected var cachePresent = false
 
     private val allChildren by lazy {
         cachePresent = true
