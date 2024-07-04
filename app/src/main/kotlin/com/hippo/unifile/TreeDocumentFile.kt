@@ -104,18 +104,22 @@ class TreeDocumentFile(
 
     override fun resolve(displayName: String) = TreeDocumentFile(this, givenName = displayName)
 
-    override fun delete() = DocumentsContractApi19.delete(uri).also {
-        if (it) parent?.evictCacheIfPresent(this)
+    override fun delete() = name.let { name ->
+        DocumentsContractApi19.delete(uri).also {
+            if (it) parent?.evictCacheIfPresent(name)
+        }
     }
 
     override fun exists() = DocumentsContractApi19.exists(uri)
 
-    override fun renameTo(displayName: String): UniFile? =
+    override fun renameTo(displayName: String): UniFile? = name.let { old ->
         DocumentsContractApi21.renameTo(uri, displayName)?.let { result ->
-            TreeDocumentFile(parent, result, displayName).also {
-                parent?.replaceCacheIfPresent(this, it)
+            TreeDocumentFile(parent, result, displayName).also { new ->
+                parent?.evictCacheIfPresent(old)
+                parent?.popCacheIfPresent(new)
             }
         }
+    }
 }
 
 private val projection = arrayOf(

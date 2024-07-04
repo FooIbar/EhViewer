@@ -5,7 +5,7 @@ abstract class CachingFile<T : UniFile>(override val parent: T?) : UniFile {
 
     private val allChildren by lazy {
         cachePresent = true
-        list() ?: mutableListOf()
+        list()?.associateBy { it.name!! } as? HashMap ?: hashMapOf()
     }
 
     protected abstract fun list(): MutableList<T>?
@@ -13,39 +13,28 @@ abstract class CachingFile<T : UniFile>(override val parent: T?) : UniFile {
     protected fun popCacheIfPresent(file: T) {
         if (cachePresent) {
             synchronized(allChildren) {
-                allChildren.add(file)
+                allChildren[file.name!!.lowercase()] = file
             }
         }
     }
 
-    protected fun evictCacheIfPresent(file: T) {
+    protected fun evictCacheIfPresent(name: String) {
         if (cachePresent) {
             synchronized(allChildren) {
-                allChildren.remove(file)
-            }
-        }
-    }
-
-    protected fun replaceCacheIfPresent(old: T, new: T) {
-        if (cachePresent) {
-            synchronized(allChildren) {
-                val index = allChildren.indexOf(old)
-                if (index != -1) {
-                    allChildren[index] = new
-                }
+                allChildren.remove(name.lowercase())
             }
         }
     }
 
     override fun listFiles() = synchronized(allChildren) {
-        allChildren.toList()
+        allChildren.values.toList()
     }
 
     override fun findFirst(filter: (String) -> Boolean) = synchronized(allChildren) {
-        allChildren.firstOrNull { filter(it.name!!) }
+        allChildren.entries.firstOrNull { (name, _) -> filter(name) }?.value
     }
 
-    override fun findFile(displayName: String) = findFirst { it.equals(displayName, true) }
+    override fun findFile(displayName: String) = allChildren[displayName.lowercase()]
 
     override fun ensureDir(): Boolean {
         if (isDirectory) return true

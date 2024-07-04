@@ -74,15 +74,19 @@ class RawFile(parent: RawFile?, private val file: File) : CachingFile<RawFile>(p
     override fun resolve(displayName: String) = RawFile(this, File(file, displayName))
 
     override fun delete() = file.deleteRecursively().also {
-        if (it) parent?.evictCacheIfPresent(this)
+        if (it) parent?.evictCacheIfPresent(name)
     }
 
     override fun exists() = file.exists()
 
     override fun renameTo(displayName: String): UniFile? {
+        val old = name
         val target = File(file.parentFile, displayName)
         return if (file.renameTo(target)) {
-            RawFile(parent, target).also { parent?.replaceCacheIfPresent(this, it) }
+            RawFile(parent, target).also { new ->
+                parent?.evictCacheIfPresent(old)
+                parent?.popCacheIfPresent(new)
+            }
         } else {
             null
         }
