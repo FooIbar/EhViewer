@@ -49,7 +49,7 @@ typedef struct {
 } entry;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static archive_ctx **ctx_pool;
+static archive_ctx **ctx_pool = NULL;
 #define CTX_POOL_SIZE 20
 
 static void *mempool = NULL;
@@ -403,6 +403,7 @@ JNIEXPORT void JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_closeArchive(JNIEnv *env, jclass thiz) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
+    if (!ctx_pool) return;
     for (int i = 0; i < CTX_POOL_SIZE; i++)
         archive_release_ctx(ctx_pool[i]);
     free(passwd);
