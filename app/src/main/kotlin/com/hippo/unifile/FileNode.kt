@@ -1,8 +1,6 @@
 package com.hippo.unifile
 
 abstract class FileNode<T : UniFile>(override val parent: T?) : UniFile {
-    override fun findFirst(filter: (String) -> Boolean) = listFiles().firstOrNull { filter(it.name!!) }
-
     override fun findFile(displayName: String) = listFiles().firstOrNull { it.name!!.equals(displayName, true) }
 
     override fun ensureDir(): Boolean {

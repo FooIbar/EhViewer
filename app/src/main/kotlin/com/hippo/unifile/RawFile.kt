@@ -78,7 +78,6 @@ class RawFile(parent: RawFile?, private val file: File) : FileNode<RawFile>(pare
     override fun exists() = file.exists()
 
     override fun renameTo(displayName: String): UniFile? {
-        val old = name
         val target = File(file.parentFile, displayName)
         return if (file.renameTo(target)) {
             RawFile(parent, target)

@@ -198,8 +198,6 @@ sealed interface UniFile {
 
     fun listFiles(): List<UniFile>
 
-    fun findFirst(filter: (String) -> Boolean): UniFile?
-
     fun openFileDescriptor(mode: String) = appCtx.contentResolver.openFileDescriptor(uri, mode) ?: error("Can't open ParcelFileDescriptor")
 
     /**
