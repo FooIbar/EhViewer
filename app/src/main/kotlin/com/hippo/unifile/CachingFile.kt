@@ -5,7 +5,7 @@ abstract class CachingFile<T : UniFile>(override val parent: T?) : UniFile {
 
     private val allChildren by lazy {
         cachePresent = true
-        list()?.associateBy { it.name!! } as? HashMap ?: hashMapOf()
+        list()?.associateBy { it.name!!.lowercase() } as? HashMap ?: hashMapOf()
     }
 
     protected abstract fun list(): MutableList<T>?
