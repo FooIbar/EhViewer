@@ -153,6 +153,31 @@ sealed interface UniFile {
     fun canWrite(): Boolean
 
     /**
+     * It works like mkdirs, but it will return true if the UniFile is directory
+     *
+     * @return `true` if the directory was created
+     * or if the directory already existed.
+     */
+    fun ensureDir(): Boolean
+
+    /**
+     * Make sure the UniFile is file
+     *
+     * @return `true` if the file can be created
+     * or if the file already existed.
+     */
+    fun ensureFile(): Boolean
+
+    /**
+     * Get child file of this directory, the child might not exist.
+     *
+     * @return the child file
+     */
+    fun resolve(displayName: String): UniFile
+
+    operator fun div(name: String) = resolve(name)
+
+    /**
      * Deletes this file.
      *
      *

@@ -32,6 +32,7 @@ class RawFile(parent: RawFile?, private val file: File) : CachingFile<RawFile>(p
         return if (child != null) {
             child.takeIf { if (isFile) it.isFile else it.isDirectory }
         } else {
+            if (!ensureDir()) return null
             val target = File(file, displayName)
             val created = if (isFile) target.createNewFile() else target.mkdir()
             if (created) {
@@ -69,6 +70,8 @@ class RawFile(parent: RawFile?, private val file: File) : CachingFile<RawFile>(p
     override fun canRead() = file.canRead()
 
     override fun canWrite() = file.canWrite()
+
+    override fun resolve(displayName: String) = RawFile(this, File(file, displayName))
 
     override fun delete() = file.deleteRecursively().also {
         if (it) parent?.evictCacheIfPresent(this)

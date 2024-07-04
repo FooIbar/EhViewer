@@ -79,9 +79,7 @@ import kotlinx.datetime.todayIn
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.init.appCtx
 
-private fun removeNoMediaFile(downloadDir: UniFile) {
-    downloadDir.findFile(".nomedia")?.delete()
-}
+private fun removeNoMediaFile(downloadDir: UniFile) = (downloadDir / ".nomedia").delete()
 
 private fun ensureNoMediaFile(downloadDir: UniFile) {
     downloadDir.createFile(".nomedia") ?: return

@@ -17,23 +17,22 @@ object DownloadThumbInterceptor : Interceptor {
         if (magicOrUrl != null) {
             val (url, location) = decodeMagicRequestOrUrl(magicOrUrl)
             if (location != null) {
-                val downloadDir = withIOContext { downloadLocation.findFile(location) }
-                val thumb = withIOContext { downloadDir?.findFile(THUMB_FILE) }
-                thumb?.run {
-                    val new = chain.request.newBuilder().data(uri).build()
+                val thumb = withIOContext { downloadLocation / location / THUMB_FILE }
+                if (withIOContext { thumb.isFile }) {
+                    val new = chain.request.newBuilder().data(thumb.uri.toString()).build()
                     val result = chain.withRequest(new).proceed()
                     if (result is SuccessResult) return result
                 }
                 val new = chain.request.newBuilder().data(url).build()
                 val result = chain.withRequest(new).proceed()
-                if (result is SuccessResult && downloadDir != null) {
+                if (result is SuccessResult) {
                     withIOContext {
                         // Accessing the recreated file immediately after deleting it throws
                         // FileNotFoundException, so we just overwrite the existing file.
-                        (thumb ?: downloadDir.createFile(THUMB_FILE))?.let {
+                        if (thumb.ensureFile()) {
                             val key = requireNotNull(chain.request.memoryCacheKey)
                             imageCache.read(key) {
-                                data.asUniFile() sendTo it
+                                data.asUniFile() sendTo thumb
                             }
                         }
                     }

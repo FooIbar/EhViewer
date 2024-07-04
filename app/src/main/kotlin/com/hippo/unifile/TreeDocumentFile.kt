@@ -23,10 +23,21 @@ import splitties.init.appCtx
 
 class TreeDocumentFile(
     parent: TreeDocumentFile?,
-    override val uri: Uri,
-    name: String? = null,
-    mimeType: String? = null,
+    private var backingUri: Uri = Uri.EMPTY,
+    private val givenName: String? = null,
+    private val givenMimeType: String? = null,
 ) : CachingFile<TreeDocumentFile>(parent) {
+
+    override val uri: Uri
+        get() = prepareUri().let { backingUri }
+
+    private fun prepareUri() {
+        if (backingUri != Uri.EMPTY) return
+        val parent = parent ?: return
+        val f = parent.findFile(name) ?: return
+        backingUri = f.uri
+    }
+
     override fun list() = runCatching {
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, DocumentsContract.getDocumentId(uri))
         appCtx.contentResolver.query(childrenUri, projection, null, null, null)?.use { c ->
@@ -51,6 +62,7 @@ class TreeDocumentFile(
         return if (child != null) {
             child.takeIf { it.isFile }
         } else {
+            if (!ensureDir()) return null
             val extension = displayName.substringAfterLast('.', "").ifEmpty { null }?.lowercase()
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
             createFile(displayName, mimeType)
@@ -62,22 +74,23 @@ class TreeDocumentFile(
         return if (child != null) {
             child.takeIf { it.isDirectory }
         } else {
+            if (!ensureDir()) return null
             createFile(displayName, Document.MIME_TYPE_DIR)
         }
     }
 
-    override val name by lazy {
-        name ?: DocumentsContractApi19.getName(uri)!!
-    }
+    override val name
+        get() = givenName ?: DocumentsContractApi19.getName(uri)!!
 
-    private val mimeType by lazy {
-        mimeType ?: DocumentsContractApi19.getRawType(uri)
-    }
+    private val mimeType
+        get() = givenMimeType ?: DocumentsContractApi19.getRawType(uri)
 
     override val type: String?
         get() = mimeType.takeUnless { isDirectory }
+
     override val isDirectory: Boolean
         get() = mimeType == Document.MIME_TYPE_DIR
+
     override val isFile: Boolean
         get() = !type.isNullOrEmpty()
 
@@ -88,6 +101,8 @@ class TreeDocumentFile(
     override fun canRead() = DocumentsContractApi19.canRead(uri)
 
     override fun canWrite() = DocumentsContractApi19.canWrite(uri)
+
+    override fun resolve(displayName: String) = TreeDocumentFile(this, givenName = displayName)
 
     override fun delete() = DocumentsContractApi19.delete(uri).also {
         if (it) parent?.evictCacheIfPresent(this)

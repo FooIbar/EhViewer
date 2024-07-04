@@ -830,6 +830,6 @@ var downloadLocation: UniFile
         }
     }
 
-val DownloadInfo.downloadDir get() = dirname?.let { downloadLocation.findFile(it) }
+val DownloadInfo.downloadDir get() = dirname?.let { downloadLocation / it }
 val DownloadInfo.archiveFile get() = downloadDir?.run { findFile("$gid.cbz") ?: findFile("$gid.zip") }
 val GalleryInfo.tempDownloadDir get() = AppConfig.getTempDir("$gid")?.asUniFile()
