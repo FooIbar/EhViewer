@@ -52,31 +52,20 @@ class TreeDocumentFile(
         }
     }.getOrNull() ?: emptyList()
 
-    private fun createFile(displayName: String, mimeType: String) =
-        DocumentsContractApi21.createFile(uri, mimeType, displayName)?.let { result ->
-            TreeDocumentFile(this, result, displayName, mimeType)
-        }
+    private fun createFile(displayName: String, mimeType: String) = DocumentsContractApi21.createFile(uri, mimeType, displayName)?.let { result ->
+        TreeDocumentFile(this, result, displayName, mimeType)
+    }
 
     override fun createFile(displayName: String): UniFile? {
-        val child = findFile(displayName)
-        return if (child != null) {
-            child.takeIf { it.isFile }
-        } else {
-            if (!ensureDir()) return null
-            val extension = displayName.substringAfterLast('.', "").ifEmpty { null }?.lowercase()
-            val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
-            createFile(displayName, mimeType)
-        }
+        if (!ensureDir()) return null
+        val extension = displayName.substringAfterLast('.', "").ifEmpty { null }?.lowercase()
+        val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
+        return createFile(displayName, mimeType)
     }
 
     override fun createDirectory(displayName: String): UniFile? {
-        val child = findFile(displayName)
-        return if (child != null) {
-            child.takeIf { it.isDirectory }
-        } else {
-            if (!ensureDir()) return null
-            createFile(displayName, Document.MIME_TYPE_DIR)
-        }
+        if (!ensureDir()) return null
+        return createFile(displayName, Document.MIME_TYPE_DIR)
     }
 
     override val name

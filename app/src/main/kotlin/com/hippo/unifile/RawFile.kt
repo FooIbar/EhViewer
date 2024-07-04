@@ -28,18 +28,13 @@ class RawFile(parent: RawFile?, private val file: File) : FileNode<RawFile>(pare
     } ?: emptyList()
 
     private fun createFile(displayName: String, isFile: Boolean): UniFile? {
-        val child = findFile(displayName)
-        return if (child != null) {
-            child.takeIf { if (isFile) it.isFile else it.isDirectory }
+        if (!ensureDir()) return null
+        val target = File(file, displayName)
+        val created = if (isFile) target.createNewFile() else target.mkdir()
+        return if (created) {
+            RawFile(this, target)
         } else {
-            if (!ensureDir()) return null
-            val target = File(file, displayName)
-            val created = if (isFile) target.createNewFile() else target.mkdir()
-            if (created) {
-                RawFile(this, target)
-            } else {
-                null
-            }
+            null
         }
     }
 
