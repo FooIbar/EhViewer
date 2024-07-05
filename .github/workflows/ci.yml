@@ -90,6 +90,8 @@ jobs:
           restore-keys: cmake-default-
 
       - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GithubToken }}
         run: ./gradlew assembleDefaultRelease
 
       - name: Upload ARM64
@@ -161,6 +163,8 @@ jobs:
           restore-keys: cmake-marshmallow-
 
       - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GithubToken }}
         run: ./gradlew assembleMarshmallowRelease
 
       - name: Upload ARM64
