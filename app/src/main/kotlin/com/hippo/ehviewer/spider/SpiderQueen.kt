@@ -38,7 +38,7 @@ import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.displayString
-import com.hippo.unifile.UniFile
+import com.hippo.files.find
 import eu.kanade.tachiyomi.util.system.logcat
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.milliseconds
@@ -61,6 +61,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withTimeout
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path
 import splitties.init.appCtx
 
 class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineScope {
@@ -302,12 +303,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         mWorkerScope.launch(index, force, orgImg)
     }
 
-    fun save(index: Int, file: UniFile): Boolean {
+    fun save(index: Int, file: Path): Boolean {
         val state = getPageState(index)
         return if (STATE_FINISHED != state) {
             false
         } else {
-            mSpiderDen.saveToUniFile(index, file)
+            mSpiderDen.saveToPath(index, file)
         }
     }
 
@@ -321,8 +322,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     private fun readSpiderInfoFromLocal(): SpiderInfo? = mSpiderDen.downloadDir?.run {
-        findFile(SPIDER_INFO_FILENAME)?.let { file ->
-            readCompatFromUniFile(file)?.takeIf {
+        find(SPIDER_INFO_FILENAME)?.let { file ->
+            readCompatFromPath(file)?.takeIf {
                 it.gid == galleryInfo.gid && it.token == galleryInfo.token
             }
         }
@@ -413,7 +414,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     @Synchronized
     private fun writeSpiderInfoToLocal() {
         if (!isReady) return
-        mSpiderDen.downloadDir?.run { createFile(SPIDER_INFO_FILENAME)?.also { mSpiderInfo.write(it) } }
+        mSpiderDen.downloadDir?.run { mSpiderInfo.write(resolve(SPIDER_INFO_FILENAME)) }
         mSpiderInfo.saveToCache()
     }
 

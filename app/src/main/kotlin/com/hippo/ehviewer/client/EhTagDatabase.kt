@@ -26,8 +26,7 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.StatusCodeException
 import com.hippo.ehviewer.util.copyTo
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.sha1
+import com.hippo.ehviewer.util.sha1
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.request.prepareGet
@@ -45,6 +44,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import moe.tarsin.coroutines.runSuspendCatching
 import okio.BufferedSource
+import okio.Path.Companion.toOkioPath
 import okio.buffer
 import okio.source
 import splitties.init.appCtx
@@ -138,7 +138,7 @@ object EhTagDatabase : CoroutineScope {
         file.source().buffer().use { it.readString(StandardCharsets.UTF_8) }
     }.getOrNull()
 
-    private fun checkData(sha1: String?, data: File): Boolean = sha1 != null && sha1 == data.asUniFile().sha1()
+    private fun checkData(sha1: String?, data: File): Boolean = sha1 != null && sha1 == data.toOkioPath().sha1()
 
     private suspend fun save(client: HttpClient, url: String, file: File) {
         runCatching {

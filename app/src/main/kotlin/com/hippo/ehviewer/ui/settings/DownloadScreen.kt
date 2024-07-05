@@ -2,6 +2,7 @@ package com.hippo.ehviewer.ui.settings
 
 import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -41,15 +42,20 @@ import com.hippo.ehviewer.spider.COMIC_INFO_FILE
 import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.readComicInfo
-import com.hippo.ehviewer.spider.readCompatFromUniFile
+import com.hippo.ehviewer.spider.readCompatFromPath
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
+import com.hippo.ehviewer.util.displayPath
 import com.hippo.ehviewer.util.displayString
-import com.hippo.unifile.UniFile
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.displayPath
+import com.hippo.files.delete
+import com.hippo.files.find
+import com.hippo.files.isDirectory
+import com.hippo.files.list
+import com.hippo.files.metadataOrNull
+import com.hippo.files.toOkioPath
+import com.hippo.files.toUri
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -58,6 +64,7 @@ import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path
 import splitties.init.appCtx
 
 @Destination<RootGraph>
@@ -86,7 +93,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     launchIO {
                         runCatching {
                             contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
-                            downloadLocationState = treeUri.asUniFile()
+                            downloadLocationState = DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri)).toOkioPath()
                             launchNonCancellable {
                                 keepNoMediaFileStatus(downloadLocationState)
                             }
@@ -99,7 +106,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
             }
             Preference(
                 title = stringResource(id = R.string.settings_download_download_location),
-                summary = downloadLocationState.uri.displayPath,
+                summary = downloadLocationState.toUri().displayPath,
             ) {
                 selectDownloadDirLauncher.launch(null)
             }
@@ -159,7 +166,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 summary = stringResource(id = R.string.settings_download_reload_metadata_summary),
             ) {
                 fun DownloadInfo.isStable(): Boolean {
-                    val downloadTime = downloadDir?.findFile(COMIC_INFO_FILE)?.lastModified() ?: return false
+                    val downloadTime = downloadDir?.resolve(COMIC_INFO_FILE)?.metadataOrNull()?.lastModifiedAtMillis ?: return false
                     val postedTime = posted?.let { ParserUtils.parseDate(it) } ?: return false
                     // stable 30 days after posted
                     val stableTime = postedTime + 30L * 24L * 60L * 60L * 1000L
@@ -187,19 +194,19 @@ fun DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 summary = stringResource(id = R.string.settings_download_restore_download_items_summary),
             ) {
                 var restoreDirCount = 0
-                suspend fun getRestoreItem(file: UniFile): RestoreItem? {
+                suspend fun getRestoreItem(file: Path): RestoreItem? {
                     if (!file.isDirectory) return null
                     return runSuspendCatching {
-                        val (gid, token) = file.findFile(SPIDER_INFO_FILENAME)?.let {
-                            readCompatFromUniFile(it)?.run {
+                        val (gid, token) = file.find(SPIDER_INFO_FILENAME)?.let {
+                            readCompatFromPath(it)?.run {
                                 GalleryDetailUrlParser.Result(gid, token)
                             }
-                        } ?: file.findFile(COMIC_INFO_FILE)?.let {
+                        } ?: file.find(COMIC_INFO_FILE)?.let {
                             readComicInfo(it)?.run {
                                 GalleryDetailUrlParser.parse(web)
                             }
                         } ?: return null
-                        val dirname = file.name ?: return null
+                        val dirname = file.name
                         if (DownloadManager.containDownloadInfo(gid)) {
                             // Restore download dir to avoid redownload
                             val dbdirname = EhDB.getDownloadDirname(gid)
@@ -215,7 +222,7 @@ fun DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     }.getOrNull()
                 }
                 runSuspendCatching {
-                    val result = downloadLocation.listFiles().parMapNotNull { getRestoreItem(it) }.also {
+                    val result = downloadLocation.list().parMapNotNull { getRestoreItem(it) }.also {
                         fillGalleryListByApi(it, EhUrl.referer)
                     }
                     if (result.isEmpty()) {
@@ -239,22 +246,22 @@ fun DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 title = stringResource(id = R.string.settings_download_clean_redundancy),
                 summary = stringResource(id = R.string.settings_download_clean_redundancy_summary),
             ) {
-                fun isRedundant(file: UniFile): Boolean {
+                fun isRedundant(file: Path): Boolean {
                     if (!file.isDirectory) return false
-                    val name = file.name ?: return false
+                    val name = file.name
                     val gid = name.substringBefore('-').toLongOrNull() ?: return false
                     return name != DownloadManager.getDownloadInfo(gid)?.dirname
                 }
-                val list = downloadLocation.listFiles().filter(::isRedundant)
+                val list = downloadLocation.list().filter(::isRedundant)
                 if (list.isNotEmpty()) {
                     awaitPermissionOrCancel(
                         confirmText = R.string.delete,
                         title = R.string.settings_download_clean_redundancy,
                     ) {
-                        Text(list.joinToString(separator = "\n") { it.name!! })
+                        Text(list.joinToString(separator = "\n") { it.name })
                     }
                 }
-                val cnt = list.sumOf { it.delete().compareTo(false) }
+                val cnt = list.count { runCatching { it.delete() }.getOrNull() != null }
                 launchSnackBar(FINAL_CLEAR_REDUNDANCY_MSG(cnt))
             }
         }

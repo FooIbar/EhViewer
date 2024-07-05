@@ -44,9 +44,11 @@ import com.hippo.ehviewer.jni.rewriteGifSource
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastU
-import com.hippo.unifile.UniFile
+import com.hippo.files.openFileDescriptor
+import com.hippo.files.toUri
 import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
+import okio.Path
 import splitties.init.appCtx
 
 class Image private constructor(image: CoilImage, private val src: AutoCloseable) {
@@ -77,10 +79,10 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
     companion object {
         private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 3
 
-        private suspend fun Either<ByteBufferSource, UniFileSource>.decodeCoil(): CoilImage {
+        private suspend fun Either<ByteBufferSource, PathSource>.decodeCoil(): CoilImage {
             val req = appCtx.imageRequest {
                 onLeft { data(it.source) }
-                onRight { data(it.source.uri) }
+                onRight { data(it.source.toUri()) }
                 size(Dimension(targetWidth), Dimension.Undefined)
                 precision(Precision.INEXACT)
                 allowHardware(false)
@@ -97,7 +99,7 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
         suspend fun decode(src: ImageSource): Image? {
             return runCatching {
                 val image = when (src) {
-                    is UniFileSource -> {
+                    is PathSource -> {
                         if (isAtLeastP && !isAtLeastU) {
                             src.source.openFileDescriptor("rw").use {
                                 val fd = it.fd
@@ -137,8 +139,8 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
 
 sealed interface ImageSource : AutoCloseable
 
-interface UniFileSource : ImageSource {
-    val source: UniFile
+interface PathSource : ImageSource {
+    val source: Path
     val type: String
 }
 

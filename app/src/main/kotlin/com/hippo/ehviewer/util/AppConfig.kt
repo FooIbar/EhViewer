@@ -57,8 +57,7 @@ object AppConfig {
     val defaultDownloadDir: File?
         get() = getDirInExternalAppDir(DOWNLOAD, false)
 
-    fun getTempDir(filename: String): File? =
-        getDirInExternalAppDir(TEMP)?.run { File(this, filename).takeIf { it.ensureDirectory() } }
+    fun getTempDir(filename: String): File? = getDirInExternalAppDir(TEMP)?.run { File(this, filename) }
 
     val externalTempDir: File?
         get() = appCtx.externalCacheDir?.run { File(this, TEMP).takeIf { it.ensureDirectory() } }

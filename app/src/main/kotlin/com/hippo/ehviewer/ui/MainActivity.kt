@@ -143,8 +143,9 @@ import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.sha1
+import com.hippo.ehviewer.util.sha1
+import com.hippo.files.isDirectory
+import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
@@ -280,7 +281,7 @@ class MainActivity : EhActivity() {
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
                                 if (null != uri) {
-                                    val hash = withIOContext { uri.asUniFile().sha1() }
+                                    val hash = withIOContext { uri.toOkioPath().sha1() }
                                     navigator.navigate(
                                         ListUrlBuilder(
                                             mode = ListUrlBuilder.MODE_IMAGE_SEARCH,

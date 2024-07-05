@@ -63,7 +63,9 @@ import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.requestPermission
 import com.hippo.ehviewer.util.toEpochMillis
 import com.hippo.ehviewer.util.toLocalDateTime
-import com.hippo.unifile.UniFile
+import com.hippo.files.delete
+import com.hippo.files.isDirectory
+import com.hippo.files.openOutputStream
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -77,19 +79,20 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.todayIn
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path
 import splitties.init.appCtx
 
-private fun removeNoMediaFile(downloadDir: UniFile) {
-    downloadDir.findFile(".nomedia")?.delete()
+private fun removeNoMediaFile(downloadDir: Path) {
+    (downloadDir / ".nomedia").delete()
 }
 
-private fun ensureNoMediaFile(downloadDir: UniFile) {
-    downloadDir.createFile(".nomedia") ?: return
+private fun ensureNoMediaFile(downloadDir: Path) {
+    (downloadDir / ".nomedia").openOutputStream().close()
 }
 
 private val lck = Mutex()
 
-suspend fun keepNoMediaFileStatus(downloadDir: UniFile = downloadLocation) {
+suspend fun keepNoMediaFileStatus(downloadDir: Path = downloadLocation) {
     if (downloadDir.isDirectory) {
         lck.withLock {
             if (Settings.mediaScan) {

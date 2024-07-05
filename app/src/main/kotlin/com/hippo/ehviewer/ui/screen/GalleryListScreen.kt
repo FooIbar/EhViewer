@@ -136,8 +136,8 @@ import com.hippo.ehviewer.ui.tools.rememberMutableStateInDataStore
 import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.pickVisualMedia
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.sha1
+import com.hippo.ehviewer.util.sha1
+import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -522,7 +522,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 return@launchIO
             }
             builder.mode = MODE_IMAGE_SEARCH
-            builder.hash = imageUri!!.asUniFile().sha1()
+            builder.hash = imageUri!!.toOkioPath().sha1()
         }
         when (oldMode) {
             MODE_TOPLIST, MODE_WHATS_HOT -> {

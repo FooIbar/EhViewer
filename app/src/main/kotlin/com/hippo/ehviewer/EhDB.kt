@@ -33,9 +33,9 @@ import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.dao.Schema17to18
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.util.sendTo
-import com.hippo.unifile.UniFile
-import com.hippo.unifile.asUniFile
 import kotlinx.coroutines.flow.Flow
+import okio.Path
+import okio.Path.Companion.toOkioPath
 import splitties.arch.room.roomDb
 
 object EhDB {
@@ -273,10 +273,10 @@ object EhDB {
         db.filterDao().update(filter)
     }
 
-    fun exportDB(context: Context, file: UniFile) {
+    fun exportDB(context: Context, file: Path) {
         db.query("PRAGMA wal_checkpoint(FULL)", null).use { it.moveToNext() }
         val dbFile = context.getDatabasePath(DB_NAME)
-        dbFile.asUniFile() sendTo file
+        dbFile.toOkioPath() sendTo file
     }
 
     suspend fun importDB(context: Context, uri: Uri) {

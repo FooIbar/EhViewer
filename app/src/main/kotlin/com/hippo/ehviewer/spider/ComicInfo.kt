@@ -5,9 +5,8 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.SimpleTagsConverter
 import com.hippo.ehviewer.client.data.TagNamespace
-import com.hippo.unifile.UniFile
-import com.hippo.unifile.openInputStream
-import com.hippo.unifile.openOutputStream
+import com.hippo.files.openInputStream
+import com.hippo.files.openOutputStream
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -22,6 +21,7 @@ import nl.adaptivity.xmlutil.newWriter
 import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.xmlStreaming
+import okio.Path
 
 const val COMIC_INFO_FILE = "ComicInfo.xml"
 private const val TAG_ORIGINAL = "original"
@@ -98,7 +98,7 @@ fun ComicInfo.toSimpleTags() = listOfNotNull(
     teams,
 ).flatten().ifEmpty { null }
 
-fun ComicInfo.write(file: UniFile) {
+fun ComicInfo.write(file: Path) {
     file.openOutputStream().bufferedWriter().use {
         xmlStreaming.newWriter(it).use { writer ->
             xml.encodeToWriter(writer, ComicInfo.serializer(), this)
@@ -106,7 +106,7 @@ fun ComicInfo.write(file: UniFile) {
     }
 }
 
-fun readComicInfo(file: UniFile): ComicInfo? = runCatching {
+fun readComicInfo(file: Path): ComicInfo? = runCatching {
     file.openInputStream().bufferedReader().use {
         xmlStreaming.newReader(it).use { reader ->
             xml.decodeFromReader(ComicInfo.serializer(), reader)

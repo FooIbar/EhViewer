@@ -150,7 +150,8 @@ import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
-import com.hippo.unifile.asUniFile
+import com.hippo.files.delete
+import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -1075,7 +1076,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                         )
                                         val dirname = downloadInfo?.dirname
                                         if (uri != null && dirname != null) {
-                                            val file = uri.asUniFile()
+                                            val file = uri.toOkioPath()
                                             val msg = runCatching {
                                                 bgWork {
                                                     withIOContext {

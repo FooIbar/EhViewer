@@ -87,6 +87,7 @@ import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.awaitActivityResult
+import com.hippo.ehviewer.util.displayPath
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getValue
@@ -94,8 +95,7 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.requestPermission
 import com.hippo.ehviewer.util.setValue
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.displayPath
+import com.hippo.files.toOkioPath
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
@@ -119,6 +119,7 @@ import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path.Companion.toOkioPath
 import splitties.systemservices.clipboardManager
 
 class GalleryModel : ViewModel() {
@@ -169,7 +170,7 @@ class ReaderActivity : EhActivity() {
 
             Intent.ACTION_VIEW -> {
                 mUri?.run {
-                    ArchivePageLoader(asUniFile()) { invalidator ->
+                    ArchivePageLoader(toOkioPath()) { invalidator ->
                         runCatching {
                             dialogState.awaitInputText(
                                 title = getString(R.string.archive_need_passwd),
@@ -380,7 +381,7 @@ class ReaderActivity : EhActivity() {
     private fun provideImage(index: Int): Uri? = AppConfig.externalTempDir?.let { dir ->
         mGalleryProvider?.run {
             getImageFilename(index)?.let { filename ->
-                val file = File(dir, filename).takeIf { save(index, it.asUniFile()) } ?: return null
+                val file = File(dir, filename).takeIf { save(index, it.toOkioPath()) } ?: return null
                 FileProvider.getUriForFile(implicit<Context>(), BuildConfig.APPLICATION_ID + ".fileprovider", file)
             }
         }
@@ -449,7 +450,7 @@ class ReaderActivity : EhActivity() {
                 }
                 val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
                     ?: return@launchIO makeToast(R.string.error_cant_save_image)
-                if (!mGalleryProvider!!.save(index, imageUri.asUniFile())) {
+                if (!mGalleryProvider!!.save(index, imageUri.toOkioPath())) {
                     try {
                         resolver.delete(imageUri, null, null)
                     } catch (e: Exception) {
@@ -476,7 +477,7 @@ class ReaderActivity : EhActivity() {
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
             runSuspendCatching {
                 awaitActivityResult(CreateDocument(mimeType), filename)?.let {
-                    mGalleryProvider!!.save(index, it.asUniFile())
+                    mGalleryProvider!!.save(index, it.toOkioPath())
                     makeToast(getString(R.string.image_saved, it.displayPath))
                 }
             }.onFailure {
