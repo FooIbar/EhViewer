@@ -68,6 +68,12 @@ class SpiderDen(val info: GalleryInfo) {
     private val saveAsCbz = Settings.saveAsCbz
     private val archiveName = "$gid.cbz"
 
+    // Search in both directories to maintain compatibility
+    private val fileCache by lazy {
+        (tempDownloadDir?.list().orEmpty() + downloadDir?.list().orEmpty())
+            .associateBy { it.name } as MutableMap
+    }
+
     private val imageDir
         get() = tempDownloadDir.takeIf { saveAsCbz } ?: downloadDir
 
@@ -97,8 +103,10 @@ class SpiderDen(val info: GalleryInfo) {
         return sCache.read(key) { true } ?: false
     }
 
-    // Search in both directories to maintain compatibility
-    private fun findImageFile(index: Int): Path? = tempDownloadDir?.findImageFile(index) ?: downloadDir?.findImageFile(index)
+    private fun findImageFile(index: Int) = synchronized(fileCache) {
+        val head = perFilename(index)
+        fileCache.entries.firstOrNull { (name) -> name.startsWith(head) }?.value
+    }
 
     private fun containInDownloadDir(index: Int): Boolean = findImageFile(index) != null
 
@@ -108,7 +116,7 @@ class SpiderDen(val info: GalleryInfo) {
         return runCatching {
             sCache.read(key) {
                 val extension = metadata.toFile().readText()
-                val file = dir / perFilename(index, extension)
+                val file = dir.findDownloadFileForIndex(index, extension)
                 data sendTo file
                 true
             } ?: false
@@ -136,11 +144,21 @@ class SpiderDen(val info: GalleryInfo) {
         return sCache.remove(key)
     }
 
-    private fun removeFromDownloadDir(index: Int) = findImageFile(index)?.delete()
+    private fun removeFromDownloadDir(index: Int) = findImageFile(index)?.run {
+        delete()
+        synchronized(fileCache) {
+            fileCache.remove(name)
+        }
+    }
 
     fun remove(index: Int) = removeFromCache(index).also { removeFromDownloadDir(index) }
 
-    private fun findDownloadFileForIndex(index: Int, extension: String): Path? = imageDir?.resolve(perFilename(index, extension))
+    private fun Path.findDownloadFileForIndex(index: Int, extension: String): Path {
+        val name = perFilename(index, extension)
+        return synchronized(fileCache) {
+            fileCache.getOrPut(name) { resolve(name) }
+        }
+    }
 
     suspend fun makeHttpCallAndSaveImage(
         index: Int,
@@ -166,8 +184,8 @@ class SpiderDen(val info: GalleryInfo) {
         ext: String,
         crossinline fops: suspend (Path) -> Unit,
     ): Boolean {
-        findDownloadFileForIndex(index, ext)?.run {
-            fops(this)
+        imageDir?.run {
+            fops(findDownloadFileForIndex(index, ext))
             return true
         }
 
@@ -339,11 +357,6 @@ private val FileNameRegex = Regex("^\\d{8}\\.\\w{3,4}")
 private val FileHashRegex = Regex("/([0-9a-f]{40})(?:-\\d+){3}-\\w+")
 
 fun perFilename(index: Int, extension: String = ""): String = "%08d.%s".format(index + 1, extension)
-
-private fun Path.findImageFile(index: Int): Path? {
-    val head = perFilename(index)
-    return list().firstOrNull { it.name.startsWith(head) }
-}
 
 suspend fun GalleryInfo.downloadDirname(): String {
     var dirname = EhDB.getDownloadDirname(gid)

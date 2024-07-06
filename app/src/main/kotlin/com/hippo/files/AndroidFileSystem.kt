@@ -81,7 +81,11 @@ class AndroidFileSystem(context: Context) : FileSystem() {
 
     override fun deleteRecursively(fileOrDirectory: Path, mustExist: Boolean) {
         if (isPhysicalFile(fileOrDirectory)) {
-            physicalFileSystem.deleteRecursively(fileOrDirectory, mustExist)
+            if (metadataOrNull(fileOrDirectory)?.isDirectory == true) {
+                physicalFileSystem.deleteRecursively(fileOrDirectory, mustExist)
+            } else {
+                physicalFileSystem.delete(fileOrDirectory, mustExist)
+            }
         } else {
             delete(fileOrDirectory, mustExist)
         }
