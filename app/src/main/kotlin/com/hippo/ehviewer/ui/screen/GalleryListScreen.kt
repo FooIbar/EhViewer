@@ -96,7 +96,6 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
-import com.hippo.ehviewer.client.data.GalleryInfo.Companion.S_LANG_TAGS
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_NORMAL
@@ -265,6 +264,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
     val toplists = remember { entries zip values }
     val quickSearchName = getSuitableTitleForUrlBuilder(urlBuilder, false)
     var saveProgress by Settings.qSSaveProgress.asMutableState()
+    var languageFilter by Settings.languageFilter.asMutableState()
 
     fun getFirstVisibleItemIndex() = if (listMode == 0) {
         listState.firstVisibleItemIndex
@@ -419,10 +419,14 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                                 ListItem(
                                     modifier = Modifier.clickable {
                                         if (urlBuilder.mode == MODE_WHATS_HOT) {
-                                            val builder = ListUrlBuilder(item)
+                                            val builder = ListUrlBuilder(item).apply {
+                                                language = languageFilter
+                                            }
                                             navigator.navigate(builder.asDst())
                                         } else {
-                                            urlBuilder = ListUrlBuilder(item)
+                                            urlBuilder = ListUrlBuilder(item).apply {
+                                                language = languageFilter
+                                            }
                                             data.refresh()
                                         }
                                         showSearchLayout = false
@@ -497,7 +501,6 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         override val destination = ProgressScreenDestination(gid, pToken, page)
     }
 
-    var languageFilter by Settings.languageFilter.asMutableState()
     val selectImageFirst = stringResource(R.string.select_image_first)
     fun onApplySearch(query: String) = launchIO {
         val builder = ListUrlBuilder()
@@ -506,12 +509,9 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
             // If it's MODE_SUBSCRIPTION, keep it
             val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
             builder.mode = newMode
-            builder.keyword = if ("gid:" in query || "l:" in query || "language:" in query) {
-                query
-            } else {
-                S_LANG_TAGS.getOrNull(languageFilter)?.plus(" $query") ?: query
-            }
+            builder.keyword = query
             builder.category = category
+            builder.language = languageFilter
             builder.advanceSearch = advancedSearchOption.advanceSearch
             builder.minRating = advancedSearchOption.minRating
             builder.pageFrom = advancedSearchOption.fromPage
