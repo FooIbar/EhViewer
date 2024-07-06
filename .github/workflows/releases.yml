@@ -38,6 +38,8 @@ jobs:
 
       - name: Gradle Build
         uses: gradle/actions/setup-gradle@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GithubToken }}
         with:
           arguments: assembleRelease
 
