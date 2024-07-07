@@ -43,6 +43,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
@@ -80,6 +81,8 @@ class DownloadService :
         val scope = this
         launch {
             deferredMgr.await().setDownloadListener(null)
+            // Wait for the last notification to be posted
+            delay(DELAY)
             scope.cancel()
         }
     }
@@ -419,10 +422,6 @@ class DownloadService :
             Cancel,
             StartForeground,
         }
-
-        companion object {
-            private const val DELAY = 1000L // 1s
-        }
     }
 
     companion object {
@@ -448,6 +447,7 @@ class DownloadService :
         private const val ID_DOWNLOADING = 1
         private const val ID_DOWNLOADED = 2
         private const val ID_509 = 3
+        private const val DELAY = 1000L // 1s
         private val sItemStateArray = LongSparseArray<Boolean>()
         private val sItemTitleArray = LongSparseArray<String>()
         private var sFailedCount = 0
