@@ -3,17 +3,19 @@ use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
 use jni_fn::jni_fn;
-use serde::Serialize;
+use prost::Message;
 use tl::Parser;
 use tl::VDom;
 use {get_vdom_first_element_by_class_name, parse_marshal_inplace};
 
-#[allow(non_snake_case)]
-#[derive(Serialize)]
+#[derive(Clone, PartialEq, Message)]
 struct Limits {
+    #[prost(int32)]
     current: i32,
+    #[prost(int32)]
     maximum: i32,
-    resetCost: i32,
+    #[prost(int32)]
+    reset_cost: i32,
 }
 
 fn parse_limit(dom: &VDom, parser: &Parser) -> Option<Limits> {
@@ -26,7 +28,7 @@ fn parse_limit(dom: &VDom, parser: &Parser) -> Option<Limits> {
     Some(Limits {
         current: vec[0],
         maximum: vec[1],
-        resetCost: vec[2],
+        reset_cost: vec[2],
     })
 }
 

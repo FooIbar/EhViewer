@@ -5,17 +5,19 @@ use jni::JNIEnv;
 use jni_fn::jni_fn;
 use parse_marshal_inplace;
 use parser::list::{parse_info_list, GalleryListResult};
+use prost::Message;
 use quick_xml::escape::unescape;
-use serde::Serialize;
 use tl::Parser;
 use tl::VDom;
 
-#[derive(Serialize)]
-#[allow(non_snake_case)]
+#[derive(Clone, PartialEq, Message)]
 struct FavResult {
-    catArray: Vec<String>,
-    countArray: Vec<i32>,
-    galleryListResult: GalleryListResult,
+    #[prost(string, repeated)]
+    cat_array: Vec<String>,
+    #[prost(int32, repeated)]
+    count_array: Vec<i32>,
+    #[prost(message, required)]
+    gallery_list_result: GalleryListResult,
 }
 
 fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult> {
@@ -45,9 +47,9 @@ fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult> {
         let list = parse_info_list(dom, parser, html)?;
         let cat = vec.iter().cloned().unzip();
         Ok(FavResult {
-            catArray: cat.0,
-            countArray: cat.1,
-            galleryListResult: list,
+            cat_array: cat.0,
+            count_array: cat.1,
+            gallery_list_result: list,
         })
     } else {
         bail!("Illegal fav cat count!")

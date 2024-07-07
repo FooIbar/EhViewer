@@ -5,9 +5,9 @@ extern crate anyhow;
 extern crate jni;
 extern crate jni_fn;
 extern crate log;
+extern crate prost;
 extern crate quick_xml;
 extern crate regex_lite;
-extern crate serde;
 extern crate tl;
 
 use android_logger::Config;
@@ -16,9 +16,9 @@ use jni::objects::JByteBuffer;
 use jni::sys::{jint, jobject, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
 use log::LevelFilter;
-use serde::Serialize;
+use prost::encoding::encode_varint;
+use prost::Message;
 use std::ffi::c_void;
-use std::io::Cursor;
 use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
 use tl::ParserOptions;
@@ -104,19 +104,41 @@ where
 fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, f: F) -> i32
 where
     F: Fn(&VDom, &str) -> Result<R>,
-    R: Serialize,
+    R: Message,
 {
     jni_throwing(env, |env| {
-        let buffer = deref_mut_direct_bytebuffer(env, str)?;
+        let mut buffer = deref_mut_direct_bytebuffer(env, str)?;
         let value = {
             let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
             let dom = tl::parse(html, ParserOptions::default()).map_err(|e| anyhow!(e))?;
             ensure!(dom.version().is_some(), "{html}");
             f(&dom, html)?
         };
-        let mut cursor = Cursor::new(buffer);
-        serde_cbor::to_writer(&mut cursor, &value)?;
-        Ok(cursor.position() as i32)
+        value.encode(&mut buffer)?;
+        Ok(value.encoded_len() as i32)
+    })
+}
+
+fn parse_marshal_inplace2<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, f: F) -> i32
+where
+    F: Fn(&VDom, &str) -> Result<Vec<R>>,
+    R: Message,
+{
+    jni_throwing(env, |env| {
+        let mut buffer = deref_mut_direct_bytebuffer(env, str)?;
+        let values = {
+            let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
+            let dom = tl::parse(html, ParserOptions::default()).map_err(|e| anyhow!(e))?;
+            ensure!(dom.version().is_some(), "{html}");
+            f(&dom, html)?
+        };
+        let len = buffer.len();
+        let buf = &mut buffer;
+        encode_varint(values.len() as u64, buf);
+        for v in values {
+            v.encode_length_delimited(buf)?;
+        }
+        Ok((len - buf.len()) as i32)
     })
 }
 

@@ -4,8 +4,8 @@ use jni::sys::jint;
 use jni::JNIEnv;
 use jni_fn::jni_fn;
 use parse_marshal_inplace;
+use prost::Message;
 use quick_xml::escape::unescape;
-use serde::Serialize;
 use std::borrow::Cow;
 use std::ops::Index;
 use tl::{Node, Parser, VDom};
@@ -14,36 +14,56 @@ use {get_first_element_by_class_name, query_childs_first_match_attr};
 use {get_node_attr, get_node_handle_attr, regex};
 use {EHGT_PREFIX, EX_PREFIX};
 
-#[derive(Serialize)]
-#[allow(non_snake_case)]
+#[derive(Clone, PartialEq, Message)]
 struct BaseGalleryInfo {
+    #[prost(int64)]
     gid: i64,
+    #[prost(string)]
     token: String,
+    #[prost(string)]
     title: String,
-    titleJpn: Option<String>,
-    thumbKey: String,
+    #[prost(string, optional)]
+    title_jpn: Option<String>,
+    #[prost(string)]
+    thumb_key: String,
+    #[prost(int32)]
     category: i32,
+    #[prost(string)]
     posted: String,
+    #[prost(string, optional)]
     uploader: Option<String>,
+    #[prost(bool)]
     disowned: bool,
+    #[prost(float)]
     rating: f32,
+    #[prost(bool)]
     rated: bool,
-    simpleTags: Vec<String>,
+    #[prost(string, repeated)]
+    simple_tags: Vec<String>,
+    #[prost(int32)]
     pages: i32,
-    thumbWidth: i32,
-    thumbHeight: i32,
-    simpleLanguage: Option<String>,
-    favoriteSlot: i32,
-    favoriteName: Option<String>,
-    favoriteNote: Option<String>,
+    #[prost(int32)]
+    thumb_width: i32,
+    #[prost(int32)]
+    thumb_height: i32,
+    #[prost(string, optional)]
+    simple_language: Option<String>,
+    #[prost(int32, required)] // required as we use non-zero default value
+    favorite_slot: i32,
+    #[prost(string, optional)]
+    favorite_name: Option<String>,
+    #[prost(string, optional)]
+    favorite_note: Option<String>,
 }
 
-#[derive(Serialize)]
-#[allow(non_snake_case)]
+#[derive(Clone, PartialEq, Message)]
 pub struct GalleryListResult {
+    #[prost(string, optional)]
     prev: Option<String>,
+    #[prost(string, optional)]
     next: Option<String>,
-    galleryInfoList: Vec<BaseGalleryInfo>,
+    #[prost(message, repeated)]
+    gallery_info_list: Vec<BaseGalleryInfo>,
 }
 
 fn to_category_i32(category: &str) -> i32 {
@@ -178,22 +198,22 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
         gid,
         token,
         title: unescape(title.trim()).ok()?.to_string(),
-        titleJpn: None,
-        thumbKey: get_thumb_key(thumb),
+        title_jpn: None,
+        thumb_key: get_thumb_key(thumb),
         category: to_category_i32(&category.trim().to_lowercase()),
         posted,
         uploader,
         disowned,
         rating: parse_rating(rating),
         rated: ir_c.contains("irr") || ir_c.contains("irg") || ir_c.contains("irb"),
-        simpleTags: simple_tags,
+        simple_tags,
         pages,
-        thumbWidth: thumb_width,
-        thumbHeight: thumb_height,
-        simpleLanguage: None,
-        favoriteSlot: if favorite_name.is_some() { 0 } else { -2 },
-        favoriteName: favorite_name,
-        favoriteNote: favorite_note,
+        thumb_width,
+        thumb_height,
+        simple_language: None,
+        favorite_slot: if favorite_name.is_some() { 0 } else { -2 },
+        favorite_name,
+        favorite_note,
     })
 }
 
@@ -232,7 +252,7 @@ pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Result<Gallery
         (!info.is_empty()).then_some(GalleryListResult {
             prev,
             next,
-            galleryInfoList: info,
+            gallery_info_list: info,
         })
     };
     f().ok_or(anyhow!("No content"))

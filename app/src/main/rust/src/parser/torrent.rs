@@ -3,21 +3,30 @@ use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
 use jni_fn::jni_fn;
+use prost::Message;
 use quick_xml::escape::unescape;
-use serde::Serialize;
 use tl::{Parser, VDom};
-use {parse_marshal_inplace, regex};
+use {parse_marshal_inplace2, regex};
 
-#[derive(Serialize)]
+#[derive(Clone, PartialEq, Message)]
 struct Torrent {
+    #[prost(bool)]
     outdated: bool,
+    #[prost(string)]
     posted: String,
+    #[prost(string)]
     size: String,
+    #[prost(int32)]
     seeds: i32,
+    #[prost(int32)]
     peers: i32,
+    #[prost(int32)]
     downloads: i32,
+    #[prost(string)]
     uploader: String,
+    #[prost(string)]
     url: String,
+    #[prost(string)]
     name: String,
 }
 
@@ -49,7 +58,7 @@ fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>> {
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.client.parser.TorrentParserKt")]
 pub fn parseTorrent(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&mut env, buffer, limit, |dom, _| {
+    parse_marshal_inplace2(&mut env, buffer, limit, |dom, _| {
         parse_torrent_list(dom, dom.parser())
     })
 }

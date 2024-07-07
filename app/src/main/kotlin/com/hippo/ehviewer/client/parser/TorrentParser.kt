@@ -14,12 +14,12 @@ object TorrentParser {
 
 @Serializable
 data class Torrent(
-    val outdated: Boolean,
+    val outdated: Boolean = false,
     val posted: String,
     val size: String,
-    val seeds: Int,
-    val peers: Int,
-    val downloads: Int,
+    val seeds: Int = 0,
+    val peers: Int = 0,
+    val downloads: Int = 0,
     val uploader: String,
     val url: String,
     val name: String,

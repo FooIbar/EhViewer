@@ -39,6 +39,6 @@ data class Funds(val gp: String, val credit: String) : Parcelable
 
 @Parcelize
 @Serializable
-data class Limits(val current: Int, val maximum: Int, val resetCost: Int) : Parcelable
+data class Limits(val current: Int = 0, val maximum: Int = 0, val resetCost: Int = 0) : Parcelable
 
 private external fun parseLimit(body: ByteBuffer, limit: Int = body.limit()): Int
