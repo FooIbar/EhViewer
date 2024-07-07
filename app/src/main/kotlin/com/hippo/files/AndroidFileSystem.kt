@@ -1,6 +1,7 @@
 package com.hippo.files
 
 import android.content.Context
+import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import android.provider.DocumentsContract.Document
@@ -20,8 +21,6 @@ class AndroidFileSystem(context: Context) : FileSystem() {
     private val contentResolver = context.contentResolver
     private val physicalFileSystem = SYSTEM
 
-    private fun isPhysicalFile(file: Path): Boolean = file.toString().first() == '/'
-
     override fun appendingSink(file: Path, mustExist: Boolean): Sink {
         TODO("Not yet implemented")
     }
@@ -35,7 +34,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
     }
 
     override fun createDirectory(dir: Path, mustCreate: Boolean) {
-        if (isPhysicalFile(dir)) {
+        if (dir.isPhysicalFile()) {
             return physicalFileSystem.createDirectory(dir, mustCreate)
         }
 
@@ -58,7 +57,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
     }
 
     override fun delete(path: Path, mustExist: Boolean) {
-        if (isPhysicalFile(path)) {
+        if (path.isPhysicalFile()) {
             return physicalFileSystem.delete(path, mustExist)
         }
 
@@ -66,7 +65,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
 
         if (metadata != null) {
             var uri = path.toUri()
-            if (uri.authority == "com.wa2c.android.cifsdocumentsprovider.documents" && metadata.isDirectory) {
+            if (uri.isCifsDocument() && metadata.isDirectory) {
                 uri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getDocumentId(uri) + '/')
             }
 
@@ -80,7 +79,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
     }
 
     override fun deleteRecursively(fileOrDirectory: Path, mustExist: Boolean) {
-        if (isPhysicalFile(fileOrDirectory)) {
+        if (fileOrDirectory.isPhysicalFile()) {
             if (metadataOrNull(fileOrDirectory)?.isDirectory == true) {
                 physicalFileSystem.deleteRecursively(fileOrDirectory, mustExist)
             } else {
@@ -96,7 +95,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
     override fun listOrNull(dir: Path): List<Path>? = list(dir, throwOnFailure = false)
 
     private fun list(dir: Path, throwOnFailure: Boolean): List<Path>? {
-        if (isPhysicalFile(dir)) {
+        if (dir.isPhysicalFile()) {
             return if (throwOnFailure) {
                 physicalFileSystem.list(dir)
             } else {
@@ -106,7 +105,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
 
         val uri = dir.toUri()
         var documentId = DocumentsContract.getDocumentId(uri)
-        if (uri.authority == "com.wa2c.android.cifsdocumentsprovider.documents") {
+        if (uri.isCifsDocument()) {
             documentId += '/'
         }
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, documentId)
@@ -123,7 +122,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
     }
 
     override fun metadataOrNull(path: Path): FileMetadata? {
-        if (isPhysicalFile(path)) {
+        if (path.isPhysicalFile()) {
             return physicalFileSystem.metadataOrNull(path)
         }
 
@@ -171,7 +170,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
         if ('w' in mode && !exists(path)) {
             val parent = path.parent ?: throw IOException("Failed to open file: $path")
             createDirectories(parent)
-            if (isPhysicalFile(path)) {
+            if (path.isPhysicalFile()) {
                 physicalFileSystem.openReadWrite(path).close()
             } else {
                 val displayName = path.name
@@ -182,12 +181,16 @@ class AndroidFileSystem(context: Context) : FileSystem() {
             }
         }
 
-        return if (isPhysicalFile(path)) {
+        return if (path.isPhysicalFile()) {
             ParcelFileDescriptor.open(path.toFile(), ParcelFileDescriptor.parseMode(mode))
         } else {
             contentResolver.openFileDescriptor(path.toUri(), mode)
         } ?: throw IOException("Failed to open file: $path")
     }
 }
+
+private fun Path.isPhysicalFile() = toString().first() == '/'
+
+private fun Uri.isCifsDocument() = authority == "com.wa2c.android.cifsdocumentsprovider.documents"
 
 val SystemFileSystem = AndroidFileSystem(appCtx)
