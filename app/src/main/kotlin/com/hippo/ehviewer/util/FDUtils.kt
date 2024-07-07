@@ -4,17 +4,18 @@ import android.os.Build
 import android.system.Int64Ref
 import android.system.Os
 import androidx.annotation.RequiresApi
-import com.hippo.unifile.UniFile
-import com.hippo.unifile.openInputStream
-import com.hippo.unifile.openOutputStream
+import com.hippo.files.openFileDescriptor
+import com.hippo.files.openInputStream
+import com.hippo.files.openOutputStream
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.FileDescriptor
+import okio.Path
 
 @RequiresApi(Build.VERSION_CODES.P)
 private fun sendFileTotally(from: FileDescriptor, to: FileDescriptor): Long =
     Os.sendfile(to, from, Int64Ref(0), Long.MAX_VALUE)
 
-infix fun UniFile.sendTo(file: UniFile): Long {
+infix fun Path.sendTo(file: Path): Long {
     if (isAtLeastP) {
         // sendfile may fail on some devices
         try {

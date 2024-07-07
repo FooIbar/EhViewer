@@ -20,23 +20,24 @@ import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.awaitActivityResult
+import com.hippo.ehviewer.util.displayPath
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastT
 import com.hippo.ehviewer.util.requestPermission
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.displayPath
+import com.hippo.files.toOkioPath
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import kotlinx.datetime.Clock
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path.Companion.toOkioPath
 import splitties.systemservices.clipboardManager
 
 context(PageLoader2)
 private fun Context.provideImage(index: Int): Uri? {
     val dir = AppConfig.externalTempDir ?: return null
     val name = getImageFilename(index) ?: return null
-    val file = File(dir, name).takeIf { save(index, it.asUniFile()) } ?: return null
+    val file = File(dir, name).takeIf { save(index, it.toOkioPath()) } ?: return null
     return FileProvider.getUriForFile(this, "$APPLICATION_ID.fileprovider", file)
 }
 
@@ -114,7 +115,7 @@ suspend fun save(page: ReaderPage) {
         }
         val imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
         if (imageUri != null) {
-            if (!save(page.index, imageUri.asUniFile())) {
+            if (!save(page.index, imageUri.toOkioPath())) {
                 try {
                     contentResolver.delete(imageUri, null, null)
                 } catch (e: Exception) {
@@ -147,7 +148,7 @@ suspend fun saveTo(page: ReaderPage) {
     page.runSuspendCatching {
         val uri = awaitActivityResult(ActivityResultContracts.CreateDocument(mimeType), filename)
         if (uri != null) {
-            save(index, uri.asUniFile())
+            save(index, uri.toOkioPath())
             showSnackbar(getString(R.string.image_saved, uri.displayPath))
         }
     }.onFailure {

@@ -28,8 +28,9 @@ import com.hippo.ehviewer.jni.openArchive
 import com.hippo.ehviewer.jni.providePassword
 import com.hippo.ehviewer.jni.releaseByteBuffer
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.unifile.UniFile
-import com.hippo.unifile.displayPath
+import com.hippo.ehviewer.util.displayPath
+import com.hippo.files.openFileDescriptor
+import com.hippo.files.toUri
 import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineStart
@@ -41,21 +42,22 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import moe.tarsin.coroutines.NamedMutex
 import moe.tarsin.coroutines.withLock
+import okio.Path
 
 typealias PasswdInvalidator = (String) -> Boolean
 typealias PasswdProvider = suspend (PasswdInvalidator) -> String
 
 class ArchivePageLoader(
-    private val file: UniFile,
+    private val file: Path,
     gid: Long = 0,
     startPage: Int = 0,
     passwdProvider: PasswdProvider? = null,
 ) : PageLoader2(gid, startPage) {
     private lateinit var pfd: ParcelFileDescriptor
     private val hostJob = launch(start = CoroutineStart.LAZY) {
-        logcat(DEBUG_TAG) { "Open archive ${file.uri.displayPath}" }
+        logcat(DEBUG_TAG) { "Open archive ${file.toUri().displayPath}" }
         pfd = file.openFileDescriptor("r")
-        size = openArchive(pfd.fd, pfd.statSize, gid == 0L || file.name!!.endsWith(".zip"))
+        size = openArchive(pfd.fd, pfd.statSize, gid == 0L || file.name.endsWith(".zip"))
         if (size == 0) {
             return@launch
         }
@@ -81,7 +83,7 @@ class ArchivePageLoader(
         super.stop()
         closeArchive()
         pfd.close()
-        logcat(DEBUG_TAG) { "Close archive ${file.uri.displayPath} successfully!" }
+        logcat(DEBUG_TAG) { "Close archive ${file.toUri().displayPath} successfully!" }
     }
 
     private val mJobMap = hashMapOf<Int, Job>()
@@ -151,7 +153,7 @@ class ArchivePageLoader(
 
     override fun getImageExtension(index: Int): String = getExtension(index)
 
-    override fun save(index: Int, file: UniFile): Boolean = runCatching {
+    override fun save(index: Int, file: Path): Boolean = runCatching {
         file.openFileDescriptor("w").use {
             extractToFd(index, it.fd)
         }
