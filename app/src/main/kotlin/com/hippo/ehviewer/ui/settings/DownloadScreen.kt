@@ -96,7 +96,9 @@ fun DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
                     launchIO {
                         runCatching {
                             contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
-                            downloadLocationState = DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri)).toOkioPath()
+                            val path = DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri)).toOkioPath()
+                            check(path.isDirectory) { "$path is not a directory" }
+                            downloadLocationState = path
                             launchNonCancellable {
                                 keepNoMediaFileStatus(downloadLocationState)
                             }

@@ -14,11 +14,20 @@ val Uri.displayPath: String?
             return path
         }
 
-        if (DocumentsContract.isDocumentUri(appCtx, this)) {
+        val context = appCtx
+        if (DocumentsContract.isDocumentUri(context, this)) {
+            val (type, path) = DocumentsContract.getDocumentId(this).split(":", limit = 2)
             if (authority == "com.android.externalstorage.documents") {
-                val (type, id) = DocumentsContract.getDocumentId(this).split(":", limit = 2)
                 if (type == "primary") {
-                    return Environment.getExternalStorageDirectory().absolutePath + "/" + id
+                    return Environment.getExternalStorageDirectory().path + "/" + path
+                }
+            }
+
+            context.externalCacheDirs.forEach {
+                val cachePath = it.path
+                val index = cachePath.indexOf(type)
+                if (index != -1) {
+                    return cachePath.substring(0, index + type.length) + "/" + path
                 }
             }
         }
