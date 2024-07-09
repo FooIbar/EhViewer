@@ -127,7 +127,8 @@ class AndroidFileSystem(context: Context) : FileSystem() {
         }
 
         val uri = path.toUri()
-        val projection = if (uri.authority == MediaStore.AUTHORITY) {
+        val isMediaUri = uri.authority == MediaStore.AUTHORITY
+        val projection = if (isMediaUri) {
             arrayOf(MediaStore.MediaColumns.MIME_TYPE, MediaStore.MediaColumns.DATE_MODIFIED)
         } else {
             arrayOf(Document.COLUMN_MIME_TYPE, Document.COLUMN_LAST_MODIFIED)
@@ -138,7 +139,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
                 if (!c.moveToNext()) return null
 
                 val mimeType = c.getString(0)
-                val lastModified = c.getLongOrNull(1)
+                val lastModified = c.getLongOrNull(1)?.let { if (isMediaUri) it * 1000 else it }
                 val isDirectory = mimeType == Document.MIME_TYPE_DIR
 
                 FileMetadata(

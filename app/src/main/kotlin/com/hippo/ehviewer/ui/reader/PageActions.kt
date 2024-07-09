@@ -97,7 +97,7 @@ suspend fun save(page: ReaderPage) {
         val values = ContentValues()
         val realPath: String
         values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-        values.put(MediaStore.Images.Media.DATE_ADDED, Clock.System.now().toEpochMilliseconds())
+        values.put(MediaStore.MediaColumns.DATE_ADDED, Clock.System.now().epochSeconds)
         values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
         if (isAtLeastQ) {
             realPath = Environment.DIRECTORY_PICTURES + File.separator + AppConfig.APP_DIRNAME
