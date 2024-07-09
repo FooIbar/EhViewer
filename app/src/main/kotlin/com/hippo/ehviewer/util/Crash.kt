@@ -74,7 +74,7 @@ object Crash {
         }
         if (t is OutOfMemoryError) {
             val dumpFile = File(dir, "hprof-$nowString.hprof")
-            Debug.dumpHprofData(dumpFile.absolutePath)
+            Debug.dumpHprofData(dumpFile.path)
         }
     }
 }

@@ -190,7 +190,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
     }
 }
 
-private fun Path.isPhysicalFile() = toString().first() == '/'
+private fun Path.isPhysicalFile() = toString().startsWith('/')
 
 private fun Uri.isCifsDocument() = authority == "com.wa2c.android.cifsdocumentsprovider.documents"
 

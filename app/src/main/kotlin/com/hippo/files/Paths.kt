@@ -1,5 +1,6 @@
 package com.hippo.files
 
+import android.content.ContentResolver
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.core.net.toUri
@@ -30,10 +31,16 @@ fun Path.openInputStream(): FileInputStream =
 fun Path.openOutputStream(): FileOutputStream =
     ParcelFileDescriptor.AutoCloseOutputStream(SystemFileSystem.openFileDescriptor(this, "wt"))
 
-fun Path.toUri(): Uri = toString().replaceFirst("content:/", "content://").toUri().let {
-    val paths = it.pathSegments
-    if (paths.size > 3 && paths[0] == "tree") {
-        it.buildUpon().apply {
+fun Path.toUri(): Uri {
+    val str = toString()
+    if (str.startsWith('/')) {
+        return toFile().toUri()
+    }
+
+    val uri = str.replaceFirst("content:/", "content://").toUri()
+    val paths = uri.pathSegments
+    return if (paths.size > 3 && paths[0] == "tree") {
+        uri.buildUpon().apply {
             path(null)
             repeat(3) { i ->
                 appendPath(paths[i])
@@ -41,8 +48,12 @@ fun Path.toUri(): Uri = toString().replaceFirst("content:/", "content://").toUri
             appendPath(paths.subList(3, paths.size).joinToString("/").replaceFirst(":/", ":"))
         }.build()
     } else {
-        it
+        uri
     }
 }
 
-fun Uri.toOkioPath() = toString().toPath()
+fun Uri.toOkioPath() = if (scheme == ContentResolver.SCHEME_FILE) {
+    path!!
+} else {
+    toString()
+}.toPath()
