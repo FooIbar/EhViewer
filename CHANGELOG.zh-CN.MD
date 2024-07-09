@@ -1,5 +1,28 @@
 # 变更日志
 
+## [1.11.6] - 2024-06-24
+
+### 改进
+
+* 某些设备上无法加载长图时可尝试减小 设置-高级 中的硬件位图阈值 [#1321](https://github.com/FooIbar/EhViewer/issues/1321)
+* 清理下载冗余时显示确认对话框 [#1369](https://github.com/FooIbar/EhViewer/issues/1369)
+* 修改收藏时显示收藏备注 [#1392](https://github.com/FooIbar/EhViewer/issues/1392)
+
+### Bug 修复
+
+* 图片完整性校验误报 [#1286](https://github.com/FooIbar/EhViewer/issues/1286)
+* 某些情况下应用崩溃 [#1290](https://github.com/FooIbar/EhViewer/issues/1290) [#1302](https://github.com/FooIbar/EhViewer/issues/1302)
+* 某些情况下渲染问题 [#1284](https://github.com/FooIbar/EhViewer/issues/1284)
+* 无法下载标题过长的画廊 [#1340](https://github.com/FooIbar/EhViewer/issues/1340)
+* 某些界面拖动滚动条时黑屏 [#1329](https://github.com/FooIbar/EhViewer/issues/1329)
+* 搜索栏多行文本遮挡其他内容 [#1365](https://github.com/FooIbar/EhViewer/issues/1365)
+* CIFS Documents Provider 兼容问题 [#1356](https://github.com/FooIbar/EhViewer/issues/1356)
+* 清理下载冗余未按预期运行 [#1369](https://github.com/FooIbar/EhViewer/issues/1369)
+* 读取压缩包失败时崩溃
+* 某些设备上崩溃 [#1276](https://github.com/FooIbar/EhViewer/issues/1276)
+* 检查更新失效
+
+
 ## [1.11.6-RC2] - 2024-06-06
 
 ### 改进
