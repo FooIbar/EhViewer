@@ -532,6 +532,7 @@ class DialogState {
         items: List<Pair<ImageVector, String>>,
         @StringRes title: Int,
         @StringRes hint: Int,
+        initialNote: String,
         maxChar: Int,
     ): Pair<Int, String> = showNoButton(false) {
         Column {
@@ -540,7 +541,7 @@ class DialogState {
                 modifier = Modifier.fillMaxWidth().aspectRatio(1F),
                 placeFirstItemInCenter = true,
             ) {
-                var note by remember { mutableStateOf("") }
+                var note by remember { mutableStateOf(initialNote) }
                 TextField(
                     value = note,
                     onValueChange = { note = it },

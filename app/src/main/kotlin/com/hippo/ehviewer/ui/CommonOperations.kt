@@ -57,6 +57,7 @@ import com.hippo.ehviewer.ui.destinations.ReaderScreenDestination
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.util.FavouriteStatusRouter
+import com.hippo.ehviewer.util.bgWork
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastT
 import com.hippo.ehviewer.util.mapToLongArray
@@ -207,10 +208,14 @@ suspend fun DialogState.modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
                 add(localFav)
                 addAll(cloudFav)
             }
+            if (galleryInfo.favoriteSlot >= 0 && galleryInfo.favoriteNote == null) {
+                galleryInfo.favoriteNote = bgWork { EhEngine.getFavoriteNote(galleryInfo.gid, galleryInfo.token) }
+            }
             val (slot, note) = awaitSelectItemWithIconAndTextField(
                 items,
                 title = R.string.add_favorites_dialog_title,
                 hint = R.string.favorite_note,
+                initialNote = galleryInfo.favoriteNote.orEmpty(),
                 maxChar = MAX_FAVNOTE_CHAR,
             )
             return doModifyFavorites(galleryInfo, if (isFavorited) slot - 2 else slot - 1, localFavorited, note)
@@ -249,6 +254,7 @@ private suspend fun doModifyFavorites(
 
         in 0..9 -> {
             EhEngine.modifyFavorites(galleryInfo.gid, galleryInfo.token, slot, note)
+            galleryInfo.favoriteNote = note
             true
         }
 
