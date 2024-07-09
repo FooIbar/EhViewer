@@ -1,15 +1,5 @@
 mod parser;
 
-extern crate android_logger;
-extern crate anyhow;
-extern crate jni;
-extern crate jni_fn;
-extern crate log;
-extern crate quick_xml;
-extern crate regex_lite;
-extern crate serde;
-extern crate tl;
-
 use android_logger::Config;
 use anyhow::{anyhow, ensure, Result};
 use jni::objects::JByteBuffer;

@@ -1,3 +1,4 @@
+use crate::{get_vdom_first_element_by_class_name, parse_marshal_inplace};
 use anyhow::anyhow;
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
@@ -6,7 +7,6 @@ use jni_fn::jni_fn;
 use serde::Serialize;
 use tl::Parser;
 use tl::VDom;
-use {get_vdom_first_element_by_class_name, parse_marshal_inplace};
 
 #[allow(non_snake_case)]
 #[derive(Serialize)]
