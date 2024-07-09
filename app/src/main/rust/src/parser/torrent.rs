@@ -1,3 +1,4 @@
+use crate::{parse_marshal_inplace, regex};
 use anyhow::{anyhow, Result};
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
@@ -6,7 +7,6 @@ use jni_fn::jni_fn;
 use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::{Parser, VDom};
-use {parse_marshal_inplace, regex};
 
 #[derive(Serialize)]
 struct Torrent {
