@@ -540,16 +540,16 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
         private fun doLaunchDownloadJob(index: Int, force: Boolean, orgImg: Boolean = false) {
             val state = mPageStateArray[index]
-            if (!force) {
-                if (state == STATE_FINISHED) return
-                if (index in mSpiderDen) return updatePageState(index, STATE_FINISHED)
-            }
+            if (!force && state == STATE_FINISHED) return
             val currentJob = mFetcherJobMap[index]
             val skipHath = force && !orgImg && currentJob?.isActive == true
             if (force) currentJob?.cancel(CancellationException(FORCE_RETRY))
             if (currentJob?.isActive != true) {
                 mFetcherJobMap[index] = launch {
                     runCatching {
+                        if (!force && index in mSpiderDen) {
+                            return@runCatching updatePageState(index, STATE_FINISHED)
+                        }
                         delayLock.withLock {
                             delay(mDownloadDelay - lastRequestTime.elapsedNow())
                             lastRequestTime = TimeSource.Monotonic.markNow()
