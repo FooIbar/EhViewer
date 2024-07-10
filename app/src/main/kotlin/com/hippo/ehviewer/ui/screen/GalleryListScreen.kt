@@ -546,8 +546,8 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
             fabHidden = it
         },
         title = suitableTitle,
-        searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
+        searchFieldState = searchFieldState,
         suggestionProvider = {
             GalleryDetailUrlParser.parse(it, false)?.run {
                 GalleryDetailUrlSuggestion(gid, token)
