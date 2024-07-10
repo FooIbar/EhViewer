@@ -37,7 +37,7 @@ fun Path.toUri(): Uri {
         return toFile().toUri()
     }
 
-    val uri = str.replaceFirst("content:/", "content://").toUri()
+    val uri = str.replaceFirst("content:/", "content://").replace("#", "%23").toUri()
     val paths = uri.pathSegments
     return if (paths.size > 3 && paths[0] == "tree") {
         uri.buildUpon().apply {
