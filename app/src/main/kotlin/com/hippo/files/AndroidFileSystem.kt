@@ -103,14 +103,14 @@ class AndroidFileSystem(context: Context) : FileSystem() {
             }
         }
 
-        val uri = dir.toUri()
-        var documentId = DocumentsContract.getDocumentId(uri)
-        if (uri.isCifsDocument()) {
-            documentId += '/'
-        }
-        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, documentId)
-
         return runCatching {
+            val uri = dir.toUri()
+            var documentId = DocumentsContract.getDocumentId(uri)
+            if (uri.isCifsDocument()) {
+                documentId += '/'
+            }
+            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(uri, documentId)
+
             contentResolver.query(childrenUri, arrayOf(Document.COLUMN_DISPLAY_NAME), null, null, null)?.use { c ->
                 List(c.count) {
                     c.moveToNext()
@@ -126,15 +126,15 @@ class AndroidFileSystem(context: Context) : FileSystem() {
             return physicalFileSystem.metadataOrNull(path)
         }
 
-        val uri = path.toUri()
-        val isMediaUri = uri.authority == MediaStore.AUTHORITY
-        val projection = if (isMediaUri) {
-            arrayOf(MediaStore.MediaColumns.MIME_TYPE, MediaStore.MediaColumns.DATE_MODIFIED)
-        } else {
-            arrayOf(Document.COLUMN_MIME_TYPE, Document.COLUMN_LAST_MODIFIED)
-        }
-
         return runCatching {
+            val uri = path.toUri()
+            val isMediaUri = uri.authority == MediaStore.AUTHORITY
+            val projection = if (isMediaUri) {
+                arrayOf(MediaStore.MediaColumns.MIME_TYPE, MediaStore.MediaColumns.DATE_MODIFIED)
+            } else {
+                arrayOf(Document.COLUMN_MIME_TYPE, Document.COLUMN_LAST_MODIFIED)
+            }
+
             contentResolver.query(uri, projection, null, null, null)?.use { c ->
                 if (!c.moveToNext()) return null
 
