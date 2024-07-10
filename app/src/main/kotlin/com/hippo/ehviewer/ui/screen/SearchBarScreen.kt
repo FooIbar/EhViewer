@@ -100,9 +100,9 @@ fun SearchBarScreen(
     onApplySearch: (String) -> Unit,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    title: String? = null,
+    title: String?,
+    searchFieldHint: String,
     searchFieldState: TextFieldState = rememberTextFieldState(),
-    searchFieldHint: String? = null,
     suggestionProvider: SuggestionProvider? = null,
     tagNamespace: Boolean = false,
     searchBarOffsetY: () -> Int = { 0 },
@@ -226,14 +226,10 @@ fun SearchBarScreen(
                     expanded = expanded,
                     onExpandedChange = onExpandedChange,
                     modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2),
-                    label = title.ifNotNullThen {
-                        Text(title!!, overflow = TextOverflow.Ellipsis, maxLines = 1)
-                    }.takeUnless {
+                    placeholder = {
                         val contentActive by activeState.state
-                        expanded || contentActive || searchFieldState.text.isNotEmpty()
-                    },
-                    placeholder = searchFieldHint.ifNotNullThen {
-                        Text(searchFieldHint!!, overflow = TextOverflow.Ellipsis, maxLines = 1)
+                        val text = title.takeUnless { expanded || contentActive } ?: searchFieldHint
+                        Text(text, overflow = TextOverflow.Ellipsis, maxLines = 1)
                     },
                     leadingIcon = {
                         if (expanded) {
