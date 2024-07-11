@@ -487,7 +487,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz
     if (!ADDR_IN_FILE_MAPPING(addr)) mempool_release_pages(addr, size);
 }
 
-JNIEXPORT jboolean JNICALL
+JNIEXPORT void JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, jintArray fd_batch, jobjectArray names, jint arc_fd, jint size) {
     EH_UNUSED(clazz);
     struct archive *arc = archive_write_new();
@@ -509,15 +509,15 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, 
         archive_entry_copy_stat(entry, &st);
         archive_entry_set_perm(entry, 0644);
         archive_write_header(arc, entry);
-        int len = read(fd, buff, sizeof(buff));
-        while (len > 0) {
-            archive_write_data(arc, buff, len);
+        int len;
+        do {
             len = read(fd, buff, sizeof(buff));
-        }
+            archive_write_data(arc, buff, len);
+        } while (len > 0);
         archive_write_finish_entry(arc);
         archive_entry_clear(entry);
     }
+    archive_entry_free(entry);
     archive_write_close(arc);
     archive_write_free(arc);
-    return true;
 }
