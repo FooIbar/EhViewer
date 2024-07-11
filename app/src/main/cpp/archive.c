@@ -62,7 +62,7 @@ static int page_size = 0;
 #define MEMPOOL_SIZE (mempoolofs[entryCount - 1])
 
 #define PROT_RW (PROT_WRITE | PROT_READ)
-#define MAP_ANON_POOL (MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE | MAP_UNINITIALIZED)
+#define MAP_ANON_POOL (MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE)
 
 static bool need_encrypt = false;
 static char *passwd = NULL;
