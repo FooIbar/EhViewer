@@ -10,4 +10,4 @@ external fun getExtension(index: Int): String
 external fun needPassword(): Boolean
 external fun providePassword(str: String): Boolean
 external fun closeArchive()
-external fun archiveFdBatch(fdBatch: IntArray, names: Array<String>, arcFd: Int, size: Int): Boolean
+external fun archiveFdBatch(fdBatch: IntArray, names: Array<String>, arcFd: Int, size: Int)
