@@ -15,6 +15,7 @@ import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.InternalAPI
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
+import io.ktor.utils.io.writeFully
 import io.ktor.utils.io.writer
 import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
