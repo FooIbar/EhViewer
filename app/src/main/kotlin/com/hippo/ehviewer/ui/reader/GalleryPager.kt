@@ -18,15 +18,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.PageLoader2
+import com.hippo.ehviewer.ui.main.plus
 import eu.kanade.tachiyomi.data.preference.PreferenceValues.TappingInvertMode
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -132,6 +136,15 @@ fun GalleryPager(
             LaunchedEffect(navigator, invertMode) {
                 navigator.invertMode = invertMode
             }
+            val density = LocalDensity.current
+            val paddingPercent by Settings.webtoonSidePadding.collectAsState()
+            val sidePadding by remember(density) {
+                snapshotFlow {
+                    with(density) {
+                        (lazyListState.layoutInfo.viewportSize.width * paddingPercent / 100f).toDp()
+                    }
+                }
+            }.collectAsState(0.dp)
             LazyColumn(
                 modifier = modifier.zoomable(
                     state = zoomableState,
@@ -163,7 +176,7 @@ fun GalleryPager(
                     onDoubleClick = DoubleTapZoom,
                 ),
                 state = lazyListState,
-                contentPadding = contentPadding,
+                contentPadding = contentPadding + PaddingValues(horizontal = sidePadding),
                 verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
             ) {
                 items(items, key = { it.index }) { page ->
@@ -298,16 +311,12 @@ suspend fun LazyListState.performScrollBy(value: Float) {
 }
 
 object DoubleTapZoom : DoubleClickToZoomListener {
+    private val listener = DoubleClickToZoomListener.cycle(maxZoomFactor = 2f)
+
     override suspend fun onDoubleClick(state: ZoomableState, centroid: Offset) {
-        val zoomFraction = state.zoomFraction ?: return // Content isn't ready yet.
-        state.zoomTo(
-            zoomFactor = if (zoomFraction < 0.05f) {
-                2f
-            } else {
-                state.contentTransformation.scaleMetadata.initialScale.run { maxOf(scaleX, scaleY) }
-            },
-            centroid = centroid,
-        )
+        if (Settings.doubleTapToZoom.value) {
+            listener.onDoubleClick(state, centroid)
+        }
     }
 }
 
