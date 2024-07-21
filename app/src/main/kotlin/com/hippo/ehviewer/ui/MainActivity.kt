@@ -147,7 +147,7 @@ import com.hippo.ehviewer.util.sha1
 import com.hippo.files.isDirectory
 import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
+import com.ramcosta.composedestinations.spec.Direction
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -162,7 +162,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
-private val navItems = arrayOf<Triple<DirectionDestinationSpec, Int, ImageVector>>(
+private val navItems = arrayOf<Triple<Direction, Int, ImageVector>>(
     Triple(HomePageScreenDestination, R.string.homepage, Icons.Default.Home),
     Triple(SubscriptionScreenDestination, R.string.subscription, EhIcons.Default.Subscriptions),
     Triple(WhatshotScreenDestination, R.string.whats_hot, Icons.Default.Whatshot),
@@ -452,7 +452,7 @@ class MainActivity : EhActivity() {
                         ) {
                             DestinationsNavHost(
                                 navGraph = NavGraphs.root,
-                                startRoute = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
+                                start = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
                                 defaultTransitions = rememberEhNavAnim(),
                                 navController = navController,
                             )
