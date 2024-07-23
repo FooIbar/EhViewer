@@ -5,6 +5,12 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.ui.AbsoluteAlignment
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.FixedScale
 import com.hippo.ehviewer.Settings
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import kotlinx.coroutines.flow.onCompletion
@@ -50,4 +56,21 @@ fun Activity.setCustomBrightnessValue(value: Int) {
     }
 
     window.attributes = window.attributes.apply { screenBrightness = readerBrightness }
+}
+
+fun Alignment.Companion.fromPreferences(value: Int, isVertical: Boolean) = when (value) {
+    1 -> if (isVertical) CenterHorizontally else Start
+    2 -> AbsoluteAlignment.Left
+    3 -> AbsoluteAlignment.Right
+    else -> CenterHorizontally
+}
+
+@Stable
+fun ContentScale.Companion.fromPreferences(value: Int, srcSize: Size, dstSize: Size) = when (value) {
+    2 -> Crop
+    3 -> FillWidth
+    4 -> FillHeight
+    5 -> FixedScale(1 / Inside.computeScaleFactor(srcSize, dstSize).scaleX)
+    6 -> if (srcSize.width > srcSize.height) FillHeight else FillWidth
+    else -> Fit
 }

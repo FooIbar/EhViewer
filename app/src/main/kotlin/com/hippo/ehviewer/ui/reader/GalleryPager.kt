@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,8 +26,13 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.layout.times
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.PageLoader2
@@ -47,6 +53,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import me.saket.telephoto.zoomable.DoubleClickToZoomListener
 import me.saket.telephoto.zoomable.ZoomSpec
+import me.saket.telephoto.zoomable.ZoomableContentLocation
 import me.saket.telephoto.zoomable.ZoomableState
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
@@ -65,9 +72,14 @@ fun GalleryPager(
     val scope = rememberCoroutineScope()
     val items = pageLoader.pages
     when (type) {
-        DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT -> {
+        DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT, VERTICAL -> {
+            val isVertical = type == VERTICAL
+            val scaleType by Settings.imageScaleType.collectAsState()
+            val alignment by Settings.zoomStart.collectAsState {
+                Alignment.fromPreferences(it, isVertical)
+            }
             val navigatorState = Settings.readerPagerNav.collectAsState {
-                ViewerNavigation.fromPreference(it, false)
+                ViewerNavigation.fromPreference(it, isVertical)
             }
             val invertMode by Settings.readerPagerNavInverted.collectAsState {
                 TappingInvertMode.entries[it]
@@ -75,54 +87,57 @@ fun GalleryPager(
             LaunchedEffect(navigatorState.value, invertMode) {
                 navigatorState.value.invertMode = invertMode
             }
-            val isRtl = type == RIGHT_TO_LEFT
-            HorizontalPager(
-                state = pagerState,
-                modifier = modifier,
-                contentPadding = contentPadding,
-                reverseLayout = isRtl,
-                key = { it },
-            ) { index ->
-                val page = items[index]
-                PageContainer(
-                    page = page,
-                    pageLoader = pageLoader,
-                    isRtl = isRtl,
-                    navigatorState = navigatorState,
-                    pagerState = pagerState,
-                    onSelectPage = onSelectPage,
-                    onMenuRegionClick = onMenuRegionClick,
-                    scope = scope,
-                )
+            val layoutSize by remember(pagerState) {
+                derivedStateOf {
+                    pagerState.layoutInfo.viewportSize.toSize()
+                }
             }
-        }
-        VERTICAL -> {
-            val navigatorState = Settings.readerPagerNav.collectAsState {
-                ViewerNavigation.fromPreference(it, true)
-            }
-            val invertMode by Settings.readerPagerNavInverted.collectAsState {
-                TappingInvertMode.entries[it]
-            }
-            LaunchedEffect(navigatorState.value, invertMode) {
-                navigatorState.value.invertMode = invertMode
-            }
-            VerticalPager(
-                state = pagerState,
-                modifier = modifier,
-                contentPadding = contentPadding,
-                key = { it },
-            ) { index ->
-                val page = items[index]
-                PageContainer(
-                    page = page,
-                    pageLoader = pageLoader,
-                    isRtl = false,
-                    navigatorState = navigatorState,
-                    pagerState = pagerState,
-                    onSelectPage = onSelectPage,
-                    onMenuRegionClick = onMenuRegionClick,
-                    scope = scope,
-                )
+            if (isVertical) {
+                VerticalPager(
+                    state = pagerState,
+                    modifier = modifier,
+                    contentPadding = contentPadding,
+                    key = { it },
+                ) { index ->
+                    val page = items[index]
+                    PageContainer(
+                        page = page,
+                        pageLoader = pageLoader,
+                        isRtl = false,
+                        scaleType = scaleType,
+                        alignment = alignment,
+                        layoutSize = layoutSize,
+                        navigatorState = navigatorState,
+                        pagerState = pagerState,
+                        onSelectPage = onSelectPage,
+                        onMenuRegionClick = onMenuRegionClick,
+                        scope = scope,
+                    )
+                }
+            } else {
+                val isRtl = type == RIGHT_TO_LEFT
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = modifier,
+                    contentPadding = contentPadding,
+                    reverseLayout = isRtl,
+                    key = { it },
+                ) { index ->
+                    val page = items[index]
+                    PageContainer(
+                        page = page,
+                        pageLoader = pageLoader,
+                        isRtl = isRtl,
+                        scaleType = scaleType,
+                        alignment = alignment,
+                        layoutSize = layoutSize,
+                        navigatorState = navigatorState,
+                        pagerState = pagerState,
+                        onSelectPage = onSelectPage,
+                        onMenuRegionClick = onMenuRegionClick,
+                        scope = scope,
+                    )
+                }
             }
         }
         WEBTOON, CONTINUOUS_VERTICAL -> {
@@ -183,8 +198,7 @@ fun GalleryPager(
                     PagerItem(
                         page = page,
                         pageLoader = pageLoader,
-                        zoomableState = zoomableState,
-                        webtoon = true,
+                        contentScale = ContentScale.FillWidth,
                     )
                 }
             }
@@ -197,6 +211,9 @@ private fun PageContainer(
     page: ReaderPage,
     pageLoader: PageLoader2,
     isRtl: Boolean,
+    scaleType: Int,
+    alignment: Alignment.Horizontal,
+    layoutSize: Size,
     navigatorState: State<ViewerNavigation>,
     pagerState: PagerState,
     onSelectPage: (ReaderPage) -> Unit,
@@ -207,59 +224,81 @@ private fun PageContainer(
     val isRtl by rememberUpdatedState(isRtl)
     val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
     val status by page.status.collectAsState()
-    Box(
-        modifier = Modifier.zoomable(
-            state = zoomableState,
-            enabled = status == Page.State.READY,
-            onClick = {
-                scope.launch {
-                    with(pagerState) {
-                        with(zoomableState) {
-                            val size = layoutInfo.viewportSize
-                            val pos = PointF(it.x / size.width, it.y / size.height)
-                            val distance = size.width.toFloat()
-                            when (navigatorState.value.getAction(pos)) {
-                                NavigationRegion.MENU -> onMenuRegionClick()
-                                NavigationRegion.NEXT -> {
-                                    val canPan = if (isRtl) panRight(distance) else panLeft(distance)
-                                    if (!canPan) {
-                                        moveToNext()
+    if (status == Page.State.READY) {
+        val size = page.image!!.rect.size.toSize()
+        val contentScale = ContentScale.fromPreferences(scaleType, size, layoutSize)
+        zoomableState.contentScale = contentScale
+        LaunchedEffect(size, contentScale, alignment) {
+            val contentSize = if (contentScale is FixedScale) { // Original
+                size
+            } else {
+                size * contentScale.computeScaleFactor(size, layoutSize)
+            }
+            val horizontalAlignment = if (contentSize.width > layoutSize.width) {
+                alignment
+            } else {
+                Alignment.CenterHorizontally
+            }
+            val verticalAlignment = if (contentSize.height > layoutSize.height) {
+                Alignment.Top
+            } else {
+                Alignment.CenterVertically
+            }
+            zoomableState.contentAlignment = horizontalAlignment + verticalAlignment
+        }
+        LaunchedEffect(size) {
+            val contentLocation = ZoomableContentLocation.scaledInsideAndCenterAligned(size)
+            zoomableState.setContentLocation(contentLocation)
+        }
+    }
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        PagerItem(
+            page = page,
+            pageLoader = pageLoader,
+            contentScale = ContentScale.Inside,
+            modifier = Modifier.zoomable(
+                state = zoomableState,
+                onClick = {
+                    scope.launch {
+                        with(pagerState) {
+                            with(zoomableState) {
+                                val pos = PointF(it.x / layoutSize.width, it.y / layoutSize.height)
+                                val distance = layoutSize.width
+                                when (navigatorState.value.getAction(pos)) {
+                                    NavigationRegion.MENU -> onMenuRegionClick()
+                                    NavigationRegion.NEXT -> {
+                                        val canPan = if (isRtl) panRight(distance) else panLeft(distance)
+                                        if (!canPan) {
+                                            moveToNext()
+                                        }
                                     }
-                                }
 
-                                NavigationRegion.PREV -> {
-                                    val canPan = if (isRtl) panLeft(distance) else panRight(distance)
-                                    if (!canPan) {
-                                        moveToPrevious()
+                                    NavigationRegion.PREV -> {
+                                        val canPan = if (isRtl) panLeft(distance) else panRight(distance)
+                                        if (!canPan) {
+                                            moveToPrevious()
+                                        }
                                     }
-                                }
 
-                                NavigationRegion.RIGHT -> {
-                                    if (!panLeft(distance)) {
-                                        if (isRtl) moveToPrevious() else moveToNext()
+                                    NavigationRegion.RIGHT -> {
+                                        if (!panLeft(distance)) {
+                                            if (isRtl) moveToPrevious() else moveToNext()
+                                        }
                                     }
-                                }
 
-                                NavigationRegion.LEFT -> {
-                                    if (!panRight(distance)) {
-                                        if (isRtl) moveToNext() else moveToPrevious()
+                                    NavigationRegion.LEFT -> {
+                                        if (!panRight(distance)) {
+                                            if (isRtl) moveToNext() else moveToPrevious()
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-            },
-            onLongClick = { onSelectPage(page) },
-            onDoubleClick = DoubleTapZoom,
-        ).fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        PagerItem(
-            page = page,
-            pageLoader = pageLoader,
-            zoomableState = zoomableState,
-            webtoon = false,
+                },
+                onLongClick = { onSelectPage(page) },
+                onDoubleClick = DoubleTapZoom,
+            ),
         )
     }
 }
