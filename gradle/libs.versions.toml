@@ -18,7 +18,7 @@ androidx-room = "2.7.0-alpha05"
 androidx-viewpager2 = "1.1.0"
 androidx-work = "2.10.0-alpha02"
 arrow = "1.2.4"
-coil = "3.0.0-alpha08"
+coil = "3.0.0-alpha09"
 compose-bom = "2024.07.00-alpha01"
 compose-destinations = "2.1.0-beta10"
 kotlin = "2.0.0"
@@ -71,7 +71,7 @@ arrow-stack = { module = "io.arrow-kt:arrow-stack", version.ref = "arrow" }
 coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif" }
-coil-network = { module = "io.coil-kt.coil3:coil-network-ktor" }
+coil-network = { module = "io.coil-kt.coil3:coil-network-ktor2" }
 
 compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "compose-bom" }
 compose-foundation = { module = "androidx.compose.foundation:foundation", version = "1.8.0-SNAPSHOT" }
