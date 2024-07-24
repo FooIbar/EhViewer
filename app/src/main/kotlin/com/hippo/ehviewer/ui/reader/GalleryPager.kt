@@ -31,6 +31,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.layout.times
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import com.hippo.ehviewer.Settings
@@ -50,6 +52,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.WEBTOON
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.saket.telephoto.zoomable.DoubleClickToZoomListener
 import me.saket.telephoto.zoomable.ZoomSpec
@@ -75,10 +78,11 @@ fun GalleryPager(
         DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT, VERTICAL -> {
             val isVertical = type == VERTICAL
             val scaleType by Settings.imageScaleType.collectAsState()
-            val alignment by Settings.zoomStart.collectAsState {
-                Alignment.fromPreferences(it, isVertical)
+            val landscapeZoom by Settings.landscapeZoom.collectAsState()
+            val alignment by Settings.zoomStart.collectAsState(type) {
+                Alignment.fromPreferences(it, type)
             }
-            val navigatorState = Settings.readerPagerNav.collectAsState {
+            val navigatorState = Settings.readerPagerNav.collectAsState(isVertical) {
                 ViewerNavigation.fromPreference(it, isVertical)
             }
             val invertMode by Settings.readerPagerNavInverted.collectAsState {
@@ -105,6 +109,7 @@ fun GalleryPager(
                         pageLoader = pageLoader,
                         isRtl = false,
                         scaleType = scaleType,
+                        landscapeZoom = landscapeZoom,
                         alignment = alignment,
                         layoutSize = layoutSize,
                         navigatorState = navigatorState,
@@ -116,11 +121,12 @@ fun GalleryPager(
                 }
             } else {
                 val isRtl = type == RIGHT_TO_LEFT
+                val isRtlLayout = LocalLayoutDirection.current == LayoutDirection.Rtl
                 HorizontalPager(
                     state = pagerState,
                     modifier = modifier,
                     contentPadding = contentPadding,
-                    reverseLayout = isRtl,
+                    reverseLayout = isRtl xor isRtlLayout,
                     key = { it },
                 ) { index ->
                     val page = items[index]
@@ -129,6 +135,7 @@ fun GalleryPager(
                         pageLoader = pageLoader,
                         isRtl = isRtl,
                         scaleType = scaleType,
+                        landscapeZoom = landscapeZoom,
                         alignment = alignment,
                         layoutSize = layoutSize,
                         navigatorState = navigatorState,
@@ -212,6 +219,7 @@ private fun PageContainer(
     pageLoader: PageLoader2,
     isRtl: Boolean,
     scaleType: Int,
+    landscapeZoom: Boolean,
     alignment: Alignment.Horizontal,
     layoutSize: Size,
     navigatorState: State<ViewerNavigation>,
@@ -222,7 +230,7 @@ private fun PageContainer(
 ) {
     @Suppress("NAME_SHADOWING")
     val isRtl by rememberUpdatedState(isRtl)
-    val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
+    val zoomableState = rememberZoomableState(zoomSpec = pagerZoomSpec)
     val status by page.status.collectAsState()
     if (status == Page.State.READY) {
         val size = page.image!!.rect.size.toSize()
@@ -249,6 +257,18 @@ private fun PageContainer(
         LaunchedEffect(size) {
             val contentLocation = ZoomableContentLocation.scaledInsideAndCenterAligned(size)
             zoomableState.setContentLocation(contentLocation)
+        }
+        if (landscapeZoom && contentScale == ContentScale.Fit && size.width > size.height) {
+            LaunchedEffect(alignment) {
+                delay(500)
+                if (zoomableState.zoomFraction == 0f) {
+                    val contentSize = zoomableState.transformedContentBounds.size
+                    val scale = ContentScale.FillHeight.computeScaleFactor(contentSize, layoutSize)
+                    val targetScale = scale.scaleX.coerceAtMost(zoomableState.zoomSpec.maxZoomFactor)
+                    val offset = alignment.align(0, layoutSize.width.toInt(), LayoutDirection.Ltr)
+                    zoomableState.zoomTo(targetScale, Offset(offset.toFloat(), 0f))
+                }
+            }
         }
     }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -350,13 +370,21 @@ suspend fun LazyListState.performScrollBy(value: Float) {
 }
 
 object DoubleTapZoom : DoubleClickToZoomListener {
-    private val listener = DoubleClickToZoomListener.cycle(maxZoomFactor = 2f)
-
     override suspend fun onDoubleClick(state: ZoomableState, centroid: Offset) {
         if (Settings.doubleTapToZoom.value) {
-            listener.onDoubleClick(state, centroid)
+            val zoomFraction = state.zoomFraction ?: return // Content isn't ready yet
+            if (zoomFraction > 0.05f) {
+                state.resetZoom()
+            } else {
+                // Workaround for https://github.com/saket/telephoto/issues/45
+                state.zoomTo(
+                    zoomFactor = state.contentTransformation.scaleMetadata.initialScale.scaleX * 2f,
+                    centroid = centroid,
+                )
+            }
         }
     }
 }
 
+private val pagerZoomSpec = ZoomSpec(maxZoomFactor = 5f)
 private val zoomSpec = ZoomSpec(maxZoomFactor = 3f)
