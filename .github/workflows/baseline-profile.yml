@@ -2,7 +2,7 @@ name: Baseline profile generation
 
 on:
   schedule:
-    - cron: '30 0 * * 0'
+    - cron: '30 0 1 * *'
   workflow_dispatch:
   push:
     branches:

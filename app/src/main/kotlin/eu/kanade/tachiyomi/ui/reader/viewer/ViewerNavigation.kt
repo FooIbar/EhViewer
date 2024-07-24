@@ -5,6 +5,11 @@ import android.graphics.RectF
 import androidx.annotation.StringRes
 import com.hippo.ehviewer.R
 import eu.kanade.tachiyomi.data.preference.PreferenceValues
+import eu.kanade.tachiyomi.ui.reader.viewer.navigation.DisabledNavigation
+import eu.kanade.tachiyomi.ui.reader.viewer.navigation.EdgeNavigation
+import eu.kanade.tachiyomi.ui.reader.viewer.navigation.KindlishNavigation
+import eu.kanade.tachiyomi.ui.reader.viewer.navigation.LNavigation
+import eu.kanade.tachiyomi.ui.reader.viewer.navigation.RightAndLeftNavigation
 import eu.kanade.tachiyomi.util.lang.invert
 
 abstract class ViewerNavigation {
@@ -45,6 +50,17 @@ abstract class ViewerNavigation {
             region != null -> region.type
             constantMenuRegion.contains(x, y) -> NavigationRegion.MENU
             else -> NavigationRegion.MENU
+        }
+    }
+
+    companion object {
+        fun fromPreference(value: Int, isVertical: Boolean) = when (value) {
+            1 -> LNavigation()
+            2 -> KindlishNavigation()
+            3 -> EdgeNavigation()
+            4 -> RightAndLeftNavigation()
+            5 -> DisabledNavigation()
+            else -> if (isVertical) LNavigation() else RightAndLeftNavigation()
         }
     }
 }

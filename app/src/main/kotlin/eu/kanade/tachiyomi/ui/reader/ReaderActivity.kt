@@ -32,7 +32,6 @@ import android.provider.MediaStore
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View.LAYER_TYPE_HARDWARE
-import android.view.WindowManager
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
@@ -81,6 +80,9 @@ import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.ui.EhActivity
 import com.hippo.ehviewer.ui.reader.SettingsPager
+import com.hippo.ehviewer.ui.reader.setCustomBrightnessValue
+import com.hippo.ehviewer.ui.reader.setOrientation
+import com.hippo.ehviewer.ui.reader.updateKeepScreenOn
 import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.DialogState
@@ -98,7 +100,6 @@ import com.hippo.ehviewer.util.setValue
 import com.hippo.files.toOkioPath
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
-import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
@@ -646,16 +647,6 @@ class ReaderActivity : EhActivity() {
     }
 
     /**
-     * Forces the user preferred [orientation] on the activity.
-     */
-    private fun setOrientation(orientation: Int) {
-        val newOrientation = OrientationType.fromPreference(orientation)
-        if (newOrientation.flag != requestedOrientation) {
-            requestedOrientation = newOrientation.flag
-        }
-    }
-
-    /**
      * Updates viewer insets depending on fullscreen reader preferences.
      */
     fun updateViewerInsets(drawInCutout: Boolean) {
@@ -733,7 +724,7 @@ class ReaderActivity : EhActivity() {
                 .launchIn(lifecycleScope)
 
             ReaderPreferences.keepScreenOn().changes()
-                .onEach { setKeepScreenOn(it) }
+                .onEach { window.updateKeepScreenOn(it) }
                 .launchIn(lifecycleScope)
 
             ReaderPreferences.customBrightness().changes()
@@ -770,17 +761,6 @@ class ReaderActivity : EhActivity() {
         }
 
         /**
-         * Sets the keep screen on mode according to [enabled].
-         */
-        private fun setKeepScreenOn(enabled: Boolean) {
-            if (enabled) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            } else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            }
-        }
-
-        /**
          * Sets the custom brightness overlay according to [enabled].
          */
         @OptIn(FlowPreview::class)
@@ -793,29 +773,6 @@ class ReaderActivity : EhActivity() {
             } else {
                 setCustomBrightnessValue(0)
             }
-        }
-
-        /**
-         * Sets the brightness of the screen. Range is [-75, 100].
-         * From -75 to -1 a semi-transparent black view is overlaid with the minimum brightness.
-         * From 1 to 100 it sets that value as brightness.
-         * 0 sets system brightness and hides the overlay.
-         */
-        private fun setCustomBrightnessValue(value: Int) {
-            // Calculate and set reader brightness.
-            val readerBrightness = when {
-                value > 0 -> {
-                    value / 100f
-                }
-
-                value < 0 -> {
-                    0.01f
-                }
-
-                else -> WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
-            }
-
-            window.attributes = window.attributes.apply { screenBrightness = readerBrightness }
         }
 
         private fun setLayerPaint(grayscale: Boolean, invertedColors: Boolean) {

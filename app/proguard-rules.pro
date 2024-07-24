@@ -11,11 +11,6 @@
     public static final ** CREATOR;
 }
 
-# https://issuetracker.google.com/347963245
--keep class * extends androidx.room.RoomDatabase {
-    <init>();
-}
-
 # Ktor logger
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 
