@@ -13,6 +13,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
 import com.hippo.ehviewer.Settings
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.RIGHT_TO_LEFT
+import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.VERTICAL
 import kotlinx.coroutines.flow.onCompletion
 
 fun Window.updateKeepScreenOn(enabled: Boolean) {
@@ -58,8 +61,12 @@ fun Activity.setCustomBrightnessValue(value: Int) {
     window.attributes = window.attributes.apply { screenBrightness = readerBrightness }
 }
 
-fun Alignment.Companion.fromPreferences(value: Int, isVertical: Boolean) = when (value) {
-    1 -> if (isVertical) CenterHorizontally else Start
+fun Alignment.Companion.fromPreferences(value: Int, mode: ReadingModeType) = when (value) {
+    1 -> when (mode) {
+        VERTICAL -> CenterHorizontally
+        RIGHT_TO_LEFT -> AbsoluteAlignment.Right
+        else -> AbsoluteAlignment.Left
+    }
     2 -> AbsoluteAlignment.Left
     3 -> AbsoluteAlignment.Right
     else -> CenterHorizontally

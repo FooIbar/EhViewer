@@ -72,6 +72,14 @@ inline fun <R, T> PrefDelegate<T>.collectAsState(crossinline transform: @Disallo
 
 @Stable
 @Composable
+inline fun <R, T> PrefDelegate<T>.collectAsState(key1: Any?, crossinline transform: @DisallowComposableCalls (T) -> R): State<R> {
+    val flow = remember(key1) { valueFlow().map { transform(it) } }
+    val init = getValue()
+    return flow.collectAsState(transform(init))
+}
+
+@Stable
+@Composable
 fun <T> PrefDelegate<T>.collectAsState(): State<T> {
     val flow = remember { valueFlow() }
     val init = getValue()
