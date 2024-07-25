@@ -64,13 +64,15 @@ fun NavigationOverlay(
                 fontSize = fontSize,
                 drawStyle = Stroke(8f),
             )
+            val scaleX = maxWidth
+            val scaleY = maxHeight
             regions.forEach { region ->
                 val rect = region.rectF
                 val color = colorResource(region.type.colorRes)
                 val text = stringResource(region.type.nameRes)
                 Box(
-                    modifier = Modifier.size(maxWidth * rect.width(), minHeight * rect.height())
-                        .offset(maxWidth * rect.left, minHeight * rect.top).background(color),
+                    modifier = Modifier.size(scaleX * rect.width(), scaleY * rect.height())
+                        .offset(scaleX * rect.left, scaleY * rect.top).background(color),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(text, style = strokeStyle)
