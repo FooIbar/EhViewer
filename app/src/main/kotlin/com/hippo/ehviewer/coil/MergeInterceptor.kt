@@ -41,7 +41,7 @@ object MergeInterceptor : Interceptor {
 
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
         val req = chain.request
-        val key = req.memoryCacheKey?.takeIf { it.startsWith("m/") || Settings.preloadThumbAggressively } ?: return withContext(req.interceptorDispatcher) { chain.proceed() }
+        val key = req.memoryCacheKey?.takeIf { it.startsWith("m/") || Settings.preloadThumbAggressively } ?: return withContext(req.interceptorCoroutineContext) { chain.proceed() }
 
         suspendCancellableCoroutine { continuation ->
             synchronized(pendingContinuationMapLock) {
@@ -62,7 +62,7 @@ object MergeInterceptor : Interceptor {
         }
 
         try {
-            return withContext(req.interceptorDispatcher) { chain.proceed() }.apply {
+            return withContext(req.interceptorCoroutineContext) { chain.proceed() }.apply {
                 // Wake all pending continuations shared with the same memory key since we have written it to memory cache
                 notifyScope.launch {
                     synchronized(pendingContinuationMapLock) {

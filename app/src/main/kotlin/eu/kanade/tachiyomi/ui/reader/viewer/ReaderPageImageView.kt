@@ -14,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.annotation.AttrRes
-import androidx.annotation.CallSuper
 import androidx.annotation.StyleRes
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.compose.ui.graphics.toAndroidRect
@@ -25,12 +24,12 @@ import coil3.DrawableImage
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView.Companion.EASE_OUT_QUAD
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView.Companion.SCALE_TYPE_CENTER_INSIDE
-import com.github.chrisbanes.photoview.PhotoView
 import com.hippo.ehviewer.image.Image
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonSubsamplingImageView
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.view.isVisibleOnScreen
+import io.getstream.photoview.PhotoView
 
 /**
  * A wrapper view for showing page image.
@@ -40,7 +39,7 @@ import eu.kanade.tachiyomi.util.view.isVisibleOnScreen
  * @param isWebtoon if true, [WebtoonSubsamplingImageView] will be used instead of [SubsamplingScaleImageView]
  * and [AppCompatImageView] will be used instead of [PhotoView]
  */
-open class ReaderPageImageView @JvmOverloads constructor(
+class ReaderPageImageView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     @AttrRes defStyleAttrs: Int = 0,
@@ -60,18 +59,16 @@ open class ReaderPageImageView @JvmOverloads constructor(
      */
     var pageBackground: Drawable? = null
 
-    @CallSuper
-    open fun onImageLoaded() {
+    private fun onImageLoaded() {
         onImageLoaded?.invoke()
         background = pageBackground
     }
 
-    @CallSuper
-    open fun onScaleChanged(newScale: Float) {
+    fun onScaleChanged(newScale: Float) {
         onScaleChanged?.invoke(newScale)
     }
 
-    open fun onPageSelected(forward: Boolean) {
+    fun onPageSelected(forward: Boolean) {
         with(pageView as? SubsamplingScaleImageView) {
             if (this == null) return
             if (isReady) {
@@ -126,16 +123,6 @@ open class ReaderPageImageView @JvmOverloads constructor(
     }
 
     /**
-     * Check if the image can be panned to the left
-     */
-    fun canPanLeft(): Boolean = canPan { it.left }
-
-    /**
-     * Check if the image can be panned to the right
-     */
-    fun canPanRight(): Boolean = canPan { it.right }
-
-    /**
      * Check whether the image can be panned.
      * @param fn a function that returns the direction to check for
      */
@@ -152,15 +139,23 @@ open class ReaderPageImageView @JvmOverloads constructor(
     /**
      * Pans the image to the left by a screen's width worth.
      */
-    fun panLeft() {
-        pan { center, view -> center.also { it.x -= view.width / view.scale } }
+    fun panLeft(): Boolean {
+        val canPan = canPan { it.left }
+        if (canPan) {
+            pan { center, view -> center.also { it.x -= view.width / view.scale } }
+        }
+        return canPan
     }
 
     /**
      * Pans the image to the right by a screen's width worth.
      */
-    fun panRight() {
-        pan { center, view -> center.also { it.x += view.width / view.scale } }
+    fun panRight(): Boolean {
+        val canPan = canPan { it.right }
+        if (canPan) {
+            pan { center, view -> center.also { it.x += view.width / view.scale } }
+        }
+        return canPan
     }
 
     /**
@@ -286,9 +281,7 @@ open class ReaderPageImageView @JvmOverloads constructor(
         this@ReaderPageImageView.onImageLoaded()
     }
 
-    private fun Int.getSystemScaledDuration(): Int {
-        return (this * context.animatorDurationScale).toInt().coerceAtLeast(1)
-    }
+    private fun Int.getSystemScaledDuration(): Int = (this * context.animatorDurationScale).toInt().coerceAtLeast(1)
 
     /**
      * All of the config except [zoomDuration] will only be used for non-animated image.

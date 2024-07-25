@@ -24,7 +24,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -34,13 +33,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import arrow.resilience.Schedule
+import arrow.resilience.retry
 import com.hippo.ehviewer.ui.tools.PredictiveBackEasing
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.snackBarPadding
+import kotlin.time.Duration.Companion.microseconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 
@@ -66,34 +67,31 @@ class FabLayoutState(
     val expandProgress = Animatable(if (initialValue == FabLayoutValue.Expand) 1f else 0f)
         .apply { updateBounds(0f, 1f) }
 
-    private suspend fun downTo(value: FabLayoutValue, priority: MutatePriority) {
-        mutatorMutex.mutate(priority) {
-            if (expandProgress.value != 0f) expandProgress.animateTo(0f, animationSpec)
-            if (value == FabLayoutValue.Hidden) {
-                appearProgress.animateTo(0f, animationSpec)
-            }
-        }
-    }
-
-    private suspend fun upTo(value: FabLayoutValue, priority: MutatePriority) {
-        mutatorMutex.mutate(priority) {
-            if (appearProgress.value != 1f) appearProgress.animateTo(1f, animationSpec)
-            if (value == FabLayoutValue.Expand) {
-                expandProgress.animateTo(1f, animationSpec)
-            }
-        }
-    }
-
-    suspend fun waitCollapse() {
+    private suspend fun downTo(value: FabLayoutValue, priority: MutatePriority) = mutatorMutex.mutate(priority) {
         if (expandProgress.value != 0f) {
-            snapshotFlow { expandProgress.value }.first { it == 0f }
+            expandProgress.animateTo(0f, animationSpec)
+        }
+        if (value == FabLayoutValue.Hidden) {
+            appearProgress.animateTo(0f, animationSpec)
         }
     }
+
+    private suspend fun upTo(value: FabLayoutValue, priority: MutatePriority) = mutatorMutex.mutate(priority) {
+        if (appearProgress.value != 1f) {
+            appearProgress.animateTo(1f, animationSpec)
+        }
+        if (value == FabLayoutValue.Expand) {
+            expandProgress.animateTo(1f, animationSpec)
+        }
+    }
+
     suspend fun show(priority: MutatePriority = MutatePriority.Default) = upTo(FabLayoutValue.Primary, priority)
     suspend fun hide(priority: MutatePriority = MutatePriority.Default) = downTo(FabLayoutValue.Hidden, priority)
     suspend fun collapse(priority: MutatePriority = MutatePriority.Default) = downTo(FabLayoutValue.Primary, priority)
     suspend fun expand(priority: MutatePriority = MutatePriority.Default) = upTo(FabLayoutValue.Expand, priority)
 }
+
+private val fabSyncSchedule = Schedule.linear<Throwable>(100.microseconds)
 
 fun interface FabBuilder {
     fun onClick(icon: ImageVector, autoClose: Boolean, that: suspend () -> Unit)
@@ -118,12 +116,14 @@ fun FabLayout(
     }
     val state = rememberFabLayoutState(newState)
     LaunchedEffect(newState) {
-        when (newState) {
-            FabLayoutValue.Expand -> state.expand()
-            FabLayoutValue.Hidden -> state.hide()
-            FabLayoutValue.Primary -> {
-                state.collapse()
-                state.show()
+        fabSyncSchedule.retry {
+            when (newState) {
+                FabLayoutValue.Expand -> state.expand()
+                FabLayoutValue.Hidden -> state.hide()
+                FabLayoutValue.Primary -> {
+                    state.collapse()
+                    state.show()
+                }
             }
         }
     }
@@ -131,7 +131,7 @@ fun FabLayout(
 
     val secondaryFab by delegateSnapshotUpdate {
         record { buildFab(builder) }
-        transform { onEachLatest { state.waitCollapse() } }
+        transform { onEachLatest { state.collapse(MutatePriority.PreventUserInput) } }
     }
 
     val density = LocalDensity.current

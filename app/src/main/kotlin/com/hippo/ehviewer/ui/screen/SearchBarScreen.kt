@@ -100,9 +100,9 @@ fun SearchBarScreen(
     onApplySearch: (String) -> Unit,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
-    title: String? = null,
+    title: String?,
+    searchFieldHint: String,
     searchFieldState: TextFieldState = rememberTextFieldState(),
-    searchFieldHint: String? = null,
     suggestionProvider: SuggestionProvider? = null,
     tagNamespace: Boolean = false,
     searchBarOffsetY: () -> Int = { 0 },
@@ -226,13 +226,11 @@ fun SearchBarScreen(
                     expanded = expanded,
                     onExpandedChange = onExpandedChange,
                     modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2),
-                    label = title.ifNotNullThen {
-                        Text(title!!, overflow = TextOverflow.Ellipsis)
-                    }.takeUnless {
+                    placeholder = {
                         val contentActive by activeState.state
-                        expanded || contentActive || searchFieldState.text.isNotEmpty()
+                        val text = title.takeUnless { expanded || contentActive } ?: searchFieldHint
+                        Text(text, overflow = TextOverflow.Ellipsis, maxLines = 1)
                     },
-                    placeholder = searchFieldHint.ifNotNullThen { Text(searchFieldHint!!) },
                     leadingIcon = {
                         if (expanded) {
                             IconButton(onClick = { hideSearchView() }) {
@@ -298,22 +296,20 @@ fun SearchBarScreen(
     }
 }
 
-fun wrapTagKeyword(keyword: String, translate: Boolean = false): String {
-    return if (keyword.endsWith(':')) {
-        keyword
+fun wrapTagKeyword(keyword: String, translate: Boolean = false): String = if (keyword.endsWith(':')) {
+    keyword
+} else {
+    val tag = keyword.substringAfter(':')
+    val prefix = keyword.dropLast(tag.length + 1)
+    if (translate) {
+        val namespacePrefix = TagNamespace(prefix).toPrefix()
+        val newPrefix = EhTagDatabase.getTranslation(tag = prefix) ?: prefix
+        val newTag = EhTagDatabase.getTranslation(namespacePrefix, tag) ?: tag
+        "$newPrefix：$newTag"
+    } else if (keyword.contains(' ')) {
+        "$prefix:\"$tag$\""
     } else {
-        val tag = keyword.substringAfter(':')
-        val prefix = keyword.dropLast(tag.length + 1)
-        if (translate) {
-            val namespacePrefix = TagNamespace(prefix).toPrefix()
-            val newPrefix = EhTagDatabase.getTranslation(tag = prefix) ?: prefix
-            val newTag = EhTagDatabase.getTranslation(namespacePrefix, tag) ?: tag
-            "$newPrefix：$newTag"
-        } else if (keyword.contains(' ')) {
-            "$prefix:\"$tag$\""
-        } else {
-            "$keyword$"
-        }
+        "$keyword$"
     }
 }
 

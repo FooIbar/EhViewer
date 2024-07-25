@@ -1,0 +1,25 @@
+From aee8f7147ddb262fd9e5feee8d5b17094cf3470f Mon Sep 17 00:00:00 2001
+From: FooIbar <118464521+FooIbar@users.noreply.github.com>
+Date: Tue, 26 Sep 2023 00:09:25 +0800
+Subject: [PATCH] Insert link libs
+
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ec97e4c7..420f204c 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -438,7 +438,7 @@ IF(DEFINED __GNUWIN32PATH AND EXISTS "${__GNUWIN32PATH}")
+   # #  endif
+ ENDIF(DEFINED __GNUWIN32PATH AND EXISTS "${__GNUWIN32PATH}")
+ 
+-SET(ADDITIONAL_LIBS "")
++SET(ADDITIONAL_LIBS ${LIBARCHIVE_CUSTOM_LIBS})
+ #
+ # Find ZLIB
+ #
+-- 
+2.34.1
+

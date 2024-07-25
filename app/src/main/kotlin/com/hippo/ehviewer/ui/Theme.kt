@@ -5,8 +5,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -27,7 +25,6 @@ inline fun ComposeView.setMD3Content(crossinline content: @Composable () -> Unit
         dialogState.Intercept()
         CompositionLocalProvider(
             LocalDialogState provides dialogState,
-            LocalContentColor provides MaterialTheme.colorScheme.onBackground,
         ) {
             content()
         }
@@ -41,7 +38,6 @@ inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -
             dialogState.Intercept()
             CompositionLocalProvider(
                 LocalDialogState provides dialogState,
-                LocalContentColor provides MaterialTheme.colorScheme.onBackground,
             ) {
                 content()
             }

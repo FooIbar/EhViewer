@@ -52,7 +52,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -80,7 +79,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -158,7 +156,6 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
     fun String.translateArtist() = ehTags?.getTranslation(TagNamespace.Artist.toPrefix(), this) ?: this
-    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
     val unknownName = stringResource(R.string.unknown_artists)
@@ -177,8 +174,6 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         },
     )
     val hint = stringResource(R.string.search_bar_hint, title)
-    val sortModes = stringArrayResource(id = R.array.download_sort_modes)
-    val downloadStates = stringArrayResource(id = R.array.download_state)
     val list = remember(filterState, invalidateKey) {
         downloadInfoList.filterTo(mutableStateListOf()) { info ->
             filterState.take(info)
@@ -232,10 +227,9 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                             launch {
                                 val text = awaitInputText(title = newLabel, hint = labelsStr) { text ->
                                     when {
-                                        text.isBlank() -> labelEmpty
-                                        text == defaultName -> defaultInvalid
-                                        DownloadManager.containLabel(text) -> labelExists
-                                        else -> null
+                                        text.isBlank() -> raise(labelEmpty)
+                                        text == defaultName -> raise(defaultInvalid)
+                                        DownloadManager.containLabel(text) -> raise(labelExists)
                                     }
                                 }
                                 DownloadManager.addLabel(text)
@@ -342,7 +336,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 val index by rememberUpdatedState(itemIndex)
                 val item by rememberUpdatedState(label)
                 // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
-                val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
+                val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
                 LaunchedEffect(dismissState) {
                     snapshotFlow { dismissState.currentValue }.collect {
                         if (it == SwipeToDismissBoxValue.EndToStart) {
@@ -362,7 +356,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         }
                     }
                 }
-                ReorderableItem(reorderableLabelState, enabled = editEnable, key = id) { isDragging ->
+                ReorderableItem(reorderableLabelState, id, enabled = editEnable, animated = animateItems) { isDragging ->
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {},
@@ -395,10 +389,9 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                             launch {
                                                 val new = awaitInputText(initial = item, title = renameLabel, hint = labelsStr) { text ->
                                                     when {
-                                                        text.isBlank() -> labelEmpty
-                                                        text == defaultName -> defaultInvalid
-                                                        DownloadManager.containLabel(text) -> labelExists
-                                                        else -> null
+                                                        text.isBlank() -> raise(labelEmpty)
+                                                        text == defaultName -> raise(defaultInvalid)
+                                                        DownloadManager.containLabel(text) -> raise(labelExists)
                                                     }
                                                 }
                                                 DownloadManager.renameLabel(item, new)
@@ -549,9 +542,9 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     FastScrollLazyVerticalStaggeredGrid(
                         columns = StaggeredGridCells.Fixed(thumbColumns),
                         modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                        contentPadding = realPadding,
                         verticalItemSpacing = gridInterval,
                         horizontalArrangement = Arrangement.spacedBy(gridInterval),
-                        contentPadding = realPadding,
                     ) {
                         items(list, key = { it.gid }) { info ->
                             GalleryInfoGridItem(
@@ -659,8 +652,9 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
                 val oldMode = SortMode.from(sortMode)
+                val sortModes = resources.getStringArray(R.array.download_sort_modes).toList()
                 val (selected, checked) = awaitSelectItemWithCheckBox(
-                    sortModes.toList(),
+                    sortModes,
                     R.string.sort_by,
                     R.string.group_by_download_label,
                     SortMode.All.indexOfFirst { it.field == oldMode.field && it.order == oldMode.order },
@@ -672,8 +666,9 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 invalidateKey = !invalidateKey
             }
             onClick(Icons.Default.FilterList) {
+                val downloadStates = resources.getStringArray(R.array.download_state).toList()
                 val state = awaitSingleChoice(
-                    downloadStates.toList(),
+                    downloadStates,
                     filterState.state + 1,
                     R.string.download_filter,
                 ) - 1

@@ -134,14 +134,10 @@ interface GalleryInfo {
     }
 }
 
-fun GalleryInfo.findBaseInfo(): BaseGalleryInfo {
-    return when (this) {
-        is BaseGalleryInfo -> this
-        is GalleryDetail -> galleryInfo
-        else -> unreachable()
-    }
+fun GalleryInfo.findBaseInfo(): BaseGalleryInfo = when (this) {
+    is BaseGalleryInfo -> this
+    is GalleryDetail -> galleryInfo
+    else -> unreachable()
 }
 
-fun GalleryInfo.asGalleryDetail(): GalleryDetail? {
-    return this as? GalleryDetail
-}
+fun GalleryInfo.asGalleryDetail(): GalleryDetail? = this as? GalleryDetail

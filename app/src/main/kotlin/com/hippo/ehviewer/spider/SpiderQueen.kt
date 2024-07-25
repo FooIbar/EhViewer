@@ -38,7 +38,7 @@ import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.displayString
-import com.hippo.unifile.UniFile
+import com.hippo.files.find
 import eu.kanade.tachiyomi.util.system.logcat
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.milliseconds
@@ -61,6 +61,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withTimeout
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path
 import splitties.init.appCtx
 
 class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineScope {
@@ -302,12 +303,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         mWorkerScope.launch(index, force, orgImg)
     }
 
-    fun save(index: Int, file: UniFile): Boolean {
+    fun save(index: Int, file: Path): Boolean {
         val state = getPageState(index)
         return if (STATE_FINISHED != state) {
             false
         } else {
-            mSpiderDen.saveToUniFile(index, file)
+            mSpiderDen.saveToPath(index, file)
         }
     }
 
@@ -320,16 +321,14 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    private fun readSpiderInfoFromLocal(): SpiderInfo? {
-        return mSpiderDen.downloadDir?.run {
-            findFile(SPIDER_INFO_FILENAME)?.let { file ->
-                readCompatFromUniFile(file)?.takeIf {
-                    it.gid == galleryInfo.gid && it.token == galleryInfo.token
-                }
+    private fun readSpiderInfoFromLocal(): SpiderInfo? = mSpiderDen.downloadDir?.run {
+        find(SPIDER_INFO_FILENAME)?.let { file ->
+            readCompatFromPath(file)?.takeIf {
+                it.gid == galleryInfo.gid && it.token == galleryInfo.token
             }
         }
-            ?: readFromCache(galleryInfo.gid)?.takeIf { it.gid == galleryInfo.gid && it.token == galleryInfo.token }
     }
+        ?: readFromCache(galleryInfo.gid)?.takeIf { it.gid == galleryInfo.gid && it.token == galleryInfo.token }
 
     private fun readPreviews(body: String, index: Int, spiderInfo: SpiderInfo) {
         spiderInfo.previewPages = parsePreviewPages(body)
@@ -349,21 +348,19 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    private suspend fun readSpiderInfoFromInternet(): SpiderInfo? {
-        return runSuspendCatching {
-            ehRequest(
-                getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
-                referer,
-            ).fetchUsingAsText {
-                val pages = parsePages(this)
-                val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, pages)
-                readPreviews(this, 0, spiderInfo)
-                spiderInfo
-            }
-        }.onFailure {
-            logcat(it)
-        }.getOrNull()
-    }
+    private suspend fun readSpiderInfoFromInternet(): SpiderInfo? = runSuspendCatching {
+        ehRequest(
+            getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
+            referer,
+        ).fetchUsingAsText {
+            val pages = parsePages(this)
+            val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, pages)
+            readPreviews(this, 0, spiderInfo)
+            spiderInfo
+        }
+    }.onFailure {
+        logcat(it)
+    }.getOrNull()
 
     suspend fun getPTokenFromMultiPageViewer(index: Int): String? {
         val spiderInfo = mSpiderInfo
@@ -417,13 +414,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     @Synchronized
     private fun writeSpiderInfoToLocal() {
         if (!isReady) return
-        mSpiderDen.downloadDir?.run { createFile(SPIDER_INFO_FILENAME)?.also { mSpiderInfo.write(it) } }
+        mSpiderDen.downloadDir?.run { mSpiderInfo.write(resolve(SPIDER_INFO_FILENAME)) }
         mSpiderInfo.saveToCache()
     }
 
-    private fun isStateDone(state: Int): Boolean {
-        return state == STATE_FINISHED || state == STATE_FAILED
-    }
+    private fun isStateDone(state: Int): Boolean = state == STATE_FINISHED || state == STATE_FAILED
 
     fun updatePageState(index: Int, @State state: Int, error: String? = null) {
         var oldState: Int
@@ -545,16 +540,16 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
         private fun doLaunchDownloadJob(index: Int, force: Boolean, orgImg: Boolean = false) {
             val state = mPageStateArray[index]
-            if (!force) {
-                if (state == STATE_FINISHED) return
-                if (index in mSpiderDen) return updatePageState(index, STATE_FINISHED)
-            }
+            if (!force && state == STATE_FINISHED) return
             val currentJob = mFetcherJobMap[index]
             val skipHath = force && !orgImg && currentJob?.isActive == true
             if (force) currentJob?.cancel(CancellationException(FORCE_RETRY))
             if (currentJob?.isActive != true) {
                 mFetcherJobMap[index] = launch {
                     runCatching {
+                        if (!force && index in mSpiderDen) {
+                            return@runCatching updatePageState(index, STATE_FINISHED)
+                        }
                         delayLock.withLock {
                             delay(mDownloadDelay - lastRequestTime.elapsedNow())
                             lastRequestTime = TimeSource.Monotonic.markNow()

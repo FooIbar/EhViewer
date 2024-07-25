@@ -6,43 +6,57 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams
-import androidx.core.view.children
+import androidx.core.view.get
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
-import androidx.viewpager.widget.ViewPager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.hippo.ehviewer.R
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
+import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageAdapter
+import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageHolder
+import eu.kanade.tachiyomi.ui.reader.viewer.ReaderPageImageView
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 
 /**
- * Implementation of a [BaseViewer] to display pages with a [ViewPager].
+ * Implementation of a [BaseViewer] to display pages with a [ViewPager2].
  */
-@Suppress("LeakingThis")
-abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
+class PagerViewer(
+    override val activity: ReaderActivity,
+    override val isRtl: Boolean = false,
+    val isVertical: Boolean = false,
+) : BaseViewer {
 
     private val scope = MainScope()
 
     /**
-     * View pager used by this viewer. It's abstract to implement L2R, R2L and vertical pagers on
-     * top of this class.
+     * View pager used by this viewer.
      */
-    val pager = createPager()
+    private val pager = ViewPager2(activity).apply {
+        if (isRtl) {
+            layoutDirection = ViewPager2.LAYOUT_DIRECTION_RTL
+        } else if (isVertical) {
+            orientation = ViewPager2.ORIENTATION_VERTICAL
+        }
+    }
+
+    private val frame = PagerFrame(activity)
 
     /**
      * Configuration used by the pager, like allow taps, scale mode on images, page transitions...
      */
-    val config = PagerConfig(this, scope)
+    private val config = PagerConfig(this, scope)
 
     /**
      * Adapter of the pager.
      */
-    private val adapter = PagerViewerAdapter(this)
+    private val adapter = ReaderPageAdapter(this)
 
     /**
      * Currently active item. It can be a chapter page or a chapter transition.
@@ -80,8 +94,8 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         pager.offscreenPageLimit = 1
         pager.id = R.id.reader_pager
         pager.adapter = adapter
-        pager.addOnPageChangeListener(
-            object : ViewPager.SimpleOnPageChangeListener() {
+        pager.registerOnPageChangeCallback(
+            object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
                     if (activity.isScrollingThroughPages.not()) {
                         activity.hideMenu()
@@ -91,11 +105,11 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                 }
 
                 override fun onPageScrollStateChanged(state: Int) {
-                    isIdle = state == ViewPager.SCROLL_STATE_IDLE
+                    isIdle = state == ViewPager2.SCROLL_STATE_IDLE
                 }
             },
         )
-        pager.tapListener = { event ->
+        frame.tapListener = { event ->
             val windowOffset = IntArray(2)
             activity.window.decorView.getLocationOnScreen(windowOffset)
             val pos = PointF(
@@ -112,7 +126,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
                 NavigationRegion.LEFT -> moveLeft()
             }
         }
-        pager.longTapListener = f@{
+        frame.longTapListener = f@{
             if (activity.menuVisible || config.longTapEnabled) {
                 val item = adapter.items.getOrNull(pager.currentItem)
                 if (item is ReaderPage) {
@@ -131,32 +145,34 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
             val showOnStart = config.navigationOverlayOnStart || config.forceNavigationOverlay
             activity.binding.navigationOverlay.setNavigation(config.navigator, showOnStart)
         }
+
+        frame.layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        frame.addView(pager)
     }
 
+    override val readerConfig
+        get() = ReaderPageImageView.Config(
+            zoomDuration = config.doubleTapAnimDuration,
+            minimumScaleType = config.imageScaleType,
+            cropBorders = config.imageCropBorders,
+            zoomStartPosition = config.imageZoomType,
+            landscapeZoom = config.landscapeZoom,
+        )
+
     override fun destroy() {
-        super.destroy()
         scope.cancel()
     }
 
     /**
-     * Creates a new ViewPager.
-     */
-    abstract fun createPager(): Pager
-
-    /**
      * Returns the view this viewer uses.
      */
-    override fun getView(): View {
-        return pager
-    }
+    override fun getView(): View = frame
 
     /**
-     * Returns the PagerPageHolder for the provided page
+     * Returns the [ReaderPageHolder] for the provided page
      */
-    private fun getPageHolder(page: ReaderPage): PagerPageHolder? =
-        pager.children
-            .filterIsInstance(PagerPageHolder::class.java)
-            .firstOrNull { it.item == page }
+    private fun getPageHolder(position: Int): ReaderPageHolder? =
+        (pager[0] as RecyclerView).findViewHolderForAdapterPosition(position) as ReaderPageHolder?
 
     /**
      * Called when a new [ReaderPage] is marked as active
@@ -178,7 +194,7 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
         activity.onPageSelected(page)
 
         // Notify holder of page change
-        getPageHolder(page)?.onPageSelected(forward)
+        getPageHolder(page.index)?.onPageSelected(forward)
     }
 
     /**
@@ -229,56 +245,62 @@ abstract class PagerViewer(val activity: ReaderActivity) : BaseViewer {
     /**
      * Moves to the next page.
      */
-    open fun moveToNext() {
-        moveRight()
+    private fun moveToNext() {
+        val currentItem = pager.currentItem
+        if (currentItem != adapter.itemCount - 1) {
+            val holder = getPageHolder(currentItem)
+            if (!config.navigateToPan || holder?.panEnd(isRtl) != true) {
+                pager.setCurrentItem(currentItem + 1, config.usePageTransitions)
+            }
+        }
     }
 
     /**
      * Moves to the previous page.
      */
-    open fun moveToPrevious() {
-        moveLeft()
+    private fun moveToPrevious() {
+        val currentItem = pager.currentItem
+        if (currentItem != 0) {
+            val holder = getPageHolder(currentItem)
+            if (!config.navigateToPan || holder?.panEnd(!isRtl) != true) {
+                pager.setCurrentItem(currentItem - 1, config.usePageTransitions)
+            }
+        }
     }
 
     /**
      * Moves to the page at the right.
      */
-    protected open fun moveRight() {
-        if (pager.currentItem != adapter.count - 1) {
-            val holder = currentPage?.let { getPageHolder(it) }
-            if (holder != null && config.navigateToPan && holder.canPanRight()) {
-                holder.panRight()
-            } else {
-                pager.setCurrentItem(pager.currentItem + 1, config.usePageTransitions)
-            }
+    private fun moveRight() {
+        if (isRtl) {
+            moveToPrevious()
+        } else {
+            moveToNext()
         }
     }
 
     /**
      * Moves to the page at the left.
      */
-    protected open fun moveLeft() {
-        if (pager.currentItem != 0) {
-            val holder = currentPage?.let { getPageHolder(it) }
-            if (holder != null && config.navigateToPan && holder.canPanLeft()) {
-                holder.panLeft()
-            } else {
-                pager.setCurrentItem(pager.currentItem - 1, config.usePageTransitions)
-            }
+    private fun moveLeft() {
+        if (isRtl) {
+            moveToNext()
+        } else {
+            moveToPrevious()
         }
     }
 
     /**
      * Moves to the page at the top (or previous).
      */
-    protected open fun moveUp() {
+    private fun moveUp() {
         moveToPrevious()
     }
 
     /**
      * Moves to the page at the bottom (or next).
      */
-    protected open fun moveDown() {
+    private fun moveDown() {
         moveToNext()
     }
 

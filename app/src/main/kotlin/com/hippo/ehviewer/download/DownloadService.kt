@@ -21,8 +21,6 @@ import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.SystemClock
-import androidx.annotation.IntDef
 import androidx.collection.LongSparseArray
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationChannelCompat
@@ -36,55 +34,57 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
-import com.hippo.ehviewer.util.SimpleHandler
 import com.hippo.ehviewer.util.getParcelableExtraCompat
+import com.hippo.ehviewer.util.unsafeLazy
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 
-class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineScope {
+class DownloadService :
+    Service(),
+    DownloadManager.DownloadListener,
+    CoroutineScope {
     override val coroutineContext = Dispatchers.IO + SupervisorJob()
-    private val deferredMgr = async { DownloadManager.apply { setDownloadListener(this@DownloadService) } }
-    private var mNotifyManager: NotificationManagerCompat? = null
-    private var mDownloadingBuilder: NotificationCompat.Builder? = null
-    private var mDownloadedBuilder: NotificationCompat.Builder? = null
-    private var m509dBuilder: NotificationCompat.Builder? = null
-    private var mDownloadingDelay: NotificationDelay? = null
-    private var mDownloadedDelay: NotificationDelay? = null
-    private var m509Delay: NotificationDelay? = null
-    private var mChannelID: String? = null
+    private val deferredMgr = async { DownloadManager }
+    private val notifyManager by unsafeLazy { NotificationManagerCompat.from(this) }
+    private val downloadingNotification by unsafeLazy { initDownloadingNotification() }
+    private val downloadedNotification by lazy { initDownloadedNotification() }
+    private val error509Notification by lazy { init509Notification() }
+    private val channelId by unsafeLazy { "$packageName.download" }
 
     override fun onCreate() {
-        super.onCreate()
-        mChannelID = "$packageName.download"
-        mNotifyManager = NotificationManagerCompat.from(this)
-        mNotifyManager!!.createNotificationChannel(
-            NotificationChannelCompat.Builder(mChannelID!!, NotificationManagerCompat.IMPORTANCE_LOW)
+        notifyManager.createNotificationChannel(
+            NotificationChannelCompat.Builder(channelId, NotificationManagerCompat.IMPORTANCE_LOW)
                 .setName(getString(R.string.download_service)).build(),
         )
-        ensureDownloadingBuilder()
-        mDownloadingBuilder!!.setContentTitle(getString(R.string.download_service))
-            .setContentText(null)
-            .setSubText(null)
-            .setProgress(0, 0, true)
-        startForeground(ID_DOWNLOADING, mDownloadingBuilder!!.build())
+        downloadingNotification.builder.run {
+            setContentTitle(getString(R.string.download_service))
+                .setContentText(null)
+                .setSubText(null)
+                .setProgress(0, 0, true)
+            startForeground(ID_DOWNLOADING, build())
+        }
+        launch {
+            deferredMgr.await().setDownloadListener(this@DownloadService)
+        }
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         val scope = this
         launch {
             deferredMgr.await().setDownloadListener(null)
+            // Wait for the last notification to be posted
+            delay(DELAY)
             scope.cancel()
         }
-        mNotifyManager = null
-        mDownloadingBuilder = null
-        mDownloadedBuilder = null
-        m509dBuilder = null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -152,17 +152,14 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         }
     }
 
-    override fun onBind(intent: Intent) = error("No bindService")
+    override fun onBind(intent: Intent) = null
 
-    private fun ensureDownloadingBuilder() {
-        if (mDownloadingBuilder != null) {
-            return
-        }
+    private fun initDownloadingNotification(): NotificationHandler {
         val stopAllIntent = Intent(this, DownloadService::class.java)
         stopAllIntent.action = ACTION_STOP_ALL
         val piStopAll =
             PendingIntent.getService(this, 0, stopAllIntent, PendingIntent.FLAG_IMMUTABLE)
-        mDownloadingBuilder = NotificationCompat.Builder(applicationContext, mChannelID!!)
+        val builder = NotificationCompat.Builder(applicationContext, channelId)
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setOngoing(true)
             .setAutoCancel(false)
@@ -173,15 +170,11 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
                 piStopAll,
             )
             .setShowWhen(false)
-            .setChannelId(mChannelID!!)
-        mDownloadingDelay =
-            NotificationDelay(this, mNotifyManager!!, mDownloadingBuilder!!, ID_DOWNLOADING)
+        return NotificationHandler(this, notifyManager, builder, ID_DOWNLOADING)
+            .apply { launch { run() } }
     }
 
-    private fun ensureDownloadedBuilder() {
-        if (mDownloadedBuilder != null) {
-            return
-        }
+    private fun initDownloadedNotification(): NotificationHandler {
         val clearIntent = Intent(this, DownloadService::class.java)
         clearIntent.action = ACTION_CLEAR
         val piClear = PendingIntent.getService(this, 0, clearIntent, PendingIntent.FLAG_IMMUTABLE)
@@ -191,29 +184,26 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         activityIntent.action = ACTION_START_DOWNLOADSCENE
         activityIntent.putExtra(ACTION_START_DOWNLOADSCENE_ARGS, bundle)
         val piActivity = PendingIntent.getActivity(
-            this@DownloadService,
+            this,
             0,
             activityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        mDownloadedBuilder = NotificationCompat.Builder(applicationContext, mChannelID!!)
+        val builder = NotificationCompat.Builder(applicationContext, channelId)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
             .setContentTitle(getString(R.string.stat_download_done_title))
             .setDeleteIntent(piClear)
             .setOngoing(false)
             .setAutoCancel(true)
             .setContentIntent(piActivity)
-        mDownloadedDelay =
-            NotificationDelay(this, mNotifyManager!!, mDownloadedBuilder!!, ID_DOWNLOADED)
+        return NotificationHandler(this, notifyManager, builder, ID_DOWNLOADED)
+            .apply { launch { run() } }
     }
 
-    private fun ensure509Builder() {
-        if (m509dBuilder != null) {
-            return
-        }
-        m509dBuilder = NotificationCompat.Builder(applicationContext, mChannelID!!)
+    private fun init509Notification(): NotificationHandler {
+        val builder = NotificationCompat.Builder(applicationContext, channelId)
             .setSmallIcon(R.drawable.ic_baseline_warning_24)
-            .setContentText(getString(R.string.stat_509_alert_title))
+            .setContentTitle(getString(R.string.stat_509_alert_title))
             .setContentText(getString(R.string.stat_509_alert_text))
             .setStyle(
                 NotificationCompat.BigTextStyle().bigText(getString(R.string.stat_509_alert_text)),
@@ -221,89 +211,61 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
             .setAutoCancel(true)
             .setOngoing(false)
             .setCategory(NotificationCompat.CATEGORY_ERROR)
-        m509Delay = NotificationDelay(this, mNotifyManager!!, m509dBuilder!!, ID_509)
+        return NotificationHandler(this, notifyManager, builder, ID_509)
+            .apply { launch { run() } }
     }
 
     override fun onGet509() {
-        launch {
-            deferredMgr.await().stopAllDownload()
-            if (mNotifyManager == null) {
-                return@launch
-            }
-            ensure509Builder()
-            m509dBuilder!!.setWhen(System.currentTimeMillis())
-            m509Delay!!.show()
+        error509Notification.run {
+            builder.setWhen(System.currentTimeMillis())
+            show()
         }
     }
 
     override fun onStart(info: DownloadInfo) {
-        if (mNotifyManager == null) {
-            return
-        }
-        ensureDownloadingBuilder()
         val bundle = Bundle()
         bundle.putLong(KEY_GID, info.gid)
         val activityIntent = Intent(this, MainActivity::class.java)
         activityIntent.action = ACTION_START_DOWNLOADSCENE
         activityIntent.putExtra(ACTION_START_DOWNLOADSCENE_ARGS, bundle)
         val piActivity = PendingIntent.getActivity(
-            this@DownloadService,
+            this,
             0,
             activityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        mDownloadingBuilder!!.setContentTitle(EhUtils.getSuitableTitle(info))
-            .setContentText(null)
-            .setSubText(null)
-            .setProgress(0, 0, true)
-            .setContentIntent(piActivity)
-        mDownloadingDelay!!.startForeground()
-    }
-
-    private fun onUpdate(info: DownloadInfo) {
-        if (mNotifyManager == null) {
-            return
+        downloadingNotification.run {
+            builder.setContentTitle(EhUtils.getSuitableTitle(info))
+                .setContentText(null)
+                .setSubText(null)
+                .setProgress(0, 0, true)
+                .setContentIntent(piActivity)
+            startForeground()
         }
-        ensureDownloadingBuilder()
-        var speed = info.speed
-        if (speed < 0) {
-            speed = 0
-        }
-        var text = FileUtils.humanReadableByteCount(speed, false) + "/s"
-        val remaining = info.remaining
-        text = if (remaining >= 0) {
-            getString(
-                R.string.download_speed_text_2,
-                text,
-                ReadableTime.getShortTimeInterval(remaining),
-            )
-        } else {
-            getString(R.string.download_speed_text, text)
-        }
-        mDownloadingBuilder!!.setContentTitle(EhUtils.getSuitableTitle(info))
-            .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
-            .setSubText(if (info.total == -1 || info.finished == -1) null else info.finished.toString() + "/" + info.total)
-            .setProgress(info.total, info.finished, false)
-        mDownloadingDelay!!.startForeground()
     }
 
     override fun onDownload(info: DownloadInfo) {
-        onUpdate(info)
-    }
-
-    override fun onGetPage(info: DownloadInfo) {
-        onUpdate(info)
+        val speed = info.speed.coerceAtLeast(0)
+        val speedText = FileUtils.humanReadableByteCount(speed, false) + "/s"
+        val remaining = info.remaining
+        val text = if (remaining >= 0) {
+            val interval = ReadableTime.getShortTimeInterval(remaining)
+            getString(R.string.download_speed_text_2, speedText, interval)
+        } else {
+            getString(R.string.download_speed_text, speedText)
+        }
+        downloadingNotification.run {
+            builder.setContentTitle(EhUtils.getSuitableTitle(info))
+                .setContentText(text)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+                .setSubText(if (info.total == -1 || info.finished == -1) null else info.finished.toString() + "/" + info.total)
+                .setProgress(info.total, info.finished, false)
+            startForeground()
+        }
     }
 
     override fun onFinish(info: DownloadInfo) {
-        if (mNotifyManager == null) {
-            return
-        }
-        if (null != mDownloadingDelay) {
-            mDownloadingDelay!!.cancel()
-        }
-        ensureDownloadedBuilder()
+        downloadingNotification.cancel()
         val finish = info.state == DownloadInfo.STATE_FINISH
         val gid = info.gid
         val index = sItemStateArray.indexOfKey(gid)
@@ -392,21 +354,18 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         } else {
             style = null
         }
-        mDownloadedBuilder!!.setContentText(text)
-            .setStyle(style)
-            .setWhen(System.currentTimeMillis())
-            .setNumber(sDownloadedCount)
-        mDownloadedDelay!!.show()
+        downloadedNotification.run {
+            builder.setContentText(text)
+                .setStyle(style)
+                .setWhen(System.currentTimeMillis())
+                .setNumber(sDownloadedCount)
+            show()
+        }
         checkStopSelf()
     }
 
     override fun onCancel(info: DownloadInfo) {
-        if (mNotifyManager == null) {
-            return
-        }
-        if (null != mDownloadingDelay) {
-            mDownloadingDelay!!.cancel()
-        }
+        downloadingNotification.cancel()
         checkStopSelf()
     }
 
@@ -419,105 +378,49 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         }
     }
 
-    private class NotificationDelay(
-        private var mService: Service,
-        private val mNotifyManager: NotificationManagerCompat,
-        private val mBuilder: NotificationCompat.Builder,
-        private val mId: Int,
-    ) : Runnable {
-        private var mLastTime: Long = 0
-        private var mPosted = false
-
-        // false for show, true for cancel
-        @Ops
-        private var mOps = 0
+    private class NotificationHandler(
+        private val service: Service,
+        private val notifyManager: NotificationManagerCompat,
+        val builder: NotificationCompat.Builder,
+        private val id: Int,
+    ) {
+        private val channel = Channel<Ops>(Channel.CONFLATED)
 
         fun show() {
-            if (mPosted) {
-                mOps = OPS_NOTIFY
-            } else {
-                val now = SystemClock.currentThreadTimeMillis()
-                if (now - mLastTime > DELAY) {
-                    // Wait long enough, do it now
-                    if (ActivityCompat.checkSelfPermission(
-                            mService,
-                            Manifest.permission.POST_NOTIFICATIONS,
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        return
-                    }
-                    mNotifyManager.notify(mId, mBuilder.build())
-                } else {
-                    // Too quick, post delay
-                    mOps = OPS_NOTIFY
-                    mPosted = true
-                    SimpleHandler.postDelayed(this, DELAY)
-                }
-                mLastTime = now
-            }
+            channel.trySend(Ops.Notify)
         }
 
         fun cancel() {
-            if (mPosted) {
-                mOps = OPS_CANCEL
-            } else {
-                val now = SystemClock.currentThreadTimeMillis()
-                if (now - mLastTime > DELAY) {
-                    // Wait long enough, do it now
-                    mNotifyManager.cancel(mId)
-                } else {
-                    // Too quick, post delay
-                    mOps = OPS_CANCEL
-                    mPosted = true
-                    SimpleHandler.postDelayed(this, DELAY)
-                }
-            }
+            channel.trySend(Ops.Cancel)
         }
 
         fun startForeground() {
-            if (mPosted) {
-                mOps = OPS_START_FOREGROUND
-            } else {
-                val now = SystemClock.currentThreadTimeMillis()
-                if (now - mLastTime > DELAY) {
-                    // Wait long enough, do it now
-                    mService.startForeground(mId, mBuilder.build())
-                } else {
-                    // Too quick, post delay
-                    mOps = OPS_START_FOREGROUND
-                    mPosted = true
-                    SimpleHandler.postDelayed(this, DELAY)
-                }
-            }
+            channel.trySend(Ops.StartForeground)
         }
 
-        override fun run() {
-            mPosted = false
-            when (mOps) {
-                OPS_NOTIFY -> {
-                    if (ActivityCompat.checkSelfPermission(
-                            mService,
-                            Manifest.permission.POST_NOTIFICATIONS,
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        return
+        suspend fun run() {
+            channel.receiveAsFlow().sample(DELAY).collect {
+                when (it) {
+                    Ops.Notify -> {
+                        if (ActivityCompat.checkSelfPermission(
+                                service,
+                                Manifest.permission.POST_NOTIFICATIONS,
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
+                            notifyManager.notify(id, builder.build())
+                        }
                     }
-                    mNotifyManager.notify(mId, mBuilder.build())
-                }
 
-                OPS_CANCEL -> mNotifyManager.cancel(mId)
-                OPS_START_FOREGROUND -> mService.startForeground(mId, mBuilder.build())
+                    Ops.Cancel -> notifyManager.cancel(id)
+                    Ops.StartForeground -> service.startForeground(id, builder.build())
+                }
             }
         }
 
-        @IntDef(OPS_NOTIFY, OPS_CANCEL, OPS_START_FOREGROUND)
-        @Retention(AnnotationRetention.SOURCE)
-        private annotation class Ops
-        companion object {
-            private const val OPS_NOTIFY = 0
-            private const val OPS_CANCEL = 1
-            private const val OPS_START_FOREGROUND = 2
-            private const val DELAY: Long = 1000 // 1s
+        private enum class Ops {
+            Notify,
+            Cancel,
+            StartForeground,
         }
     }
 
@@ -544,6 +447,7 @@ class DownloadService : Service(), DownloadManager.DownloadListener, CoroutineSc
         private const val ID_DOWNLOADING = 1
         private const val ID_DOWNLOADED = 2
         private const val ID_509 = 3
+        private const val DELAY = 1000L // 1s
         private val sItemStateArray = LongSparseArray<Boolean>()
         private val sItemTitleArray = LongSparseArray<String>()
         private var sFailedCount = 0

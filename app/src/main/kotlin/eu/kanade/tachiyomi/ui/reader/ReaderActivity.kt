@@ -20,6 +20,7 @@ import android.Manifest
 import android.app.assist.AssistContent
 import android.content.ClipData
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
@@ -31,7 +32,6 @@ import android.provider.MediaStore
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View.LAYER_TYPE_HARDWARE
-import android.view.WindowManager
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
@@ -65,6 +65,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
+import arrow.core.raise.ensure
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -79,11 +80,16 @@ import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.ui.EhActivity
 import com.hippo.ehviewer.ui.reader.SettingsPager
+import com.hippo.ehviewer.ui.reader.setCustomBrightnessValue
+import com.hippo.ehviewer.ui.reader.setOrientation
+import com.hippo.ehviewer.ui.reader.updateKeepScreenOn
+import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.ui.setMD3Content
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.awaitActivityResult
+import com.hippo.ehviewer.util.displayPath
 import com.hippo.ehviewer.util.getParcelableCompat
 import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getValue
@@ -91,15 +97,12 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.lazyMut
 import com.hippo.ehviewer.util.requestPermission
 import com.hippo.ehviewer.util.setValue
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.displayPath
+import com.hippo.files.toOkioPath
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
-import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.ReaderPreferences
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
-import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.isNightMode
@@ -117,6 +120,7 @@ import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path.Companion.toOkioPath
 import splitties.systemservices.clipboardManager
 
 class GalleryModel : ViewModel() {
@@ -167,19 +171,14 @@ class ReaderActivity : EhActivity() {
 
             Intent.ACTION_VIEW -> {
                 mUri?.run {
-                    ArchivePageLoader(asUniFile()) { invalidator ->
+                    ArchivePageLoader(toOkioPath()) { invalidator ->
                         runCatching {
                             dialogState.awaitInputText(
                                 title = getString(R.string.archive_need_passwd),
                                 hint = getString(R.string.archive_passwd),
-                            ) {
-                                if (it.isBlank()) {
-                                    getString(R.string.passwd_cannot_be_empty)
-                                } else if (invalidator(it)) {
-                                    null
-                                } else {
-                                    getString(R.string.passwd_wrong)
-                                }
+                            ) { text ->
+                                ensure(text.isNotBlank()) { getString(R.string.passwd_cannot_be_empty) }
+                                ensure(invalidator(text)) { getString(R.string.passwd_wrong) }
                             }
                         }.onFailure {
                             finish()
@@ -358,7 +357,7 @@ class ReaderActivity : EhActivity() {
         totalPage = mGalleryProvider!!.size
         viewer?.destroy()
         viewer = ReadingModeType.toViewer(ReaderPreferences.defaultReadingMode().get(), this)
-        isRtl = viewer is R2LPagerViewer
+        isRtl = viewer!!.isRtl
         updateViewerInsets(ReaderPreferences.cutoutShort().get())
         binding.viewerContainer.removeAllViews()
         setOrientation(ReaderPreferences.defaultOrientationType().get())
@@ -380,14 +379,11 @@ class ReaderActivity : EhActivity() {
 
     private suspend fun makeToast(@StringRes resId: Int) = makeToast(getString(resId))
 
-    private fun provideImage(index: Int): Uri? {
-        return AppConfig.externalTempDir?.let { dir ->
-            mGalleryProvider?.saveToDir(index, dir.asUniFile())?.name?.let {
-                FileProvider.getUriForFile(
-                    this,
-                    BuildConfig.APPLICATION_ID + ".fileprovider",
-                    File(dir, it),
-                )
+    private fun provideImage(index: Int): Uri? = AppConfig.externalTempDir?.let { dir ->
+        mGalleryProvider?.run {
+            getImageFilename(index)?.let { filename ->
+                val file = File(dir, filename).takeIf { save(index, it.toOkioPath()) } ?: return null
+                FileProvider.getUriForFile(implicit<Context>(), BuildConfig.APPLICATION_ID + ".fileprovider", file)
             }
         }
     }
@@ -438,7 +434,7 @@ class ReaderActivity : EhActivity() {
                 val resolver = contentResolver
                 val values = ContentValues()
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-                values.put(MediaStore.Images.Media.DATE_ADDED, Clock.System.now().toEpochMilliseconds())
+                values.put(MediaStore.MediaColumns.DATE_ADDED, Clock.System.now().epochSeconds)
                 values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
                 if (isAtLeastQ) {
                     realPath = Environment.DIRECTORY_PICTURES + File.separator + AppConfig.APP_DIRNAME
@@ -455,7 +451,7 @@ class ReaderActivity : EhActivity() {
                 }
                 val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
                     ?: return@launchIO makeToast(R.string.error_cant_save_image)
-                if (!mGalleryProvider!!.save(index, imageUri.asUniFile())) {
+                if (!mGalleryProvider!!.save(index, imageUri.toOkioPath())) {
                     try {
                         resolver.delete(imageUri, null, null)
                     } catch (e: Exception) {
@@ -482,7 +478,7 @@ class ReaderActivity : EhActivity() {
             val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
             runSuspendCatching {
                 awaitActivityResult(CreateDocument(mimeType), filename)?.let {
-                    mGalleryProvider!!.save(index, it.asUniFile())
+                    mGalleryProvider!!.save(index, it.toOkioPath())
                     makeToast(getString(R.string.image_saved, it.displayPath))
                 }
             }.onFailure {
@@ -651,16 +647,6 @@ class ReaderActivity : EhActivity() {
     }
 
     /**
-     * Forces the user preferred [orientation] on the activity.
-     */
-    private fun setOrientation(orientation: Int) {
-        val newOrientation = OrientationType.fromPreference(orientation)
-        if (newOrientation.flag != requestedOrientation) {
-            requestedOrientation = newOrientation.flag
-        }
-    }
-
-    /**
      * Updates viewer insets depending on fullscreen reader preferences.
      */
     fun updateViewerInsets(drawInCutout: Boolean) {
@@ -676,28 +662,26 @@ class ReaderActivity : EhActivity() {
      */
     private inner class ReaderConfig {
 
-        private fun getCombinedPaint(grayscale: Boolean, invertedColors: Boolean): Paint {
-            return Paint().apply {
-                colorFilter = ColorMatrixColorFilter(
-                    ColorMatrix().apply {
-                        if (grayscale) {
-                            setSaturation(0f)
-                        }
-                        if (invertedColors) {
-                            postConcat(
-                                ColorMatrix(
-                                    floatArrayOf(
-                                        -1f, 0f, 0f, 0f, 255f,
-                                        0f, -1f, 0f, 0f, 255f,
-                                        0f, 0f, -1f, 0f, 255f,
-                                        0f, 0f, 0f, 1f, 0f,
-                                    ),
+        private fun getCombinedPaint(grayscale: Boolean, invertedColors: Boolean): Paint = Paint().apply {
+            colorFilter = ColorMatrixColorFilter(
+                ColorMatrix().apply {
+                    if (grayscale) {
+                        setSaturation(0f)
+                    }
+                    if (invertedColors) {
+                        postConcat(
+                            ColorMatrix(
+                                floatArrayOf(
+                                    -1f, 0f, 0f, 0f, 255f,
+                                    0f, -1f, 0f, 0f, 255f,
+                                    0f, 0f, -1f, 0f, 255f,
+                                    0f, 0f, 0f, 1f, 0f,
                                 ),
-                            )
-                        }
-                    },
-                )
-            }
+                            ),
+                        )
+                    }
+                },
+            )
         }
 
         /**
@@ -740,7 +724,7 @@ class ReaderActivity : EhActivity() {
                 .launchIn(lifecycleScope)
 
             ReaderPreferences.keepScreenOn().changes()
-                .onEach { setKeepScreenOn(it) }
+                .onEach { window.updateKeepScreenOn(it) }
                 .launchIn(lifecycleScope)
 
             ReaderPreferences.customBrightness().changes()
@@ -763,12 +747,10 @@ class ReaderActivity : EhActivity() {
         /**
          * Picks background color for [ReaderActivity] based on light/dark theme preference
          */
-        private fun automaticBackgroundColor(): Int {
-            return if (baseContext.isNightMode()) {
-                R.color.reader_background_dark
-            } else {
-                android.R.color.white
-            }
+        private fun automaticBackgroundColor(): Int = if (baseContext.isNightMode()) {
+            R.color.reader_background_dark
+        } else {
+            android.R.color.white
         }
 
         /**
@@ -776,17 +758,6 @@ class ReaderActivity : EhActivity() {
          */
         fun setPageNumberVisibility(visible: Boolean) {
             binding.pageNumber.isVisible = visible
-        }
-
-        /**
-         * Sets the keep screen on mode according to [enabled].
-         */
-        private fun setKeepScreenOn(enabled: Boolean) {
-            if (enabled) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            } else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            }
         }
 
         /**
@@ -802,29 +773,6 @@ class ReaderActivity : EhActivity() {
             } else {
                 setCustomBrightnessValue(0)
             }
-        }
-
-        /**
-         * Sets the brightness of the screen. Range is [-75, 100].
-         * From -75 to -1 a semi-transparent black view is overlaid with the minimum brightness.
-         * From 1 to 100 it sets that value as brightness.
-         * 0 sets system brightness and hides the overlay.
-         */
-        private fun setCustomBrightnessValue(value: Int) {
-            // Calculate and set reader brightness.
-            val readerBrightness = when {
-                value > 0 -> {
-                    value / 100f
-                }
-
-                value < 0 -> {
-                    0.01f
-                }
-
-                else -> WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
-            }
-
-            window.attributes = window.attributes.apply { screenBrightness = readerBrightness }
         }
 
         private fun setLayerPaint(grayscale: Boolean, invertedColors: Boolean) {

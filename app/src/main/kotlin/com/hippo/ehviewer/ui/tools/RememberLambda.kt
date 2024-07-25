@@ -13,6 +13,4 @@ fun rememberLambda(calculation: @DisallowComposableCalls () -> Unit): () -> Unit
 fun rememberLambda(
     key1: Any?,
     calculation: @DisallowComposableCalls () -> Unit,
-): () -> Unit {
-    return currentComposer.cache(currentComposer.changed(key1)) { calculation }
-}
+): () -> Unit = currentComposer.cache(currentComposer.changed(key1)) { calculation }

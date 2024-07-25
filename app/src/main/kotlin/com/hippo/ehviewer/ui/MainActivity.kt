@@ -137,6 +137,7 @@ import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.updater.AppUpdater
+import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.calculateFraction
 import com.hippo.ehviewer.util.displayString
@@ -144,10 +145,11 @@ import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.sha1
+import com.hippo.ehviewer.util.sha1
+import com.hippo.files.isDirectory
+import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
+import com.ramcosta.composedestinations.spec.Direction
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -162,7 +164,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
-private val navItems = arrayOf<Triple<DirectionDestinationSpec, Int, ImageVector>>(
+private val navItems = arrayOf<Triple<Direction, Int, ImageVector>>(
     Triple(HomePageScreenDestination, R.string.homepage, Icons.Default.Home),
     Triple(SubscriptionScreenDestination, R.string.subscription, EhIcons.Default.Subscriptions),
     Triple(WhatshotScreenDestination, R.string.whats_hot, Icons.Default.Whatshot),
@@ -228,7 +230,7 @@ class MainActivity : EhActivity() {
             }
 
             suspend fun DialogState.checkDownloadLocation() {
-                val valid = withIOContext { downloadLocation.ensureDir() }
+                val valid = withIOContext { downloadLocation.isDirectory }
                 if (!valid) {
                     awaitPermissionOrCancel(
                         confirmText = R.string.open_settings,
@@ -244,17 +246,19 @@ class MainActivity : EhActivity() {
                 }
             }
 
-            LaunchedEffect(Unit) {
-                runCatching { dialogState.checkDownloadLocation() }
-                runCatching { dialogState.checkAppLinkVerify() }
-                runSuspendCatching {
-                    withIOContext {
-                        AppUpdater.checkForUpdate()?.let {
-                            dialogState.showNewVersion(this@MainActivity, it)
+            if (!AppConfig.isBenchmark) {
+                LaunchedEffect(Unit) {
+                    runCatching { dialogState.checkDownloadLocation() }
+                    runCatching { dialogState.checkAppLinkVerify() }
+                    runSuspendCatching {
+                        withIOContext {
+                            AppUpdater.checkForUpdate()?.let {
+                                dialogState.showNewVersion(this@MainActivity, it)
+                            }
                         }
+                    }.onFailure {
+                        snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
                     }
-                }.onFailure {
-                    snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
                 }
             }
 
@@ -279,7 +283,7 @@ class MainActivity : EhActivity() {
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
                                 if (null != uri) {
-                                    val hash = withIOContext { uri.asUniFile().sha1() }
+                                    val hash = withIOContext { uri.toOkioPath().sha1() }
                                     navigator.navigate(
                                         ListUrlBuilder(
                                             mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
@@ -452,8 +456,8 @@ class MainActivity : EhActivity() {
                                 CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                                     DestinationsNavHost(
                                         navGraph = NavGraphs.root,
-                                        startRoute = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
-                                        // defaultTransitions = rememberEhNavAnim(),
+                                        start = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
+                                        defaultTransitions = rememberEhNavAnim(),
                                         navController = navController,
                                     )
                                 }

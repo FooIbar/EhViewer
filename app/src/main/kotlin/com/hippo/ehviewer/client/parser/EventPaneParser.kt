@@ -20,7 +20,5 @@ package com.hippo.ehviewer.client.parser
 import org.jsoup.Jsoup
 
 object EventPaneParser {
-    fun parse(body: String): String? {
-        return Jsoup.parse(body).getElementById("eventpane")?.html()
-    }
+    fun parse(body: String): String? = Jsoup.parse(body).getElementById("eventpane")?.html()
 }

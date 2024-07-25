@@ -1,24 +1,19 @@
 package com.hippo.ehviewer.client
 
 import android.webkit.CookieManager
-import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastJoinToString
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
 import io.ktor.http.Url
 import io.ktor.http.parseClientCookiesHeader
-import io.ktor.http.renderCookieHeader
 import io.ktor.http.renderSetCookieHeader
 
 object EhCookieStore : CookiesStorage {
     private val manager = CookieManager.getInstance()
     fun removeAllCookies() = manager.removeAllCookies(null)
-    fun contains(url: String, name: String) = load(Url(url)).fastAny { it.name == name }
 
-    fun hasSignedIn(): Boolean {
-        val url = EhUrl.HOST_E
-        return contains(url, KEY_IPB_MEMBER_ID) && contains(url, KEY_IPB_PASS_HASH)
-    }
+    fun hasSignedIn(): Boolean = getCookies(EhUrl.HOST_E)?.run {
+        containsKey(KEY_IPB_MEMBER_ID) && containsKey(KEY_IPB_PASS_HASH)
+    } ?: false
 
     const val KEY_IPB_MEMBER_ID = "ipb_member_id"
     const val KEY_IPB_PASS_HASH = "ipb_pass_hash"
@@ -53,11 +48,7 @@ object EhCookieStore : CookiesStorage {
 
     fun flush() = manager.flush()
 
-    fun getCookieHeader(url: String): String {
-        return load(Url(url)).fastJoinToString("; ") {
-            renderCookieHeader(it)
-        }
-    }
+    fun getCookieHeader(url: String): String? = manager.getCookie(url)
 
     // See https://github.com/Ehviewer-Overhauled/Ehviewer/issues/873
     override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {

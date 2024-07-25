@@ -55,7 +55,8 @@ data class GalleryDetail(
     var comments: GalleryCommentList,
     val previewPages: Int,
     val previewList: List<GalleryPreview>,
-) : GalleryInfo by galleryInfo, Parcelable {
+) : GalleryInfo by galleryInfo,
+    Parcelable {
     fun fillInfo() {
         val index = LANGUAGES.indexOf(language)
         if (index != -1) simpleLanguage = S_LANGS[index]

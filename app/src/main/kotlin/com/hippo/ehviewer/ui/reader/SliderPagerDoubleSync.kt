@@ -98,10 +98,8 @@ fun rememberSliderPagerDoubleSyncState(
     lazyListState: LazyListState,
     pagerState: PagerState,
     pageLoader: PageLoader2,
-): SliderPagerDoubleSync {
-    return remember {
-        SliderPagerDoubleSync(lazyListState, pagerState, pageLoader)
-    }
+): SliderPagerDoubleSync = remember {
+    SliderPagerDoubleSync(lazyListState, pagerState, pageLoader)
 }
 
 private fun smoothScroll(distance: Int) =

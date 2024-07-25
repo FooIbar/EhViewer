@@ -61,6 +61,8 @@ import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlin.coroutines.resume
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
 
@@ -68,6 +70,12 @@ import moe.tarsin.kt.unreachable
 @Composable
 fun AnimatedVisibilityScope.ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsNavigator) = composing(navigator) {
     ConfigureKeepScreenOn()
+    LaunchedEffect(Unit) {
+        val orientation = requestedOrientation
+        Settings.orientationMode.valueFlow()
+            .onCompletion { requestedOrientation = orientation }
+            .collect { setOrientation(it) }
+    }
     val pageLoader = remember {
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         archive?.let { ArchivePageLoader(it, info.gid, page) } ?: EhPageLoader(info, page)
@@ -179,6 +187,13 @@ fun AnimatedVisibilityScope.ReaderScreen(info: BaseGalleryInfo, page: Int = -1, 
                 color = { colorOverlay }.takeIf { colorOverlayEnabled },
                 colorBlendMode = colorOverlayMode,
             )
+            if (brightness) {
+                LaunchedEffect(Unit) {
+                    Settings.customBrightnessValue.valueFlow().sample(100)
+                        .onCompletion { setCustomBrightnessValue(0) }
+                        .collect { setCustomBrightnessValue(it) }
+                }
+            }
             val showPageNumber by Settings.showPageNumber.collectAsState()
             if (showPageNumber && !appbarVisible) {
                 CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {

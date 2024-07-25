@@ -1,13 +1,13 @@
-@file:Suppress("ktlint:standard:property-naming", "ktlint:standard:function-naming")
+@file:Suppress("ktlint:standard:property-naming")
 
 package androidx.compose.material3
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.anchoredHorizontalDraggable
@@ -53,8 +53,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 private val AnimationSpec = TweenSpec<Float>(durationMillis = 256)
-private const val DrawerPositionalThreshold = 0.5f
-private val DrawerVelocityThreshold = 400.dp
 
 @Suppress("NotCloseable")
 @Stable
@@ -65,11 +63,7 @@ class DrawerState2(
 
     val anchoredDraggableState = AnchoredDraggableState(
         initialValue = initialValue,
-        snapAnimationSpec = AnimationSpec,
-        decayAnimationSpec = exponentialDecay(7.5f),
         confirmValueChange = confirmStateChange,
-        positionalThreshold = { distance -> distance * DrawerPositionalThreshold },
-        velocityThreshold = { with(requireDensity()) { DrawerVelocityThreshold.toPx() } },
     )
 
     /**
@@ -230,10 +224,8 @@ class DrawerState2(
 fun rememberDrawerState2(
     initialValue: DrawerValue,
     confirmStateChange: (DrawerValue) -> Boolean = { true },
-): DrawerState2 {
-    return rememberSaveable(saver = DrawerState2.Saver(confirmStateChange)) {
-        DrawerState2(initialValue, confirmStateChange)
-    }
+): DrawerState2 = rememberSaveable(saver = DrawerState2.Saver(confirmStateChange)) {
+    DrawerState2(initialValue, confirmStateChange)
 }
 
 @Composable
@@ -266,6 +258,10 @@ fun ModalSideDrawer(
             enableDragFromStartToEnd = drawerState.isOpen,
             enableDragFromEndToStart = drawerState.isClosed,
             enabled = gesturesEnabled,
+            flingBehavior = AnchoredDraggableDefaults.flingBehavior(
+                state = drawerState.anchoredDraggableState,
+                animationSpec = AnimationSpec,
+            ),
         ),
     ) {
         val radius by remember {

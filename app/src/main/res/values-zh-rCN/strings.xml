@@ -363,6 +363,8 @@
     <string name="settings_advanced_dump_logcat_to">已保存日志至 %s</string>
     <string name="settings_advanced_read_cache_size">阅读缓存大小</string>
     <string name="settings_advanced_app_language_title">App 界面语言</string>
+    <string name="settings_advanced_hardware_bitmap_threshold">硬件位图（性能更好）阈值</string>
+    <string name="settings_advanced_hardware_bitmap_threshold_summary">若长图无法加载请尝试减小此项</string>
     <string name="settings_advanced_export_data">导出数据</string>
     <string name="settings_advanced_export_data_summary">保存数据至外置存储器，例如下载列表，快速搜索列表</string>
     <string name="settings_advanced_export_data_to">已导出数据至 %s</string>

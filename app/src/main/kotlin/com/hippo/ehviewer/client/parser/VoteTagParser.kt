@@ -21,7 +21,5 @@ import com.hippo.ehviewer.client.parseAs
 
 object VoteTagParser {
     // {"error":"The tag \"neko\" is not allowed. Use character:neko or artist:neko"}
-    fun parse(body: String): String? {
-        return runCatching { body.parseAs<Error>().error }.getOrNull()
-    }
+    fun parse(body: String): String? = runCatching { body.parseAs<Error>().error }.getOrNull()
 }

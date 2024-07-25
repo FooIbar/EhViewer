@@ -10,10 +10,6 @@ fun Any?.ifNotNullThen(content: @Composable () -> Unit): (@Composable () -> Unit
 fun Boolean.ifTrueThen(content: @Composable () -> Unit): (@Composable () -> Unit)? =
     if (this) content else null
 
-fun roundToDP(value: Double, places: Int): Double {
-    return BigDecimal(value).setScale(places, RoundingMode.HALF_EVEN).toDouble()
-}
+fun roundToDP(value: Double, places: Int): Double = BigDecimal(value).setScale(places, RoundingMode.HALF_EVEN).toDouble()
 
-fun roundToDP(value: Float, places: Int): Float {
-    return BigDecimal(value.toDouble()).setScale(places, RoundingMode.HALF_EVEN).toFloat()
-}
+fun roundToDP(value: Float, places: Int): Float = BigDecimal(value.toDouble()).setScale(places, RoundingMode.HALF_EVEN).toFloat()

@@ -70,6 +70,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.SecureFlagPolicy
 import arrow.core.Either
+import arrow.core.raise.Raise
+import arrow.core.raise.either
 import arrow.core.right
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
@@ -109,45 +111,43 @@ class DialogState {
     suspend fun <R> awaitResult(
         initial: R,
         @StringRes title: Int? = null,
-        invalidator: (suspend (R) -> String?)? = null,
+        invalidator: (suspend Raise<String>.(R) -> Unit)? = null,
         block: @Composable DialogScope<R>.(String?) -> Unit,
-    ): R {
-        return dialog { cont ->
-            val coroutineScope = rememberCoroutineScope()
-            val state = remember(cont) { mutableStateOf(initial) }
-            var error by remember(cont) { mutableStateOf<String?>(null) }
-            val impl = remember(cont) {
-                object : DialogScope<R> {
-                    override var expectedValue by state
-                }
+    ): R = dialog { cont ->
+        val coroutineScope = rememberCoroutineScope()
+        val state = remember(cont) { mutableStateOf(initial) }
+        var errorMsg by remember(cont) { mutableStateOf<String?>(null) }
+        val impl = remember(cont) {
+            object : DialogScope<R> {
+                override var expectedValue by state
             }
-            AlertDialog(
-                onDismissRequest = { cont.cancel() },
-                confirmButton = {
-                    TextButton(onClick = {
-                        if (invalidator == null) {
-                            cont.resume(state.value)
-                        } else {
-                            coroutineScope.launch {
-                                error = invalidator.invoke(state.value)
-                                error ?: cont.resume(state.value)
-                            }
-                        }
-                    }) {
-                        Text(text = stringResource(id = android.R.string.ok))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        cont.cancel()
-                    }) {
-                        Text(text = stringResource(id = android.R.string.cancel))
-                    }
-                },
-                title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
-                text = { block(impl, error) },
-            )
         }
+        AlertDialog(
+            onDismissRequest = { cont.cancel() },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (invalidator == null) {
+                        cont.resume(state.value)
+                    } else {
+                        coroutineScope.launch {
+                            errorMsg = either { invalidator(state.value) }.leftOrNull()
+                            errorMsg ?: cont.resume(state.value)
+                        }
+                    }
+                }) {
+                    Text(text = stringResource(id = android.R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    cont.cancel()
+                }) {
+                    Text(text = stringResource(id = android.R.string.cancel))
+                }
+            },
+            title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+            text = { block(impl, errorMsg) },
+        )
     }
 
     suspend fun awaitInputText(
@@ -156,35 +156,90 @@ class DialogState {
         hint: String? = null,
         isNumber: Boolean = false,
         @StringRes confirmText: Int = android.R.string.ok,
-        invalidator: (suspend (String) -> String?)? = null,
-    ): String {
-        return dialog { cont ->
-            val coroutineScope = rememberCoroutineScope()
-            var state by remember(cont) { mutableStateOf(initial) }
-            var error by remember(cont) { mutableStateOf<String?>(null) }
-            AlertDialog(
-                onDismissRequest = { cont.cancel() },
-                confirmButton = {
-                    TextButton(onClick = {
-                        if (invalidator == null) {
-                            cont.resume(state)
-                        } else {
-                            coroutineScope.launch {
-                                error = invalidator.invoke(state)
-                                error ?: cont.resume(state)
-                            }
+        invalidator: (suspend Raise<String>.(String) -> Unit)? = null,
+    ) = dialog { cont ->
+        val coroutineScope = rememberCoroutineScope()
+        var state by remember(cont) { mutableStateOf(initial) }
+        var error by remember(cont) { mutableStateOf<String?>(null) }
+        AlertDialog(
+            onDismissRequest = { cont.cancel() },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (invalidator == null) {
+                        cont.resume(state)
+                    } else {
+                        coroutineScope.launch {
+                            error = either { invalidator(state) }.leftOrNull()
+                            error ?: cont.resume(state)
                         }
-                    }) {
-                        Text(text = stringResource(id = confirmText))
                     }
-                },
-                title = title.ifNotNullThen { Text(text = title!!) },
-                text = {
+                }) {
+                    Text(text = stringResource(id = confirmText))
+                }
+            },
+            title = title.ifNotNullThen { Text(text = title!!) },
+            text = {
+                OutlinedTextField(
+                    value = state,
+                    onValueChange = { state = it },
+                    label = hint.ifNotNullThen {
+                        Text(text = hint!!)
+                    },
+                    trailingIcon = error.ifNotNullThen {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = null,
+                        )
+                    },
+                    supportingText = error.ifNotNullThen {
+                        Text(text = error!!)
+                    },
+                    isError = error != null,
+                    keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
+                )
+            },
+        )
+    }
+
+    suspend fun awaitInputTextWithCheckBox(
+        initial: String = "",
+        @StringRes title: Int? = null,
+        @StringRes hint: Int? = null,
+        checked: Boolean,
+        @StringRes checkBoxText: Int,
+        isNumber: Boolean = false,
+        invalidator: (suspend Raise<String>.(String, Boolean) -> Unit)? = null,
+    ): Pair<String, Boolean> = dialog { cont ->
+        val coroutineScope = rememberCoroutineScope()
+        var state by remember(cont) { mutableStateOf(initial) }
+        var error by remember(cont) { mutableStateOf<String?>(null) }
+        var checkedState by remember { mutableStateOf(checked) }
+        AlertDialog(
+            onDismissRequest = { cont.cancel() },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (invalidator == null) {
+                        cont.resume(state to checkedState)
+                    } else {
+                        coroutineScope.launch {
+                            error = either { invalidator(state, checkedState) }.leftOrNull()
+                            error ?: cont.resume(state to checkedState)
+                        }
+                    }
+                }) {
+                    Text(text = stringResource(id = android.R.string.ok))
+                }
+            },
+            title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
                     OutlinedTextField(
                         value = state,
                         onValueChange = { state = it },
                         label = hint.ifNotNullThen {
-                            Text(text = hint!!)
+                            Text(text = stringResource(id = hint!!))
                         },
                         trailingIcon = error.ifNotNullThen {
                             Icon(
@@ -198,74 +253,15 @@ class DialogState {
                         isError = error != null,
                         keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
                     )
-                },
-            )
-        }
-    }
-
-    suspend fun awaitInputTextWithCheckBox(
-        initial: String = "",
-        @StringRes title: Int? = null,
-        @StringRes hint: Int? = null,
-        checked: Boolean,
-        @StringRes checkBoxText: Int,
-        isNumber: Boolean = false,
-        invalidator: (suspend (String, Boolean) -> String?)? = null,
-    ): Pair<String, Boolean> {
-        return dialog { cont ->
-            val coroutineScope = rememberCoroutineScope()
-            var state by remember(cont) { mutableStateOf(initial) }
-            var error by remember(cont) { mutableStateOf<String?>(null) }
-            var checkedState by remember { mutableStateOf(checked) }
-            AlertDialog(
-                onDismissRequest = { cont.cancel() },
-                confirmButton = {
-                    TextButton(onClick = {
-                        if (invalidator == null) {
-                            cont.resume(state to checkedState)
-                        } else {
-                            coroutineScope.launch {
-                                error = invalidator.invoke(state, checkedState)
-                                error ?: cont.resume(state to checkedState)
-                            }
-                        }
-                    }) {
-                        Text(text = stringResource(id = android.R.string.ok))
-                    }
-                },
-                title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
-                text = {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        OutlinedTextField(
-                            value = state,
-                            onValueChange = { state = it },
-                            label = hint.ifNotNullThen {
-                                Text(text = stringResource(id = hint!!))
-                            },
-                            trailingIcon = error.ifNotNullThen {
-                                Icon(
-                                    imageVector = Icons.Filled.Info,
-                                    contentDescription = null,
-                                )
-                            },
-                            supportingText = error.ifNotNullThen {
-                                Text(text = error!!)
-                            },
-                            isError = error != null,
-                            keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
-                        )
-                        LabeledCheckbox(
-                            modifier = Modifier.fillMaxWidth(),
-                            checked = checkedState,
-                            onCheckedChange = { checkedState = !checkedState },
-                            label = stringResource(checkBoxText),
-                        )
-                    }
-                },
-            )
-        }
+                    LabeledCheckbox(
+                        modifier = Modifier.fillMaxWidth(),
+                        checked = checkedState,
+                        onCheckedChange = { checkedState = !checkedState },
+                        label = stringResource(checkBoxText),
+                    )
+                }
+            },
+        )
     }
 
     suspend fun awaitPermissionOrCancel(
@@ -277,32 +273,30 @@ class DialogState {
         onCancelButtonClick: () -> Unit = {},
         secure: Boolean = false,
         text: @Composable (() -> Unit)? = null,
-    ) {
-        return dialog { cont ->
-            AlertDialog(
-                onDismissRequest = { cont.cancel() },
-                confirmButton = {
-                    TextButton(onClick = { cont.resume(Unit) }, enabled = confirmButtonEnabled) {
-                        Text(text = stringResource(id = confirmText))
-                    }
-                },
-                dismissButton = showCancelButton.ifTrueThen {
-                    TextButton(onClick = {
-                        onCancelButtonClick()
-                        cont.cancel()
-                    }) {
-                        Text(text = stringResource(id = dismissText))
-                    }
-                },
-                title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
-                text = text,
-                properties = if (secure) {
-                    DialogProperties(securePolicy = SecureFlagPolicy.SecureOn)
-                } else {
-                    DialogProperties()
-                },
-            )
-        }
+    ) = dialog { cont ->
+        AlertDialog(
+            onDismissRequest = { cont.cancel() },
+            confirmButton = {
+                TextButton(onClick = { cont.resume(Unit) }, enabled = confirmButtonEnabled) {
+                    Text(text = stringResource(id = confirmText))
+                }
+            },
+            dismissButton = showCancelButton.ifTrueThen {
+                TextButton(onClick = {
+                    onCancelButtonClick()
+                    cont.cancel()
+                }) {
+                    Text(text = stringResource(id = dismissText))
+                }
+            },
+            title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+            text = text,
+            properties = if (secure) {
+                DialogProperties(securePolicy = SecureFlagPolicy.SecureOn)
+            } else {
+                DialogProperties()
+            },
+        )
     }
 
     suspend fun awaitSelectDate(
@@ -313,63 +307,59 @@ class DialogState {
         initialDisplayMode: DisplayMode = DisplayMode.Picker,
         selectableDates: SelectableDates = DatePickerDefaults.AllDates,
         showModeToggle: Boolean = true,
-    ): Long? {
-        return dialog { cont ->
-            val state = rememberDatePickerState(
-                initialSelectedDateMillis,
-                initialDisplayedMonthMillis,
-                yearRange,
-                initialDisplayMode,
-                selectableDates,
+    ): Long? = dialog { cont ->
+        val state = rememberDatePickerState(
+            initialSelectedDateMillis,
+            initialDisplayedMonthMillis,
+            yearRange,
+            initialDisplayMode,
+            selectableDates,
+        )
+        DatePickerDialog(
+            onDismissRequest = { cont.cancel() },
+            confirmButton = {
+                TextButton(onClick = { cont.resume(state.selectedDateMillis) }) {
+                    Text(text = stringResource(id = android.R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { cont.cancel() }) {
+                    Text(text = stringResource(id = android.R.string.cancel))
+                }
+            },
+        ) {
+            DatePicker(
+                state = state,
+                title = {
+                    Text(
+                        text = stringResource(id = title),
+                        modifier = Modifier.padding(DatePickerTitlePadding),
+                    )
+                },
+                showModeToggle = showModeToggle,
             )
-            DatePickerDialog(
-                onDismissRequest = { cont.cancel() },
-                confirmButton = {
-                    TextButton(onClick = { cont.resume(state.selectedDateMillis) }) {
-                        Text(text = stringResource(id = android.R.string.ok))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { cont.cancel() }) {
-                        Text(text = stringResource(id = android.R.string.cancel))
-                    }
-                },
-            ) {
-                DatePicker(
-                    state = state,
-                    title = {
-                        Text(
-                            text = stringResource(id = title),
-                            modifier = Modifier.padding(DatePickerTitlePadding),
-                        )
-                    },
-                    showModeToggle = showModeToggle,
-                )
-            }
         }
     }
 
-    suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable DismissDialogScope<R>.() -> Unit): R {
-        return dialog { cont ->
-            val impl = remember(cont) {
-                DismissDialogScope<R> {
-                    cont.resume(it)
-                }
+    suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable DismissDialogScope<R>.() -> Unit): R = dialog { cont ->
+        val impl = remember(cont) {
+            DismissDialogScope<R> {
+                cont.resume(it)
             }
-            BasicAlertDialog(
-                onDismissRequest = { cont.cancel() },
-                properties = DialogProperties(usePlatformDefaultWidth = respectDefaultWidth),
-                content = {
-                    Surface(
-                        modifier = with(Modifier) { if (!respectDefaultWidth) defaultMinSize(280.dp) else width(280.dp) },
-                        shape = AlertDialogDefaults.shape,
-                        color = AlertDialogDefaults.containerColor,
-                        tonalElevation = AlertDialogDefaults.TonalElevation,
-                        content = { block(impl) },
-                    )
-                },
-            )
         }
+        BasicAlertDialog(
+            onDismissRequest = { cont.cancel() },
+            properties = DialogProperties(usePlatformDefaultWidth = respectDefaultWidth),
+            content = {
+                Surface(
+                    modifier = with(Modifier) { if (!respectDefaultWidth) defaultMinSize(280.dp) else width(280.dp) },
+                    shape = AlertDialogDefaults.shape,
+                    color = AlertDialogDefaults.containerColor,
+                    tonalElevation = AlertDialogDefaults.TonalElevation,
+                    content = { block(impl) },
+                )
+            },
+        )
     }
 
     suspend fun awaitSelectTime(
@@ -542,6 +532,7 @@ class DialogState {
         items: List<Pair<ImageVector, String>>,
         @StringRes title: Int,
         @StringRes hint: Int,
+        initialNote: String,
         maxChar: Int,
     ): Pair<Int, String> = showNoButton(false) {
         Column {
@@ -550,7 +541,7 @@ class DialogState {
                 modifier = Modifier.fillMaxWidth().aspectRatio(1F),
                 placeFirstItemInCenter = true,
             ) {
-                var note by remember { mutableStateOf("") }
+                var note by remember { mutableStateOf(initialNote) }
                 TextField(
                     value = note,
                     onValueChange = { note = it },

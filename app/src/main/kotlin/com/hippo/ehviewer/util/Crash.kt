@@ -5,22 +5,17 @@ import android.os.Debug
 import com.hippo.ehviewer.BuildConfig
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
-import java.io.FileWriter
-import java.io.OutputStreamWriter
 import java.io.PrintWriter
+import java.io.Writer
 
-private fun joinIfStringArray(any: Any?): String {
-    return if (any is Array<*>) any.joinToString() else any.toString()
-}
+private fun joinIfStringArray(any: Any?): String = if (any is Array<*>) any.joinToString() else any.toString()
 
-private fun collectClassStaticInfo(clazz: Class<*>): String {
-    return clazz.fields.joinToString("\n") {
-        "${it.name}=${joinIfStringArray(it.get(null))}"
-    }
+private fun collectClassStaticInfo(clazz: Class<*>): String = clazz.fields.joinToString("\n") {
+    "${it.name}=${joinIfStringArray(it.get(null))}"
 }
 
 object Crash {
-    fun collectInfo(writer: OutputStreamWriter) {
+    fun collectInfo(writer: Writer) {
         writer.write("======== PackageInfo ========\n")
         writer.write("PackageName=${BuildConfig.APPLICATION_ID}\n")
         writer.write("VersionName=${BuildConfig.VERSION_NAME}\n")
@@ -50,12 +45,11 @@ object Crash {
         writer.flush()
     }
 
-    private fun getThrowableInfo(t: Throwable, fw: FileWriter) {
-        val printWriter = PrintWriter(fw)
-        t.printStackTrace(printWriter)
+    private fun getThrowableInfo(t: Throwable, writer: PrintWriter) {
+        t.printStackTrace(writer)
         var cause = t.cause
         while (cause != null) {
-            cause.printStackTrace(printWriter)
+            cause.printStackTrace(writer)
             cause = cause.cause
         }
     }
@@ -66,14 +60,13 @@ object Crash {
         val fileName = "crash-$nowString.log"
         val file = File(dir, fileName)
         runCatching {
-            FileWriter(file).use { fw ->
-                fw.write("TIME=${nowString}\n")
-                fw.write("\n")
-                collectInfo(fw)
-                fw.write("======== CrashInfo ========\n")
-                getThrowableInfo(t, fw)
-                fw.write("\n")
-                fw.flush()
+            file.printWriter().use { writer ->
+                writer.write("TIME=${nowString}\n")
+                writer.write("\n")
+                collectInfo(writer)
+                writer.write("======== CrashInfo ========\n")
+                getThrowableInfo(t, writer)
+                writer.write("\n")
             }
         }.onFailure {
             logcat(it)
@@ -81,7 +74,7 @@ object Crash {
         }
         if (t is OutOfMemoryError) {
             val dumpFile = File(dir, "hprof-$nowString.hprof")
-            Debug.dumpHprofData(dumpFile.absolutePath)
+            Debug.dumpHprofData(dumpFile.path)
         }
     }
 }

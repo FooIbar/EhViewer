@@ -42,6 +42,7 @@ data class ListUrlBuilder(
     var category: Int = EhUtils.NONE,
     private var mKeyword: String? = null,
     var hash: String? = null,
+    var language: Int = -1,
     var advanceSearch: Int = -1,
     var minRating: Int = -1,
     var pageFrom: Int = -1,
@@ -83,18 +84,16 @@ data class ListUrlBuilder(
         mNext = q.name.substringAfterLast('@', "").ifEmpty { null }
     }
 
-    fun toQuickSearch(name: String): QuickSearch {
-        return QuickSearch(
-            name = name,
-            mode = mode,
-            category = category,
-            keyword = mKeyword,
-            advanceSearch = advanceSearch,
-            minRating = minRating,
-            pageFrom = pageFrom,
-            pageTo = pageTo,
-        )
-    }
+    fun toQuickSearch(name: String): QuickSearch = QuickSearch(
+        name = name,
+        mode = mode,
+        category = category,
+        keyword = mKeyword,
+        advanceSearch = advanceSearch,
+        minRating = minRating,
+        pageFrom = pageFrom,
+        pageTo = pageTo,
+    )
 
     fun equalsQuickSearch(q: QuickSearch?): Boolean {
         if (null == q) {
@@ -259,85 +258,89 @@ data class ListUrlBuilder(
         }
     }
 
-    fun build(): String {
-        return when (mode) {
-            MODE_NORMAL, MODE_SUBSCRIPTION -> ehUrl(EhUrl.WATCHED_PATH.takeIf { mode == MODE_SUBSCRIPTION }) {
-                val category = if (!Settings.hasSignedIn.value && category <= 0) EhUtils.NON_H else category
-                if (category > 0) {
-                    addQueryParameter("f_cats", (category.inv() and EhUtils.ALL_CATEGORY).toString())
+    fun build(): String = when (mode) {
+        MODE_NORMAL, MODE_SUBSCRIPTION -> ehUrl(EhUrl.WATCHED_PATH.takeIf { mode == MODE_SUBSCRIPTION }) {
+            val category = if (!Settings.hasSignedIn.value && category <= 0) EhUtils.NON_H else category
+            if (category > 0) {
+                addQueryParameter("f_cats", (category.inv() and EhUtils.ALL_CATEGORY).toString())
+            }
+            val query = mKeyword?.let { keyword ->
+                if (language == -1 || "gid:" in keyword || "l:" in keyword || "language:" in keyword) {
+                    keyword
+                } else {
+                    val tag = GalleryInfo.S_LANG_TAGS[language]
+                    if (keyword.isNotEmpty()) {
+                        "$tag $keyword"
+                    } else {
+                        tag
+                    }
                 }
-                val query = mKeyword?.let {
-                    val index = Settings.languageFilter.value
-                    GalleryInfo.S_LANG_TAGS.getOrNull(index)?.let { lang ->
-                        "$it $lang"
-                    } ?: it
+            }
+            addQueryParameterIfNotBlank("f_search", query)
+            addQueryParameterIfNotBlank("prev", mPrev)
+            addQueryParameterIfNotBlank("next", mNext)
+            addQueryParameterIfNotBlank("seek", mJumpTo)
+            addQueryParameterIfNotBlank("range", mRange.takeIf { it > 0 }?.toString())
+            // Advance search
+            if (advanceSearch > 0 || minRating > 0 || pageFrom > 0 || pageTo > 0) {
+                addQueryParameter("advsearch", "1")
+                if (advanceSearch and AdvanceTable.SH != 0) {
+                    addQueryParameter("f_sh", "on")
                 }
-                addQueryParameterIfNotBlank("f_search", query)
+                if (advanceSearch and AdvanceTable.STO != 0) {
+                    addQueryParameter("f_sto", "on")
+                }
+                if (advanceSearch and AdvanceTable.SFL != 0) {
+                    addQueryParameter("f_sfl", "on")
+                }
+                if (advanceSearch and AdvanceTable.SFU != 0) {
+                    addQueryParameter("f_sfu", "on")
+                }
+                if (advanceSearch and AdvanceTable.SFT != 0) {
+                    addQueryParameter("f_sft", "on")
+                }
+                // Set min star
+                if (minRating > 0) {
+                    addQueryParameter("f_sr", "on")
+                    addQueryParameter("f_srdd", "$minRating")
+                }
+                // Pages
+                if (pageFrom > 0 || pageTo > 0) {
+                    addQueryParameter("f_sp", "on")
+                    addQueryParameterIfNotBlank(
+                        "f_spf",
+                        pageFrom.takeIf { it > 0 }?.toString(),
+                    )
+                    addQueryParameterIfNotBlank(
+                        "f_spt",
+                        pageTo.takeIf { it > 0 }?.toString(),
+                    )
+                }
+            }
+        }.buildString()
+
+        MODE_UPLOADER, MODE_TAG -> {
+            val path = if (mode == MODE_UPLOADER) "uploader" else "tag"
+            ehUrl(listOf(path, requireNotNull(mKeyword))) {
                 addQueryParameterIfNotBlank("prev", mPrev)
                 addQueryParameterIfNotBlank("next", mNext)
                 addQueryParameterIfNotBlank("seek", mJumpTo)
                 addQueryParameterIfNotBlank("range", mRange.takeIf { it > 0 }?.toString())
-                // Advance search
-                if (advanceSearch > 0 || minRating > 0 || pageFrom > 0 || pageTo > 0) {
-                    addQueryParameter("advsearch", "1")
-                    if (advanceSearch and AdvanceTable.SH != 0) {
-                        addQueryParameter("f_sh", "on")
-                    }
-                    if (advanceSearch and AdvanceTable.STO != 0) {
-                        addQueryParameter("f_sto", "on")
-                    }
-                    if (advanceSearch and AdvanceTable.SFL != 0) {
-                        addQueryParameter("f_sfl", "on")
-                    }
-                    if (advanceSearch and AdvanceTable.SFU != 0) {
-                        addQueryParameter("f_sfu", "on")
-                    }
-                    if (advanceSearch and AdvanceTable.SFT != 0) {
-                        addQueryParameter("f_sft", "on")
-                    }
-                    // Set min star
-                    if (minRating > 0) {
-                        addQueryParameter("f_sr", "on")
-                        addQueryParameter("f_srdd", "$minRating")
-                    }
-                    // Pages
-                    if (pageFrom > 0 || pageTo > 0) {
-                        addQueryParameter("f_sp", "on")
-                        addQueryParameterIfNotBlank(
-                            "f_spf",
-                            pageFrom.takeIf { it > 0 }?.toString(),
-                        )
-                        addQueryParameterIfNotBlank(
-                            "f_spt",
-                            pageTo.takeIf { it > 0 }?.toString(),
-                        )
-                    }
-                }
             }.buildString()
-
-            MODE_UPLOADER, MODE_TAG -> {
-                val path = if (mode == MODE_UPLOADER) "uploader" else "tag"
-                ehUrl(listOf(path, requireNotNull(mKeyword))) {
-                    addQueryParameterIfNotBlank("prev", mPrev)
-                    addQueryParameterIfNotBlank("next", mNext)
-                    addQueryParameterIfNotBlank("seek", mJumpTo)
-                    addQueryParameterIfNotBlank("range", mRange.takeIf { it > 0 }?.toString())
-                }.buildString()
-            }
-
-            MODE_WHATS_HOT -> EhUrl.popularUrl
-            MODE_IMAGE_SEARCH -> ehUrl {
-                addQueryParameter("f_shash", requireNotNull(hash))
-            }.buildString()
-            MODE_TOPLIST -> {
-                ehUrl("toplist.php", EhUrl.DOMAIN_E) {
-                    addQueryParameter("tl", requireNotNull(mKeyword))
-                    addQueryParameterIfNotBlank("p", mJumpTo)
-                }.buildString()
-            }
-
-            else -> throw IllegalStateException("Unexpected value: $mode")
         }
+
+        MODE_WHATS_HOT -> EhUrl.popularUrl
+        MODE_IMAGE_SEARCH -> ehUrl {
+            addQueryParameter("f_shash", requireNotNull(hash))
+        }.buildString()
+        MODE_TOPLIST -> {
+            ehUrl("toplist.php", EhUrl.DOMAIN_E) {
+                addQueryParameter("tl", requireNotNull(mKeyword))
+                addQueryParameterIfNotBlank("p", mJumpTo)
+            }.buildString()
+        }
+
+        else -> throw IllegalStateException("Unexpected value: $mode")
     }
 
     @IntDef(

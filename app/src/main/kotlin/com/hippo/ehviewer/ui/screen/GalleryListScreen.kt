@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.screen
 import android.content.Context
 import android.net.Uri
 import android.view.ViewConfiguration
+import androidx.activity.compose.ReportDrawnWhen
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.animateDpAsState
@@ -40,12 +41,10 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -78,16 +77,18 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.viewModelScope
+import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
+import arrow.core.raise.ensure
+import arrow.core.raise.ensureNotNull
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -135,8 +136,8 @@ import com.hippo.ehviewer.ui.tools.rememberMutableStateInDataStore
 import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.pickVisualMedia
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.sha1
+import com.hippo.ehviewer.util.sha1
+import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -177,6 +178,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
     var showSearchLayout by rememberSaveable { mutableStateOf(false) }
+    val animateItems by Settings.animateItems.collectAsState()
 
     var category by rememberMutableStateInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
     var advancedSearchOption by rememberMutableStateInDataStore("AdvancedSearchOption") { AdvancedSearchOption() }
@@ -203,7 +205,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         onBack = { showSearchLayout = false },
     )
     val density = LocalDensity.current
-    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val listState = rememberLazyGridState()
     val gridState = rememberLazyStaggeredGridState()
     val isTopList = remember(urlBuilder) { urlBuilder.mode == MODE_TOPLIST }
@@ -254,6 +255,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             }
         }.flow.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
+    ReportDrawnWhen { data.loadState.refresh !is LoadState.Loading }
     FavouriteStatusRouter.Observe(data)
     val listMode by Settings.listMode.collectAsState()
 
@@ -263,6 +265,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     val toplists = remember { entries zip values }
     val quickSearchName = getSuitableTitleForUrlBuilder(urlBuilder, false)
     var saveProgress by Settings.qSSaveProgress.asMutableState()
+    var languageFilter by Settings.languageFilter.asMutableState()
 
     fun getFirstVisibleItemIndex() = if (listMode == 0) {
         listState.firstVisibleItemIndex
@@ -341,20 +344,15 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                     checkBoxText = R.string.save_progress,
                                 ) { input, checked ->
                                     var text = input.trim()
-                                    nameEmpty.takeIf {
-                                        text.isEmpty()
-                                    } ?: dupName.takeIf {
-                                        if (checked) text += "@$next"
-                                        quickSearchList.fastAny { it.name == text }
-                                    } ?: run {
-                                        val quickSearch = urlBuilder.toQuickSearch(text)
-                                        quickSearch.position = quickSearchList.size
-                                        // Insert to DB first to update the id
-                                        EhDB.insertQuickSearch(quickSearch)
-                                        quickSearchList.add(quickSearch)
-                                        saveProgress = checked
-                                        null
-                                    }
+                                    ensure(text.isNotBlank()) { nameEmpty }
+                                    if (checked) text += "@$next"
+                                    ensure(quickSearchList.none { it.name == text }) { dupName }
+                                    val quickSearch = urlBuilder.toQuickSearch(text)
+                                    quickSearch.position = quickSearchList.size
+                                    // Insert to DB first to update the id
+                                    EhDB.insertQuickSearch(quickSearch)
+                                    quickSearchList.add(quickSearch)
+                                    saveProgress = checked
                                 }
                             }
                         }
@@ -371,9 +369,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 val quickSearchListState = rememberLazyListState()
                 val hapticFeedback = rememberHapticFeedback()
                 val reorderableLazyListState = rememberReorderableLazyListState(quickSearchListState) { from, to ->
-                    val fromIndex = from.index - 1
-                    val toIndex = to.index - 1
-                    quickSearchList.apply { add(toIndex, removeAt(fromIndex)) }
+                    quickSearchList.apply { add(to.index, removeAt(from.index)) }
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.MOVE)
                 }
                 var fromIndex by remember { mutableIntStateOf(-1) }
@@ -382,15 +378,11 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                     state = quickSearchListState,
                     contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
                 ) {
-                    // Fix the first item's reorder animation
-                    stickyHeader {
-                        HorizontalDivider()
-                    }
                     itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { itemIndex, item ->
                         val index by rememberUpdatedState(itemIndex)
-                        ReorderableItem(reorderableLazyListState, key = item.id!!) { isDragging ->
+                        ReorderableItem(reorderableLazyListState, item.id!!, animated = animateItems) { isDragging ->
                             // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
-                            val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
+                            val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
                             LaunchedEffect(dismissState) {
                                 snapshotFlow { dismissState.currentValue }.collect { value ->
                                     if (value == SwipeToDismissBoxValue.EndToStart) {
@@ -428,10 +420,14 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                 ListItem(
                                     modifier = Modifier.clickable {
                                         if (urlBuilder.mode == MODE_WHATS_HOT) {
-                                            val builder = ListUrlBuilder(item)
+                                            val builder = ListUrlBuilder(item).apply {
+                                                language = languageFilter
+                                            }
                                             navigator.navigate(builder.asDst())
                                         } else {
-                                            urlBuilder = ListUrlBuilder(item)
+                                            urlBuilder = ListUrlBuilder(item).apply {
+                                                language = languageFilter
+                                            }
                                             data.refresh()
                                         }
                                         showSearchLayout = false
@@ -516,6 +512,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             builder.mode = newMode
             builder.keyword = query
             builder.category = category
+            builder.language = languageFilter
             builder.advanceSearch = advancedSearchOption.advanceSearch
             builder.minRating = advancedSearchOption.minRating
             builder.pageFrom = advancedSearchOption.fromPage
@@ -526,7 +523,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 return@launchIO
             }
             builder.mode = MODE_IMAGE_SEARCH
-            builder.hash = imageUri!!.asUniFile().sha1()
+            builder.hash = imageUri!!.toOkioPath().sha1()
         }
         when (oldMode) {
             MODE_TOPLIST, MODE_WHATS_HOT -> {
@@ -550,8 +547,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             fabHidden = it
         },
         title = suitableTitle,
-        searchFieldState = searchFieldState,
         searchFieldHint = searchBarHint,
+        searchFieldState = searchFieldState,
         suggestionProvider = {
             GalleryDetailUrlParser.parse(it, false)?.run {
                 GalleryDetailUrlSuggestion(gid, token)
@@ -579,11 +576,11 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         filter = {
             SearchFilter(
                 category = category,
-                onCategoryChanged = { category = it },
+                onCategoryChange = { category = it },
+                language = languageFilter,
+                onLanguageChange = { languageFilter = it },
                 advancedOption = advancedSearchOption,
-                onAdvancedOptionChanged = {
-                    advancedSearchOption = it
-                },
+                onAdvancedOptionChange = { advancedSearchOption = it },
             )
         },
         floatingActionButton = {
@@ -736,11 +733,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                     val page = urlBuilder.mJumpTo?.toIntOrNull() ?: 0
                     val hint = getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
                     val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
-                        when (oriText.trim().toIntOrNull()?.let { it - 1 }) {
-                            null -> invalidNum
-                            !in 0..<TOPLIST_PAGES -> outOfRange
-                            else -> null
-                        }
+                        val goto = ensureNotNull(oriText.trim().toIntOrNull()) { invalidNum } - 1
+                        ensure(goto in 0..<TOPLIST_PAGES) { outOfRange }
                     }.trim().toInt() - 1
                     urlBuilder.setJumpTo(text)
                 } else {

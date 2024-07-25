@@ -22,10 +22,11 @@ import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.obtainSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.releaseSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
-import com.hippo.unifile.UniFile
+import okio.Path
 
 class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
-    PageLoader2(mGalleryInfo.gid, startPage), OnSpiderListener {
+    PageLoader2(mGalleryInfo.gid, startPage),
+    OnSpiderListener {
     private lateinit var mSpiderQueen: SpiderQueen
     override fun start() {
         super.start()
@@ -45,13 +46,9 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
         EhUtils.getSuitableTitle(mGalleryInfo)
     }
 
-    override fun getImageExtension(index: Int): String? {
-        return mSpiderQueen.getExtension(index)
-    }
+    override fun getImageExtension(index: Int): String? = mSpiderQueen.getExtension(index)
 
-    override fun save(index: Int, file: UniFile): Boolean {
-        return mSpiderQueen.save(index, file)
-    }
+    override fun save(index: Int, file: Path): Boolean = mSpiderQueen.save(index, file)
 
     override val size: Int
         get() = mSpiderQueen.size
@@ -64,9 +61,7 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
         mSpiderQueen.forceRequest(index, orgImg)
     }
 
-    override suspend fun awaitReady(): Boolean {
-        return super.awaitReady() && mSpiderQueen.awaitReady()
-    }
+    override suspend fun awaitReady(): Boolean = super.awaitReady() && mSpiderQueen.awaitReady()
 
     override val isReady: Boolean
         get() = ::mSpiderQueen.isInitialized && mSpiderQueen.isReady

@@ -18,7 +18,6 @@ package com.hippo.ehviewer.gallery
 import androidx.annotation.CallSuper
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.unifile.UniFile
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -26,8 +25,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import okio.Path
 
-abstract class PageLoader2(private val gid: Long, var startPage: Int) : PageLoader(), CoroutineScope {
+abstract class PageLoader2(private val gid: Long, var startPage: Int) :
+    PageLoader(),
+    CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
     private val progressJob = launch(start = CoroutineStart.LAZY) {
         if (startPage == -1) {
@@ -66,9 +68,5 @@ abstract class PageLoader2(private val gid: Long, var startPage: Int) : PageLoad
         FileUtils.sanitizeFilename("$title - ${index + 1}.${it.lowercase()}")
     }
 
-    abstract fun save(index: Int, file: UniFile): Boolean
-
-    fun saveToDir(index: Int, dir: UniFile): UniFile? = getImageFilename(index)?.let { filename ->
-        (dir / filename).takeIf { save(index, it) }
-    }
+    abstract fun save(index: Int, file: Path): Boolean
 }

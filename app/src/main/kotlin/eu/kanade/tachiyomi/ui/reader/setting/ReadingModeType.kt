@@ -12,9 +12,7 @@ import com.hippo.ehviewer.icons.reader.Vertical
 import com.hippo.ehviewer.icons.reader.Webtoon
 import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
-import eu.kanade.tachiyomi.ui.reader.viewer.pager.L2RPagerViewer
-import eu.kanade.tachiyomi.ui.reader.viewer.pager.R2LPagerViewer
-import eu.kanade.tachiyomi.ui.reader.viewer.pager.VerticalPagerViewer
+import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
 import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 
 @Stable
@@ -50,15 +48,13 @@ enum class ReadingModeType(
 
         fun fromSpinner(position: Int?) = entries.find { value -> value.prefValue == position } ?: DEFAULT
 
-        fun toViewer(preference: Int?, activity: ReaderActivity): BaseViewer {
-            return when (fromPreference(preference)) {
-                LEFT_TO_RIGHT -> L2RPagerViewer(activity)
-                RIGHT_TO_LEFT -> R2LPagerViewer(activity)
-                VERTICAL -> VerticalPagerViewer(activity)
-                WEBTOON -> WebtoonViewer(activity)
-                CONTINUOUS_VERTICAL -> WebtoonViewer(activity, isContinuous = false)
-                DEFAULT -> L2RPagerViewer(activity)
-            }
+        fun toViewer(preference: Int?, activity: ReaderActivity): BaseViewer = when (fromPreference(preference)) {
+            LEFT_TO_RIGHT -> PagerViewer(activity)
+            RIGHT_TO_LEFT -> PagerViewer(activity, true)
+            VERTICAL -> PagerViewer(activity, isVertical = true)
+            WEBTOON -> WebtoonViewer(activity)
+            CONTINUOUS_VERTICAL -> WebtoonViewer(activity, isContinuous = false)
+            DEFAULT -> PagerViewer(activity)
         }
     }
 }
