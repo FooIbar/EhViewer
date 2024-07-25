@@ -1,7 +1,6 @@
 package com.hippo.ehviewer.ui.reader
 
 import android.graphics.PointF
-import androidx.compose.animation.core.SnapSpec
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +52,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.WEBTOON
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.saket.telephoto.zoomable.DoubleClickToZoomListener
@@ -263,11 +263,12 @@ private fun PageContainer(
             LaunchedEffect(alignment) {
                 val zoomFraction = snapshotFlow { zoomableState.zoomFraction }.first { it != null }
                 if (zoomFraction == 0f) {
+                    delay(500)
                     val contentSize = zoomableState.transformedContentBounds.size
                     val scale = ContentScale.FillHeight.computeScaleFactor(contentSize, layoutSize)
                     val targetScale = scale.scaleX.coerceAtMost(zoomableState.zoomSpec.maxZoomFactor)
                     val offset = alignment.align(0, layoutSize.width.toInt(), LayoutDirection.Ltr)
-                    zoomableState.zoomTo(targetScale, Offset(offset.toFloat(), 0f), NoAnimationSpec)
+                    zoomableState.zoomTo(targetScale, Offset(offset.toFloat(), 0f))
                 }
             }
         }
@@ -389,4 +390,3 @@ object DoubleTapZoom : DoubleClickToZoomListener {
 
 private val PagerZoomSpec = ZoomSpec(maxZoomFactor = 5f)
 private val ZoomSpec = ZoomSpec(maxZoomFactor = 3f)
-private val NoAnimationSpec = SnapSpec<Float>()
