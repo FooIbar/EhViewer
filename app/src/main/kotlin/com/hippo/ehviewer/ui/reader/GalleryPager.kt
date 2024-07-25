@@ -53,6 +53,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import me.saket.telephoto.zoomable.DoubleClickToZoomListener
 import me.saket.telephoto.zoomable.ZoomSpec
@@ -148,7 +149,7 @@ fun GalleryPager(
             }
         }
         WEBTOON, CONTINUOUS_VERTICAL -> {
-            val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
+            val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec)
             val navigator by Settings.readerWebtoonNav.collectAsState {
                 ViewerNavigation.fromPreference(it, true)
             }
@@ -230,7 +231,7 @@ private fun PageContainer(
 ) {
     @Suppress("NAME_SHADOWING")
     val isRtl by rememberUpdatedState(isRtl)
-    val zoomableState = rememberZoomableState(zoomSpec = pagerZoomSpec)
+    val zoomableState = rememberZoomableState(zoomSpec = PagerZoomSpec)
     val status by page.status.collectAsState()
     if (status == Page.State.READY) {
         val size = page.image!!.rect.size.toSize()
@@ -260,8 +261,9 @@ private fun PageContainer(
         }
         if (landscapeZoom && contentScale == ContentScale.Fit && size.width > size.height) {
             LaunchedEffect(alignment) {
-                delay(500)
-                if (zoomableState.zoomFraction == 0f) {
+                val zoomFraction = snapshotFlow { zoomableState.zoomFraction }.first { it != null }
+                if (zoomFraction == 0f) {
+                    delay(500)
                     val contentSize = zoomableState.transformedContentBounds.size
                     val scale = ContentScale.FillHeight.computeScaleFactor(contentSize, layoutSize)
                     val targetScale = scale.scaleX.coerceAtMost(zoomableState.zoomSpec.maxZoomFactor)
@@ -386,5 +388,5 @@ object DoubleTapZoom : DoubleClickToZoomListener {
     }
 }
 
-private val pagerZoomSpec = ZoomSpec(maxZoomFactor = 5f)
-private val zoomSpec = ZoomSpec(maxZoomFactor = 3f)
+private val PagerZoomSpec = ZoomSpec(maxZoomFactor = 5f)
+private val ZoomSpec = ZoomSpec(maxZoomFactor = 3f)
