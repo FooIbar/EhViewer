@@ -217,6 +217,8 @@ object Settings : DataStorePreferences(null) {
     val imageScaleType = intPref("pref_image_scale_type_key", 1)
     val landscapeZoom = boolPref("landscape_zoom", false)
     val zoomStart = intPref("pref_zoom_start_key", 1)
+    val showNavigationOverlayNewUser = boolPref("reader_navigation_overlay_new_user", true)
+    val showNavigationOverlayOnStart = boolPref("reader_navigation_overlay_on_start", false)
 
     init {
         if ("CN" == Locale.getDefault().country) {

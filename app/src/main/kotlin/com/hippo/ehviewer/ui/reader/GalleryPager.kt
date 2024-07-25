@@ -212,7 +212,15 @@ fun GalleryPager(
             }
         }
     }
-    NavigationOverlay(navigator, navigator.invertMode)
+    val showOnStart = remember {
+        Settings.showNavigationOverlayNewUser.value || Settings.showNavigationOverlayOnStart.value
+    }
+    NavigationOverlay(
+        navigator,
+        navigator.invertMode,
+        showOnStart,
+        onDismiss = { Settings.showNavigationOverlayNewUser.value = false },
+    )
 }
 
 @Composable

@@ -33,21 +33,26 @@ import eu.kanade.tachiyomi.ui.reader.viewer.navigation.DisabledNavigation
 fun NavigationOverlay(
     navigation: ViewerNavigation,
     invertMode: PreferenceValues.TappingInvertMode,
+    showOnStart: Boolean,
+    onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var firstLaunch by remember { mutableStateOf(true) }
     var visible by remember { mutableStateOf(false) }
     val regions = remember(navigation, invertMode) {
+        val enabled = navigation !is DisabledNavigation
         if (firstLaunch) {
             firstLaunch = false
+            visible = showOnStart && enabled
         } else {
-            visible = navigation !is DisabledNavigation
+            visible = enabled
         }
         navigation.regions
     }
     AnimatedVisibility(
         visible = visible,
         modifier = modifier.clickable(interactionSource = null, indication = null) {
+            onDismiss()
             visible = false
         }.fillMaxSize(),
         enter = fadeIn(AnimationSpec),
