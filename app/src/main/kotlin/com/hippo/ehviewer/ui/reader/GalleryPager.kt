@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.reader
 
-import android.graphics.PointF
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -82,27 +81,27 @@ fun GalleryPager(
     val webtoonInvertMode by Settings.readerWebtoonNavInverted.collectAsState {
         TappingInvertMode.entries[it]
     }
-    val navigation = if (isPagerType) {
+    val navigationType = if (isPagerType) {
         pagerNavigation
     } else {
         webtoonNavigation
     }
-    val navigator = remember(navigation, type) {
-        ViewerNavigation.fromPreference(navigation, ReadingModeType.isVertical(type))
+    val navigation = remember(navigationType, type) {
+        ViewerNavigation.fromPreference(navigationType, ReadingModeType.isVertical(type))
     }
-    navigator.invertMode = if (isPagerType) {
+    navigation.invertMode = if (isPagerType) {
         pagerInvertMode
     } else {
         webtoonInvertMode
     }
-    val navigatorState = rememberUpdatedState(navigator)
+    val regions = remember(navigation, navigation.invertMode) { navigation.regions }
+    val navigatorState = rememberUpdatedState(regions)
     if (isPagerType) {
         val isVertical = type == VERTICAL
         val scaleType by Settings.imageScaleType.collectAsState()
         val landscapeZoom by Settings.landscapeZoom.collectAsState()
-        val alignment by Settings.zoomStart.collectAsState(type) {
-            Alignment.fromPreferences(it, type)
-        }
+        val zoomStart by Settings.zoomStart.collectAsState()
+        val alignment = Alignment.fromPreferences(zoomStart, type)
         val layoutSize by remember(pagerState) {
             derivedStateOf {
                 pagerState.layoutInfo.viewportSize.toSize()
@@ -176,9 +175,10 @@ fun GalleryPager(
                     scope.launch {
                         with(lazyListState) {
                             val size = lazyListState.layoutInfo.viewportSize
-                            val pos = PointF(it.x / size.width, it.y / size.height)
+                            val x = it.x / size.width
+                            val y = it.y / size.height
                             val distance = size.height * 0.75f
-                            when (navigatorState.value.getAction(pos)) {
+                            when (navigatorState.value.getAction(x, y)) {
                                 NavigationRegion.MENU -> onMenuRegionClick()
                                 NavigationRegion.NEXT, NavigationRegion.RIGHT -> performScrollBy(distance)
                                 NavigationRegion.PREV, NavigationRegion.LEFT -> performScrollBy(-distance)
@@ -216,8 +216,7 @@ fun GalleryPager(
         Settings.showNavigationOverlayNewUser.value || Settings.showNavigationOverlayOnStart.value
     }
     NavigationOverlay(
-        navigator,
-        navigator.invertMode,
+        regions,
         showOnStart,
         onDismiss = { Settings.showNavigationOverlayNewUser.value = false },
     )
@@ -232,7 +231,7 @@ private fun PageContainer(
     landscapeZoom: Boolean,
     alignment: Alignment.Horizontal,
     layoutSize: Size,
-    navigatorState: State<ViewerNavigation>,
+    navigatorState: State<NavigationRegions>,
     pagerState: PagerState,
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
@@ -293,9 +292,10 @@ private fun PageContainer(
                     scope.launch {
                         with(pagerState) {
                             with(zoomableState) {
-                                val pos = PointF(it.x / layoutSize.width, it.y / layoutSize.height)
+                                val x = it.x / layoutSize.width
+                                val y = it.y / layoutSize.height
                                 val distance = layoutSize.width
-                                when (navigatorState.value.getAction(pos)) {
+                                when (navigatorState.value.getAction(x, y)) {
                                     NavigationRegion.MENU -> onMenuRegionClick()
                                     NavigationRegion.NEXT -> {
                                         val canPan = if (isRtl) panRight(distance) else panLeft(distance)
@@ -333,6 +333,9 @@ private fun PageContainer(
         )
     }
 }
+
+private fun NavigationRegions.getAction(x: Float, y: Float) =
+    find { it.rectF.contains(x, y) }?.type ?: NavigationRegion.MENU
 
 suspend fun ZoomableState.panLeft(distance: Float): Boolean {
     val canPan = Settings.navigateToPan.value && transformedContentBounds.right > distance

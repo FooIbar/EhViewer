@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,32 +26,26 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import eu.kanade.tachiyomi.data.preference.PreferenceValues
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
-import eu.kanade.tachiyomi.ui.reader.viewer.navigation.DisabledNavigation
 
 @Composable
 fun NavigationOverlay(
-    navigation: ViewerNavigation,
-    invertMode: PreferenceValues.TappingInvertMode,
+    regions: NavigationRegions,
     showOnStart: Boolean,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var firstLaunch by remember { mutableStateOf(true) }
-    var visible by remember { mutableStateOf(false) }
-    val regions = remember(navigation, invertMode) {
-        val enabled = navigation !is DisabledNavigation
+    var visible by remember { mutableStateOf(showOnStart) }
+    LaunchedEffect(regions) {
         if (firstLaunch) {
             firstLaunch = false
-            visible = showOnStart && enabled
         } else {
-            visible = enabled
+            visible = true
         }
-        navigation.regions
     }
     AnimatedVisibility(
-        visible = visible,
+        visible = visible && regions.isNotEmpty(),
         modifier = modifier.clickable(interactionSource = null, indication = null) {
             onDismiss()
             visible = false
@@ -87,5 +82,7 @@ fun NavigationOverlay(
         }
     }
 }
+
+typealias NavigationRegions = List<ViewerNavigation.Region>
 
 private val AnimationSpec = tween<Float>(1000)
