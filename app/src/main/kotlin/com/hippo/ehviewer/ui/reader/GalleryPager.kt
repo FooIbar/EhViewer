@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.reader
 
-import android.graphics.PointF
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
@@ -44,8 +43,6 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.CONTINUOUS_VERTICAL
-import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.DEFAULT
-import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.LEFT_TO_RIGHT
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.RIGHT_TO_LEFT
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.VERTICAL
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.WEBTOON
@@ -75,143 +72,154 @@ fun GalleryPager(
 ) {
     val scope = rememberCoroutineScope()
     val items = pageLoader.pages
-    when (type) {
-        DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT, VERTICAL -> {
-            val isVertical = type == VERTICAL
-            val scaleType by Settings.imageScaleType.collectAsState()
-            val landscapeZoom by Settings.landscapeZoom.collectAsState()
-            val alignment by Settings.zoomStart.collectAsState(type) {
-                Alignment.fromPreferences(it, type)
-            }
-            val navigatorState = Settings.readerPagerNav.collectAsState(isVertical) {
-                ViewerNavigation.fromPreference(it, isVertical)
-            }
-            val invertMode by Settings.readerPagerNavInverted.collectAsState {
-                TappingInvertMode.entries[it]
-            }
-            LaunchedEffect(navigatorState.value, invertMode) {
-                navigatorState.value.invertMode = invertMode
-            }
-            val layoutSize by remember(pagerState) {
-                derivedStateOf {
-                    pagerState.layoutInfo.viewportSize.toSize()
-                }
-            }
-            if (isVertical) {
-                VerticalPager(
-                    state = pagerState,
-                    modifier = modifier,
-                    contentPadding = contentPadding,
-                    key = { it },
-                ) { index ->
-                    val page = items[index]
-                    PageContainer(
-                        page = page,
-                        pageLoader = pageLoader,
-                        isRtl = false,
-                        scaleType = scaleType,
-                        landscapeZoom = landscapeZoom,
-                        alignment = alignment,
-                        layoutSize = layoutSize,
-                        navigatorState = navigatorState,
-                        pagerState = pagerState,
-                        onSelectPage = onSelectPage,
-                        onMenuRegionClick = onMenuRegionClick,
-                        scope = scope,
-                    )
-                }
-            } else {
-                val isRtl = type == RIGHT_TO_LEFT
-                val isRtlLayout = LocalLayoutDirection.current == LayoutDirection.Rtl
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = modifier,
-                    contentPadding = contentPadding,
-                    reverseLayout = isRtl xor isRtlLayout,
-                    key = { it },
-                ) { index ->
-                    val page = items[index]
-                    PageContainer(
-                        page = page,
-                        pageLoader = pageLoader,
-                        isRtl = isRtl,
-                        scaleType = scaleType,
-                        landscapeZoom = landscapeZoom,
-                        alignment = alignment,
-                        layoutSize = layoutSize,
-                        navigatorState = navigatorState,
-                        pagerState = pagerState,
-                        onSelectPage = onSelectPage,
-                        onMenuRegionClick = onMenuRegionClick,
-                        scope = scope,
-                    )
-                }
+    val isPagerType = !ReadingModeType.isWebtoon(type)
+    val pagerNavigation by Settings.readerPagerNav.collectAsState()
+    val pagerInvertMode by Settings.readerPagerNavInverted.collectAsState {
+        TappingInvertMode.entries[it]
+    }
+    val webtoonNavigation by Settings.readerWebtoonNav.collectAsState()
+    val webtoonInvertMode by Settings.readerWebtoonNavInverted.collectAsState {
+        TappingInvertMode.entries[it]
+    }
+    val navigationType = if (isPagerType) {
+        pagerNavigation
+    } else {
+        webtoonNavigation
+    }
+    val navigation = remember(navigationType, type) {
+        ViewerNavigation.fromPreference(navigationType, ReadingModeType.isVertical(type))
+    }
+    navigation.invertMode = if (isPagerType) {
+        pagerInvertMode
+    } else {
+        webtoonInvertMode
+    }
+    val regions = remember(navigation, navigation.invertMode) { navigation.regions }
+    val navigatorState = rememberUpdatedState(regions)
+    if (isPagerType) {
+        val isVertical = type == VERTICAL
+        val scaleType by Settings.imageScaleType.collectAsState()
+        val landscapeZoom by Settings.landscapeZoom.collectAsState()
+        val zoomStart by Settings.zoomStart.collectAsState()
+        val alignment = Alignment.fromPreferences(zoomStart, type)
+        val layoutSize by remember(pagerState) {
+            derivedStateOf {
+                pagerState.layoutInfo.viewportSize.toSize()
             }
         }
-        WEBTOON, CONTINUOUS_VERTICAL -> {
-            val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec)
-            val navigator by Settings.readerWebtoonNav.collectAsState {
-                ViewerNavigation.fromPreference(it, true)
+        if (isVertical) {
+            VerticalPager(
+                state = pagerState,
+                modifier = modifier,
+                contentPadding = contentPadding,
+                key = { it },
+            ) { index ->
+                val page = items[index]
+                PageContainer(
+                    page = page,
+                    pageLoader = pageLoader,
+                    isRtl = false,
+                    scaleType = scaleType,
+                    landscapeZoom = landscapeZoom,
+                    alignment = alignment,
+                    layoutSize = layoutSize,
+                    navigatorState = navigatorState,
+                    pagerState = pagerState,
+                    onSelectPage = onSelectPage,
+                    onMenuRegionClick = onMenuRegionClick,
+                    scope = scope,
+                )
             }
-            val invertMode by Settings.readerWebtoonNavInverted.collectAsState {
-                TappingInvertMode.entries[it]
+        } else {
+            val isRtl = type == RIGHT_TO_LEFT
+            val isRtlLayout = LocalLayoutDirection.current == LayoutDirection.Rtl
+            HorizontalPager(
+                state = pagerState,
+                modifier = modifier,
+                contentPadding = contentPadding,
+                reverseLayout = isRtl xor isRtlLayout,
+                key = { it },
+            ) { index ->
+                val page = items[index]
+                PageContainer(
+                    page = page,
+                    pageLoader = pageLoader,
+                    isRtl = isRtl,
+                    scaleType = scaleType,
+                    landscapeZoom = landscapeZoom,
+                    alignment = alignment,
+                    layoutSize = layoutSize,
+                    navigatorState = navigatorState,
+                    pagerState = pagerState,
+                    onSelectPage = onSelectPage,
+                    onMenuRegionClick = onMenuRegionClick,
+                    scope = scope,
+                )
             }
-            LaunchedEffect(navigator, invertMode) {
-                navigator.invertMode = invertMode
-            }
-            val density = LocalDensity.current
-            val paddingPercent by Settings.webtoonSidePadding.collectAsState()
-            val sidePadding by remember(density) {
-                snapshotFlow {
-                    with(density) {
-                        (lazyListState.layoutInfo.viewportSize.width * paddingPercent / 100f).toDp()
-                    }
+        }
+    } else {
+        val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec)
+        val density = LocalDensity.current
+        val paddingPercent by Settings.webtoonSidePadding.collectAsState()
+        val sidePadding by remember(density) {
+            snapshotFlow {
+                with(density) {
+                    (lazyListState.layoutInfo.viewportSize.width * paddingPercent / 100f).toDp()
                 }
-            }.collectAsState(0.dp)
-            LazyColumn(
-                modifier = modifier.zoomable(
-                    state = zoomableState,
-                    onClick = {
-                        scope.launch {
-                            with(lazyListState) {
-                                val size = lazyListState.layoutInfo.viewportSize
-                                val pos = PointF(it.x / size.width, it.y / size.height)
-                                val distance = size.height * 0.75f
-                                when (navigator.getAction(pos)) {
-                                    NavigationRegion.MENU -> onMenuRegionClick()
-                                    NavigationRegion.NEXT, NavigationRegion.RIGHT -> performScrollBy(distance)
-                                    NavigationRegion.PREV, NavigationRegion.LEFT -> performScrollBy(-distance)
-                                }
+            }
+        }.collectAsState(0.dp)
+        LazyColumn(
+            modifier = modifier.zoomable(
+                state = zoomableState,
+                onClick = {
+                    scope.launch {
+                        with(lazyListState) {
+                            val size = lazyListState.layoutInfo.viewportSize
+                            val x = it.x / size.width
+                            val y = it.y / size.height
+                            val distance = size.height * 0.75f
+                            when (navigatorState.value.getAction(x, y)) {
+                                NavigationRegion.MENU -> onMenuRegionClick()
+                                NavigationRegion.NEXT, NavigationRegion.RIGHT -> performScrollBy(distance)
+                                NavigationRegion.PREV, NavigationRegion.LEFT -> performScrollBy(-distance)
                             }
                         }
-                    },
-                    onLongClick = { ofs ->
-                        val info = lazyListState.layoutInfo.visibleItemsInfo.find { info ->
-                            info.offset <= ofs.y && info.offset + info.size > ofs.y
-                        }
-                        if (info == null && type == CONTINUOUS_VERTICAL) {
-                            // Maybe user long-click on gaps? ¯\_(ツ)_/¯
-                            return@zoomable
-                        }
-                        info ?: error("Internal error finding long click item!!! offset:$ofs")
-                        onSelectPage(items[info.index])
-                    },
-                    onDoubleClick = DoubleTapZoom,
-                ),
-                state = lazyListState,
-                contentPadding = contentPadding + PaddingValues(horizontal = sidePadding),
-                verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
-            ) {
-                items(items, key = { it.index }) { page ->
-                    PagerItem(
-                        page = page,
-                        pageLoader = pageLoader,
-                        contentScale = ContentScale.FillWidth,
-                    )
-                }
+                    }
+                },
+                onLongClick = { ofs ->
+                    val info = lazyListState.layoutInfo.visibleItemsInfo.find { info ->
+                        info.offset <= ofs.y && info.offset + info.size > ofs.y
+                    }
+                    if (info == null && type == CONTINUOUS_VERTICAL) {
+                        // Maybe user long-click on gaps? ¯\_(ツ)_/¯
+                        return@zoomable
+                    }
+                    info ?: error("Internal error finding long click item!!! offset:$ofs")
+                    onSelectPage(items[info.index])
+                },
+                onDoubleClick = DoubleTapZoom,
+            ),
+            state = lazyListState,
+            contentPadding = contentPadding + PaddingValues(horizontal = sidePadding),
+            verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
+        ) {
+            items(items, key = { it.index }) { page ->
+                PagerItem(
+                    page = page,
+                    pageLoader = pageLoader,
+                    contentScale = ContentScale.FillWidth,
+                )
             }
         }
     }
+    val showOnStart = remember {
+        Settings.showNavigationOverlayNewUser.value || Settings.showNavigationOverlayOnStart.value
+    }
+    NavigationOverlay(
+        regions,
+        showOnStart,
+        onDismiss = { Settings.showNavigationOverlayNewUser.value = false },
+    )
 }
 
 @Composable
@@ -223,7 +231,7 @@ private fun PageContainer(
     landscapeZoom: Boolean,
     alignment: Alignment.Horizontal,
     layoutSize: Size,
-    navigatorState: State<ViewerNavigation>,
+    navigatorState: State<NavigationRegions>,
     pagerState: PagerState,
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
@@ -284,9 +292,10 @@ private fun PageContainer(
                     scope.launch {
                         with(pagerState) {
                             with(zoomableState) {
-                                val pos = PointF(it.x / layoutSize.width, it.y / layoutSize.height)
+                                val x = it.x / layoutSize.width
+                                val y = it.y / layoutSize.height
                                 val distance = layoutSize.width
-                                when (navigatorState.value.getAction(pos)) {
+                                when (navigatorState.value.getAction(x, y)) {
                                     NavigationRegion.MENU -> onMenuRegionClick()
                                     NavigationRegion.NEXT -> {
                                         val canPan = if (isRtl) panRight(distance) else panLeft(distance)
@@ -324,6 +333,9 @@ private fun PageContainer(
         )
     }
 }
+
+private fun NavigationRegions.getAction(x: Float, y: Float) =
+    find { it.rectF.contains(x, y) }?.type ?: NavigationRegion.MENU
 
 suspend fun ZoomableState.panLeft(distance: Float): Boolean {
     val canPan = Settings.navigateToPan.value && transformedContentBounds.right > distance

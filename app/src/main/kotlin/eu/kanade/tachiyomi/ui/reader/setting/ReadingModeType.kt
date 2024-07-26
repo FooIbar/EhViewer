@@ -37,6 +37,11 @@ enum class ReadingModeType(
             WEBTOON, CONTINUOUS_VERTICAL -> true
         }
 
+        fun isVertical(type: ReadingModeType) = when (type) {
+            DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT -> false
+            VERTICAL, WEBTOON, CONTINUOUS_VERTICAL -> true
+        }
+
         const val MASK = 0x00000007
 
         fun fromPreference(preference: Int?): ReadingModeType = entries.find { it.flagValue == preference } ?: DEFAULT

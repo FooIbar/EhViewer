@@ -72,14 +72,6 @@ inline fun <R, T> PrefDelegate<T>.collectAsState(crossinline transform: @Disallo
 
 @Stable
 @Composable
-inline fun <R, T> PrefDelegate<T>.collectAsState(key1: Any?, crossinline transform: @DisallowComposableCalls (T) -> R): State<R> {
-    val flow = remember(key1) { valueFlow().map { transform(it) } }
-    val init = getValue()
-    return flow.collectAsState(transform(init))
-}
-
-@Stable
-@Composable
 fun <T> PrefDelegate<T>.collectAsState(): State<T> {
     val flow = remember { valueFlow() }
     val init = getValue()
@@ -217,6 +209,8 @@ object Settings : DataStorePreferences(null) {
     val imageScaleType = intPref("pref_image_scale_type_key", 1)
     val landscapeZoom = boolPref("landscape_zoom", false)
     val zoomStart = intPref("pref_zoom_start_key", 1)
+    val showNavigationOverlayNewUser = boolPref("reader_navigation_overlay_new_user", true)
+    val showNavigationOverlayOnStart = boolPref("reader_navigation_overlay_on_start", false)
 
     init {
         if ("CN" == Locale.getDefault().country) {

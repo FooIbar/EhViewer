@@ -61,6 +61,7 @@ fun Activity.setCustomBrightnessValue(value: Int) {
     window.attributes = window.attributes.apply { screenBrightness = readerBrightness }
 }
 
+@Stable
 fun Alignment.Companion.fromPreferences(value: Int, mode: ReadingModeType) = when (value) {
     1 -> when (mode) {
         VERTICAL -> CenterHorizontally
