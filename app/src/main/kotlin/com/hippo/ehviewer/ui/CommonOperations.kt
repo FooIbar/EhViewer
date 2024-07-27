@@ -18,6 +18,7 @@ package com.hippo.ehviewer.ui
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,6 +55,7 @@ import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.ui.destinations.ReaderScreenDestination
+import com.hippo.ehviewer.ui.reader.ReaderScreenArgs
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -286,13 +288,24 @@ fun navToReader(
     page: Int = -1,
 ) {
     if (Settings.newReader) {
-        navigate(ReaderScreenDestination(info, page))
+        navigate(ReaderScreenDestination(ReaderScreenArgs.Gallery(info, page)))
     } else {
         val intent = Intent(this@Context, ReaderActivity::class.java)
         intent.action = ReaderActivity.ACTION_EH
         intent.putExtra(ReaderActivity.KEY_GALLERY_INFO, info)
         intent.putExtra(ReaderActivity.KEY_PAGE, page)
         startActivity(intent)
+    }
+}
+
+fun DestinationsNavigator.navToReader(context: Context, uri: Uri) {
+    if (Settings.newReader) {
+        navigate(ReaderScreenDestination(ReaderScreenArgs.Archive(uri)))
+    } else {
+        val intent = Intent(context, ReaderActivity::class.java)
+        intent.action = Intent.ACTION_VIEW
+        intent.data = uri
+        context.startActivity(intent)
     }
 }
 

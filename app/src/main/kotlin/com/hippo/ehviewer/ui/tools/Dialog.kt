@@ -156,13 +156,17 @@ class DialogState {
         hint: String? = null,
         isNumber: Boolean = false,
         @StringRes confirmText: Int = android.R.string.ok,
+        onUserDismiss: (() -> Unit)? = null,
         invalidator: (suspend Raise<String>.(String) -> Unit)? = null,
     ) = dialog { cont ->
         val coroutineScope = rememberCoroutineScope()
         var state by remember(cont) { mutableStateOf(initial) }
         var error by remember(cont) { mutableStateOf<String?>(null) }
         AlertDialog(
-            onDismissRequest = { cont.cancel() },
+            onDismissRequest = {
+                cont.cancel()
+                onUserDismiss?.invoke()
+            },
             confirmButton = {
                 TextButton(onClick = {
                     if (invalidator == null) {

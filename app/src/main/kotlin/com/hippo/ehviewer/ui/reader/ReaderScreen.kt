@@ -1,5 +1,8 @@
 package com.hippo.ehviewer.ui.reader
 
+import android.content.Context
+import android.net.Uri
+import android.os.Parcelable
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -21,6 +24,7 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -37,8 +41,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowInsetsControllerCompat
+import arrow.core.Either
+import arrow.core.raise.ensure
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -48,8 +55,12 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
 import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
+import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.ui.composing
-import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.Await
+import com.hippo.ehviewer.ui.tools.DialogState
+import com.hippo.ehviewer.util.displayString
+import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -63,11 +74,51 @@ import kotlin.coroutines.resume
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import moe.tarsin.kt.unreachable
+
+sealed interface ReaderScreenArgs : Parcelable {
+    @Parcelize
+    data class Gallery(val info: BaseGalleryInfo, val page: Int) : ReaderScreenArgs
+
+    @Parcelize
+    data class Archive(val uri: Uri) : ReaderScreenArgs
+}
 
 @Destination<RootGraph>
 @Composable
-fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsNavigator) = composing(navigator) {
+fun ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
+    Await({ preparePageLoader(args) }) { pageLoader ->
+        DisposableEffect(pageLoader) {
+            pageLoader.start()
+            onDispose {
+                pageLoader.stop()
+            }
+        }
+        val readingFailed = stringResource(R.string.error_reading_failed)
+        Await({
+            Either.catch {
+                readingFailed.takeUnless { pageLoader.awaitReady() }
+            }.fold({ it.displayString() }, { it })
+        }) { error ->
+            if (error == null) {
+                val info = (args as? ReaderScreenArgs.Gallery)?.info
+                ReaderScreen(pageLoader, info, navigator)
+            } else {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ReaderScreen(pageLoader: PageLoader2, info: BaseGalleryInfo?, navigator: DestinationsNavigator) = composing(navigator) {
     ConfigureKeepScreenOn()
     LaunchedEffect(Unit) {
         val orientation = requestedOrientation
@@ -75,19 +126,9 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
             .onCompletion { requestedOrientation = orientation }
             .collect { setOrientation(it) }
     }
-    val pageLoader = remember {
-        val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
-        archive?.let { ArchivePageLoader(it, info.gid, page) } ?: EhPageLoader(info, page)
-    }
-    LaunchedEffect(Unit) {
+    LaunchedEffect(pageLoader) {
         Settings.cropBorder.changesFlow().collect {
             pageLoader.restart()
-        }
-    }
-    DisposableEffect(pageLoader) {
-        pageLoader.start()
-        onDispose {
-            pageLoader.stop()
         }
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
@@ -103,139 +144,163 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
             uiController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
         }
     }
-    Deferred({ pageLoader.awaitReady() }) {
-        val lazyListState = rememberLazyListState()
-        val pagerState = rememberPagerState { pageLoader.size }
-        val syncState = rememberSliderPagerDoubleSyncState(lazyListState, pagerState, pageLoader)
-        Box {
-            var appbarVisible by remember { mutableStateOf(false) }
-            val bgColor by collectBackgroundColorAsState()
-            syncState.Sync(ReadingModeType.isWebtoon(readingMode)) { appbarVisible = false }
-            if (fullscreen) {
-                LaunchedEffect(Unit) {
-                    snapshotFlow { appbarVisible }.collect {
-                        uiController.isSystemBarsVisible = it
-                    }
+    val lazyListState = rememberLazyListState()
+    val pagerState = rememberPagerState { pageLoader.size }
+    val syncState = rememberSliderPagerDoubleSyncState(lazyListState, pagerState, pageLoader)
+    Box {
+        var appbarVisible by remember { mutableStateOf(false) }
+        val bgColor by collectBackgroundColorAsState()
+        syncState.Sync(ReadingModeType.isWebtoon(readingMode)) { appbarVisible = false }
+        if (fullscreen) {
+            LaunchedEffect(Unit) {
+                snapshotFlow { appbarVisible }.collect {
+                    uiController.isSystemBarsVisible = it
                 }
             }
-            VolumeKeysHandler(
-                enabled = { volumeKeysEnabled && !appbarVisible },
-                movePrevious = { syncState.sliderScrollTo(syncState.sliderValue - 1) },
-                moveNext = { syncState.sliderScrollTo(syncState.sliderValue + 1) },
-            )
-            GalleryPager(
-                type = readingMode,
-                pagerState = pagerState,
-                lazyListState = lazyListState,
-                pageLoader = pageLoader,
-                onSelectPage = { page ->
-                    if (Settings.readerLongTapAction.value) {
-                        launch {
-                            dialog { cont ->
-                                fun dispose() = cont.resume(Unit)
-                                val state = rememberModalBottomSheetState()
-                                ModalBottomSheet(
-                                    onDismissRequest = { dispose() },
-                                    modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
-                                    sheetState = state,
-                                    contentWindowInsets = { WindowInsets(0) },
-                                ) {
-                                    ReaderPageSheetMeta(
-                                        retry = { pageLoader.retryPage(page.index) },
-                                        retryOrigin = { pageLoader.retryPage(page.index, true) },
-                                        share = { launchIO { with(pageLoader) { shareImage(page, info) } } },
-                                        copy = { launchIO { with(pageLoader) { copy(page) } } },
-                                        save = { launchIO { with(pageLoader) { save(page) } } },
-                                        saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
-                                        dismiss = { launch { state.hide().also { dispose() } } },
-                                    )
-                                }
-                            }
-                        }
-                    }
-                },
-                onMenuRegionClick = { appbarVisible = !appbarVisible },
-                modifier = Modifier.background(bgColor),
-                contentPadding = if (fullscreen) {
-                    if (cutoutShort) {
-                        PaddingValues(0.dp)
-                    } else {
-                        WindowInsets.displayCutout.asPaddingValues()
-                    }
-                } else {
-                    WindowInsets.systemBars.asPaddingValues()
-                },
-            )
-            val brightness by Settings.customBrightness.collectAsState()
-            val brightnessValue by Settings.customBrightnessValue.collectAsState()
-            val colorOverlayEnabled by Settings.colorFilter.collectAsState()
-            val colorOverlay by Settings.colorFilterValue.collectAsState()
-            val colorOverlayMode by Settings.colorFilterMode.collectAsState {
-                when (it) {
-                    0 -> BlendMode.SrcOver
-                    1 -> BlendMode.Multiply
-                    2 -> BlendMode.Screen
-                    3 -> BlendMode.Overlay
-                    4 -> BlendMode.Lighten
-                    5 -> BlendMode.Darken
-                    else -> unreachable()
-                }
-            }
-            ReaderContentOverlay(
-                brightness = { brightnessValue }.takeIf { brightness && brightnessValue < 0 },
-                color = { colorOverlay }.takeIf { colorOverlayEnabled },
-                colorBlendMode = colorOverlayMode,
-            )
-            if (brightness) {
-                LaunchedEffect(Unit) {
-                    Settings.customBrightnessValue.valueFlow().sample(100)
-                        .onCompletion { setCustomBrightnessValue(0) }
-                        .collect { setCustomBrightnessValue(it) }
-                }
-            }
-            val showPageNumber by Settings.showPageNumber.collectAsState()
-            if (showPageNumber && !appbarVisible) {
-                CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
-                    PageIndicatorText(
-                        currentPage = syncState.sliderValue,
-                        totalPages = pageLoader.size,
-                        modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding(),
-                    )
-                }
-            }
-            ReaderAppBars(
-                visible = appbarVisible,
-                isRtl = readingMode == ReadingModeType.RIGHT_TO_LEFT,
-                showSeekBar = showSeekbar,
-                currentPage = syncState.sliderValue,
-                totalPages = pageLoader.size,
-                onSliderValueChange = { syncState.sliderScrollTo(it + 1) },
-                onClickSettings = {
+        }
+        VolumeKeysHandler(
+            enabled = { volumeKeysEnabled && !appbarVisible },
+            movePrevious = { syncState.sliderScrollTo(syncState.sliderValue - 1) },
+            moveNext = { syncState.sliderScrollTo(syncState.sliderValue + 1) },
+        )
+        GalleryPager(
+            type = readingMode,
+            pagerState = pagerState,
+            lazyListState = lazyListState,
+            pageLoader = pageLoader,
+            onSelectPage = { page ->
+                if (Settings.readerLongTapAction.value) {
                     launch {
                         dialog { cont ->
                             fun dispose() = cont.resume(Unit)
-                            var isColorFilter by remember { mutableStateOf(false) }
-                            val scrim by animateColorAsState(
-                                targetValue = if (isColorFilter) Color.Transparent else BottomSheetDefaults.ScrimColor,
-                                label = "ScrimColor",
-                            )
+                            val state = rememberModalBottomSheetState()
                             ModalBottomSheet(
                                 onDismissRequest = { dispose() },
                                 modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
-                                // Yeah, I know color state should not be read here, but we have to do it...
-                                scrimColor = scrim,
-                                dragHandle = null,
+                                sheetState = state,
                                 contentWindowInsets = { WindowInsets(0) },
                             ) {
-                                SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
-                                    isColorFilter = page == 2
-                                    appbarVisible = !isColorFilter
-                                }
+                                ReaderPageSheetMeta(
+                                    retry = { pageLoader.retryPage(page.index) },
+                                    retryOrigin = { pageLoader.retryPage(page.index, true) },
+                                    share = { launchIO { with(pageLoader) { shareImage(page, info) } } },
+                                    copy = { launchIO { with(pageLoader) { copy(page) } } },
+                                    save = { launchIO { with(pageLoader) { save(page) } } },
+                                    saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
+                                    dismiss = { launch { state.hide().also { dispose() } } },
+                                )
                             }
                         }
                     }
-                },
-            )
+                }
+            },
+            onMenuRegionClick = { appbarVisible = !appbarVisible },
+            modifier = Modifier.background(bgColor),
+            contentPadding = if (fullscreen) {
+                if (cutoutShort) {
+                    PaddingValues(0.dp)
+                } else {
+                    WindowInsets.displayCutout.asPaddingValues()
+                }
+            } else {
+                WindowInsets.systemBars.asPaddingValues()
+            },
+        )
+        val brightness by Settings.customBrightness.collectAsState()
+        val brightnessValue by Settings.customBrightnessValue.collectAsState()
+        val colorOverlayEnabled by Settings.colorFilter.collectAsState()
+        val colorOverlay by Settings.colorFilterValue.collectAsState()
+        val colorOverlayMode by Settings.colorFilterMode.collectAsState {
+            when (it) {
+                0 -> BlendMode.SrcOver
+                1 -> BlendMode.Multiply
+                2 -> BlendMode.Screen
+                3 -> BlendMode.Overlay
+                4 -> BlendMode.Lighten
+                5 -> BlendMode.Darken
+                else -> unreachable()
+            }
+        }
+        ReaderContentOverlay(
+            brightness = { brightnessValue }.takeIf { brightness && brightnessValue < 0 },
+            color = { colorOverlay }.takeIf { colorOverlayEnabled },
+            colorBlendMode = colorOverlayMode,
+        )
+        if (brightness) {
+            LaunchedEffect(Unit) {
+                Settings.customBrightnessValue.valueFlow().sample(100)
+                    .onCompletion { setCustomBrightnessValue(0) }
+                    .collect { setCustomBrightnessValue(it) }
+            }
+        }
+        val showPageNumber by Settings.showPageNumber.collectAsState()
+        if (showPageNumber && !appbarVisible) {
+            CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.bodySmall) {
+                PageIndicatorText(
+                    currentPage = syncState.sliderValue,
+                    totalPages = pageLoader.size,
+                    modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding(),
+                )
+            }
+        }
+        ReaderAppBars(
+            visible = appbarVisible,
+            isRtl = readingMode == ReadingModeType.RIGHT_TO_LEFT,
+            showSeekBar = showSeekbar,
+            currentPage = syncState.sliderValue,
+            totalPages = pageLoader.size,
+            onSliderValueChange = { syncState.sliderScrollTo(it + 1) },
+            onClickSettings = {
+                launch {
+                    dialog { cont ->
+                        fun dispose() = cont.resume(Unit)
+                        var isColorFilter by remember { mutableStateOf(false) }
+                        val scrim by animateColorAsState(
+                            targetValue = if (isColorFilter) Color.Transparent else BottomSheetDefaults.ScrimColor,
+                            label = "ScrimColor",
+                        )
+                        ModalBottomSheet(
+                            onDismissRequest = { dispose() },
+                            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+                            // Yeah, I know color state should not be read here, but we have to do it...
+                            scrimColor = scrim,
+                            dragHandle = null,
+                            contentWindowInsets = { WindowInsets(0) },
+                        ) {
+                            SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
+                                isColorFilter = page == 2
+                                appbarVisible = !isColorFilter
+                            }
+                        }
+                    }
+                }
+            },
+        )
+    }
+}
+
+context(Context, DialogState, DestinationsNavigator)
+private suspend fun preparePageLoader(args: ReaderScreenArgs) = when (args) {
+    is ReaderScreenArgs.Gallery -> {
+        val info = args.info
+        val page = args.page
+        val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
+        if (archive != null) {
+            ArchivePageLoader(archive, info.gid, page)
+        } else {
+            EhPageLoader(info, page)
+        }
+    }
+    is ReaderScreenArgs.Archive -> {
+        ArchivePageLoader(args.uri.toOkioPath()) { invalidator ->
+            awaitInputText(
+                title = getString(R.string.archive_need_passwd),
+                hint = getString(R.string.archive_passwd),
+                onUserDismiss = { popBackStack() },
+            ) { text ->
+                ensure(text.isNotBlank()) { getString(R.string.passwd_cannot_be_empty) }
+                ensure(invalidator(text)) { getString(R.string.passwd_wrong) }
+            }
         }
     }
 }

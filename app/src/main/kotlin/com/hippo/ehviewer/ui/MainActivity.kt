@@ -17,6 +17,8 @@ package com.hippo.ehviewer.ui
 
 import android.annotation.SuppressLint
 import android.app.assist.AssistContent
+import android.content.ContentResolver.SCHEME_CONTENT
+import android.content.ContentResolver.SCHEME_FILE
 import android.content.Intent
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE_NONE
@@ -265,10 +267,19 @@ class MainActivity : EhActivity() {
                 intentFlow.collect { intent ->
                     when (intent.action) {
                         Intent.ACTION_VIEW -> {
-                            val url = intent.data?.toString()
-                            if (url != null && !navigator.navWithUrl(url)) {
-                                val new = dialogState.awaitInputText(initial = url, title = cannotParse)
-                                addTextToClipboard(new)
+                            val uri = intent.data ?: return@collect
+                            when (uri.scheme) {
+                                SCHEME_CONTENT, SCHEME_FILE -> {
+                                    navigator.navToReader(applicationContext, uri)
+                                }
+
+                                else -> {
+                                    val url = uri.toString()
+                                    if (!navigator.navWithUrl(url)) {
+                                        val new = dialogState.awaitInputText(initial = url, title = cannotParse)
+                                        addTextToClipboard(new)
+                                    }
+                                }
                             }
                         }
                         Intent.ACTION_SEND -> {
