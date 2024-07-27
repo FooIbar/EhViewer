@@ -107,10 +107,10 @@ fun ReaderScreen(info: BaseGalleryInfo, page: Int = -1, navigator: DestinationsN
         val lazyListState = rememberLazyListState()
         val pagerState = rememberPagerState { pageLoader.size }
         val syncState = rememberSliderPagerDoubleSyncState(lazyListState, pagerState, pageLoader)
-        syncState.Sync(ReadingModeType.isWebtoon(readingMode))
         Box {
             var appbarVisible by remember { mutableStateOf(false) }
             val bgColor by collectBackgroundColorAsState()
+            syncState.Sync(ReadingModeType.isWebtoon(readingMode)) { appbarVisible = false }
             if (fullscreen) {
                 LaunchedEffect(Unit) {
                     snapshotFlow { appbarVisible }.collect {
