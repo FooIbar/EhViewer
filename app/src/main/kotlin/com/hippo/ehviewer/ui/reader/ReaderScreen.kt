@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -95,17 +96,25 @@ fun ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = com
                 pageLoader.stop()
             }
         }
+        val bgColor by collectBackgroundColorAsState()
         val readingFailed = stringResource(R.string.error_reading_failed)
-        Await({
-            Either.catch {
-                readingFailed.takeUnless { pageLoader.awaitReady() }
-            }.fold({ it.displayString() }, { it })
-        }) { error ->
+        Await(
+            {
+                Either.catch {
+                    readingFailed.takeUnless { pageLoader.awaitReady() }
+                }.fold({ it.displayString() }, { it })
+            },
+            placeholder = {
+                Box(Modifier.fillMaxSize().background(bgColor), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            },
+        ) { error ->
             if (error == null) {
                 val info = (args as? ReaderScreenArgs.Gallery)?.info
                 ReaderScreen(pageLoader, info, navigator)
             } else {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxSize().background(bgColor), contentAlignment = Alignment.Center) {
                     Text(
                         text = error,
                         color = MaterialTheme.colorScheme.error,

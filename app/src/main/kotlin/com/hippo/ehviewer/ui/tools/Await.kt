@@ -11,10 +11,17 @@ import arrow.core.Option
 import arrow.core.some
 
 @Composable
-fun <T> Await(block: suspend () -> T, content: @Composable (T) -> Unit) {
+fun <T> Await(
+    block: suspend () -> T,
+    placeholder: (@Composable () -> Unit)? = null,
+    content: @Composable (T) -> Unit,
+) {
     var completed by remember(block) { mutableStateOf<Option<T>>(None) }
     LaunchedEffect(block) {
         completed = block().some()
+    }
+    if (placeholder != null) {
+        completed.onNone { placeholder() }
     }
     completed.onSome { content(it) }
 }
