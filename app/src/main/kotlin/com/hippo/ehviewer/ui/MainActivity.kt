@@ -270,7 +270,7 @@ class MainActivity : EhActivity() {
                             val uri = intent.data ?: return@collect
                             when (uri.scheme) {
                                 SCHEME_CONTENT, SCHEME_FILE -> {
-                                    navigator.navToReader(applicationContext, uri)
+                                    navigator.navToReader(uri)
                                 }
 
                                 else -> {
