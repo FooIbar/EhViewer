@@ -433,12 +433,9 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz, 
     archive_ctx *ctx;
     jboolean ret = true;
     int len = (*env)->GetStringUTFLength(env, str);
-    passwd = realloc(passwd, len * sizeof(char));
-    if (!passwd) {
-        LOGE("Allocate passwd buffer failed");
-        return false;
-    }
+    passwd = realloc(passwd, len + 1);
     (*env)->GetStringUTFRegion(env, str, 0, len, passwd);
+    passwd[len] = 0;
     archive_alloc_ctx(&ctx);
     void *tmpBuf = alloca(4096);
     while (archive_read_next_header(ctx->arc, &entry) == ARCHIVE_OK) {
