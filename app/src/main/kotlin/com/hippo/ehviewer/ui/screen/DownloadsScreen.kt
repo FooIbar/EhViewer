@@ -535,7 +535,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             navToReader(info.galleryInfo)
         }
         AnimatedContent(gridView, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "Downloads") { showGridView ->
-            togetherWith(this@AnimatedVisibilityScope) {
+            togetherWith(implicit<AnimatedVisibilityScope>()) {
                 if (showGridView) {
                     val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
                     val thumbColumns by Settings.thumbColumns.collectAsState()

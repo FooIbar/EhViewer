@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.NoopTransitionsVisibilityScope
@@ -22,7 +23,7 @@ inline fun <R> AnimatedVisibilityScope.composing(
     block: @Composable context(MainActivity, SnackbarHostState, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, CoroutineScope)
     () -> R,
 ) = with(NoopTransitionsVisibilityScope) {
-    togetherWith(this@AnimatedVisibilityScope) {
+    togetherWith(implicit<AnimatedVisibilityScope>()) {
         block(
             with(LocalContext.current) { remember { findActivity() } },
             LocalSnackBarHostState.current,
