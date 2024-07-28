@@ -119,11 +119,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="eu.kanade.tachiyomi.ui.reader.ReaderActivity"
-            android:configChanges="screenSize"
-            android:launchMode="singleTask">
-        </activity>
-        <activity
             android:name=".ui.SecurityActivity"
             android:configChanges="screenSize"
             android:label="@string/settings" />

@@ -93,8 +93,6 @@
 - [libarchive](https://www.libarchive.org/)
 - [jsoup](https://jsoup.org/)
 
-特别感谢[Tachiyomi](https://tachiyomi.org/)的阅读器实现
-
 # 许可证
 
     Copyright 2014-2019 Hippo Seven

@@ -8,7 +8,6 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.ComposeView
 import androidx.navigation.NavBackStackEntry
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.DialogState
@@ -18,18 +17,6 @@ import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationSty
 import soup.compose.material.motion.animation.materialSharedAxisXIn
 import soup.compose.material.motion.animation.materialSharedAxisXOut
 import soup.compose.material.motion.animation.rememberSlideDistance
-
-inline fun ComposeView.setMD3Content(crossinline content: @Composable () -> Unit) = setContent {
-    EhTheme {
-        val dialogState = remember { DialogState() }
-        dialogState.Intercept()
-        CompositionLocalProvider(
-            LocalDialogState provides dialogState,
-        ) {
-            content()
-        }
-    }
-}
 
 inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -> Unit) = setContent {
     EhTheme {

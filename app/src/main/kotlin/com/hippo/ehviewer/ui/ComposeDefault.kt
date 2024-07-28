@@ -17,7 +17,7 @@ inline fun <R> composing(
     block: @Composable context(MainActivity, SnackbarHostState, DialogState, DestinationsNavigator, CoroutineScope)
     () -> R,
 ) = block(
-    LocalContext.current.run { remember { findActivity<MainActivity>() } },
+    LocalContext.current.run { remember { findActivity() } },
     LocalSnackBarHostState.current,
     LocalDialogState.current,
     navigator,

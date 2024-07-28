@@ -70,7 +70,6 @@ import com.hippo.files.delete
 import com.hippo.files.isDirectory
 import com.hippo.files.openOutputStream
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.sync.Mutex
@@ -282,32 +281,14 @@ suspend fun removeFromFavorites(galleryInfo: BaseGalleryInfo) = doModifyFavorite
     localFavorited = EhDB.containLocalFavorites(galleryInfo.gid),
 )
 
-context (Context, DestinationsNavigator)
+context (DestinationsNavigator)
 fun navToReader(
     info: BaseGalleryInfo,
     page: Int = -1,
-) {
-    if (Settings.newReader) {
-        navigate(ReaderScreenDestination(ReaderScreenArgs.Gallery(info, page)))
-    } else {
-        val intent = Intent(this@Context, ReaderActivity::class.java)
-        intent.action = ReaderActivity.ACTION_EH
-        intent.putExtra(ReaderActivity.KEY_GALLERY_INFO, info)
-        intent.putExtra(ReaderActivity.KEY_PAGE, page)
-        startActivity(intent)
-    }
-}
+) = navigate(ReaderScreenDestination(ReaderScreenArgs.Gallery(info, page)))
 
-fun DestinationsNavigator.navToReader(context: Context, uri: Uri) {
-    if (Settings.newReader) {
-        navigate(ReaderScreenDestination(ReaderScreenArgs.Archive(uri)))
-    } else {
-        val intent = Intent(context, ReaderActivity::class.java)
-        intent.action = Intent.ACTION_VIEW
-        intent.data = uri
-        context.startActivity(intent)
-    }
-}
+fun DestinationsNavigator.navToReader(uri: Uri) =
+    navigate(ReaderScreenDestination(ReaderScreenArgs.Archive(uri)))
 
 context(DialogState, Context, DestinationsNavigator)
 suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
