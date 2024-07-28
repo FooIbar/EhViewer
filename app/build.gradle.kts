@@ -192,7 +192,6 @@ androidComponents {
 
 baselineProfile {
     mergeIntoMain = true
-    saveInSrc = false
 }
 
 dependencies {

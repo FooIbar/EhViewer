@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - "*"
-  workflow_dispatch:
 
 jobs:
   build:
@@ -78,7 +77,6 @@ jobs:
           mv app/build/outputs/native-debug-symbols/marshmallowRelease/native-debug-symbols.zip EhViewer-${{ github.ref_name }}-marshmallow-native-debug-symbols.zip
 
       - name: Releases
-        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
           body: Bump Version
