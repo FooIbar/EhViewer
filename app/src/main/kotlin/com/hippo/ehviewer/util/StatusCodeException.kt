@@ -25,9 +25,7 @@ class StatusCodeException(val responseCode: Int) : Exception() {
     val isIdentifiedResponseCode: Boolean
         get() = DEFAULT_ERROR_MESSAGE != message
 
-    override fun getLocalizedMessage(): String {
-        return message
-    }
+    override fun getLocalizedMessage(): String = message
 
     companion object {
         private val ERROR_MESSAGE_ARRAY = SparseArray<String>(24)

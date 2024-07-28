@@ -8,4 +8,6 @@ plugins {
     alias(libs.plugins.spotless) apply false
     alias(libs.plugins.aboutlibrariesPlugin) apply false
     alias(libs.plugins.composeCompilerReportGenerator) apply false
+    alias(libs.plugins.android.test) apply false
+    alias(libs.plugins.baselineprofile) apply false
 }

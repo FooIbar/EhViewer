@@ -38,17 +38,18 @@ import com.hippo.ehviewer.spider.COMIC_INFO_FILE
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
-import com.hippo.ehviewer.spider.putToDownloadDir
+import com.hippo.ehviewer.spider.downloadDirname
 import com.hippo.ehviewer.spider.readComicInfo
-import com.hippo.ehviewer.spider.readCompatFromUniFile
+import com.hippo.ehviewer.spider.readCompatFromPath
 import com.hippo.ehviewer.spider.toSimpleTags
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.insertWith
 import com.hippo.ehviewer.util.mapNotNull
 import com.hippo.ehviewer.util.runAssertingNotMainThread
-import com.hippo.unifile.UniFile
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.asUniFileOrNull
+import com.hippo.files.delete
+import com.hippo.files.find
+import com.hippo.files.toOkioPath
+import com.hippo.files.toUri
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -61,6 +62,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import logcat.LogPriority
+import okio.Path
+import okio.Path.Companion.toOkioPath
+import okio.Path.Companion.toPath
 import splitties.preferences.edit
 
 object DownloadManager : OnSpiderListener, CoroutineScope {
@@ -172,7 +176,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             }
         } else {
             // It is new download info
-            info = DownloadInfo(galleryInfo, galleryInfo.putToDownloadDir())
+            info = DownloadInfo(galleryInfo, galleryInfo.downloadDirname())
             info.label = label
             info.state = DownloadInfo.STATE_WAIT
             // Add to all download list and map
@@ -541,7 +545,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             }
         }.parMapNotNull(concurrency = 5) { (info, updateGallery, updateArtist) ->
             info.downloadDir?.run {
-                val comicInfo = findFile(COMIC_INFO_FILE)?.let { readComicInfo(it) }
+                val comicInfo = find(COMIC_INFO_FILE)?.let { readComicInfo(it) }
                 if (comicInfo != null) {
                     val galleryInfo = if (updateGallery) {
                         info.pages = comicInfo.pageCount
@@ -564,8 +568,8 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                         null
                     }
                 } else if (info.pages == 0) {
-                    val galleryInfo = findFile(SPIDER_INFO_FILENAME)?.let {
-                        readCompatFromUniFile(it)?.run {
+                    val galleryInfo = find(SPIDER_INFO_FILENAME)?.let {
+                        readCompatFromPath(it)?.run {
                             info.pages = pages
                             info.galleryInfo
                         }
@@ -605,6 +609,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     override fun onGet509(index: Int) {
         launch {
             mDownloadListener?.onGet509()
+            stopAllDownload()
         }
     }
 
@@ -626,7 +631,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                 info.finished = finished
                 info.downloaded = downloaded
                 info.total = total
-                mDownloadListener?.onGetPage(info)
+                mDownloadListener?.onDownload(info)
                 mutableNotifyFlow.emit(info)
             } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
         }
@@ -701,11 +706,6 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
          * Update download speed
          */
         fun onDownload(info: DownloadInfo)
-
-        /**
-         * Update page downloaded
-         */
-        fun onGetPage(info: DownloadInfo)
 
         /**
          * Download done
@@ -813,18 +813,21 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     private fun comparator() = SortMode.from(Settings.downloadSortMode.value).comparator()
 }
 
-var downloadLocation: UniFile
+var downloadLocation: Path
     get() = with(Settings) {
-        val uri = Uri.Builder().apply {
-            scheme(downloadScheme)
-            encodedAuthority(downloadAuthority)
-            encodedPath(downloadPath)
-            encodedQuery(downloadQuery)
-            encodedFragment(downloadFragment)
-        }.build()
-        uri.asUniFileOrNull() ?: AppConfig.defaultDownloadDir?.asUniFile() ?: UniFile.Stub
+        if (downloadScheme != null) {
+            Uri.Builder().apply {
+                scheme(downloadScheme)
+                encodedAuthority(downloadAuthority)
+                encodedPath(downloadPath)
+                encodedQuery(downloadQuery)
+                encodedFragment(downloadFragment)
+            }.build().toOkioPath()
+        } else {
+            AppConfig.defaultDownloadDir?.toOkioPath() ?: "".toPath()
+        }
     }
-    set(value) = with(value.uri) {
+    set(value) = with(value.toUri()) {
         Settings.edit {
             downloadScheme = scheme
             downloadAuthority = encodedAuthority
@@ -835,5 +838,5 @@ var downloadLocation: UniFile
     }
 
 val DownloadInfo.downloadDir get() = dirname?.let { downloadLocation / it }
-val DownloadInfo.archiveFile get() = downloadDir?.run { findFile("$gid.cbz") ?: findFile("$gid.zip") }
-val GalleryInfo.tempDownloadDir get() = AppConfig.getTempDir("$gid")
+val DownloadInfo.archiveFile get() = downloadDir?.run { find("$gid.cbz") ?: find("$gid.zip") }
+val GalleryInfo.tempDownloadDir get() = AppConfig.getTempDir("$gid")?.toOkioPath()

@@ -5,11 +5,8 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.SimpleTagsConverter
 import com.hippo.ehviewer.client.data.TagNamespace
-import com.hippo.unifile.UniFile
-import com.hippo.unifile.openInputStream
-import com.hippo.unifile.openOutputStream
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
+import com.hippo.files.openInputStream
+import com.hippo.files.openOutputStream
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -18,15 +15,19 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import nl.adaptivity.xmlutil.XmlDeclMode
+import nl.adaptivity.xmlutil.XmlUtilInternal
 import nl.adaptivity.xmlutil.core.XmlVersion
-import nl.adaptivity.xmlutil.newGenericWriter
+import nl.adaptivity.xmlutil.newWriter
 import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlElement
 import nl.adaptivity.xmlutil.xmlStreaming
+import okio.Path
 
 const val COMIC_INFO_FILE = "ComicInfo.xml"
 private const val TAG_ORIGINAL = "original"
 
+// Workaround for https://youtrack.jetbrains.com/issue/KT-69182
+@OptIn(XmlUtilInternal::class)
 private val xml = XML {
     recommended {
         ignoreUnknownChildren()
@@ -97,22 +98,18 @@ fun ComicInfo.toSimpleTags() = listOfNotNull(
     teams,
 ).flatten().ifEmpty { null }
 
-fun ComicInfo.write(file: UniFile) {
-    file.openOutputStream().use {
-        OutputStreamWriter(it, Charsets.UTF_8).use { writer ->
-            xmlStreaming.newGenericWriter(writer).use { xmlWriter ->
-                xml.encodeToWriter(xmlWriter, ComicInfo.serializer(), this)
-            }
+fun ComicInfo.write(file: Path) {
+    file.openOutputStream().bufferedWriter().use {
+        xmlStreaming.newWriter(it).use { writer ->
+            xml.encodeToWriter(writer, ComicInfo.serializer(), this)
         }
     }
 }
 
-fun readComicInfo(file: UniFile): ComicInfo? = runCatching {
-    file.openInputStream().use {
-        InputStreamReader(it, Charsets.UTF_8).use { reader ->
-            xmlStreaming.newGenericReader(reader).use { xmlReader ->
-                xml.decodeFromReader(ComicInfo.serializer(), xmlReader)
-            }
+fun readComicInfo(file: Path): ComicInfo? = runCatching {
+    file.openInputStream().bufferedReader().use {
+        xmlStreaming.newReader(it).use { reader ->
+            xml.decodeFromReader(ComicInfo.serializer(), reader)
         }
     }
 }.getOrNull()

@@ -283,56 +283,50 @@ object GalleryDetailParser {
         }
     }
 
-    private fun parseTagGroup(element: Element): GalleryTagGroup? {
-        return try {
-            var nameSpace = element.child(0).text()
-            // Remove last ':'
-            nameSpace = nameSpace.substring(0, nameSpace.length - 1)
-            val group = GalleryTagGroup(nameSpace)
-            val tags = element.child(1).children()
-            tags.forEach {
-                var tag = it.text()
-                // Sometimes parody tag is followed with '|' and english translate, just remove them
-                val index = tag.indexOf('|')
-                if (index >= 0) {
-                    tag = tag.substring(0, index).trim()
-                }
-                if (it.className() == "gtw") {
-                    tag = "_$tag" // weak tag
-                }
-                group.add(tag)
+    private fun parseTagGroup(element: Element): GalleryTagGroup? = try {
+        var nameSpace = element.child(0).text()
+        // Remove last ':'
+        nameSpace = nameSpace.substring(0, nameSpace.length - 1)
+        val group = GalleryTagGroup(nameSpace)
+        val tags = element.child(1).children()
+        tags.forEach {
+            var tag = it.text()
+            // Sometimes parody tag is followed with '|' and english translate, just remove them
+            val index = tag.indexOf('|')
+            if (index >= 0) {
+                tag = tag.substring(0, index).trim()
             }
-            if (group.size > 0) group else null
-        } catch (e: Throwable) {
-            ExceptionUtils.throwIfFatal(e)
-            logcat(e)
-            null
+            if (it.className() == "gtw") {
+                tag = "_$tag" // weak tag
+            }
+            group.add(tag)
         }
+        if (group.size > 0) group else null
+    } catch (e: Throwable) {
+        ExceptionUtils.throwIfFatal(e)
+        logcat(e)
+        null
     }
 
     /**
      * Parse tag groups with html parser
      */
-    private fun parseTagGroups(document: Document): List<GalleryTagGroup> {
-        return try {
-            val taglist = document.getElementById("taglist")!!
-            val tagGroups = taglist.child(0).child(0).children()
-            parseTagGroups(tagGroups)
-        } catch (e: Throwable) {
-            ExceptionUtils.throwIfFatal(e)
-            logcat(e)
-            emptyList()
-        }
+    private fun parseTagGroups(document: Document): List<GalleryTagGroup> = try {
+        val taglist = document.getElementById("taglist")!!
+        val tagGroups = taglist.child(0).child(0).children()
+        parseTagGroups(tagGroups)
+    } catch (e: Throwable) {
+        ExceptionUtils.throwIfFatal(e)
+        logcat(e)
+        emptyList()
     }
 
-    private fun parseTagGroups(trs: Elements): List<GalleryTagGroup> {
-        return try {
-            trs.mapNotNull { parseTagGroup(it) }
-        } catch (e: Throwable) {
-            ExceptionUtils.throwIfFatal(e)
-            logcat(e)
-            emptyList()
-        }
+    private fun parseTagGroups(trs: Elements): List<GalleryTagGroup> = try {
+        trs.mapNotNull { parseTagGroup(it) }
+    } catch (e: Throwable) {
+        ExceptionUtils.throwIfFatal(e)
+        logcat(e)
+        emptyList()
     }
 
     private suspend fun parseComment(element: Element): GalleryComment? {
@@ -449,22 +443,16 @@ object GalleryDetailParser {
     /**
      * Parse preview pages with regular expressions
      */
-    fun parsePreviewPages(body: String): Int {
-        return PATTERN_PREVIEW_PAGES.find(body)?.groupValues?.get(1)?.toIntOrNull()
-            ?: throw ParseException("Parse preview page count error")
-    }
+    fun parsePreviewPages(body: String): Int = PATTERN_PREVIEW_PAGES.find(body)?.groupValues?.get(1)?.toIntOrNull()
+        ?: throw ParseException("Parse preview page count error")
 
     /**
      * Parse pages with regular expressions
      */
-    fun parsePages(body: String): Int {
-        return PATTERN_PAGES.find(body)?.groupValues?.get(1)?.toIntOrNull()
-            ?: throw ParseException("Parse pages error")
-    }
+    fun parsePages(body: String): Int = PATTERN_PAGES.find(body)?.groupValues?.get(1)?.toIntOrNull()
+        ?: throw ParseException("Parse pages error")
 
-    fun parsePreviewList(body: String): Pair<List<GalleryPreview>, List<String>> {
-        return runCatching { parseNormalPreview(body) }.getOrElse { parseLargePreview(body) }
-    }
+    fun parsePreviewList(body: String): Pair<List<GalleryPreview>, List<String>> = runCatching { parseNormalPreview(body) }.getOrElse { parseLargePreview(body) }
 
     private fun parseLargePreview(body: String): Pair<List<GalleryPreview>, List<String>> {
         check(PATTERN_LARGE_PREVIEW.containsMatchIn(body))

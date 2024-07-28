@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
 
@@ -14,13 +15,15 @@ plugins {
     alias(libs.plugins.spotless)
     alias(libs.plugins.aboutlibrariesPlugin)
     alias(libs.plugins.composeCompilerReportGenerator)
+    alias(libs.plugins.baselineprofile)
 }
 
 val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
 
 android {
-    compileSdk = 34
-    ndkVersion = "27.0.11718014-beta1"
+    compileSdk = if (isRelease) 35 else 34
+    buildToolsVersion = "35.0.0"
+    ndkVersion = "27.0.11902837-rc1"
     androidResources.generateLocaleConfig = true
 
     splits {
@@ -61,11 +64,14 @@ android {
     val chromeVersion = rootProject.layout.projectDirectory.file("chrome-for-testing/LATEST_RELEASE_STABLE").asFile
         .readText().substringBefore('.')
 
+    val githubToken = gradleLocalProperties(rootDir, providers)["GITHUB_TOKEN"] as? String
+        ?: System.getenv("GITHUB_TOKEN").orEmpty()
+
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 180056
+        targetSdk = 35
+        versionCode = 180058
         versionName = "1.12.0"
         versionNameSuffix = "-SNAPSHOT"
         resourceConfigurations.addAll(
@@ -89,6 +95,7 @@ android {
         buildConfigField("long", "COMMIT_TIME", commitTime)
         buildConfigField("String", "REPO_NAME", "\"$repoName\"")
         buildConfigField("String", "CHROME_VERSION", "\"$chromeVersion\"")
+        buildConfigField("String", "GITHUB_TOKEN", "\"$githubToken\"")
         ndk {
             if (isRelease) {
                 abiFilters.addAll(supportedAbis)
@@ -124,8 +131,9 @@ android {
     }
 
     lint {
+        checkReleaseBuilds = false
         disable += setOf("MissingTranslation", "MissingQuantity")
-        fatal += setOf("NewApi", "InlinedApi")
+        error += setOf("InlinedApi")
     }
 
     packaging {
@@ -149,12 +157,18 @@ android {
                 abortOnError = false
             }
         }
+        create("benchmarkRelease") {
+            initWith(buildTypes.getByName("release"))
+            matchingFallbacks += listOf("release")
+            applicationIdSuffix = ".benchmark"
+            signingConfig = signingConfigs.getByName("debug")
+            isDebuggable = false
+        }
     }
 
     buildFeatures {
         buildConfig = true
         compose = true
-        viewBinding = true
     }
 
     namespace = "com.hippo.ehviewer"
@@ -174,6 +188,10 @@ androidComponents {
             "**.bin",
         )
     }
+}
+
+baselineProfile {
+    mergeIntoMain = true
 }
 
 dependencies {
@@ -204,15 +222,11 @@ dependencies {
     // https://developer.android.com/jetpack/androidx/releases/paging
     implementation(libs.androidx.paging.compose)
 
-    implementation(libs.androidx.recyclerview)
-
     // https://developer.android.com/jetpack/androidx/releases/room
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.paging)
 
     implementation(libs.androidx.work.runtime)
-    implementation(libs.photoview) // Dead Dependency
-    implementation(libs.directionalviewpager) // Dead Dependency
     implementation(libs.material.motion.core)
 
     implementation(libs.bundles.splitties)
@@ -227,9 +241,7 @@ dependencies {
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.accompanist.drawable.painter)
 
-    implementation(libs.insetter) // Dead Dependency
-
-    implementation(libs.reorderable)
+    // implementation(libs.reorderable)
 
     implementation(platform(libs.arrow.stack))
     implementation(libs.arrow.fx.coroutines)
@@ -253,6 +265,9 @@ dependencies {
 
     implementation(libs.cronet.embedded)
 
+    implementation(libs.androidx.profileinstaller)
+    "baselineProfile"(project(":benchmark"))
+
     debugImplementation(libs.compose.ui.tooling)
     implementation(libs.compose.ui.tooling.preview)
 }
@@ -273,6 +288,7 @@ kotlin {
             "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
             "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
             "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
+            "-opt-in=androidx.compose.animation.ExperimentalSharedTransitionApi",
             "-opt-in=androidx.paging.ExperimentalPagingApi",
             "-opt-in=kotlin.contracts.ExperimentalContracts",
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
@@ -294,13 +310,15 @@ aboutLibraries {
     duplicationRule = GROUP
 }
 
+val ktlintVersion = libs.ktlint.get().version
+
 spotless {
     kotlin {
         // https://github.com/diffplug/spotless/issues/111
         target("src/**/*.kt")
-        ktlint()
+        ktlint(ktlintVersion)
     }
     kotlinGradle {
-        ktlint()
+        ktlint(ktlintVersion)
     }
 }

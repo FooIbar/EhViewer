@@ -151,9 +151,9 @@ fun GalleryList(
                 columns = StaggeredGridCells.Fixed(thumbColumns),
                 modifier = contentModifier,
                 state = thumbListState,
+                contentPadding = contentPadding + PaddingValues(marginH, marginV),
                 verticalItemSpacing = gridInterval,
                 horizontalArrangement = Arrangement.spacedBy(gridInterval),
-                contentPadding = contentPadding + PaddingValues(marginH, marginV),
             ) {
                 items(
                     count = data.itemCount,

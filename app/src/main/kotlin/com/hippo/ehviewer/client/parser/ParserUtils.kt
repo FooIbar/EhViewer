@@ -37,23 +37,13 @@ object ParserUtils {
         minute()
     }
 
-    fun formatDate(time: Long): String {
-        return formatter.format(time.toLocalDateTime())
-    }
+    fun formatDate(time: Long): String = formatter.format(time.toLocalDateTime())
 
-    fun parseDate(str: String): Long {
-        return formatter.parse(str).toEpochMillis()
-    }
+    fun parseDate(str: String): Long = formatter.parse(str).toEpochMillis()
 
-    fun trim(str: String?): String {
-        return str?.unescapeXml()?.trim() ?: ""
-    }
+    fun trim(str: String?): String = str?.unescapeXml()?.trim() ?: ""
 
-    fun parseInt(str: String?, defValue: Int): Int {
-        return trim(str).replace(",", "").toIntOrDefault(defValue)
-    }
+    fun parseInt(str: String?, defValue: Int): Int = trim(str).replace(",", "").toIntOrDefault(defValue)
 
-    fun parseLong(str: String?, defValue: Long): Long {
-        return trim(str).replace(",", "").toLongOrDefault(defValue)
-    }
+    fun parseLong(str: String?, defValue: Long): Long = trim(str).replace(",", "").toLongOrDefault(defValue)
 }

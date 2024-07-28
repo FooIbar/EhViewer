@@ -1,9 +1,9 @@
+use crate::{parse_marshal_inplace, regex};
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
 use jni_fn::jni_fn;
 use quick_xml::escape::unescape;
-use {parse_marshal_inplace, regex};
 
 #[no_mangle]
 #[allow(non_snake_case)]

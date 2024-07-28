@@ -49,10 +49,10 @@ typedef struct {
 } entry;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static archive_ctx **ctx_pool;
+static archive_ctx **ctx_pool = NULL;
 #define CTX_POOL_SIZE 20
 
-static void *mempool = NULL;
+static void *mempool = MAP_FAILED;
 static size_t *mempoolofs = NULL;
 static int page_size = 0;
 
@@ -62,11 +62,11 @@ static int page_size = 0;
 #define MEMPOOL_SIZE (mempoolofs[entryCount - 1])
 
 #define PROT_RW (PROT_WRITE | PROT_READ)
-#define MAP_ANON_POOL (MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE | MAP_UNINITIALIZED)
+#define MAP_ANON_POOL (MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE)
 
 static bool need_encrypt = false;
 static char *passwd = NULL;
-static void *archiveAddr = NULL;
+static void *archiveAddr = MAP_FAILED;
 static size_t archiveSize = 0;
 static entry *entries = NULL;
 static size_t entryCount = 0;
@@ -117,8 +117,8 @@ static inline int compare_entries(const void *a, const void *b) {
     return strnatcmp(fa, fb);
 }
 
-static long archive_map_entries_index(archive_ctx *ctx, bool sort) {
-    long count = 0;
+static int archive_map_entries_index(archive_ctx *ctx, bool sort) {
+    int count = 0;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK) {
         const char *name = archive_entry_pathname2(ctx->entry);
         if (archive_entry_is_file(ctx->entry) && filename_is_playable_file(name)) {
@@ -165,8 +165,8 @@ static void mempool_prefault_pages(void *addr, size_t size) {
     }
 }
 
-static long archive_list_all_entries(archive_ctx *ctx) {
-    long count = 0;
+static int archive_list_all_entries(archive_ctx *ctx) {
+    int count = 0;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK)
         if (archive_entry_is_playable(ctx->entry))
             count++;
@@ -296,11 +296,12 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
         LOGE("Allocate archive ctx pool failed:ENOMEM");
         return 0;
     }
-    long r = archive_alloc_ctx(&ctx);
+    int r = archive_alloc_ctx(&ctx);
     if (r) {
         if (r == -ENOMEM)
             LOGE("%s", "Mem alloc failed");
         LOGE("%s%s", "Archive open failed:", archive_error_string(ctx->arc));
+        return 0;
     } else {
         entryCount = archive_list_all_entries(ctx);
         LOGI("%s%zu%s", "Found ", entryCount, " image entries in archive");
@@ -347,10 +348,6 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
         r = archive_map_entries_index(ctx, sort_entries);
         if (!archive_prealloc_mempool()) {
             r = 0;
-            for (int i = 0; i < entryCount; ++i) {
-                free((void *) entries[i].filename);
-            }
-            free(entries);
         }
     }
 
@@ -403,19 +400,32 @@ JNIEXPORT void JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_closeArchive(JNIEnv *env, jclass thiz) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
-    for (int i = 0; i < CTX_POOL_SIZE; i++)
-        archive_release_ctx(ctx_pool[i]);
+    if (ctx_pool) {
+        for (int i = 0; i < CTX_POOL_SIZE; i++)
+            archive_release_ctx(ctx_pool[i]);
+        free(ctx_pool);
+        ctx_pool = NULL;
+    }
     free(passwd);
-    free(ctx_pool);
     passwd = NULL;
     need_encrypt = false;
-    munmap(archiveAddr, archiveSize);
-    munmap(mempool, MEMPOOL_SIZE);
-    free(mempoolofs);
-    for (int i = 0; i < entryCount; ++i) {
-        free((void *) entries[i].filename);
+    if (archiveAddr != MAP_FAILED) {
+        munmap(archiveAddr, archiveSize);
+        archiveAddr = MAP_FAILED;
     }
-    free(entries);
+    if (mempool != MAP_FAILED) {
+        munmap(mempool, MEMPOOL_SIZE);
+        mempool = MAP_FAILED;
+    }
+    free(mempoolofs);
+    mempoolofs = NULL;
+    if (entries) {
+        for (int i = 0; i < entryCount; ++i) {
+            free((void *) entries[i].filename);
+        }
+        free(entries);
+        entries = NULL;
+    }
 }
 
 JNIEXPORT jboolean JNICALL
@@ -432,12 +442,9 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz, 
     archive_ctx *ctx;
     jboolean ret = true;
     int len = (*env)->GetStringUTFLength(env, str);
-    passwd = realloc(passwd, len * sizeof(char));
-    if (!passwd) {
-        LOGE("Allocate passwd buffer failed");
-        return false;
-    }
+    passwd = realloc(passwd, len + 1);
     (*env)->GetStringUTFRegion(env, str, 0, len, passwd);
+    passwd[len] = 0;
     archive_alloc_ctx(&ctx);
     void *tmpBuf = alloca(4096);
     while (archive_read_next_header(ctx->arc, &entry) == ARCHIVE_OK) {
@@ -486,7 +493,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz
     if (!ADDR_IN_FILE_MAPPING(addr)) mempool_release_pages(addr, size);
 }
 
-JNIEXPORT jboolean JNICALL
+JNIEXPORT void JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, jintArray fd_batch, jobjectArray names, jint arc_fd, jint size) {
     EH_UNUSED(clazz);
     struct archive *arc = archive_write_new();
@@ -508,15 +515,15 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, 
         archive_entry_copy_stat(entry, &st);
         archive_entry_set_perm(entry, 0644);
         archive_write_header(arc, entry);
-        int len = read(fd, buff, sizeof(buff));
-        while (len > 0) {
-            archive_write_data(arc, buff, len);
+        int len;
+        do {
             len = read(fd, buff, sizeof(buff));
-        }
+            archive_write_data(arc, buff, len);
+        } while (len > 0);
         archive_write_finish_entry(arc);
         archive_entry_clear(entry);
     }
+    archive_entry_free(entry);
     archive_write_close(arc);
     archive_write_free(arc);
-    return true;
 }

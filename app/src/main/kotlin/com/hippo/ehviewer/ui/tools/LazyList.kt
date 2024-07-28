@@ -1,11 +1,13 @@
 package com.hippo.ehviewer.ui.tools
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.scrollbar.rememberScrollbarAdapter
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,10 +24,7 @@ fun FastScrollLazyColumn(
     userScrollEnabled: Boolean = true,
     content: LazyListScope.() -> Unit,
 ) {
-    VerticalFastScroller(
-        listState = state,
-        topContentPadding = contentPadding.calculateTopPadding(),
-    ) {
+    Box {
         LazyColumn(
             modifier = modifier,
             state = state,
@@ -35,6 +34,12 @@ fun FastScrollLazyColumn(
             horizontalAlignment = horizontalAlignment,
             userScrollEnabled = userScrollEnabled,
             content = content,
+        )
+        VerticalScrollbar(
+            adapter = rememberScrollbarAdapter(state),
+            isScrollInProgress = state.isScrollInProgress,
+            modifier = Modifier.align(Alignment.TopEnd),
+            contentPadding = contentPadding,
         )
     }
 }

@@ -1,5 +1,7 @@
 package com.hippo.ehviewer.ui.main
 
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.material3.ShapeDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.getValue
@@ -7,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil3.Image
@@ -14,6 +17,8 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
+import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
+import com.hippo.ehviewer.ui.tools.sharedBounds
 import com.hippo.ehviewer.ui.tools.shouldCrop
 import com.hippo.ehviewer.ui.tools.thumbPlaceholder
 
@@ -24,6 +29,7 @@ fun requestOf(model: GalleryInfo): ImageRequest {
     return remember(model) { context.imageRequest(model) }
 }
 
+context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 @NonRestartableComposable
 fun EhAsyncThumb(
@@ -34,7 +40,9 @@ fun EhAsyncThumb(
 ) = AsyncImage(
     model = requestOf(model),
     contentDescription = null,
-    modifier = modifier,
+    modifier = modifier.sharedBounds(
+        key = "${model.gid}",
+    ).clip(ShapeDefaults.Medium),
     placeholder = thumbPlaceholder,
     onSuccess = onSuccess?.let { callback ->
         { callback(it.result.image) }
@@ -42,6 +50,7 @@ fun EhAsyncThumb(
     contentScale = contentScale,
 )
 
+context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun EhAsyncCropThumb(
     key: GalleryInfo,
@@ -51,7 +60,9 @@ fun EhAsyncCropThumb(
     AsyncImage(
         model = requestOf(key),
         contentDescription = null,
-        modifier = modifier,
+        modifier = modifier.sharedBounds(
+            key = "${key.gid}",
+        ).clip(ShapeDefaults.Medium),
         placeholder = thumbPlaceholder,
         onSuccess = {
             if (it.result.image.shouldCrop) {

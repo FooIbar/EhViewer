@@ -1,7 +1,7 @@
 [versions]
-aboutlibraries = "11.2.1"
+aboutlibraries = "11.2.2"
 accompanist = "0.34.0"
-agp = "8.6.0-alpha04"
+agp = "8.7.0-alpha03"
 androidx-activity = "1.9.0"
 androidx-appcompat = "1.7.0"
 androidx-biometric = "1.2.0-alpha05"
@@ -11,25 +11,28 @@ androidx-core = "1.14.0-alpha01"
 androidx-core-splashscreen = "1.2.0-alpha01"
 androidx-datastore = "1.1.1"
 androidx-graphics-path = "1.0.1"
-androidx-lifecycle = "2.8.1"
-androidx-paging = "3.3.0"
-androidx-recyclerview = "1.4.0-alpha01"
-androidx-room = "2.7.0-alpha03"
+androidx-lifecycle = "2.8.4"
+androidx-paging = "3.3.1"
+androidx-room = "2.7.0-alpha05"
 androidx-work = "2.10.0-alpha02"
 arrow = "1.2.4"
-coil = "3.0.0-alpha06"
-compose-bom = "2024.05.00-alpha03"
-compose-destinations = "2.1.0-beta09"
+coil = "3.0.0-alpha09"
+compose-bom = "2024.07.00-alpha02"
+compose-destinations = "2.1.0-beta11"
 kotlin = "2.0.0"
 kotlinx-coroutines = "1.8.1"
 kotlinx-datetime = "0.6.0"
-kotlinx-serialization = "1.7.0"
-ksp = "2.0.0-1.0.22"
+kotlinx-serialization = "1.7.1"
+ksp = "2.0.0-1.0.23"
 ktor = "3.0.0-beta-1"
 okio = "3.9.0"
 splitties = "3.0.0"
-telephoto = "0.11.2"
-xmlutil = "0.86.3"
+telephoto = "0.12.1"
+xmlutil = "0.90.1"
+junit = "1.2.1"
+uiautomator = "2.4.0-alpha01"
+benchmark = "1.3.0-beta02"
+profileinstaller = "1.4.0-alpha01"
 
 [libraries]
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
@@ -50,8 +53,6 @@ androidx-lifecycle-compose = { module = "androidx.lifecycle:lifecycle-runtime-co
 
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "androidx-paging" }
 
-androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerview" }
-
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
 androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "androidx-room" }
 
@@ -64,12 +65,12 @@ arrow-stack = { module = "io.arrow-kt:arrow-stack", version.ref = "arrow" }
 coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif" }
-coil-network = { module = "io.coil-kt.coil3:coil-network-ktor" }
+coil-network = { module = "io.coil-kt.coil3:coil-network-ktor2" }
 
 compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "compose-bom" }
 compose-foundation = { module = "androidx.compose.foundation:foundation", version = "1.8.0-SNAPSHOT" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-compose-material3 = { module = "androidx.compose.material3:material3", version = "1.3.0-SNAPSHOT" }
+compose-material3 = { module = "androidx.compose.material3:material3", version = "1.4.0-SNAPSHOT" }
 compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
@@ -78,19 +79,19 @@ compose-ui-util = { module = "androidx.compose.ui:ui-util" }
 compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "compose-destinations" }
 compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "compose-destinations" }
 
-material-motion-core = "io.github.fornewid:material-motion-compose-core:2.0.0"
+material-motion-core = "io.github.fornewid:material-motion-compose-core:2.0.1"
 
 cronet-embedded = "org.chromium.net:cronet-embedded:119.6045.31"
 
 desugar = "com.android.tools:desugar_jdk_libs_nio:2.0.4"
 
-directionalviewpager = "com.github.tachiyomiorg:DirectionalViewPager:1.0.0"
-diff = "io.github.petertrr:kotlin-multiplatform-diff:0.5.0"
-insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
-jsoup = "org.jsoup:jsoup:1.17.2"
+diff = "io.github.petertrr:kotlin-multiplatform-diff:0.7.0"
+jsoup = "org.jsoup:jsoup:1.18.1"
 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+
+ktlint = "com.pinterest:ktlint:1.3.0"
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 
@@ -98,16 +99,13 @@ logcat = "com.squareup.logcat:logcat:0.1"
 
 okio-jvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
 
-photoview = "com.github.chrisbanes:PhotoView:2.3.0"
-
-reorderable = "sh.calvin.reorderable:reorderable:2.1.1"
+reorderable = "sh.calvin.reorderable:reorderable:2.2.0"
 
 serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinx-serialization" }
 
-serialization-xml-core = { module = "io.github.pdvrieze.xmlutil:core-android", version.ref = "xmlutil" }
-serialization-xml = { module = "io.github.pdvrieze.xmlutil:serialization-android", version.ref = "xmlutil" }
+serialization-xml = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
 
 splitties-appctx = { module = "com.louiscad.splitties:splitties-appctx", version.ref = "splitties" }
 splitties-arch-room = { module = "com.louiscad.splitties:splitties-arch-room", version.ref = "splitties" }
@@ -116,19 +114,26 @@ splitties-systemservices = { module = "com.louiscad.splitties:splitties-systemse
 
 telephoto-zoomable = { module = "me.saket.telephoto:zoomable", version.ref = "telephoto" }
 
+androidx-junit = { module = "androidx.test.ext:junit", version.ref = "junit" }
+androidx-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
+androidx-benchmark-macro-junit4 = { module = "androidx.benchmark:benchmark-macro-junit4", version.ref = "benchmark" }
+androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
+
 [bundles]
 coil = ["coil-compose", "coil-gif", "coil-network"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-adaptive", "compose-ui-util"]
-kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-okio", "serialization-xml-core", "serialization-xml"]
+kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-okio", "serialization-xml"]
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
 
 [plugins]
 aboutlibrariesPlugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
 android-application = { id = "com.android.application", version.ref = "agp" }
-composeCompilerReportGenerator = { id = "dev.shreyaspatil.compose-compiler-report-generator", version = "1.3.1" }
+composeCompilerReportGenerator = { id = "dev.shreyaspatil.compose-compiler-report-generator", version = "1.4.0" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 spotless = { id = "com.diffplug.spotless", version = "6.25.0" }
+android-test = { id = "com.android.test", version.ref = "agp" }
+baselineprofile = { id = "androidx.baselineprofile", version.ref = "benchmark" }

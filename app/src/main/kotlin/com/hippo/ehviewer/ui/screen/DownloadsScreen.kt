@@ -4,8 +4,12 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.view.ViewConfiguration
-import androidx.compose.animation.Crossfade
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,7 +52,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -76,7 +79,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -107,7 +109,7 @@ import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.showMoveDownloadLabelList
-import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
@@ -115,6 +117,7 @@ import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
+import com.hippo.ehviewer.ui.tools.togetherWith
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.takeAndClear
 import com.jamal.composeprefs3.ui.ifTrueThen
@@ -133,7 +136,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Destination<RootGraph>
 @Composable
-fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
     val filterMode by Settings.downloadFilterMode.collectAsState { DownloadsFilterMode.from(it) }
@@ -153,7 +156,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
     fun String.translateArtist() = ehTags?.getTranslation(TagNamespace.Artist.toPrefix(), this) ?: this
-    val positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
     val unknownName = stringResource(R.string.unknown_artists)
@@ -172,8 +174,6 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         },
     )
     val hint = stringResource(R.string.search_bar_hint, title)
-    val sortModes = stringArrayResource(id = R.array.download_sort_modes)
-    val downloadStates = stringArrayResource(id = R.array.download_state)
     val list = remember(filterState, invalidateKey) {
         downloadInfoList.filterTo(mutableStateListOf()) { info ->
             filterState.take(info)
@@ -336,7 +336,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 val index by rememberUpdatedState(itemIndex)
                 val item by rememberUpdatedState(label)
                 // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
-                val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density, positionalThreshold = positionalThreshold) }
+                val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
                 LaunchedEffect(dismissState) {
                     snapshotFlow { dismissState.currentValue }.collect {
                         if (it == SwipeToDismissBoxValue.EndToStart) {
@@ -356,7 +356,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         }
                     }
                 }
-                ReorderableItem(reorderableLabelState, enabled = editEnable, key = id) { isDragging ->
+                ReorderableItem(reorderableLabelState, id, enabled = editEnable, animated = animateItems) { isDragging ->
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {},
@@ -534,77 +534,78 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
             launchIO { EhDB.putHistoryInfo(info.galleryInfo) }
             navToReader(info.galleryInfo)
         }
-
-        Crossfade(targetState = gridView, label = "Downloads") { showGridView ->
-            if (showGridView) {
-                val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
-                val thumbColumns by Settings.thumbColumns.collectAsState()
-                FastScrollLazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Fixed(thumbColumns),
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-                    verticalItemSpacing = gridInterval,
-                    horizontalArrangement = Arrangement.spacedBy(gridInterval),
-                    contentPadding = realPadding,
-                ) {
-                    items(list, key = { it.gid }) { info ->
-                        GalleryInfoGridItem(
-                            onClick = ::onItemClick.partially1(info),
-                            onLongClick = { navigate(info.galleryInfo.asDst()) },
-                            info = info,
-                            modifier = Modifier.thenIf(animateItems) { animateItem() },
-                            showLanguage = false,
-                        )
-                    }
-                }
-            } else {
-                FastScrollLazyColumn(
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-                    contentPadding = realPadding,
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-                ) {
-                    items(list, key = { it.gid }) { info ->
-                        val checked = info.gid in checkedInfoMap
-                        CheckableItem(
-                            checked = checked,
-                            modifier = Modifier.thenIf(animateItems) { animateItem() },
-                        ) { interactionSource ->
-                            DownloadCard(
-                                onClick = {
-                                    if (selectMode) {
-                                        if (checked) {
-                                            checkedInfoMap.remove(info.gid)
-                                        } else {
-                                            checkedInfoMap[info.gid] = info
-                                        }
-                                    } else {
-                                        onItemClick(info)
-                                    }
-                                },
-                                onThumbClick = {
-                                    navigate(info.galleryInfo.asDst())
-                                },
-                                onLongClick = {
-                                    checkedInfoMap[info.gid] = info
-                                },
-                                onStart = {
-                                    val intent = Intent(implicit<Activity>(), DownloadService::class.java)
-                                    intent.action = DownloadService.ACTION_START
-                                    intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                                    ContextCompat.startForegroundService(implicit<Activity>(), intent)
-                                },
-                                onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
+        AnimatedContent(gridView, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "Downloads") { showGridView ->
+            togetherWith(implicit<AnimatedVisibilityScope>()) {
+                if (showGridView) {
+                    val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
+                    val thumbColumns by Settings.thumbColumns.collectAsState()
+                    FastScrollLazyVerticalStaggeredGrid(
+                        columns = StaggeredGridCells.Fixed(thumbColumns),
+                        modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                        contentPadding = realPadding,
+                        verticalItemSpacing = gridInterval,
+                        horizontalArrangement = Arrangement.spacedBy(gridInterval),
+                    ) {
+                        items(list, key = { it.gid }) { info ->
+                            GalleryInfoGridItem(
+                                onClick = ::onItemClick.partially1(info),
+                                onLongClick = { navigate(info.galleryInfo.asDst()) },
                                 info = info,
-                                selectMode = selectMode,
-                                modifier = Modifier.height(height),
-                                interactionSource = interactionSource,
+                                modifier = Modifier.thenIf(animateItems) { animateItem() },
+                                showLanguage = false,
                             )
+                        }
+                    }
+                } else {
+                    FastScrollLazyColumn(
+                        modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                        contentPadding = realPadding,
+                        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
+                    ) {
+                        items(list, key = { it.gid }) { info ->
+                            val checked = info.gid in checkedInfoMap
+                            CheckableItem(
+                                checked = checked,
+                                modifier = Modifier.thenIf(animateItems) { animateItem() },
+                            ) { interactionSource ->
+                                DownloadCard(
+                                    onClick = {
+                                        if (selectMode) {
+                                            if (checked) {
+                                                checkedInfoMap.remove(info.gid)
+                                            } else {
+                                                checkedInfoMap[info.gid] = info
+                                            }
+                                        } else {
+                                            onItemClick(info)
+                                        }
+                                    },
+                                    onThumbClick = {
+                                        navigate(info.galleryInfo.asDst())
+                                    },
+                                    onLongClick = {
+                                        checkedInfoMap[info.gid] = info
+                                    },
+                                    onStart = {
+                                        val intent = Intent(implicit<Activity>(), DownloadService::class.java)
+                                        intent.action = DownloadService.ACTION_START
+                                        intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
+                                        ContextCompat.startForegroundService(implicit<Activity>(), intent)
+                                    },
+                                    onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
+                                    info = info,
+                                    selectMode = selectMode,
+                                    modifier = Modifier.height(height),
+                                    interactionSource = interactionSource,
+                                )
+                            }
                         }
                     }
                 }
             }
         }
 
-        Deferred({ delay(200) }) {
+        Await({ delay(200) }) {
             if (list.isEmpty()) {
                 Column(
                     modifier = Modifier.padding(realPadding).fillMaxSize(),
@@ -651,8 +652,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
                 val oldMode = SortMode.from(sortMode)
+                val sortModes = resources.getStringArray(R.array.download_sort_modes).toList()
                 val (selected, checked) = awaitSelectItemWithCheckBox(
-                    sortModes.toList(),
+                    sortModes,
                     R.string.sort_by,
                     R.string.group_by_download_label,
                     SortMode.All.indexOfFirst { it.field == oldMode.field && it.order == oldMode.order },
@@ -664,8 +666,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                 invalidateKey = !invalidateKey
             }
             onClick(Icons.Default.FilterList) {
+                val downloadStates = resources.getStringArray(R.array.download_state).toList()
                 val state = awaitSingleChoice(
-                    downloadStates.toList(),
+                    downloadStates,
                     filterState.state + 1,
                     R.string.download_filter,
                 ) - 1

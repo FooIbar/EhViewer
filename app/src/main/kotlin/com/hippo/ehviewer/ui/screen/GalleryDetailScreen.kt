@@ -10,6 +10,7 @@ import android.os.Parcelable
 import android.text.TextUtils.TruncateAt.END
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -150,7 +151,8 @@ import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
-import com.hippo.unifile.asUniFile
+import com.hippo.files.delete
+import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -184,21 +186,19 @@ data class TokenArgs(
 ) : GalleryDetailScreenArgs
 
 @StringRes
-private fun getRatingText(rating: Float): Int {
-    return when ((rating * 2).roundToInt()) {
-        0 -> R.string.rating0
-        1 -> R.string.rating1
-        2 -> R.string.rating2
-        3 -> R.string.rating3
-        4 -> R.string.rating4
-        5 -> R.string.rating5
-        6 -> R.string.rating6
-        7 -> R.string.rating7
-        8 -> R.string.rating8
-        9 -> R.string.rating9
-        10 -> R.string.rating10
-        else -> R.string.rating_none
-    }
+private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt()) {
+    0 -> R.string.rating0
+    1 -> R.string.rating1
+    2 -> R.string.rating2
+    3 -> R.string.rating3
+    4 -> R.string.rating4
+    5 -> R.string.rating5
+    6 -> R.string.rating6
+    7 -> R.string.rating7
+    8 -> R.string.rating8
+    9 -> R.string.rating9
+    10 -> R.string.rating10
+    else -> R.string.rating_none
 }
 
 private fun List<GalleryTagGroup>.getArtistTag(): String? {
@@ -213,7 +213,7 @@ private fun List<GalleryTagGroup>.getArtistTag(): String? {
 
 @Destination<RootGraph>
 @Composable
-fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
     var galleryInfo by remember {
         val casted = args as? GalleryInfoArgs
         mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
@@ -588,7 +588,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
                     )
                     r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                    r.addRequestHeader("Cookie", EhCookieStore.getCookieHeader(url))
+                    EhCookieStore.getCookieHeader(url)?.let { r.addRequestHeader("Cookie", it) }
                     downloadManager.enqueue(r)
                     showSnackbar(downloadTorrentStarted)
                 }
@@ -618,14 +618,12 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             )
         }
         Spacer(modifier = Modifier.size(keylineMargin))
-        fun getAllRatingText(rating: Float, ratingCount: Int): String {
-            return getString(
-                R.string.rating_text,
-                getString(getRatingText(rating)),
-                rating,
-                ratingCount,
-            )
-        }
+        fun getAllRatingText(rating: Float, ratingCount: Int): String = getString(
+            R.string.rating_text,
+            getString(getRatingText(rating)),
+            rating,
+            ratingCount,
+        )
         var ratingText by rememberSaveable {
             mutableStateOf(getAllRatingText(galleryDetail.rating, galleryDetail.ratingCount))
         }
@@ -846,9 +844,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                         GalleryDetailHeaderCard(
                             info = galleryInfo,
                             onInfoCardClick = ::onGalleryInfoCardClick,
-                            onCategoryChipClick = ::onCategoryChipClick,
                             onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
                             onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
+                            onCategoryChipClick = ::onCategoryChipClick,
                             modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
                         )
                         Row {
@@ -900,9 +898,9 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             GalleryDetailHeaderCard(
                                 info = galleryInfo,
                                 onInfoCardClick = ::onGalleryInfoCardClick,
-                                onCategoryChipClick = ::onCategoryChipClick,
                                 onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
                                 onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
+                                onCategoryChipClick = ::onCategoryChipClick,
                                 modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
                             )
                             Column(
@@ -1079,7 +1077,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                                         )
                                         val dirname = downloadInfo?.dirname
                                         if (uri != null && dirname != null) {
-                                            val file = uri.asUniFile()
+                                            val file = uri.toOkioPath()
                                             val msg = runCatching {
                                                 bgWork {
                                                     withIOContext {

@@ -32,13 +32,11 @@ object GalleryTokenApiParser {
      * ]
      * }
      */
-    fun parse(body: String): String {
-        return runCatching {
-            body.parseAs<Result>().tokenList[0].token
-        }.getOrElse {
-            ExceptionUtils.throwIfFatal(it)
-            throw EhException(body.parseAs<Error>().error)
-        }
+    fun parse(body: String): String = runCatching {
+        body.parseAs<Result>().tokenList[0].token
+    }.getOrElse {
+        ExceptionUtils.throwIfFatal(it)
+        throw EhException(body.parseAs<Error>().error)
     }
 
     @Serializable

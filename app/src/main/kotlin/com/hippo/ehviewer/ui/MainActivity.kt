@@ -17,6 +17,8 @@ package com.hippo.ehviewer.ui
 
 import android.annotation.SuppressLint
 import android.app.assist.AssistContent
+import android.content.ContentResolver.SCHEME_CONTENT
+import android.content.ContentResolver.SCHEME_FILE
 import android.content.Intent
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE_NONE
@@ -24,6 +26,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -135,6 +139,7 @@ import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.updater.AppUpdater
+import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.calculateFraction
 import com.hippo.ehviewer.util.displayString
@@ -142,10 +147,11 @@ import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.getUrlFromClipboard
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.isAtLeastS
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.sha1
+import com.hippo.ehviewer.util.sha1
+import com.hippo.files.isDirectory
+import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
+import com.ramcosta.composedestinations.spec.Direction
 import com.ramcosta.composedestinations.utils.currentDestinationAsState
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -160,7 +166,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
-private val navItems = arrayOf<Triple<DirectionDestinationSpec, Int, ImageVector>>(
+private val navItems = arrayOf<Triple<Direction, Int, ImageVector>>(
     Triple(HomePageScreenDestination, R.string.homepage, Icons.Default.Home),
     Triple(SubscriptionScreenDestination, R.string.subscription, EhIcons.Default.Subscriptions),
     Triple(WhatshotScreenDestination, R.string.whats_hot, Icons.Default.Whatshot),
@@ -226,7 +232,7 @@ class MainActivity : EhActivity() {
             }
 
             suspend fun DialogState.checkDownloadLocation() {
-                val valid = withIOContext { downloadLocation.ensureDir() }
+                val valid = withIOContext { downloadLocation.isDirectory }
                 if (!valid) {
                     awaitPermissionOrCancel(
                         confirmText = R.string.open_settings,
@@ -242,17 +248,19 @@ class MainActivity : EhActivity() {
                 }
             }
 
-            LaunchedEffect(Unit) {
-                runCatching { dialogState.checkDownloadLocation() }
-                runCatching { dialogState.checkAppLinkVerify() }
-                runSuspendCatching {
-                    withIOContext {
-                        AppUpdater.checkForUpdate()?.let {
-                            dialogState.showNewVersion(this@MainActivity, it)
+            if (!AppConfig.isBenchmark) {
+                LaunchedEffect(Unit) {
+                    runCatching { dialogState.checkDownloadLocation() }
+                    runCatching { dialogState.checkAppLinkVerify() }
+                    runSuspendCatching {
+                        withIOContext {
+                            AppUpdater.checkForUpdate()?.let {
+                                dialogState.showNewVersion(this@MainActivity, it)
+                            }
                         }
+                    }.onFailure {
+                        snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
                     }
-                }.onFailure {
-                    snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
                 }
             }
 
@@ -261,10 +269,19 @@ class MainActivity : EhActivity() {
                 intentFlow.collect { intent ->
                     when (intent.action) {
                         Intent.ACTION_VIEW -> {
-                            val url = intent.data?.toString()
-                            if (url != null && !navigator.navWithUrl(url)) {
-                                val new = dialogState.awaitInputText(initial = url, title = cannotParse)
-                                addTextToClipboard(new)
+                            val uri = intent.data ?: return@collect
+                            when (uri.scheme) {
+                                SCHEME_CONTENT, SCHEME_FILE -> {
+                                    navigator.navToReader(uri)
+                                }
+
+                                else -> {
+                                    val url = uri.toString()
+                                    if (!navigator.navWithUrl(url)) {
+                                        val new = dialogState.awaitInputText(initial = url, title = cannotParse)
+                                        addTextToClipboard(new)
+                                    }
+                                }
                             }
                         }
                         Intent.ACTION_SEND -> {
@@ -277,7 +294,7 @@ class MainActivity : EhActivity() {
                             } else if (type != null && type.startsWith("image/")) {
                                 val uri = intent.getParcelableExtraCompat<Uri>(Intent.EXTRA_STREAM)
                                 if (null != uri) {
-                                    val hash = withIOContext { uri.asUniFile().sha1() }
+                                    val hash = withIOContext { uri.toOkioPath().sha1() }
                                     navigator.navigate(
                                         ListUrlBuilder(
                                             mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
@@ -446,12 +463,16 @@ class MainActivity : EhActivity() {
                             drawerState = sideSheetState,
                             gesturesEnabled = sheet != null && drawerEnabled,
                         ) {
-                            DestinationsNavHost(
-                                navGraph = NavGraphs.root,
-                                startRoute = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
-                                defaultTransitions = rememberEhNavAnim(),
-                                navController = navController,
-                            )
+                            SharedTransitionLayout {
+                                CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                                    DestinationsNavHost(
+                                        navGraph = NavGraphs.root,
+                                        start = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
+                                        defaultTransitions = rememberEhNavAnim(),
+                                        navController = navController,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -533,6 +554,7 @@ val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionL
 val LocalDrawerHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerHandle not present!") }
 val LocalSnackBarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackBarHostState not present!") }
 val LocalSnackBarFabPadding = compositionLocalOf<State<Dp>> { error("CompositionLocal LocalSnackBarFabPadding not present!") }
+val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope> { error("CompositionLocal LocalSharedTransitionScope not present!") }
 
 @Composable
 fun DrawerHandle(enabled: Boolean) {

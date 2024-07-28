@@ -1,18 +1,4 @@
-mod hash;
 mod parser;
-
-extern crate android_logger;
-extern crate anyhow;
-extern crate base16ct;
-extern crate jni;
-extern crate jni_fn;
-extern crate log;
-extern crate once_cell;
-extern crate quick_xml;
-extern crate regex_lite;
-extern crate serde;
-extern crate sha1;
-extern crate tl;
 
 use android_logger::Config;
 use anyhow::{anyhow, ensure, Result};
@@ -31,7 +17,7 @@ use tl::{Bytes, Node, NodeHandle, Parser, VDom};
 #[macro_export]
 macro_rules! regex {
     ($re:literal $(,)?) => {{
-        static RE: once_cell::sync::OnceCell<regex_lite::Regex> = once_cell::sync::OnceCell::new();
+        static RE: std::sync::OnceLock<regex_lite::Regex> = std::sync::OnceLock::new();
         RE.get_or_init(|| regex_lite::Regex::new($re).unwrap())
     }};
 }

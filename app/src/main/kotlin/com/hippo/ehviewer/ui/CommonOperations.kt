@@ -18,6 +18,7 @@ package com.hippo.ehviewer.ui
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,18 +55,21 @@ import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.ui.destinations.ReaderScreenDestination
+import com.hippo.ehviewer.ui.reader.ReaderScreenArgs
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.util.FavouriteStatusRouter
+import com.hippo.ehviewer.util.bgWork
 import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastT
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.requestPermission
 import com.hippo.ehviewer.util.toEpochMillis
 import com.hippo.ehviewer.util.toLocalDateTime
-import com.hippo.unifile.UniFile
+import com.hippo.files.delete
+import com.hippo.files.isDirectory
+import com.hippo.files.openOutputStream
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.sync.Mutex
@@ -77,20 +81,20 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.todayIn
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path
 import splitties.init.appCtx
 
-private fun removeNoMediaFile(downloadDir: UniFile) {
-    val noMedia = downloadDir / ".nomedia"
-    noMedia.delete()
+private fun removeNoMediaFile(downloadDir: Path) {
+    (downloadDir / ".nomedia").delete()
 }
 
-private fun ensureNoMediaFile(downloadDir: UniFile) {
-    downloadDir.createFile(".nomedia") ?: return
+private fun ensureNoMediaFile(downloadDir: Path) {
+    (downloadDir / ".nomedia").openOutputStream().close()
 }
 
 private val lck = Mutex()
 
-suspend fun keepNoMediaFileStatus(downloadDir: UniFile = downloadLocation) {
+suspend fun keepNoMediaFileStatus(downloadDir: Path = downloadLocation) {
     if (downloadDir.isDirectory) {
         lck.withLock {
             if (Settings.mediaScan) {
@@ -205,10 +209,14 @@ suspend fun DialogState.modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
                 add(localFav)
                 addAll(cloudFav)
             }
+            if (galleryInfo.favoriteSlot >= 0 && galleryInfo.favoriteNote == null) {
+                galleryInfo.favoriteNote = bgWork { EhEngine.getFavoriteNote(galleryInfo.gid, galleryInfo.token) }
+            }
             val (slot, note) = awaitSelectItemWithIconAndTextField(
                 items,
                 title = R.string.add_favorites_dialog_title,
                 hint = R.string.favorite_note,
+                initialNote = galleryInfo.favoriteNote.orEmpty(),
                 maxChar = MAX_FAVNOTE_CHAR,
             )
             return doModifyFavorites(galleryInfo, if (isFavorited) slot - 2 else slot - 1, localFavorited, note)
@@ -247,6 +255,7 @@ private suspend fun doModifyFavorites(
 
         in 0..9 -> {
             EhEngine.modifyFavorites(galleryInfo.gid, galleryInfo.token, slot, note)
+            galleryInfo.favoriteNote = note
             true
         }
 
@@ -272,21 +281,14 @@ suspend fun removeFromFavorites(galleryInfo: BaseGalleryInfo) = doModifyFavorite
     localFavorited = EhDB.containLocalFavorites(galleryInfo.gid),
 )
 
-context (Context, DestinationsNavigator)
+context (DestinationsNavigator)
 fun navToReader(
     info: BaseGalleryInfo,
     page: Int = -1,
-) {
-    if (Settings.newReader) {
-        navigate(ReaderScreenDestination(info, page))
-    } else {
-        val intent = Intent(this@Context, ReaderActivity::class.java)
-        intent.action = ReaderActivity.ACTION_EH
-        intent.putExtra(ReaderActivity.KEY_GALLERY_INFO, info)
-        intent.putExtra(ReaderActivity.KEY_PAGE, page)
-        startActivity(intent)
-    }
-}
+) = navigate(ReaderScreenDestination(ReaderScreenArgs.Gallery(info, page)))
+
+fun DestinationsNavigator.navToReader(uri: Uri) =
+    navigate(ReaderScreenDestination(ReaderScreenArgs.Archive(uri)))
 
 context(DialogState, Context, DestinationsNavigator)
 suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
@@ -439,9 +441,7 @@ suspend fun DialogState.awaitSelectDate(): String? {
         title = R.string.go_to,
         yearRange = initial.year..yesterday.year,
         selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                return utcTimeMillis in dateRange
-            }
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis in dateRange
         },
     )
     val date = dateMillis?.run { toLocalDateTime().date.toString() }

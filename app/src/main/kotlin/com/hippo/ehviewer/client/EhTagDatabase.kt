@@ -26,8 +26,7 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.StatusCodeException
 import com.hippo.ehviewer.util.copyTo
-import com.hippo.unifile.asUniFile
-import com.hippo.unifile.sha1
+import com.hippo.ehviewer.util.sha1
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.request.prepareGet
@@ -45,6 +44,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import moe.tarsin.coroutines.runSuspendCatching
 import okio.BufferedSource
+import okio.Path.Companion.toOkioPath
 import okio.buffer
 import okio.source
 import splitties.init.appCtx
@@ -63,9 +63,7 @@ object EhTagDatabase : CoroutineScope {
 
     var initialized by mutableStateOf(false)
 
-    fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? {
-        return tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
-    }
+    fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
 
     private fun internalSuggestFlow(
         tags: Map<String, String>,
@@ -131,24 +129,16 @@ object EhTagDatabase : CoroutineScope {
     private fun String.containsIgnoreSpace(other: String, ignoreCase: Boolean = true): Boolean =
         removeSpace().contains(other.removeSpace(), ignoreCase)
 
-    private fun getMetadata(context: Context): Array<String>? {
-        return context.resources.getStringArray(R.array.tag_translation_metadata)
-            .takeIf { it.size == 4 }
-    }
+    private fun getMetadata(context: Context): Array<String>? = context.resources.getStringArray(R.array.tag_translation_metadata)
+        .takeIf { it.size == 4 }
 
-    fun isTranslatable(context: Context): Boolean {
-        return context.resources.getBoolean(R.bool.tag_translatable)
-    }
+    fun isTranslatable(context: Context): Boolean = context.resources.getBoolean(R.bool.tag_translatable)
 
-    private fun getFileContent(file: File): String? {
-        return runCatching {
-            file.source().buffer().use { it.readString(StandardCharsets.UTF_8) }
-        }.getOrNull()
-    }
+    private fun getFileContent(file: File): String? = runCatching {
+        file.source().buffer().use { it.readString(StandardCharsets.UTF_8) }
+    }.getOrNull()
 
-    private fun checkData(sha1: String?, data: File): Boolean {
-        return sha1 != null && sha1 == data.asUniFile().sha1()
-    }
+    private fun checkData(sha1: String?, data: File): Boolean = sha1 != null && sha1 == data.toOkioPath().sha1()
 
     private suspend fun save(client: HttpClient, url: String, file: File) {
         runCatching {

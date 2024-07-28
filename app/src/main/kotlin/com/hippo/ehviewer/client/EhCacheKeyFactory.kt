@@ -29,13 +29,9 @@ private const val URL_PREFIX_THUMB_E = "https://ehgt.org/"
 private const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/"
 private const val URL_PREFIX_LARGE_THUMB_EX = URL_PREFIX_THUMB_EX + "t/"
 
-fun getImageKey(gid: Long, index: Int): String {
-    return "image:$gid:$index"
-}
+fun getImageKey(gid: Long, index: Int): String = "image:$gid:$index"
 
-fun getThumbKey(url: String): String {
-    return url.removePrefix(URL_PREFIX_THUMB_E).removePrefix(URL_PREFIX_LARGE_THUMB_EX).removePrefix(URL_PREFIX_THUMB_EX)
-}
+fun getThumbKey(url: String): String = url.removePrefix(URL_PREFIX_THUMB_E).removePrefix(URL_PREFIX_LARGE_THUMB_EX).removePrefix(URL_PREFIX_THUMB_EX)
 
 val GalleryPreview.url
     get() = if (exThumb) {

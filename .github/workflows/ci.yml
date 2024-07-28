@@ -43,10 +43,13 @@ jobs:
           cache-read-only: true
 
       - name: Install NDK
-        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11902837"
 
       - name: Spotless Check
         run: ./gradlew spotlessCheck
+
+      - name: Lint Check
+        run: ./gradlew lintMarshmallowRelease
 
   default:
     runs-on: ubuntu-latest
@@ -61,7 +64,7 @@ jobs:
           java-version: 21
 
       - name: Install NDK
-        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11902837"
 
       - name: Install Rust Toolchain
         run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
@@ -87,6 +90,8 @@ jobs:
           restore-keys: cmake-default-
 
       - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GithubToken }}
         run: ./gradlew assembleDefaultRelease
 
       - name: Upload ARM64
@@ -111,7 +116,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: default-mapping-${{ github.sha }}
-          path: app/build/outputs/mapping/defaultRelease/mapping.txt
+          path: app/build/outputs/mapping/defaultRelease
 
       - name: Upload native debug symbols
         uses: actions/upload-artifact@v4
@@ -132,7 +137,7 @@ jobs:
           java-version: 21
 
       - name: Install NDK
-        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
+        run: echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11902837"
 
       - name: Install Rust Toolchain
         run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
@@ -158,6 +163,8 @@ jobs:
           restore-keys: cmake-marshmallow-
 
       - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GithubToken }}
         run: ./gradlew assembleMarshmallowRelease
 
       - name: Upload ARM64
@@ -182,7 +189,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: marshmallow-mapping-${{ github.sha }}
-          path: app/build/outputs/mapping/marshmallowRelease/mapping.txt
+          path: app/build/outputs/mapping/marshmallowRelease
 
       - name: Upload native debug symbols
         uses: actions/upload-artifact@v4

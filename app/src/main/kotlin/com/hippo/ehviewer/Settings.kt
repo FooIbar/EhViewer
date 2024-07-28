@@ -100,6 +100,7 @@ fun <T> PrefDelegate<T>.asMutableState(): MutableState<T> {
 object Settings : DataStorePreferences(null) {
     private const val KEY_SHOW_TAG_TRANSLATIONS = "show_tag_translations"
 
+    @Suppress("ktlint:standard:backing-property-naming")
     private val _favFlow = MutableSharedFlow<Unit>()
     val favChangesFlow = _favFlow.debounce(1000)
     var favCat by stringArrayPref("fav_cat", 10, "Favorites").emitTo(_favFlow)
@@ -140,6 +141,7 @@ object Settings : DataStorePreferences(null) {
     var readCacheSize by intPref("read_cache_size_2", 640)
     var launchPage by intPref("launch_page_2", 0)
     var commentThreshold by intPref("comment_threshold", -101)
+    var hardwareBitmapThreshold by intPref("hardware_bitmap_threshold", 16384)
     var forceEhThumb by boolPref("force_eh_thumb", false)
     var showComments by boolPref("show_gallery_comments", true)
     var requestNews by boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
@@ -173,9 +175,7 @@ object Settings : DataStorePreferences(null) {
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
     var lastUpdateTime by longPref("last_update_time", BuildConfig.COMMIT_TIME)
 
-    // Tachiyomi Reader
-    var newReader by boolPref("new_compose_reader", false)
-
+    // Reader
     val cropBorder = boolPref("crop_borders", false)
     val colorFilter = boolPref("pref_color_filter_key", false)
     val colorFilterValue = intPref("color_filter_value", 0)
@@ -207,6 +207,8 @@ object Settings : DataStorePreferences(null) {
     val imageScaleType = intPref("pref_image_scale_type_key", 1)
     val landscapeZoom = boolPref("landscape_zoom", false)
     val zoomStart = intPref("pref_zoom_start_key", 1)
+    val showNavigationOverlayNewUser = boolPref("reader_navigation_overlay_new_user", true)
+    val showNavigationOverlayOnStart = boolPref("reader_navigation_overlay_on_start", false)
 
     init {
         if ("CN" == Locale.getDefault().country) {
@@ -225,7 +227,7 @@ object Settings : DataStorePreferences(null) {
     private fun intArrayPref(key: String, count: Int) = object : Delegate<IntArray> {
         override val flowGetter: () -> Flow<Unit> = { _value.asFlow().flatMapMerge { it.changesFlow() }.conflate() }
 
-        @Suppress("ktlint:standard:property-naming")
+        @Suppress("ktlint:standard:backing-property-naming")
         private var _value = (0 until count).map { intPref("${key}_$it", 0) }.toTypedArray()
         override fun getValue(thisRef: Any?, prop: KProperty<*>?): IntArray = _value.map { it.value }.toIntArray()
         override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: IntArray) {
@@ -237,7 +239,7 @@ object Settings : DataStorePreferences(null) {
     private fun stringArrayPref(key: String, count: Int, defMetaValue: String) = object : Delegate<Array<String>> {
         override val flowGetter: () -> Flow<Unit> = { _value.asFlow().flatMapMerge { it.changesFlow() }.conflate() }
 
-        @Suppress("ktlint:standard:property-naming")
+        @Suppress("ktlint:standard:backing-property-naming")
         private var _value = (0 until count).map { stringPref("${key}_$it", "$defMetaValue $it") }.toTypedArray()
         override fun getValue(thisRef: Any?, prop: KProperty<*>?): Array<String> = _value.map { it.value }.toTypedArray()
         override fun setValue(thisRef: Any?, prop: KProperty<*>?, value: Array<String>) {

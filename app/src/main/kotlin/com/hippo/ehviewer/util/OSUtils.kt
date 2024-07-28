@@ -17,7 +17,7 @@ package com.hippo.ehviewer.util
 
 import android.os.Looper
 import eu.kanade.tachiyomi.util.system.logcat
-import java.io.FileReader
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
@@ -34,8 +34,8 @@ object OSUtils {
 
     val totalMemory by lazy {
         runCatching {
-            FileReader(PROCFS_MEMFILE).buffered(64).use { reader ->
-                reader.lineSequence().forEach { line ->
+            File(PROCFS_MEMFILE).useLines {
+                it.forEach { line ->
                     PROCFS_MEMFILE_FORMAT.find(line)?.destructured?.let { (k, v) ->
                         if (k == MEMTOTAL_STRING) {
                             return@runCatching v.toLong() * 1024
@@ -44,9 +44,10 @@ object OSUtils {
                 }
             }
             -1L
-        }.onFailure {
+        }.getOrElse {
             logcat(it)
-        }.getOrElse { -1L }
+            -1L
+        }
     }
 }
 
