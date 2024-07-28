@@ -16,8 +16,9 @@ inline fun Modifier.thenIf(condition: Boolean, crossinline block: Modifier.() ->
 
 val NoopTransitionsVisibilityScope = TransitionsVisibilityScope(emptySet())
 
+@JvmInline
 @Stable
-class TransitionsVisibilityScope(val scopes: Set<AnimatedVisibilityScope>)
+value class TransitionsVisibilityScope(val scopes: Set<AnimatedVisibilityScope>)
 
 context(TransitionsVisibilityScope)
 @Composable
