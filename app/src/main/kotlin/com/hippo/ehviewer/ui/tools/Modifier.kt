@@ -22,7 +22,8 @@ value class TransitionsVisibilityScope(val scopes: Set<AnimatedVisibilityScope>)
 
 context(TransitionsVisibilityScope)
 @Composable
-inline fun <T> AnimatedVisibilityScope.advance(block: @Composable TransitionsVisibilityScope.() -> T) = block(remember(scopes, this) { TransitionsVisibilityScope(scopes + this) })
+inline fun <T> togetherWith(scope: AnimatedVisibilityScope, block: @Composable TransitionsVisibilityScope.() -> T) =
+    block(remember(scopes, scope) { TransitionsVisibilityScope(scopes + scope) })
 
 context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable

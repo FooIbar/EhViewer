@@ -113,11 +113,11 @@ import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
-import com.hippo.ehviewer.ui.tools.advance
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
+import com.hippo.ehviewer.ui.tools.togetherWith
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.takeAndClear
 import com.jamal.composeprefs3.ui.ifTrueThen
@@ -535,7 +535,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             navToReader(info.galleryInfo)
         }
         AnimatedContent(gridView, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "Downloads") { showGridView ->
-            advance {
+            togetherWith(this@AnimatedVisibilityScope) {
                 if (showGridView) {
                     val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
                     val thumbColumns by Settings.thumbColumns.collectAsState()

@@ -11,7 +11,7 @@ import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.NoopTransitionsVisibilityScope
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
-import com.hippo.ehviewer.ui.tools.advance
+import com.hippo.ehviewer.ui.tools.togetherWith
 import com.hippo.ehviewer.util.findActivity
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +22,7 @@ inline fun <R> AnimatedVisibilityScope.composing(
     block: @Composable context(MainActivity, SnackbarHostState, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, CoroutineScope)
     () -> R,
 ) = with(NoopTransitionsVisibilityScope) {
-    advance {
+    togetherWith(this@AnimatedVisibilityScope) {
         block(
             with(LocalContext.current) { remember { findActivity() } },
             LocalSnackBarHostState.current,
