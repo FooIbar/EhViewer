@@ -53,7 +53,7 @@ import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.plus
-import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
@@ -165,7 +165,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
                 }
             }
         }
-        Deferred(keyword, { delay(200) }) {
+        Await(keyword, { delay(200) }) {
             if (historyData.itemCount == 0) {
                 Column(
                     modifier = Modifier.padding(paddingValues).padding(horizontal = marginH).fillMaxSize(),

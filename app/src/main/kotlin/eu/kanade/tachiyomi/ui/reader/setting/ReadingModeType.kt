@@ -10,10 +10,6 @@ import com.hippo.ehviewer.icons.reader.LeftToRight
 import com.hippo.ehviewer.icons.reader.RightToLeft
 import com.hippo.ehviewer.icons.reader.Vertical
 import com.hippo.ehviewer.icons.reader.Webtoon
-import eu.kanade.tachiyomi.ui.reader.ReaderActivity
-import eu.kanade.tachiyomi.ui.reader.viewer.BaseViewer
-import eu.kanade.tachiyomi.ui.reader.viewer.pager.PagerViewer
-import eu.kanade.tachiyomi.ui.reader.viewer.webtoon.WebtoonViewer
 
 @Stable
 enum class ReadingModeType(
@@ -37,6 +33,11 @@ enum class ReadingModeType(
             WEBTOON, CONTINUOUS_VERTICAL -> true
         }
 
+        fun isVertical(type: ReadingModeType) = when (type) {
+            DEFAULT, LEFT_TO_RIGHT, RIGHT_TO_LEFT -> false
+            VERTICAL, WEBTOON, CONTINUOUS_VERTICAL -> true
+        }
+
         const val MASK = 0x00000007
 
         fun fromPreference(preference: Int?): ReadingModeType = entries.find { it.flagValue == preference } ?: DEFAULT
@@ -47,14 +48,5 @@ enum class ReadingModeType(
         }
 
         fun fromSpinner(position: Int?) = entries.find { value -> value.prefValue == position } ?: DEFAULT
-
-        fun toViewer(preference: Int?, activity: ReaderActivity): BaseViewer = when (fromPreference(preference)) {
-            LEFT_TO_RIGHT -> PagerViewer(activity)
-            RIGHT_TO_LEFT -> PagerViewer(activity, true)
-            VERTICAL -> PagerViewer(activity, isVertical = true)
-            WEBTOON -> WebtoonViewer(activity)
-            CONTINUOUS_VERTICAL -> WebtoonViewer(activity, isContinuous = false)
-            DEFAULT -> PagerViewer(activity)
-        }
     }
 }

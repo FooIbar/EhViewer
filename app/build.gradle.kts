@@ -169,7 +169,6 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
-        viewBinding = true
     }
 
     namespace = "com.hippo.ehviewer"
@@ -223,15 +222,11 @@ dependencies {
     // https://developer.android.com/jetpack/androidx/releases/paging
     implementation(libs.androidx.paging.compose)
 
-    implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.viewpager2)
-
     // https://developer.android.com/jetpack/androidx/releases/room
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.paging)
 
     implementation(libs.androidx.work.runtime)
-    implementation(libs.photoview)
     implementation(libs.material.motion.core)
 
     implementation(libs.bundles.splitties)
@@ -245,8 +240,6 @@ dependencies {
     implementation(libs.aboutlibraries.core)
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.accompanist.drawable.painter)
-
-    implementation(libs.insetter) // Dead Dependency
 
     // implementation(libs.reorderable)
 

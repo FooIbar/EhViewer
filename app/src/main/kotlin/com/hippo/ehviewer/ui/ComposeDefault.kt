@@ -24,7 +24,7 @@ inline fun <R> AnimatedVisibilityScope.composing(
 ) = with(NoopTransitionsVisibilityScope) {
     advance {
         block(
-            LocalContext.current.run { remember { findActivity<MainActivity>() } },
+            with(LocalContext.current) { remember { findActivity() } },
             LocalSnackBarHostState.current,
             LocalDialogState.current,
             LocalSharedTransitionScope.current,

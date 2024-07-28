@@ -58,7 +58,7 @@ import com.hippo.ehviewer.client.EhFilter.trigger
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
-import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.ramcosta.composedestinations.annotation.Destination
@@ -213,7 +213,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
             }
         },
     ) { paddingValues ->
-        Deferred({ allFilterMap.await() }) { filters ->
+        Await({ allFilterMap.await() }) { filters ->
             LazyColumn(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 contentPadding = paddingValues,

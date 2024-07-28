@@ -50,6 +50,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -224,7 +225,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         check(!(mReadReference < 0 || mDownloadReference < 0)) { "Mode reference < 0" }
     }
 
-    private val prepareJob = launch { doPrepare() }
+    private val prepareJob = async { doPrepare() }
     private val archiveJob = launch(start = CoroutineStart.LAZY) { mSpiderDen.archive() }
 
     private suspend fun doPrepare() {
@@ -235,7 +236,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     suspend fun awaitReady(): Boolean {
-        prepareJob.join()
+        prepareJob.await()
         return isReady
     }
 

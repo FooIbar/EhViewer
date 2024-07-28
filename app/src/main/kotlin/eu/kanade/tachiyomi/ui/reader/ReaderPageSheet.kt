@@ -21,16 +21,12 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.util.findActivity
-import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import moe.tarsin.kt.andThen
 
 @Composable
@@ -63,18 +59,4 @@ fun ReaderPageSheetMeta(
         Item(icon = Icons.Default.Save, text = R.string.action_save, onClick = save)
         Item(icon = Icons.Default.Save, text = R.string.action_save_to, onClick = saveTo)
     }
-}
-
-@Composable
-fun ReaderPageSheet(page: ReaderPage, dismiss: () -> Unit) {
-    val activity = LocalContext.current.run { remember { findActivity<ReaderActivity>() } }
-    ReaderPageSheetMeta(
-        retry = { activity.retryPage(page.index) },
-        retryOrigin = { activity.retryPage(page.index, true) },
-        share = { activity.shareImage(page.index) },
-        copy = { activity.copyImage(page.index) },
-        save = { activity.saveImage(page.index) },
-        saveTo = { activity.saveImageTo(page.index) },
-        dismiss = dismiss,
-    )
 }

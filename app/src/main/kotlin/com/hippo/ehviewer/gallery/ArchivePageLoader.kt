@@ -35,6 +35,7 @@ import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
@@ -54,21 +55,19 @@ class ArchivePageLoader(
     passwdProvider: PasswdProvider? = null,
 ) : PageLoader2(gid, startPage) {
     private lateinit var pfd: ParcelFileDescriptor
-    private val hostJob = launch(start = CoroutineStart.LAZY) {
+    private val hostJob = async(start = CoroutineStart.LAZY) {
         logcat(DEBUG_TAG) { "Open archive ${file.toUri().displayPath}" }
         pfd = file.openFileDescriptor("r")
-        size = openArchive(pfd.fd, pfd.statSize, gid == 0L || file.name.endsWith(".zip"))
-        if (size == 0) {
-            return@launch
-        }
-        if (passwdProvider != null && needPassword()) {
+        val size = openArchive(pfd.fd, pfd.statSize, gid == 0L || file.name.endsWith(".zip"))
+        if (size != 0 && passwdProvider != null && needPassword()) {
             archivePasswds?.forEach {
                 it ?: return@forEach
-                if (providePassword(it)) return@launch
+                if (providePassword(it)) return@async size
             }
             val toAdd = passwdProvider { providePassword(it) }
             archivePasswds = archivePasswds?.toMutableSet()?.apply { add(toAdd) } ?: setOf(toAdd)
         }
+        size
     }
 
     override var size = 0
@@ -136,8 +135,8 @@ class ArchivePageLoader(
     }
 
     override suspend fun awaitReady(): Boolean {
-        hostJob.join()
-        return super.awaitReady() && size != 0
+        size = hostJob.await()
+        return super.awaitReady() && isReady
     }
 
     override val isReady: Boolean

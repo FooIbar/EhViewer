@@ -26,9 +26,10 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
+import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
-import eu.kanade.tachiyomi.util.system.isTabletUi
 import kotlin.math.roundToInt
 
 @Composable
@@ -38,7 +39,8 @@ fun ChapterNavigator(
     totalPages: Int,
     onSliderValueChange: (Int) -> Unit,
 ) {
-    val isTabletUi = LocalConfiguration.current.isTabletUi()
+    val windowSizeClass = LocalWindowSizeClass.current
+    val isTabletUi = windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
     val horizontalPadding = if (isTabletUi) 24.dp else 16.dp
     val layoutDirection = if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
     val configuration = LocalConfiguration.current
