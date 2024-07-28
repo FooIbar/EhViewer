@@ -22,7 +22,7 @@ class SliderPagerDoubleSync(
     private val pagerState: PagerState,
     private val pageLoader: PageLoader2,
 ) {
-    private var sliderFollowPager by mutableStateOf(false)
+    private var sliderFollowPager by mutableStateOf(true)
     var sliderValue by mutableIntStateOf(pageLoader.startPage + 1)
         private set
 
@@ -37,8 +37,9 @@ class SliderPagerDoubleSync(
         val pagerFling by pagerState.interactionSource.collectIsDraggedAsState()
         if (fling || pagerFling) sliderFollowPager = true
         val currentIndexFlow = remember(webtoon) {
-            sliderFollowPager = false
+            val initialIndex = sliderValue - 1
             if (webtoon) {
+                sliderFollowPager = lazyListState.firstVisibleItemIndex == initialIndex
                 snapshotFlow {
                     with(lazyListState.layoutInfo) {
                         visibleItemsInfo.lastOrNull {
@@ -47,6 +48,7 @@ class SliderPagerDoubleSync(
                     }
                 }.filterNotNull()
             } else {
+                sliderFollowPager = pagerState.currentPage == initialIndex
                 snapshotFlow { pagerState.currentPage }
             }
         }

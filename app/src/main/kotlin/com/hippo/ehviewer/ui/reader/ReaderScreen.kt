@@ -144,8 +144,8 @@ fun ReaderScreen(pageLoader: PageLoader2, info: BaseGalleryInfo?, navigator: Des
             uiController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
         }
     }
-    val lazyListState = rememberLazyListState()
-    val pagerState = rememberPagerState { pageLoader.size }
+    val lazyListState = rememberLazyListState(pageLoader.startPage)
+    val pagerState = rememberPagerState(pageLoader.startPage) { pageLoader.size }
     val syncState = rememberSliderPagerDoubleSyncState(lazyListState, pagerState, pageLoader)
     Box {
         var appbarVisible by remember { mutableStateOf(false) }
