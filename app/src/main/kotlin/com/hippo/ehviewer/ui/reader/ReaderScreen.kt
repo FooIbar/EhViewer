@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.reader
 import android.content.Context
 import android.net.Uri
 import android.os.Parcelable
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -88,7 +89,7 @@ sealed interface ReaderScreenArgs : Parcelable {
 
 @Destination<RootGraph>
 @Composable
-fun ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
     Await({ preparePageLoader(args) }) { pageLoader ->
         DisposableEffect(pageLoader) {
             pageLoader.start()
@@ -127,7 +128,7 @@ fun ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = com
 }
 
 @Composable
-fun ReaderScreen(pageLoader: PageLoader2, info: BaseGalleryInfo?, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGalleryInfo?, navigator: DestinationsNavigator) = composing(navigator) {
     ConfigureKeepScreenOn()
     LaunchedEffect(Unit) {
         val orientation = requestedOrientation
