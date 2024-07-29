@@ -241,7 +241,7 @@ dependencies {
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.accompanist.drawable.painter)
 
-    // implementation(libs.reorderable)
+    implementation(libs.reorderable)
 
     implementation(platform(libs.arrow.stack))
     implementation(libs.arrow.fx.coroutines)

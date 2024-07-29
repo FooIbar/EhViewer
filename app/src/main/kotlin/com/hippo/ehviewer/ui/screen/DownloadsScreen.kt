@@ -356,7 +356,12 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         }
                     }
                 }
-                ReorderableItem(reorderableLabelState, id, enabled = editEnable, animated = animateItems) { isDragging ->
+                ReorderableItem(
+                    reorderableLabelState,
+                    id,
+                    enabled = editEnable,
+                    animateItemModifier = Modifier.thenIf(animateItems) { animateItem() },
+                ) { isDragging ->
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {},
