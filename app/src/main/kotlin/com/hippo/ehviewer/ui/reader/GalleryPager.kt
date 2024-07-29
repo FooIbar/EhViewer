@@ -1,7 +1,5 @@
 package com.hippo.ehviewer.ui.reader
 
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -177,11 +175,10 @@ fun GalleryPager(
                             val size = lazyListState.layoutInfo.viewportSize
                             val x = it.x / size.width
                             val y = it.y / size.height
-                            val distance = size.height * 0.75f
                             when (navigatorState.value.getAction(x, y)) {
                                 NavigationRegion.MENU -> onMenuRegionClick()
-                                NavigationRegion.NEXT, NavigationRegion.RIGHT -> performScrollBy(distance)
-                                NavigationRegion.PREV, NavigationRegion.LEFT -> performScrollBy(-distance)
+                                NavigationRegion.NEXT, NavigationRegion.RIGHT -> scrollDown()
+                                NavigationRegion.PREV, NavigationRegion.LEFT -> scrollUp()
                             }
                         }
                     }
@@ -351,36 +348,6 @@ suspend fun ZoomableState.panRight(distance: Float): Boolean {
         panBy(Offset(distance, 0f))
     }
     return canPan
-}
-
-suspend fun PagerState.performScrollToPage(page: Int) {
-    if (Settings.pageTransitions.value) {
-        animateScrollToPage(page)
-    } else {
-        scrollToPage(page)
-    }
-}
-
-suspend fun PagerState.moveToPrevious() {
-    val target = currentPage - 1
-    if (target >= 0) {
-        performScrollToPage(target)
-    }
-}
-
-suspend fun PagerState.moveToNext() {
-    val target = currentPage + 1
-    if (target < pageCount) {
-        performScrollToPage(target)
-    }
-}
-
-suspend fun LazyListState.performScrollBy(value: Float) {
-    if (Settings.pageTransitions.value) {
-        animateScrollBy(value)
-    } else {
-        scrollBy(value)
-    }
 }
 
 object DoubleTapZoom : DoubleClickToZoomListener {
