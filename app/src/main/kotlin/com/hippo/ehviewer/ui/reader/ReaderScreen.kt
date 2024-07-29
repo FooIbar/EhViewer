@@ -36,6 +36,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -160,7 +161,8 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
     Box {
         var appbarVisible by remember { mutableStateOf(false) }
         val bgColor by collectBackgroundColorAsState()
-        syncState.Sync(ReadingModeType.isWebtoon(readingMode)) { appbarVisible = false }
+        val isWebtoon by rememberUpdatedState(ReadingModeType.isWebtoon(readingMode))
+        syncState.Sync(isWebtoon, appbarVisible) { appbarVisible = false }
         if (fullscreen) {
             LaunchedEffect(Unit) {
                 snapshotFlow { appbarVisible }.collect {
@@ -170,8 +172,12 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
         }
         VolumeKeysHandler(
             enabled = { volumeKeysEnabled && !appbarVisible },
-            movePrevious = { syncState.sliderScrollTo(syncState.sliderValue - 1) },
-            moveNext = { syncState.sliderScrollTo(syncState.sliderValue + 1) },
+            movePrevious = {
+                if (isWebtoon) lazyListState.scrollUp() else pagerState.moveToPrevious()
+            },
+            moveNext = {
+                if (isWebtoon) lazyListState.scrollDown() else pagerState.moveToNext()
+            },
         )
         GalleryPager(
             type = readingMode,

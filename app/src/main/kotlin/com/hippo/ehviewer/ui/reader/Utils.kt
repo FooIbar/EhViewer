@@ -3,6 +3,10 @@ package com.hippo.ehviewer.ui.reader
 import android.app.Activity
 import android.view.Window
 import android.view.WindowManager
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -82,3 +86,44 @@ fun ContentScale.Companion.fromPreferences(value: Int, srcSize: Size, dstSize: S
     6 -> if (srcSize.width > srcSize.height) FillHeight else FillWidth
     else -> Fit
 }
+
+suspend fun PagerState.performScrollToPage(page: Int) {
+    if (Settings.pageTransitions.value) {
+        animateScrollToPage(page)
+    } else {
+        scrollToPage(page)
+    }
+}
+
+suspend fun PagerState.moveToPrevious() {
+    val target = currentPage - 1
+    if (target >= 0) {
+        performScrollToPage(target)
+    }
+}
+
+suspend fun PagerState.moveToNext() {
+    val target = currentPage + 1
+    if (target < pageCount) {
+        performScrollToPage(target)
+    }
+}
+
+suspend fun LazyListState.performScrollBy(value: Float) {
+    if (Settings.pageTransitions.value) {
+        animateScrollBy(value)
+    } else {
+        scrollBy(value)
+    }
+}
+
+suspend fun LazyListState.scrollUp() {
+    performScrollBy(-scrollDistance)
+}
+
+suspend fun LazyListState.scrollDown() {
+    performScrollBy(scrollDistance)
+}
+
+private val LazyListState.scrollDistance
+    get() = layoutInfo.viewportSize.height * 0.75f

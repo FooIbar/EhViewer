@@ -32,10 +32,10 @@ class SliderPagerDoubleSync(
     }
 
     @Composable
-    fun Sync(webtoon: Boolean, onPageSelected: () -> Unit) {
+    fun Sync(webtoon: Boolean, appbarVisible: Boolean, onPageSelected: () -> Unit) {
         val fling by lazyListState.interactionSource.collectIsDraggedAsState()
         val pagerFling by pagerState.interactionSource.collectIsDraggedAsState()
-        if (fling || pagerFling) sliderFollowPager = true
+        if (fling || pagerFling || !appbarVisible) sliderFollowPager = true
         val currentIndexFlow = remember(webtoon) {
             val initialIndex = sliderValue - 1
             if (webtoon) {
