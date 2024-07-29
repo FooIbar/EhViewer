@@ -134,6 +134,7 @@ import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.rememberMutableStateInDataStore
 import com.hippo.ehviewer.ui.tools.snackBarPadding
+import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.pickVisualMedia
 import com.hippo.ehviewer.util.sha1
@@ -380,7 +381,11 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 ) {
                     itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { itemIndex, item ->
                         val index by rememberUpdatedState(itemIndex)
-                        ReorderableItem(reorderableLazyListState, item.id!!, animated = animateItems) { isDragging ->
+                        ReorderableItem(
+                            reorderableLazyListState,
+                            item.id!!,
+                            animateItemModifier = Modifier.thenIf(animateItems) { animateItem() },
+                        ) { isDragging ->
                             // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                             val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
                             LaunchedEffect(dismissState) {
