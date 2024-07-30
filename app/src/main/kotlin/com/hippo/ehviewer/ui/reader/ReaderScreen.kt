@@ -34,6 +34,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -114,7 +115,9 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
         ) { error ->
             if (error == null) {
                 val info = (args as? ReaderScreenArgs.Gallery)?.info
-                ReaderScreen(pageLoader, info, navigator)
+                key(pageLoader) {
+                    ReaderScreen(pageLoader, info, navigator)
+                }
             } else {
                 Box(Modifier.fillMaxSize().background(bgColor), contentAlignment = Alignment.Center) {
                     Text(

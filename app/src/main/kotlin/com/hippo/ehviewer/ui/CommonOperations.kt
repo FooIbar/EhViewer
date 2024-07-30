@@ -281,14 +281,14 @@ suspend fun removeFromFavorites(galleryInfo: BaseGalleryInfo) = doModifyFavorite
     localFavorited = EhDB.containLocalFavorites(galleryInfo.gid),
 )
 
-context (DestinationsNavigator)
-fun navToReader(
-    info: BaseGalleryInfo,
-    page: Int = -1,
-) = navigate(ReaderScreenDestination(ReaderScreenArgs.Gallery(info, page)))
+fun DestinationsNavigator.navToReader(info: BaseGalleryInfo, page: Int = -1) =
+    navToReader(ReaderScreenArgs.Gallery(info, page))
 
 fun DestinationsNavigator.navToReader(uri: Uri) =
-    navigate(ReaderScreenDestination(ReaderScreenArgs.Archive(uri)))
+    navToReader(ReaderScreenArgs.Archive(uri))
+
+private fun DestinationsNavigator.navToReader(args: ReaderScreenArgs) =
+    navigate(ReaderScreenDestination(args)) { launchSingleTop = true }
 
 context(DialogState, Context, DestinationsNavigator)
 suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
