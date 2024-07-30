@@ -530,7 +530,7 @@ class DialogState {
                     leadingContent = {
                         Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
                     },
-                    colors = ListItemDefaults.colors(containerColor = Color.Unspecified),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             }
         }
@@ -611,7 +611,7 @@ private fun CheckableItem(text: String, checked: Boolean, modifier: Modifier = M
         trailingContent = checked.ifTrueThen {
             Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = checkedColor)
         },
-        colors = ListItemDefaults.colors(containerColor = Color.Unspecified),
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
 }
 

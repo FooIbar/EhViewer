@@ -100,5 +100,4 @@ fun SearchBarInputField(
 val SearchBarIconOffsetX = 4.dp
 val SearchBarMinWidth = 360.dp
 val SearchBarMaxWidth = 720.dp
-val SearchBarHorizontalPadding = 16.dp
 const val AnimationDelayMillis = 100
