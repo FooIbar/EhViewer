@@ -186,8 +186,8 @@ class DialogState {
                 OutlinedTextField(
                     value = state,
                     onValueChange = { state = it },
-                    label = hint.ifNotNullThen {
-                        Text(text = hint!!)
+                    label = hint?.let {
+                        @Composable { Text(text = it) }
                     },
                     trailingIcon = error.ifNotNullThen {
                         Icon(
@@ -242,8 +242,8 @@ class DialogState {
                     OutlinedTextField(
                         value = state,
                         onValueChange = { state = it },
-                        label = hint.ifNotNullThen {
-                            Text(text = stringResource(id = hint!!))
+                        label = hint?.let {
+                            { Text(text = stringResource(id = it)) }
                         },
                         trailingIcon = error.ifNotNullThen {
                             Icon(
@@ -526,7 +526,7 @@ class DialogState {
                     leadingContent = {
                         Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
                     },
-                    colors = ListItemDefaults.colors(containerColor = Color.Unspecified),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             }
         }
@@ -607,7 +607,7 @@ private fun CheckableItem(text: String, checked: Boolean, modifier: Modifier = M
         trailingContent = checked.ifTrueThen {
             Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = checkedColor)
         },
-        colors = ListItemDefaults.colors(containerColor = Color.Unspecified),
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
 }
 
