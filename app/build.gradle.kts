@@ -176,7 +176,8 @@ android {
 }
 
 composeCompiler {
-    featureFlags = setOf(ComposeFeatureFlag.OptimizeNonSkippingGroups)
+    enableNonSkippingGroupOptimization = true
+    enableStrongSkippingMode = true
 }
 
 androidComponents {
