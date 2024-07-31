@@ -1,61 +1,28 @@
 package com.hippo.ehviewer.ui.reader
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.FixedScale
-import androidx.compose.ui.layout.times
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.PageLoader2
-import com.hippo.ehviewer.ui.main.plus
-import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.CONTINUOUS_VERTICAL
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.RIGHT_TO_LEFT
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.VERTICAL
-import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.WEBTOON
 import eu.kanade.tachiyomi.ui.reader.setting.TappingInvertMode
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
-import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import me.saket.telephoto.zoomable.DoubleClickToZoomListener
-import me.saket.telephoto.zoomable.ZoomSpec
-import me.saket.telephoto.zoomable.ZoomableContentLocation
-import me.saket.telephoto.zoomable.ZoomableState
-import me.saket.telephoto.zoomable.rememberZoomableState
-import me.saket.telephoto.zoomable.zoomable
 
 @Composable
 fun GalleryPager(
@@ -68,304 +35,66 @@ fun GalleryPager(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    val scope = rememberCoroutineScope()
-    val items = pageLoader.pages
     val isPagerType = !ReadingModeType.isWebtoon(type)
     val pagerNavigation by Settings.readerPagerNav.collectAsState()
-    val pagerInvertMode by Settings.readerPagerNavInverted.collectAsState {
-        TappingInvertMode.entries[it]
-    }
+    val pagerInvertMode by Settings.readerPagerNavInverted.collectAsState()
     val webtoonNavigation by Settings.readerWebtoonNav.collectAsState()
-    val webtoonInvertMode by Settings.readerWebtoonNavInverted.collectAsState {
-        TappingInvertMode.entries[it]
-    }
-    val navigationType = if (isPagerType) {
-        pagerNavigation
-    } else {
-        webtoonNavigation
-    }
+    val webtoonInvertMode by Settings.readerWebtoonNavInverted.collectAsState()
+    val navigationType = if (isPagerType) pagerNavigation else webtoonNavigation
     val navigation = remember(navigationType, type) {
         ViewerNavigation.fromPreference(navigationType, ReadingModeType.isVertical(type))
     }
-    navigation.invertMode = if (isPagerType) {
-        pagerInvertMode
-    } else {
-        webtoonInvertMode
+    val invertMode = if (isPagerType) pagerInvertMode else webtoonInvertMode
+    var firstLaunch by remember { mutableStateOf(true) }
+    var showNavigationOverlay by remember {
+        val showOnStart = Settings.showNavigationOverlayNewUser.value || Settings.showNavigationOverlayOnStart.value
+        Settings.showNavigationOverlayNewUser.value = false
+        mutableStateOf(showOnStart)
     }
-    val regions = remember(navigation, navigation.invertMode) { navigation.regions }
-    val navigatorState = rememberUpdatedState(regions)
-    if (isPagerType) {
-        val isVertical = type == VERTICAL
-        val scaleType by Settings.imageScaleType.collectAsState()
-        val landscapeZoom by Settings.landscapeZoom.collectAsState()
-        val zoomStart by Settings.zoomStart.collectAsState()
-        val alignment = Alignment.fromPreferences(zoomStart, type)
-        val layoutSize by remember(pagerState) {
-            derivedStateOf {
-                pagerState.layoutInfo.viewportSize.toSize()
-            }
-        }
-        if (isVertical) {
-            VerticalPager(
-                state = pagerState,
-                modifier = modifier,
-                contentPadding = contentPadding,
-                key = { it },
-            ) { index ->
-                val page = items[index]
-                PageContainer(
-                    page = page,
-                    pageLoader = pageLoader,
-                    isRtl = false,
-                    scaleType = scaleType,
-                    landscapeZoom = landscapeZoom,
-                    alignment = alignment,
-                    layoutSize = layoutSize,
-                    navigatorState = navigatorState,
-                    pagerState = pagerState,
-                    onSelectPage = onSelectPage,
-                    onMenuRegionClick = onMenuRegionClick,
-                    scope = scope,
-                )
-            }
+    val regions = remember(navigation, invertMode) {
+        if (firstLaunch) {
+            firstLaunch = false
         } else {
-            val isRtl = type == RIGHT_TO_LEFT
-            val isRtlLayout = LocalLayoutDirection.current == LayoutDirection.Rtl
-            HorizontalPager(
-                state = pagerState,
-                modifier = modifier,
-                contentPadding = contentPadding,
-                reverseLayout = isRtl xor isRtlLayout,
-                key = { it },
-            ) { index ->
-                val page = items[index]
-                PageContainer(
-                    page = page,
-                    pageLoader = pageLoader,
-                    isRtl = isRtl,
-                    scaleType = scaleType,
-                    landscapeZoom = landscapeZoom,
-                    alignment = alignment,
-                    layoutSize = layoutSize,
-                    navigatorState = navigatorState,
-                    pagerState = pagerState,
-                    onSelectPage = onSelectPage,
-                    onMenuRegionClick = onMenuRegionClick,
-                    scope = scope,
-                )
-            }
+            showNavigationOverlay = true
         }
-    } else {
-        val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec)
-        val density = LocalDensity.current
-        val paddingPercent by Settings.webtoonSidePadding.collectAsState()
-        val sidePadding by remember(density) {
-            snapshotFlow {
-                with(density) {
-                    (lazyListState.layoutInfo.viewportSize.width * paddingPercent / 100f).toDp()
-                }
-            }
-        }.collectAsState(0.dp)
-        LazyColumn(
-            modifier = modifier.zoomable(
-                state = zoomableState,
-                onClick = {
-                    scope.launch {
-                        with(lazyListState) {
-                            val size = lazyListState.layoutInfo.viewportSize
-                            val x = it.x / size.width
-                            val y = it.y / size.height
-                            when (navigatorState.value.getAction(x, y)) {
-                                NavigationRegion.MENU -> onMenuRegionClick()
-                                NavigationRegion.NEXT, NavigationRegion.RIGHT -> scrollDown()
-                                NavigationRegion.PREV, NavigationRegion.LEFT -> scrollUp()
-                            }
-                        }
-                    }
-                },
-                onLongClick = { ofs ->
-                    val info = lazyListState.layoutInfo.visibleItemsInfo.find { info ->
-                        info.offset <= ofs.y && info.offset + info.size > ofs.y
-                    }
-                    if (info == null && type == CONTINUOUS_VERTICAL) {
-                        // Maybe user long-click on gaps? ¯\_(ツ)_/¯
-                        return@zoomable
-                    }
-                    info ?: error("Internal error finding long click item!!! offset:$ofs")
-                    onSelectPage(items[info.index])
-                },
-                onDoubleClick = DoubleTapZoom,
-            ),
-            state = lazyListState,
-            contentPadding = contentPadding + PaddingValues(horizontal = sidePadding),
-            verticalArrangement = Arrangement.spacedBy(if (type != WEBTOON) 15.dp else 0.dp),
-        ) {
-            items(items, key = { it.index }) { page ->
-                PagerItem(
-                    page = page,
-                    pageLoader = pageLoader,
-                    contentScale = ContentScale.FillWidth,
-                )
-            }
-        }
+        navigation.invertMode = TappingInvertMode.entries[invertMode]
+        navigation.regions
     }
-    val showOnStart = remember {
-        Settings.showNavigationOverlayNewUser.value || Settings.showNavigationOverlayOnStart.value
-    }
-    NavigationOverlay(
-        regions,
-        showOnStart,
-        onDismiss = { Settings.showNavigationOverlayNewUser.value = false },
-    )
-}
-
-@Composable
-private fun PageContainer(
-    page: ReaderPage,
-    pageLoader: PageLoader2,
-    isRtl: Boolean,
-    scaleType: Int,
-    landscapeZoom: Boolean,
-    alignment: Alignment.Horizontal,
-    layoutSize: Size,
-    navigatorState: State<NavigationRegions>,
-    pagerState: PagerState,
-    onSelectPage: (ReaderPage) -> Unit,
-    onMenuRegionClick: () -> Unit,
-    scope: CoroutineScope,
-) {
-    @Suppress("NAME_SHADOWING")
-    val isRtl by rememberUpdatedState(isRtl)
-    val zoomableState = rememberZoomableState(zoomSpec = PagerZoomSpec)
-    val status by page.status.collectAsState()
-    if (status == Page.State.READY && layoutSize != Size.Zero) {
-        val size = page.image!!.rect.size.toSize()
-        val contentScale = ContentScale.fromPreferences(scaleType, size, layoutSize)
-        zoomableState.contentScale = contentScale
-        LaunchedEffect(size, contentScale, alignment) {
-            val contentSize = if (contentScale is FixedScale) { // Original
-                size
-            } else {
-                size * contentScale.computeScaleFactor(size, layoutSize)
-            }
-            val horizontalAlignment = if (contentSize.width > layoutSize.width) {
-                alignment
-            } else {
-                Alignment.CenterHorizontally
-            }
-            val verticalAlignment = if (contentSize.height > layoutSize.height) {
-                Alignment.Top
-            } else {
-                Alignment.CenterVertically
-            }
-            zoomableState.contentAlignment = horizontalAlignment + verticalAlignment
-        }
-        LaunchedEffect(size) {
-            val contentLocation = ZoomableContentLocation.scaledInsideAndCenterAligned(size)
-            zoomableState.setContentLocation(contentLocation)
-        }
-        if (landscapeZoom && contentScale == ContentScale.Fit && size.width > size.height) {
-            LaunchedEffect(alignment) {
-                val zoomFraction = snapshotFlow { zoomableState.zoomFraction }.first { it != null }
-                if (zoomFraction == 0f) {
-                    delay(500)
-                    val contentSize = zoomableState.transformedContentBounds.size
-                    val scale = ContentScale.FillHeight.computeScaleFactor(contentSize, layoutSize)
-                    val targetScale = scale.scaleX.coerceAtMost(zoomableState.zoomSpec.maxZoomFactor)
-                    val offset = alignment.align(0, layoutSize.width.toInt(), LayoutDirection.Ltr)
-                    zoomableState.zoomTo(targetScale, Offset(offset.toFloat(), 0f))
-                }
-            }
-        }
-    }
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        PagerItem(
-            page = page,
+    val navigator by rememberUpdatedState(regions)
+    if (isPagerType) {
+        PagerViewer(
+            pagerState = pagerState,
+            isRtl = type == RIGHT_TO_LEFT,
+            isVertical = type == VERTICAL,
             pageLoader = pageLoader,
-            contentScale = ContentScale.Inside,
-            modifier = Modifier.zoomable(
-                state = zoomableState,
-                onClick = {
-                    scope.launch {
-                        with(pagerState) {
-                            with(zoomableState) {
-                                val x = it.x / layoutSize.width
-                                val y = it.y / layoutSize.height
-                                val distance = layoutSize.width
-                                when (navigatorState.value.getAction(x, y)) {
-                                    NavigationRegion.MENU -> onMenuRegionClick()
-                                    NavigationRegion.NEXT -> {
-                                        val canPan = if (isRtl) panRight(distance) else panLeft(distance)
-                                        if (!canPan) {
-                                            moveToNext()
-                                        }
-                                    }
-
-                                    NavigationRegion.PREV -> {
-                                        val canPan = if (isRtl) panLeft(distance) else panRight(distance)
-                                        if (!canPan) {
-                                            moveToPrevious()
-                                        }
-                                    }
-
-                                    NavigationRegion.RIGHT -> {
-                                        if (!panLeft(distance)) {
-                                            if (isRtl) moveToPrevious() else moveToNext()
-                                        }
-                                    }
-
-                                    NavigationRegion.LEFT -> {
-                                        if (!panRight(distance)) {
-                                            if (isRtl) moveToNext() else moveToPrevious()
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                onLongClick = { onSelectPage(page) },
-                onDoubleClick = DoubleTapZoom,
-            ),
+            navigator = { navigator },
+            onClick = { showNavigationOverlay = false },
+            onSelectPage = onSelectPage,
+            onMenuRegionClick = onMenuRegionClick,
+            contentPadding = contentPadding,
+            modifier = modifier,
+        )
+    } else {
+        WebtoonViewer(
+            lazyListState = lazyListState,
+            withGaps = type == CONTINUOUS_VERTICAL,
+            pageLoader = pageLoader,
+            navigator = { navigator },
+            onClick = { showNavigationOverlay = false },
+            onSelectPage = onSelectPage,
+            onMenuRegionClick = onMenuRegionClick,
+            contentPadding = contentPadding,
+            modifier = modifier,
         )
     }
-}
-
-private fun NavigationRegions.getAction(x: Float, y: Float) =
-    find { it.rectF.contains(x, y) }?.type ?: NavigationRegion.MENU
-
-suspend fun ZoomableState.panLeft(distance: Float): Boolean {
-    val canPan = Settings.navigateToPan.value && transformedContentBounds.right > distance
-    if (canPan) {
-        panBy(Offset(-distance, 0f))
-    }
-    return canPan
-}
-
-suspend fun ZoomableState.panRight(distance: Float): Boolean {
-    val canPan = Settings.navigateToPan.value && transformedContentBounds.left < 0
-    if (canPan) {
-        panBy(Offset(distance, 0f))
-    }
-    return canPan
-}
-
-object DoubleTapZoom : DoubleClickToZoomListener {
-    override suspend fun onDoubleClick(state: ZoomableState, centroid: Offset) {
-        if (Settings.doubleTapToZoom.value) {
-            val zoomFraction = state.zoomFraction ?: return // Content isn't ready yet
-            if (zoomFraction > 0.05f) {
-                state.resetZoom()
-            } else {
-                // Workaround for https://github.com/saket/telephoto/issues/45
-                state.zoomTo(
-                    zoomFactor = state.contentTransformation.scaleMetadata.initialScale.scaleX * 2f,
-                    centroid = centroid,
-                )
-            }
+    LaunchedEffect(isPagerType) {
+        if (isPagerType) {
+            pagerState.interactionSource
+        } else {
+            lazyListState.interactionSource
+        }.interactions.collect {
+            showNavigationOverlay = false
         }
     }
+    NavigationOverlay(showNavigationOverlay, regions, modifier = Modifier.fillMaxSize())
 }
-
-private val PagerZoomSpec = ZoomSpec(maxZoomFactor = 5f)
-private val ZoomSpec = ZoomSpec(maxZoomFactor = 3f)
