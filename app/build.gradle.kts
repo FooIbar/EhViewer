@@ -1,6 +1,7 @@
 import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
+import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 
 val isRelease: Boolean
     get() = gradle.startParameter.taskNames.any { it.contains("Release") }
@@ -23,7 +24,7 @@ val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
 android {
     compileSdk = 35
     buildToolsVersion = "35.0.0"
-    ndkVersion = "27.0.11902837-rc1"
+    ndkVersion = "27.0.12077973"
     androidResources.generateLocaleConfig = true
 
     splits {
@@ -175,7 +176,7 @@ android {
 }
 
 composeCompiler {
-    enableNonSkippingGroupOptimization = true
+    featureFlags = setOf(ComposeFeatureFlag.OptimizeNonSkippingGroups)
 }
 
 androidComponents {
