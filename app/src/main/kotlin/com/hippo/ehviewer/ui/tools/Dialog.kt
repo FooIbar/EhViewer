@@ -52,12 +52,14 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -79,6 +81,7 @@ import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -116,7 +119,6 @@ class DialogState {
         invalidator: (suspend Raise<String>.(R) -> Unit)? = null,
         block: @Composable DialogScope<R>.(String?) -> Unit,
     ): R = dialog { cont ->
-        val coroutineScope = rememberCoroutineScope()
         val state = remember(cont) { mutableStateOf(initial) }
         var errorMsg by remember(cont) { mutableStateOf<String?>(null) }
         val impl = remember(cont) {
@@ -124,17 +126,19 @@ class DialogState {
                 override var expectedValue by state
             }
         }
+        if (invalidator != null) {
+            LaunchedEffect(state) {
+                snapshotFlow { state.value }.collectLatest {
+                    errorMsg = either { invalidator(it) }.leftOrNull()
+                }
+            }
+        }
         AlertDialog(
             onDismissRequest = { cont.cancel() },
             confirmButton = {
                 TextButton(onClick = {
-                    if (invalidator == null) {
+                    if (invalidator == null || errorMsg == null) {
                         cont.resume(state.value)
-                    } else {
-                        coroutineScope.launch {
-                            errorMsg = either { invalidator(state.value) }.leftOrNull()
-                            errorMsg ?: cont.resume(state.value)
-                        }
                     }
                 }) {
                     Text(text = stringResource(id = android.R.string.ok))
