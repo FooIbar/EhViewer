@@ -22,7 +22,7 @@ plugins {
 val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
 
 android {
-    compileSdk = 35
+    compileSdk = if (isRelease) 35 else 34
     buildToolsVersion = "35.0.0"
     ndkVersion = "27.0.12077973"
     androidResources.generateLocaleConfig = true
@@ -284,7 +284,6 @@ kotlin {
             "-opt-in=coil3.annotation.ExperimentalCoilApi",
             "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
             "-opt-in=androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
             "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
             "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
