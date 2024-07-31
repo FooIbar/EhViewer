@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -193,6 +194,7 @@ fun SearchFilter(
                                         Icon(imageVector = Icons.Default.Info, contentDescription = null)
                                     },
                                     colors = ListItemDefaults.colors(
+                                        containerColor = Color.Transparent,
                                         headlineColor = MaterialTheme.colorScheme.error,
                                         leadingIconColor = MaterialTheme.colorScheme.error,
                                     ),

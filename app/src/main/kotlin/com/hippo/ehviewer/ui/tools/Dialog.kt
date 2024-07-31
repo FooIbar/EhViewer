@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -160,7 +162,7 @@ class DialogState {
         invalidator: (suspend Raise<String>.(String) -> Unit)? = null,
     ) = dialog { cont ->
         val coroutineScope = rememberCoroutineScope()
-        var state by remember(cont) { mutableStateOf(initial) }
+        val state = rememberTextFieldState(initial)
         var error by remember(cont) { mutableStateOf<String?>(null) }
         AlertDialog(
             onDismissRequest = {
@@ -169,12 +171,13 @@ class DialogState {
             },
             confirmButton = {
                 TextButton(onClick = {
+                    val text = state.text.toString()
                     if (invalidator == null) {
-                        cont.resume(state)
+                        cont.resume(text)
                     } else {
                         coroutineScope.launch {
-                            error = either { invalidator(state) }.leftOrNull()
-                            error ?: cont.resume(state)
+                            error = either { invalidator(text) }.leftOrNull()
+                            error ?: cont.resume(text)
                         }
                     }
                 }) {
@@ -184,10 +187,9 @@ class DialogState {
             title = title.ifNotNullThen { Text(text = title!!) },
             text = {
                 OutlinedTextField(
-                    value = state,
-                    onValueChange = { state = it },
-                    label = hint.ifNotNullThen {
-                        Text(text = hint!!)
+                    state = state,
+                    label = hint?.let {
+                        @Composable { Text(text = it) }
                     },
                     trailingIcon = error.ifNotNullThen {
                         Icon(
@@ -215,19 +217,20 @@ class DialogState {
         invalidator: (suspend Raise<String>.(String, Boolean) -> Unit)? = null,
     ): Pair<String, Boolean> = dialog { cont ->
         val coroutineScope = rememberCoroutineScope()
-        var state by remember(cont) { mutableStateOf(initial) }
+        val state = rememberTextFieldState(initial)
         var error by remember(cont) { mutableStateOf<String?>(null) }
         var checkedState by remember { mutableStateOf(checked) }
         AlertDialog(
             onDismissRequest = { cont.cancel() },
             confirmButton = {
                 TextButton(onClick = {
+                    val text = state.text.toString()
                     if (invalidator == null) {
-                        cont.resume(state to checkedState)
+                        cont.resume(text to checkedState)
                     } else {
                         coroutineScope.launch {
-                            error = either { invalidator(state, checkedState) }.leftOrNull()
-                            error ?: cont.resume(state to checkedState)
+                            error = either { invalidator(text, checkedState) }.leftOrNull()
+                            error ?: cont.resume(text to checkedState)
                         }
                     }
                 }) {
@@ -240,10 +243,9 @@ class DialogState {
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     OutlinedTextField(
-                        value = state,
-                        onValueChange = { state = it },
-                        label = hint.ifNotNullThen {
-                            Text(text = stringResource(id = hint!!))
+                        state = state,
+                        label = hint?.let {
+                            { Text(text = stringResource(id = it)) }
                         },
                         trailingIcon = error.ifNotNullThen {
                             Icon(
@@ -526,7 +528,7 @@ class DialogState {
                     leadingContent = {
                         Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
                     },
-                    colors = ListItemDefaults.colors(containerColor = Color.Unspecified),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             }
         }
@@ -545,22 +547,21 @@ class DialogState {
                 modifier = Modifier.fillMaxWidth().aspectRatio(1F),
                 placeFirstItemInCenter = true,
             ) {
-                var note by remember { mutableStateOf(initialNote) }
+                val note = rememberTextFieldState(initialNote)
                 TextField(
-                    value = note,
-                    onValueChange = { note = it },
+                    state = note,
                     modifier = Modifier.fillMaxWidth(0.45F).aspectRatio(1F),
                     label = { Text(text = stringResource(id = hint)) },
                     trailingIcon = {
-                        if (note.isNotEmpty()) {
-                            IconButton(onClick = { note = "" }) {
+                        if (note.text.isNotEmpty()) {
+                            IconButton(onClick = { note.clearText() }) {
                                 Icon(imageVector = Icons.Default.Close, contentDescription = null)
                             }
                         }
                     },
                     supportingText = {
                         Text(
-                            text = "${note.toByteArray().size} / $maxChar",
+                            text = "${note.text.toString().toByteArray().size} / $maxChar",
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.End,
                         )
@@ -573,7 +574,7 @@ class DialogState {
                 )
                 items.forEachIndexed { index, (icon, text) ->
                     Column(
-                        modifier = Modifier.clip(IconWithTextCorner).clickable { dismissWith(index to note) }
+                        modifier = Modifier.clip(IconWithTextCorner).clickable { dismissWith(index to note.text.toString()) }
                             .fillMaxWidth(0.2F),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
@@ -607,7 +608,7 @@ private fun CheckableItem(text: String, checked: Boolean, modifier: Modifier = M
         trailingContent = checked.ifTrueThen {
             Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = checkedColor)
         },
-        colors = ListItemDefaults.colors(containerColor = Color.Unspecified),
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
     )
 }
 
