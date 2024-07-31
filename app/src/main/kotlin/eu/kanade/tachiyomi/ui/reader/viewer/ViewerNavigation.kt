@@ -50,3 +50,8 @@ abstract class ViewerNavigation {
         }
     }
 }
+
+typealias NavigationRegions = List<ViewerNavigation.Region>
+
+fun NavigationRegions.getAction(x: Float, y: Float) =
+    find { it.rectF.contains(x, y) }?.type ?: ViewerNavigation.NavigationRegion.MENU
