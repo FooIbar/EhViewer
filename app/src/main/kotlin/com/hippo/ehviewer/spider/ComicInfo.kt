@@ -15,7 +15,6 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import nl.adaptivity.xmlutil.XmlDeclMode
-import nl.adaptivity.xmlutil.XmlUtilInternal
 import nl.adaptivity.xmlutil.core.XmlVersion
 import nl.adaptivity.xmlutil.newWriter
 import nl.adaptivity.xmlutil.serialization.XML
@@ -26,8 +25,6 @@ import okio.Path
 const val COMIC_INFO_FILE = "ComicInfo.xml"
 private const val TAG_ORIGINAL = "original"
 
-// Workaround for https://youtrack.jetbrains.com/issue/KT-69182
-@OptIn(XmlUtilInternal::class)
 private val xml = XML {
     recommended {
         ignoreUnknownChildren()
