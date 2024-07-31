@@ -176,7 +176,6 @@ android {
 
 composeCompiler {
     enableNonSkippingGroupOptimization = true
-    enableStrongSkippingMode = true
 }
 
 androidComponents {
