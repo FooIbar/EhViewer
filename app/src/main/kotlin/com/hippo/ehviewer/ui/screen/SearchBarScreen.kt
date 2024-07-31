@@ -38,6 +38,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarHorizontalPadding
 import androidx.compose.material3.SearchBarInputField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -313,4 +314,3 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String = if (ke
 }
 
 private val WhitespaceRegex = Regex("\\s+")
-private val SearchBarHorizontalPadding = 16.dp

@@ -14,10 +14,8 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.TextFieldLineLimits
-import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -51,6 +49,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -85,8 +85,8 @@ fun SignInScreen(navigator: DestinationsNavigator) {
     var isProgressIndicatorVisible by rememberSaveable { mutableStateOf(false) }
     var showUsernameError by rememberSaveable { mutableStateOf(false) }
     var showPasswordError by rememberSaveable { mutableStateOf(false) }
-    val username = rememberTextFieldState()
-    val password = rememberTextFieldState()
+    var username by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
     var passwordHidden by rememberSaveable { mutableStateOf(true) }
     val context = LocalContext.current
     var signInJob by remember { mutableStateOf<Job?>(null) }
@@ -94,13 +94,13 @@ fun SignInScreen(navigator: DestinationsNavigator) {
 
     fun signIn() {
         if (signInJob?.isActive == true) return
-        if (username.text.isEmpty()) {
+        if (username.isEmpty()) {
             showUsernameError = true
             return
         } else {
             showUsernameError = false
         }
-        if (password.text.isEmpty()) {
+        if (password.isEmpty()) {
             showPasswordError = true
             return
         } else {
@@ -112,7 +112,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
         EhUtils.signOut()
         signInJob = coroutineScope.launchIO {
             runCatching {
-                EhEngine.signIn(username.text.toString(), password.text.toString())
+                EhEngine.signIn(username, password)
             }.onFailure {
                 withUIContext {
                     focusManager.clearFocus()
@@ -141,33 +141,31 @@ fun SignInScreen(navigator: DestinationsNavigator) {
     @Composable
     fun UsernameAndPasswordTextField() {
         OutlinedTextField(
-            state = username,
+            value = username,
+            onValueChange = { username = it },
             modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width)).autofill(
                 autofillTypes = listOf(AutofillType.Username),
-                onFill = { username.setTextAndPlaceCursorAtEnd(it) },
+                onFill = { username = it },
             ),
             label = { Text(stringResource(R.string.username)) },
             supportingText = { if (showUsernameError) Text(stringResource(R.string.error_username_cannot_empty)) },
             trailingIcon = { if (showUsernameError) Icon(imageVector = Icons.Filled.Info, contentDescription = null) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            lineLimits = TextFieldLineLimits.SingleLine,
+            singleLine = true,
             isError = showUsernameError,
         )
         OutlinedTextField(
-            state = password,
+            value = password,
+            onValueChange = { password = it },
             modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width)).autofill(
                 autofillTypes = listOf(AutofillType.Password),
-                onFill = { password.setTextAndPlaceCursorAtEnd(it) },
+                onFill = { password = it },
             ),
             label = { Text(stringResource(R.string.password)) },
-            outputTransformation = {
-                if (passwordHidden) {
-                    replace(0, length, "\u2022".repeat(length))
-                }
-            },
+            visualTransformation = if (passwordHidden) PasswordVisualTransformation() else VisualTransformation.None,
             supportingText = { if (showPasswordError) Text(stringResource(R.string.error_password_cannot_empty)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            onKeyboardAction = { signIn() },
+            keyboardActions = KeyboardActions(onDone = { signIn() }),
             trailingIcon = {
                 if (showPasswordError) {
                     Icon(imageVector = Icons.Filled.Info, contentDescription = null)
@@ -178,7 +176,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                     }
                 }
             },
-            lineLimits = TextFieldLineLimits.SingleLine,
+            singleLine = true,
             isError = showPasswordError,
         )
     }
