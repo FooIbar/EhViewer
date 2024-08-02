@@ -11,7 +11,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven("https://androidx.dev/snapshots/builds/12043948/artifacts/repository")
+        // Hold until https://issuetracker.google.com/357042294 is fixed
+        maven("https://androidx.dev/snapshots/builds/12079276/artifacts/repository")
     }
 }
 
