@@ -78,6 +78,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.text.parseAsHtml
+import androidx.navigation.NavBackStackEntry
 import androidx.window.core.layout.WindowWidthSizeClass
 import arrow.core.partially1
 import coil3.imageLoader
@@ -176,6 +177,7 @@ sealed interface GalleryDetailScreenArgs : Parcelable
 @Parcelize
 data class GalleryInfoArgs(
     val galleryInfo: BaseGalleryInfo,
+    val origin: String?,
 ) : GalleryDetailScreenArgs
 
 @Parcelize
@@ -213,15 +215,20 @@ private fun List<GalleryTagGroup>.getArtistTag(): String? {
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.GalleryDetailScreen(
+    args: GalleryDetailScreenArgs,
+    navigator: DestinationsNavigator,
+    backStackEntry: NavBackStackEntry,
+) = composing(navigator) {
     var galleryInfo by remember {
         val casted = args as? GalleryInfoArgs
         mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
     }
-    val (gid, token) = remember {
+    val (gid, token, origin) = remember {
+        val id = backStackEntry.id
         when (args) {
-            is GalleryInfoArgs -> args.galleryInfo.run { gid to token }
-            is TokenArgs -> args.gid to args.token
+            is GalleryInfoArgs -> args.galleryInfo.run { Triple(gid, token, args.origin ?: id) }
+            is TokenArgs -> Triple(args.gid, args.token, id)
         }
     }
     val galleryDetailUrl = remember { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
@@ -843,6 +850,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                     Column {
                         GalleryDetailHeaderCard(
                             info = galleryInfo,
+                            origin = origin,
                             onInfoCardClick = ::onGalleryInfoCardClick,
                             onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
                             onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
@@ -897,6 +905,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                         ) {
                             GalleryDetailHeaderCard(
                                 info = galleryInfo,
+                                origin = origin,
                                 onInfoCardClick = ::onGalleryInfoCardClick,
                                 onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
                                 onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),

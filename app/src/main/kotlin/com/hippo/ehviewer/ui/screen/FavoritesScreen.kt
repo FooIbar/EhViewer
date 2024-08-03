@@ -48,6 +48,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavBackStackEntry
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource
@@ -95,7 +96,7 @@ import moe.tarsin.coroutines.runSwallowingWithUI
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator, backStackEntry: NavBackStackEntry) = composing(navigator) {
     // Immutables
     val localFavName = stringResource(R.string.local_favorites)
     val cloudFavName = stringResource(R.string.cloud_favorites)
@@ -266,6 +267,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                 }
             }
         }
+        val origin = backStackEntry.id
         GalleryList(
             data = data,
             contentModifier = Modifier.nestedScroll(searchBarConnection),
@@ -286,13 +288,14 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigate(info.asDst())
+                                navigate(info.asDst(origin))
                             }
                         },
                         onLongClick = {
                             checkedInfoMap[info.gid] = info
                         },
                         info = info,
+                        origin = origin,
                         showPages = showPages,
                         modifier = Modifier.height(height),
                         isInFavScene = true,
@@ -315,13 +318,14 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigate(info.asDst())
+                                navigate(info.asDst(origin))
                             }
                         },
                         onLongClick = {
                             checkedInfoMap[info.gid] = info
                         },
                         info = info,
+                        origin = origin,
                         showPages = showPages,
                         interactionSource = interactionSource,
                     )
@@ -357,7 +361,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             if (isLocalFav) {
                 onClick(Icons.Default.Shuffle) {
                     val random = EhDB.randomLocalFav()
-                    withUIContext { navigate(random.asDst()) }
+                    withUIContext { navigate(random.asDst(null)) }
                 }
             }
             onClick(EhIcons.Default.GoTo) {

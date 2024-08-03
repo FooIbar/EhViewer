@@ -96,6 +96,7 @@ fun GalleryInfoListItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     info: GalleryInfo,
+    origin: String,
     showPages: Boolean,
     modifier: Modifier = Modifier,
     isInFavScene: Boolean = false,
@@ -110,6 +111,7 @@ fun GalleryInfoListItem(
         Card {
             EhAsyncCropThumb(
                 key = info,
+                origin = origin,
                 modifier = Modifier.aspectRatio(DEFAULT_RATIO).fillMaxSize(),
             )
         }
@@ -208,6 +210,7 @@ fun GalleryInfoGridItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     info: GalleryInfo,
+    origin: String,
     modifier: Modifier = Modifier,
     showLanguage: Boolean = true,
     showPages: Boolean = true,
@@ -229,6 +232,7 @@ fun GalleryInfoGridItem(
         }
         EhAsyncThumb(
             model = info,
+            origin = origin,
             modifier = Modifier.aspectRatio(ratio),
             onSuccess = {
                 ratio = (it.width.toFloat() / it.height).coerceIn(MIN_RATIO, MAX_RATIO)
