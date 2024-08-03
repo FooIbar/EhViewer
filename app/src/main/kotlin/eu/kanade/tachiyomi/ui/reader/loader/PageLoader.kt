@@ -7,6 +7,7 @@ import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
+import eu.kanade.tachiyomi.util.lang.withIOContext
 
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
@@ -36,7 +37,7 @@ abstract class PageLoader {
 
     @CallSuper
     open suspend fun awaitReady(): Boolean {
-        cache
+        withIOContext { cache }
         return true
     }
 
