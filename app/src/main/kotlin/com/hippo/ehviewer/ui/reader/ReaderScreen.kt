@@ -74,6 +74,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderContentOverlay
 import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlin.coroutines.resume
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
@@ -303,7 +304,7 @@ private suspend fun preparePageLoader(args: ReaderScreenArgs) = when (args) {
     is ReaderScreenArgs.Gallery -> {
         val info = args.info
         val page = args.page
-        val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
+        val archive = withIOContext { DownloadManager.getDownloadInfo(info.gid)?.archiveFile }
         if (archive != null) {
             ArchivePageLoader(archive, info.gid, page)
         } else {

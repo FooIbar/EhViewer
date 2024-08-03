@@ -33,6 +33,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.NavigationRegions
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import eu.kanade.tachiyomi.ui.reader.viewer.getAction
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -234,7 +235,7 @@ private fun PageContainer(
 }
 
 private suspend fun ZoomableState.panLeft(distance: Float): Boolean {
-    val canPan = Settings.navigateToPan.value && transformedContentBounds.right > distance
+    val canPan = Settings.navigateToPan.value && transformedContentBounds.right.roundToInt() > distance
     if (canPan) {
         panBy(Offset(-distance, 0f))
     }
@@ -242,7 +243,7 @@ private suspend fun ZoomableState.panLeft(distance: Float): Boolean {
 }
 
 private suspend fun ZoomableState.panRight(distance: Float): Boolean {
-    val canPan = Settings.navigateToPan.value && transformedContentBounds.left < 0
+    val canPan = Settings.navigateToPan.value && transformedContentBounds.left.roundToInt() < 0
     if (canPan) {
         panBy(Offset(distance, 0f))
     }
