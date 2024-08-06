@@ -19,7 +19,9 @@ jobs:
           java-version: 21
 
       - name: Free disk space
-        run: rm -rf ${ANDROID_SDK_ROOT}/ndk/(!27*)
+        run: |
+          shopt -s extglob
+          rm -rf ${ANDROID_SDK_ROOT}/ndk/!(27*)
 
       - name: Enable KVM group perms
         run: |
