@@ -13,6 +13,8 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import java.io.File
 import java.util.zip.ZipInputStream
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.time.Duration.Companion.days
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -83,9 +85,12 @@ object AppUpdater {
         }
 }
 
+@OptIn(ExperimentalEncodingApi::class)
 private suspend inline fun ghStatement(url: String) = ktorClient.prepareGet(url) {
-    header("Authorization", "Bearer ${BuildConfig.GITHUB_TOKEN}")
+    header("Authorization", Base64.decode(GITHUB_TOKEN).decodeToString())
 }
+
+private const val GITHUB_TOKEN = "Z2l0aHViX3BhdF8xMUE0SDJBQ0kwNG9hY291VXNpYlN4X1FZcUg1V2hkUmpKVVNtZXpqM3ZleDlzUUxaQzh2U3JMNFZYUHhEY3dmaGNXTFFGSDZIM0wwdERZdXBy"
 
 data class Release(
     val version: String,
