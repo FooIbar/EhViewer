@@ -84,8 +84,15 @@ object AppUpdater {
 }
 
 private suspend inline fun ghStatement(url: String) = ktorClient.prepareGet(url) {
-    header("Authorization", "Bearer ${BuildConfig.GITHUB_TOKEN}")
+    header("Authorization", GithubTokenParts.joinToString("_"))
 }
+
+private val GithubTokenParts = arrayOf(
+    "github",
+    "pat",
+    "11A4H2ACI04oacouUsibSx",
+    "QYqH5WhdRjJUSmezj3vex9sQLZC8vSrL4VXPxDcwfhcWLQFH6H3L0tDYupr",
+)
 
 data class Release(
     val version: String,

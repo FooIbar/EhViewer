@@ -19,7 +19,9 @@ jobs:
           java-version: 21
 
       - name: Free disk space
-        run: rm -rf ${ANDROID_SDK_ROOT}/ndk/(!27*)
+        run: |
+          shopt -s extglob
+          rm -rf ${ANDROID_SDK_ROOT}/ndk/!(27*)
 
       - name: Enable KVM group perms
         run: |
@@ -43,7 +45,7 @@ jobs:
           restore-keys: cmake-
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
           gradle-home-cache-cleanup: true
@@ -53,8 +55,6 @@ jobs:
           -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect"
 
       - name: Build
-        env:
-          GITHUB_TOKEN: ${{ secrets.GithubToken }}
         run: ./gradlew assembleRelease
 
       - name: Rename Apks
