@@ -53,8 +53,6 @@ jobs:
           -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect"
 
       - name: Build
-        env:
-          GITHUB_TOKEN: ${{ secrets.GithubToken }}
         run: ./gradlew assembleRelease
 
       - name: Rename Apks
