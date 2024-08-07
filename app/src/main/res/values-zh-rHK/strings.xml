@@ -42,7 +42,6 @@
     <string name="clipboard_gallery_url_snack_message">剪切板裏有畫廊鏈接</string>
     <string name="clipboard_gallery_url_snack_action">查看</string>
 
-    <string name="error_bad_status_code">錯誤狀態碼：%d</string>
     <string name="error_timeout">超時</string>
     <string name="error_unknown_host">未知主機</string>
     <string name="error_redirection">太多重定向</string>

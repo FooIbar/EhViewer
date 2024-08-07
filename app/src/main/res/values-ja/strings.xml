@@ -37,7 +37,6 @@
 
     <string name="invalid_download_location">ダウンロードパスは現在利用できません。ダウンロードパスを設定してください。</string>
 
-    <string name="error_bad_status_code">無効なステータスコード：%d</string>
     <string name="error_timeout">タイムアウト</string>
     <string name="error_unknown_host">不明なホスト</string>
     <string name="error_redirection">リダイレクトが多すぎます</string>
