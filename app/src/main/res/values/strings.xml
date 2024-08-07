@@ -47,31 +47,6 @@
     <string name="invalid_download_location">It seems download location is not available. Please set it in Settings.</string>
     <string name="clipboard_gallery_url_snack_message">There is a gallery URL in the clipboard</string>
     <string name="clipboard_gallery_url_snack_action">View</string>
-    <string name="error_status_code_400" translatable="false">Bad Request</string>
-    <string name="error_status_code_401" translatable="false">Unauthorized</string>
-    <string name="error_status_code_402" translatable="false">Payment Required</string>
-    <string name="error_status_code_403" translatable="false">Forbidden</string>
-    <string name="error_status_code_404" translatable="false">Not Found</string>
-    <string name="error_status_code_405" translatable="false">Method Not Allowed</string>
-    <string name="error_status_code_406" translatable="false">Not Acceptable</string>
-    <string name="error_status_code_407" translatable="false">Proxy Authentication Required</string>
-    <string name="error_status_code_408" translatable="false">Request Timeout</string>
-    <string name="error_status_code_409" translatable="false">Conflict</string>
-    <string name="error_status_code_410" translatable="false">Gone</string>
-    <string name="error_status_code_411" translatable="false">Length Required</string>
-    <string name="error_status_code_412" translatable="false">Precondition Failed</string>
-    <string name="error_status_code_413" translatable="false">Request Entity Too Large</string>
-    <string name="error_status_code_414" translatable="false">Request-URI Too Long</string>
-    <string name="error_status_code_415" translatable="false">Unsupported Media Type</string>
-    <string name="error_status_code_416" translatable="false">Requested Range Not Satisfiable</string>
-    <string name="error_status_code_417" translatable="false">Expectation Failed</string>
-    <string name="error_status_code_500" translatable="false">Internal Server Error</string>
-    <string name="error_status_code_501" translatable="false">Not Implemented</string>
-    <string name="error_status_code_502" translatable="false">Bad Gateway</string>
-    <string name="error_status_code_503" translatable="false">Service Unavailable</string>
-    <string name="error_status_code_504" translatable="false">Gateway Timeout</string>
-    <string name="error_status_code_505" translatable="false">HTTP Version Not Supported</string>
-    <string name="error_bad_status_code">Bad status code: %d</string>
     <string name="error_timeout">Timeout</string>
     <string name="error_unknown_host">Unknown host</string>
     <string name="error_redirection">Too many redirections</string>

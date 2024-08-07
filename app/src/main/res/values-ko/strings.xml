@@ -41,7 +41,6 @@
     <string name="clipboard_gallery_url_snack_message">클립보드에 갤러리 주소가 있습니다.</string>
     <string name="clipboard_gallery_url_snack_action">보기</string>
 
-    <string name="error_bad_status_code">비정상 상태 코드: %d</string>
     <string name="error_timeout">시간 초과</string>
     <string name="error_unknown_host">알 수 없는 호스트</string>
     <string name="error_redirection">너무 많은 서버 리디렉션</string>
