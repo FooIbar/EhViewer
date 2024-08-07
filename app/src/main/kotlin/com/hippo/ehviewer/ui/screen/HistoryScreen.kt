@@ -55,6 +55,7 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
+import com.hippo.ehviewer.ui.tools.awaitNotLoading
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -62,7 +63,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.math.roundToInt
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Destination<RootGraph>
@@ -165,7 +165,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
                 }
             }
         }
-        Await(keyword, { delay(200) }) {
+        Await(keyword, { historyData.awaitNotLoading() }) {
             if (historyData.itemCount == 0) {
                 Column(
                     modifier = Modifier.padding(paddingValues).padding(horizontal = marginH).fillMaxSize(),

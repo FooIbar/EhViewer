@@ -20,6 +20,7 @@ import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.ui.tools.sharedBounds
 import com.hippo.ehviewer.ui.tools.shouldCrop
+import com.hippo.ehviewer.ui.tools.thumbPlaceholder
 
 @Composable
 @NonRestartableComposable
@@ -42,6 +43,7 @@ fun EhAsyncThumb(
     modifier = modifier.sharedBounds(
         key = "${model.gid}",
     ).clip(ShapeDefaults.Medium),
+    placeholder = thumbPlaceholder,
     onSuccess = onSuccess?.let { callback ->
         { callback(it.result.image) }
     },
@@ -61,6 +63,7 @@ fun EhAsyncCropThumb(
         modifier = modifier.sharedBounds(
             key = "${key.gid}",
         ).clip(ShapeDefaults.Medium),
+        placeholder = thumbPlaceholder,
         onSuccess = {
             if (it.result.image.shouldCrop) {
                 contentScale = ContentScale.Crop
