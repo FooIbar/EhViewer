@@ -36,6 +36,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavBackStackEntry
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
@@ -67,7 +68,7 @@ import kotlinx.coroutines.launch
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator, backStackEntry: NavBackStackEntry) = composing(navigator) {
     val title = stringResource(id = R.string.history)
     val hint = stringResource(R.string.search_bar_hint, title)
     val animateItems by Settings.animateItems.collectAsState()
@@ -126,6 +127,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
         val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
         val cardHeight by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
+        val origin = backStackEntry.id
         FastScrollLazyColumn(
             modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
             contentPadding = paddingValues + PaddingValues(horizontal = marginH),
@@ -153,9 +155,10 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
                         enableDismissFromStartToEnd = false,
                     ) {
                         GalleryInfoListItem(
-                            onClick = { navigate(info.asDst()) },
+                            onClick = { navigate(info.asDst(origin)) },
                             onLongClick = { launch { doGalleryInfoAction(info) } },
                             info = info,
+                            origin = origin,
                             showPages = showPages,
                             modifier = Modifier.height(cardHeight),
                         )

@@ -80,6 +80,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.lerp
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavBackStackEntry
 import androidx.paging.LoadState
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -157,23 +158,31 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.HomePageScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(), navigator)
+fun AnimatedVisibilityScope.HomePageScreen(navigator: DestinationsNavigator, backStackEntry: NavBackStackEntry) =
+    GalleryListScreen(ListUrlBuilder(), navigator, backStackEntry)
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.SubscriptionScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator)
+fun AnimatedVisibilityScope.SubscriptionScreen(navigator: DestinationsNavigator, backStackEntry: NavBackStackEntry) =
+    GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator, backStackEntry)
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.WhatshotScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator)
+fun AnimatedVisibilityScope.WhatshotScreen(navigator: DestinationsNavigator, backStackEntry: NavBackStackEntry) =
+    GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator, backStackEntry)
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.ToplistScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator)
+fun AnimatedVisibilityScope.ToplistScreen(navigator: DestinationsNavigator, backStackEntry: NavBackStackEntry) =
+    GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator, backStackEntry)
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.GalleryListScreen(
+    lub: ListUrlBuilder,
+    navigator: DestinationsNavigator,
+    backStackEntry: NavBackStackEntry,
+) = composing(navigator) {
     val searchFieldState = rememberTextFieldState()
     var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
@@ -664,6 +673,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 }
             }
         }
+        val origin = backStackEntry.id
         GalleryList(
             modifier = Modifier.graphicsLayer {
                 scaleX = animatedSearchLayout
@@ -677,9 +687,10 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             detailListState = listState,
             detailItemContent = { info ->
                 GalleryInfoListItem(
-                    onClick = { navigate(info.asDst()) },
+                    onClick = { navigate(info.asDst(origin)) },
                     onLongClick = { launch { doGalleryInfoAction(info) } },
                     info = info,
+                    origin = origin,
                     showPages = showPages,
                     modifier = Modifier.height(height),
                 )
@@ -687,9 +698,10 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             thumbListState = gridState,
             thumbItemContent = { info ->
                 GalleryInfoGridItem(
-                    onClick = { navigate(info.asDst()) },
+                    onClick = { navigate(info.asDst(origin)) },
                     onLongClick = { launch { doGalleryInfoAction(info) } },
                     info = info,
+                    origin = origin,
                     showPages = showPages,
                 )
             },

@@ -36,7 +36,7 @@ fun DestinationsNavigator.popNavigate(direction: Direction) = navigate(direction
     popUpTo(NavGraphs.root)
 }
 
-fun BaseGalleryInfo.asDst() = GalleryDetailScreenDestination(GalleryInfoArgs(this))
+fun BaseGalleryInfo.asDst(origin: String?) = GalleryDetailScreenDestination(GalleryInfoArgs(this, origin))
 
 infix fun Long.asDstWith(token: String) = GalleryDetailScreenDestination(TokenArgs(this, token))
 

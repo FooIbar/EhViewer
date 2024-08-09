@@ -101,6 +101,7 @@ fun DownloadCard(
     onStart: () -> Unit,
     onStop: () -> Unit,
     info: DownloadInfo,
+    origin: String,
     selectMode: Boolean,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -110,6 +111,7 @@ fun DownloadCard(
             movableContentOf<DownloadInfo> {
                 EhAsyncCropThumb(
                     key = it,
+                    origin = origin,
                     modifier = Modifier.aspectRatio(DEFAULT_RATIO).fillMaxSize(),
                 )
             }

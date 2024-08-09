@@ -33,6 +33,7 @@ context(SharedTransitionScope, TransitionsVisibilityScope)
 @NonRestartableComposable
 fun EhAsyncThumb(
     model: GalleryInfo,
+    origin: String,
     modifier: Modifier = Modifier,
     onSuccess: ((Image) -> Unit)? = null,
     contentScale: ContentScale = ContentScale.Fit,
@@ -40,7 +41,7 @@ fun EhAsyncThumb(
     model = requestOf(model),
     contentDescription = null,
     modifier = modifier.sharedBounds(
-        key = "${model.gid}",
+        key = "$origin:${model.gid}",
     ).clip(ShapeDefaults.Medium),
     onSuccess = onSuccess?.let { callback ->
         { callback(it.result.image) }
@@ -52,6 +53,7 @@ context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun EhAsyncCropThumb(
     key: GalleryInfo,
+    origin: String,
     modifier: Modifier = Modifier,
 ) {
     var contentScale by remember(key) { mutableStateOf(ContentScale.Fit) }
@@ -59,7 +61,7 @@ fun EhAsyncCropThumb(
         model = requestOf(key),
         contentDescription = null,
         modifier = modifier.sharedBounds(
-            key = "${key.gid}",
+            key = "$origin:${key.gid}",
         ).clip(ShapeDefaults.Medium),
         onSuccess = {
             if (it.result.image.shouldCrop) {

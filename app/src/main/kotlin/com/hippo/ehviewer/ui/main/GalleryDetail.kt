@@ -101,6 +101,7 @@ context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun GalleryDetailHeaderCard(
     info: GalleryInfo,
+    origin: String,
     onInfoCardClick: () -> Unit,
     onUploaderChipClick: () -> Unit,
     onBlockUploaderIconClick: () -> Unit,
@@ -111,6 +112,7 @@ fun GalleryDetailHeaderCard(
         Card {
             EhAsyncCropThumb(
                 key = remember(info.gid) { info },
+                origin = origin,
                 modifier = Modifier.size(
                     dimensionResource(id = R.dimen.gallery_detail_thumb_width),
                     dimensionResource(id = R.dimen.gallery_detail_thumb_height),
