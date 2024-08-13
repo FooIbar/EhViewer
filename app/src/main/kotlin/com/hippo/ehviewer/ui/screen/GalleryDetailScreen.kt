@@ -770,7 +770,11 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
             DownloadInfo.STATE_FAILED -> stringResource(R.string.download_state_failed)
             else -> error("Invalid DownloadState!!!")
         }
-        fun onReadButtonClick() = navToReader(galleryInfo.findBaseInfo(), startPage)
+        fun onReadButtonClick() {
+            if (galleryDetail != null || downloadState != DownloadInfo.STATE_INVALID) {
+                navToReader(galleryInfo.findBaseInfo(), startPage)
+            }
+        }
         fun onCategoryChipClick() {
             val category = galleryInfo.category
             if (category == EhUtils.NONE || category == EhUtils.PRIVATE || category == EhUtils.UNKNOWN) {
