@@ -165,6 +165,8 @@ class ArchivePageLoader(
         false
     }
 
+    override val preloadPageCount = 3
+
     override fun preloadPages(pages: List<Int>, bounds: Pair<Int, Int>) {
         synchronized(mJobMap) {
             val (min, max) = bounds
