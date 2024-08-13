@@ -60,6 +60,7 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
 
             else -> simpleTags?.forEach { tagString ->
                 val (namespace, tag) = tagString.split(':', limit = 2)
+                    .takeIf { it.size == 2 } ?: return@forEach // Ignore temp tags that don't have namespace
                 when (val ns = TagNamespace(namespace)) {
                     Artist, Cosplayer -> artists.add(tag)
                     Group -> groups.add(tag)
