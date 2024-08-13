@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.loader
 
 import androidx.annotation.CallSuper
 import androidx.collection.lruCache
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
@@ -33,7 +34,7 @@ abstract class PageLoader {
         (0 until size).map { ReaderPage(it) }
     }
 
-    private val preloads = com.hippo.ehviewer.Settings.preloadImage.coerceIn(0, 100)
+    private val preloads = Settings.preloadImage.coerceIn(0, 100)
 
     @CallSuper
     open suspend fun awaitReady(): Boolean {
@@ -66,11 +67,11 @@ abstract class PageLoader {
             onRequest(index)
         }
 
-        val pagesAbsent = ((index - 5).coerceAtLeast(0) until (preloads + index).coerceAtMost(size))
-            .mapNotNullTo(mutableListOf()) { it.takeIf { it != index && cache[it] == null } }
+        val preloadRange = (index - 5).coerceAtLeast(0) until (preloads + index).coerceAtMost(size)
+        val pagesAbsent = preloadRange.mapNotNullTo(mutableListOf()) { it.takeIf { it != index && cache[it] == null } }
         // Load forward first, then load backward from the nearest index
         pagesAbsent.sortBy { (index - it).coerceAtLeast(0) }
-        preloadPages(pagesAbsent, (index - 10).coerceAtLeast(0) to (preloads + index + 10).coerceAtMost(size))
+        preloadPages(pagesAbsent, (preloadRange.first - 5).coerceAtLeast(0) to (preloadRange.last + 10).coerceAtMost(size))
     }
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
@@ -78,7 +79,7 @@ abstract class PageLoader {
         onForceRequest(index, orgImg)
     }
 
-    protected abstract fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>)
+    protected abstract fun preloadPages(pages: List<Int>, bounds: Pair<Int, Int>)
 
     protected abstract fun onRequest(index: Int)
 

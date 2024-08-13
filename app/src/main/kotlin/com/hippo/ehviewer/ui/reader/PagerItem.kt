@@ -45,13 +45,13 @@ fun PagerItem(
     contentScale: ContentScale,
     modifier: Modifier = Modifier,
 ) {
+    LaunchedEffect(Unit) {
+        pageLoader.request(page.index)
+    }
     val defaultError = stringResource(id = R.string.decode_image_error)
     val state by page.status.collectAsState()
     when (state) {
         Page.State.QUEUE, Page.State.LOAD_PAGE, Page.State.DOWNLOAD_IMAGE -> {
-            LaunchedEffect(Unit) {
-                pageLoader.request(page.index)
-            }
             Box(
                 modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
                 contentAlignment = Alignment.Center,
