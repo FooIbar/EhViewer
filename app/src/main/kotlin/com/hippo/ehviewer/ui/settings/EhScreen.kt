@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -126,15 +125,16 @@ fun EhScreen(navigator: DestinationsNavigator) {
                         if (hasSignedIn) {
                             Column {
                                 val warning = stringResource(id = R.string.settings_eh_identity_cookies_signed)
-                                val state = rememberTextFieldState(cookies.joinToString("\n") { (k, v) -> "$k: $v" })
+                                val str = cookies.joinToString("\n") { (k, v) -> "$k: $v" }
                                 Text(text = AnnotatedString.fromHtml(warning))
                                 Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
                                 OutlinedTextField(
-                                    state = state,
+                                    value = str,
+                                    onValueChange = {},
                                     readOnly = true,
                                     trailingIcon = {
                                         IconButton(onClick = {
-                                            copyTextToClipboard(state.text, true)
+                                            copyTextToClipboard(str, true)
                                             // Avoid double notify user since system have done that on Tiramisu above
                                             if (!isAtLeastT) launchSnackBar(copiedToClipboard)
                                         }) {
