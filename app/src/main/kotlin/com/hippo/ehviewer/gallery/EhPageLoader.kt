@@ -15,6 +15,7 @@
  */
 package com.hippo.ehviewer.gallery
 
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.image.Image
@@ -105,7 +106,9 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
         notifyPageFailed(index, error)
     }
 
-    override fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {
-        mSpiderQueen.preloadPages(pages, pair)
+    override val preloadPageCount = Settings.preloadImage
+
+    override fun preloadPages(pages: List<Int>, bounds: Pair<Int, Int>) {
+        mSpiderQueen.preloadPages(pages, bounds)
     }
 }

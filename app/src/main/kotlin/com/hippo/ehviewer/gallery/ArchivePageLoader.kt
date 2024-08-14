@@ -91,13 +91,17 @@ class ArchivePageLoader(
 
     override fun onRequest(index: Int) {
         synchronized(mJobMap) {
-            val current = mJobMap[index]
-            if (current?.isActive != true) {
-                mJobMap[index] = launch {
-                    mWorkerMutex.withLock(index) {
-                        mSemaphore.withPermit {
-                            doRealWork(index)
-                        }
+            enqueue(index)
+        }
+    }
+
+    private fun enqueue(index: Int) {
+        val current = mJobMap[index]
+        if (current?.isActive != true) {
+            mJobMap[index] = launch {
+                mWorkerMutex.withLock(index) {
+                    mSemaphore.withPermit {
+                        doRealWork(index)
                     }
                 }
             }
@@ -161,7 +165,19 @@ class ArchivePageLoader(
         false
     }
 
-    override fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {}
+    override val preloadPageCount = 3
+
+    override fun preloadPages(pages: List<Int>, bounds: Pair<Int, Int>) {
+        synchronized(mJobMap) {
+            val (min, max) = bounds
+            mJobMap.forEach { (i, job) ->
+                if (i < min || i > max) {
+                    job.cancel()
+                }
+            }
+            pages.forEach(::enqueue)
+        }
+    }
 }
 
 private const val DEBUG_TAG = "ArchivePageLoader"
