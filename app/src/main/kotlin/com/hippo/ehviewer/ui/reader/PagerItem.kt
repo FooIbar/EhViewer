@@ -61,6 +61,9 @@ fun PagerItem(
             }
         }
         Page.State.READY -> {
+            LaunchedEffect(Unit) {
+                pageLoader.prefetch(page.index)
+            }
             val image = page.image!!
             val painter = remember(image) { image.toPainter() }
             val grayScale by Settings.grayScale.collectAsState()
