@@ -294,7 +294,6 @@ class SpiderDen(val info: GalleryInfo) {
                     it.delete()
                 }
             }
-            (dir / SpiderQueen.SPIDER_INFO_FILENAME).delete()
             tempDownloadDir?.delete()
         }
         return archived
