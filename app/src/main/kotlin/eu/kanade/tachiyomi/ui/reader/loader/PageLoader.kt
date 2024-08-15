@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.loader
 
 import androidx.annotation.CallSuper
 import androidx.collection.lruCache
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
@@ -33,7 +34,7 @@ abstract class PageLoader {
         (0 until size).map { ReaderPage(it) }
     }
 
-    abstract val preloadPageCount: Int
+    private val prefetchPageCount = Settings.preloadImage
 
     @CallSuper
     open suspend fun awaitReady(): Boolean {
@@ -57,6 +58,8 @@ abstract class PageLoader {
 
     abstract val size: Int
 
+    private var lastRequestIndex = -1
+
     fun request(index: Int) {
         val image = cache[index]
         if (image != null) {
@@ -66,11 +69,24 @@ abstract class PageLoader {
             onRequest(index)
         }
 
-        val preloadRange = (index - 3).coerceAtLeast(0) until (index + preloadPageCount).coerceAtMost(size)
-        val pagesAbsent = preloadRange.mapNotNullTo(mutableListOf()) { it.takeIf { it != index && cache[it] == null } }
-        // Load forward first, then load backward from the nearest index
-        pagesAbsent.sortBy { (index - it).coerceAtLeast(0) }
-        preloadPages(pagesAbsent, (preloadRange.first - 5).coerceAtLeast(0) to (preloadRange.last + 10).coerceAtMost(size))
+        // Prefetch to disk
+        val prefetchRange = if (index >= lastRequestIndex) {
+            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
+        } else {
+            index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
+        }
+        val pagesAbsent = prefetchRange.filter { pages[it].status.value == Page.State.QUEUE }
+        val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
+        val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
+        prefetchPages(pagesAbsent, start - 5 to end + 5)
+
+        // Prefetch to memory
+        val range = index - 3..index + 3
+        pagesAbsent.forEach {
+            if (it in range) onRequest(it)
+        }
+
+        lastRequestIndex = index
     }
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
@@ -78,7 +94,7 @@ abstract class PageLoader {
         onForceRequest(index, orgImg)
     }
 
-    protected abstract fun preloadPages(pages: List<Int>, bounds: Pair<Int, Int>)
+    protected abstract fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>)
 
     protected abstract fun onRequest(index: Int)
 
