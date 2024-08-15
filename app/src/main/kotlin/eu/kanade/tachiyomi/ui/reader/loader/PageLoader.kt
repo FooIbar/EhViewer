@@ -60,8 +60,6 @@ abstract class PageLoader {
 
     private var lastRequestIndex = -1
 
-    private var prefetchForward = true
-
     fun request(index: Int) {
         val image = cache[index]
         if (image != null) {
@@ -70,13 +68,9 @@ abstract class PageLoader {
             notifyPageWait(index)
             onRequest(index)
         }
-        prefetchForward = index >= lastRequestIndex
-        lastRequestIndex = index
-    }
 
-    fun prefetch(index: Int) {
         // Prefetch to disk
-        val prefetchRange = if (prefetchForward) {
+        val prefetchRange = if (index >= lastRequestIndex) {
             index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
         } else {
             index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
@@ -91,6 +85,8 @@ abstract class PageLoader {
         pagesAbsent.forEach {
             if (it in range) onRequest(it)
         }
+
+        lastRequestIndex = index
     }
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
