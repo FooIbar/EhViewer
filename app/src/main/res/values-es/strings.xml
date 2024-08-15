@@ -39,7 +39,6 @@
 
     <string name="invalid_download_location">Parece que la ubicación de descarga no está disponible. Establece la ubicación en Configuración.</string>
 
-    <string name="error_bad_status_code">Bad status code: %d</string>
     <string name="error_timeout">Sin tiempo</string>
     <string name="error_unknown_host">Host desconocido</string>
     <string name="error_redirection">Demasiadas redirecciones</string>

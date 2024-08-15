@@ -55,11 +55,12 @@ import com.hippo.ehviewer.dailycheck.showEventNotification
 import com.hippo.ehviewer.dailycheck.today
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ReadableTime
-import com.hippo.ehviewer.util.StatusCodeException
 import com.hippo.ehviewer.util.bodyAsUtf8Text
+import com.hippo.ehviewer.util.ensureSuccess
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import java.io.File
@@ -96,7 +97,7 @@ fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
     }
 }
 
-fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): Nothing {
+fun rethrowExactly(status: HttpStatusCode, body: Either<String, ByteBuffer>, e: Throwable): Nothing {
     // Don't translate coroutine cancellation
     if (e is CancellationException) throw e
 
@@ -124,9 +125,7 @@ fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): N
     }
 
     // Check bad response code
-    if (code >= 400) {
-        throw StatusCodeException(code)
-    }
+    status.ensureSuccess()
 
     if (e is ParseException || e is SerializationException) {
         body.onLeft { if ("<" !in it) throw EhException(it) }
@@ -151,7 +150,7 @@ suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend
     runSuspendCatching {
         block(body)
     }.onFailure {
-        rethrowExactly(response.status.value, body.left(), it)
+        rethrowExactly(response.status, body.left(), it)
     }.getOrThrow()
 }
 
@@ -163,7 +162,7 @@ suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: s
             block(buffer)
         }.onFailure {
             buffer.rewind()
-            rethrowExactly(response.status.value, buffer.right(), it)
+            rethrowExactly(response.status, buffer.right(), it)
         }.getOrThrow()
     }
 }

@@ -3,7 +3,6 @@
     <string name="text_is_empty">Tekst tom</string>
     <string name="waring">Advarsel</string>
     <string name="clipboard_gallery_url_snack_action">Vis</string>
-    <string name="error_bad_status_code">Feil statuskode: %d</string>
     <string name="error_timeout">Tidsavbrudd</string>
     <string name="error_unknown_host">Ukjent vert</string>
     <string name="error_redirection">For mange videresendinger</string>

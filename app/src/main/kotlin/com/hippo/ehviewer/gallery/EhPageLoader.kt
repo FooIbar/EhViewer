@@ -105,7 +105,7 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
         notifyPageFailed(index, error)
     }
 
-    override fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {
-        mSpiderQueen.preloadPages(pages, pair)
+    override fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>) {
+        mSpiderQueen.preloadPages(pages, bounds)
     }
 }

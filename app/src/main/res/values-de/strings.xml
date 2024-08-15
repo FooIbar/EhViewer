@@ -32,7 +32,6 @@
     <string name="text_is_empty">Der Text wird nicht eingegeben</string>
     <string name="waring">Achtung</string>
     <string name="invalid_download_location">Der Downloadpfad ist nicht verfügbar. Geh zu die Einstellungen und stelle einen neue Pfad fest.</string>
-    <string name="error_bad_status_code">Inkorrekter Statuscode: %d</string>
     <string name="error_timeout">Timeout</string>
     <string name="error_unknown_host">Unbekannter Hostcomputer</string>
     <string name="error_redirection">Zu viele Umleitungen</string>

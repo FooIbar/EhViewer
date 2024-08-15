@@ -2,6 +2,8 @@ package com.hippo.ehviewer.util
 
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
 import io.ktor.utils.io.charsets.decode
 import io.ktor.utils.io.core.ByteReadPacket
 import java.nio.charset.CodingErrorAction
@@ -14,4 +16,8 @@ suspend fun HttpResponse.bodyAsUtf8Text(): String {
     val input = body<ByteReadPacket>()
 
     return decoder.decode(input)
+}
+
+fun HttpStatusCode.ensureSuccess() {
+    if (!isSuccess()) throw Exception(toString())
 }

@@ -48,7 +48,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           cache-encryption-key: ${{ secrets.GradleEncryptionKey }}
-          gradle-home-cache-cleanup: true
 
       - name: Generate Baseline Profile
         run: ./gradlew generateBaselineProfile

@@ -33,7 +33,6 @@
     <string name="invalid_download_location">看來下載路徑似乎沒辦法使用。請至設定重新設定下載路徑。</string>
     <string name="clipboard_gallery_url_snack_message">剪貼簿裡有圖庫連結</string>
     <string name="clipboard_gallery_url_snack_action">檢視</string>
-    <string name="error_bad_status_code">錯誤狀態碼：%d</string>
     <string name="error_timeout">逾時</string>
     <string name="error_unknown_host">未知的主機</string>
     <string name="error_redirection">重新導向迴圈</string>

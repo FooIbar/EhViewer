@@ -161,7 +161,7 @@ class ArchivePageLoader(
         false
     }
 
-    override fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {}
+    override fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>) = Unit
 }
 
 private const val DEBUG_TAG = "ArchivePageLoader"
