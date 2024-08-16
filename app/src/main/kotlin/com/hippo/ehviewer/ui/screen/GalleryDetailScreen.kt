@@ -843,16 +843,18 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
             ) {
                 item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                    GalleryDetailHeaderCard(
+                        info = galleryInfo,
+                        onInfoCardClick = ::onGalleryInfoCardClick,
+                        onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
+                        onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
+                        onCategoryChipClick = ::onCategoryChipClick,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
+                    )
+                }
+                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
                     LocalPinnableContainer.current!!.run { remember { pin() } }
                     Column {
-                        GalleryDetailHeaderCard(
-                            info = galleryInfo,
-                            onInfoCardClick = ::onGalleryInfoCardClick,
-                            onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
-                            onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
-                            onCategoryChipClick = ::onCategoryChipClick,
-                            modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
-                        )
                         Row {
                             FilledTonalButton(
                                 onClick = onDownloadButtonClick,
@@ -894,39 +896,39 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
             ) {
                 item(span = { GridItemSpan(maxCurrentLineSpan) }) {
-                    LocalPinnableContainer.current!!.run { remember { pin() } }
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        GalleryDetailHeaderCard(
+                            info = galleryInfo,
+                            onInfoCardClick = ::onGalleryInfoCardClick,
+                            onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
+                            onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
+                            onCategoryChipClick = ::onCategoryChipClick,
+                            modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
+                        )
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            GalleryDetailHeaderCard(
-                                info = galleryInfo,
-                                onInfoCardClick = ::onGalleryInfoCardClick,
-                                onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
-                                onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
-                                onCategoryChipClick = ::onCategoryChipClick,
-                                modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
-                            )
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                            Spacer(modifier = modifier.height(16.dp))
+                            Button(
+                                onClick = ::onReadButtonClick,
+                                modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
                             ) {
-                                Spacer(modifier = modifier.height(16.dp))
-                                Button(
-                                    onClick = ::onReadButtonClick,
-                                    modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
-                                ) {
-                                    Text(text = readButtonText, maxLines = 1)
-                                }
-                                Spacer(modifier = modifier.height(24.dp))
-                                FilledTonalButton(
-                                    onClick = onDownloadButtonClick,
-                                    modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
-                                ) {
-                                    Text(text = downloadButtonText, maxLines = 1)
-                                }
+                                Text(text = readButtonText, maxLines = 1)
+                            }
+                            Spacer(modifier = modifier.height(24.dp))
+                            FilledTonalButton(
+                                onClick = onDownloadButtonClick,
+                                modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
+                            ) {
+                                Text(text = downloadButtonText, maxLines = 1)
                             }
                         }
+                    }
+                }
+                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                    LocalPinnableContainer.current!!.run { remember { pin() } }
+                    Column {
                         if (getDetailError.isNotBlank()) {
                             GalleryDetailErrorTip(error = getDetailError, onClick = { getDetailError = "" })
                         } else if (galleryDetail != null) {
