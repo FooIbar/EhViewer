@@ -4,12 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.view.ViewConfiguration
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -117,7 +114,6 @@ import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
-import com.hippo.ehviewer.ui.tools.togetherWith
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.takeAndClear
 import com.jamal.composeprefs3.ui.ifTrueThen
@@ -539,71 +535,70 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             launchIO { EhDB.putHistoryInfo(info.galleryInfo) }
             navToReader(info.galleryInfo)
         }
-        AnimatedContent(gridView, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "Downloads") { showGridView ->
-            togetherWith(implicit<AnimatedVisibilityScope>()) {
-                if (showGridView) {
-                    val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
-                    val thumbColumns by Settings.thumbColumns.collectAsState()
-                    FastScrollLazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Fixed(thumbColumns),
-                        modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-                        contentPadding = realPadding,
-                        verticalItemSpacing = gridInterval,
-                        horizontalArrangement = Arrangement.spacedBy(gridInterval),
-                    ) {
-                        items(list, key = { it.gid }) { info ->
-                            GalleryInfoGridItem(
-                                onClick = ::onItemClick.partially1(info),
-                                onLongClick = { navigate(info.galleryInfo.asDst()) },
-                                info = info,
-                                modifier = Modifier.thenIf(animateItems) { animateItem() },
-                                showLanguage = false,
-                            )
-                        }
+
+        Crossfade(targetState = gridView, label = "Downloads") { showGridView ->
+            if (showGridView) {
+                val gridInterval = dimensionResource(R.dimen.gallery_grid_interval)
+                val thumbColumns by Settings.thumbColumns.collectAsState()
+                FastScrollLazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(thumbColumns),
+                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    contentPadding = realPadding,
+                    verticalItemSpacing = gridInterval,
+                    horizontalArrangement = Arrangement.spacedBy(gridInterval),
+                ) {
+                    items(list, key = { it.gid }) { info ->
+                        GalleryInfoGridItem(
+                            onClick = ::onItemClick.partially1(info),
+                            onLongClick = { navigate(info.galleryInfo.asDst()) },
+                            info = info,
+                            modifier = Modifier.thenIf(animateItems) { animateItem() },
+                            showLanguage = false,
+                        )
                     }
-                } else {
-                    FastScrollLazyColumn(
-                        modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
-                        contentPadding = realPadding,
-                        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
-                    ) {
-                        items(list, key = { it.gid }) { info ->
-                            val checked = info.gid in checkedInfoMap
-                            CheckableItem(
-                                checked = checked,
-                                modifier = Modifier.thenIf(animateItems) { animateItem() },
-                            ) { interactionSource ->
-                                DownloadCard(
-                                    onClick = {
-                                        if (selectMode) {
-                                            if (checked) {
-                                                checkedInfoMap.remove(info.gid)
-                                            } else {
-                                                checkedInfoMap[info.gid] = info
-                                            }
+                }
+            } else {
+                FastScrollLazyColumn(
+                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    contentPadding = realPadding,
+                    verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
+                ) {
+                    items(list, key = { it.gid }) { info ->
+                        val checked = info.gid in checkedInfoMap
+                        CheckableItem(
+                            checked = checked,
+                            modifier = Modifier.thenIf(animateItems) { animateItem() },
+                        ) { interactionSource ->
+                            DownloadCard(
+                                onClick = {
+                                    if (selectMode) {
+                                        if (checked) {
+                                            checkedInfoMap.remove(info.gid)
                                         } else {
-                                            onItemClick(info)
+                                            checkedInfoMap[info.gid] = info
                                         }
-                                    },
-                                    onThumbClick = {
-                                        navigate(info.galleryInfo.asDst())
-                                    },
-                                    onLongClick = {
-                                        checkedInfoMap[info.gid] = info
-                                    },
-                                    onStart = {
-                                        val intent = Intent(implicit<Activity>(), DownloadService::class.java)
-                                        intent.action = DownloadService.ACTION_START
-                                        intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                                        ContextCompat.startForegroundService(implicit<Activity>(), intent)
-                                    },
-                                    onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
-                                    info = info,
-                                    selectMode = selectMode,
-                                    modifier = Modifier.height(height),
-                                    interactionSource = interactionSource,
-                                )
-                            }
+                                    } else {
+                                        onItemClick(info)
+                                    }
+                                },
+                                onThumbClick = {
+                                    navigate(info.galleryInfo.asDst())
+                                },
+                                onLongClick = {
+                                    checkedInfoMap[info.gid] = info
+                                },
+                                onStart = {
+                                    val intent = Intent(implicit<Activity>(), DownloadService::class.java)
+                                    intent.action = DownloadService.ACTION_START
+                                    intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
+                                    ContextCompat.startForegroundService(implicit<Activity>(), intent)
+                                },
+                                onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
+                                info = info,
+                                selectMode = selectMode,
+                                modifier = Modifier.height(height),
+                                interactionSource = interactionSource,
+                            )
                         }
                     }
                 }
