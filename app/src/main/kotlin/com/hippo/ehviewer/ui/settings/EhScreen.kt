@@ -333,11 +333,6 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 entryValueRes = R.array.thumb_resolution_entry_values,
                 value = thumbResolution,
             )
-            SwitchPreference(
-                title = stringResource(id = R.string.settings_eh_force_eh_thumb),
-                summary = stringResource(id = R.string.settings_eh_force_eh_thumb_summary),
-                value = Settings::forceEhThumb,
-            )
             var showGalleryPages by Settings.showGalleryPages.asMutableState()
             SwitchPref(
                 checked = showGalleryPages,
