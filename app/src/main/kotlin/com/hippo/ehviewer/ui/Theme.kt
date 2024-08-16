@@ -13,6 +13,7 @@ import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.ProvideVectorPainterCache
+import com.hippo.ehviewer.ui.tools.UpdateShaderColor
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import soup.compose.material.motion.animation.materialSharedAxisXIn
 import soup.compose.material.motion.animation.materialSharedAxisXOut
@@ -20,6 +21,7 @@ import soup.compose.material.motion.animation.rememberSlideDistance
 
 inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -> Unit) = setContent {
     EhTheme {
+        UpdateShaderColor()
         ProvideVectorPainterCache {
             val dialogState = remember { DialogState() }
             dialogState.Intercept()
