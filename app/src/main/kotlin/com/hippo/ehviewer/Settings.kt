@@ -142,7 +142,6 @@ object Settings : DataStorePreferences(null) {
     var launchPage by intPref("launch_page_2", 0)
     var commentThreshold by intPref("comment_threshold", -101)
     var hardwareBitmapThreshold by intPref("hardware_bitmap_threshold", 16384)
-    var forceEhThumb by boolPref("force_eh_thumb", false)
     var showComments by boolPref("show_gallery_comments", true)
     var requestNews by boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
     var hideHvEvents by boolPref("hide_hv_events", false)
