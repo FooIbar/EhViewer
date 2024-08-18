@@ -29,6 +29,7 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
+import com.hippo.ehviewer.client.exception.NoHitsFoundException
 import com.hippo.ehviewer.client.exception.NotLoggedInException
 import com.hippo.ehviewer.client.exception.ParseException
 import com.hippo.ehviewer.client.parser.ArchiveParser
@@ -130,7 +131,7 @@ fun rethrowExactly(status: HttpStatusCode, body: Either<String, ByteBuffer>, e: 
     if (e is ParseException || e is SerializationException) {
         body.onLeft { if ("<" !in it) throw EhException(it) }
         when (val message = e.cause?.message) {
-            "No hits found!" -> throw EhException(R.string.gallery_list_empty_hit)
+            "No hits found!" -> throw NoHitsFoundException()
             "No watched tags!" -> throw EhException(R.string.gallery_list_empty_hit_subscription)
             "Not logged in!" -> throw NotLoggedInException()
             is String -> if (message.startsWith("Your IP address")) throw EhException(message)
