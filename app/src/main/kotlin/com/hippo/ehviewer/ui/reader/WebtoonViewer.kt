@@ -42,7 +42,7 @@ fun WebtoonViewer(
 ) {
     val scope = rememberCoroutineScope()
     val items = pageLoader.pages
-    val zoomableState = rememberZoomableState(zoomSpec = ZoomSpec)
+    val zoomableState = rememberZoomableState(zoomSpec = WebtoonZoomSpec)
     val density = LocalDensity.current
     val paddingPercent by Settings.webtoonSidePadding.collectAsState()
     val sidePadding by remember(density) {
@@ -97,4 +97,4 @@ fun WebtoonViewer(
     }
 }
 
-private val ZoomSpec = ZoomSpec(maxZoomFactor = 3f)
+private val WebtoonZoomSpec = ZoomSpec(maxZoomFactor = 3f)
