@@ -11,6 +11,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -66,6 +67,17 @@ fun PagerItem(
             val painter = remember(image) { image.toPainter() }
             val grayScale by Settings.grayScale.collectAsState()
             val invert by Settings.invertedColors.collectAsState()
+            DisposableEffect(image) {
+                image.isRecyclable = false
+                onDispose {
+                    if (image.isRecyclable) {
+                        pageLoader.notifyPageWait(page.index)
+                        image.recycle()
+                    } else {
+                        image.isRecyclable = true
+                    }
+                }
+            }
             Image(
                 painter = painter,
                 contentDescription = null,
