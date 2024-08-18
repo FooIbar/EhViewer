@@ -23,8 +23,12 @@ abstract class PageLoader {
             },
             sizeOf = { _, v -> v.size.toInt() },
             onEntryRemoved = { _, k, o, n ->
-                n ?: notifyPageWait(k)
-                o.recycle()
+                if (o.isRecyclable) {
+                    n ?: notifyPageWait(k)
+                    o.recycle()
+                } else {
+                    o.isRecyclable = true
+                }
             },
         )
     }
@@ -63,7 +67,7 @@ abstract class PageLoader {
     fun request(index: Int) {
         val image = cache[index]
         if (image != null) {
-            notifyPageSucceed(index, image)
+            notifyPageSucceed(index, image, false)
         } else {
             notifyPageWait(index)
             onRequest(index)
@@ -107,16 +111,17 @@ abstract class PageLoader {
     protected abstract fun onCancelRequest(index: Int)
 
     fun notifyPageWait(index: Int) {
+        pages[index].progress = 0
         pages[index].status.value = Page.State.QUEUE
     }
 
     fun notifyPagePercent(index: Int, percent: Float) {
-        pages[index].status.compareAndSet(Page.State.QUEUE, Page.State.DOWNLOAD_IMAGE)
         pages[index].progress = (percent * 100).toInt()
+        pages[index].status.compareAndSet(Page.State.QUEUE, Page.State.DOWNLOAD_IMAGE)
     }
 
-    fun notifyPageSucceed(index: Int, image: Image) {
-        if (cache[index] != image) {
+    fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
+        if (replaceCache) {
             cache.put(index, image)
         }
         pages[index].image = image
