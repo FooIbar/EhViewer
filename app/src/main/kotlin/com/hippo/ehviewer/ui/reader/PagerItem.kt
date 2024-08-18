@@ -44,6 +44,7 @@ fun PagerItem(
     pageLoader: PageLoader,
     contentScale: ContentScale,
     modifier: Modifier = Modifier,
+    contentModifier: Modifier = Modifier,
 ) {
     LaunchedEffect(Unit) {
         pageLoader.request(page.index)
@@ -53,7 +54,7 @@ fun PagerItem(
     when (state) {
         Page.State.QUEUE, Page.State.LOAD_PAGE, Page.State.DOWNLOAD_IMAGE -> {
             Box(
-                modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
+                modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
                 contentAlignment = Alignment.Center,
             ) {
                 val progress by page.progressFlow.collectAsState()
@@ -68,7 +69,7 @@ fun PagerItem(
             Image(
                 painter = painter,
                 contentDescription = null,
-                modifier = modifier.fillMaxSize(),
+                modifier = contentModifier.fillMaxSize(),
                 contentScale = contentScale,
                 colorFilter = when {
                     grayScale && invert -> grayScaleAndInvertFilter
@@ -79,7 +80,7 @@ fun PagerItem(
             )
         }
         Page.State.ERROR -> {
-            Box(modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
+            Box(modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
                 Column(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally,

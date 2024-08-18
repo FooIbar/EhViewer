@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.reader
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.layout.times
@@ -38,6 +40,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import me.saket.telephoto.zoomable.ZoomSpec
 import me.saket.telephoto.zoomable.ZoomableContentLocation
 import me.saket.telephoto.zoomable.ZoomableState
 import me.saket.telephoto.zoomable.rememberZoomableState
@@ -138,7 +141,7 @@ private fun PageContainer(
 ) {
     @Suppress("NAME_SHADOWING")
     val isRtl by rememberUpdatedState(isRtl)
-    val zoomableState = rememberZoomableState(zoomSpec = zoomSpec)
+    val zoomableState = rememberZoomableState(zoomSpec = PagerZoomSpec)
     val status by page.status.collectAsState()
     if (status == Page.State.READY && layoutSize != Size.Zero) {
         val size = page.image!!.rect.size.toSize()
@@ -180,12 +183,31 @@ private fun PageContainer(
             }
         }
     }
+    val onLongClick = { _: Offset -> onSelectPage(page) }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         PagerItem(
             page = page,
             pageLoader = pageLoader,
             contentScale = ContentScale.Inside,
-            modifier = Modifier.zoomable(
+            modifier = Modifier.pointerInput(Unit) {
+                detectTapGestures(onLongPress = onLongClick) {
+                    scope.launch {
+                        onClick()
+                        with(pagerState) {
+                            val x = it.x / layoutSize.width
+                            val y = it.y / layoutSize.height
+                            when (navigator().getAction(x, y)) {
+                                NavigationRegion.MENU -> onMenuRegionClick()
+                                NavigationRegion.NEXT -> moveToNext()
+                                NavigationRegion.PREV -> moveToPrevious()
+                                NavigationRegion.RIGHT -> if (isRtl) moveToPrevious() else moveToNext()
+                                NavigationRegion.LEFT -> if (isRtl) moveToNext() else moveToPrevious()
+                            }
+                        }
+                    }
+                }
+            },
+            contentModifier = Modifier.zoomable(
                 state = zoomableState,
                 onClick = {
                     scope.launch {
@@ -227,7 +249,7 @@ private fun PageContainer(
                         }
                     }
                 },
-                onLongClick = { onSelectPage(page) },
+                onLongClick = onLongClick,
                 onDoubleClick = DoubleTapZoom,
             ),
         )
@@ -250,4 +272,4 @@ private suspend fun ZoomableState.panRight(distance: Float): Boolean {
     return canPan
 }
 
-private val zoomSpec = me.saket.telephoto.zoomable.ZoomSpec(maxZoomFactor = 5f)
+private val PagerZoomSpec = ZoomSpec(maxZoomFactor = 5f)
