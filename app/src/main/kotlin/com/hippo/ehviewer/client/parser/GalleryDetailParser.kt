@@ -21,7 +21,6 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhFilter
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.EhUtils.getCategory
-import com.hippo.ehviewer.client.EhUtils.handleThumbUrlResolution
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.GalleryCommentList
@@ -140,11 +139,7 @@ object GalleryDetailParser {
             val gm = d.getElementsByClass("gm")[0]
             // Thumb url
             gm.getElementById("gd1")?.child(0)?.attr("style")?.trim()?.let {
-                gd.thumbKey = getThumbKey(
-                    PATTERN_COVER.find(it)?.run {
-                        handleThumbUrlResolution(groupValues[3])
-                    }!!,
-                )
+                gd.thumbKey = getThumbKey(PATTERN_COVER.find(it)!!.groupValues[3])
             }
 
             gd.title = gm.getElementById("gn")?.text()?.trim()
