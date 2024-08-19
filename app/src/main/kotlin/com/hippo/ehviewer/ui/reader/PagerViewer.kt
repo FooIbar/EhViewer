@@ -19,7 +19,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
@@ -27,6 +29,7 @@ import androidx.compose.ui.layout.times
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
+import arrow.core.partially1
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.PageLoader2
@@ -35,7 +38,7 @@ import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.NavigationRegions
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import eu.kanade.tachiyomi.ui.reader.viewer.getAction
-import kotlin.math.roundToInt
+import kotlin.contracts.contract
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -53,7 +56,6 @@ fun PagerViewer(
     isVertical: Boolean,
     pageLoader: PageLoader2,
     navigator: () -> NavigationRegions,
-    onClick: () -> Unit,
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
     contentPadding: PaddingValues,
@@ -89,7 +91,6 @@ fun PagerViewer(
                 navigator = navigator,
                 pagerState = pagerState,
                 onSelectPage = onSelectPage,
-                onClick = onClick,
                 onMenuRegionClick = onMenuRegionClick,
                 scope = scope,
             )
@@ -115,7 +116,6 @@ fun PagerViewer(
                 navigator = navigator,
                 pagerState = pagerState,
                 onSelectPage = onSelectPage,
-                onClick = onClick,
                 onMenuRegionClick = onMenuRegionClick,
                 scope = scope,
             )
@@ -134,7 +134,6 @@ private fun PageContainer(
     layoutSize: Size,
     navigator: () -> NavigationRegions,
     pagerState: PagerState,
-    onClick: () -> Unit,
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
     scope: CoroutineScope,
@@ -184,71 +183,57 @@ private fun PageContainer(
         }
     }
     val onLongClick = { _: Offset -> onSelectPage(page) }
+    val onTap: ZoomableState?.(Offset) -> Unit = { offset ->
+        scope.launch {
+            with(pagerState) {
+                // Don't use `layoutSize` as it may capture outdated value
+                val size = layoutInfo.viewportSize.toSize()
+                val x = offset.x / size.width
+                val y = offset.y / size.height
+                val distance = size.width
+                val bounds = size.toRect()
+                when (navigator().getAction(x, y)) {
+                    NavigationRegion.MENU -> onMenuRegionClick()
+                    NavigationRegion.NEXT -> {
+                        val canPan = if (isRtl) panRight(distance, bounds) else panLeft(distance, bounds)
+                        if (!canPan) {
+                            moveToNext()
+                        }
+                    }
+
+                    NavigationRegion.PREV -> {
+                        val canPan = if (isRtl) panLeft(distance, bounds) else panRight(distance, bounds)
+                        if (!canPan) {
+                            moveToPrevious()
+                        }
+                    }
+
+                    NavigationRegion.RIGHT -> {
+                        if (!panLeft(distance, bounds)) {
+                            if (isRtl) moveToPrevious() else moveToNext()
+                        }
+                    }
+
+                    NavigationRegion.LEFT -> {
+                        if (!panRight(distance, bounds)) {
+                            if (isRtl) moveToNext() else moveToPrevious()
+                        }
+                    }
+                }
+            }
+        }
+    }
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         PagerItem(
             page = page,
             pageLoader = pageLoader,
             contentScale = ContentScale.Inside,
-            modifier = Modifier.pointerInput(Unit) {
-                detectTapGestures(onLongPress = onLongClick) {
-                    scope.launch {
-                        onClick()
-                        with(pagerState) {
-                            val x = it.x / layoutSize.width
-                            val y = it.y / layoutSize.height
-                            when (navigator().getAction(x, y)) {
-                                NavigationRegion.MENU -> onMenuRegionClick()
-                                NavigationRegion.NEXT -> moveToNext()
-                                NavigationRegion.PREV -> moveToPrevious()
-                                NavigationRegion.RIGHT -> if (isRtl) moveToPrevious() else moveToNext()
-                                NavigationRegion.LEFT -> if (isRtl) moveToNext() else moveToPrevious()
-                            }
-                        }
-                    }
-                }
+            modifier = Modifier.pointerInput(onTap) {
+                detectTapGestures(onLongPress = onLongClick, onTap = onTap.partially1(null))
             },
             contentModifier = Modifier.zoomable(
                 state = zoomableState,
-                onClick = {
-                    scope.launch {
-                        onClick()
-                        with(pagerState) {
-                            with(zoomableState) {
-                                val x = it.x / layoutSize.width
-                                val y = it.y / layoutSize.height
-                                val distance = layoutSize.width
-                                when (navigator().getAction(x, y)) {
-                                    NavigationRegion.MENU -> onMenuRegionClick()
-                                    NavigationRegion.NEXT -> {
-                                        val canPan = if (isRtl) panRight(distance) else panLeft(distance)
-                                        if (!canPan) {
-                                            moveToNext()
-                                        }
-                                    }
-
-                                    NavigationRegion.PREV -> {
-                                        val canPan = if (isRtl) panLeft(distance) else panRight(distance)
-                                        if (!canPan) {
-                                            moveToPrevious()
-                                        }
-                                    }
-
-                                    NavigationRegion.RIGHT -> {
-                                        if (!panLeft(distance)) {
-                                            if (isRtl) moveToPrevious() else moveToNext()
-                                        }
-                                    }
-
-                                    NavigationRegion.LEFT -> {
-                                        if (!panRight(distance)) {
-                                            if (isRtl) moveToNext() else moveToPrevious()
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
+                onClick = onTap.partially1(zoomableState),
                 onLongClick = onLongClick,
                 onDoubleClick = DoubleTapZoom,
             ),
@@ -256,20 +241,28 @@ private fun PageContainer(
     }
 }
 
-private suspend fun ZoomableState.panLeft(distance: Float): Boolean {
-    val canPan = Settings.navigateToPan.value && transformedContentBounds.right.roundToInt() > distance
-    if (canPan) {
+private suspend fun ZoomableState?.panLeft(distance: Float, bounds: Rect): Boolean =
+    if (canPan { it.right - bounds.right }) {
         panBy(Offset(-distance, 0f))
+        true
+    } else {
+        false
     }
-    return canPan
-}
 
-private suspend fun ZoomableState.panRight(distance: Float): Boolean {
-    val canPan = Settings.navigateToPan.value && transformedContentBounds.left.roundToInt() < 0
-    if (canPan) {
+private suspend fun ZoomableState?.panRight(distance: Float, bounds: Rect): Boolean =
+    if (canPan { bounds.left - it.left }) {
         panBy(Offset(distance, 0f))
+        true
+    } else {
+        false
     }
-    return canPan
+
+private inline fun ZoomableState?.canPan(getRemaining: (Rect) -> Float): Boolean {
+    // TODO: Remove when K2 mode in IDE is stable
+    contract {
+        returns(true) implies (this@canPan != null)
+    }
+    return this != null && Settings.navigateToPan.value && getRemaining(transformedContentBounds) > 1f
 }
 
 private val PagerZoomSpec = ZoomSpec(maxZoomFactor = 5f)

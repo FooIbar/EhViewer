@@ -6,6 +6,8 @@ import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -166,7 +169,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
         var appbarVisible by remember { mutableStateOf(false) }
         val bgColor by collectBackgroundColorAsState()
         val isWebtoon by rememberUpdatedState(ReadingModeType.isWebtoon(readingMode))
-        syncState.Sync(isWebtoon, appbarVisible) { appbarVisible = false }
+        syncState.Sync(isWebtoon) { appbarVisible = false }
         if (fullscreen) {
             LaunchedEffect(Unit) {
                 snapshotFlow { appbarVisible }.collect {
@@ -183,11 +186,18 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                 if (isWebtoon) lazyListState.scrollDown() else pagerState.moveToNext()
             },
         )
+        var showNavigationOverlay by remember {
+            val showOnStart = Settings.showNavigationOverlayNewUser.value || Settings.showNavigationOverlayOnStart.value
+            Settings.showNavigationOverlayNewUser.value = false
+            mutableStateOf(showOnStart)
+        }
         GalleryPager(
             type = readingMode,
             pagerState = pagerState,
             lazyListState = lazyListState,
             pageLoader = pageLoader,
+            showNavigationOverlay = showNavigationOverlay,
+            onNavigationModeChange = { showNavigationOverlay = true },
             onSelectPage = { page ->
                 if (Settings.readerLongTapAction.value) {
                     launch {
@@ -215,7 +225,13 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                 }
             },
             onMenuRegionClick = { appbarVisible = !appbarVisible },
-            modifier = Modifier.background(bgColor),
+            modifier = Modifier.background(bgColor).pointerInput(syncState) {
+                awaitEachGesture {
+                    waitForUpOrCancellation()
+                    syncState.reset()
+                    showNavigationOverlay = false
+                }
+            },
             contentPadding = if (fullscreen) {
                 if (cutoutShort) {
                     PaddingValues(0.dp)
