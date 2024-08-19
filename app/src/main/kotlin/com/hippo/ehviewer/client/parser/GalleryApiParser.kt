@@ -16,7 +16,6 @@
 package com.hippo.ehviewer.client.parser
 
 import com.hippo.ehviewer.client.EhUtils.getCategory
-import com.hippo.ehviewer.client.EhUtils.handleThumbUrlResolution
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.getThumbKey
 import com.hippo.ehviewer.client.parseAs
@@ -32,7 +31,7 @@ object GalleryApiParser {
                 title = item.title.unescapeXml()
                 titleJpn = item.titleJpn.unescapeXml()
                 category = getCategory(item.category)
-                thumbKey = getThumbKey(handleThumbUrlResolution(item.thumb)!!)
+                thumbKey = getThumbKey(item.thumb)
                 uploader = item.uploader?.unescapeXml()
                 posted = ParserUtils.formatDate(item.posted * 1000)
                 rating = item.rating

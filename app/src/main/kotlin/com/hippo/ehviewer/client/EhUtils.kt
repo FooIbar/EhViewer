@@ -172,10 +172,7 @@ object EhUtils {
         return title.substringBeforeLast('|').trim().ifEmpty { null }
     }
 
-    fun handleThumbUrlResolution(url: String?): String? {
-        if (null == url) {
-            return null
-        }
+    fun handleThumbUrlResolution(url: String): String {
         val resolution = when (Settings.thumbResolution) {
             0 -> return url
             1 -> "250"

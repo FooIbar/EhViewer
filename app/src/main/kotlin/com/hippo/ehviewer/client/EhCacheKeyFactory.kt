@@ -19,10 +19,9 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
 
+// Normal Preview: https://*.hath.network/cm/[timed token]/[gid]-[index].jpg
 // ExHentai Large Preview: https://s.exhentai.org/t/***
-// ExHentai Normal Preview: https://*.hath.network/cm/[timed token]/[gid]-[index].jpg
-// EHentai Normal Preview: https://ehgt.org/m/[permanent token]/[gid]-[index].jpg
-// EHentai Large Preview: https://ehgt.org/***
+// E-Hentai Large Preview: https://ehgt.org/***
 
 private const val URL_PREFIX_THUMB_E = "https://ehgt.org/"
 private const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/t/"
@@ -44,7 +43,7 @@ val GalleryPreview.imageKey
     }
 
 val GalleryInfo.thumbUrl
-    get() = thumbPrefix + thumbKey!!
+    get() = thumbPrefix + EhUtils.handleThumbUrlResolution(thumbKey!!)
 
 private val thumbPrefix
     get() = if (EhUtils.isExHentai) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E
