@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +29,8 @@ fun GalleryPager(
     pagerState: PagerState,
     lazyListState: LazyListState,
     pageLoader: PageLoader2,
+    showNavigationOverlay: Boolean,
+    onNavigationModeChange: () -> Unit,
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -46,16 +47,11 @@ fun GalleryPager(
     }
     val invertMode = if (isPagerType) pagerInvertMode else webtoonInvertMode
     var firstLaunch by remember { mutableStateOf(true) }
-    var showNavigationOverlay by remember {
-        val showOnStart = Settings.showNavigationOverlayNewUser.value || Settings.showNavigationOverlayOnStart.value
-        Settings.showNavigationOverlayNewUser.value = false
-        mutableStateOf(showOnStart)
-    }
     val regions = remember(navigation, invertMode) {
         if (firstLaunch) {
             firstLaunch = false
         } else {
-            showNavigationOverlay = true
+            onNavigationModeChange()
         }
         navigation.invertMode = TappingInvertMode.entries[invertMode]
         navigation.regions
@@ -68,7 +64,6 @@ fun GalleryPager(
             isVertical = type == VERTICAL,
             pageLoader = pageLoader,
             navigator = { navigator },
-            onClick = { showNavigationOverlay = false },
             onSelectPage = onSelectPage,
             onMenuRegionClick = onMenuRegionClick,
             contentPadding = contentPadding,
@@ -80,21 +75,11 @@ fun GalleryPager(
             withGaps = type == CONTINUOUS_VERTICAL,
             pageLoader = pageLoader,
             navigator = { navigator },
-            onClick = { showNavigationOverlay = false },
             onSelectPage = onSelectPage,
             onMenuRegionClick = onMenuRegionClick,
             contentPadding = contentPadding,
             modifier = modifier,
         )
-    }
-    LaunchedEffect(isPagerType) {
-        if (isPagerType) {
-            pagerState.interactionSource
-        } else {
-            lazyListState.interactionSource
-        }.interactions.collect {
-            showNavigationOverlay = false
-        }
     }
     NavigationOverlay(showNavigationOverlay, regions, modifier = Modifier.fillMaxSize())
 }

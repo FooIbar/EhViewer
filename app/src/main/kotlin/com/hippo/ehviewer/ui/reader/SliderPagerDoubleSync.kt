@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.reader
 
-import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
@@ -31,11 +30,12 @@ class SliderPagerDoubleSync(
         sliderValue = index.coerceIn(1, pageLoader.size)
     }
 
+    fun reset() {
+        sliderFollowPager = true
+    }
+
     @Composable
-    fun Sync(webtoon: Boolean, appbarVisible: Boolean, onPageSelected: () -> Unit) {
-        val fling by lazyListState.interactionSource.collectIsDraggedAsState()
-        val pagerFling by pagerState.interactionSource.collectIsDraggedAsState()
-        if (fling || pagerFling || !appbarVisible) sliderFollowPager = true
+    fun Sync(webtoon: Boolean, onPageSelected: () -> Unit) {
         val currentIndexFlow = remember(webtoon) {
             val initialIndex = sliderValue - 1
             if (webtoon) {
