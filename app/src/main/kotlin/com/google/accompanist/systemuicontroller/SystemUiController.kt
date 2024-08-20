@@ -69,6 +69,11 @@ interface SystemUiController {
             isStatusBarVisible = value
             isNavigationBarVisible = value
         }
+
+    /**
+     * Property which holds whether the status bar icons + content are 'dark' or not.
+     */
+    var statusBarDarkContentEnabled: Boolean
 }
 
 /**
@@ -148,5 +153,11 @@ internal class AndroidSystemUiController(
             } else {
                 windowInsetsController?.hide(WindowInsetsCompat.Type.navigationBars())
             }
+        }
+
+    override var statusBarDarkContentEnabled: Boolean
+        get() = windowInsetsController?.isAppearanceLightStatusBars == true
+        set(value) {
+            windowInsetsController?.isAppearanceLightStatusBars = value
         }
 }

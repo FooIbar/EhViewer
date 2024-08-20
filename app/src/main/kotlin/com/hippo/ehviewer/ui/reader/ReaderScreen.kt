@@ -105,6 +105,18 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
         }
         val bgColor by collectBackgroundColorAsState()
         val readingFailed = stringResource(R.string.error_reading_failed)
+        val uiController = rememberSystemUiController()
+        DisposableEffect(uiController) {
+            val lightStatusBar = uiController.statusBarDarkContentEnabled
+            onDispose {
+                uiController.statusBarDarkContentEnabled = lightStatusBar
+            }
+        }
+        LaunchedEffect(uiController) {
+            snapshotFlow { bgColor }.collect {
+                uiController.statusBarDarkContentEnabled = it == Color.White
+            }
+        }
         Await(
             {
                 Either.catch {
