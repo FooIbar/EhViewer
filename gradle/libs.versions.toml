@@ -83,7 +83,7 @@ material-motion-core = "io.github.fornewid:material-motion-compose-core:2.0.1"
 
 cronet-embedded = "org.chromium.net:cronet-embedded:119.6045.31"
 
-desugar = "com.android.tools:desugar_jdk_libs_nio:2.0.4"
+desugar = "com.android.tools:desugar_jdk_libs_nio:2.1.0"
 
 diff = "io.github.petertrr:kotlin-multiplatform-diff:0.7.0"
 jsoup = "org.jsoup:jsoup:1.18.1"
