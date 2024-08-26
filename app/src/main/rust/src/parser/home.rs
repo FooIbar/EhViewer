@@ -21,13 +21,23 @@ fn parse_limit(dom: &VDom, parser: &Parser) -> Option<Limits> {
         .as_tag()?
         .query_selector(parser, "strong")?;
     let vec: Vec<i32> = iter
-        .filter_map(|e| e.get(parser)?.inner_text(parser).parse::<i32>().ok())
+        .filter_map(|e| {
+            e.get(parser)?
+                .inner_text(parser)
+                .replace(",", "")
+                .parse::<i32>()
+                .ok()
+        })
         .collect();
-    Some(Limits {
-        current: vec[0],
-        maximum: vec[1],
-        resetCost: vec[2],
-    })
+    if vec.len() == 3 {
+        Some(Limits {
+            current: vec[0],
+            maximum: vec[1],
+            resetCost: vec[2],
+        })
+    } else {
+        None
+    }
 }
 
 #[no_mangle]
