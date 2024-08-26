@@ -333,7 +333,7 @@ object EhEngine {
 
     suspend fun resetImageLimits() = ehRequest(EhUrl.URL_HOME) {
         formBody {
-            append("reset_imagelimit", "Reset Limit")
+            append("reset_imagelimit", "Reset Quota")
         }
     }.fetchUsingAsText(HomeParser::parseResetLimits)
 
