@@ -123,7 +123,7 @@ object Settings : DataStorePreferences(null) {
     val security = boolPref("require_unlock", false)
     val animateItems = boolPref("animate_items", true)
     val displayName = stringOrNullPref("display_name", null)
-    val recentDownloadLabel = stringOrNullPref("recent_download_label", "")
+    val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)
@@ -214,6 +214,9 @@ object Settings : DataStorePreferences(null) {
             edit {
                 if (KEY_SHOW_TAG_TRANSLATIONS !in prefs) showTagTranslations = true
             }
+        }
+        if (downloadFilterMode.value == DownloadsFilterMode.ARTIST.flag && recentDownloadLabel.value == null) {
+            recentDownloadLabel.value = ""
         }
     }
 
