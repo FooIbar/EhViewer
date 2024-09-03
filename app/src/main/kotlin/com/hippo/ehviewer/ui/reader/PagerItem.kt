@@ -20,8 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -114,7 +112,7 @@ fun PagerItem(
 
 private fun Image.toPainter() = when (val image = innerImage) {
     is BitmapImage -> BitmapPainter(
-        image = image.bitmap.asImageBitmap(),
+        image = image.bitmap,
         srcOffset = rect.topLeft,
         srcSize = rect.size,
     )
