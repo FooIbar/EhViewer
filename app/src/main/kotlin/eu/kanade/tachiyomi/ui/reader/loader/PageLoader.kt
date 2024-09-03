@@ -58,6 +58,7 @@ abstract class PageLoader {
 
     fun restart() {
         cache.evictAll()
+        pages.forEach(ReaderPage::reset)
     }
 
     abstract val size: Int
@@ -111,8 +112,7 @@ abstract class PageLoader {
     protected abstract fun onCancelRequest(index: Int)
 
     fun notifyPageWait(index: Int) {
-        pages[index].progress = 0
-        pages[index].status.value = Page.State.QUEUE
+        pages[index].reset()
     }
 
     fun notifyPagePercent(index: Int, percent: Float) {
@@ -132,4 +132,11 @@ abstract class PageLoader {
         pages[index].errorMsg = error
         pages[index].status.value = Page.State.ERROR
     }
+}
+
+private fun ReaderPage.reset() {
+    image = null
+    errorMsg = null
+    progress = 0
+    status.value = Page.State.QUEUE
 }

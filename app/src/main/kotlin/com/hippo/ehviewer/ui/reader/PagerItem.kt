@@ -37,6 +37,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
+import kotlinx.coroutines.flow.drop
 import moe.tarsin.kt.unreachable
 
 @Composable
@@ -49,6 +50,11 @@ fun PagerItem(
 ) {
     LaunchedEffect(Unit) {
         pageLoader.request(page.index)
+        page.status.drop(1).collect {
+            if (page.status.value == Page.State.QUEUE) {
+                pageLoader.request(page.index)
+            }
+        }
     }
     val defaultError = stringResource(id = R.string.decode_image_error)
     val state by page.status.collectAsState()
