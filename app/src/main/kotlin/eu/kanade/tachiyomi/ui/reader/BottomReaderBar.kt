@@ -14,11 +14,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -108,7 +108,7 @@ private fun DropdownIconButton(
     ) {
         IconButton(
             onClick = {},
-            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
         ) {
             Icon(
                 imageVector = selectedItem.icon,
@@ -119,7 +119,7 @@ private fun DropdownIconButton(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier.widthIn(min = minMenuWidth),
-            matchAnchorWidth = false,
+            matchTextFieldWidth = false,
         ) {
             menuItems.forEach {
                 DropdownMenuItem(
