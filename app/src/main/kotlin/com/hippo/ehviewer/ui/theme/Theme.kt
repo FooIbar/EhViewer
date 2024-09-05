@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.scrollbar.LocalScrollbarStyle
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -19,8 +18,7 @@ import com.hippo.ehviewer.ui.tools.scrollbarStyle
 import com.hippo.ehviewer.util.isAtLeastS
 
 @Composable
-fun EhTheme(content: @Composable () -> Unit) {
-    val useDarkTheme = isSystemInDarkTheme()
+fun EhTheme(useDarkTheme: Boolean, content: @Composable () -> Unit) {
     val amoled by Settings.blackDarkTheme.collectAsState()
     val context = LocalContext.current
     val colors = if (useDarkTheme) {

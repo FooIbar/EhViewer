@@ -10,10 +10,8 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -49,7 +47,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowInsetsControllerCompat
 import arrow.core.Either
 import arrow.core.raise.ensure
@@ -64,8 +61,10 @@ import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.ui.composing
+import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
+import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.util.displayString
 import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
@@ -75,6 +74,7 @@ import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
 import eu.kanade.tachiyomi.ui.reader.ReaderContentOverlay
 import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
+import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -91,6 +91,14 @@ sealed interface ReaderScreenArgs : Parcelable {
 
     @Parcelize
     data class Archive(val uri: Uri) : ReaderScreenArgs
+}
+
+@Composable
+private fun Background(
+    color: Color,
+    content: @Composable () -> Unit,
+) = Box(Modifier.fillMaxSize().background(color), contentAlignment = Alignment.Center) {
+    EhTheme(useDarkTheme = color != Color.White, content = content)
 }
 
 @Destination<RootGraph>
@@ -124,7 +132,7 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
                 }.fold({ it.displayString() }, { it })
             },
             placeholder = {
-                Box(Modifier.fillMaxSize().background(bgColor), contentAlignment = Alignment.Center) {
+                Background(bgColor) {
                     CircularProgressIndicator()
                 }
             },
@@ -135,7 +143,7 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
                     ReaderScreen(pageLoader, info, navigator)
                 }
             } else {
-                Box(Modifier.fillMaxSize().background(bgColor), contentAlignment = Alignment.Center) {
+                Background(bgColor) {
                     Text(
                         text = error,
                         color = MaterialTheme.colorScheme.error,
@@ -203,57 +211,60 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
             Settings.showNavigationOverlayNewUser.value = false
             mutableStateOf(showOnStart)
         }
-        GalleryPager(
-            type = readingMode,
-            pagerState = pagerState,
-            lazyListState = lazyListState,
-            pageLoader = pageLoader,
-            showNavigationOverlay = showNavigationOverlay,
-            onNavigationModeChange = { showNavigationOverlay = true },
-            onSelectPage = { page ->
-                if (Settings.readerLongTapAction.value) {
-                    launch {
-                        dialog { cont ->
-                            fun dispose() = cont.resume(Unit)
-                            val state = rememberModalBottomSheetState()
-                            ModalBottomSheet(
-                                onDismissRequest = { dispose() },
-                                modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
-                                sheetState = state,
-                                contentWindowInsets = { WindowInsets(0) },
-                            ) {
-                                ReaderPageSheetMeta(
-                                    retry = { pageLoader.retryPage(page.index) },
-                                    retryOrigin = { pageLoader.retryPage(page.index, true) },
-                                    share = { launchIO { with(pageLoader) { shareImage(page, info) } } },
-                                    copy = { launchIO { with(pageLoader) { copy(page) } } },
-                                    save = { launchIO { with(pageLoader) { save(page) } } },
-                                    saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
-                                    dismiss = { launch { state.hide().also { dispose() } } },
-                                )
-                            }
+        val onSelectPage = { page: ReaderPage ->
+            if (Settings.readerLongTapAction.value) {
+                launch {
+                    dialog { cont ->
+                        fun dispose() = cont.resume(Unit)
+                        val state = rememberModalBottomSheetState()
+                        ModalBottomSheet(
+                            onDismissRequest = { dispose() },
+                            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
+                            sheetState = state,
+                            contentWindowInsets = { WindowInsets(0) },
+                        ) {
+                            ReaderPageSheetMeta(
+                                retry = { pageLoader.retryPage(page.index) },
+                                retryOrigin = { pageLoader.retryPage(page.index, true) },
+                                share = { launchIO { with(pageLoader) { shareImage(page, info) } } },
+                                copy = { launchIO { with(pageLoader) { copy(page) } } },
+                                save = { launchIO { with(pageLoader) { save(page) } } },
+                                saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
+                                dismiss = { launch { state.hide().also { dispose() } } },
+                            )
                         }
                     }
                 }
-            },
-            onMenuRegionClick = { appbarVisible = !appbarVisible },
-            modifier = Modifier.background(bgColor).pointerInput(syncState) {
-                awaitEachGesture {
-                    waitForUpOrCancellation()
-                    syncState.reset()
-                    showNavigationOverlay = false
-                }
-            },
-            contentPadding = if (fullscreen) {
+            }
+        }
+        EhTheme(useDarkTheme = bgColor != Color.White) {
+            val insets = if (fullscreen) {
                 if (cutoutShort) {
-                    PaddingValues(0.dp)
+                    EmptyWindowInsets
                 } else {
-                    WindowInsets.displayCutout.asPaddingValues()
+                    WindowInsets.displayCutout
                 }
             } else {
-                WindowInsets.systemBars.asPaddingValues()
-            },
-        )
+                WindowInsets.systemBars
+            }
+            GalleryPager(
+                type = readingMode,
+                pagerState = pagerState,
+                lazyListState = lazyListState,
+                pageLoader = pageLoader,
+                showNavigationOverlay = showNavigationOverlay,
+                onNavigationModeChange = { showNavigationOverlay = true },
+                onSelectPage = onSelectPage,
+                onMenuRegionClick = { appbarVisible = !appbarVisible },
+                modifier = Modifier.background(bgColor).pointerInput(syncState) {
+                    awaitEachGesture {
+                        waitForUpOrCancellation()
+                        syncState.reset()
+                        showNavigationOverlay = false
+                    }
+                }.fillMaxSize().windowInsetsPadding(insets),
+            )
+        }
         val brightness by Settings.customBrightness.collectAsState()
         val brightnessValue by Settings.customBrightnessValue.collectAsState()
         val colorOverlayEnabled by Settings.colorFilter.collectAsState()
