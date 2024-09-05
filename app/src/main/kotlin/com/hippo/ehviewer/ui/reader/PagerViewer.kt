@@ -2,7 +2,6 @@ package com.hippo.ehviewer.ui.reader
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -58,7 +57,6 @@ fun PagerViewer(
     navigator: () -> NavigationRegions,
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
-    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -76,7 +74,6 @@ fun PagerViewer(
         VerticalPager(
             state = pagerState,
             modifier = modifier,
-            contentPadding = contentPadding,
             key = { it },
         ) { index ->
             val page = items[index]
@@ -100,7 +97,6 @@ fun PagerViewer(
         HorizontalPager(
             state = pagerState,
             modifier = modifier,
-            contentPadding = contentPadding,
             reverseLayout = isRtl xor isRtlLayout,
             key = { it },
         ) { index ->

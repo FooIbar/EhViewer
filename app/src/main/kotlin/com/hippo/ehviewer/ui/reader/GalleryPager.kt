@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.reader
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.PagerState
@@ -44,7 +43,6 @@ fun GalleryPager(
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val isPagerType = !ReadingModeType.isWebtoon(type)
     val pagerNavigation by Settings.readerPagerNav.collectAsState()
@@ -84,7 +82,6 @@ fun GalleryPager(
             navigator = { navigator },
             onSelectPage = onSelectPage,
             onMenuRegionClick = onMenuRegionClick,
-            contentPadding = contentPadding,
             modifier = modifier.pointerInput(channel) {
                 awaitPointerEventScope {
                     while (true) {
@@ -103,7 +100,6 @@ fun GalleryPager(
             navigator = { navigator },
             onSelectPage = onSelectPage,
             onMenuRegionClick = onMenuRegionClick,
-            contentPadding = contentPadding,
             modifier = modifier,
         )
     }

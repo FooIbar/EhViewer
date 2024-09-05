@@ -36,7 +36,6 @@ fun WebtoonViewer(
     navigator: () -> NavigationRegions,
     onSelectPage: (ReaderPage) -> Unit,
     onMenuRegionClick: () -> Unit,
-    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -72,17 +71,14 @@ fun WebtoonViewer(
                 val info = lazyListState.layoutInfo.visibleItemsInfo.find { info ->
                     info.offset <= ofs.y && info.offset + info.size > ofs.y
                 }
-                if (info == null && withGaps) {
-                    // Maybe user long-click on gaps? ¯\_(ツ)_/¯
-                    return@zoomable
+                if (info != null) {
+                    onSelectPage(items[info.index])
                 }
-                info ?: error("Internal error finding long click item!!! offset:$ofs")
-                onSelectPage(items[info.index])
             },
             onDoubleClick = DoubleTapZoom,
         ),
         state = lazyListState,
-        contentPadding = contentPadding + PaddingValues(horizontal = sidePadding),
+        contentPadding = PaddingValues(horizontal = sidePadding),
         verticalArrangement = Arrangement.spacedBy(if (withGaps) 15.dp else 0.dp),
     ) {
         items(items, key = { it.index }) { page ->

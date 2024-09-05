@@ -5,6 +5,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -19,7 +20,7 @@ import soup.compose.material.motion.animation.materialSharedAxisXOut
 import soup.compose.material.motion.animation.rememberSlideDistance
 
 inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -> Unit) = setContent {
-    EhTheme {
+    EhTheme(useDarkTheme = isSystemInDarkTheme()) {
         ProvideVectorPainterCache {
             val dialogState = remember { DialogState() }
             dialogState.Intercept()
