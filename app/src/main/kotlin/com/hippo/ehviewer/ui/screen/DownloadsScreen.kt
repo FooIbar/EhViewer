@@ -648,7 +648,9 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     ) {
         if (!selectMode) {
             onClick(Icons.Default.Shuffle) {
-                withUIContext { navToReader(list.random().galleryInfo) }
+                if (list.isNotEmpty()) {
+                    withUIContext { navToReader(list.random().galleryInfo) }
+                }
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
                 val oldMode = SortMode.from(sortMode)

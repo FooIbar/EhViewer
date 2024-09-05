@@ -356,8 +356,9 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         if (!selectMode) {
             if (isLocalFav) {
                 onClick(Icons.Default.Shuffle) {
-                    val random = EhDB.randomLocalFav()
-                    withUIContext { navigate(random.asDst()) }
+                    EhDB.randomLocalFav()?.let { info ->
+                        withUIContext { navigate(info.asDst()) }
+                    }
                 }
             }
             onClick(EhIcons.Default.GoTo) {
