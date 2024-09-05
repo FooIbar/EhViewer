@@ -17,7 +17,7 @@ androidx-room = "2.7.0-alpha07"
 androidx-work = "2.10.0-alpha02"
 arrow = "1.2.4"
 coil = "3.0.0-alpha10"
-compose-bom = "2024.08.00-alpha02"
+compose-bom = "2024.09.00-alpha"
 compose-destinations = "2.1.0-beta11"
 kotlin = "2.0.20"
 kotlinx-coroutines = "1.8.1"
@@ -67,10 +67,10 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-ktor2" }
 
-compose-bom = { module = "dev.chrisbanes.compose:compose-bom", version.ref = "compose-bom" }
-compose-foundation = { module = "androidx.compose.foundation:foundation", version = "1.8.0-SNAPSHOT" }
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
-compose-material3 = { module = "androidx.compose.material3:material3", version = "1.4.0-SNAPSHOT" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
 compose-material3-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
