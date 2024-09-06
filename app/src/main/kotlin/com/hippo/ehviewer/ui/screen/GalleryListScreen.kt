@@ -126,6 +126,7 @@ import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.tools.Await
+import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
@@ -283,7 +284,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         ProvideSideSheetContent { sheetState ->
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.toplist)) },
-                windowInsets = WindowInsets(0),
+                windowInsets = EmptyWindowInsets,
             )
             toplists.forEach { (name, keyword) ->
                 ListItem(
@@ -364,7 +365,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                         )
                     }
                 },
-                windowInsets = WindowInsets(0),
+                windowInsets = EmptyWindowInsets,
             )
             Box(modifier = Modifier.fillMaxSize()) {
                 val quickSearchListState = rememberLazyListState()
