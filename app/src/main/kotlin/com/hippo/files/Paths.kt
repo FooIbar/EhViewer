@@ -23,6 +23,8 @@ fun Path.delete() = SystemFileSystem.deleteRecursively(this)
 
 fun Path.list() = SystemFileSystem.listOrNull(this).orEmpty()
 
+fun Path.moveTo(target: Path) = SystemFileSystem.atomicMove(this, target)
+
 fun Path.openFileDescriptor(mode: String) = SystemFileSystem.openFileDescriptor(this, mode)
 
 fun Path.openInputStream(): FileInputStream =
