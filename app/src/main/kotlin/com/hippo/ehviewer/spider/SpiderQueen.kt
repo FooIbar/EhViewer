@@ -694,7 +694,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                             updatePageState(index, STATE_FINISHED)
                             return
                         }.onFailure {
-                            mSpiderDen.remove(index)
+                            mSpiderDen.removeIntermediateFiles(index)
                             logcat(WORKER_DEBUG_TAG) { "Download image $index attempt #$times failed" }
                             error = when (it) {
                                 is TimeoutCancellationException -> ERROR_TIMEOUT
