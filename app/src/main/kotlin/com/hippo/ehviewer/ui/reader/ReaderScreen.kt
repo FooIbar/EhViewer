@@ -221,7 +221,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                             onDismissRequest = { dispose() },
                             modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
                             sheetState = state,
-                            contentWindowInsets = { WindowInsets(0) },
+                            contentWindowInsets = { EmptyWindowInsets },
                         ) {
                             ReaderPageSheetMeta(
                                 retry = { pageLoader.retryPage(page.index) },
@@ -324,7 +324,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                             // Yeah, I know color state should not be read here, but we have to do it...
                             scrimColor = scrim,
                             dragHandle = null,
-                            contentWindowInsets = { WindowInsets(0) },
+                            contentWindowInsets = { EmptyWindowInsets },
                         ) {
                             SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
                                 isColorFilter = page == 2

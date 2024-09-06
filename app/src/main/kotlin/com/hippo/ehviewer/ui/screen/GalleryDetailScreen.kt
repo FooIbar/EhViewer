@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -133,6 +132,7 @@ import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.CrystalCard
+import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
@@ -800,7 +800,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
         if (showBottomSheet && galleryDetail != null) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
-                contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
+                contentWindowInsets = { EmptyWindowInsets },
             ) {
                 GalleryInfoBottomSheet(galleryDetail, navigator)
             }
