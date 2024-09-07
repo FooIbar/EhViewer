@@ -15,15 +15,24 @@
       "allowedVersions": "!/SNAPSHOT$/"
     },
     {
+      "groupName": "AGP",
+      "matchDepNames": [
+        "com.android.application",
+        "com.android.test"
+      ],
+      "allowedVersions": "/^.*-alpha\\d*$/",
+      "ignoreUnstable": false
+    },
+    {
       "matchDepPrefixes": [
         "androidx."
       ],
       "ignoreUnstable": false
     },
     {
+      "groupName": "Compose BOM",
       "matchDepNames": [
-        "androidx.compose:compose-bom",
-        "com.android.application"
+        "androidx.compose:compose-bom"
       ],
       "allowedVersions": "/^.*-alpha\\d*$/",
       "ignoreUnstable": false
