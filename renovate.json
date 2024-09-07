@@ -12,6 +12,7 @@
       "matchDepNames": [
         "com.android.application"
       ],
+      "allowedVersions": "/^.*-alpha\\d*$/",
       "ignoreUnstable": false
     },
     {
@@ -23,8 +24,9 @@
     {
       "groupName": "Compose BOM",
       "matchDepNames": [
-        "dev.chrisbanes.compose:compose-bom"
+        "androidx.compose:compose-bom"
       ],
+      "allowedVersions": "/^.*-alpha\\d*$/",
       "ignoreUnstable": false
     },
     {
