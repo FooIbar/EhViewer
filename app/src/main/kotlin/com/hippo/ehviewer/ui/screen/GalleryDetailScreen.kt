@@ -374,14 +374,18 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
 
     fun LazyGridScope.galleryDetailPreview(gd: GalleryDetail) {
         val previewList = gd.previewList
-        items(previewList) {
+        items(previewList, key = { it.position }, contentType = { "preview" }) {
             EhPreviewItem(
                 galleryPreview = it,
                 position = it.position,
                 onClick = { navToReader(gd.galleryInfo, it.position) },
             )
         }
-        item(span = { GridItemSpan(maxLineSpan) }) {
+        item(
+            key = "footer",
+            span = { GridItemSpan(maxLineSpan) },
+            contentType = "footer",
+        ) {
             val footerText = if (gd.previewPages <= 0 || previewList.isEmpty()) {
                 stringResource(R.string.no_previews)
             } else if (gd.previewPages == 1) {
@@ -842,7 +846,11 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
             ) {
-                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                item(
+                    key = "header",
+                    span = { GridItemSpan(maxCurrentLineSpan) },
+                    contentType = "header",
+                ) {
                     GalleryDetailHeaderCard(
                         info = galleryInfo,
                         onInfoCardClick = ::onGalleryInfoCardClick,
@@ -852,7 +860,11 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                         modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
                     )
                 }
-                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                item(
+                    key = "body",
+                    span = { GridItemSpan(maxCurrentLineSpan) },
+                    contentType = "body",
+                ) {
                     LocalPinnableContainer.current!!.run { remember { pin() } }
                     Column {
                         Row {
@@ -895,7 +907,11 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
             ) {
-                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                item(
+                    key = "header",
+                    span = { GridItemSpan(maxCurrentLineSpan) },
+                    contentType = "header",
+                ) {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         GalleryDetailHeaderCard(
                             info = galleryInfo,
@@ -926,7 +942,11 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                         }
                     }
                 }
-                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                item(
+                    key = "body",
+                    span = { GridItemSpan(maxCurrentLineSpan) },
+                    contentType = "body",
+                ) {
                     LocalPinnableContainer.current!!.run { remember { pin() } }
                     Column {
                         if (getDetailError.isNotBlank()) {
