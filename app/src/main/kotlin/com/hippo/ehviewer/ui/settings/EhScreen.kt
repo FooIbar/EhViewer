@@ -160,7 +160,11 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 var error by rememberSaveable { mutableStateOf<String?>(null) }
                 val summary by rememberUpdatedState(
                     result?.run {
-                        stringResource(id = R.string.image_limits_summary, limits.current, limits.maximum)
+                        when (limits.maximum) {
+                            -1 -> stringResource(id = R.string.image_limits_restricted)
+                            0 -> stringResource(id = R.string.image_limits_normal)
+                            else -> stringResource(id = R.string.image_limits_summary, limits.current, limits.maximum)
+                        }
                     } ?: placeholder,
                 )
                 suspend fun getImageLimits() {
@@ -190,12 +194,16 @@ fun EhScreen(navigator: DestinationsNavigator) {
                                 Text(text = it)
                             } ?: result?.let { (limits, funds) ->
                                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    LinearProgressIndicator(
-                                        progress = { limits.current.toFloat() / limits.maximum },
-                                        modifier = Modifier.height(12.dp).fillMaxWidth(),
-                                    )
+                                    if (limits.maximum > 0) {
+                                        LinearProgressIndicator(
+                                            progress = { limits.current.toFloat() / limits.maximum },
+                                            modifier = Modifier.height(12.dp).fillMaxWidth(),
+                                        )
+                                    }
                                     Text(text = summary)
-                                    Text(text = stringResource(id = R.string.reset_cost, limits.resetCost))
+                                    if (limits.resetCost > 0) {
+                                        Text(text = stringResource(id = R.string.reset_cost, limits.resetCost))
+                                    }
                                     Text(text = stringResource(id = R.string.current_funds))
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
