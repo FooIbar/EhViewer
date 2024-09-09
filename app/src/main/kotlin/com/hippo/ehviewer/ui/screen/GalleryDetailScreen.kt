@@ -214,7 +214,7 @@ private fun List<GalleryTagGroup>.getArtistTag(): String? {
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
-    var galleryInfo by remember {
+    var galleryInfo by rememberInVM {
         val casted = args as? GalleryInfoArgs
         mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
     }
