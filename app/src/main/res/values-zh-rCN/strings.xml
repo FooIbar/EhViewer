@@ -423,6 +423,8 @@
     <string name="insufficient_funds">余额不足</string>
     <string name="image_limits">图片配额</string>
     <string name="image_limits_summary">已用：%1$d / %2$d</string>
+    <string name="image_limits_normal">无限制</string>
+    <string name="image_limits_restricted">图片分辨率限制为 1280x</string>
     <string name="reset_cost">重置花费：%d GP</string>
     <string name="reset_limits_succeed">成功重置图片配额</string>
     <string name="reset">重置</string>

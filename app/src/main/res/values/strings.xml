@@ -444,6 +444,8 @@
     <string name="insufficient_funds">Insufficient Funds</string>
     <string name="image_limits">Image Limits</string>
     <string name="image_limits_summary">Used: %1$d / %2$d</string>
+    <string name="image_limits_normal">No restrictions</string>
+    <string name="image_limits_restricted">Image resolution restricted to 1280x</string>
     <string name="reset_cost">Reset Cost: %d GP</string>
     <string name="reset_limits_succeed">Image limit was successfully reset</string>
     <string name="reset">Reset</string>
