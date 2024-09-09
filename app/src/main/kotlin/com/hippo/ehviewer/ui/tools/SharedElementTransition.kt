@@ -30,7 +30,7 @@ fun Modifier.sharedBounds(
     key: String,
     enter: EnterTransition = fadeIn(),
     exit: ExitTransition = fadeOut(),
-) = remember(key) { generate(key) }.let { node ->
+) = remember(key) { summon(key) }.let { node ->
     DisposableEffect(key) {
         onDispose {
             dispose(node)
@@ -57,14 +57,29 @@ val SETNode.syntheticKey: String
 val listThumbGenerator = SETNodeGenerator()
 val detailThumbGenerator = SETNodeGenerator()
 
+fun initSETConnection() {
+    listThumbGenerator connectTo detailThumbGenerator
+}
+
 private val atomicIncId = AtomicInt()
 
 class SETNodeGenerator {
     private val tracker = hashMapOf<String, SETNode>()
-    fun generate(contentKey: String) = SETNode(
+    private val opposites = mutableListOf<SETNodeGenerator>()
+
+    fun summon(contentKey: String) = opposites.firstNotNullOfOrNull {
+        it.tracker[contentKey]
+    } ?: SETNode(
         contentKey = contentKey,
         uniqueID = "${atomicIncId.getAndIncrement()}",
-    ).also { tracker[contentKey] = it }
+    ).also {
+        tracker[contentKey] = it
+    }
 
     fun dispose(node: SETNode) = tracker.remove(node.contentKey, node)
+
+    infix fun connectTo(other: SETNodeGenerator) {
+        opposites.add(other)
+        other.opposites.add(this)
+    }
 }
