@@ -112,7 +112,6 @@ import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
-import com.hippo.ehviewer.ui.tools.listThumbGenerator
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
@@ -571,38 +570,36 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                             checked = checked,
                             modifier = Modifier.thenIf(animateItems) { animateItem() },
                         ) { interactionSource ->
-                            with(listThumbGenerator) {
-                                DownloadCard(
-                                    onClick = {
-                                        if (selectMode) {
-                                            if (checked) {
-                                                checkedInfoMap.remove(info.gid)
-                                            } else {
-                                                checkedInfoMap[info.gid] = info
-                                            }
+                            DownloadCard(
+                                onClick = {
+                                    if (selectMode) {
+                                        if (checked) {
+                                            checkedInfoMap.remove(info.gid)
                                         } else {
-                                            onItemClick(info)
+                                            checkedInfoMap[info.gid] = info
                                         }
-                                    },
-                                    onThumbClick = {
-                                        navigate(info.galleryInfo.asDst())
-                                    },
-                                    onLongClick = {
-                                        checkedInfoMap[info.gid] = info
-                                    },
-                                    onStart = {
-                                        val intent = Intent(implicit<Activity>(), DownloadService::class.java)
-                                        intent.action = DownloadService.ACTION_START
-                                        intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                                        ContextCompat.startForegroundService(implicit<Activity>(), intent)
-                                    },
-                                    onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
-                                    info = info,
-                                    selectMode = selectMode,
-                                    modifier = Modifier.height(height),
-                                    interactionSource = interactionSource,
-                                )
-                            }
+                                    } else {
+                                        onItemClick(info)
+                                    }
+                                },
+                                onThumbClick = {
+                                    navigate(info.galleryInfo.asDst())
+                                },
+                                onLongClick = {
+                                    checkedInfoMap[info.gid] = info
+                                },
+                                onStart = {
+                                    val intent = Intent(implicit<Activity>(), DownloadService::class.java)
+                                    intent.action = DownloadService.ACTION_START
+                                    intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
+                                    ContextCompat.startForegroundService(implicit<Activity>(), intent)
+                                },
+                                onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
+                                info = info,
+                                selectMode = selectMode,
+                                modifier = Modifier.height(height),
+                                interactionSource = interactionSource,
+                            )
                         }
                     }
                 }
