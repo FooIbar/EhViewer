@@ -44,6 +44,7 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
+import com.hippo.ehviewer.ui.tools.SETNodeGenerator
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.util.FileUtils
 
@@ -92,7 +93,7 @@ private val constraintSet = ConstraintSet {
     }
 }
 
-context(SharedTransitionScope, TransitionsVisibilityScope)
+context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
 @Composable
 fun DownloadCard(
     onClick: () -> Unit,

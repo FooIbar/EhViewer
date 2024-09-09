@@ -7,9 +7,11 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import arrow.atomic.AtomicInt
 
 val NoopTransitionsVisibilityScope = TransitionsVisibilityScope(emptySet())
 
@@ -22,17 +24,47 @@ context(TransitionsVisibilityScope)
 inline fun <T> togetherWith(scope: AnimatedVisibilityScope, block: @Composable TransitionsVisibilityScope.() -> T) =
     block(remember(scopes, scope) { TransitionsVisibilityScope(scopes + scope) })
 
-context(SharedTransitionScope, TransitionsVisibilityScope)
+context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
 @Composable
 fun Modifier.sharedBounds(
     key: String,
     enter: EnterTransition = fadeIn(),
     exit: ExitTransition = fadeOut(),
-) = scopes.fold(this) { modifier, scope ->
-    modifier.sharedBounds(
-        rememberSharedContentState("$key + ${scope.transition.label}"),
-        scope,
-        enter,
-        exit,
-    )
+) = remember(key) { generate(key) }.let { node ->
+    DisposableEffect(key) {
+        onDispose {
+            dispose(node)
+        }
+    }
+    scopes.fold(this) { modifier, scope ->
+        modifier.sharedBounds(
+            rememberSharedContentState("${node.syntheticKey} + ${scope.transition.label}"),
+            scope,
+            enter,
+            exit,
+        )
+    }
+}
+
+data class SETNode(
+    val contentKey: String,
+    val uniqueID: String,
+)
+
+val SETNode.syntheticKey: String
+    get() = contentKey + uniqueID
+
+val listThumbGenerator = SETNodeGenerator()
+val detailThumbGenerator = SETNodeGenerator()
+
+private val atomicIncId = AtomicInt()
+
+class SETNodeGenerator {
+    private val tracker = hashMapOf<String, SETNode>()
+    fun generate(contentKey: String) = SETNode(
+        contentKey = contentKey,
+        uniqueID = "${atomicIncId.getAndIncrement()}",
+    ).also { tracker[contentKey] = it }
+
+    fun dispose(node: SETNode) = tracker.remove(node.contentKey, node)
 }
