@@ -152,7 +152,10 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     val density = LocalDensity.current
     val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
-    fun String.translateArtist() = ehTags?.getTranslation(TagNamespace.Artist.toPrefix(), this) ?: this
+    fun getTranslation(tag: String) = ehTags?.run {
+        getTranslation(TagNamespace.Artist.toPrefix(), tag)
+            ?: getTranslation(TagNamespace.Cosplayer.toPrefix(), tag)
+    } ?: tag
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
     val unknownName = stringResource(R.string.unknown_artists)
@@ -166,7 +169,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             when (label) {
                 "" -> allName
                 null -> emptyLabelName
-                else -> if (mode == DownloadsFilterMode.ARTIST) label.translateArtist() else label
+                else -> if (mode == DownloadsFilterMode.ARTIST) getTranslation(label) else label
             }
         },
     )
@@ -381,7 +384,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                             tonalElevation = 1.dp,
                             shadowElevation = elevation,
                             headlineContent = {
-                                val name = if (filterMode == DownloadsFilterMode.ARTIST) label.translateArtist() else label
+                                val name = if (filterMode == DownloadsFilterMode.ARTIST) getTranslation(label) else label
                                 Text("$name [${downloadsCount.getOrDefault(item, 0)}]")
                             },
                             trailingContent = editEnable.ifTrueThen {

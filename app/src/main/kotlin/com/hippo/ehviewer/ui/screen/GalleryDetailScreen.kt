@@ -201,10 +201,12 @@ private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt())
 }
 
 private fun List<GalleryTagGroup>.getArtistTag(): String? {
-    val namespace = TagNamespace.Artist.value
     for (tagGroup in this) {
-        if (tagGroup.groupName == namespace && tagGroup.size > 0) {
-            return "$namespace:${tagGroup[0].removePrefix("_")}"
+        if (tagGroup.isNotEmpty()) {
+            val namespace = tagGroup.groupName
+            if (namespace == TagNamespace.Artist.value || namespace == TagNamespace.Cosplayer.value) {
+                return "$namespace:${tagGroup[0].removePrefix("_")}"
+            }
         }
     }
     return null
