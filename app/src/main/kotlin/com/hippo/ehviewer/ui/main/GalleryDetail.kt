@@ -37,6 +37,7 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
+import com.hippo.ehviewer.ui.tools.detailThumbGenerator
 
 @Composable
 fun GalleryDetailHeaderInfoCard(
@@ -109,13 +110,15 @@ fun GalleryDetailHeaderCard(
 ) = ElevatedCard(modifier = modifier) {
     Row {
         Card {
-            EhAsyncCropThumb(
-                key = remember(info.gid) { info },
-                modifier = Modifier.size(
-                    dimensionResource(id = R.dimen.gallery_detail_thumb_width),
-                    dimensionResource(id = R.dimen.gallery_detail_thumb_height),
-                ),
-            )
+            with(detailThumbGenerator) {
+                EhAsyncCropThumb(
+                    key = remember(info.gid) { info },
+                    modifier = Modifier.size(
+                        dimensionResource(id = R.dimen.gallery_detail_thumb_width),
+                        dimensionResource(id = R.dimen.gallery_detail_thumb_height),
+                    ),
+                )
+            }
         }
         Spacer(modifier = Modifier.weight(0.5F))
         Column(
