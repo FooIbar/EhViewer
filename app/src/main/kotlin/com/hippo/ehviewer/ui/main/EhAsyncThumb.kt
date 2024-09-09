@@ -18,6 +18,7 @@ import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
+import com.hippo.ehviewer.ui.tools.sharedBounds
 import com.hippo.ehviewer.ui.tools.shouldCrop
 
 @Composable
@@ -38,10 +39,7 @@ fun EhAsyncThumb(
 ) = AsyncImage(
     model = requestOf(model),
     contentDescription = null,
-    modifier = modifier
-        // https://github.com/FooIbar/EhViewer/issues/1527
-        // .sharedBounds(key = "${model.gid}")
-        .clip(ShapeDefaults.Medium),
+    modifier = modifier.sharedBounds(key = "${model.gid}").clip(ShapeDefaults.Medium),
     onSuccess = onSuccess?.let { callback ->
         { callback(it.result.image) }
     },
@@ -58,10 +56,7 @@ fun EhAsyncCropThumb(
     AsyncImage(
         model = requestOf(key),
         contentDescription = null,
-        modifier = modifier
-            // https://github.com/FooIbar/EhViewer/issues/1527
-            // .sharedBounds(key = "${key.gid}")
-            .clip(ShapeDefaults.Medium),
+        modifier = modifier.sharedBounds(key = "${key.gid}").clip(ShapeDefaults.Medium),
         onSuccess = {
             if (it.result.image.shouldCrop) {
                 contentScale = ContentScale.Crop
