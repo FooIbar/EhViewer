@@ -67,13 +67,10 @@ class SETNodeGenerator {
     private val tracker = hashMapOf<String, SETNode>()
     private val opposites = mutableListOf<SETNodeGenerator>()
 
-    fun summon(contentKey: String) = opposites.firstNotNullOfOrNull {
-        it.tracker[contentKey]
-    } ?: SETNode(
-        contentKey = contentKey,
-        uniqueID = "${atomicIncId.getAndIncrement()}",
-    ).also {
-        tracker[contentKey] = it
+    fun summon(contentKey: String): SETNode {
+        val node = opposites.firstNotNullOfOrNull { it.tracker[contentKey] } ?: SETNode(contentKey = contentKey, uniqueID = "${atomicIncId.getAndIncrement()}")
+        tracker[contentKey] = node
+        return node
     }
 
     fun dispose(node: SETNode) = tracker.remove(node.contentKey, node)
