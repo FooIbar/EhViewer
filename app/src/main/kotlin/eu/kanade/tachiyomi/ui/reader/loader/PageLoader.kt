@@ -103,9 +103,11 @@ abstract class PageLoader {
             visualIndex - 1 downTo (visualIndex - prefetchPageCount).coerceAtLeast(0)
         }
         val pagesAbsent = prefetchRange.map { stateList[it] }.filter { it.status.value == Page.State.QUEUE }
-        val start = if (prefetchRange.step > 0) stateList[prefetchRange.first] else stateList[prefetchRange.last]
-        val end = if (prefetchRange.step > 0) stateList[prefetchRange.last] else stateList[prefetchRange.first]
-        prefetchPages(pagesAbsent.map { it.index }, start.index - 5 to end.index + 5)
+
+        // TODO: Cancel bounds according to visual index
+        val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
+        val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
+        prefetchPages(pagesAbsent.map { it.index }, start - 5 to end + 5)
 
         // Prefetch to memory
         val range = visualIndex - 3..visualIndex + 3
@@ -146,6 +148,7 @@ abstract class PageLoader {
     fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
         val page = index.page
         if (image.hasQRCode) {
+            println("$index has QRCode")
             stateList.remove(page)
         } else {
             if (replaceCache) {
