@@ -108,7 +108,6 @@ abstract class PageLoader {
         }
         val pagesAbsent = prefetchRange.map { stateList[it] }.filter { it.status.value == Page.State.QUEUE }
 
-        // TODO: Cancel bounds according to visual index
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
         val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
         prefetchPages(pagesAbsent.map { it.index }, start - 5 to end + 5)
