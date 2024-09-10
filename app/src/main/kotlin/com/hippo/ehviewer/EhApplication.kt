@@ -176,10 +176,10 @@ class EhApplication :
             add(KtorNetworkFetcherFactory { ktorClient })
             add(MergeInterceptor)
             add(DownloadThumbInterceptor)
+            add(MapExtraInfoInterceptor)
             if (isAtLeastO) {
                 add(HardwareBitmapInterceptor)
             }
-            add(MapExtraInfoInterceptor)
             add(QRCodeInterceptor)
             add(CropBorderInterceptor)
             if (isAtLeastP) {
