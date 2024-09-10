@@ -69,7 +69,11 @@ abstract class PageLoader {
 
     fun restart() {
         cache.evictAll()
-        stateList.forEach(ReaderPage::reset)
+        trackMap.values.apply {
+            onEach(ReaderPage::reset)
+            stateList.clear()
+            stateList += this
+        }
     }
 
     protected abstract val internalSize: Int
