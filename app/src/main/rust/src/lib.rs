@@ -14,7 +14,6 @@ use ndk::bitmap::Bitmap;
 use serde::Serialize;
 use std::ffi::c_void;
 use std::io::Cursor;
-use std::ops::Deref;
 use std::ptr::slice_from_raw_parts;
 use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
@@ -146,19 +145,6 @@ fn query_childs_first_match_attr<'a>(
     get_node_handle_attr(&iter.next()?, parser, attr)
 }
 
-struct BorrowedPixelContainer {
-    ptr: *const u8,
-    len: usize,
-}
-
-impl Deref for BorrowedPixelContainer {
-    type Target = [u8];
-
-    fn deref(&self) -> &Self::Target {
-        unsafe { &*slice_from_raw_parts(self.ptr, self.len) }
-    }
-}
-
 fn get_bitmap_handle(env: &mut JNIEnv, bitmap: jobject) -> Bitmap {
     unsafe { Bitmap::from_jni(env.get_raw(), bitmap) }
 }
@@ -172,11 +158,8 @@ pub fn hasQRCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
         let bitmap_info = handle.info()?;
         let (width, height) = (bitmap_info.width(), bitmap_info.height());
         let ptr = handle.lock_pixels()? as *const u8;
-        let buffer = BorrowedPixelContainer {
-            ptr,
-            len: (width * height * 4) as usize,
-        };
-        let decoder = default_decoder::<ImageBuffer<Rgba<u8>, BorrowedPixelContainer>>();
+        let buffer = unsafe { &*slice_from_raw_parts(ptr, (width * height * 4) as usize) };
+        let decoder = default_decoder::<ImageBuffer<Rgba<u8>, &[u8]>>();
         let image = ImageBuffer::from_raw(bitmap_info.width(), bitmap_info.height(), buffer);
         let result = image.map(|img| decoder.decode(&img));
         handle.unlock_pixels()?;
