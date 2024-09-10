@@ -4,7 +4,6 @@ use android_logger::Config;
 use anyhow::{anyhow, ensure, Result};
 use bardecoder::default_decoder;
 use image::ImageBuffer;
-use image::Rgba;
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::{jboolean, jint, jobject, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
@@ -159,7 +158,7 @@ pub fn hasQRCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
         let (width, height) = (bitmap_info.width(), bitmap_info.height());
         let ptr = handle.lock_pixels()? as *const u8;
         let buffer = unsafe { &*slice_from_raw_parts(ptr, (width * height * 4) as usize) };
-        let decoder = default_decoder::<ImageBuffer<Rgba<u8>, &[u8]>>();
+        let decoder = default_decoder();
         let image = ImageBuffer::from_raw(bitmap_info.width(), bitmap_info.height(), buffer);
         let result = image.map(|img| decoder.decode(&img));
         handle.unlock_pixels()?;
