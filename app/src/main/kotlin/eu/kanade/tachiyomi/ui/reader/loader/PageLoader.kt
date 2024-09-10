@@ -34,10 +34,20 @@ abstract class PageLoader {
         )
     }
 
-    private val pages by lazy {
+    private val storage by lazy {
         check(internalSize > 0)
-        (0 until internalSize).map { index -> ReaderPage(index) }.toMutableStateList()
+        (0 until internalSize).map { ReaderPage(it) }.let { pages ->
+            val tracker = pages.associateBy { it.index }
+            val stateList = pages.toMutableStateList()
+            tracker to stateList
+        }
     }
+
+    private val trackMap
+        get() = storage.first
+
+    private val stateList
+        get() = storage.second
 
     private val prefetchPageCount = Settings.preloadImage
 
@@ -59,15 +69,15 @@ abstract class PageLoader {
 
     fun restart() {
         cache.evictAll()
-        pages.forEach(ReaderPage::reset)
+        stateList.forEach(ReaderPage::reset)
     }
 
     protected abstract val internalSize: Int
 
-    operator fun get(index: Int): ReaderPage = pages[index]!!
+    operator fun get(index: Int): ReaderPage = stateList[index]
 
     val size: Int
-        get() = pages.size
+        get() = stateList.size
 
     private var lastRequestIndex = -1
 
@@ -83,11 +93,11 @@ abstract class PageLoader {
 
         // Prefetch to disk
         val prefetchRange = if (index >= lastRequestIndex) {
-            index + 1..(index + prefetchPageCount).coerceAtMost(internalSize - 1)
+            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
         } else {
             index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
         }
-        val pagesAbsent = prefetchRange.filter { pages[it].status.value == Page.State.QUEUE }
+        val pagesAbsent = prefetchRange.filter { stateList[it].status.value == Page.State.QUEUE }
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
         val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
         prefetchPages(pagesAbsent, start - 5 to end + 5)
@@ -107,6 +117,11 @@ abstract class PageLoader {
         onForceRequest(index, orgImg)
     }
 
+    private val Int.page
+        get() = trackMap[this]!!
+
+    // Following accepts real index!!!
+
     protected abstract fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>)
 
     protected abstract fun onRequest(index: Int)
@@ -114,26 +129,28 @@ abstract class PageLoader {
     protected abstract fun onForceRequest(index: Int, orgImg: Boolean)
 
     fun notifyPageWait(index: Int) {
-        pages[index].reset()
+        index.page.reset()
     }
 
     fun notifyPagePercent(index: Int, percent: Float) {
-        pages[index].progress = (percent * 100).toInt()
-        pages[index].status.compareAndSet(Page.State.QUEUE, Page.State.DOWNLOAD_IMAGE)
+        val page = index.page
+        page.progress = (percent * 100).toInt()
+        page.status.compareAndSet(Page.State.QUEUE, Page.State.DOWNLOAD_IMAGE)
     }
 
     fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
-        val page = pages.first { it.index == index }
+        val page = index.page
         if (replaceCache) {
             cache[page] = image
         }
-        pages[index].image = image
-        pages[index].status.value = Page.State.READY
+        page.image = image
+        page.status.value = Page.State.READY
     }
 
     fun notifyPageFailed(index: Int, error: String?) {
-        pages[index].errorMsg = error
-        pages[index].status.value = Page.State.ERROR
+        val page = index.page
+        page.errorMsg = error
+        page.status.value = Page.State.ERROR
     }
 }
 
