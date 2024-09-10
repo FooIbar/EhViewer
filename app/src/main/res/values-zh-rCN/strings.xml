@@ -321,6 +321,7 @@
     <string name="settings_read_volume_page_fast">快</string>
     <string name="settings_read_volume_page_slow">慢</string>
     <string name="settings_read_reverse_volume">翻转音量键</string>
+    <string name="settings_strip_external_ads">移除外部广告</string>
     <string name="settings_download">下载</string>
     <string name="settings_download_download_location">下载路径</string>
     <string name="settings_download_cant_get_download_location">无法获取下载路径</string>

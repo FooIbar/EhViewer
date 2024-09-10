@@ -83,4 +83,8 @@ fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberS
             )
         }
     }
+    SwitchChoice(
+        title = stringResource(id = R.string.settings_strip_external_ads),
+        field = Settings.stripExternalAds.asMutableState(),
+    )
 }
