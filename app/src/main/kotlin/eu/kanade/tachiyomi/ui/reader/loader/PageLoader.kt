@@ -1,7 +1,7 @@
 package eu.kanade.tachiyomi.ui.reader.loader
 
 import androidx.annotation.CallSuper
-import androidx.collection.lruCache
+import androidx.collection.SieveCache
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
@@ -15,16 +15,16 @@ private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
 abstract class PageLoader {
     private val cache by lazy {
-        lruCache<Int, Image>(
+        SieveCache<ReaderPage, Image>(
             maxSize = if (isAtLeastO) {
                 (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
             } else {
                 (OSUtils.appMaxMemory / 3 * 2).toInt()
             },
             sizeOf = { _, v -> v.size.toInt() },
-            onEntryRemoved = { _, k, o, n ->
+            onEntryRemoved = { k, o, n, _ ->
                 if (o.isRecyclable) {
-                    n ?: notifyPageWait(k)
+                    n ?: notifyPageWait(k.index)
                     o.recycle()
                 } else {
                     o.isRecyclable = true
@@ -67,7 +67,7 @@ abstract class PageLoader {
 
     fun request(page: ReaderPage) {
         val index = page.index
-        val image = cache[index]
+        val image = cache[page]
         if (image != null) {
             notifyPageSucceed(index, image, false)
         } else {
@@ -117,8 +117,9 @@ abstract class PageLoader {
     }
 
     fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
+        val page = pages.first { it.index == index }
         if (replaceCache) {
-            cache.put(index, image)
+            cache[page] = image
         }
         pages[index].image = image
         pages[index].status.value = Page.State.READY
