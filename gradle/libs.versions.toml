@@ -24,7 +24,7 @@ kotlinx-coroutines = "1.8.1"
 kotlinx-datetime = "0.6.1"
 kotlinx-serialization = "1.7.2"
 ksp = "2.0.20-1.0.25"
-ktor = "3.0.0-beta-1"
+ktor = "3.0.0-rc-1"
 okio = "3.9.0"
 splitties = "3.0.0"
 telephoto = "0.13.0"
@@ -65,7 +65,7 @@ arrow-stack = { module = "io.arrow-kt:arrow-stack", version.ref = "arrow" }
 coil-bom = { module = "io.coil-kt.coil3:coil-bom", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif" }
-coil-network = { module = "io.coil-kt.coil3:coil-network-ktor2" }
+coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3" }
 
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }

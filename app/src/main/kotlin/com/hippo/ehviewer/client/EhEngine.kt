@@ -64,6 +64,7 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
+import io.ktor.utils.io.readAvailable
 import java.io.File
 import java.nio.ByteBuffer
 import kotlin.math.ceil

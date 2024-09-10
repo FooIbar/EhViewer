@@ -55,7 +55,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.request
 import io.ktor.http.isSuccess
-import io.ktor.utils.io.jvm.nio.copyTo
+import io.ktor.utils.io.copyTo
 import kotlin.io.path.readText
 import kotlinx.coroutines.CancellationException
 import okio.Path
