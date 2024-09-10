@@ -10,7 +10,7 @@ import coil3.request.allowHardware
 
 data class BitmapImageWithExtraInfo(
     val image: BitmapImage,
-    val rect: IntRect = IntRect.Zero,
+    val rect: IntRect = IntRect(0, 0, image.width, image.height),
     val hasQRCode: Boolean = false,
 ) : Image by image
 
