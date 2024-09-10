@@ -79,6 +79,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlin.coroutines.resume
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
@@ -165,8 +166,10 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
             .collect { setOrientation(it) }
     }
     LaunchedEffect(pageLoader) {
-        Settings.cropBorder.changesFlow().collect {
-            pageLoader.restart()
+        with(Settings) {
+            merge(cropBorder.changesFlow(), stripExternalAds.changesFlow()).collect {
+                pageLoader.restart()
+            }
         }
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()

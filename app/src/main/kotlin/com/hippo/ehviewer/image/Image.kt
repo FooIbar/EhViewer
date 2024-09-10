@@ -90,7 +90,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                 allowHardware(false)
                 hardwareThreshold(Settings.hardwareBitmapThreshold)
                 maybeCropBorder(Settings.cropBorder.value)
-                detectQRCode(true)
+                detectQRCode(Settings.stripExternalAds.value)
                 memoryCachePolicy(CachePolicy.DISABLED)
             }
             return when (val result = appCtx.imageLoader.execute(req)) {
