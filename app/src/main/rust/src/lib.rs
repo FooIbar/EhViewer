@@ -4,7 +4,7 @@ use android_logger::Config;
 use anyhow::{anyhow, ensure, Result};
 use bardecoder::default_decoder;
 use image::ImageBuffer;
-use image::{GenericImageView, Rgba};
+use image::Rgba;
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::{jboolean, jint, jobject, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
@@ -159,12 +159,16 @@ impl Deref for BorrowedPixelContainer {
     }
 }
 
+fn get_bitmap_handle(env: &mut JNIEnv, bitmap: jobject) -> Bitmap {
+    unsafe { Bitmap::from_jni(env.get_raw(), bitmap) }
+}
+
 #[no_mangle]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn hasQRCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
-    let handle = unsafe { Bitmap::from_jni(env.get_raw(), object) };
-    jni_throwing(&mut env, |env| {
+    let handle = get_bitmap_handle(&mut env, object);
+    jni_throwing(&mut env, |_| {
         let bitmap_info = handle.info()?;
         let (width, height) = (bitmap_info.width(), bitmap_info.height());
         let ptr = handle.lock_pixels()? as *const u8;
