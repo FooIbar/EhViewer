@@ -27,7 +27,7 @@ interface LocalFavoritesDao {
     fun joinListLazy(title: String): PagingSource<Int, BaseGalleryInfo>
 
     @Query("SELECT GALLERIES.* FROM LOCAL_FAVORITES JOIN GALLERIES USING(GID) ORDER BY RANDOM() LIMIT 1")
-    suspend fun random(): BaseGalleryInfo
+    suspend fun random(): BaseGalleryInfo?
 
     @Query("SELECT EXISTS(SELECT * FROM LOCAL_FAVORITES WHERE GID = :gid)")
     suspend fun contains(gid: Long): Boolean

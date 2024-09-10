@@ -39,7 +39,6 @@
 
     <string name="invalid_download_location">La location de téléchargement actuelle n\'est pas disponible. Choissez-en une à nouveau dans les Paramétres.</string>
 
-    <string name="error_bad_status_code">Code d\'état inconnu : %d</string>
     <string name="error_timeout">Time-out</string>
     <string name="error_unknown_host">Hôte inconnu</string>
     <string name="error_redirection">Trop de redirections</string>

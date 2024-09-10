@@ -18,6 +18,7 @@ package com.hippo.ehviewer.ui
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,6 +55,7 @@ import com.hippo.ehviewer.download.downloadDir
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.ui.destinations.ReaderScreenDestination
+import com.hippo.ehviewer.ui.reader.ReaderScreenArgs
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -68,7 +70,6 @@ import com.hippo.files.delete
 import com.hippo.files.isDirectory
 import com.hippo.files.openOutputStream
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.ui.reader.ReaderActivity
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.sync.Mutex
@@ -280,21 +281,14 @@ suspend fun removeFromFavorites(galleryInfo: BaseGalleryInfo) = doModifyFavorite
     localFavorited = EhDB.containLocalFavorites(galleryInfo.gid),
 )
 
-context (Context, DestinationsNavigator)
-fun navToReader(
-    info: BaseGalleryInfo,
-    page: Int = -1,
-) {
-    if (Settings.newReader) {
-        navigate(ReaderScreenDestination(info, page))
-    } else {
-        val intent = Intent(this@Context, ReaderActivity::class.java)
-        intent.action = ReaderActivity.ACTION_EH
-        intent.putExtra(ReaderActivity.KEY_GALLERY_INFO, info)
-        intent.putExtra(ReaderActivity.KEY_PAGE, page)
-        startActivity(intent)
-    }
-}
+fun DestinationsNavigator.navToReader(info: BaseGalleryInfo, page: Int = -1) =
+    navToReader(ReaderScreenArgs.Gallery(info, page))
+
+fun DestinationsNavigator.navToReader(uri: Uri) =
+    navToReader(ReaderScreenArgs.Archive(uri))
+
+private fun DestinationsNavigator.navToReader(args: ReaderScreenArgs) =
+    navigate(ReaderScreenDestination(args)) { launchSingleTop = true }
 
 context(DialogState, Context, DestinationsNavigator)
 suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {

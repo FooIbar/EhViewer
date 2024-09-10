@@ -22,13 +22,13 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -58,7 +58,7 @@ import com.hippo.ehviewer.client.EhFilter.trigger
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
-import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.ramcosta.composedestinations.annotation.Destination
@@ -127,7 +127,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                                 onExpandedChange = { expanded = !expanded },
                             ) {
                                 OutlinedTextField(
-                                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
                                     readOnly = true,
                                     value = type,
                                     onValueChange = {},
@@ -213,7 +213,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
             }
         },
     ) { paddingValues ->
-        Deferred({ allFilterMap.await() }) { filters ->
+        Await({ allFilterMap.await() }) { filters ->
             LazyColumn(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 contentPadding = paddingValues,

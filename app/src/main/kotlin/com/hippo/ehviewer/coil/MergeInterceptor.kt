@@ -3,6 +3,7 @@ package com.hippo.ehviewer.coil
 import coil3.intercept.Interceptor
 import coil3.request.ImageResult
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.client.isNormalPreviewKey
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.CancellableContinuation
@@ -41,7 +42,7 @@ object MergeInterceptor : Interceptor {
 
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
         val req = chain.request
-        val key = req.memoryCacheKey?.takeIf { it.startsWith("m/") || Settings.preloadThumbAggressively } ?: return withContext(req.interceptorCoroutineContext) { chain.proceed() }
+        val key = req.memoryCacheKey?.takeIf { it.isNormalPreviewKey || Settings.preloadThumbAggressively } ?: return withContext(req.interceptorCoroutineContext) { chain.proceed() }
 
         suspendCancellableCoroutine { continuation ->
             synchronized(pendingContinuationMapLock) {

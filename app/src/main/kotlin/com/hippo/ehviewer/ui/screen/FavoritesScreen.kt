@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.screen
 import android.content.Context
 import android.view.ViewConfiguration
 import androidx.collection.MutableLongSet
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -73,6 +74,7 @@ import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.startDownload
+import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
@@ -94,7 +96,7 @@ import moe.tarsin.coroutines.runSwallowingWithUI
 
 @Destination<RootGraph>
 @Composable
-fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
     // Immutables
     val localFavName = stringResource(R.string.local_favorites)
     val cloudFavName = stringResource(R.string.cloud_favorites)
@@ -184,7 +186,7 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
         val localFavCount by localFavCountFlow.collectAsState(0)
         TopAppBar(
             title = { Text(text = stringResource(id = R.string.collections)) },
-            windowInsets = WindowInsets(0, 0, 0, 0),
+            windowInsets = EmptyWindowInsets,
         )
         val scope = currentRecomposeScope
         LaunchedEffect(Unit) {
@@ -355,8 +357,9 @@ fun FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
         if (!selectMode) {
             if (isLocalFav) {
                 onClick(Icons.Default.Shuffle) {
-                    val random = EhDB.randomLocalFav()
-                    withUIContext { navigate(random.asDst()) }
+                    EhDB.randomLocalFav()?.let { info ->
+                        withUIContext { navigate(info.asDst()) }
+                    }
                 }
             }
             onClick(EhIcons.Default.GoTo) {

@@ -94,8 +94,6 @@ Here is the libraries
 - [libarchive](https://www.libarchive.org/)
 - [jsoup](https://jsoup.org/)
 
-Specially thanks [Tachiyomi](https://tachiyomi.org/) for its reader implementation!
-
 # License
 
     Copyright 2014-2019 Hippo Seven

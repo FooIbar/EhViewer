@@ -8,12 +8,15 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.ViewCompat
 import com.hippo.ehviewer.Settings
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
+context(CoroutineScope)
 @Composable
 fun VolumeKeysHandler(
     enabled: () -> Boolean,
-    movePrevious: () -> Unit,
-    moveNext: () -> Unit,
+    movePrevious: suspend () -> Unit,
+    moveNext: suspend () -> Unit,
 ) {
     val view = LocalView.current
     DisposableEffect(view) {
@@ -24,10 +27,12 @@ fun VolumeKeysHandler(
                     val interval = Settings.readWithVolumeKeysInterval.value + 1
                     val inverted = Settings.readWithVolumeKeysInverted.value
                     if (event.action == ACTION_DOWN && event.repeatCount % interval == 0) {
-                        if (inverted.xor(keyCode == KEYCODE_VOLUME_UP)) {
-                            movePrevious()
-                        } else {
-                            moveNext()
+                        launch {
+                            if (inverted.xor(keyCode == KEYCODE_VOLUME_UP)) {
+                                movePrevious()
+                            } else {
+                                moveNext()
+                            }
                         }
                     }
                     true

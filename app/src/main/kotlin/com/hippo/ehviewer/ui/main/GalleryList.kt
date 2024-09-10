@@ -53,6 +53,7 @@ import androidx.paging.compose.itemKey
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.client.exception.NoHitsFoundException
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
@@ -116,6 +117,11 @@ fun GalleryList(
             }
         },
     ) {
+        val showLoadStateIndicator = when (val state = data.loadState.append) {
+            LoadState.Loading -> true
+            is LoadState.Error -> state.error !is NoHitsFoundException
+            is LoadState.NotLoading -> false
+        }
         if (listMode == 0) {
             val columnWidth by collectDetailSizeAsState()
             FastScrollLazyVerticalGrid(
@@ -136,7 +142,7 @@ fun GalleryList(
                         detailItemContent(info)
                     }
                 }
-                if (data.loadState.append !is LoadState.NotLoading) {
+                if (showLoadStateIndicator) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         LoadStateIndicator(state = data.loadState.append) {
                             data.retry()
@@ -165,7 +171,7 @@ fun GalleryList(
                         thumbItemContent(info)
                     }
                 }
-                if (data.loadState.append !is LoadState.NotLoading) {
+                if (showLoadStateIndicator) {
                     item(span = StaggeredGridItemSpan.FullLine) {
                         LoadStateIndicator(state = data.loadState.append) {
                             data.retry()

@@ -5,6 +5,7 @@ import android.net.Uri
 import android.view.ViewConfiguration
 import androidx.activity.compose.ReportDrawnWhen
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -124,7 +125,8 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.SearchFilter
-import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.Await
+import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
@@ -133,6 +135,7 @@ import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.rememberMutableStateInDataStore
 import com.hippo.ehviewer.ui.tools.snackBarPadding
+import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.pickVisualMedia
 import com.hippo.ehviewer.util.sha1
@@ -155,23 +158,23 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Destination<RootGraph>
 @Composable
-fun HomePageScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(), navigator)
+fun AnimatedVisibilityScope.HomePageScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(), navigator)
 
 @Destination<RootGraph>
 @Composable
-fun SubscriptionScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator)
+fun AnimatedVisibilityScope.SubscriptionScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_SUBSCRIPTION), navigator)
 
 @Destination<RootGraph>
 @Composable
-fun WhatshotScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator)
+fun AnimatedVisibilityScope.WhatshotScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_WHATS_HOT), navigator)
 
 @Destination<RootGraph>
 @Composable
-fun ToplistScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator)
+fun AnimatedVisibilityScope.ToplistScreen(navigator: DestinationsNavigator) = GalleryListScreen(ListUrlBuilder(MODE_TOPLIST, mKeyword = Settings.recentToplist), navigator)
 
 @Destination<RootGraph>
 @Composable
-fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = composing(navigator) {
     val searchFieldState = rememberTextFieldState()
     var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
@@ -281,7 +284,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
         ProvideSideSheetContent { sheetState ->
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.toplist)) },
-                windowInsets = WindowInsets(0),
+                windowInsets = EmptyWindowInsets,
             )
             toplists.forEach { (name, keyword) ->
                 ListItem(
@@ -362,7 +365,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                         )
                     }
                 },
-                windowInsets = WindowInsets(0),
+                windowInsets = EmptyWindowInsets,
             )
             Box(modifier = Modifier.fillMaxSize()) {
                 val quickSearchListState = rememberLazyListState()
@@ -379,7 +382,11 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                 ) {
                     itemsIndexed(quickSearchList, key = { _, item -> item.id!! }) { itemIndex, item ->
                         val index by rememberUpdatedState(itemIndex)
-                        ReorderableItem(reorderableLazyListState, item.id!!, animated = animateItems) { isDragging ->
+                        ReorderableItem(
+                            reorderableLazyListState,
+                            item.id!!,
+                            animateItemModifier = Modifier.thenIf(animateItems) { animateItem() },
+                        ) { isDragging ->
                             // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                             val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
                             LaunchedEffect(dismissState) {
@@ -467,7 +474,7 @@ fun GalleryListScreen(lub: ListUrlBuilder, navigator: DestinationsNavigator) = c
                         }
                     }
                 }
-                Deferred({ delay(200) }) {
+                Await({ delay(200) }) {
                     if (quickSearchList.isEmpty()) {
                         Text(
                             text = stringResource(id = R.string.quick_search_tip),

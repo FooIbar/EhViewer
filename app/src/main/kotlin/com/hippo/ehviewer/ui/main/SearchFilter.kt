@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -151,23 +153,27 @@ fun SearchFilter(
                     val (from, to) = dialogState.awaitResult(
                         initial = advancedOption.fromPage to advancedOption.toPage,
                         title = R.string.key_pages,
-                        invalidator = { (min, _max) ->
-                            // 0 means max pages not filled, though +inf
-                            val max = if (_max == 0) Int.MAX_VALUE else _max
-                            if (min != 0) {
-                                ensure(max - min >= 20) { pageErr2 }
-                            } else {
-                                ensure(max >= 10) { pageErr1 }
+                        invalidator = { (min, max) ->
+                            if (max != 0) {
+                                if (min != 0) {
+                                    ensure(min <= (max / 2).coerceAtMost(max - 20)) { pageErr2 }
+                                } else {
+                                    ensure(max >= 10) { pageErr1 }
+                                }
                             }
                         },
                     ) { error ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                            ) {
                                 OutlinedTextField(
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     value = expectedValue.first.takeIf { it > 0 }?.toString().orEmpty(),
                                     onValueChange = {
-                                        expectedValue = expectedValue.copy(first = it.toIntOrDefault(0).coerceAtLeast(0))
+                                        expectedValue = expectedValue.copy(first = it.toIntOrDefault(0).coerceIn(0, 1000))
                                     },
                                     modifier = Modifier.width(112.dp).padding(16.dp),
                                     singleLine = true,
@@ -178,7 +184,7 @@ fun SearchFilter(
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     value = expectedValue.second.takeIf { it > 0 }?.toString().orEmpty(),
                                     onValueChange = {
-                                        expectedValue = expectedValue.copy(second = it.toIntOrDefault(0).coerceAtLeast(0))
+                                        expectedValue = expectedValue.copy(second = it.toIntOrDefault(0).coerceIn(0, 2000))
                                     },
                                     modifier = Modifier.width(112.dp).padding(16.dp),
                                     singleLine = true,
@@ -188,11 +194,14 @@ fun SearchFilter(
                             }
                             if (error != null) {
                                 ListItem(
-                                    headlineContent = { Text(text = error) },
+                                    headlineContent = {
+                                        Text(text = error, style = MaterialTheme.typography.bodySmall)
+                                    },
                                     leadingContent = {
                                         Icon(imageVector = Icons.Default.Info, contentDescription = null)
                                     },
                                     colors = ListItemDefaults.colors(
+                                        containerColor = Color.Transparent,
                                         headlineColor = MaterialTheme.colorScheme.error,
                                         leadingIconColor = MaterialTheme.colorScheme.error,
                                     ),

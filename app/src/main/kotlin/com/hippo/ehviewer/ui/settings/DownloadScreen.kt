@@ -5,6 +5,7 @@ import android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -72,7 +73,7 @@ import splitties.init.appCtx
 
 @Destination<RootGraph>
 @Composable
-fun DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     fun launchSnackBar(content: String) = launch { showSnackbar(content) }
     Scaffold(

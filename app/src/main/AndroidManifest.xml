@@ -70,26 +70,6 @@
                 <data android:host="exhentai.org" />
                 <data android:host="e-hentai.org" />
             </intent-filter>
-            <intent-filter android:label="@string/keyword_search">
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-            <intent-filter android:label="@string/image_search">
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="image/*" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name="eu.kanade.tachiyomi.ui.reader.ReaderActivity"
-            android:configChanges="screenSize"
-            android:exported="true"
-            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -122,6 +102,20 @@
                 <data android:mimeType="application/x-bzip-compressed-tar" />
                 <data android:mimeType="application/x-lzma-compressed-tar" />
                 <data android:mimeType="application/x-xz-compressed-tar" />
+            </intent-filter>
+            <intent-filter android:label="@string/keyword_search">
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter android:label="@string/image_search">
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
         <activity

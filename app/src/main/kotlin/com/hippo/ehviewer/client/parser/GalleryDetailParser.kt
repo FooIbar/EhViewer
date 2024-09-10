@@ -21,7 +21,6 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhFilter
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.EhUtils.getCategory
-import com.hippo.ehviewer.client.EhUtils.handleThumbUrlResolution
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.GalleryCommentList
@@ -62,7 +61,7 @@ object GalleryDetailParser {
         RegexOption.DOT_MATCHES_ALL,
     )
     private val PATTERN_TORRENT =
-        Regex("<a[^<>]*onclick=\"return popUp\\('([^']+)'[^)]+\\)\">Torrent Download[^<]+(\\d+)[^<]+</a")
+        Regex("<a[^<>]*onclick=\"return popUp\\('([^']+)'[^)]+\\)\">Torrent Download \\((\\d+)\\)</a>")
     private val PATTERN_ARCHIVE =
         Regex("<a[^<>]*onclick=\"return popUp\\('([^']+)'[^)]+\\)\">Archive Download</a>")
     private val PATTERN_COVER = Regex("width:(\\d+)px; height:(\\d+)px.+?url\\((.+?)\\)")
@@ -140,11 +139,7 @@ object GalleryDetailParser {
             val gm = d.getElementsByClass("gm")[0]
             // Thumb url
             gm.getElementById("gd1")?.child(0)?.attr("style")?.trim()?.let {
-                gd.thumbKey = getThumbKey(
-                    PATTERN_COVER.find(it)?.run {
-                        handleThumbUrlResolution(groupValues[3])
-                    }!!,
-                )
+                gd.thumbKey = getThumbKey(PATTERN_COVER.find(it)!!.groupValues[3])
             }
 
             gd.title = gm.getElementById("gn")?.text()?.trim()
@@ -458,9 +453,9 @@ object GalleryDetailParser {
         check(PATTERN_LARGE_PREVIEW.containsMatchIn(body))
         return PATTERN_LARGE_PREVIEW.findAll(body).unzip {
             val position = it.groupValues[2].toInt() - 1
-            val imageKey = getThumbKey(it.groupValues[3].trim())
+            val url = it.groupValues[3].trim()
             val pageUrl = it.groupValues[1].trim()
-            LargeGalleryPreview(imageKey, position) to pageUrl
+            LargeGalleryPreview(url, position) to pageUrl
         }.run {
             first.toList() to second.toList()
         }
@@ -470,12 +465,12 @@ object GalleryDetailParser {
         check(PATTERN_NORMAL_PREVIEW.containsMatchIn(body))
         return PATTERN_NORMAL_PREVIEW.findAll(body).unzip {
             val position = it.groupValues[6].toInt() - 1
-            val imageKey = getThumbKey(it.groupValues[3].trim())
+            val url = it.groupValues[3].trim()
             val xOffset = it.groupValues[4].toIntOrNull() ?: 0
             val width = it.groupValues[1].toInt()
             val height = it.groupValues[2].toInt()
             val pageUrl = it.groupValues[5].trim()
-            NormalGalleryPreview(imageKey, position, xOffset, width, height) to pageUrl
+            NormalGalleryPreview(url, position, xOffset, width, height) to pageUrl
         }.run {
             first.toList() to second.toList()
         }

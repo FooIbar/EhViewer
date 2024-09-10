@@ -10,6 +10,7 @@ import android.os.Parcelable
 import android.text.TextUtils.TruncateAt.END
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -19,7 +20,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -132,6 +132,7 @@ import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.CrystalCard
+import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
@@ -147,7 +148,6 @@ import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.bgWork
 import com.hippo.ehviewer.util.displayString
-import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
 import com.hippo.files.delete
@@ -201,10 +201,12 @@ private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt())
 }
 
 private fun List<GalleryTagGroup>.getArtistTag(): String? {
-    val namespace = TagNamespace.Artist.value
     for (tagGroup in this) {
-        if (tagGroup.groupName == namespace && tagGroup.size > 0) {
-            return "$namespace:${tagGroup[0].removePrefix("_")}"
+        if (tagGroup.isNotEmpty()) {
+            val namespace = tagGroup.groupName
+            if (namespace == TagNamespace.Artist.value || namespace == TagNamespace.Cosplayer.value) {
+                return "$namespace:${tagGroup[0].removePrefix("_")}"
+            }
         }
     }
     return null
@@ -212,19 +214,18 @@ private fun List<GalleryTagGroup>.getArtistTag(): String? {
 
 @Destination<RootGraph>
 @Composable
-fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
-    var galleryInfo by remember {
+fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
+    var galleryInfo by rememberInVM {
         val casted = args as? GalleryInfoArgs
         mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
     }
     val (gid, token) = remember {
         when (args) {
-            is GalleryInfoArgs -> args.galleryInfo.run { gid to token }
+            is GalleryInfoArgs -> with(args.galleryInfo) { gid to token }
             is TokenArgs -> args.gid to args.token
         }
     }
     val galleryDetailUrl = remember { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
-    val activity = remember { findActivity<MainActivity>() }
     var showReadAction by rememberSaveable { mutableStateOf(true) }
     LaunchedEffect(args, galleryInfo) {
         if (showReadAction) {
@@ -243,9 +244,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             }
         }
     }
-    with(activity) {
-        ProvideAssistContent(galleryDetailUrl)
-    }
+    ProvideAssistContent(galleryDetailUrl)
     var getDetailError by rememberSaveable { mutableStateOf("") }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -329,7 +328,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                             }
                             val name = "$gid-${EhUtils.getSuitableTitle(galleryDetail)}.zip"
                             try {
-                                activity.startActivity(intent)
+                                startActivity(intent)
                                 withUIContext { addTextToClipboard(name, true) }
                             } catch (_: ActivityNotFoundException) {
                                 val r = DownloadManager.Request(uri)
@@ -373,14 +372,18 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
 
     fun LazyGridScope.galleryDetailPreview(gd: GalleryDetail) {
         val previewList = gd.previewList
-        items(previewList) {
+        items(previewList, key = { it.position }, contentType = { "preview" }) {
             EhPreviewItem(
                 galleryPreview = it,
                 position = it.position,
                 onClick = { navToReader(gd.galleryInfo, it.position) },
             )
         }
-        item(span = { GridItemSpan(maxLineSpan) }) {
+        item(
+            key = "footer",
+            span = { GridItemSpan(maxLineSpan) },
+            contentType = "footer",
+        ) {
             val footerText = if (gd.previewPages <= 0 || previewList.isEmpty()) {
                 stringResource(R.string.no_previews)
             } else if (gd.previewPages == 1) {
@@ -707,27 +710,25 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     }
                     launchIO {
                         awaitSelectAction {
-                            with(activity) {
-                                onSelect(copy) {
-                                    addTextToClipboard(tag)
+                            onSelect(copy) {
+                                addTextToClipboard(tag)
+                            }
+                            if (temp != translated) {
+                                onSelect(copyTrans) {
+                                    addTextToClipboard(translated)
                                 }
-                                if (temp != translated) {
-                                    onSelect(copyTrans) {
-                                        addTextToClipboard(translated)
-                                    }
-                                }
-                                onSelect(showDefine) {
-                                    openBrowser(EhUrl.getTagDefinitionUrl(temp))
-                                }
-                                onSelect(addFilter) {
-                                    awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
-                                    Filter(FilterMode.TAG, tag).remember()
-                                    showSnackbar(filterAdded)
-                                }
-                                if (galleryDetail.apiUid >= 0) {
-                                    onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
-                                    onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
-                                }
+                            }
+                            onSelect(showDefine) {
+                                openBrowser(EhUrl.getTagDefinitionUrl(temp))
+                            }
+                            onSelect(addFilter) {
+                                awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
+                                Filter(FilterMode.TAG, tag).remember()
+                                showSnackbar(filterAdded)
+                            }
+                            if (galleryDetail.apiUid >= 0) {
+                                onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
+                                onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
                             }
                         }()
                     }
@@ -769,7 +770,11 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
             DownloadInfo.STATE_FAILED -> stringResource(R.string.download_state_failed)
             else -> error("Invalid DownloadState!!!")
         }
-        fun onReadButtonClick() = navToReader(galleryInfo.findBaseInfo(), startPage)
+        fun onReadButtonClick() {
+            if (galleryDetail != null || downloadState != DownloadInfo.STATE_INVALID) {
+                navToReader(galleryInfo.findBaseInfo(), startPage)
+            }
+        }
         fun onCategoryChipClick() {
             val category = galleryInfo.category
             if (category == EhUtils.NONE || category == EhUtils.PRIVATE || category == EhUtils.UNKNOWN) {
@@ -795,7 +800,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         if (showBottomSheet && galleryDetail != null) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
-                contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
+                contentWindowInsets = { EmptyWindowInsets },
             ) {
                 GalleryInfoBottomSheet(galleryDetail, navigator)
             }
@@ -823,7 +828,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
         val onDownloadButtonClick = rememberLambda(galleryInfo) {
             galleryDetail ?: return@rememberLambda
             if (EhDownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
-                launchUI { startDownload(activity, false, galleryDetail.galleryInfo) }
+                launchUI { startDownload(implicit<MainActivity>(), false, galleryDetail.galleryInfo) }
             } else {
                 launch { confirmRemoveDownload(galleryDetail) }
             }
@@ -837,17 +842,27 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
             ) {
-                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
+                item(
+                    key = "header",
+                    span = { GridItemSpan(maxCurrentLineSpan) },
+                    contentType = "header",
+                ) {
+                    GalleryDetailHeaderCard(
+                        info = galleryInfo,
+                        onInfoCardClick = ::onGalleryInfoCardClick,
+                        onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
+                        onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
+                        onCategoryChipClick = ::onCategoryChipClick,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
+                    )
+                }
+                item(
+                    key = "body",
+                    span = { GridItemSpan(maxCurrentLineSpan) },
+                    contentType = "body",
+                ) {
                     LocalPinnableContainer.current!!.run { remember { pin() } }
                     Column {
-                        GalleryDetailHeaderCard(
-                            info = galleryInfo,
-                            onInfoCardClick = ::onGalleryInfoCardClick,
-                            onCategoryChipClick = ::onCategoryChipClick,
-                            onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
-                            onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
-                            modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
-                        )
                         Row {
                             FilledTonalButton(
                                 onClick = onDownloadButtonClick,
@@ -888,40 +903,48 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                 horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
             ) {
-                item(span = { GridItemSpan(maxCurrentLineSpan) }) {
-                    LocalPinnableContainer.current!!.run { remember { pin() } }
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
+                item(
+                    key = "header",
+                    span = { GridItemSpan(maxCurrentLineSpan) },
+                    contentType = "header",
+                ) {
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        GalleryDetailHeaderCard(
+                            info = galleryInfo,
+                            onInfoCardClick = ::onGalleryInfoCardClick,
+                            onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
+                            onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
+                            onCategoryChipClick = ::onCategoryChipClick,
+                            modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
+                        )
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            GalleryDetailHeaderCard(
-                                info = galleryInfo,
-                                onInfoCardClick = ::onGalleryInfoCardClick,
-                                onCategoryChipClick = ::onCategoryChipClick,
-                                onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
-                                onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
-                                modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
-                            )
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                            Spacer(modifier = modifier.height(16.dp))
+                            Button(
+                                onClick = ::onReadButtonClick,
+                                modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
                             ) {
-                                Spacer(modifier = modifier.height(16.dp))
-                                Button(
-                                    onClick = ::onReadButtonClick,
-                                    modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
-                                ) {
-                                    Text(text = readButtonText, maxLines = 1)
-                                }
-                                Spacer(modifier = modifier.height(24.dp))
-                                FilledTonalButton(
-                                    onClick = onDownloadButtonClick,
-                                    modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
-                                ) {
-                                    Text(text = downloadButtonText, maxLines = 1)
-                                }
+                                Text(text = readButtonText, maxLines = 1)
+                            }
+                            Spacer(modifier = modifier.height(24.dp))
+                            FilledTonalButton(
+                                onClick = onDownloadButtonClick,
+                                modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
+                            ) {
+                                Text(text = downloadButtonText, maxLines = 1)
                             }
                         }
+                    }
+                }
+                item(
+                    key = "body",
+                    span = { GridItemSpan(maxCurrentLineSpan) },
+                    contentType = "body",
+                ) {
+                    LocalPinnableContainer.current!!.run { remember { pin() } }
+                    Column {
                         if (getDetailError.isNotBlank()) {
                             GalleryDetailErrorTip(error = getDetailError, onClick = { getDetailError = "" })
                         } else if (galleryDetail != null) {
@@ -973,7 +996,7 @@ fun GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNa
                     }
                     IconButton(
                         onClick = {
-                            AppHelper.share(activity, galleryDetailUrl)
+                            AppHelper.share(implicit<MainActivity>(), galleryDetailUrl)
                             // In case the link is copied to the clipboard
                             Settings.clipboardTextHashCode = galleryDetailUrl.hashCode()
                         },

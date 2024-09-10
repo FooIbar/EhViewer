@@ -8,10 +8,19 @@
   ],
   "packageRules": [
     {
+      "description": "Disable updates for SNAPSHOTs",
+      "matchDatasources": [
+        "maven"
+      ],
+      "allowedVersions": "!/SNAPSHOT$/"
+    },
+    {
       "groupName": "AGP",
       "matchDepNames": [
-        "com.android.application"
+        "com.android.application",
+        "com.android.test"
       ],
+      "allowedVersions": "/^.*-alpha\\d*$/",
       "ignoreUnstable": false
     },
     {
@@ -23,8 +32,9 @@
     {
       "groupName": "Compose BOM",
       "matchDepNames": [
-        "dev.chrisbanes.compose:compose-bom"
+        "androidx.compose:compose-bom"
       ],
+      "allowedVersions": "/^.*-alpha\\d*$/",
       "ignoreUnstable": false
     },
     {
@@ -34,13 +44,6 @@
         "https://github.com/google/ksp"
       ],
       "recreateWhen": "never"
-    },
-    {
-      "description": "Disable updates for SNAPSHOTs",
-      "matchDatasources": [
-        "maven"
-      ],
-      "allowedVersions": "!/SNAPSHOT$/"
     }
   ],
   "lockFileMaintenance": {

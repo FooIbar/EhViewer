@@ -1,5 +1,34 @@
 # 变更日志
 
+## [1.12.0] - 2024-08-19
+
+### 重大变更
+
+* Compose 阅读器已稳定，移除了旧阅读器实现 [#847](https://github.com/FooIbar/EhViewer/issues/847)
+* 由于 E 站缩略图服务器变更，移除了强制使用 e-hentai 缩略图服务器的选项
+
+### 改进
+
+* 更新高级搜索选项中页数过滤器的范围限制以遵循 E 站变更
+
+### Bug 修复
+
+* 评论页面刷新指示器边距不正确 [#1428](https://github.com/FooIbar/EhViewer/issues/1428)
+* 关闭打开失败的压缩包时崩溃
+* 无法打开带密码的压缩包 [#1454](https://github.com/FooIbar/EhViewer/issues/1454)
+* 使用音量键翻页时无法关闭过渡动画 [#1467](https://github.com/FooIbar/EhViewer/issues/1467)
+* 带有图片的评论显示错位 [#1468](https://github.com/FooIbar/EhViewer/issues/1468)
+* 在包含相同项目的页面间切换时崩溃 [#1490](https://github.com/FooIbar/EhViewer/issues/1490)
+* 无法检查更新 [#1512](https://github.com/FooIbar/EhViewer/issues/1512)
+* 画廊详情未加载完成时退出阅读器导致崩溃 [#1507](https://github.com/FooIbar/EhViewer/issues/1507)
+* 无法为带有临时标签的画廊生成 ComicInfo.xml [#1509](https://github.com/FooIbar/EhViewer/issues/1509)
+* 已下载的画廊翻页时出现加载动画 [#1510](https://github.com/FooIbar/EhViewer/issues/1510)
+* 画廊详情页面的缩略图无法加载 [#1529](https://github.com/FooIbar/EhViewer/issues/1529)
+* 图片未加载完成时无法通过点击翻页
+* 搜索结果为空时解析失败 [#1418](https://github.com/FooIbar/EhViewer/issues/1418)
+* 缩略图分辨率设置不起作用
+
+
 ## [1.11.7] - 2024-07-10
 
 ### Bug 修复

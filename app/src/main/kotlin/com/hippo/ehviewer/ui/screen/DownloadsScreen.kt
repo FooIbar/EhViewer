@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.view.ViewConfiguration
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
@@ -105,7 +106,8 @@ import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.showMoveDownloadLabelList
-import com.hippo.ehviewer.ui.tools.Deferred
+import com.hippo.ehviewer.ui.tools.Await
+import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
@@ -131,7 +133,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Destination<RootGraph>
 @Composable
-fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     var gridView by Settings.gridView.asMutableState()
     var sortMode by Settings.downloadSortMode.asMutableState()
     val filterMode by Settings.downloadFilterMode.collectAsState { DownloadsFilterMode.from(it) }
@@ -150,7 +152,10 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val density = LocalDensity.current
     val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
-    fun String.translateArtist() = ehTags?.getTranslation(TagNamespace.Artist.toPrefix(), this) ?: this
+    fun getTranslation(tag: String) = ehTags?.run {
+        getTranslation(TagNamespace.Artist.toPrefix(), tag)
+            ?: getTranslation(TagNamespace.Cosplayer.toPrefix(), tag)
+    } ?: tag
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)
     val unknownName = stringResource(R.string.unknown_artists)
@@ -164,7 +169,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
             when (label) {
                 "" -> allName
                 null -> emptyLabelName
-                else -> if (mode == DownloadsFilterMode.ARTIST) label.translateArtist() else label
+                else -> if (mode == DownloadsFilterMode.ARTIST) getTranslation(label) else label
             }
         },
     )
@@ -214,7 +219,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
         fun closeSheet() = launch { drawerState.close() }
         TopAppBar(
             title = { Text(text = labelsStr) },
-            windowInsets = WindowInsets(0, 0, 0, 0),
+            windowInsets = EmptyWindowInsets,
             actions = {
                 if (DownloadsFilterMode.CUSTOM == filterMode) {
                     IconButton(
@@ -351,7 +356,12 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                         }
                     }
                 }
-                ReorderableItem(reorderableLabelState, id, enabled = editEnable, animated = animateItems) { isDragging ->
+                ReorderableItem(
+                    reorderableLabelState,
+                    id,
+                    enabled = editEnable,
+                    animateItemModifier = Modifier.thenIf(animateItems) { animateItem() },
+                ) { isDragging ->
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {},
@@ -374,7 +384,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
                             tonalElevation = 1.dp,
                             shadowElevation = elevation,
                             headlineContent = {
-                                val name = if (filterMode == DownloadsFilterMode.ARTIST) label.translateArtist() else label
+                                val name = if (filterMode == DownloadsFilterMode.ARTIST) getTranslation(label) else label
                                 Text("$name [${downloadsCount.getOrDefault(item, 0)}]")
                             },
                             trailingContent = editEnable.ifTrueThen {
@@ -599,7 +609,7 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
             }
         }
 
-        Deferred({ delay(200) }) {
+        Await({ delay(200) }) {
             if (list.isEmpty()) {
                 Column(
                     modifier = Modifier.padding(realPadding).fillMaxSize(),
@@ -642,7 +652,9 @@ fun DownloadsScreen(navigator: DestinationsNavigator) = composing(navigator) {
     ) {
         if (!selectMode) {
             onClick(Icons.Default.Shuffle) {
-                withUIContext { navToReader(list.random().galleryInfo) }
+                if (list.isNotEmpty()) {
+                    withUIContext { navToReader(list.random().galleryInfo) }
+                }
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
                 val oldMode = SortMode.from(sortMode)

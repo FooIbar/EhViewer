@@ -17,6 +17,8 @@ package com.hippo.ehviewer.ui
 
 import android.annotation.SuppressLint
 import android.app.assist.AssistContent
+import android.content.ContentResolver.SCHEME_CONTENT
+import android.content.ContentResolver.SCHEME_FILE
 import android.content.Intent
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE_NONE
@@ -24,6 +26,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.StringRes
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -265,10 +269,19 @@ class MainActivity : EhActivity() {
                 intentFlow.collect { intent ->
                     when (intent.action) {
                         Intent.ACTION_VIEW -> {
-                            val url = intent.data?.toString()
-                            if (url != null && !navigator.navWithUrl(url)) {
-                                val new = dialogState.awaitInputText(initial = url, title = cannotParse)
-                                addTextToClipboard(new)
+                            val uri = intent.data ?: return@collect
+                            when (uri.scheme) {
+                                SCHEME_CONTENT, SCHEME_FILE -> {
+                                    navigator.navToReader(uri)
+                                }
+
+                                else -> {
+                                    val url = uri.toString()
+                                    if (!navigator.navWithUrl(url)) {
+                                        val new = dialogState.awaitInputText(initial = url, title = cannotParse)
+                                        addTextToClipboard(new)
+                                    }
+                                }
                             }
                         }
                         Intent.ACTION_SEND -> {
@@ -450,12 +463,16 @@ class MainActivity : EhActivity() {
                             drawerState = sideSheetState,
                             gesturesEnabled = sheet != null && drawerEnabled,
                         ) {
-                            DestinationsNavHost(
-                                navGraph = NavGraphs.root,
-                                start = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
-                                defaultTransitions = rememberEhNavAnim(),
-                                navController = navController,
-                            )
+                            SharedTransitionLayout {
+                                CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                                    DestinationsNavHost(
+                                        navGraph = NavGraphs.root,
+                                        start = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
+                                        defaultTransitions = rememberEhNavAnim(),
+                                        navController = navController,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -537,6 +554,7 @@ val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionL
 val LocalDrawerHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerHandle not present!") }
 val LocalSnackBarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackBarHostState not present!") }
 val LocalSnackBarFabPadding = compositionLocalOf<State<Dp>> { error("CompositionLocal LocalSnackBarFabPadding not present!") }
+val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope> { error("CompositionLocal LocalSharedTransitionScope not present!") }
 
 @Composable
 fun DrawerHandle(enabled: Boolean) {

@@ -18,7 +18,6 @@
 package com.hippo.ehviewer.image
 
 import android.graphics.Bitmap
-import android.graphics.drawable.Animatable
 import androidx.compose.ui.unit.IntRect
 import arrow.core.Either
 import arrow.core.left
@@ -51,7 +50,7 @@ import java.nio.ByteBuffer
 import okio.Path
 import splitties.init.appCtx
 
-class Image private constructor(image: CoilImage, private val src: AutoCloseable) {
+class Image private constructor(image: CoilImage, private val src: ImageSource) {
     val size = image.size
     val rect = when (image) {
         is BitmapImageWithRect -> image.rect
@@ -63,14 +62,12 @@ class Image private constructor(image: CoilImage, private val src: AutoCloseable
         else -> image
     }
 
+    var isRecyclable = true
+
     @Synchronized
     fun recycle() {
         when (val image = innerImage ?: return) {
-            is DrawableImage -> {
-                (image.drawable as Animatable).stop()
-                image.drawable.callback = null
-                src.close()
-            }
+            is DrawableImage -> src.close()
             is BitmapImage -> image.bitmap.recycle()
         }
         innerImage = null

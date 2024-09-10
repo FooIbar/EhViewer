@@ -60,14 +60,10 @@ object EhUrl {
         }
 
     val apiUrl: String
-        get() = if (Settings.forceEhThumb) {
-            API_E
-        } else {
-            when (Settings.gallerySite) {
-                SITE_E -> API_E
-                SITE_EX -> API_EX
-                else -> API_E
-            }
+        get() = when (Settings.gallerySite) {
+            SITE_E -> API_E
+            SITE_EX -> API_EX
+            else -> API_E
         }
 
     val referer: String

@@ -201,7 +201,7 @@ pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Result<Gallery
     if str.contains("<p>You do not have any watched tags") {
         bail!("No watched tags!")
     }
-    if str.contains("No hits found</p>") || str.contains("No unfiltered results found") {
+    if str.contains("No hits found</p>") || str.contains("No unfiltered results") {
         bail!("No hits found!")
     }
     let f = || {

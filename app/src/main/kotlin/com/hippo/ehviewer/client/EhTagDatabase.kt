@@ -24,14 +24,13 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
-import com.hippo.ehviewer.util.StatusCodeException
 import com.hippo.ehviewer.util.copyTo
+import com.hippo.ehviewer.util.ensureSuccess
 import com.hippo.ehviewer.util.sha1
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.isSuccess
 import java.io.File
 import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.CoroutineScope
@@ -143,11 +142,8 @@ object EhTagDatabase : CoroutineScope {
     private suspend fun save(client: HttpClient, url: String, file: File) {
         runCatching {
             client.prepareGet(url).executeSafely {
-                if (it.status.isSuccess()) {
-                    it.bodyAsChannel().copyTo(file)
-                } else {
-                    throw StatusCodeException(it.status.value)
-                }
+                it.status.ensureSuccess()
+                it.bodyAsChannel().copyTo(file)
             }
         }.onFailure {
             file.delete()

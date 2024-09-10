@@ -39,12 +39,6 @@ private fun getReadableStringInternal(e: Throwable) = when (e) {
     is MalformedURLException -> appCtx.getString(R.string.error_invalid_url)
     is SocketTimeoutException -> appCtx.getString(R.string.error_timeout)
     is UnknownHostException -> appCtx.getString(R.string.error_unknown_host)
-    is StatusCodeException -> buildString {
-        append(appCtx.getString(R.string.error_bad_status_code, e.responseCode))
-        if (e.isIdentifiedResponseCode) {
-            append(", ").append(e.message)
-        }
-    }
     is ProtocolException -> if (e.message!!.startsWith("Too many follow-up requests:")) {
         appCtx.getString(R.string.error_redirection)
     } else {

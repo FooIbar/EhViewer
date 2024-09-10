@@ -29,6 +29,7 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
+import com.hippo.ehviewer.client.exception.NoHitsFoundException
 import com.hippo.ehviewer.client.exception.NotLoggedInException
 import com.hippo.ehviewer.client.exception.ParseException
 import com.hippo.ehviewer.client.parser.ArchiveParser
@@ -55,11 +56,12 @@ import com.hippo.ehviewer.dailycheck.showEventNotification
 import com.hippo.ehviewer.dailycheck.today
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ReadableTime
-import com.hippo.ehviewer.util.StatusCodeException
 import com.hippo.ehviewer.util.bodyAsUtf8Text
+import com.hippo.ehviewer.util.ensureSuccess
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import io.ktor.utils.io.readAvailable
@@ -97,7 +99,7 @@ fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
     }
 }
 
-fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): Nothing {
+fun rethrowExactly(status: HttpStatusCode, body: Either<String, ByteBuffer>, e: Throwable): Nothing {
     // Don't translate coroutine cancellation
     if (e is CancellationException) throw e
 
@@ -125,14 +127,12 @@ fun rethrowExactly(code: Int, body: Either<String, ByteBuffer>, e: Throwable): N
     }
 
     // Check bad response code
-    if (code >= 400) {
-        throw StatusCodeException(code)
-    }
+    status.ensureSuccess()
 
     if (e is ParseException || e is SerializationException) {
         body.onLeft { if ("<" !in it) throw EhException(it) }
         when (val message = e.cause?.message) {
-            "No hits found!" -> throw EhException(R.string.gallery_list_empty_hit)
+            "No hits found!" -> throw NoHitsFoundException()
             "No watched tags!" -> throw EhException(R.string.gallery_list_empty_hit_subscription)
             "Not logged in!" -> throw NotLoggedInException()
             is String -> if (message.startsWith("Your IP address")) throw EhException(message)
@@ -152,7 +152,7 @@ suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend
     runSuspendCatching {
         block(body)
     }.onFailure {
-        rethrowExactly(response.status.value, body.left(), it)
+        rethrowExactly(response.status, body.left(), it)
     }.getOrThrow()
 }
 
@@ -164,7 +164,7 @@ suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: s
             block(buffer)
         }.onFailure {
             buffer.rewind()
-            rethrowExactly(response.status.value, buffer.right(), it)
+            rethrowExactly(response.status, buffer.right(), it)
         }.getOrThrow()
     }
 }
@@ -334,7 +334,7 @@ object EhEngine {
 
     suspend fun resetImageLimits() = ehRequest(EhUrl.URL_HOME) {
         formBody {
-            append("reset_imagelimit", "Reset Limit")
+            append("reset_imagelimit", "Reset Quota")
         }
     }.fetchUsingAsText(HomeParser::parseResetLimits)
 

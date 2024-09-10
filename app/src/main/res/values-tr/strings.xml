@@ -64,7 +64,6 @@
     <string name="image_search_not_quick_search">Görsel arama, hızlı arama olarak eklenemez</string>
     <string name="duplicate_name">Ad zaten kullanımda.</string>
     <string name="text_is_empty">Yazı boş</string>
-    <string name="error_bad_status_code">Kötü durum kodu: %d</string>
     <string name="error_unknown_host">Bilinmeyen host</string>
     <string name="app_waring">Bu uygulamadaki içerikler internetten alınmaktadır. Bazı içerikler fiziksel veya zihinsel olarak size zararlı gelebilir.Yukarıda, riskleri öğrendiniz ve üstleneceksiniz.
 \nKullanmaya devam ederek, yukarıdaki koşulları kabul edersiniz.</string>

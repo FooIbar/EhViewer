@@ -33,7 +33,6 @@
     <string name="invalid_download_location">似乎下载路径不可用。请到重新设置下载路径。</string>
     <string name="clipboard_gallery_url_snack_message">剪切板里有画廊链接</string>
     <string name="clipboard_gallery_url_snack_action">查看</string>
-    <string name="error_bad_status_code">错误状态码：%d</string>
     <string name="error_timeout">超时</string>
     <string name="error_unknown_host">未知主机</string>
     <string name="error_redirection">太多重定向</string>
@@ -72,7 +71,7 @@
     <string name="search_sr">最低评分</string>
     <string name="search_sp_to">到</string>
     <string name="search_sp_err1">页数最大值至少为 10</string>
-    <string name="search_sp_err2">页数范围差至少为 20</string>
+    <string name="search_sp_err2">页数范围过窄</string>
     <string name="search_sf">禁用排除项：</string>
     <string name="search_sfl">语言</string>
     <string name="search_sfu">上传者</string>
@@ -304,8 +303,6 @@
     <string name="settings_eh_thumb_resolution">缩略图分辨率</string>
     <string name="settings_eh_thumb_resolution_summary">%s，指定分辨率可能使获取缩略图失败</string>
     <string name="settings_eh_thumb_resolution_auto">自动</string>
-    <string name="settings_eh_force_eh_thumb">强制使用 e-hentai 缩略图/API服务器</string>
-    <string name="settings_eh_force_eh_thumb_summary">若 exhentai 加载失败可尝试此项\n注意此项将使用 e-hentai 设置加载图像</string>
     <string name="settings_eh_show_jpn_title">显示日文标题</string>
     <string name="settings_eh_show_jpn_title_summary">需同时在 EHentai 网站设置中启用 Japanese Title</string>
     <string name="settings_eh_show_gallery_pages">显示画廊页数</string>
@@ -426,6 +423,8 @@
     <string name="insufficient_funds">余额不足</string>
     <string name="image_limits">图片配额</string>
     <string name="image_limits_summary">已用：%1$d / %2$d</string>
+    <string name="image_limits_normal">无限制</string>
+    <string name="image_limits_restricted">图片分辨率限制为 1280x</string>
     <string name="reset_cost">重置花费：%d GP</string>
     <string name="reset_limits_succeed">成功重置图片配额</string>
     <string name="reset">重置</string>

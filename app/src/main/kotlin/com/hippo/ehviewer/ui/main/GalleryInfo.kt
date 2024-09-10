@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +52,8 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.ElevatedCard
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
+import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
+import com.hippo.ehviewer.ui.tools.listThumbGenerator
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 
 private val ids = Tuple7(1, 2, 3, 4, 5, 6, 7)
@@ -88,6 +91,7 @@ private val constraintSet = ConstraintSet {
     }
 }
 
+context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun GalleryInfoListItem(
     onClick: () -> Unit,
@@ -105,10 +109,12 @@ fun GalleryInfoListItem(
 ) {
     Row {
         Card {
-            EhAsyncCropThumb(
-                key = info,
-                modifier = Modifier.aspectRatio(DEFAULT_RATIO).fillMaxSize(),
-            )
+            with(listThumbGenerator) {
+                EhAsyncCropThumb(
+                    key = info,
+                    modifier = Modifier.aspectRatio(DEFAULT_RATIO).fillMaxSize(),
+                )
+            }
         }
         ConstraintLayout(
             modifier = Modifier.padding(start = 8.dp, top = 2.dp, end = 4.dp, bottom = 4.dp).fillMaxSize(),
@@ -199,6 +205,7 @@ fun GalleryInfoListItem(
     }
 }
 
+context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun GalleryInfoGridItem(
     onClick: () -> Unit,
@@ -223,13 +230,15 @@ fun GalleryInfoGridItem(
             }
             mutableFloatStateOf(ratio)
         }
-        EhAsyncThumb(
-            model = info,
-            modifier = Modifier.aspectRatio(ratio),
-            onSuccess = {
-                ratio = (it.width.toFloat() / it.height).coerceIn(MIN_RATIO, MAX_RATIO)
-            },
-        )
+        with(listThumbGenerator) {
+            EhAsyncThumb(
+                model = info,
+                modifier = Modifier.aspectRatio(ratio),
+                onSuccess = {
+                    ratio = (it.width.toFloat() / it.height).coerceIn(MIN_RATIO, MAX_RATIO)
+                },
+            )
+        }
         val categoryColor = EhUtils.getCategoryColor(info.category)
         Badge(
             modifier = Modifier.align(Alignment.TopEnd).widthIn(min = 32.dp).height(24.dp),

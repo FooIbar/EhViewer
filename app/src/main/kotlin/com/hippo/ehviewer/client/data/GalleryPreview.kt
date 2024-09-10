@@ -19,19 +19,19 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 interface GalleryPreview : Parcelable {
-    val imageKey: String
+    val url: String
     val position: Int
 }
 
 @Parcelize
 data class LargeGalleryPreview(
-    override val imageKey: String,
+    override val url: String,
     override val position: Int,
 ) : GalleryPreview
 
 @Parcelize
 data class NormalGalleryPreview(
-    override val imageKey: String,
+    override val url: String,
     override val position: Int,
     val offsetX: Int,
     val clipWidth: Int,

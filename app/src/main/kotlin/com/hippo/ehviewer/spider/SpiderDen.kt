@@ -46,6 +46,7 @@ import com.hippo.files.exists
 import com.hippo.files.find
 import com.hippo.files.isDirectory
 import com.hippo.files.list
+import com.hippo.files.moveTo
 import com.hippo.files.openFileDescriptor
 import com.hippo.files.openOutputStream
 import eu.kanade.tachiyomi.util.system.logcat
@@ -103,9 +104,11 @@ class SpiderDen(val info: GalleryInfo) {
         return sCache.read(key) { true } ?: false
     }
 
-    private fun findImageFile(index: Int) = synchronized(fileCache) {
+    private fun findImageFile(index: Int, temp: Boolean = false) = synchronized(fileCache) {
         val head = perFilename(index)
-        fileCache.entries.firstOrNull { (name) -> name.startsWith(head) }?.value
+        fileCache.entries.firstOrNull { (name) ->
+            name.startsWith(head) && temp == name.endsWith(TEMP_SUFFIX)
+        }?.value
     }
 
     private fun containInDownloadDir(index: Int): Boolean = findImageFile(index) != null
@@ -144,14 +147,17 @@ class SpiderDen(val info: GalleryInfo) {
         return sCache.remove(key)
     }
 
-    private fun removeFromDownloadDir(index: Int) = findImageFile(index)?.run {
+    private fun removeTempFile(index: Int) = findImageFile(index, temp = true)?.run {
         delete()
         synchronized(fileCache) {
             fileCache.remove(name)
         }
     }
 
-    fun remove(index: Int) = removeFromCache(index).also { removeFromDownloadDir(index) }
+    fun removeIntermediateFiles(index: Int) {
+        removeFromCache(index)
+        removeTempFile(index)
+    }
 
     private fun Path.findDownloadFileForIndex(index: Int, extension: String): Path {
         val name = perFilename(index, extension)
@@ -185,7 +191,15 @@ class SpiderDen(val info: GalleryInfo) {
         crossinline fops: suspend (Path) -> Unit,
     ): Boolean {
         imageDir?.run {
-            fops(findDownloadFileForIndex(index, ext))
+            val tempFile = findDownloadFileForIndex(index, "$ext$TEMP_SUFFIX")
+            fops(tempFile)
+            val file = resolve(tempFile.name.removeSuffix(TEMP_SUFFIX))
+            file.delete()
+            tempFile.moveTo(file)
+            synchronized(fileCache) {
+                fileCache.remove(tempFile.name)
+                fileCache[file.name] = file
+            }
             return true
         }
 
@@ -353,6 +367,7 @@ class SpiderDen(val info: GalleryInfo) {
     }
 }
 
+private const val TEMP_SUFFIX = ".tmp"
 private val FileNameRegex = Regex("^\\d{8}\\.\\w{3,4}")
 private val FileHashRegex = Regex("/([0-9a-f]{40})(?:-\\d+){3}-\\w+")
 

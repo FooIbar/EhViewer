@@ -5,6 +5,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class GithubRepo(
+    @SerialName("default_branch") val defaultBranch: String,
+)
+
+@Serializable
 data class GithubWorkflowRuns(
     @SerialName("workflow_runs") val workflowRuns: List<GithubWorkflowRun>,
 )

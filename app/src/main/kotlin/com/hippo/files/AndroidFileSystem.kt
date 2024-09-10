@@ -26,7 +26,12 @@ class AndroidFileSystem(context: Context) : FileSystem() {
     }
 
     override fun atomicMove(source: Path, target: Path) {
-        TODO("Not yet implemented")
+        if (source.isPhysicalFile()) {
+            return physicalFileSystem.atomicMove(source, target)
+        }
+
+        DocumentsContract.renameDocument(contentResolver, source.toUri(), target.name)
+            ?: throw IOException("Failed to move $source to $target")
     }
 
     override fun canonicalize(path: Path): Path {

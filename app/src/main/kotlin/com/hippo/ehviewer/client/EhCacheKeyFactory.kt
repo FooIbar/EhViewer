@@ -15,32 +15,35 @@
  */
 package com.hippo.ehviewer.client
 
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
 
+// Normal Preview: https://*.hath.network/cm/[timed token]/[gid]-[index].jpg
 // ExHentai Large Preview: https://s.exhentai.org/t/***
-// ExHentai Normal Preview: https://s.exhentai.org/m/***
-// EHentai Normal Preview: https://ehgt.org/m/***
-// EHentai Large Preview: https://ehgt.org/***
+// E-Hentai Large Preview: https://ehgt.org/***
 
 private const val URL_PREFIX_THUMB_E = "https://ehgt.org/"
-private const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/"
-private const val URL_PREFIX_LARGE_THUMB_EX = URL_PREFIX_THUMB_EX + "t/"
+private const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/t/"
+private const val NORMAL_PREVIEW_PREFIX = "$"
+private val NormalPreviewKeyRegex = Regex("/(\\d+-\\d+)\\.jpg$")
 
 fun getImageKey(gid: Long, index: Int): String = "image:$gid:$index"
 
-fun getThumbKey(url: String): String = url.removePrefix(URL_PREFIX_THUMB_E).removePrefix(URL_PREFIX_LARGE_THUMB_EX).removePrefix(URL_PREFIX_THUMB_EX)
+fun getThumbKey(url: String): String = url.removePrefix(thumbPrefix)
 
-val GalleryPreview.url
-    get() = if (exThumb) {
-        if (this is NormalGalleryPreview) URL_PREFIX_THUMB_EX else URL_PREFIX_LARGE_THUMB_EX
+val String.isNormalPreviewKey
+    get() = startsWith(NORMAL_PREVIEW_PREFIX)
+
+val GalleryPreview.imageKey
+    get() = if (this is NormalGalleryPreview) {
+        NormalPreviewKeyRegex.find(url)?.run { NORMAL_PREVIEW_PREFIX + groupValues[1] }
     } else {
-        URL_PREFIX_THUMB_E
-    } + imageKey
+        getThumbKey(url)
+    }
 
 val GalleryInfo.thumbUrl
-    get() = (if (exThumb) URL_PREFIX_LARGE_THUMB_EX else URL_PREFIX_THUMB_E) + thumbKey!!
+    get() = thumbPrefix + EhUtils.handleThumbUrlResolution(thumbKey!!)
 
-val exThumb get() = EhUtils.isExHentai && !Settings.forceEhThumb
+private val thumbPrefix
+    get() = if (EhUtils.isExHentai) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E
