@@ -70,7 +70,7 @@ class ArchivePageLoader(
         size
     }
 
-    override var size = 0
+    override var internalSize = 0
         private set
 
     override fun start() {
@@ -135,12 +135,12 @@ class ArchivePageLoader(
     }
 
     override suspend fun awaitReady(): Boolean {
-        size = hostJob.await()
+        internalSize = hostJob.await()
         return super.awaitReady() && isReady
     }
 
     override val isReady: Boolean
-        get() = size != 0
+        get() = internalSize != 0
 
     override val title by lazy {
         FileUtils.getNameFromFilename(file.name)!!

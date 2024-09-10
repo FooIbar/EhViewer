@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.loader
 
 import androidx.annotation.CallSuper
 import androidx.collection.SieveCache
+import androidx.compose.runtime.toMutableStateList
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
@@ -33,9 +34,9 @@ abstract class PageLoader {
         )
     }
 
-    val pages by lazy {
-        check(size > 0)
-        (0 until size).map { ReaderPage(it) }
+    private val pages by lazy {
+        check(internalSize > 0)
+        (0 until internalSize).map { index -> ReaderPage(index) }.toMutableStateList()
     }
 
     private val prefetchPageCount = Settings.preloadImage
@@ -61,7 +62,12 @@ abstract class PageLoader {
         pages.forEach(ReaderPage::reset)
     }
 
-    abstract val size: Int
+    protected abstract val internalSize: Int
+
+    operator fun get(index: Int): ReaderPage = pages[index]!!
+
+    val size: Int
+        get() = pages.size
 
     private var lastRequestIndex = -1
 
@@ -77,7 +83,7 @@ abstract class PageLoader {
 
         // Prefetch to disk
         val prefetchRange = if (index >= lastRequestIndex) {
-            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
+            index + 1..(index + prefetchPageCount).coerceAtMost(internalSize - 1)
         } else {
             index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
         }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.PageLoader2
-import com.hippo.ehviewer.ui.main.plus
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.NavigationRegions
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
@@ -39,7 +37,6 @@ fun WebtoonViewer(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    val items = pageLoader.pages
     val zoomableState = rememberZoomableState(zoomSpec = WebtoonZoomSpec)
     val density = LocalDensity.current
     val paddingPercent by Settings.webtoonSidePadding.collectAsState()
@@ -72,7 +69,7 @@ fun WebtoonViewer(
                     info.offset <= ofs.y && info.offset + info.size > ofs.y
                 }
                 if (info != null) {
-                    onSelectPage(items[info.index])
+                    onSelectPage(pageLoader[info.index])
                 }
             },
             onDoubleClick = DoubleTapZoom,
@@ -81,9 +78,9 @@ fun WebtoonViewer(
         contentPadding = PaddingValues(horizontal = sidePadding),
         verticalArrangement = Arrangement.spacedBy(if (withGaps) 15.dp else 0.dp),
     ) {
-        items(items, key = { it.index }) { page ->
+        items(pageLoader.size, key = { pageLoader[it].index }) { index ->
             PagerItem(
-                page = page,
+                page = pageLoader[index],
                 pageLoader = pageLoader,
                 contentScale = ContentScale.FillWidth,
             )
