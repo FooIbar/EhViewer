@@ -140,11 +140,15 @@ abstract class PageLoader {
 
     fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
         val page = index.page
-        if (replaceCache) {
-            cache[page] = image
+        if (image.hasQRCode) {
+            stateList.remove(page)
+        } else {
+            if (replaceCache) {
+                cache[page] = image
+            }
+            page.image = image
+            page.status.value = Page.State.READY
         }
-        page.image = image
-        page.status.value = Page.State.READY
     }
 
     fun notifyPageFailed(index: Int, error: String?) {
