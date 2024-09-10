@@ -42,7 +42,9 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.coil.CropBorderInterceptor
 import com.hippo.ehviewer.coil.DownloadThumbInterceptor
 import com.hippo.ehviewer.coil.HardwareBitmapInterceptor
+import com.hippo.ehviewer.coil.MapExtraInfoInterceptor
 import com.hippo.ehviewer.coil.MergeInterceptor
+import com.hippo.ehviewer.coil.QRCodeInterceptor
 import com.hippo.ehviewer.cronet.cronetHttpClient
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
@@ -177,6 +179,8 @@ class EhApplication :
             if (isAtLeastO) {
                 add(HardwareBitmapInterceptor)
             }
+            add(MapExtraInfoInterceptor)
+            add(QRCodeInterceptor)
             add(CropBorderInterceptor)
             if (isAtLeastP) {
                 add(AnimatedImageDecoder.Factory(false))
