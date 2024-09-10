@@ -65,7 +65,8 @@ abstract class PageLoader {
 
     private var lastRequestIndex = -1
 
-    fun request(index: Int) {
+    fun request(page: ReaderPage) {
+        val index = page.index
         val image = cache[index]
         if (image != null) {
             notifyPageSucceed(index, image, false)
@@ -94,7 +95,8 @@ abstract class PageLoader {
         lastRequestIndex = index
     }
 
-    fun retryPage(index: Int, orgImg: Boolean = false) {
+    fun retryPage(page: ReaderPage, orgImg: Boolean = false) {
+        val index = page.index
         notifyPageWait(index)
         onForceRequest(index, orgImg)
     }
@@ -104,12 +106,6 @@ abstract class PageLoader {
     protected abstract fun onRequest(index: Int)
 
     protected abstract fun onForceRequest(index: Int, orgImg: Boolean)
-
-    fun cancelRequest(index: Int) {
-        onCancelRequest(index)
-    }
-
-    protected abstract fun onCancelRequest(index: Int)
 
     fun notifyPageWait(index: Int) {
         pages[index].reset()
