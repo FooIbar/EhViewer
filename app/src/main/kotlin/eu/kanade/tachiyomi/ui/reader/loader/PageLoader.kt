@@ -82,33 +82,38 @@ abstract class PageLoader {
     private var lastRequestIndex = -1
 
     fun request(page: ReaderPage) {
-        val index = page.index
+        val visualIndex = stateList.indexOf(page)
+        val realIndex = page.index
+
+        // Don't operate on dropped pages
+        if (visualIndex == -1) return
+
         val image = cache[page]
         if (image != null) {
-            notifyPageSucceed(index, image, false)
+            notifyPageSucceed(realIndex, image, false)
         } else {
-            notifyPageWait(index)
-            onRequest(index)
+            notifyPageWait(realIndex)
+            onRequest(realIndex)
         }
 
         // Prefetch to disk
-        val prefetchRange = if (index >= lastRequestIndex) {
-            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
+        val prefetchRange = if (visualIndex >= lastRequestIndex) {
+            visualIndex + 1..(visualIndex + prefetchPageCount).coerceAtMost(size - 1)
         } else {
-            index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
+            visualIndex - 1 downTo (visualIndex - prefetchPageCount).coerceAtLeast(0)
         }
-        val pagesAbsent = prefetchRange.filter { stateList[it].status.value == Page.State.QUEUE }
-        val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
-        val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
-        prefetchPages(pagesAbsent, start - 5 to end + 5)
+        val pagesAbsent = prefetchRange.map { stateList[it] }.filter { it.status.value == Page.State.QUEUE }
+        val start = if (prefetchRange.step > 0) stateList[prefetchRange.first] else stateList[prefetchRange.last]
+        val end = if (prefetchRange.step > 0) stateList[prefetchRange.last] else stateList[prefetchRange.first]
+        prefetchPages(pagesAbsent.map { it.index }, start.index - 5 to end.index + 5)
 
         // Prefetch to memory
-        val range = index - 3..index + 3
-        pagesAbsent.forEach {
-            if (it in range) onRequest(it)
+        val range = visualIndex - 3..visualIndex + 3
+        pagesAbsent.forEach { absentPage ->
+            if (stateList.indexOf(absentPage) in range) onRequest(absentPage.index)
         }
 
-        lastRequestIndex = index
+        lastRequestIndex = visualIndex
     }
 
     fun retryPage(page: ReaderPage, orgImg: Boolean = false) {
