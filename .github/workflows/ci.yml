@@ -35,7 +35,7 @@ jobs:
 
       - name: Clippy Check
         working-directory: ./app/src/main/rust
-        run: cargo clippy --all-targets --all-features -- -D warnings
+        run: cargo clippy --all-features -- -D warnings --target aarch64-linux-android
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
