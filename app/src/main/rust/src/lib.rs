@@ -2,13 +2,20 @@ mod parser;
 
 use android_logger::Config;
 use anyhow::{anyhow, ensure, Result};
-use jni::objects::JByteBuffer;
-use jni::sys::{jint, jobject, JavaVM, JNI_VERSION_1_6};
+use bardecoder::default_decoder;
+use image::ImageBuffer;
+use image::{GenericImageView, Rgba};
+use jni::objects::{JByteBuffer, JClass};
+use jni::sys::{jboolean, jint, jobject, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
+use jni_fn::jni_fn;
 use log::LevelFilter;
+use ndk::bitmap::Bitmap;
 use serde::Serialize;
 use std::ffi::c_void;
 use std::io::Cursor;
+use std::ops::Deref;
+use std::ptr::slice_from_raw_parts;
 use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
 use tl::ParserOptions;
@@ -62,6 +69,12 @@ fn deref_mut_direct_bytebuffer(env: &JNIEnv, buffer: JByteBuffer) -> Result<&'st
 
 trait ThrowingHasDefault {
     fn default() -> Self;
+}
+
+impl ThrowingHasDefault for jboolean {
+    fn default() -> Self {
+        0 as jboolean
+    }
 }
 
 impl ThrowingHasDefault for jobject {
@@ -131,6 +144,41 @@ fn query_childs_first_match_attr<'a>(
     let selector = format!("[{}]", attr);
     let mut iter = node.as_tag()?.query_selector(parser, &selector)?;
     get_node_handle_attr(&iter.next()?, parser, attr)
+}
+
+struct BorrowedPixelContainer {
+    ptr: *const u8,
+    len: usize,
+}
+
+impl Deref for BorrowedPixelContainer {
+    type Target = [u8];
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*slice_from_raw_parts(self.ptr, self.len) }
+    }
+}
+
+#[no_mangle]
+#[allow(non_snake_case)]
+#[jni_fn("com.hippo.ehviewer.image.ImageKt")]
+pub fn hasQRCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
+    let handle = unsafe { Bitmap::from_jni(env.get_raw(), object) };
+    jni_throwing(&mut env, |env| {
+        let bitmap_info = handle.info()?;
+        let (width, height) = (bitmap_info.width(), bitmap_info.height());
+        let ptr = handle.lock_pixels()? as *const u8;
+        let buffer = BorrowedPixelContainer {
+            ptr,
+            len: (width * height * 4) as usize,
+        };
+        let decoder = default_decoder::<ImageBuffer<Rgba<u8>, BorrowedPixelContainer>>();
+        let image = ImageBuffer::from_raw(bitmap_info.width(), bitmap_info.height(), buffer);
+        let result = image.map(|img| decoder.decode(&img));
+        handle.unlock_pixels()?;
+        let vec = result.ok_or(anyhow!("Internal Error!"))?;
+        Ok(!vec.is_empty() as jboolean)
+    })
 }
 
 #[no_mangle]
