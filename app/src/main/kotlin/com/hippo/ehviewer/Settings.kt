@@ -9,6 +9,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import com.hippo.ehviewer.client.CHROME_MOBILE_USER_AGENT
 import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
@@ -162,6 +163,7 @@ object Settings : DataStorePreferences(null) {
     var downloadOriginImage by boolPref("download_origin_image", false)
     var saveAsCbz by boolPref("save_as_cbz", false)
     var archiveMetadata by boolPref("archive_metadata", true)
+    var desktopSite by boolPref("desktop_site", false)
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)
     var defaultFavSlot by intPref("default_favorite_slot", -2)
     var securityDelay by intPref("require_unlock_delay", 0)
@@ -170,7 +172,6 @@ object Settings : DataStorePreferences(null) {
     var updateIntervalDays by intPref("update_interval_days", 7)
     var lastDawnDays by intPref("last_dawn_days", 0)
     var recentToplist by stringPref("recent_toplist", "11")
-    var userAgent by stringPref("user_agent", CHROME_USER_AGENT)
     var defaultDownloadLabel by stringOrNullPref("default_download_label", null)
     var lastUpdateTime by longPref("last_update_time", BuildConfig.COMMIT_TIME)
 
@@ -208,6 +209,9 @@ object Settings : DataStorePreferences(null) {
     val zoomStart = intPref("pref_zoom_start_key", 1)
     val showNavigationOverlayNewUser = boolPref("reader_navigation_overlay_new_user", true)
     val showNavigationOverlayOnStart = boolPref("reader_navigation_overlay_on_start", false)
+
+    val userAgent
+        get() = if (desktopSite) CHROME_USER_AGENT else CHROME_MOBILE_USER_AGENT
 
     init {
         if ("CN" == Locale.getDefault().country) {
