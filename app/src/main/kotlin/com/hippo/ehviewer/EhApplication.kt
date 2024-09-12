@@ -55,7 +55,6 @@ import com.hippo.ehviewer.legacy.cleanObsoleteCache
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
 import com.hippo.ehviewer.ui.tools.dataStateFlow
-import com.hippo.ehviewer.ui.tools.initSETConnection
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -84,7 +83,7 @@ class EhApplication :
     Application(),
     SingletonImageLoader.Factory {
     override fun onCreate() {
-        initSETConnection()
+        // initSETConnection()
         // Initialize Settings on first access
         lifecycleScope.launchIO {
             val mode = Settings.theme

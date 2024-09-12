@@ -26,7 +26,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.StringRes
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
@@ -463,16 +462,16 @@ class MainActivity : EhActivity() {
                             drawerState = sideSheetState,
                             gesturesEnabled = sheet != null && drawerEnabled,
                         ) {
-                            SharedTransitionLayout {
-                                CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                                    DestinationsNavHost(
-                                        navGraph = NavGraphs.root,
-                                        start = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
-                                        defaultTransitions = rememberEhNavAnim(),
-                                        navController = navController,
-                                    )
-                                }
-                            }
+                            // SharedTransitionLayout {
+                            //     CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                            DestinationsNavHost(
+                                navGraph = NavGraphs.root,
+                                start = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
+                                defaultTransitions = rememberEhNavAnim(),
+                                navController = navController,
+                            )
+                            //     }
+                            // }
                         }
                     }
                 }
