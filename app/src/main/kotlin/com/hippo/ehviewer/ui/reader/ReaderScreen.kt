@@ -368,7 +368,7 @@ private suspend fun preparePageLoader(args: ReaderScreenArgs) = when (args) {
 }
 
 @Composable
-private fun collectBackgroundColorAsState(): State<Color> {
+fun collectBackgroundColorAsState(): State<Color> {
     val grey = colorResource(R.color.reader_background_dark)
     val dark = isSystemInDarkTheme()
     return Settings.readerTheme.collectAsState { theme ->

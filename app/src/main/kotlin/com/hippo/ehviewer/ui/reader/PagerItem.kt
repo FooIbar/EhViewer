@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -82,18 +83,28 @@ fun PagerItem(
                     }
                 }
             }
-            Image(
-                painter = painter,
-                contentDescription = null,
-                modifier = contentModifier.fillMaxSize(),
-                contentScale = contentScale,
-                colorFilter = when {
-                    grayScale && invert -> grayScaleAndInvertFilter
-                    grayScale -> grayScaleFilter
-                    invert -> invertFilter
-                    else -> null
-                },
-            )
+            if (image.hasQRCode) {
+                val bgColor by collectBackgroundColorAsState()
+                Image(
+                    painter = ColorPainter(bgColor),
+                    contentDescription = null,
+                    modifier = contentModifier.fillMaxSize(),
+                    contentScale = contentScale,
+                )
+            } else {
+                Image(
+                    painter = painter,
+                    contentDescription = null,
+                    modifier = contentModifier.fillMaxSize(),
+                    contentScale = contentScale,
+                    colorFilter = when {
+                        grayScale && invert -> grayScaleAndInvertFilter
+                        grayScale -> grayScaleFilter
+                        invert -> invertFilter
+                        else -> null
+                    },
+                )
+            }
         }
         Page.State.ERROR -> {
             Box(modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
