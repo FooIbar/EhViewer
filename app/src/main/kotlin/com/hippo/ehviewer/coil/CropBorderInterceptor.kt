@@ -27,7 +27,7 @@ object CropBorderInterceptor : Interceptor {
         val result = chain.proceed()
         if (chain.request.maybeCropBorder && result is SuccessResult) {
             val image = result.image
-            if (image is BitmapImageWithExtraInfo) {
+            if (image is BitmapImageWithExtraInfo && !image.hasQRCode) {
                 val bitmap = image.image.bitmap
                 val ratio = if (image.height > image.width) {
                     image.height / image.width

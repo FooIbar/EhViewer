@@ -179,8 +179,8 @@ class EhApplication :
             if (isAtLeastO) {
                 add(HardwareBitmapInterceptor)
             }
-            add(QRCodeInterceptor)
             add(CropBorderInterceptor)
+            add(QRCodeInterceptor)
             add(MapExtraInfoInterceptor)
             if (isAtLeastP) {
                 add(AnimatedImageDecoder.Factory(false))
