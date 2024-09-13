@@ -93,14 +93,17 @@ fun PagerItem(
                     modifier = contentModifier.fillMaxSize(),
                     contentScale = contentScale,
                 ) {
-                    if (painter.state.collectAsState().value !is AsyncImagePainter.State.Error) {
+                    val placeholderState by painter.state.collectAsState()
+                    if (placeholderState is AsyncImagePainter.State.Success) {
                         SubcomposeAsyncImageContent()
                     } else {
                         Box(
                             modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text(text = stringResource(id = R.string.extraneous_ads))
+                            if (placeholderState is AsyncImagePainter.State.Error) {
+                                Text(text = stringResource(id = R.string.extraneous_ads))
+                            }
                         }
                     }
                 }
