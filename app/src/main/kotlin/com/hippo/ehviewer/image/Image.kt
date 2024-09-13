@@ -99,7 +99,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
             }
         }
 
-        suspend fun decode(src: ImageSource, checkExternalAD: Boolean = false): Image? {
+        suspend fun decode(src: ImageSource, checkExtraneousAds: Boolean = false): Image? {
             return runCatching {
                 val image = when (src) {
                     is PathSource -> {
@@ -115,18 +115,18 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                                             src.close()
                                         }
                                     }
-                                    return decode(source, checkExternalAD)
+                                    return decode(source, checkExtraneousAds)
                                 }
                             }
                         }
-                        src.right().decodeCoil(checkExternalAD)
+                        src.right().decodeCoil(checkExtraneousAds)
                     }
 
                     is ByteBufferSource -> {
                         if (isAtLeastP && !isAtLeastU) {
                             rewriteGifSource(src.source)
                         }
-                        src.left().decodeCoil(checkExternalAD)
+                        src.left().decodeCoil(checkExtraneousAds)
                     }
                 }
                 Image(image, src).apply {
