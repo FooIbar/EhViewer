@@ -41,6 +41,7 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
+import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.ReadableTime
@@ -93,6 +94,11 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_advanced_save_parse_error_body),
                 summary = stringResource(id = R.string.settings_advanced_save_parse_error_body_summary),
                 value = Settings::saveParseErrorBody,
+            )
+            val stripADS = Settings.stripExternalAds.asMutableState()
+            SwitchPreference(
+                title = stringResource(id = R.string.settings_strip_external_ads),
+                value = stripADS.rememberedAccessor,
             )
             SwitchPreference(
                 title = stringResource(id = R.string.settings_advanced_save_crash_log),
