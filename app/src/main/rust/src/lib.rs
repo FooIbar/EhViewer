@@ -182,7 +182,7 @@ pub fn hasQRCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
         let buffer = unsafe { &*slice_from_raw_parts(ptr, (width * height * 4) as usize) };
         let mut decoder = default_builder();
         decoder.qr(Box::new(NOTHING), Box::new(NOTHING));
-        let image = ImageBuffer::from_raw(bitmap_info.width(), bitmap_info.height(), buffer);
+        let image = ImageBuffer::from_raw(width, height, buffer);
         let result = image.map(|img| decoder.build().decode(&img));
         handle.unlock_pixels()?;
         let vec = result.ok_or(anyhow!("Internal Error!"))?;
