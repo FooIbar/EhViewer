@@ -106,7 +106,7 @@ class ArchivePageLoader(
         }
     }
 
-    private fun mayBeAd(index: Int) = index in (size - 10)..size
+    private fun mayBeAd(index: Int) = index > size - 10
 
     private suspend fun doRealWork(index: Int) {
         val buffer = extractToByteBuffer(index) ?: return notifyPageFailed(index, null)

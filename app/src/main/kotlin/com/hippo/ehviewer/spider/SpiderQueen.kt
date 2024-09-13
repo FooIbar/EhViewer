@@ -742,7 +742,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 }
             }
 
-            private fun mayBeAd(index: Int) = index in (size - 10)..size
+            private fun mayBeAd(index: Int) = index > size - 10
 
             private val hasAds = galleryInfo.hasAds
 
