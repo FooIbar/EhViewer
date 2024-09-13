@@ -606,6 +606,7 @@
     <string name="dark_theme_off">总是关闭</string>
     <string name="dark_theme_on">总是开启</string>
     <string name="pref_crop_borders">裁剪边缘</string>
+    <string name="extraneous_ads">被移除的外部广告</string>
     <!-- Tachiyomi Reader End-->
 
     <plurals name="page_count">

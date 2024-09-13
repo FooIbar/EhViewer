@@ -20,14 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.BitmapImage
 import coil3.DrawableImage
-import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.SubcomposeAsyncImageContent
 import com.google.accompanist.drawablepainter.DrawablePainter
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -71,7 +72,7 @@ fun PagerItem(
         }
         Page.State.READY -> {
             val image = page.image!!
-            val painter = remember(image) { image.toPainter() }
+            val imagePainter = remember(image) { image.toPainter() }
             val grayScale by Settings.grayScale.collectAsState()
             val invert by Settings.invertedColors.collectAsState()
             DisposableEffect(image) {
@@ -87,16 +88,26 @@ fun PagerItem(
             }
             if (image.hasQRCode) {
                 val bgColor by collectBackgroundColorAsState()
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = ADSPlaceholderFile,
-                    error = ColorPainter(bgColor),
                     contentDescription = null,
                     modifier = contentModifier.fillMaxSize(),
                     contentScale = contentScale,
-                )
+                ) {
+                    if (painter.state.collectAsState().value is AsyncImagePainter.State.Success) {
+                        SubcomposeAsyncImageContent()
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(text = stringResource(id = R.string.extraneous_ads))
+                        }
+                    }
+                }
             } else {
                 Image(
-                    painter = painter,
+                    painter = imagePainter,
                     contentDescription = null,
                     modifier = contentModifier.fillMaxSize(),
                     contentScale = contentScale,
