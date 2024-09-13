@@ -18,7 +18,7 @@ serde_cbor = "0.11"
 serde = { version = "1.0", features = ["derive"] }
 anyhow = "1.0"
 bardecoder = "0.5"
-image = "0.24"
+image = "0.25"
 ndk = { version = "0.9", features = ["bitmap"] }
 
 [profile.release]
