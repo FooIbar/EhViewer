@@ -53,14 +53,12 @@ fun ReaderPageSheetMeta(
         modifier = Modifier.fillMaxSize() // Workaround for https://issuetracker.google.com/341594885
             .verticalScroll(rememberScrollState()).navigationBarsPadding(),
     ) {
+        showAds?.let { Item(icon = Icons.Default.Refresh, text = R.string.show_extraneous_ads, onClick = it) }
         Item(icon = Icons.Default.Refresh, text = R.string.refresh, onClick = retry)
         Item(icon = Icons.Default.Refresh, text = R.string.refresh_original, onClick = retryOrigin)
         Item(icon = Icons.Default.Share, text = R.string.action_share, onClick = share)
         Item(icon = Icons.Default.FileCopy, text = R.string.action_copy, onClick = copy)
         Item(icon = Icons.Default.Save, text = R.string.action_save, onClick = save)
         Item(icon = Icons.Default.Save, text = R.string.action_save_to, onClick = saveTo)
-        showAds?.let {
-            Item(icon = Icons.Default.Refresh, text = R.string.show_extraneous_ads, onClick = it)
-        }
     }
 }
