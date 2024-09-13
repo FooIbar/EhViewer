@@ -55,6 +55,7 @@ import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastV
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.ehviewer.util.setAppLanguage
+import com.hippo.files.delete
 import com.hippo.files.toOkioPath
 import com.jamal.composeprefs3.ui.prefs.DropDownPref
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
@@ -113,9 +114,11 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     contract = ActivityResultContracts.PickVisualMedia(),
                     key = PickVisualMediaRequest(mediaType = ImageOnly),
                 ) { uri ->
-                    if (uri != null) {
-                        withIOContext {
+                    withIOContext {
+                        if (uri != null) {
                             uri.toOkioPath() sendTo AdsPlaceholderFile
+                        } else {
+                            AdsPlaceholderFile.delete()
                         }
                     }
                 }

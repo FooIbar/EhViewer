@@ -104,7 +104,6 @@ fun PagerItem(
                 model = AdsPlaceholderFile,
                 contentDescription = null,
                 modifier = modifier.fillMaxSize(),
-                contentScale = contentScale,
             ) {
                 val placeholderState by painter.state.collectAsState()
                 if (placeholderState is AsyncImagePainter.State.Success) {
