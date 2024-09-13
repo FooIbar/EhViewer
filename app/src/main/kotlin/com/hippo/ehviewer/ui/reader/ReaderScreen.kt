@@ -54,6 +54,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.client.data.hasAds
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
@@ -348,7 +349,7 @@ private suspend fun preparePageLoader(args: ReaderScreenArgs) = when (args) {
         val page = args.page
         val archive = withIOContext { DownloadManager.getDownloadInfo(info.gid)?.archiveFile }
         if (archive != null) {
-            ArchivePageLoader(archive, info.gid, page)
+            ArchivePageLoader(archive, info.gid, page, info.hasAds)
         } else {
             EhPageLoader(info, page)
         }
