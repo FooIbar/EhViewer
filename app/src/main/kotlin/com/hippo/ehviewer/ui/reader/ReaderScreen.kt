@@ -167,7 +167,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
     }
     LaunchedEffect(pageLoader) {
         with(Settings) {
-            merge(cropBorder.changesFlow(), stripExternalAds.changesFlow()).collect {
+            merge(cropBorder.changesFlow(), stripExtraneousAds.changesFlow()).collect {
                 pageLoader.restart()
             }
         }

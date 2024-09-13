@@ -102,7 +102,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 summary = stringResource(id = R.string.settings_advanced_save_parse_error_body_summary),
                 value = Settings::saveParseErrorBody,
             )
-            val stripADS = Settings.stripExternalAds.asMutableState()
+            val stripADS = Settings.stripExtraneousAds.asMutableState()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_strip_external_ads),
                 value = stripADS.rememberedAccessor,
