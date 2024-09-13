@@ -27,11 +27,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.BitmapImage
 import coil3.DrawableImage
+import coil3.compose.AsyncImage
 import com.google.accompanist.drawablepainter.DrawablePainter
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.image.Image
+import com.hippo.ehviewer.ui.settings.ADSPlaceholderFile
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -85,8 +87,9 @@ fun PagerItem(
             }
             if (image.hasQRCode) {
                 val bgColor by collectBackgroundColorAsState()
-                Image(
-                    painter = ColorPainter(bgColor),
+                AsyncImage(
+                    model = ADSPlaceholderFile,
+                    error = ColorPainter(bgColor),
                     contentDescription = null,
                     modifier = contentModifier.fillMaxSize(),
                     contentScale = contentScale,

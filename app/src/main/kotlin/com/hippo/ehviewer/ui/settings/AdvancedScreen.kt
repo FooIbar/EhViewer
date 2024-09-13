@@ -53,6 +53,7 @@ import com.hippo.ehviewer.util.getAppLanguage
 import com.hippo.ehviewer.util.getLanguages
 import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastV
+import com.hippo.ehviewer.util.sendTo
 import com.hippo.ehviewer.util.setAppLanguage
 import com.hippo.files.toOkioPath
 import com.jamal.composeprefs3.ui.prefs.DropDownPref
@@ -60,6 +61,7 @@ import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.util.zip.ZipEntry
@@ -68,6 +70,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path.Companion.toOkioPath
+import splitties.init.appCtx
 
 @Destination<RootGraph>
 @Composable
@@ -109,6 +113,11 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     contract = ActivityResultContracts.PickVisualMedia(),
                     key = PickVisualMediaRequest(mediaType = ImageOnly),
                 ) { uri ->
+                    if (uri != null) {
+                        withIOContext {
+                            uri.toOkioPath() sendTo ADSPlaceholderFile
+                        }
+                    }
                 }
             }
             SwitchPreference(
@@ -301,3 +310,5 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
         }
     }
 }
+
+val ADSPlaceholderFile = appCtx.filesDir.toOkioPath() / "ADS_placeholder"
