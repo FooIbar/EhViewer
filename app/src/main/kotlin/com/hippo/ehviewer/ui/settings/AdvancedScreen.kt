@@ -102,12 +102,12 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 summary = stringResource(id = R.string.settings_advanced_save_parse_error_body_summary),
                 value = Settings::saveParseErrorBody,
             )
-            val stripADS = Settings.stripExtraneousAds.asMutableState()
+            val stripAds = Settings.stripExtraneousAds.asMutableState()
             SwitchPreference(
                 title = stringResource(id = R.string.settings_strip_external_ads),
-                value = stripADS.rememberedAccessor,
+                value = stripAds.rememberedAccessor,
             )
-            AnimatedVisibility(visible = stripADS.value) {
+            AnimatedVisibility(visible = stripAds.value) {
                 LauncherPreference(
                     title = stringResource(id = R.string.settings_ads_placeholder),
                     contract = ActivityResultContracts.PickVisualMedia(),
