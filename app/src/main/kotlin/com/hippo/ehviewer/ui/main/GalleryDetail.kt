@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,8 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
+import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
+import com.hippo.ehviewer.ui.tools.detailThumbGenerator
 
 @Composable
 fun GalleryDetailHeaderInfoCard(
@@ -95,7 +98,7 @@ fun GalleryDetailHeaderInfoCard(
     }
 }
 
-// context(SharedTransitionScope, TransitionsVisibilityScope)
+context(SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun GalleryDetailHeaderCard(
     info: GalleryInfo,
@@ -107,15 +110,15 @@ fun GalleryDetailHeaderCard(
 ) = ElevatedCard(modifier = modifier) {
     Row {
         Card {
-            // with(detailThumbGenerator) {
-            EhAsyncCropThumb(
-                key = remember(info.gid) { info },
-                modifier = Modifier.size(
-                    dimensionResource(id = R.dimen.gallery_detail_thumb_width),
-                    dimensionResource(id = R.dimen.gallery_detail_thumb_height),
-                ),
-            )
-            // }
+            with(detailThumbGenerator) {
+                EhAsyncCropThumb(
+                    key = remember(info.gid) { info },
+                    modifier = Modifier.size(
+                        dimensionResource(id = R.dimen.gallery_detail_thumb_width),
+                        dimensionResource(id = R.dimen.gallery_detail_thumb_height),
+                    ),
+                )
+            }
         }
         Spacer(modifier = Modifier.weight(0.5F))
         Column(
