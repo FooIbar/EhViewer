@@ -742,13 +742,13 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 }
             }
 
-            private fun indexMayAD(index: Int) = index in 0..5 || index in (size - 10)..size
+            private fun mayBeAd(index: Int) = index in 0..5 || index in (size - 10)..size
 
             private val hasAds = galleryInfo.hasAds
 
             private suspend fun doInJob(index: Int) {
                 val src = mSpiderDen.getImageSource(index) ?: return
-                val image = Image.decode(src, hasAds && Settings.stripExtraneousAds.value && indexMayAD(index))
+                val image = Image.decode(src, hasAds && Settings.stripExtraneousAds.value && mayBeAd(index))
                 checkNotNull(image)
                 runCatching {
                     currentCoroutineContext().ensureActive()

@@ -57,7 +57,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
         is BitmapImageWithExtraInfo -> image.rect
         else -> with(image) { IntRect(0, 0, width, height) }
     }
-    val hasQRCode = when (image) {
+    val hasQrCode = when (image) {
         is BitmapImageWithExtraInfo -> image.hasQrCode
         else -> false
     }

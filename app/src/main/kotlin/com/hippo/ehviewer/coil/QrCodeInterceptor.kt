@@ -23,8 +23,8 @@ object QrCodeInterceptor : Interceptor {
         if (chain.request.detectQrCode && result is SuccessResult) {
             val image = result.image
             if (image is BitmapImageWithExtraInfo) {
-                val hasQRCode = hasQrCode(image.image.bitmap)
-                val new = image.copy(hasQrCode = hasQRCode)
+                val hasQrCode = hasQrCode(image.image.bitmap)
+                val new = image.copy(hasQrCode = hasQrCode)
                 return result.copy(image = new)
             }
         }

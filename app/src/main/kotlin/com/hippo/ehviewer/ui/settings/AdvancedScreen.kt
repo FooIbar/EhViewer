@@ -115,7 +115,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 ) { uri ->
                     if (uri != null) {
                         withIOContext {
-                            uri.toOkioPath() sendTo ADSPlaceholderFile
+                            uri.toOkioPath() sendTo AdsPlaceholderFile
                         }
                     }
                 }
@@ -311,4 +311,4 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
     }
 }
 
-val ADSPlaceholderFile = appCtx.filesDir.toOkioPath() / "ADS_placeholder"
+val AdsPlaceholderFile = appCtx.filesDir.toOkioPath() / "AdsPlaceholder"

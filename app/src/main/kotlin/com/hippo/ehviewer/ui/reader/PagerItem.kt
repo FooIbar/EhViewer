@@ -34,7 +34,7 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.image.Image
-import com.hippo.ehviewer.ui.settings.ADSPlaceholderFile
+import com.hippo.ehviewer.ui.settings.AdsPlaceholderFile
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -86,9 +86,9 @@ fun PagerItem(
                     }
                 }
             }
-            if (image.hasQRCode) {
+            if (image.hasQrCode) {
                 SubcomposeAsyncImage(
-                    model = ADSPlaceholderFile,
+                    model = AdsPlaceholderFile,
                     contentDescription = null,
                     modifier = contentModifier.fillMaxSize(),
                     contentScale = contentScale,

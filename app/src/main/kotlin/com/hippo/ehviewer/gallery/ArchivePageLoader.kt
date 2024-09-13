@@ -106,7 +106,7 @@ class ArchivePageLoader(
         }
     }
 
-    private fun indexMayAD(index: Int) = index in 0..5 || index in (size - 10)..size
+    private fun mayBeAd(index: Int) = index in 0..5 || index in (size - 10)..size
 
     private suspend fun doRealWork(index: Int) {
         val buffer = extractToByteBuffer(index) ?: return notifyPageFailed(index, null)
@@ -124,7 +124,7 @@ class ArchivePageLoader(
             src.close()
             throw it
         }
-        val image = Image.decode(src, hasAds && Settings.stripExtraneousAds.value && indexMayAD(index)) ?: return notifyPageFailed(index, null)
+        val image = Image.decode(src, hasAds && Settings.stripExtraneousAds.value && mayBeAd(index)) ?: return notifyPageFailed(index, null)
         runCatching {
             currentCoroutineContext().ensureActive()
         }.onFailure {
