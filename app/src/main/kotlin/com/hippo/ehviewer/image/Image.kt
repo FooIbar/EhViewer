@@ -81,7 +81,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
     companion object {
         private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 3
 
-        private suspend fun Either<ByteBufferSource, PathSource>.decodeCoil(checkExternalAD: Boolean): CoilImage {
+        private suspend fun Either<ByteBufferSource, PathSource>.decodeCoil(checkExtraneousAds: Boolean): CoilImage {
             val req = appCtx.imageRequest {
                 onLeft { data(it.source) }
                 onRight { data(it.source.toUri()) }
@@ -90,7 +90,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                 allowHardware(false)
                 hardwareThreshold(Settings.hardwareBitmapThreshold)
                 maybeCropBorder(Settings.cropBorder.value)
-                detectQrCode(checkExternalAD)
+                detectQrCode(checkExtraneousAds)
                 memoryCachePolicy(CachePolicy.DISABLED)
             }
             return when (val result = appCtx.imageLoader.execute(req)) {
