@@ -17,14 +17,14 @@ fun ImageRequest.Builder.detectQRCode(enable: Boolean) = apply {
 val ImageRequest.detectQRCode: Boolean
     get() = getExtra(detectQRCodeKey)
 
-object QRCodeInterceptor : Interceptor {
+object QrCodeInterceptor : Interceptor {
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
         val result = chain.proceed()
         if (chain.request.detectQRCode && result is SuccessResult) {
             val image = result.image
             if (image is BitmapImageWithExtraInfo) {
                 val hasQRCode = hasQRCode(image.image.bitmap)
-                val new = image.copy(hasQRCode = hasQRCode)
+                val new = image.copy(hasQrCode = hasQRCode)
                 return result.copy(image = new)
             }
         }
