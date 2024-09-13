@@ -26,11 +26,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.BitmapImage
 import coil3.DrawableImage
+import coil3.compose.AsyncImagePainter
+import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.SubcomposeAsyncImageContent
 import com.google.accompanist.drawablepainter.DrawablePainter
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.image.Image
+import com.hippo.ehviewer.ui.settings.AdsPlaceholderFile
 import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
@@ -94,6 +98,27 @@ fun PagerItem(
                     else -> null
                 },
             )
+        }
+        Page.State.BLOCKED -> {
+            SubcomposeAsyncImage(
+                model = AdsPlaceholderFile,
+                contentDescription = null,
+                modifier = modifier.fillMaxSize(),
+            ) {
+                val placeholderState by painter.state.collectAsState()
+                if (placeholderState is AsyncImagePainter.State.Success) {
+                    SubcomposeAsyncImageContent()
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (placeholderState is AsyncImagePainter.State.Error) {
+                            Text(text = stringResource(id = R.string.blocked_image))
+                        }
+                    }
+                }
+            }
         }
         Page.State.ERROR -> {
             Box(modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {

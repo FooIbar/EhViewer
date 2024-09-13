@@ -54,6 +54,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
+import com.hippo.ehviewer.client.data.hasAds
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
@@ -70,6 +71,7 @@ import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
 import eu.kanade.tachiyomi.ui.reader.ReaderContentOverlay
@@ -79,6 +81,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlin.coroutines.resume
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
@@ -165,8 +168,10 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
             .collect { setOrientation(it) }
     }
     LaunchedEffect(pageLoader) {
-        Settings.cropBorder.changesFlow().collect {
-            pageLoader.restart()
+        with(Settings) {
+            merge(cropBorder.changesFlow(), stripExtraneousAds.changesFlow()).collect {
+                pageLoader.restart()
+            }
         }
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
@@ -214,6 +219,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
         val onSelectPage = { page: ReaderPage ->
             if (Settings.readerLongTapAction.value) {
                 launch {
+                    val pageBlocked = page.status.value == Page.State.BLOCKED
                     dialog { cont ->
                         fun dispose() = cont.resume(Unit)
                         val state = rememberModalBottomSheetState()
@@ -230,6 +236,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                                 copy = { launchIO { with(pageLoader) { copy(page) } } },
                                 save = { launchIO { with(pageLoader) { save(page) } } },
                                 saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
+                                showAds = { page.status.value = Page.State.READY }.takeIf { pageBlocked },
                                 dismiss = { launch { state.hide().also { dispose() } } },
                             )
                         }
@@ -345,7 +352,7 @@ private suspend fun preparePageLoader(args: ReaderScreenArgs) = when (args) {
         val page = args.page
         val archive = withIOContext { DownloadManager.getDownloadInfo(info.gid)?.archiveFile }
         if (archive != null) {
-            ArchivePageLoader(archive, info.gid, page)
+            ArchivePageLoader(archive, info.gid, page, info.hasAds)
         } else {
             EhPageLoader(info, page)
         }

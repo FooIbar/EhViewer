@@ -42,7 +42,9 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.coil.CropBorderInterceptor
 import com.hippo.ehviewer.coil.DownloadThumbInterceptor
 import com.hippo.ehviewer.coil.HardwareBitmapInterceptor
+import com.hippo.ehviewer.coil.MapExtraInfoInterceptor
 import com.hippo.ehviewer.coil.MergeInterceptor
+import com.hippo.ehviewer.coil.QrCodeInterceptor
 import com.hippo.ehviewer.cronet.cronetHttpClient
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
@@ -68,6 +70,7 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cookies.HttpCookies
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
@@ -169,6 +172,7 @@ class EhApplication :
     }
 
     override fun newImageLoader(context: Context) = context.imageLoader {
+        interceptorCoroutineContext(Dispatchers.Default)
         components {
             serviceLoaderEnabled(false)
             add(KtorNetworkFetcherFactory { ktorClient })
@@ -178,6 +182,8 @@ class EhApplication :
                 add(HardwareBitmapInterceptor)
             }
             add(CropBorderInterceptor)
+            add(QrCodeInterceptor)
+            add(MapExtraInfoInterceptor)
             if (isAtLeastP) {
                 add(AnimatedImageDecoder.Factory(false))
             } else {

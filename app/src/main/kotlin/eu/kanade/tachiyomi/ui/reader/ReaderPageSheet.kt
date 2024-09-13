@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.FileCopy
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +38,7 @@ fun ReaderPageSheetMeta(
     copy: () -> Unit,
     save: () -> Unit,
     saveTo: () -> Unit,
+    showAds: (() -> Unit)?,
     dismiss: () -> Unit,
 ) {
     @Composable
@@ -52,6 +54,7 @@ fun ReaderPageSheetMeta(
         modifier = Modifier.fillMaxSize() // Workaround for https://issuetracker.google.com/341594885
             .verticalScroll(rememberScrollState()).navigationBarsPadding(),
     ) {
+        showAds?.let { Item(icon = Icons.Default.Visibility, text = R.string.show_blocked_image, onClick = it) }
         Item(icon = Icons.Default.Refresh, text = R.string.refresh, onClick = retry)
         Item(icon = Icons.Default.Refresh, text = R.string.refresh_original, onClick = retryOrigin)
         Item(icon = Icons.Default.Share, text = R.string.action_share, onClick = share)

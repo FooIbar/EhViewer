@@ -321,6 +321,8 @@
     <string name="settings_read_volume_page_fast">快</string>
     <string name="settings_read_volume_page_slow">慢</string>
     <string name="settings_read_reverse_volume">翻转音量键</string>
+    <string name="settings_strip_extraneous_ads">移除外部广告</string>
+    <string name="settings_ads_placeholder">选择替换外部广告的图片</string>
     <string name="settings_download">下载</string>
     <string name="settings_download_download_location">下载路径</string>
     <string name="settings_download_cant_get_download_location">无法获取下载路径</string>
@@ -606,6 +608,8 @@
     <string name="dark_theme_off">总是关闭</string>
     <string name="dark_theme_on">总是开启</string>
     <string name="pref_crop_borders">裁剪边缘</string>
+    <string name="blocked_image">已屏蔽的图片</string>
+    <string name="show_blocked_image">显示已屏蔽的图片</string>
     <!-- Tachiyomi Reader End-->
 
     <plurals name="page_count">

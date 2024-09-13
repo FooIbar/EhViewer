@@ -105,12 +105,6 @@ abstract class PageLoader {
 
     protected abstract fun onForceRequest(index: Int, orgImg: Boolean)
 
-    fun cancelRequest(index: Int) {
-        onCancelRequest(index)
-    }
-
-    protected abstract fun onCancelRequest(index: Int)
-
     fun notifyPageWait(index: Int) {
         pages[index].reset()
     }
@@ -125,7 +119,7 @@ abstract class PageLoader {
             cache.put(index, image)
         }
         pages[index].image = image
-        pages[index].status.value = Page.State.READY
+        pages[index].status.value = if (image.hasQrCode) Page.State.BLOCKED else Page.State.READY
     }
 
     fun notifyPageFailed(index: Int, error: String?) {

@@ -209,6 +209,7 @@ object Settings : DataStorePreferences(null) {
     val zoomStart = intPref("pref_zoom_start_key", 1)
     val showNavigationOverlayNewUser = boolPref("reader_navigation_overlay_new_user", true)
     val showNavigationOverlayOnStart = boolPref("reader_navigation_overlay_on_start", false)
+    val stripExtraneousAds = boolPref("strip_extraneous_ads", false)
 
     val userAgent
         get() = if (desktopSite) CHROME_USER_AGENT else CHROME_MOBILE_USER_AGENT

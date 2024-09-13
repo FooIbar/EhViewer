@@ -16,6 +16,7 @@
 package com.hippo.ehviewer.gallery
 
 import android.os.ParcelFileDescriptor
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.Settings.archivePasswds
 import com.hippo.ehviewer.image.ByteBufferSource
 import com.hippo.ehviewer.image.Image
@@ -52,6 +53,7 @@ class ArchivePageLoader(
     private val file: Path,
     gid: Long = 0,
     startPage: Int = 0,
+    private val hasAds: Boolean = false,
     passwdProvider: PasswdProvider? = null,
 ) : PageLoader2(gid, startPage) {
     private lateinit var pfd: ParcelFileDescriptor
@@ -104,6 +106,8 @@ class ArchivePageLoader(
         }
     }
 
+    private fun mayBeAd(index: Int) = index > size - 10
+
     private suspend fun doRealWork(index: Int) {
         val buffer = extractToByteBuffer(index) ?: return notifyPageFailed(index, null)
         check(buffer.isDirect)
@@ -120,7 +124,7 @@ class ArchivePageLoader(
             src.close()
             throw it
         }
-        val image = Image.decode(src) ?: return notifyPageFailed(index, null)
+        val image = Image.decode(src, hasAds && Settings.stripExtraneousAds.value && mayBeAd(index)) ?: return notifyPageFailed(index, null)
         runCatching {
             currentCoroutineContext().ensureActive()
         }.onFailure {
@@ -141,10 +145,6 @@ class ArchivePageLoader(
 
     override val isReady: Boolean
         get() = size != 0
-
-    override fun onCancelRequest(index: Int) {
-        mJobMap[index]?.cancel()
-    }
 
     override val title by lazy {
         FileUtils.getNameFromFilename(file.name)!!

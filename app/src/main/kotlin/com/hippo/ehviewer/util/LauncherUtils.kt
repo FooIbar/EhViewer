@@ -74,7 +74,7 @@ suspend fun Context.requestPermission(key: String): Boolean {
     return awaitActivityResult(ActivityResultContracts.RequestPermission(), key)
 }
 
-suspend fun Context.pickVisualMedia(type: VisualMediaType): Uri? = awaitActivityResult(ActivityResultContracts.PickVisualMedia(), PickVisualMediaRequest.Builder().setMediaType(type).build())
+suspend fun Context.pickVisualMedia(type: VisualMediaType): Uri? = awaitActivityResult(ActivityResultContracts.PickVisualMedia(), PickVisualMediaRequest(mediaType = type))
 
 @RequiresApi(Build.VERSION_CODES.O)
 suspend fun Context.requestInstallPermission(): Boolean {

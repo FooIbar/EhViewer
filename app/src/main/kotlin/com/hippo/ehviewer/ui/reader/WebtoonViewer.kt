@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.PageLoader2
-import com.hippo.ehviewer.ui.main.plus
 import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.NavigationRegions
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion

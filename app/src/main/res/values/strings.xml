@@ -337,6 +337,8 @@
     <string name="settings_read_volume_page_fast">Fast</string>
     <string name="settings_read_volume_page_slow">Slow</string>
     <string name="settings_read_reverse_volume">Reverse volume key</string>
+    <string name="settings_strip_extraneous_ads">Remove extraneous ads</string>
+    <string name="settings_ads_placeholder">Pick placeholder for removed ads</string>
     <string name="settings_download">Download</string>
     <string name="settings_download_download_location">Download location</string>
     <string name="settings_download_cant_get_download_location">Can\'t get download location</string>
@@ -624,6 +626,8 @@
     <string name="dark_theme_follow_system">Follow system</string>
     <string name="dark_theme_off">Always off</string>
     <string name="dark_theme_on">Always on</string>
+    <string name="blocked_image">Blocked image</string>
+    <string name="show_blocked_image">Show blocked image</string>
     <!-- Tachiyomi Reader End-->
 
     <plurals name="page_count">

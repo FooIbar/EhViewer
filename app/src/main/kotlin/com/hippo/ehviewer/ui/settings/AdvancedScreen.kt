@@ -5,7 +5,10 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -39,6 +42,7 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.observed
+import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.Crash
 import com.hippo.ehviewer.util.ReadableTime
@@ -47,13 +51,16 @@ import com.hippo.ehviewer.util.getAppLanguage
 import com.hippo.ehviewer.util.getLanguages
 import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastV
+import com.hippo.ehviewer.util.sendTo
 import com.hippo.ehviewer.util.setAppLanguage
+import com.hippo.files.delete
 import com.hippo.files.toOkioPath
 import com.jamal.composeprefs3.ui.prefs.DropDownPref
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.util.zip.ZipEntry
@@ -62,6 +69,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.Path.Companion.toOkioPath
+import splitties.init.appCtx
 
 @Destination<RootGraph>
 @Composable
@@ -91,6 +100,26 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 summary = stringResource(id = R.string.settings_advanced_save_parse_error_body_summary),
                 value = Settings::saveParseErrorBody,
             )
+            val stripAds = Settings.stripExtraneousAds.asMutableState()
+            SwitchPreference(
+                title = stringResource(id = R.string.settings_strip_extraneous_ads),
+                value = stripAds.rememberedAccessor,
+            )
+            AnimatedVisibility(visible = stripAds.value) {
+                LauncherPreference(
+                    title = stringResource(id = R.string.settings_ads_placeholder),
+                    contract = ActivityResultContracts.PickVisualMedia(),
+                    key = PickVisualMediaRequest(mediaType = ImageOnly),
+                ) { uri ->
+                    withIOContext {
+                        if (uri != null) {
+                            uri.toOkioPath() sendTo AdsPlaceholderFile
+                        } else {
+                            AdsPlaceholderFile.delete()
+                        }
+                    }
+                }
+            }
             SwitchPreference(
                 title = stringResource(id = R.string.settings_advanced_save_crash_log),
                 summary = stringResource(id = R.string.settings_advanced_save_crash_log_summary),
@@ -273,3 +302,5 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
         }
     }
 }
+
+val AdsPlaceholderFile = appCtx.filesDir.toOkioPath() / "AdsPlaceholder"

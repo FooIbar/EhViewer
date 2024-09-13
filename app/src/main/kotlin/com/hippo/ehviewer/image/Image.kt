@@ -33,7 +33,8 @@ import coil3.request.allowHardware
 import coil3.size.Dimension
 import coil3.size.Precision
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.coil.BitmapImageWithRect
+import com.hippo.ehviewer.coil.BitmapImageWithExtraInfo
+import com.hippo.ehviewer.coil.detectQrCode
 import com.hippo.ehviewer.coil.hardwareThreshold
 import com.hippo.ehviewer.coil.maybeCropBorder
 import com.hippo.ehviewer.jni.isGif
@@ -53,12 +54,16 @@ import splitties.init.appCtx
 class Image private constructor(image: CoilImage, private val src: ImageSource) {
     val size = image.size
     val rect = when (image) {
-        is BitmapImageWithRect -> image.rect
-        else -> image.run { IntRect(0, 0, width, height) }
+        is BitmapImageWithExtraInfo -> image.rect
+        else -> with(image) { IntRect(0, 0, width, height) }
+    }
+    val hasQrCode = when (image) {
+        is BitmapImageWithExtraInfo -> image.hasQrCode
+        else -> false
     }
 
     var innerImage: CoilImage? = when (image) {
-        is BitmapImageWithRect -> image.image
+        is BitmapImageWithExtraInfo -> image.image
         else -> image
     }
 
@@ -76,7 +81,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
     companion object {
         private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 3
 
-        private suspend fun Either<ByteBufferSource, PathSource>.decodeCoil(): CoilImage {
+        private suspend fun Either<ByteBufferSource, PathSource>.decodeCoil(checkExtraneousAds: Boolean): CoilImage {
             val req = appCtx.imageRequest {
                 onLeft { data(it.source) }
                 onRight { data(it.source.toUri()) }
@@ -85,6 +90,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                 allowHardware(false)
                 hardwareThreshold(Settings.hardwareBitmapThreshold)
                 maybeCropBorder(Settings.cropBorder.value)
+                detectQrCode(checkExtraneousAds)
                 memoryCachePolicy(CachePolicy.DISABLED)
             }
             return when (val result = appCtx.imageLoader.execute(req)) {
@@ -93,7 +99,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
             }
         }
 
-        suspend fun decode(src: ImageSource): Image? {
+        suspend fun decode(src: ImageSource, checkExtraneousAds: Boolean = false): Image? {
             return runCatching {
                 val image = when (src) {
                     is PathSource -> {
@@ -109,18 +115,18 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                                             src.close()
                                         }
                                     }
-                                    return decode(source)
+                                    return decode(source, checkExtraneousAds)
                                 }
                             }
                         }
-                        src.right().decodeCoil()
+                        src.right().decodeCoil(checkExtraneousAds)
                     }
 
                     is ByteBufferSource -> {
                         if (isAtLeastP && !isAtLeastU) {
                             rewriteGifSource(src.source)
                         }
-                        src.left().decodeCoil()
+                        src.left().decodeCoil(checkExtraneousAds)
                     }
                 }
                 Image(image, src).apply {
@@ -146,3 +152,4 @@ interface ByteBufferSource : ImageSource {
 }
 
 external fun detectBorder(bitmap: Bitmap): IntArray
+external fun hasQrCode(bitmap: Bitmap): Boolean

@@ -28,6 +28,7 @@ import com.hippo.ehviewer.client.EhUrl.getGalleryDetailUrl
 import com.hippo.ehviewer.client.EhUrl.getGalleryMultiPageViewerUrl
 import com.hippo.ehviewer.client.EhUrl.referer
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.data.hasAds
 import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.client.exception.QuotaExceededException
 import com.hippo.ehviewer.client.fetchUsingAsText
@@ -284,10 +285,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    fun cancelRequest(index: Int) {
-        mWorkerScope.cancelDecode(index)
-    }
-
     fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {
         mWorkerScope.updateRAList(pages, pair)
     }
@@ -511,10 +508,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         private var lastRequestTime = TimeSource.Monotonic.markNow()
         var isDownloadMode = false
             private set
-
-        fun cancelDecode(index: Int) {
-            decoder.cancel(index)
-        }
 
         @Synchronized
         fun enterDownloadMode() {
@@ -749,9 +742,13 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 }
             }
 
+            private fun mayBeAd(index: Int) = index > size - 10
+
+            private val hasAds = galleryInfo.hasAds
+
             private suspend fun doInJob(index: Int) {
                 val src = mSpiderDen.getImageSource(index) ?: return
-                val image = Image.decode(src)
+                val image = Image.decode(src, hasAds && Settings.stripExtraneousAds.value && mayBeAd(index))
                 checkNotNull(image)
                 runCatching {
                     currentCoroutineContext().ensureActive()
