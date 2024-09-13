@@ -90,7 +90,7 @@ fun PagerItem(
                 SubcomposeAsyncImage(
                     model = AdsPlaceholderFile,
                     contentDescription = null,
-                    modifier = contentModifier.fillMaxSize(),
+                    modifier = modifier.fillMaxSize(),
                     contentScale = contentScale,
                 ) {
                     val placeholderState by painter.state.collectAsState()
