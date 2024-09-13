@@ -87,14 +87,13 @@ fun PagerItem(
                 }
             }
             if (image.hasQRCode) {
-                val bgColor by collectBackgroundColorAsState()
                 SubcomposeAsyncImage(
                     model = ADSPlaceholderFile,
                     contentDescription = null,
                     modifier = contentModifier.fillMaxSize(),
                     contentScale = contentScale,
                 ) {
-                    if (painter.state.collectAsState().value is AsyncImagePainter.State.Success) {
+                    if (painter.state.collectAsState().value !is AsyncImagePainter.State.Error) {
                         SubcomposeAsyncImageContent()
                     } else {
                         Box(
