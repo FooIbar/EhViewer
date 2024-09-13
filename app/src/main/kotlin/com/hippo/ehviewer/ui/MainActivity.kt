@@ -26,7 +26,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.StringRes
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
@@ -138,6 +137,7 @@ import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
+import com.hippo.ehviewer.ui.tools.NoopSharedTransitionScope
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.addTextToClipboard
@@ -463,16 +463,17 @@ class MainActivity : EhActivity() {
                             drawerState = sideSheetState,
                             gesturesEnabled = sheet != null && drawerEnabled,
                         ) {
-                            SharedTransitionLayout {
-                                CompositionLocalProvider(LocalSharedTransitionScope provides this) {
-                                    DestinationsNavHost(
-                                        navGraph = NavGraphs.root,
-                                        start = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
-                                        defaultTransitions = rememberEhNavAnim(),
-                                        navController = navController,
-                                    )
-                                }
+                            // https://issuetracker.google.com/336140982
+                            // SharedTransitionLayout {
+                            CompositionLocalProvider(LocalSharedTransitionScope provides NoopSharedTransitionScope) {
+                                DestinationsNavHost(
+                                    navGraph = NavGraphs.root,
+                                    start = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
+                                    defaultTransitions = rememberEhNavAnim(),
+                                    navController = navController,
+                                )
                             }
+                            // }
                         }
                     }
                 }
