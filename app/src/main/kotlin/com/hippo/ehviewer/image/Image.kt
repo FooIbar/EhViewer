@@ -34,7 +34,7 @@ import coil3.size.Dimension
 import coil3.size.Precision
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.coil.BitmapImageWithExtraInfo
-import com.hippo.ehviewer.coil.detectQRCode
+import com.hippo.ehviewer.coil.detectQrCode
 import com.hippo.ehviewer.coil.hardwareThreshold
 import com.hippo.ehviewer.coil.maybeCropBorder
 import com.hippo.ehviewer.jni.isGif
@@ -90,7 +90,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                 allowHardware(false)
                 hardwareThreshold(Settings.hardwareBitmapThreshold)
                 maybeCropBorder(Settings.cropBorder.value)
-                detectQRCode(checkExternalAD)
+                detectQrCode(checkExternalAD)
                 memoryCachePolicy(CachePolicy.DISABLED)
             }
             return when (val result = appCtx.imageLoader.execute(req)) {

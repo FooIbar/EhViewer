@@ -17,7 +17,7 @@ data class BitmapImageWithExtraInfo(
 object MapExtraInfoInterceptor : Interceptor {
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
         val result = chain.proceed()
-        val needMap = with(chain.request) { maybeCropBorder || detectQRCode || !allowHardware }
+        val needMap = with(chain.request) { maybeCropBorder || detectQrCode || !allowHardware }
         if (needMap && result is SuccessResult) {
             val image = result.image
             if (image is BitmapImage) {
