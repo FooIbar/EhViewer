@@ -741,9 +741,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 }
             }
 
+            private val hasADS = galleryInfo.simpleTags?.any { "extraneous ads" in it } ?: false
+
             private suspend fun doInJob(index: Int) {
                 val src = mSpiderDen.getImageSource(index) ?: return
-                val image = Image.decode(src)
+                val image = Image.decode(src, hasADS && Settings.stripExternalAds.value)
                 checkNotNull(image)
                 runCatching {
                     currentCoroutineContext().ensureActive()

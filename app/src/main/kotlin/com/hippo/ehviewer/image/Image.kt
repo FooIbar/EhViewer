@@ -81,7 +81,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
     companion object {
         private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 3
 
-        private suspend fun Either<ByteBufferSource, PathSource>.decodeCoil(): CoilImage {
+        private suspend fun Either<ByteBufferSource, PathSource>.decodeCoil(checkExternalAD: Boolean): CoilImage {
             val req = appCtx.imageRequest {
                 onLeft { data(it.source) }
                 onRight { data(it.source.toUri()) }
@@ -90,7 +90,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                 allowHardware(false)
                 hardwareThreshold(Settings.hardwareBitmapThreshold)
                 maybeCropBorder(Settings.cropBorder.value)
-                detectQRCode(Settings.stripExternalAds.value)
+                detectQRCode(checkExternalAD)
                 memoryCachePolicy(CachePolicy.DISABLED)
             }
             return when (val result = appCtx.imageLoader.execute(req)) {
@@ -99,7 +99,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
             }
         }
 
-        suspend fun decode(src: ImageSource): Image? {
+        suspend fun decode(src: ImageSource, checkExternalAD: Boolean = false): Image? {
             return runCatching {
                 val image = when (src) {
                     is PathSource -> {
@@ -115,18 +115,18 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                                             src.close()
                                         }
                                     }
-                                    return decode(source)
+                                    return decode(source, checkExternalAD)
                                 }
                             }
                         }
-                        src.right().decodeCoil()
+                        src.right().decodeCoil(checkExternalAD)
                     }
 
                     is ByteBufferSource -> {
                         if (isAtLeastP && !isAtLeastU) {
                             rewriteGifSource(src.source)
                         }
-                        src.left().decodeCoil()
+                        src.left().decodeCoil(checkExternalAD)
                     }
                 }
                 Image(image, src).apply {
