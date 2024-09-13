@@ -13,7 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
 
 object MergeInterceptor : Interceptor {
     private val pendingContinuationMap: HashMap<String, MutableList<CancellableContinuation<Unit>>> = hashMapOf()
@@ -42,7 +41,7 @@ object MergeInterceptor : Interceptor {
 
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
         val req = chain.request
-        val key = req.memoryCacheKey?.takeIf { it.isNormalPreviewKey || Settings.preloadThumbAggressively } ?: return withContext(req.interceptorCoroutineContext) { chain.proceed() }
+        val key = req.memoryCacheKey?.takeIf { it.isNormalPreviewKey || Settings.preloadThumbAggressively } ?: return chain.proceed()
 
         suspendCancellableCoroutine { continuation ->
             synchronized(pendingContinuationMapLock) {
@@ -63,7 +62,7 @@ object MergeInterceptor : Interceptor {
         }
 
         try {
-            return withContext(req.interceptorCoroutineContext) { chain.proceed() }.apply {
+            return chain.proceed().apply {
                 // Wake all pending continuations shared with the same memory key since we have written it to memory cache
                 notifyScope.launch {
                     synchronized(pendingContinuationMapLock) {

@@ -70,6 +70,7 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cookies.HttpCookies
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
@@ -171,6 +172,7 @@ class EhApplication :
     }
 
     override fun newImageLoader(context: Context) = context.imageLoader {
+        interceptorCoroutineContext(Dispatchers.Default)
         components {
             serviceLoaderEnabled(false)
             add(KtorNetworkFetcherFactory { ktorClient })
