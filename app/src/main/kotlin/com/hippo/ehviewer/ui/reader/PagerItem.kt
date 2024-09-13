@@ -72,7 +72,7 @@ fun PagerItem(
         }
         Page.State.READY -> {
             val image = page.image!!
-            val imagePainter = remember(image) { image.toPainter() }
+            val painter = remember(image) { image.toPainter() }
             val grayScale by Settings.grayScale.collectAsState()
             val invert by Settings.invertedColors.collectAsState()
             DisposableEffect(image) {
@@ -86,40 +86,39 @@ fun PagerItem(
                     }
                 }
             }
-            if (image.hasQrCode) {
-                SubcomposeAsyncImage(
-                    model = AdsPlaceholderFile,
-                    contentDescription = null,
-                    modifier = modifier.fillMaxSize(),
-                    contentScale = contentScale,
-                ) {
-                    val placeholderState by painter.state.collectAsState()
-                    if (placeholderState is AsyncImagePainter.State.Success) {
-                        SubcomposeAsyncImageContent()
-                    } else {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            if (placeholderState is AsyncImagePainter.State.Error) {
-                                Text(text = stringResource(id = R.string.extraneous_ads))
-                            }
+            Image(
+                painter = painter,
+                contentDescription = null,
+                modifier = contentModifier.fillMaxSize(),
+                contentScale = contentScale,
+                colorFilter = when {
+                    grayScale && invert -> grayScaleAndInvertFilter
+                    grayScale -> grayScaleFilter
+                    invert -> invertFilter
+                    else -> null
+                },
+            )
+        }
+        Page.State.BLOCKED -> {
+            SubcomposeAsyncImage(
+                model = AdsPlaceholderFile,
+                contentDescription = null,
+                modifier = modifier.fillMaxSize(),
+                contentScale = contentScale,
+            ) {
+                val placeholderState by painter.state.collectAsState()
+                if (placeholderState is AsyncImagePainter.State.Success) {
+                    SubcomposeAsyncImageContent()
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (placeholderState is AsyncImagePainter.State.Error) {
+                            Text(text = stringResource(id = R.string.blocked_image))
                         }
                     }
                 }
-            } else {
-                Image(
-                    painter = imagePainter,
-                    contentDescription = null,
-                    modifier = contentModifier.fillMaxSize(),
-                    contentScale = contentScale,
-                    colorFilter = when {
-                        grayScale && invert -> grayScaleAndInvertFilter
-                        grayScale -> grayScaleFilter
-                        invert -> invertFilter
-                        else -> null
-                    },
-                )
             }
         }
         Page.State.ERROR -> {

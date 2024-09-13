@@ -71,6 +71,7 @@ import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
 import eu.kanade.tachiyomi.ui.reader.ReaderContentOverlay
@@ -218,6 +219,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
         val onSelectPage = { page: ReaderPage ->
             if (Settings.readerLongTapAction.value) {
                 launch {
+                    val pageBlocked = page.status.value == Page.State.BLOCKED
                     dialog { cont ->
                         fun dispose() = cont.resume(Unit)
                         val state = rememberModalBottomSheetState()
@@ -227,7 +229,6 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                             sheetState = state,
                             contentWindowInsets = { EmptyWindowInsets },
                         ) {
-                            val hasQrCode = page.image?.hasQrCode ?: false
                             ReaderPageSheetMeta(
                                 retry = { pageLoader.retryPage(page.index) },
                                 retryOrigin = { pageLoader.retryPage(page.index, true) },
@@ -235,7 +236,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                                 copy = { launchIO { with(pageLoader) { copy(page) } } },
                                 save = { launchIO { with(pageLoader) { save(page) } } },
                                 saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
-                                showAds = { page.image?.hasQrCode = false }.takeIf { hasQrCode },
+                                showAds = { page.status.value = Page.State.READY }.takeIf { pageBlocked },
                                 dismiss = { launch { state.hide().also { dispose() } } },
                             )
                         }

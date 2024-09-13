@@ -26,6 +26,7 @@ open class Page(val index: Int) {
         LOAD_PAGE,
         DOWNLOAD_IMAGE,
         READY,
+        BLOCKED,
         ERROR,
     }
 }

@@ -625,8 +625,8 @@
     <string name="dark_theme_follow_system">Follow system</string>
     <string name="dark_theme_off">Always off</string>
     <string name="dark_theme_on">Always on</string>
-    <string name="extraneous_ads">Removed extraneous ads</string>
-    <string name="show_extraneous_ads">Show extraneous ads</string>
+    <string name="blocked_image">Blocked image</string>
+    <string name="show_blocked_image">Show blocked image</string>
     <!-- Tachiyomi Reader End-->
 
     <plurals name="page_count">
