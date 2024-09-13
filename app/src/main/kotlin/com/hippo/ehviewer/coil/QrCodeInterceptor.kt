@@ -6,7 +6,7 @@ import coil3.intercept.Interceptor
 import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
-import com.hippo.ehviewer.image.hasQRCode
+import com.hippo.ehviewer.image.hasQrCode
 
 private val detectQrCodeKey = Extras.Key(default = false)
 
@@ -23,7 +23,7 @@ object QrCodeInterceptor : Interceptor {
         if (chain.request.detectQrCode && result is SuccessResult) {
             val image = result.image
             if (image is BitmapImageWithExtraInfo) {
-                val hasQRCode = hasQRCode(image.image.bitmap)
+                val hasQRCode = hasQrCode(image.image.bitmap)
                 val new = image.copy(hasQrCode = hasQRCode)
                 return result.copy(image = new)
             }

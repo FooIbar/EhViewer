@@ -173,7 +173,7 @@ impl Decode<QRData, String, QRError> for Nothing {
 #[no_mangle]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
-pub fn hasQRCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
+pub fn hasQrCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
     let handle = get_bitmap_handle(&mut env, object);
     jni_throwing(&mut env, |_| {
         let bitmap_info = handle.info()?;

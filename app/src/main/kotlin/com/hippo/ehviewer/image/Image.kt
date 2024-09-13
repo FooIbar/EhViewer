@@ -152,4 +152,4 @@ interface ByteBufferSource : ImageSource {
 }
 
 external fun detectBorder(bitmap: Bitmap): IntArray
-external fun hasQRCode(bitmap: Bitmap): Boolean
+external fun hasQrCode(bitmap: Bitmap): Boolean
