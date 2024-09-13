@@ -5,7 +5,10 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -100,6 +103,14 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_strip_external_ads),
                 value = stripADS.rememberedAccessor,
             )
+            AnimatedVisibility(visible = stripADS.value) {
+                LauncherPreference(
+                    title = stringResource(id = R.string.settings_ads_placeholder),
+                    contract = ActivityResultContracts.PickVisualMedia(),
+                    key = PickVisualMediaRequest(mediaType = ImageOnly),
+                ) { uri ->
+                }
+            }
             SwitchPreference(
                 title = stringResource(id = R.string.settings_advanced_save_crash_log),
                 summary = stringResource(id = R.string.settings_advanced_save_crash_log_summary),

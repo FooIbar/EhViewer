@@ -338,6 +338,7 @@
     <string name="settings_read_volume_page_slow">Slow</string>
     <string name="settings_read_reverse_volume">Reverse volume key</string>
     <string name="settings_strip_external_ads">Remove external ads</string>
+    <string name="settings_ads_placeholder">Pick placeholder for removed ads</string>
     <string name="settings_download">Download</string>
     <string name="settings_download_download_location">Download location</string>
     <string name="settings_download_cant_get_download_location">Can\'t get download location</string>
