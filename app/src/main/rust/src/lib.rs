@@ -163,7 +163,7 @@ pub fn hasQrCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
         let result = image.map(|img| decoder.decode(&img));
         handle.unlock_pixels()?;
         let vec = result.ok_or(anyhow!("Internal Error!"))?;
-        Ok(!vec.is_empty() as jboolean)
+        Ok(vec.iter().any(|i| i.is_ok()) as jboolean)
     })
 }
 
