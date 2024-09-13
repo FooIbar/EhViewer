@@ -2,7 +2,6 @@ package eu.kanade.tachiyomi.ui.reader.loader
 
 import androidx.annotation.CallSuper
 import androidx.collection.lruCache
-import androidx.compose.runtime.toMutableStateList
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
@@ -16,7 +15,7 @@ private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
 abstract class PageLoader {
     private val cache by lazy {
-        lruCache<ReaderPage, Image>(
+        lruCache<Int, Image>(
             maxSize = if (isAtLeastO) {
                 (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
             } else {
@@ -25,7 +24,7 @@ abstract class PageLoader {
             sizeOf = { _, v -> v.size.toInt() },
             onEntryRemoved = { _, k, o, n ->
                 if (o.isRecyclable) {
-                    n ?: notifyPageWait(k.index)
+                    n ?: notifyPageWait(k)
                     o.recycle()
                 } else {
                     o.isRecyclable = true
@@ -34,20 +33,10 @@ abstract class PageLoader {
         )
     }
 
-    private val storage by lazy {
-        check(internalSize > 0)
-        (0 until internalSize).map { ReaderPage(it) }.let { pages ->
-            val tracker = pages.associateBy { it.index }
-            val stateList = pages.toMutableStateList()
-            tracker to stateList
-        }
+    val pages by lazy {
+        check(size > 0)
+        (0 until size).map { ReaderPage(it) }
     }
-
-    private val trackMap
-        get() = storage.first
-
-    private val stateList
-        get() = storage.second
 
     private val prefetchPageCount = Settings.preloadImage
 
@@ -69,64 +58,46 @@ abstract class PageLoader {
 
     fun restart() {
         cache.evictAll()
-        stateList.forEach(ReaderPage::reset)
+        pages.forEach(ReaderPage::reset)
     }
 
-    protected abstract val internalSize: Int
-
-    operator fun get(index: Int): ReaderPage = stateList[index]
-
-    val size: Int
-        get() = stateList.size
+    abstract val size: Int
 
     private var lastRequestIndex = -1
 
-    fun request(page: ReaderPage) {
-        val visualIndex = stateList.indexOf(page)
-        val realIndex = page.index
-
-        // Don't operate on dropped pages
-        if (visualIndex == -1) return
-
-        val image = cache[page]
+    fun request(index: Int) {
+        val image = cache[index]
         if (image != null) {
-            notifyPageSucceed(realIndex, image, false)
+            notifyPageSucceed(index, image, false)
         } else {
-            notifyPageWait(realIndex)
-            onRequest(realIndex)
+            notifyPageWait(index)
+            onRequest(index)
         }
 
         // Prefetch to disk
-        val prefetchRange = if (visualIndex >= lastRequestIndex) {
-            visualIndex + 1..(visualIndex + prefetchPageCount).coerceAtMost(size - 1)
+        val prefetchRange = if (index >= lastRequestIndex) {
+            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
         } else {
-            visualIndex - 1 downTo (visualIndex - prefetchPageCount).coerceAtLeast(0)
+            index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
         }
-        val pagesAbsent = prefetchRange.map { stateList[it] }.filter { it.status.value == Page.State.QUEUE }
-
+        val pagesAbsent = prefetchRange.filter { pages[it].status.value == Page.State.QUEUE }
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
         val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
-        prefetchPages(pagesAbsent.map { it.index }, start - 5 to end + 5)
+        prefetchPages(pagesAbsent, start - 5 to end + 5)
 
         // Prefetch to memory
-        val range = visualIndex - 3..visualIndex + 3
-        pagesAbsent.forEach { absentPage ->
-            if (stateList.indexOf(absentPage) in range) onRequest(absentPage.index)
+        val range = index - 3..index + 3
+        pagesAbsent.forEach {
+            if (it in range) onRequest(it)
         }
 
-        lastRequestIndex = visualIndex
+        lastRequestIndex = index
     }
 
-    fun retryPage(page: ReaderPage, orgImg: Boolean = false) {
-        val index = page.index
+    fun retryPage(index: Int, orgImg: Boolean = false) {
         notifyPageWait(index)
         onForceRequest(index, orgImg)
     }
-
-    private val Int.page
-        get() = trackMap[this]!!
-
-    // Following accepts real index!!!
 
     protected abstract fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>)
 
@@ -135,33 +106,25 @@ abstract class PageLoader {
     protected abstract fun onForceRequest(index: Int, orgImg: Boolean)
 
     fun notifyPageWait(index: Int) {
-        index.page.reset()
+        pages[index].reset()
     }
 
     fun notifyPagePercent(index: Int, percent: Float) {
-        val page = index.page
-        page.progress = (percent * 100).toInt()
-        page.status.compareAndSet(Page.State.QUEUE, Page.State.DOWNLOAD_IMAGE)
+        pages[index].progress = (percent * 100).toInt()
+        pages[index].status.compareAndSet(Page.State.QUEUE, Page.State.DOWNLOAD_IMAGE)
     }
 
     fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
-        val page = index.page
-        if (image.hasQRCode) {
-            println("$index has QRCode")
-            stateList.remove(page)
-        } else {
-            if (replaceCache) {
-                cache.put(page, image)
-            }
-            page.image = image
-            page.status.value = Page.State.READY
+        if (replaceCache) {
+            cache.put(index, image)
         }
+        pages[index].image = image
+        pages[index].status.value = Page.State.READY
     }
 
     fun notifyPageFailed(index: Int, error: String?) {
-        val page = index.page
-        page.errorMsg = error
-        page.status.value = Page.State.ERROR
+        pages[index].errorMsg = error
+        pages[index].status.value = Page.State.ERROR
     }
 }
 

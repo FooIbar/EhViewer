@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,6 +38,7 @@ fun WebtoonViewer(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
+    val items = pageLoader.pages
     val zoomableState = rememberZoomableState(zoomSpec = WebtoonZoomSpec)
     val density = LocalDensity.current
     val paddingPercent by Settings.webtoonSidePadding.collectAsState()
@@ -69,7 +71,7 @@ fun WebtoonViewer(
                     info.offset <= ofs.y && info.offset + info.size > ofs.y
                 }
                 if (info != null) {
-                    onSelectPage(pageLoader[info.index])
+                    onSelectPage(items[info.index])
                 }
             },
             onDoubleClick = DoubleTapZoom,
@@ -78,9 +80,9 @@ fun WebtoonViewer(
         contentPadding = PaddingValues(horizontal = sidePadding),
         verticalArrangement = Arrangement.spacedBy(if (withGaps) 15.dp else 0.dp),
     ) {
-        items(pageLoader.size, key = { pageLoader[it].index }) { index ->
+        items(items, key = { it.index }) { page ->
             PagerItem(
-                page = pageLoader[index],
+                page = page,
                 pageLoader = pageLoader,
                 contentScale = ContentScale.FillWidth,
             )

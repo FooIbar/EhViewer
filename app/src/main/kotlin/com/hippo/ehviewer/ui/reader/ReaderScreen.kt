@@ -227,8 +227,8 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                             contentWindowInsets = { EmptyWindowInsets },
                         ) {
                             ReaderPageSheetMeta(
-                                retry = { pageLoader.retryPage(page) },
-                                retryOrigin = { pageLoader.retryPage(page, true) },
+                                retry = { pageLoader.retryPage(page.index) },
+                                retryOrigin = { pageLoader.retryPage(page.index, true) },
                                 share = { launchIO { with(pageLoader) { shareImage(page, info) } } },
                                 copy = { launchIO { with(pageLoader) { copy(page) } } },
                                 save = { launchIO { with(pageLoader) { save(page) } } },

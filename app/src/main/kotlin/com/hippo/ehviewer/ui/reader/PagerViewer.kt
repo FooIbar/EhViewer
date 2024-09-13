@@ -60,6 +60,7 @@ fun PagerViewer(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
+    val items = pageLoader.pages
     val scaleType by Settings.imageScaleType.collectAsState()
     val landscapeZoom by Settings.landscapeZoom.collectAsState()
     val zoomStart by Settings.zoomStart.collectAsState()
@@ -73,9 +74,9 @@ fun PagerViewer(
         VerticalPager(
             state = pagerState,
             modifier = modifier,
-            key = { pageLoader[it].index },
+            key = { it },
         ) { index ->
-            val page = pageLoader[index]
+            val page = items[index]
             PageContainer(
                 page = page,
                 pageLoader = pageLoader,
@@ -97,9 +98,9 @@ fun PagerViewer(
             state = pagerState,
             modifier = modifier,
             reverseLayout = isRtl xor isRtlLayout,
-            key = { pageLoader[it].index },
+            key = { it },
         ) { index ->
-            val page = pageLoader[index]
+            val page = items[index]
             PageContainer(
                 page = page,
                 pageLoader = pageLoader,

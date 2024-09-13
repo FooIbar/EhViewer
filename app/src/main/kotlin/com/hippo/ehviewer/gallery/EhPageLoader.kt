@@ -50,7 +50,7 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
 
     override fun save(index: Int, file: Path): Boolean = mSpiderQueen.save(index, file)
 
-    override val internalSize: Int
+    override val size: Int
         get() = mSpiderQueen.size
 
     override fun onRequest(index: Int) {

@@ -47,10 +47,10 @@ fun PagerItem(
     contentModifier: Modifier = Modifier,
 ) {
     LaunchedEffect(Unit) {
-        pageLoader.request(page)
+        pageLoader.request(page.index)
         page.status.drop(1).collect {
             if (page.status.value == Page.State.QUEUE) {
-                pageLoader.request(page)
+                pageLoader.request(page.index)
             }
         }
     }
@@ -107,7 +107,7 @@ fun PagerItem(
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                    Button(onClick = { pageLoader.retryPage(page) }, modifier = Modifier.padding(8.dp)) {
+                    Button(onClick = { pageLoader.retryPage(page.index) }, modifier = Modifier.padding(8.dp)) {
                         Text(text = stringResource(id = R.string.action_retry))
                     }
                 }
