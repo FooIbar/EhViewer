@@ -227,6 +227,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                             sheetState = state,
                             contentWindowInsets = { EmptyWindowInsets },
                         ) {
+                            val hasQrCode = page.image?.hasQrCode ?: false
                             ReaderPageSheetMeta(
                                 retry = { pageLoader.retryPage(page.index) },
                                 retryOrigin = { pageLoader.retryPage(page.index, true) },
@@ -234,6 +235,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                                 copy = { launchIO { with(pageLoader) { copy(page) } } },
                                 save = { launchIO { with(pageLoader) { save(page) } } },
                                 saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
+                                showAds = { page.image?.hasQrCode = false }.takeIf { hasQrCode },
                                 dismiss = { launch { state.hide().also { dispose() } } },
                             )
                         }

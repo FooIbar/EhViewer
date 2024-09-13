@@ -37,6 +37,7 @@ fun ReaderPageSheetMeta(
     copy: () -> Unit,
     save: () -> Unit,
     saveTo: () -> Unit,
+    showAds: (() -> Unit)?,
     dismiss: () -> Unit,
 ) {
     @Composable
@@ -58,5 +59,8 @@ fun ReaderPageSheetMeta(
         Item(icon = Icons.Default.FileCopy, text = R.string.action_copy, onClick = copy)
         Item(icon = Icons.Default.Save, text = R.string.action_save, onClick = save)
         Item(icon = Icons.Default.Save, text = R.string.action_save_to, onClick = saveTo)
+        showAds?.let {
+            Item(icon = Icons.Default.Refresh, text = R.string.show_extraneous_ads, onClick = it)
+        }
     }
 }
