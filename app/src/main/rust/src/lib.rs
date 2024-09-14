@@ -1,6 +1,7 @@
 mod image;
 mod parser;
 
+use ::image::{ImageBuffer, Rgba};
 use android_logger::Config;
 use anyhow::{anyhow, ensure, Result};
 use jni::objects::JByteBuffer;
@@ -11,7 +12,7 @@ use ndk::bitmap::Bitmap;
 use serde::Serialize;
 use std::ffi::c_void;
 use std::io::Cursor;
-use std::ptr::slice_from_raw_parts_mut;
+use std::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
 use std::str::from_utf8_unchecked;
 use tl::ParserOptions;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
@@ -139,6 +140,23 @@ fn query_childs_first_match_attr<'a>(
     let selector = format!("[{}]", attr);
     let mut iter = node.as_tag()?.query_selector(parser, &selector)?;
     get_node_handle_attr(&iter.next()?, parser, attr)
+}
+
+fn with_bitmap_content<F, R>(env: &mut JNIEnv, bitmap: jobject, f: F) -> Result<R>
+where
+    F: FnOnce(&ImageBuffer<Rgba<u8>, &[u8]>) -> Result<R>,
+{
+    let handle = get_bitmap_handle(env, bitmap);
+    let info = handle.info()?;
+    let (width, height) = (info.width(), info.height());
+    let ptr = handle.lock_pixels()? as *const u8;
+    let buffer = unsafe { &*slice_from_raw_parts(ptr, (width * height * 4) as usize) };
+    let image = ImageBuffer::from_raw(width, height, buffer);
+    let result = image
+        .ok_or(anyhow!("Image buffer not RGBA8888!!!"))
+        .and_then(|img| f(&img));
+    handle.unlock_pixels()?;
+    result
 }
 
 fn get_bitmap_handle(env: &mut JNIEnv, bitmap: jobject) -> Bitmap {
