@@ -23,8 +23,25 @@ val supportedAbis = arrayOf("arm64-v8a", "x86_64", "armeabi-v7a")
 android {
     compileSdk = 35
     buildToolsVersion = "35.0.0"
-    ndkVersion = "27.0.12077973"
-    androidResources.generateLocaleConfig = true
+    ndkVersion = "27.1.12297006"
+
+    androidResources {
+        generateLocaleConfig = true
+        localeFilters += listOf(
+            "zh",
+            "zh-rCN",
+            "zh-rHK",
+            "zh-rTW",
+            "es",
+            "ja",
+            "ko",
+            "fr",
+            "de",
+            "th",
+            "tr",
+            "nb-rNO",
+        )
+    }
 
     splits {
         abi {
@@ -71,22 +88,6 @@ android {
         versionCode = 180059
         versionName = "1.13.0"
         versionNameSuffix = "-SNAPSHOT"
-        resourceConfigurations.addAll(
-            listOf(
-                "zh",
-                "zh-rCN",
-                "zh-rHK",
-                "zh-rTW",
-                "es",
-                "ja",
-                "ko",
-                "fr",
-                "de",
-                "th",
-                "tr",
-                "nb-rNO",
-            ),
-        )
         buildConfigField("String", "RAW_VERSION_NAME", "\"$versionName${versionNameSuffix.orEmpty()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("long", "COMMIT_TIME", commitTime)
