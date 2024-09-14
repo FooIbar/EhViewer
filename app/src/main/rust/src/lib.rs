@@ -112,6 +112,7 @@ where
         let value = {
             // SAFETY: ktor client ensure html content is valid utf-8.
             let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
+
             let dom = tl::parse(html, ParserOptions::default()).map_err(|e| anyhow!(e))?;
             ensure!(dom.version().is_some(), "{html}");
             f(&dom, html)?
