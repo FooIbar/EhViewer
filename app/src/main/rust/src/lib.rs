@@ -151,7 +151,7 @@ fn query_childs_first_match_attr<'a>(
 
 fn with_bitmap_content<F, R>(env: &mut JNIEnv, bitmap: jobject, f: F) -> Result<R>
 where
-    F: FnOnce(&ImageBuffer<Rgba<u8>, &[u8]>) -> Result<R>,
+    F: FnOnce(ImageBuffer<Rgba<u8>, &[u8]>) -> Result<R>,
 {
     // SAFETY: kotlin caller must ensure bitmap is valid.
     let handle = unsafe { Bitmap::from_jni(env.get_raw(), bitmap) };
@@ -166,7 +166,7 @@ where
     let image = ImageBuffer::from_raw(width, height, buffer);
     let result = image
         .ok_or(anyhow!("Image buffer not RGBA8888!!!"))
-        .and_then(|img| f(&img));
+        .and_then(f);
     handle.unlock_pixels()?;
     result
 }
