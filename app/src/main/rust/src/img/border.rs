@@ -1,12 +1,10 @@
 use std::ops::Deref;
 
 use anyhow::anyhow;
-use image::{buffer::Pixels, ImageBuffer, Luma, Pixel, Rgba};
-use jni::{
-    objects::JClass,
-    sys::{jintArray, jobject},
-    JNIEnv,
-};
+use image::{ImageBuffer, Luma, Pixel, Rgba};
+use jni::objects::JClass;
+use jni::sys::{jintArray, jobject};
+use jni::JNIEnv;
 use jni_fn::jni_fn;
 
 use crate::{jni_throwing, with_bitmap_content};
@@ -39,13 +37,17 @@ fn black_white_counter_add(counter: (i32, i32), luma: &Luma<u8>) -> (i32, i32) {
     }
 }
 
-fn line_not_filled_by(line: Pixels<Rgba<u8>>, white: bool, limit: i32) -> bool {
+fn line_not_filled_by<'pixel>(
+    line: impl Iterator<Item = &'pixel Rgba<u8>>,
+    white: bool,
+    limit: i32,
+) -> bool {
     let f = if white { is_black } else { is_white };
     line.step_by(2).filter(|p| f(&p.to_luma())).count() as i32 > limit
 }
 
-fn try_count_lines<'a>(
-    iter: impl Iterator<Item = Pixels<'a, Rgba<u8>>>,
+fn try_count_lines<'pixel>(
+    iter: impl Iterator<Item = impl Iterator<Item = &'pixel Rgba<u8>>>,
     white: bool,
     limit: i32,
 ) -> i32 {
@@ -60,7 +62,9 @@ fn try_count_lines<'a>(
     count
 }
 
-fn detect_border_lines<'a>(iter: impl Iterator<Item = Pixels<'a, Rgba<u8>>>) -> i32 {
+fn detect_border_lines<'pixel>(
+    iter: impl Iterator<Item = impl ExactSizeIterator<Item = &'pixel Rgba<u8>>>,
+) -> i32 {
     let mut iter = iter.step_by(2);
     let first_row = iter.next().expect("Image is empty!");
     let filled_limit = (first_row.len() as f32 * FILLED_RATIO_LIMIT / 2.0).round() as i32;
@@ -76,14 +80,23 @@ fn detect_border_lines<'a>(iter: impl Iterator<Item = Pixels<'a, Rgba<u8>>>) -> 
     }
 }
 
+fn image_column_iter(
+    image: &ImageBuffer<Rgba<u8>, impl Deref<Target = [u8]>>,
+) -> impl DoubleEndedIterator<Item = impl ExactSizeIterator<Item = &Rgba<u8>>> {
+    let width = image.width();
+    let column_chunk = (4 * width) as usize;
+    image
+        .chunks_exact(column_chunk)
+        .map(|s| s.chunks_exact(4).map(Rgba::from_slice))
+}
+
 // left, top, right, bottom
-fn detect_border<Container>(image: &ImageBuffer<Rgba<u8>, Container>) -> Option<[i32; 4]>
-where
-    Container: Deref<Target = [u8]>,
-{
+fn detect_border(image: &ImageBuffer<Rgba<u8>, impl Deref<Target = [u8]>>) -> Option<[i32; 4]> {
     let left = detect_border_lines(image.rows());
     let right = detect_border_lines(image.rows().rev());
-    Some([left, 0, right, 0])
+    let top = detect_border_lines(image_column_iter(image));
+    let bottom = detect_border_lines(image_column_iter(image).rev());
+    Some([left, top, right, bottom])
 }
 
 #[no_mangle]
