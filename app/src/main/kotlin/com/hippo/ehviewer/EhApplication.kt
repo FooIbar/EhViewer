@@ -22,7 +22,6 @@ import android.os.StrictMode
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.collection.LruCache
-import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.coroutineScope
 import coil3.EventListener
@@ -141,9 +140,6 @@ class EhApplication :
         }
         if (BuildConfig.DEBUG) {
             StrictMode.enableDefaults()
-            Snapshot.registerApplyObserver { anies, _ ->
-                logcat(LogPriority.VERBOSE) { anies.toString() }
-            }
         }
     }
 
