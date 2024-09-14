@@ -60,6 +60,8 @@ where
 fn deref_mut_direct_bytebuffer(env: &JNIEnv, buffer: JByteBuffer) -> Result<&'static mut [u8]> {
     let ptr = env.get_direct_buffer_address(&buffer)?;
     let cap = env.get_direct_buffer_capacity(&buffer)?;
+
+    // SAFETY: jni contract, buffer must alive through native call.
     Ok(unsafe { &mut *slice_from_raw_parts_mut(ptr, cap) })
 }
 
