@@ -63,9 +63,8 @@ fn try_count_lines<'pixel>(
 }
 
 fn detect_border_lines<'pixel>(
-    iter: impl Iterator<Item = impl ExactSizeIterator<Item = &'pixel Rgba<u8>>>,
+    mut iter: impl Iterator<Item = impl ExactSizeIterator<Item = &'pixel Rgba<u8>>>,
 ) -> i32 {
-    let mut iter = iter.step_by(2);
     let first_row = iter.next().expect("Image is empty!");
     let filled_limit = (first_row.len() as f32 * FILLED_RATIO_LIMIT / 2.0).round() as i32;
     let (black, white) = first_row.step_by(2).fold((0, 0), |counter, pixel| {
@@ -80,23 +79,12 @@ fn detect_border_lines<'pixel>(
     }
 }
 
-fn image_column_iter(
-    image: &ImageBuffer<Rgba<u8>, impl Deref<Target = [u8]>>,
-) -> impl DoubleEndedIterator<Item = impl ExactSizeIterator<Item = &Rgba<u8>>> {
-    let width = image.width();
-    let column_chunk = (4 * width) as usize;
-    image
-        .chunks_exact(column_chunk)
-        .map(|s| s.chunks_exact(4).map(Rgba::from_slice))
-}
-
 // left, top, right, bottom
 fn detect_border(image: &ImageBuffer<Rgba<u8>, impl Deref<Target = [u8]>>) -> Option<[i32; 4]> {
-    let left = detect_border_lines(image.rows());
-    let right = detect_border_lines(image.rows().rev());
-    let top = detect_border_lines(image_column_iter(image));
-    let bottom = detect_border_lines(image_column_iter(image).rev());
-    Some([left, top, right, bottom])
+    let (w, h) = image.dimensions();
+    let top = detect_border_lines(image.rows());
+    let bottom = detect_border_lines(image.rows().rev());
+    Some([0, top, w as i32, h as i32 - bottom])
 }
 
 #[no_mangle]
