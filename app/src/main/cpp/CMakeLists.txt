@@ -40,13 +40,12 @@ if (CMAKE_HOST_SYSTEM_NAME STREQUAL Windows)
 else ()
     set(CURRENT_DIR ${CMAKE_CURRENT_LIST_DIR})
 endif ()
-set(NDK_VERSION "${ANDROID_NDK_MAJOR}.${ANDROID_NDK_MINOR}.${ANDROID_NDK_BUILD}")
 ExternalProject_Add(
         nettle
         PREFIX nettle
         URL https://ftp.gnu.org/gnu/nettle/nettle-3.10.tar.gz
         URL_MD5 c61453139d5fb44e9cdcc5b684b26e55
-        CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
+        CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${CMAKE_C_COMPILER_TARGET}
         BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS}'"
         INSTALL_COMMAND ""
         BUILD_IN_SOURCE 1
