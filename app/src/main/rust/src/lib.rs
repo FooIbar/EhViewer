@@ -57,7 +57,10 @@ where
     handle.get(parser)
 }
 
-fn deref_mut_direct_bytebuffer(env: &JNIEnv, buffer: JByteBuffer) -> Result<&'static mut [u8]> {
+fn deref_mut_direct_bytebuffer<'local>(
+    env: &'local JNIEnv,
+    buffer: JByteBuffer,
+) -> Result<&'local mut [u8]> {
     let ptr = env.get_direct_buffer_address(&buffer)?;
     let cap = env.get_direct_buffer_capacity(&buffer)?;
 
