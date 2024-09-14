@@ -146,7 +146,7 @@ fn with_bitmap_content<F, R>(env: &mut JNIEnv, bitmap: jobject, f: F) -> Result<
 where
     F: FnOnce(&ImageBuffer<Rgba<u8>, &[u8]>) -> Result<R>,
 {
-    let handle = get_bitmap_handle(env, bitmap);
+    let handle = unsafe { Bitmap::from_jni(env.get_raw(), bitmap) };
     let info = handle.info()?;
     let (width, height) = (info.width(), info.height());
     let ptr = handle.lock_pixels()? as *const u8;
@@ -157,10 +157,6 @@ where
         .and_then(|img| f(&img));
     handle.unlock_pixels()?;
     result
-}
-
-fn get_bitmap_handle(env: &mut JNIEnv, bitmap: jobject) -> Bitmap {
-    unsafe { Bitmap::from_jni(env.get_raw(), bitmap) }
 }
 
 #[no_mangle]
