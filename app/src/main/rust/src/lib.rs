@@ -146,11 +146,16 @@ fn with_bitmap_content<F, R>(env: &mut JNIEnv, bitmap: jobject, f: F) -> Result<
 where
     F: FnOnce(&ImageBuffer<Rgba<u8>, &[u8]>) -> Result<R>,
 {
+    // SAFETY: kotlin caller must ensure bitmap is valid.
     let handle = unsafe { Bitmap::from_jni(env.get_raw(), bitmap) };
+
     let info = handle.info()?;
     let (width, height) = (info.width(), info.height());
     let ptr = handle.lock_pixels()? as *const u8;
+
+    // SAFETY: maybe unsafe if bitmap buffer not RGBA8888 format.
     let buffer = unsafe { &*slice_from_raw_parts(ptr, (width * height * 4) as usize) };
+
     let image = ImageBuffer::from_raw(width, height, buffer);
     let result = image
         .ok_or(anyhow!("Image buffer not RGBA8888!!!"))
