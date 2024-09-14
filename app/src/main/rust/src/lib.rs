@@ -1,9 +1,9 @@
-mod image;
+mod img;
 mod parser;
 
-use ::image::{ImageBuffer, Rgba};
 use android_logger::Config;
 use anyhow::{anyhow, ensure, Result};
+use image::{ImageBuffer, Rgba};
 use jni::objects::JByteBuffer;
 use jni::sys::{jboolean, jint, jobject, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
