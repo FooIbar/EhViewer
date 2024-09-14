@@ -58,8 +58,8 @@ where
 }
 
 fn deref_mut_direct_bytebuffer<'local>(
-    env: &'local JNIEnv,
-    buffer: JByteBuffer,
+    env: &JNIEnv,
+    buffer: JByteBuffer<'local>,
 ) -> Result<&'local mut [u8]> {
     let ptr = env.get_direct_buffer_address(&buffer)?;
     let cap = env.get_direct_buffer_capacity(&buffer)?;
