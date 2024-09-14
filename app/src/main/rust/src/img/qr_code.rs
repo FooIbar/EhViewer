@@ -1,31 +1,22 @@
 use crate::{jni_throwing, with_bitmap_content};
-use anyhow::{Ok, Result};
-use bardecoder::decode::Decode;
-use bardecoder::default_builder;
-use bardecoder::extract::QRExtractor;
-use bardecoder::util::qr::{QRData, QRError};
-use image::{GenericImageView, Rgba};
+use anyhow::Ok;
+use image::{ImageBuffer, Rgba};
 use jni::objects::JClass;
 use jni::sys::{jboolean, jobject};
 use jni::JNIEnv;
 use jni_fn::jni_fn;
+use rxing::common::HybridBinarizer;
+use rxing::qrcode::detector::Detector;
+use rxing::{BinaryBitmap, RGBLuminanceSource};
+use std::ptr::slice_from_raw_parts;
 
-#[allow(dead_code)]
-struct Nothing {}
-
-impl Decode<QRData, String, QRError> for Nothing {
-    fn decode(&self, result: Result<QRData, QRError>) -> Result<String, QRError> {
-        result.map(|_| String::new())
-    }
-}
-
-fn detect_image_ad<D>(image: &D) -> bool
-where
-    D: GenericImageView<Pixel = Rgba<u8>>,
-{
-    let mut decoder = default_builder();
-    decoder.qr(Box::new(QRExtractor {}), Box::new(Nothing {}));
-    decoder.build().decode(image).iter().any(|i| i.is_ok())
+fn detect_image_ad(image: ImageBuffer<Rgba<u8>, &[u8]>) -> bool {
+    let (width, height) = (image.width() as usize, image.height() as usize);
+    let buffer = image.into_raw();
+    let pixels = unsafe { &*slice_from_raw_parts(buffer.as_ptr() as *const u32, buffer.len()) };
+    let source = RGBLuminanceSource::new_with_width_height_pixels(width, height, pixels);
+    let image = BinaryBitmap::new(HybridBinarizer::new(source));
+    Detector::new(image.get_black_matrix()).detect().is_ok()
 }
 
 #[no_mangle]
