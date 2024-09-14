@@ -1,22 +1,16 @@
+mod image;
 mod parser;
 
 use android_logger::Config;
 use anyhow::{anyhow, ensure, Result};
-use bardecoder::decode::Decode;
-use bardecoder::default_builder;
-use bardecoder::extract::QRExtractor;
-use bardecoder::util::qr::{QRData, QRError};
-use image::ImageBuffer;
-use jni::objects::{JByteBuffer, JClass};
+use jni::objects::JByteBuffer;
 use jni::sys::{jboolean, jint, jobject, JavaVM, JNI_VERSION_1_6};
 use jni::JNIEnv;
-use jni_fn::jni_fn;
 use log::LevelFilter;
 use ndk::bitmap::Bitmap;
 use serde::Serialize;
 use std::ffi::c_void;
 use std::io::Cursor;
-use std::ptr::slice_from_raw_parts;
 use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
 use tl::ParserOptions;
@@ -149,35 +143,6 @@ fn query_childs_first_match_attr<'a>(
 
 fn get_bitmap_handle(env: &mut JNIEnv, bitmap: jobject) -> Bitmap {
     unsafe { Bitmap::from_jni(env.get_raw(), bitmap) }
-}
-
-#[allow(dead_code)]
-struct Nothing {}
-
-impl Decode<QRData, String, QRError> for Nothing {
-    fn decode(&self, result: Result<QRData, QRError>) -> Result<String, QRError> {
-        result.map(|_| String::new())
-    }
-}
-
-#[no_mangle]
-#[allow(non_snake_case)]
-#[jni_fn("com.hippo.ehviewer.image.ImageKt")]
-pub fn hasQrCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
-    let handle = get_bitmap_handle(&mut env, object);
-    jni_throwing(&mut env, |_| {
-        let bitmap_info = handle.info()?;
-        let (width, height) = (bitmap_info.width(), bitmap_info.height());
-        let ptr = handle.lock_pixels()? as *const u8;
-        let buffer = unsafe { &*slice_from_raw_parts(ptr, (width * height * 4) as usize) };
-        let mut decoder = default_builder();
-        decoder.qr(Box::new(QRExtractor {}), Box::new(Nothing {}));
-        let image = ImageBuffer::from_raw(width, height, buffer);
-        let result = image.map(|img| decoder.build().decode(&img));
-        handle.unlock_pixels()?;
-        let vec = result.ok_or(anyhow!("Internal Error!"))?;
-        Ok(vec.iter().any(|i| i.is_ok()) as jboolean)
-    })
 }
 
 #[no_mangle]
