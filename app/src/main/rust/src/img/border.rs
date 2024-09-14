@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
 use anyhow::anyhow;
-use image::{buffer::EnumeratePixels, ImageBuffer, Luma, Pixel, Rgba};
+use image::{buffer::Pixels, ImageBuffer, Luma, Pixel, Rgba};
 use jni::{
     objects::JClass,
     sys::{jintArray, jobject},
@@ -39,18 +39,18 @@ fn black_white_counter_add(counter: (i32, i32), luma: &Luma<u8>) -> (i32, i32) {
     }
 }
 
-fn line_not_filled_by(line: EnumeratePixels<Rgba<u8>>, white: bool, limit: i32) -> bool {
+fn line_not_filled_by(line: Pixels<Rgba<u8>>, white: bool, limit: i32) -> bool {
     let f = if white { is_black } else { is_white };
-    line.step_by(2).filter(|(_, _, p)| f(&p.to_luma())).count() as i32 > limit
+    line.step_by(2).filter(|p| f(&p.to_luma())).count() as i32 > limit
 }
 
 fn try_count_lines<'a>(
-    iter: impl Iterator<Item = (u32, EnumeratePixels<'a, Rgba<u8>>)>,
+    iter: impl Iterator<Item = Pixels<'a, Rgba<u8>>>,
     white: bool,
     limit: i32,
 ) -> i32 {
     let mut count = 1;
-    for (_, line) in iter {
+    for line in iter {
         if line_not_filled_by(line, white, limit) {
             break;
         } else {
@@ -60,13 +60,11 @@ fn try_count_lines<'a>(
     count
 }
 
-fn detect_border_lines<'a>(
-    iter: impl Iterator<Item = (u32, EnumeratePixels<'a, Rgba<u8>>)>,
-) -> i32 {
+fn detect_border_lines<'a>(iter: impl Iterator<Item = Pixels<'a, Rgba<u8>>>) -> i32 {
     let mut iter = iter.step_by(2);
-    let (_, first_row) = iter.next().expect("Image is empty!");
+    let first_row = iter.next().expect("Image is empty!");
     let filled_limit = (first_row.len() as f32 * FILLED_RATIO_LIMIT / 2.0).round() as i32;
-    let (black, white) = first_row.step_by(2).fold((0, 0), |counter, (_, _, pixel)| {
+    let (black, white) = first_row.step_by(2).fold((0, 0), |counter, pixel| {
         black_white_counter_add(counter, &pixel.to_luma())
     });
     match (black > filled_limit, white > filled_limit) {
@@ -83,8 +81,9 @@ fn detect_border<Container>(image: &ImageBuffer<Rgba<u8>, Container>) -> Option<
 where
     Container: Deref<Target = [u8]>,
 {
-    let left = detect_border_lines(image.enumerate_rows());
-    Some([left, 0, 0, 0])
+    let left = detect_border_lines(image.rows());
+    let right = detect_border_lines(image.rows().rev());
+    Some([left, 0, right, 0])
 }
 
 #[no_mangle]
