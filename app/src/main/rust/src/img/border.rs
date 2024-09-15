@@ -1,11 +1,9 @@
 use anyhow::anyhow;
-use image::buffer::Pixels;
 use image::{ImageBuffer, Luma, Pixel, Rgba};
 use jni::objects::JClass;
 use jni::sys::{jintArray, jobject};
 use jni::JNIEnv;
 use jni_fn::jni_fn;
-use std::iter::{Skip, StepBy};
 
 use crate::{jni_throwing, with_bitmap_content};
 
@@ -86,21 +84,39 @@ struct ColumnView<'a> {
     end: i32,
 }
 
+struct OneRow<'a> {
+    buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>,
+    row: i32,
+    column: i32,
+}
+
+impl<'a> Iterator for OneRow<'a> {
+    type Item = &'a Rgba<u8>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let item = self
+            .buffer
+            .get_pixel_checked(self.row as u32, self.column as u32);
+        self.column += 1;
+        item
+    }
+}
+
 impl<'a> Iterator for ColumnView<'a> {
-    type Item = StepBy<Skip<Pixels<'a, Rgba<u8>>>>;
+    type Item = OneRow<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let (start, end) = (self.start, self.end);
         if start == end {
             None
         } else {
-            let iter = self
-                .buffer
-                .pixels()
-                .skip(start as usize)
-                .step_by(self.buffer.width() as usize);
+            let row = OneRow {
+                buffer: self.buffer,
+                row: start,
+                column: 0,
+            };
             self.start = start + 1;
-            Some(iter)
+            Some(row)
         }
     }
 }
@@ -111,13 +127,13 @@ impl<'a> DoubleEndedIterator for ColumnView<'a> {
         if start == end {
             None
         } else {
-            let iter = self
-                .buffer
-                .pixels()
-                .skip(end as usize)
-                .step_by(self.buffer.width() as usize);
+            let row = OneRow {
+                buffer: self.buffer,
+                row: end,
+                column: 0,
+            };
             self.end = end - 1;
-            Some(iter)
+            Some(row)
         }
     }
 }
