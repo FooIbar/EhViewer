@@ -24,17 +24,6 @@ fn is_black(pixel: &Luma<u8>) -> bool {
     pixel.0[0] < THRESHOLD_FOR_BLACK
 }
 
-fn black_white_counter_add(counter: (i32, i32), luma: &Luma<u8>) -> (i32, i32) {
-    let (black, white) = counter;
-    if is_black(luma) {
-        (black + 1, white)
-    } else if is_white(luma) {
-        (black, white + 1)
-    } else {
-        counter
-    }
-}
-
 fn line_not_filled_by<'pixel>(
     line: impl Iterator<Item = &'pixel Rgba<u8>>,
     white: bool,
@@ -66,9 +55,15 @@ fn detect_border_lines<'pixel>(
 ) -> i32 {
     let first_row = iter.next().expect("Image is empty!");
     let filled_limit = (line_len as f32 * FILLED_RATIO_LIMIT / 2.0).round() as i32;
-    let (black, white) = first_row.step_by(2).fold((0, 0), |counter, pixel| {
-        black_white_counter_add(counter, &pixel.to_luma())
-    });
+    let (mut black, mut white) = (0, 0);
+    for pixel in first_row.step_by(2) {
+        let luma = &pixel.to_luma();
+        if is_black(luma) {
+            black += 1;
+        } else if is_white(luma) {
+            white += 1;
+        }
+    }
     match (black > filled_limit, white > filled_limit) {
         // Black is dominant color.
         (true, false) => try_count_lines(iter, false, filled_limit),
