@@ -90,6 +90,16 @@ struct OneRow<'a> {
     column: i32,
 }
 
+impl<'a> OneRow<'a> {
+    fn new(buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>, row:i32) -> Self {
+        OneRow {
+            buffer,
+            row,
+            column: 0,
+        }
+    }
+}
+
 impl<'a> Iterator for OneRow<'a> {
     type Item = &'a Rgba<u8>;
 
@@ -110,11 +120,7 @@ impl<'a> Iterator for ColumnView<'a> {
         if start == end {
             None
         } else {
-            let row = OneRow {
-                buffer: self.buffer,
-                row: start,
-                column: 0,
-            };
+            let row = OneRow::new(self.buffer, self.start);
             self.start = start + 1;
             Some(row)
         }
@@ -127,11 +133,7 @@ impl<'a> DoubleEndedIterator for ColumnView<'a> {
         if start == end {
             None
         } else {
-            let row = OneRow {
-                buffer: self.buffer,
-                row: end,
-                column: 0,
-            };
+            let row = OneRow::new(self.buffer, self.end);
             self.end = end - 1;
             Some(row)
         }
