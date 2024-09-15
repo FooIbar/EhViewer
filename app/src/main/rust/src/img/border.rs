@@ -1,9 +1,11 @@
 use anyhow::anyhow;
+use image::buffer::Pixels;
 use image::{ImageBuffer, Luma, Pixel, Rgba};
 use jni::objects::JClass;
 use jni::sys::{jintArray, jobject};
 use jni::JNIEnv;
 use jni_fn::jni_fn;
+use std::iter::{Skip, StepBy};
 
 use crate::{jni_throwing, with_bitmap_content};
 
@@ -78,12 +80,67 @@ fn detect_border_lines<'pixel>(
     }
 }
 
+struct ColumnView<'a> {
+    buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>,
+    start: i32,
+    end: i32,
+}
+
+impl<'a> Iterator for ColumnView<'a> {
+    type Item = StepBy<Skip<Pixels<'a, Rgba<u8>>>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (start, end) = (self.start, self.end);
+        if start == end {
+            None
+        } else {
+            let iter = self
+                .buffer
+                .pixels()
+                .skip(start as usize)
+                .step_by(self.buffer.width() as usize);
+            self.start = start + 1;
+            Some(iter)
+        }
+    }
+}
+
+impl<'a> DoubleEndedIterator for ColumnView<'a> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        let (start, end) = (self.start, self.end);
+        if start == end {
+            None
+        } else {
+            let iter = self
+                .buffer
+                .pixels()
+                .skip(end as usize)
+                .step_by(self.buffer.width() as usize);
+            self.end = end - 1;
+            Some(iter)
+        }
+    }
+}
+
 // left, top, right, bottom
 fn detect_border(image: &ImageBuffer<Rgba<u8>, &[u8]>) -> Option<[i32; 4]> {
     let (w, h) = image.dimensions();
     let top = detect_border_lines(image.rows(), w as i32);
     let bottom = detect_border_lines(image.rows().rev(), w as i32);
-    Some([0, top, w as i32, h as i32 - bottom])
+
+    let column = ColumnView {
+        buffer: image,
+        start: 0,
+        end: w as i32 - 1,
+    };
+    let left = detect_border_lines(column, h as i32);
+    let column = ColumnView {
+        buffer: image,
+        start: 0,
+        end: w as i32 - 1,
+    };
+    let right = detect_border_lines(column.rev(), h as i32);
+    Some([left, top, w as i32 - right, h as i32 - bottom])
 }
 
 #[no_mangle]
