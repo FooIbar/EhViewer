@@ -91,7 +91,7 @@ struct OneRow<'a> {
 }
 
 impl<'a> OneRow<'a> {
-    fn new(buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>, row:i32) -> Self {
+    fn new(buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>, row: i32) -> Self {
         OneRow {
             buffer,
             row,
