@@ -62,7 +62,7 @@ fn try_count_lines<'pixel>(
 
 fn detect_border_lines<'pixel>(
     mut iter: impl Iterator<Item = impl Iterator<Item = &'pixel Rgba<u8>>>,
-    line_len: i32,
+    line_len: u32,
 ) -> i32 {
     let first_row = iter.next().expect("Image is empty!");
     let filled_limit = (line_len as f32 * FILLED_RATIO_LIMIT / 2.0).round() as i32;
@@ -81,8 +81,8 @@ fn detect_border_lines<'pixel>(
 #[derive(Clone)]
 struct ColumnView<'a> {
     buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>,
-    start: i32,
-    end: i32,
+    start: u32,
+    end: u32,
 }
 
 impl<'a> ColumnView<'a> {
@@ -90,19 +90,19 @@ impl<'a> ColumnView<'a> {
         ColumnView {
             buffer,
             start: 0,
-            end: buffer.width() as i32 - 1,
+            end: buffer.width() - 1,
         }
     }
 }
 
 struct OneRow<'a> {
     buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>,
-    row: i32,
-    column: i32,
+    row: u32,
+    column: u32,
 }
 
 impl<'a> OneRow<'a> {
-    fn new(buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>, row: i32) -> Self {
+    fn new(buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>, row: u32) -> Self {
         OneRow {
             buffer,
             row,
@@ -115,9 +115,7 @@ impl<'a> Iterator for OneRow<'a> {
     type Item = &'a Rgba<u8>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let item = self
-            .buffer
-            .get_pixel_checked(self.row as u32, self.column as u32);
+        let item = self.buffer.get_pixel_checked(self.row, self.column);
         self.column += 1;
         item
     }
@@ -154,11 +152,11 @@ impl<'a> DoubleEndedIterator for ColumnView<'a> {
 // left, top, right, bottom
 fn detect_border(image: &ImageBuffer<Rgba<u8>, &[u8]>) -> Option<[i32; 4]> {
     let (w, h) = image.dimensions();
-    let top = detect_border_lines(image.rows(), w as i32);
-    let bottom = detect_border_lines(image.rows().rev(), w as i32);
+    let top = detect_border_lines(image.rows(), w);
+    let bottom = detect_border_lines(image.rows().rev(), w);
     let column = ColumnView::new(image);
-    let left = detect_border_lines(column.clone(), h as i32);
-    let right = detect_border_lines(column.rev(), h as i32);
+    let left = detect_border_lines(column.clone(), h);
+    let right = detect_border_lines(column.rev(), h);
     Some([left, top, w as i32 - right, h as i32 - bottom])
 }
 
