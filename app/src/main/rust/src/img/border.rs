@@ -124,9 +124,8 @@ impl<'a> Iterator for ColumnView<'a> {
         if start == end {
             None
         } else {
-            let row = OneRow::new(self.buffer, self.start);
-            self.start = start + 1;
-            Some(row)
+            self.start += 1;
+            Some(OneRow::new(self.buffer, start))
         }
     }
 }
@@ -137,9 +136,8 @@ impl<'a> DoubleEndedIterator for ColumnView<'a> {
         if start == end {
             None
         } else {
-            let row = OneRow::new(self.buffer, self.end);
-            self.end = end - 1;
-            Some(row)
+            self.end -= 1;
+            Some(OneRow::new(self.buffer, end))
         }
     }
 }
