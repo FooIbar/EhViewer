@@ -110,9 +110,14 @@ impl<'a> Iterator for OneRow<'a> {
     type Item = &'a Rgba<u8>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let item = self.buffer.get_pixel_checked(self.row, self.column);
+        let column = self.column;
         self.column += 1;
-        item
+        self.buffer.get_pixel_checked(self.row, column)
+    }
+
+    fn nth(&mut self, n: usize) -> Option<Self::Item> {
+        self.column += n as u32;
+        self.next()
     }
 }
 
