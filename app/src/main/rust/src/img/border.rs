@@ -1,11 +1,10 @@
+use crate::{jni_throwing, with_bitmap_content};
 use anyhow::anyhow;
 use image::{ImageBuffer, Luma, Pixel, Rgba};
 use jni::objects::JClass;
 use jni::sys::{jintArray, jobject};
 use jni::JNIEnv;
 use jni_fn::jni_fn;
-
-use crate::{jni_throwing, with_bitmap_content};
 
 /** A line will be considered as having content if 0.25% of it is filled. */
 static FILLED_RATIO_LIMIT: f32 = 0.0025;
@@ -73,88 +72,13 @@ fn detect_border_lines<'pixel>(
     }
 }
 
-#[derive(Clone)]
-struct ColumnView<'a> {
-    buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>,
-    start: u32,
-    end: u32,
-}
-
-impl<'a> ColumnView<'a> {
-    fn new(buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>) -> Self {
-        ColumnView {
-            buffer,
-            start: 0,
-            end: buffer.width() - 1,
-        }
-    }
-}
-
-struct OneRow<'a> {
-    buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>,
-    row: u32,
-    column: u32,
-}
-
-impl<'a> OneRow<'a> {
-    fn new(buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>, row: u32) -> Self {
-        OneRow {
-            buffer,
-            row,
-            column: 0,
-        }
-    }
-}
-
-impl<'a> Iterator for OneRow<'a> {
-    type Item = &'a Rgba<u8>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let column = self.column;
-        self.column += 1;
-        self.buffer.get_pixel_checked(self.row, column)
-    }
-
-    fn nth(&mut self, n: usize) -> Option<Self::Item> {
-        self.column += n as u32;
-        self.next()
-    }
-}
-
-impl<'a> Iterator for ColumnView<'a> {
-    type Item = OneRow<'a>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let (start, end) = (self.start, self.end);
-        if start == end {
-            None
-        } else {
-            self.start += 1;
-            Some(OneRow::new(self.buffer, start))
-        }
-    }
-}
-
-impl<'a> DoubleEndedIterator for ColumnView<'a> {
-    fn next_back(&mut self) -> Option<Self::Item> {
-        let (start, end) = (self.start, self.end);
-        if start == end {
-            None
-        } else {
-            self.end -= 1;
-            Some(OneRow::new(self.buffer, end))
-        }
-    }
-}
-
-// left, top, right, bottom
 fn detect_border(image: &ImageBuffer<Rgba<u8>, &[u8]>) -> Option<[i32; 4]> {
     let (w, h) = image.dimensions();
     let top = detect_border_lines(image.rows(), w);
     let bottom = detect_border_lines(image.rows().rev(), w);
-    let column = ColumnView::new(image);
-    let left = detect_border_lines(column.clone(), h);
-    let right = detect_border_lines(column.rev(), h);
+    let iter = (0..w).map(|row| (0..h).map(move |col| image.get_pixel(row, col)));
+    let left = detect_border_lines(iter.clone(), h);
+    let right = detect_border_lines(iter.rev(), h);
     Some([left, top, w as i32 - right, h as i32 - bottom])
 }
 
