@@ -78,10 +78,21 @@ fn detect_border_lines<'pixel>(
     }
 }
 
+#[derive(Clone)]
 struct ColumnView<'a> {
     buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>,
     start: i32,
     end: i32,
+}
+
+impl<'a> ColumnView<'a> {
+    fn new(buffer: &'a ImageBuffer<Rgba<u8>, &'a [u8]>) -> Self {
+        ColumnView {
+            buffer,
+            start: 0,
+            end: buffer.width() as i32 - 1,
+        }
+    }
 }
 
 struct OneRow<'a> {
@@ -145,18 +156,8 @@ fn detect_border(image: &ImageBuffer<Rgba<u8>, &[u8]>) -> Option<[i32; 4]> {
     let (w, h) = image.dimensions();
     let top = detect_border_lines(image.rows(), w as i32);
     let bottom = detect_border_lines(image.rows().rev(), w as i32);
-
-    let column = ColumnView {
-        buffer: image,
-        start: 0,
-        end: w as i32 - 1,
-    };
-    let left = detect_border_lines(column, h as i32);
-    let column = ColumnView {
-        buffer: image,
-        start: 0,
-        end: w as i32 - 1,
-    };
+    let column = ColumnView::new(image);
+    let left = detect_border_lines(column.clone(), h as i32);
     let right = detect_border_lines(column.rev(), h as i32);
     Some([left, top, w as i32 - right, h as i32 - bottom])
 }
