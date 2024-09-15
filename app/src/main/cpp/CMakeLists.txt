@@ -107,5 +107,5 @@ corrosion_import_crate(MANIFEST_PATH ../rust/Cargo.toml)
 corrosion_add_target_local_rustflags(ehviewer_rust "-Clink-args=-Wl,-z,max-page-size=16384")
 
 # Build and link our app's native lib
-add_library(${PROJECT_NAME} SHARED archive.c border.c gifutils.c hash.c natsort/strnatcmp.c)
+add_library(${PROJECT_NAME} SHARED archive.c gifutils.c hash.c natsort/strnatcmp.c)
 target_link_libraries(${PROJECT_NAME} ehviewer_rust archive_static log jnigraphics -Wl,--exclude-libs,ALL)

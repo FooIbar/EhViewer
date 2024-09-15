@@ -151,6 +151,5 @@ interface ByteBufferSource : ImageSource {
     val source: ByteBuffer
 }
 
-external fun detectBorderRust(bitmap: Bitmap): IntArray
 external fun detectBorder(bitmap: Bitmap): IntArray
 external fun hasQrCode(bitmap: Bitmap): Boolean

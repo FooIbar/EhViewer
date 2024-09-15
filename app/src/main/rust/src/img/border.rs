@@ -156,7 +156,7 @@ fn detect_border(image: &ImageBuffer<Rgba<u8>, &[u8]>) -> Option<[i32; 4]> {
 #[no_mangle]
 #[allow(non_snake_case)]
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
-pub fn detectBorderRust(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArray {
+pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArray {
     jni_throwing(&mut env, |env| {
         let slice = with_bitmap_content(env, object, |img| Ok(detect_border(img)))?;
         let array = env.new_int_array(4)?;
