@@ -8,5 +8,5 @@ import kotlinx.coroutines.sync.withLock
 value class WeakMutexMap<T>(val mutexes: WeakHashMap<T, Mutex> = WeakHashMap())
 
 suspend inline fun <T, K> WeakMutexMap<K>.withLock(key: K, owner: Any? = null, action: () -> T) = synchronized(mutexes) {
-    mutexes[key] ?: Mutex().also { mutexes[key] = it }
+    mutexes.getOrPut(key) { Mutex() }
 }.withLock(owner, action)
