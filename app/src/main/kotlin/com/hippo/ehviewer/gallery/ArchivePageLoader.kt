@@ -42,7 +42,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import moe.tarsin.coroutines.NamedMutex
+import moe.tarsin.coroutines.WeakMutexMap
 import moe.tarsin.coroutines.withLock
 import okio.Path
 
@@ -88,7 +88,7 @@ class ArchivePageLoader(
     }
 
     private val mJobMap = hashMapOf<Int, Job>()
-    private val mWorkerMutex = NamedMutex<Int>()
+    private val mWorkerMutex = WeakMutexMap<Int>()
     private val mSemaphore = Semaphore(4)
 
     override fun onRequest(index: Int) {
