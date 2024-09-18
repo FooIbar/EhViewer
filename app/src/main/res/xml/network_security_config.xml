@@ -16,7 +16,4 @@
   ~ If not, see <https://www.gnu.org/licenses/>.
   -->
 <network-security-config>
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">ehtracker.org</domain>
-    </domain-config>
 </network-security-config>
