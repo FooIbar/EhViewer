@@ -1,5 +1,5 @@
 use crate::{jni_throwing, with_bitmap_content};
-use anyhow::anyhow;
+use anyhow::Context;
 use image::{ImageBuffer, Luma, Pixel, Rgba};
 use jni::objects::JClass;
 use jni::sys::{jintArray, jobject};
@@ -89,7 +89,7 @@ pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArr
     jni_throwing(&mut env, |env| {
         let slice = with_bitmap_content(env, object, |img| Ok(detect_border(&img)))?;
         let array = env.new_int_array(4)?;
-        env.set_int_array_region(&array, 0, &slice.ok_or(anyhow!("Image too small!"))?)?;
+        env.set_int_array_region(&array, 0, &slice.context("Image too small!")?)?;
         Ok(array.into_raw())
     })
 }

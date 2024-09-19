@@ -1,5 +1,5 @@
 use crate::{get_vdom_first_element_by_class_name, parse_marshal_inplace};
-use anyhow::anyhow;
+use anyhow::Context;
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
@@ -52,6 +52,6 @@ fn parse_limit(dom: &VDom, parser: &Parser) -> Option<Limits> {
 #[jni_fn("com.hippo.ehviewer.client.parser.HomeParserKt")]
 pub fn parseLimit(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
     parse_marshal_inplace(&mut env, input, limit, |dom, _| {
-        parse_limit(dom, dom.parser()).ok_or(anyhow!("Can't parse Limit"))
+        parse_limit(dom, dom.parser()).context("Can't parse Limit")
     })
 }
