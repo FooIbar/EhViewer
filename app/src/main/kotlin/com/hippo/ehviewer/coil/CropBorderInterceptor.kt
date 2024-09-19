@@ -43,6 +43,7 @@ object CropBorderInterceptor : Interceptor {
                             }
                         }.onSuccess { bitmap ->
                             bitmap?.let {
+                                src.recycle()
                                 return result.copy(image = image.copy(image = bitmap.asImage(), rect = image.rect.size.toIntRect()))
                             }
                         }
