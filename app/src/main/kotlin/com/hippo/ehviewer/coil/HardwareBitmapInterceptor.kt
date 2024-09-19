@@ -3,7 +3,6 @@ package com.hippo.ehviewer.coil
 import android.graphics.Bitmap
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.ui.unit.IntRect
 import coil3.Extras
 import coil3.asImage
 import coil3.getExtra
@@ -38,7 +37,7 @@ object HardwareBitmapInterceptor : Interceptor {
                 if (maxOf(bitmap.width, bitmap.height) <= request.hardwareThreshold) {
                     bitmap.copy(Bitmap.Config.HARDWARE, false)?.let { hwBitmap ->
                         bitmap.recycle()
-                        return result.copy(image = image.copy(image = hwBitmap.asImage(), rect = IntRect.Zero))
+                        return result.copy(image = image.copy(image = hwBitmap.asImage()))
                     }
                 }
             }

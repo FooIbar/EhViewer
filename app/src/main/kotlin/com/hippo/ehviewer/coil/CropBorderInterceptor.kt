@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.coil
 
 import android.graphics.Bitmap
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import coil3.asImage
@@ -16,16 +17,16 @@ object CropBorderInterceptor : Interceptor {
             if (image is BitmapImageWithExtraInfo) {
                 // Copy with cropped region
                 val srcSize = IntSize(image.width, image.height)
-                val bitmap = if (image.rect.size != srcSize) {
+                if (image.rect.size != srcSize) {
                     val (x, y) = image.rect.topLeft
                     val (w, h) = image.rect.size
-                    Bitmap.createBitmap(image.image.bitmap, x, y, w, h).also {
+                    Bitmap.createBitmap(image.image.bitmap, x, y, w, h).also { cropped ->
                         image.image.bitmap.recycle()
+                        return result.copy(image = image.copy(image = cropped.asImage(), rect = IntRect(IntOffset.Zero, image.rect.size)))
                     }
                 } else {
                     image.image.bitmap
                 }
-                return result.copy(image = image.copy(image = bitmap.asImage(), rect = IntRect.Zero))
             }
         }
         return result
