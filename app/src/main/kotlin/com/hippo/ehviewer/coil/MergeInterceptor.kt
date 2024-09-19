@@ -24,7 +24,9 @@ object MergeInterceptor : Interceptor {
         notifyScope.launch {
             synchronized(pendingContinuationMapLock) {
                 // Wake up a pending continuation to continue executing task
-                val successor = pendingContinuationMap[key]?.removeFirstOrNull()?.apply { resume(Unit) { triggerSuccessor(key) } }
+                val successor = pendingContinuationMap[key]?.removeFirstOrNull()?.apply {
+                    resume(Unit) { _, _, _ -> triggerSuccessor(key) }
+                }
                 // If no successor, delete this entry from hashmap
                 successor ?: pendingContinuationMap.remove(key)
             }
@@ -48,7 +50,7 @@ object MergeInterceptor : Interceptor {
                 val existPendingContinuations = pendingContinuationMap[key]
                 if (existPendingContinuations == null) {
                     pendingContinuationMap[key] = EMPTY_LIST
-                    continuation.resume(Unit) {
+                    continuation.resume(Unit) { _, _, _ ->
                         triggerSuccessor(key)
                     }
                 } else {
