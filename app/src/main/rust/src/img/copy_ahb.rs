@@ -16,11 +16,12 @@ pub fn copyBitmapToAHB(mut env: JNIEnv, _: JClass, bm: jobject, ahb: jobject, x:
     jni_throwing(&mut env, |env| {
         with_bitmap_content(env, bm, |src| {
             let desc = ahb.describe();
-            let (w, h) = (desc.stride, desc.height);
+            let (w, h, stride) = (desc.width, desc.height, desc.stride);
             let view = src.view(x as u32, y as u32, w, h);
             let ptr = ahb.lock(HardwareBufferUsage::CPU_WRITE_RARELY, None, None)? as *mut u8;
-            let s = unsafe { &mut *slice_from_raw_parts_mut(ptr, (w * h * 4) as usize) };
-            let dst = ImageBuffer::from_raw(w, h, s).ok_or(anyhow!("Image buffer not RGBA8888!!!"));
+            let s = unsafe { &mut *slice_from_raw_parts_mut(ptr, (stride * h * 4) as usize) };
+            let dst =
+                ImageBuffer::from_raw(stride, h, s).ok_or(anyhow!("Image buffer not RGBA8888!!!"));
             let result = dst.map(|mut dst| dst.copy_from(view.deref(), 0, 0));
             ahb.unlock()?;
             result??;
