@@ -30,14 +30,6 @@
       "ignoreUnstable": false
     },
     {
-      "groupName": "Compose BOM",
-      "matchDepNames": [
-        "androidx.compose:compose-bom"
-      ],
-      "allowedVersions": "/^.*-alpha\\d*$/",
-      "ignoreUnstable": false
-    },
-    {
       "groupName": "Kotlin & KSP",
       "matchSourceUrls": [
         "https://github.com/JetBrains/kotlin",

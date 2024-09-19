@@ -17,7 +17,7 @@ androidx-room = "2.7.0-alpha08"
 androidx-work = "2.10.0-alpha04"
 arrow = "1.2.4"
 coil = "3.0.0-alpha10"
-compose-bom = "2024.09.00-alpha"
+compose-bom = "2024.09.02"
 compose-destinations = "2.1.0-beta12"
 kotlin = "2.0.20"
 kotlinx-coroutines = "1.9.0"
@@ -67,7 +67,7 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif" }
 coil-network = { module = "io.coil-kt.coil3:coil-network-ktor3" }
 
-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+compose-bom = { module = "androidx.compose:compose-bom-alpha", version.ref = "compose-bom" }
 compose-foundation = { module = "androidx.compose.foundation:foundation" }
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 compose-material3 = { module = "androidx.compose.material3:material3" }
