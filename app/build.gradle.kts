@@ -273,6 +273,7 @@ kotlin {
             "-progressive",
             "-Xjvm-default=all",
             "-Xcontext-receivers",
+            "-Xsuppress-warning=CONTEXT_RECEIVERS_DEPRECATED",
 
             "-opt-in=coil3.annotation.ExperimentalCoilApi",
             "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
