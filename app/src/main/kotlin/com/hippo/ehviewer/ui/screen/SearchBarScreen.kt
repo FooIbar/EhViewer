@@ -189,7 +189,7 @@ fun SearchBarScreen(
 
     fun deleteKeyword(keyword: String) {
         scope.launch {
-            dialogState.awaitPermissionOrCancel(
+            dialogState.awaitConfirmationOrCancel(
                 confirmText = R.string.delete,
             ) {
                 Text(text = stringResource(id = R.string.delete_search_history, keyword))

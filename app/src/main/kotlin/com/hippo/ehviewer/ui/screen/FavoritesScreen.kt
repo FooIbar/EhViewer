@@ -385,7 +385,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             }
             onClick(Icons.Default.Delete) {
                 val info = checkedInfoMap.takeAndClear()
-                awaitPermissionOrCancel(title = R.string.delete_favorites_dialog_title) {
+                awaitConfirmationOrCancel(title = R.string.delete_favorites_dialog_title) {
                     Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
                 }
                 val srcCat = urlBuilder.favCat

@@ -116,7 +116,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
             }.onFailure {
                 withUIContext {
                     focusManager.clearFocus()
-                    dialogState.awaitPermissionOrCancel(
+                    dialogState.awaitConfirmationOrCancel(
                         confirmText = R.string.get_it,
                         title = R.string.sign_in_failed,
                         showCancelButton = false,

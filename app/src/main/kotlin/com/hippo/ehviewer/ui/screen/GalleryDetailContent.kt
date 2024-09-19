@@ -225,7 +225,7 @@ fun GalleryDetailContent(
             return
         }
         launchIO {
-            awaitPermissionOrCancel {
+            awaitConfirmationOrCancel {
                 Text(text = stringResource(R.string.filter_the_uploader, uploader))
             }
             Filter(FilterMode.UPLOADER, uploader).remember()
@@ -699,7 +699,7 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
                             openBrowser(EhUrl.getTagDefinitionUrl(temp))
                         }
                         onSelect(addFilter) {
-                            awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
+                            awaitConfirmationOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
                             Filter(FilterMode.TAG, tag).remember()
                             showSnackbar(filterAdded)
                         }

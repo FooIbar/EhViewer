@@ -139,7 +139,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
 }
 
 suspend fun DialogState.showNewVersion(context: Context, release: Release) {
-    awaitPermissionOrCancel(
+    awaitConfirmationOrCancel(
         confirmText = R.string.download,
         title = R.string.new_version_available,
     ) {
