@@ -105,8 +105,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Corrosion)
 corrosion_import_crate(MANIFEST_PATH ../rust/Cargo.toml)
 corrosion_add_target_local_rustflags(ehviewer_rust "-Clink-args=-Wl,-z,max-page-size=16384")
-if (CMAKE_SYSTEM_VERSION GREATER_EQUAL 26)
-    corrosion_set_features(ehviewer_rust "api-level-26")
+if (ANDROID_NATIVE_API_LEVEL GREATER_EQUAL 26)
+    corrosion_set_features(ehviewer_rust FEATURES api-level-26)
 endif ()
 
 # Build and link our app's native lib
