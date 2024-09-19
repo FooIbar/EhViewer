@@ -5,15 +5,15 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import io.ktor.utils.io.charsets.decode
-import io.ktor.utils.io.core.ByteReadPacket
 import java.nio.charset.CodingErrorAction
+import kotlinx.io.Source
 
 suspend fun HttpResponse.bodyAsUtf8Text(): String {
     val decoder = Charsets.UTF_8.newDecoder().apply {
         onMalformedInput(CodingErrorAction.REPLACE)
         onUnmappableCharacter(CodingErrorAction.REPLACE)
     }
-    val input = body<ByteReadPacket>()
+    val input = body<Source>()
 
     return decoder.decode(input)
 }
