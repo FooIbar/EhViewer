@@ -47,11 +47,6 @@ object CropBorderInterceptor : Interceptor {
                                 copyBitmapToAHB(src, buffer, x, y)
                                 Bitmap.wrapHardwareBuffer(buffer, src.colorSpace)
                             }
-                        }.onSuccess { bitmap ->
-                            bitmap?.let {
-                                src.recycle()
-                                return result.copy(image = image.copy(image = bitmap.asImage(), rect = image.rect.size.toIntRect()))
-                            }
                         }.getOrNull()
                         else -> null
                     } ?: Bitmap.createBitmap(src, x, y, w, h)
