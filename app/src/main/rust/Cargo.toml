@@ -6,6 +6,9 @@ edition = "2021"
 [lib]
 crate-type = ["cdylib"]
 
+[features]
+api-level-26 = ["ndk/api-level-26"]
+
 [dependencies]
 regex-lite = "0.1"
 jni = "0.21"

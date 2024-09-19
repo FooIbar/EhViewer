@@ -90,6 +90,10 @@ impl ThrowingHasDefault for i32 {
     }
 }
 
+impl ThrowingHasDefault for () {
+    fn default() -> Self {}
+}
+
 fn jni_throwing<F, R>(env: &mut JNIEnv, f: F) -> R
 where
     F: FnOnce(&mut JNIEnv) -> Result<R>,
