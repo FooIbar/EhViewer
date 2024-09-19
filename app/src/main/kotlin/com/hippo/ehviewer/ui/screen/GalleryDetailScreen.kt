@@ -1,171 +1,92 @@
 package com.hippo.ehviewer.ui.screen
 
-import android.Manifest
 import android.app.DownloadManager
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
-import android.text.TextUtils.TruncateAt.END
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.foundation.MutatorMutex
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyGridScope
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FolderZip
-import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.SwapVerticalCircle
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.LocalPinnableContainer
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
-import androidx.core.text.parseAsHtml
-import androidx.window.core.layout.WindowWidthSizeClass
-import arrow.core.partially1
 import coil3.imageLoader
 import com.hippo.ehviewer.EhApplication.Companion.galleryDetailCache
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
-import com.hippo.ehviewer.client.EhFilter.remember
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
-import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
-import com.hippo.ehviewer.client.data.GalleryTagGroup
-import com.hippo.ehviewer.client.data.ListUrlBuilder
-import com.hippo.ehviewer.client.data.TagNamespace
-import com.hippo.ehviewer.client.data.asGalleryDetail
 import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.NoHAtHClientException
 import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.coil.justDownload
-import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
-import com.hippo.ehviewer.dao.Filter
-import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderDen
-import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.composing
-import com.hippo.ehviewer.ui.confirmRemoveDownload
-import com.hippo.ehviewer.ui.destinations.GalleryCommentsScreenDestination
-import com.hippo.ehviewer.ui.destinations.GalleryPreviewScreenDestination
-import com.hippo.ehviewer.ui.getFavoriteIcon
-import com.hippo.ehviewer.ui.jumpToReaderByPage
-import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.main.ArchiveList
-import com.hippo.ehviewer.ui.main.EhPreviewItem
-import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
-import com.hippo.ehviewer.ui.main.GalleryDetailHeaderCard
-import com.hippo.ehviewer.ui.main.GalleryTags
-import com.hippo.ehviewer.ui.main.TorrentList
-import com.hippo.ehviewer.ui.modifyFavorites
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
-import com.hippo.ehviewer.ui.startDownload
-import com.hippo.ehviewer.ui.tools.CrystalCard
-import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
-import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
-import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
-import com.hippo.ehviewer.ui.tools.GalleryDetailRating
-import com.hippo.ehviewer.ui.tools.GalleryRatingBar
-import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.tools.rememberLambda
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.AppHelper
-import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.bgWork
 import com.hippo.ehviewer.util.displayString
-import com.hippo.ehviewer.util.isAtLeastQ
-import com.hippo.ehviewer.util.requestPermission
 import com.hippo.files.delete
 import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
-import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.downloadManager
@@ -183,34 +104,6 @@ data class TokenArgs(
     val token: String,
     val page: Int = 0,
 ) : GalleryDetailScreenArgs
-
-@StringRes
-private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt()) {
-    0 -> R.string.rating0
-    1 -> R.string.rating1
-    2 -> R.string.rating2
-    3 -> R.string.rating3
-    4 -> R.string.rating4
-    5 -> R.string.rating5
-    6 -> R.string.rating6
-    7 -> R.string.rating7
-    8 -> R.string.rating8
-    9 -> R.string.rating9
-    10 -> R.string.rating10
-    else -> R.string.rating_none
-}
-
-private fun List<GalleryTagGroup>.getArtistTag(): String? {
-    for (tagGroup in this) {
-        if (tagGroup.isNotEmpty()) {
-            val namespace = tagGroup.groupName
-            if (namespace == TagNamespace.Artist.value || namespace == TagNamespace.Cosplayer.value) {
-                return "$namespace:${tagGroup[0].removePrefix("_")}"
-            }
-        }
-    }
-    return null
-}
 
 @Destination<RootGraph>
 @Composable
@@ -248,9 +141,6 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
     var getDetailError by rememberSaveable { mutableStateOf("") }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    val voteSuccess = stringResource(R.string.tag_vote_successfully)
-    val voteFailed = stringResource(R.string.vote_failed)
-
     if (galleryInfo !is GalleryDetail && getDetailError.isBlank()) {
         LaunchedEffect(Unit) {
             val galleryDetail = galleryDetailCache[gid]
@@ -273,20 +163,6 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 EhDB.putHistoryInfo(it.galleryInfo)
                 galleryInfo = it
             }
-        }
-    }
-
-    suspend fun GalleryDetail.voteTag(tag: String, vote: Int) {
-        runSuspendCatching {
-            EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
-        }.onSuccess { result ->
-            if (result != null) {
-                showSnackbar(result)
-            } else {
-                showSnackbar(voteSuccess)
-            }
-        }.onFailure {
-            showSnackbar(voteFailed)
         }
     }
 
@@ -357,610 +233,6 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                             showSnackbar(downloadFailed)
                         }
                     }
-                }
-            }
-        }
-    }
-
-    val keylineMargin = dimensionResource(R.dimen.keyline_margin)
-
-    fun navigateToPreview(nextPage: Boolean = false) {
-        (galleryInfo as? GalleryDetail)?.let {
-            navigator.navigate(GalleryPreviewScreenDestination(it, nextPage))
-        }
-    }
-
-    fun LazyGridScope.galleryDetailPreview(gd: GalleryDetail) {
-        val previewList = gd.previewList
-        items(previewList, key = { it.position }, contentType = { "preview" }) {
-            EhPreviewItem(
-                galleryPreview = it,
-                position = it.position,
-                onClick = { navToReader(gd.galleryInfo, it.position) },
-            )
-        }
-        item(
-            key = "footer",
-            span = { GridItemSpan(maxLineSpan) },
-            contentType = "footer",
-        ) {
-            val footerText = if (gd.previewPages <= 0 || previewList.isEmpty()) {
-                stringResource(R.string.no_previews)
-            } else if (gd.previewPages == 1) {
-                stringResource(R.string.no_more_previews)
-            } else {
-                stringResource(R.string.more_previews)
-            }
-            TextButton(onClick = ::navigateToPreview.partially1(true)) {
-                Text(footerText)
-            }
-        }
-    }
-
-    @Composable
-    fun BelowHeader(galleryDetail: GalleryDetail) {
-        @Composable
-        fun EhIconButton(
-            icon: ImageVector,
-            text: String,
-            onClick: () -> Unit,
-        ) = Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            FilledTertiaryIconButton(onClick = onClick) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                )
-            }
-            Text(text = text)
-        }
-
-        @Composable
-        fun GalleryDetailComment(commentsList: List<GalleryComment>) {
-            val maxShowCount = 2
-            val commentText = when {
-                commentsList.isEmpty() -> stringResource(R.string.no_comments)
-                commentsList.size <= maxShowCount -> stringResource(R.string.no_more_comments)
-                else -> stringResource(R.string.more_comment)
-            }
-            fun onNavigateToCommentScene() {
-                navigator.navigate(GalleryCommentsScreenDestination(galleryDetail.gid))
-            }
-            CrystalCard {
-                commentsList.take(maxShowCount).forEach { item ->
-                    GalleryCommentCard(
-                        modifier = Modifier.padding(vertical = 4.dp),
-                        comment = item,
-                        onCardClick = ::onNavigateToCommentScene,
-                        onUserClick = ::onNavigateToCommentScene,
-                        onUrlClick = { if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it) },
-                    ) {
-                        maxLines = 5
-                        ellipsize = END
-                        text = item.comment.parseAsHtml(imageGetter = CoilImageGetter(this))
-                    }
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = dimensionResource(id = R.dimen.strip_item_padding_v))
-                        .clip(RoundedCornerShape(16.dp))
-                        .clickable(onClick = ::onNavigateToCommentScene),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(commentText)
-                }
-            }
-        }
-        suspend fun showNewerVersionDialog() {
-            val items = galleryDetail.newerVersions.map {
-                getString(R.string.newer_version_title, it.title, it.posted)
-            }
-            val selected = awaitSelectItem(items)
-            val info = galleryDetail.newerVersions[selected]
-            withUIContext {
-                // Can't use GalleryInfoArgs as thumbKey is null
-                navigator.navigate(info.gid asDstWith info.token)
-            }
-        }
-        Spacer(modifier = Modifier.size(keylineMargin))
-        if (galleryDetail.newerVersions.isNotEmpty()) {
-            Box(contentAlignment = Alignment.Center) {
-                CrystalCard(
-                    onClick = { launchIO { showNewerVersionDialog() } },
-                    modifier = Modifier.fillMaxWidth().height(32.dp),
-                ) {
-                }
-                Text(text = stringResource(id = R.string.newer_version_available))
-            }
-            Spacer(modifier = Modifier.size(keylineMargin))
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
-        ) {
-            val favSlot by FavouriteStatusRouter.collectAsState(galleryDetail) { it }
-            val favButtonText = if (favSlot != NOT_FAVORITED) {
-                galleryDetail.favoriteName ?: stringResource(id = R.string.local_favorites)
-            } else {
-                stringResource(id = R.string.not_favorited)
-            }
-            val favoritesLock = remember { MutatorMutex() }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                val removeSucceed = stringResource(R.string.remove_from_favorite_success)
-                val addSucceed = stringResource(R.string.add_to_favorite_success)
-                // val removeFailed = stringResource(R.string.remove_from_favorite_failure)
-                val addFailed = stringResource(R.string.add_to_favorite_failure)
-                FilledTertiaryIconToggleButton(
-                    checked = favSlot != NOT_FAVORITED,
-                    onCheckedChange = {
-                        launchIO {
-                            favoritesLock.mutate {
-                                runSuspendCatching {
-                                    modifyFavorites(galleryDetail.galleryInfo)
-                                }.onSuccess { add ->
-                                    if (add) {
-                                        showSnackbar(addSucceed)
-                                    } else {
-                                        showSnackbar(removeSucceed)
-                                    }
-                                }.onFailure {
-                                    // TODO: We don't know if it's add or remove
-                                    showSnackbar(addFailed)
-                                }
-                            }
-                        }
-                    },
-                ) {
-                    Icon(
-                        imageVector = getFavoriteIcon(favSlot != NOT_FAVORITED),
-                        contentDescription = null,
-                    )
-                }
-                Text(text = favButtonText)
-            }
-            EhIconButton(
-                icon = Icons.Default.Search,
-                text = stringResource(id = R.string.similar_gallery),
-                onClick = {
-                    val keyword = EhUtils.extractTitle(galleryDetail.title)
-                    val artistTag = galleryDetail.tags.getArtistTag()
-                    if (null != keyword) {
-                        navigate(
-                            ListUrlBuilder(
-                                mode = ListUrlBuilder.MODE_NORMAL,
-                                mKeyword = "\"" + keyword + "\"",
-                            ).asDst(),
-                        )
-                    } else if (artistTag != null) {
-                        navigate(
-                            ListUrlBuilder(
-                                mode = ListUrlBuilder.MODE_TAG,
-                                mKeyword = artistTag,
-                            ).asDst(),
-                        )
-                    } else if (null != galleryDetail.uploader) {
-                        navigate(
-                            ListUrlBuilder(
-                                mode = ListUrlBuilder.MODE_UPLOADER,
-                                mKeyword = galleryDetail.uploader,
-                            ).asDst(),
-                        )
-                    }
-                },
-            )
-            EhIconButton(
-                icon = Icons.Default.ImageSearch,
-                text = stringResource(id = R.string.search_cover),
-                onClick = {
-                    val key = galleryDetail.thumbKey!!
-                    navigator.navigate(
-                        ListUrlBuilder(
-                            mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
-                            hash = key.substringAfterLast('/').substringBefore('-'),
-                        ).asDst(),
-                    )
-                },
-            )
-            val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
-            val permissionDenied = stringResource(R.string.permission_denied)
-            val downloadTorrentFailed = stringResource(R.string.download_torrent_failure)
-            val downloadTorrentStarted = stringResource(R.string.download_torrent_started)
-            val noTorrents = stringResource(R.string.no_torrents)
-            val torrentResult = remember(galleryDetail) {
-                async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
-                    EhEngine.getTorrentList(galleryDetail.torrentUrl!!, gid, token)
-                }
-            }
-            suspend fun showTorrentDialog() {
-                val torrentList = bgWork { torrentResult.await() }
-                if (torrentList.isEmpty()) {
-                    showSnackbar(noTorrents)
-                } else {
-                    val selected = showNoButton(false) {
-                        TorrentList(
-                            items = torrentList,
-                            onItemClick = { dismissWith(it) },
-                        )
-                    }
-                    val url = selected.url
-                    val name = "${selected.name}.torrent"
-                    val r = DownloadManager.Request(url.toUri())
-                    r.setDestinationInExternalPublicDir(
-                        Environment.DIRECTORY_DOWNLOADS,
-                        AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
-                    )
-                    r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                    EhCookieStore.getCookieHeader(url)?.let { r.addRequestHeader("Cookie", it) }
-                    downloadManager.enqueue(r)
-                    showSnackbar(downloadTorrentStarted)
-                }
-            }
-            EhIconButton(
-                icon = Icons.Default.SwapVerticalCircle,
-                text = torrentText,
-                onClick = {
-                    launchIO {
-                        if (galleryDetail.torrentCount > 0) {
-                            val granted = isAtLeastQ || requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            if (granted) {
-                                runSuspendCatching {
-                                    showTorrentDialog()
-                                }.onFailure {
-                                    logcat(it)
-                                    showSnackbar(downloadTorrentFailed)
-                                }
-                            } else {
-                                showSnackbar(permissionDenied)
-                            }
-                        } else {
-                            showSnackbar(noTorrents)
-                        }
-                    }
-                },
-            )
-        }
-        Spacer(modifier = Modifier.size(keylineMargin))
-        fun getAllRatingText(rating: Float, ratingCount: Int): String = getString(
-            R.string.rating_text,
-            getString(getRatingText(rating)),
-            rating,
-            ratingCount,
-        )
-        var ratingText by rememberSaveable {
-            mutableStateOf(getAllRatingText(galleryDetail.rating, galleryDetail.ratingCount))
-        }
-        val rateSucceed = stringResource(R.string.rate_successfully)
-        val rateFailed = stringResource(R.string.rate_failed)
-        fun showRateDialog() {
-            launchIO {
-                if (galleryDetail.apiUid < 0) {
-                    showSnackbar(signInFirst)
-                    return@launchIO
-                }
-                val pendingRating = awaitResult(galleryDetail.rating.coerceAtLeast(.5f), title = R.string.rate) {
-                    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                        var text by remember { mutableIntStateOf(getRatingText(expectedValue)) }
-                        Text(text = stringResource(id = text), style = MaterialTheme.typography.bodyLarge)
-                        Spacer(modifier = Modifier.size(keylineMargin))
-                        GalleryRatingBar(
-                            rating = expectedValue,
-                            onRatingChange = {
-                                expectedValue = it.coerceAtLeast(.5f)
-                                text = getRatingText(expectedValue)
-                            },
-                        )
-                    }
-                }
-                galleryDetail.runSuspendCatching {
-                    EhEngine.rateGallery(apiUid, apiKey, gid, token, pendingRating)
-                }.onSuccess { result ->
-                    galleryInfo = galleryDetail.apply {
-                        rating = result.rating
-                        ratingCount = result.ratingCount
-                    }
-                    ratingText = getAllRatingText(result.rating, result.ratingCount)
-                    showSnackbar(rateSucceed)
-                }.onFailure {
-                    logcat(it)
-                    showSnackbar(rateFailed)
-                }
-            }
-        }
-        CrystalCard(onClick = ::showRateDialog) {
-            Column(
-                modifier = Modifier.padding(8.dp).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                GalleryDetailRating(rating = galleryDetail.rating)
-                Spacer(modifier = Modifier.size(keylineMargin))
-                Text(text = ratingText)
-            }
-        }
-        Spacer(modifier = Modifier.size(keylineMargin))
-        val tags = galleryDetail.tags
-        if (tags.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(text = stringResource(id = R.string.no_tags))
-            }
-        } else {
-            val copy = stringResource(android.R.string.copy)
-            val copyTrans = stringResource(R.string.copy_trans)
-            val showDefine = stringResource(R.string.show_definition)
-            val addFilter = stringResource(R.string.add_filter)
-            val filterAdded = stringResource(R.string.filter_added)
-            val upTag = stringResource(R.string.tag_vote_up)
-            val downTag = stringResource(R.string.tag_vote_down)
-            GalleryTags(
-                tagGroups = tags,
-                onTagClick = {
-                    val lub = ListUrlBuilder()
-                    lub.mode = ListUrlBuilder.MODE_TAG
-                    lub.keyword = it
-                    navigate(lub.asDst())
-                },
-                onTagLongClick = { translated, tag ->
-                    val index = tag.indexOf(':')
-                    val temp = if (index >= 0) {
-                        tag.substring(index + 1)
-                    } else {
-                        tag
-                    }
-                    launchIO {
-                        awaitSelectAction {
-                            onSelect(copy) {
-                                addTextToClipboard(tag)
-                            }
-                            if (temp != translated) {
-                                onSelect(copyTrans) {
-                                    addTextToClipboard(translated)
-                                }
-                            }
-                            onSelect(showDefine) {
-                                openBrowser(EhUrl.getTagDefinitionUrl(temp))
-                            }
-                            onSelect(addFilter) {
-                                awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
-                                Filter(FilterMode.TAG, tag).remember()
-                                showSnackbar(filterAdded)
-                            }
-                            if (galleryDetail.apiUid >= 0) {
-                                onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
-                                onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
-                            }
-                        }()
-                    }
-                },
-            )
-        }
-        Spacer(modifier = Modifier.size(keylineMargin))
-        if (Settings.showComments) {
-            GalleryDetailComment(galleryDetail.comments.comments)
-            Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.strip_item_padding_v)))
-        }
-    }
-
-    @Composable
-    fun GalleryDetailContent(
-        galleryInfo: GalleryInfo,
-        contentPadding: PaddingValues,
-        modifier: Modifier,
-    ) {
-        val galleryDetail = galleryInfo.asGalleryDetail()
-        val windowSizeClass = LocalWindowSizeClass.current
-        val thumbColumns by Settings.thumbColumns.collectAsState()
-        val readText = stringResource(R.string.read)
-        val startPage by rememberInVM {
-            EhDB.getReadProgressFlow(galleryInfo.gid)
-        }.collectAsState(0)
-        val readButtonText = if (startPage == 0) {
-            readText
-        } else {
-            stringResource(R.string.read_from, startPage + 1)
-        }
-        val downloadState by EhDownloadManager.collectDownloadState(gid)
-        val downloadButtonText = when (downloadState) {
-            DownloadInfo.STATE_INVALID -> stringResource(R.string.download)
-            DownloadInfo.STATE_NONE -> stringResource(R.string.download_state_none)
-            DownloadInfo.STATE_WAIT -> stringResource(R.string.download_state_wait)
-            DownloadInfo.STATE_DOWNLOAD -> stringResource(R.string.download_state_downloading)
-            DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_downloaded)
-            DownloadInfo.STATE_FAILED -> stringResource(R.string.download_state_failed)
-            else -> error("Invalid DownloadState!!!")
-        }
-        fun onReadButtonClick() {
-            if (galleryDetail != null || downloadState != DownloadInfo.STATE_INVALID) {
-                navToReader(galleryInfo.findBaseInfo(), startPage)
-            }
-        }
-        fun onCategoryChipClick() {
-            val category = galleryInfo.category
-            if (category == EhUtils.NONE || category == EhUtils.PRIVATE || category == EhUtils.UNKNOWN) {
-                return
-            }
-            val lub = ListUrlBuilder(category = category)
-            navigator.navigate(lub.asDst())
-        }
-        fun onUploaderChipClick(galleryInfo: GalleryInfo) {
-            val uploader = galleryInfo.uploader
-            val disowned = uploader == "(Disowned)"
-            if (uploader.isNullOrEmpty() || disowned) {
-                return
-            }
-            val lub = ListUrlBuilder()
-            lub.mode = ListUrlBuilder.MODE_UPLOADER
-            lub.keyword = uploader
-            navigator.navigate(lub.asDst())
-        }
-
-        var showBottomSheet by remember { mutableStateOf(false) }
-
-        if (showBottomSheet && galleryDetail != null) {
-            ModalBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
-                contentWindowInsets = { EmptyWindowInsets },
-            ) {
-                GalleryInfoBottomSheet(galleryDetail, navigator)
-            }
-        }
-
-        fun onGalleryInfoCardClick() {
-            showBottomSheet = true
-        }
-
-        val filterAdded = stringResource(R.string.filter_added)
-        fun showFilterUploaderDialog(galleryInfo: GalleryInfo) {
-            val uploader = galleryInfo.uploader
-            val disowned = uploader == "(Disowned)"
-            if (uploader.isNullOrEmpty() || disowned) {
-                return
-            }
-            launchIO {
-                awaitPermissionOrCancel {
-                    Text(text = stringResource(R.string.filter_the_uploader, uploader))
-                }
-                Filter(FilterMode.UPLOADER, uploader).remember()
-                showSnackbar(filterAdded)
-            }
-        }
-        val onDownloadButtonClick = rememberLambda(galleryInfo) {
-            galleryDetail ?: return@rememberLambda
-            if (EhDownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
-                launchUI { startDownload(implicit<MainActivity>(), false, galleryDetail.galleryInfo) }
-            } else {
-                launch { confirmRemoveDownload(galleryDetail) }
-            }
-        }
-
-        when (windowSizeClass.windowWidthSizeClass) {
-            WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.COMPACT -> LazyVerticalGrid(
-                columns = GridCells.Fixed(thumbColumns),
-                contentPadding = contentPadding,
-                modifier = modifier.padding(horizontal = keylineMargin),
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
-            ) {
-                item(
-                    key = "header",
-                    span = { GridItemSpan(maxCurrentLineSpan) },
-                    contentType = "header",
-                ) {
-                    GalleryDetailHeaderCard(
-                        info = galleryInfo,
-                        onInfoCardClick = ::onGalleryInfoCardClick,
-                        onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
-                        onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
-                        onCategoryChipClick = ::onCategoryChipClick,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
-                    )
-                }
-                item(
-                    key = "body",
-                    span = { GridItemSpan(maxCurrentLineSpan) },
-                    contentType = "body",
-                ) {
-                    LocalPinnableContainer.current!!.run { remember { pin() } }
-                    Column {
-                        Row {
-                            FilledTonalButton(
-                                onClick = onDownloadButtonClick,
-                                modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
-                            ) {
-                                Text(text = downloadButtonText, maxLines = 1)
-                            }
-                            Button(
-                                onClick = ::onReadButtonClick,
-                                modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
-                            ) {
-                                Text(text = readButtonText, maxLines = 1)
-                            }
-                        }
-                        if (getDetailError.isNotBlank()) {
-                            GalleryDetailErrorTip(error = getDetailError, onClick = { getDetailError = "" })
-                        } else if (galleryDetail != null) {
-                            BelowHeader(galleryDetail)
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize().padding(keylineMargin),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
-                }
-                if (galleryDetail != null) {
-                    galleryDetailPreview(galleryDetail)
-                }
-            }
-
-            WindowWidthSizeClass.EXPANDED -> LazyVerticalGrid(
-                columns = GridCells.Fixed(thumbColumns),
-                contentPadding = contentPadding,
-                modifier = modifier.padding(horizontal = keylineMargin),
-                horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
-                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
-            ) {
-                item(
-                    key = "header",
-                    span = { GridItemSpan(maxCurrentLineSpan) },
-                    contentType = "header",
-                ) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        GalleryDetailHeaderCard(
-                            info = galleryInfo,
-                            onInfoCardClick = ::onGalleryInfoCardClick,
-                            onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
-                            onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
-                            onCategoryChipClick = ::onCategoryChipClick,
-                            modifier = Modifier.width(dimensionResource(id = R.dimen.gallery_detail_card_landscape_width)).padding(vertical = keylineMargin),
-                        )
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Spacer(modifier = modifier.height(16.dp))
-                            Button(
-                                onClick = ::onReadButtonClick,
-                                modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
-                            ) {
-                                Text(text = readButtonText, maxLines = 1)
-                            }
-                            Spacer(modifier = modifier.height(24.dp))
-                            FilledTonalButton(
-                                onClick = onDownloadButtonClick,
-                                modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
-                            ) {
-                                Text(text = downloadButtonText, maxLines = 1)
-                            }
-                        }
-                    }
-                }
-                item(
-                    key = "body",
-                    span = { GridItemSpan(maxCurrentLineSpan) },
-                    contentType = "body",
-                ) {
-                    LocalPinnableContainer.current!!.run { remember { pin() } }
-                    Column {
-                        if (getDetailError.isNotBlank()) {
-                            GalleryDetailErrorTip(error = getDetailError, onClick = { getDetailError = "" })
-                        } else if (galleryDetail != null) {
-                            BelowHeader(galleryDetail)
-                        } else {
-                            Box(
-                                modifier = Modifier.fillMaxSize().padding(keylineMargin),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
-                }
-                if (galleryDetail != null) {
-                    galleryDetailPreview(galleryDetail)
                 }
             }
         }
@@ -1128,6 +400,8 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
             GalleryDetailContent(
                 galleryInfo = gi,
                 contentPadding = it,
+                getDetailError = getDetailError,
+                onRetry = { getDetailError = "" },
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             )
         } else if (getDetailError.isNotBlank()) {
@@ -1140,5 +414,20 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 CircularProgressIndicator()
             }
         }
+    }
+}
+
+context(Context, SnackbarHostState)
+suspend fun GalleryDetail.voteTag(tag: String, vote: Int) {
+    runSuspendCatching {
+        EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
+    }.onSuccess { result ->
+        if (result != null) {
+            showSnackbar(result)
+        } else {
+            showSnackbar(getString(R.string.tag_vote_successfully))
+        }
+    }.onFailure {
+        showSnackbar(getString(R.string.vote_failed))
     }
 }

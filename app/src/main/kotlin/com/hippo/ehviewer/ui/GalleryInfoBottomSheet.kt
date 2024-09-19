@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -62,10 +62,10 @@ private fun GalleryDetail.generateContent() = arrayOf(
     R.string.favorite_name to favoriteName,
 )
 
+context(Context, DestinationsNavigator)
 @Composable
-fun GalleryInfoBottomSheet(detail: GalleryDetail, navigator: DestinationsNavigator) {
+fun GalleryInfoBottomSheet(detail: GalleryDetail) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        val context = LocalContext.current
         Text(
             text = stringResource(id = R.string.gallery_info),
             modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -79,10 +79,10 @@ fun GalleryInfoBottomSheet(detail: GalleryDetail, navigator: DestinationsNavigat
                         modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.keyline_margin)).clickable {
                             if (index == INDEX_PARENT) {
                                 if (content != null) {
-                                    navigator.navWithUrl(content)
+                                    navWithUrl(content)
                                 }
                             } else {
-                                context.addTextToClipboard(content, true)
+                                addTextToClipboard(content, true)
                                 if (index == INDEX_URL) {
                                     // Save it to avoid detect the gallery
                                     Settings.clipboardTextHashCode = data[index].hashCode()
