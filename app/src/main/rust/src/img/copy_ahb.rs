@@ -1,3 +1,5 @@
+#![cfg(feature = "api-level-26")]
+
 use crate::{jni_throwing, with_bitmap_content};
 use anyhow::anyhow;
 use image::{GenericImage, GenericImageView, ImageBuffer};

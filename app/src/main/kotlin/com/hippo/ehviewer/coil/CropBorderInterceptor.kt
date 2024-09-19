@@ -2,6 +2,8 @@ package com.hippo.ehviewer.coil
 
 import android.graphics.Bitmap
 import android.hardware.HardwareBuffer
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.toIntRect
 import arrow.fx.coroutines.autoCloseable
@@ -15,7 +17,10 @@ import com.hippo.ehviewer.image.copyBitmapToAHB
 import com.hippo.ehviewer.util.isAtLeastQ
 import moe.tarsin.coroutines.runSuspendCatching
 
+@RequiresApi(Build.VERSION_CODES.O)
 private const val FORMAT = HardwareBuffer.RGBA_8888
+
+@RequiresApi(Build.VERSION_CODES.O)
 private const val USAGE = HardwareBuffer.USAGE_CPU_WRITE_RARELY or HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE
 
 object CropBorderInterceptor : Interceptor {
