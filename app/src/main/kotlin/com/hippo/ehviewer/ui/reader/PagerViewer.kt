@@ -26,7 +26,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.layout.times
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.toSize
 import arrow.core.partially1
@@ -140,7 +139,7 @@ private fun PageContainer(
     val zoomableState = rememberZoomableState(zoomSpec = PagerZoomSpec)
     val status by page.status.collectAsState()
     if (status == Page.State.READY && layoutSize != Size.Zero) {
-        val size = with(page.image!!.innerImage!!) { IntSize(width, height) }.toSize()
+        val size = page.image!!.intrinsicSize.toSize()
         val contentScale = ContentScale.fromPreferences(scaleType, size, layoutSize)
         zoomableState.contentScale = contentScale
         LaunchedEffect(size, contentScale, alignment) {

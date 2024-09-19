@@ -4,18 +4,16 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.RectF
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toAndroidRectF
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastRoundToInt
 
-class BitmapPainter(private val bitmap: Bitmap) : Painter() {
-    override val intrinsicSize = IntSize(bitmap.width, bitmap.height).toSize()
+class BitmapPainter(private val bitmap: Bitmap, override val intrinsicSize: Size) : Painter() {
     private val srcRect = intrinsicSize.toRect().toAndroidRectF()
     private val dstRect = RectF()
     private val matrix = Matrix()
