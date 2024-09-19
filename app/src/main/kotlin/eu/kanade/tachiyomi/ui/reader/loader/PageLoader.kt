@@ -21,7 +21,7 @@ abstract class PageLoader {
             } else {
                 (OSUtils.appMaxMemory / 3 * 2).toInt()
             },
-            sizeOf = { _, v -> v.size.toInt() },
+            sizeOf = { _, v -> v.allocationSize.toInt() },
             onEntryRemoved = { _, k, o, n ->
                 if (o.isRecyclable) {
                     n ?: notifyPageWait(k)

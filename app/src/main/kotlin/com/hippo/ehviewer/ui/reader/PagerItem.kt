@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import coil3.BitmapImage
 import coil3.DrawableImage
 import coil3.compose.AsyncImagePainter
@@ -143,7 +144,7 @@ fun PagerItem(
 }
 
 private fun Image.toPainter() = when (val image = innerImage) {
-    is BitmapImage -> BitmapPainter(image.bitmap, rect)
+    is BitmapImage -> BitmapPainter(image.bitmap, intrinsicSize.toSize())
     is DrawableImage -> DrawablePainter(image.drawable)
     else -> unreachable()
 }

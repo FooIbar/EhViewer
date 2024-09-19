@@ -139,7 +139,7 @@ private fun PageContainer(
     val zoomableState = rememberZoomableState(zoomSpec = PagerZoomSpec)
     val status by page.status.collectAsState()
     if (status == Page.State.READY && layoutSize != Size.Zero) {
-        val size = page.image!!.rect.size.toSize()
+        val size = page.image!!.intrinsicSize.toSize()
         val contentScale = ContentScale.fromPreferences(scaleType, size, layoutSize)
         zoomableState.contentScale = contentScale
         LaunchedEffect(size, contentScale, alignment) {

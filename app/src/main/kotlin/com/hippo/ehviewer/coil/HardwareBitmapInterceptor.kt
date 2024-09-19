@@ -37,8 +37,7 @@ object HardwareBitmapInterceptor : Interceptor {
                 if (maxOf(bitmap.width, bitmap.height) <= request.hardwareThreshold) {
                     bitmap.copy(Bitmap.Config.HARDWARE, false)?.let { hwBitmap ->
                         bitmap.recycle()
-                        val newImage = hwBitmap.asImage()
-                        return result.copy(image = image.copy(image = newImage))
+                        return result.copy(image = image.copy(image = hwBitmap.asImage()))
                     }
                 }
             }

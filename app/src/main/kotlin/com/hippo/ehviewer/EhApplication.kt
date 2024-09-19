@@ -39,6 +39,7 @@ import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.coil.CropBorderInterceptor
+import com.hippo.ehviewer.coil.DetectBorderInterceptor
 import com.hippo.ehviewer.coil.DownloadThumbInterceptor
 import com.hippo.ehviewer.coil.HardwareBitmapInterceptor
 import com.hippo.ehviewer.coil.MapExtraInfoInterceptor
@@ -178,6 +179,7 @@ class EhApplication :
                 add(HardwareBitmapInterceptor)
             }
             add(CropBorderInterceptor)
+            add(DetectBorderInterceptor)
             add(QrCodeInterceptor)
             add(MapExtraInfoInterceptor)
             if (isAtLeastP) {
