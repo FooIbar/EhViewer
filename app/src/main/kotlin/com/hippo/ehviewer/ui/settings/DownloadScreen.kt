@@ -260,7 +260,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
                 }
                 val list = downloadLocation.list().filter(::isRedundant)
                 if (list.isNotEmpty()) {
-                    awaitPermissionOrCancel(
+                    awaitConfirmationOrCancel(
                         confirmText = R.string.delete,
                         title = R.string.settings_download_clean_redundancy,
                     ) {

@@ -115,7 +115,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
             ) {
                 coroutineScope.launch {
                     val cookies = EhCookieStore.getIdentityCookies()
-                    dialogState.awaitPermissionOrCancel(
+                    dialogState.awaitConfirmationOrCancel(
                         confirmText = R.string.settings_eh_sign_out,
                         dismissText = R.string.settings_eh_clear_igneous,
                         showCancelButton = cookies.last().second != null,
@@ -185,7 +185,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                     summary = summary,
                 ) {
                     coroutineScope.launch {
-                        dialogState.awaitPermissionOrCancel(
+                        dialogState.awaitConfirmationOrCancel(
                             confirmText = R.string.reset,
                             title = R.string.image_limits,
                             confirmButtonEnabled = result?.run { limits.resetCost != 0 } ?: false,

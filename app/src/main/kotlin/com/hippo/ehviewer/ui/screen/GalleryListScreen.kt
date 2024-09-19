@@ -308,7 +308,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 actions = {
                     IconButton(onClick = {
                         launch {
-                            awaitPermissionOrCancel(title = R.string.quick_search, showCancelButton = false) {
+                            awaitConfirmationOrCancel(title = R.string.quick_search, showCancelButton = false) {
                                 Text(text = stringResource(id = R.string.add_quick_search_tip))
                             }
                         }
@@ -393,7 +393,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                 snapshotFlow { dismissState.currentValue }.collect { value ->
                                     if (value == SwipeToDismissBoxValue.EndToStart) {
                                         runCatching {
-                                            awaitPermissionOrCancel(confirmText = R.string.delete) {
+                                            awaitConfirmationOrCancel(confirmText = R.string.delete) {
                                                 Text(text = stringResource(R.string.delete_quick_search, item.name))
                                             }
                                         }.onSuccess {

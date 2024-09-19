@@ -272,7 +272,7 @@ class DialogState {
         )
     }
 
-    suspend fun awaitPermissionOrCancel(
+    suspend fun awaitConfirmationOrCancel(
         @StringRes confirmText: Int = android.R.string.ok,
         @StringRes dismissText: Int = android.R.string.cancel,
         @StringRes title: Int? = null,

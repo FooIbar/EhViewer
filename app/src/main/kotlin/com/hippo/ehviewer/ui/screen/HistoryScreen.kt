@@ -102,7 +102,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
         trailingIcon = {
             IconButton(onClick = {
                 launch {
-                    awaitPermissionOrCancel(
+                    awaitConfirmationOrCancel(
                         confirmText = R.string.clear_all,
                         text = { Text(text = stringResource(id = R.string.clear_all_history)) },
                     )

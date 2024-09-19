@@ -341,7 +341,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     snapshotFlow { dismissState.currentValue }.collect {
                         if (it == SwipeToDismissBoxValue.EndToStart) {
                             runCatching {
-                                awaitPermissionOrCancel(confirmText = R.string.delete) {
+                                awaitConfirmationOrCancel(confirmText = R.string.delete) {
                                     Text(text = stringResource(R.string.delete_label, item))
                                 }
                             }.onSuccess {
@@ -490,7 +490,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     onClick = {
                         expanded = false
                         launchIO {
-                            awaitPermissionOrCancel(
+                            awaitConfirmationOrCancel(
                                 confirmText = android.R.string.ok,
                                 dismissText = android.R.string.cancel,
                             ) {
