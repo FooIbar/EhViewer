@@ -39,25 +39,25 @@ object CropBorderInterceptor : Interceptor {
                     // Large hardware bitmaps have rendering issues (e.g. crash, empty) on some devices.
                     // This is not ideal but I haven't figured out how to probe the threshold.
                     // All we know is that it's less than the maximum texture size.
-                    if (isAtLeastQ && maxOf(w, h) <= chain.request.hardwareThreshold) {
+                    val bitmap = if (isAtLeastQ && maxOf(w, h) <= chain.request.hardwareThreshold) {
                         runSuspendCatching {
                             resourceScope {
                                 val buffer = autoCloseable { HardwareBuffer.create(w, h, FORMAT, 1, USAGE) }
                                 copyBitmapToAHB(src, buffer, x, y)
-                                Bitmap.wrapHardwareBuffer(buffer, chain.request.colorSpace)
+                                Bitmap.wrapHardwareBuffer(buffer, src.colorSpace)
                             }
                         }.onSuccess { bitmap ->
                             bitmap?.let {
                                 src.recycle()
                                 return result.copy(image = image.copy(image = bitmap.asImage(), rect = image.rect.size.toIntRect()))
                             }
-                        }
-                    }
+                        }.getOrNull()
+                    } else {
+                        null
+                    } ?: Bitmap.createBitmap(src, x, y, w, h)
 
-                    Bitmap.createBitmap(src, x, y, w, h).also { cropped ->
-                        src.recycle()
-                        return result.copy(image = image.copy(image = cropped.asImage(), rect = image.rect.size.toIntRect()))
-                    }
+                    src.recycle()
+                    return result.copy(image = image.copy(image = bitmap.asImage(), rect = image.rect.size.toIntRect()))
                 }
             }
         }
