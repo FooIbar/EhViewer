@@ -16,7 +16,7 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import moe.tarsin.coroutines.runSuspendCatching
 
 private const val FORMAT = HardwareBuffer.RGBA_8888
-private const val USAGE = HardwareBuffer.USAGE_CPU_READ_RARELY or HardwareBuffer.USAGE_CPU_WRITE_RARELY or HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE
+private const val USAGE = HardwareBuffer.USAGE_CPU_WRITE_RARELY or HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE
 
 object CropBorderInterceptor : Interceptor {
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
