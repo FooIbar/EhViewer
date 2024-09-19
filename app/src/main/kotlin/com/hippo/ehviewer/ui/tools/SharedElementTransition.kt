@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.tools
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterTransition
@@ -88,6 +89,7 @@ class SETNodeGenerator {
     }
 }
 
+@SuppressLint("ModifierFactoryUnreferencedReceiver")
 object NoopSharedTransitionScope : SharedTransitionScope {
     override val isTransitionActive: Boolean
         get() = TODO("Not yet implemented")
