@@ -150,9 +150,6 @@ android {
         }
         debug {
             applicationIdSuffix = ".debug"
-            lint {
-                abortOnError = false
-            }
         }
         create("benchmarkRelease") {
             initWith(buildTypes.getByName("release"))
