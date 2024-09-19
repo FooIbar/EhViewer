@@ -151,4 +151,4 @@ interface ByteBufferSource : ImageSource {
 
 external fun detectBorder(bitmap: Bitmap): IntArray
 external fun hasQrCode(bitmap: Bitmap): Boolean
-external fun copyBitmapToAHBWithRect(src: Bitmap, dst: HardwareBuffer, x: Int, y: Int, w: Int, h: Int)
+external fun copyBitmapToAHB(src: Bitmap, dst: HardwareBuffer, x: Int, y: Int)

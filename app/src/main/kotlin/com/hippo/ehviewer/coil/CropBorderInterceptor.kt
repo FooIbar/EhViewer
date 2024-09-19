@@ -11,7 +11,7 @@ import coil3.intercept.Interceptor
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
 import coil3.request.colorSpace
-import com.hippo.ehviewer.image.copyBitmapToAHBWithRect
+import com.hippo.ehviewer.image.copyBitmapToAHB
 import com.hippo.ehviewer.util.isAtLeastQ
 import moe.tarsin.coroutines.runSuspendCatching
 
@@ -38,7 +38,7 @@ object CropBorderInterceptor : Interceptor {
                         runSuspendCatching {
                             resourceScope {
                                 val buffer = autoCloseable { HardwareBuffer.create(w, h, FORMAT, 1, USAGE) }
-                                copyBitmapToAHBWithRect(src, buffer, x, y, w, h)
+                                copyBitmapToAHB(src, buffer, x, y)
                                 Bitmap.wrapHardwareBuffer(buffer, chain.request.colorSpace)
                             }
                         }.onSuccess { bitmap ->
