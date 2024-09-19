@@ -12,9 +12,9 @@ import coil3.asImage
 import coil3.intercept.Interceptor
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
-import coil3.request.colorSpace
 import com.hippo.ehviewer.image.copyBitmapToAHB
 import com.hippo.ehviewer.util.isAtLeastQ
+import eu.kanade.tachiyomi.util.system.logcat
 import moe.tarsin.coroutines.runSuspendCatching
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -47,7 +47,7 @@ object CropBorderInterceptor : Interceptor {
                                 copyBitmapToAHB(src, buffer, x, y)
                                 Bitmap.wrapHardwareBuffer(buffer, src.colorSpace)
                             }
-                        }.getOrNull()
+                        }.onFailure { logcat(it) }.getOrNull()
                         else -> null
                     } ?: Bitmap.createBitmap(src, x, y, w, h)
 
