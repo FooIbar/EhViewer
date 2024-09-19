@@ -143,7 +143,7 @@ fun PagerItem(
 }
 
 private fun Image.toPainter() = when (val image = innerImage) {
-    is BitmapImage -> BitmapPainter(image.bitmap, rect)
+    is BitmapImage -> BitmapPainter(image.bitmap)
     is DrawableImage -> DrawablePainter(image.drawable)
     else -> unreachable()
 }
