@@ -1,7 +1,7 @@
 #![cfg(feature = "api-level-26")]
 
 use crate::{jni_throwing, with_bitmap_content};
-use anyhow::anyhow;
+use anyhow::Context;
 use image::{GenericImage, GenericImageView, ImageBuffer};
 use jni::objects::JClass;
 use jni::sys::{jint, jobject};
@@ -22,7 +22,7 @@ pub fn copyBitmapToAHB(mut env: JNIEnv, _: JClass, bm: jobject, ahb: jobject, x:
             let view = src.view(x as u32, y as u32, w, h);
             let ptr = ahb.lock(HardwareBufferUsage::CPU_WRITE_RARELY, None, None)? as *mut u8;
             let s = unsafe { &mut *slice_from_raw_parts_mut(ptr, (stride * h * 4) as usize) };
-            let dst = ImageBuffer::from_raw(stride, h, s).ok_or(anyhow!("Illegal AHB format!"));
+            let dst = ImageBuffer::from_raw(stride, h, s).context("Illegal AHB format!");
             let result = dst.map(|mut dst| dst.copy_from(view.deref(), 0, 0));
             ahb.unlock()?;
             result??;

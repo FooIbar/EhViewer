@@ -3,7 +3,7 @@ use crate::{get_element_by_id, get_vdom_first_element_by_class_name};
 use crate::{get_first_element_by_class_name, query_childs_first_match_attr};
 use crate::{get_node_attr, get_node_handle_attr, regex};
 use crate::{EHGT_PREFIX, EX_PREFIX};
-use anyhow::{anyhow, bail, Result};
+use anyhow::{bail, Context, Result};
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
 use jni::JNIEnv;
@@ -235,7 +235,7 @@ pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Result<Gallery
             galleryInfoList: info,
         })
     };
-    f().ok_or(anyhow!("No content"))
+    f().context("No content")
 }
 
 #[no_mangle]
