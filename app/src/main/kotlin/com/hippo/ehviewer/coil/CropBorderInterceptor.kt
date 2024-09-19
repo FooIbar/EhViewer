@@ -24,8 +24,6 @@ object CropBorderInterceptor : Interceptor {
                         image.image.bitmap.recycle()
                         return result.copy(image = image.copy(image = cropped.asImage(), rect = IntRect(IntOffset.Zero, image.rect.size)))
                     }
-                } else {
-                    image.image.bitmap
                 }
             }
         }
