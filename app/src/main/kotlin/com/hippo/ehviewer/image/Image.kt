@@ -18,6 +18,7 @@
 package com.hippo.ehviewer.image
 
 import android.graphics.Bitmap
+import android.hardware.HardwareBuffer
 import androidx.compose.ui.unit.IntSize
 import arrow.core.Either
 import arrow.core.left
@@ -150,3 +151,4 @@ interface ByteBufferSource : ImageSource {
 
 external fun detectBorder(bitmap: Bitmap): IntArray
 external fun hasQrCode(bitmap: Bitmap): Boolean
+external fun copyBitmapToAHBWithRect(src: Bitmap, dst: HardwareBuffer, x: Int, y: Int, w: Int, h: Int)
