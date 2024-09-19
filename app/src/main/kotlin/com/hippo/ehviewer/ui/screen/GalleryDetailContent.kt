@@ -126,7 +126,6 @@ import com.hippo.ehviewer.ui.tools.getClippedRefreshKey
 import com.hippo.ehviewer.ui.tools.getLimit
 import com.hippo.ehviewer.ui.tools.getOffset
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.tools.rememberLambda
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
@@ -193,8 +192,7 @@ fun GalleryDetailContent(
         if (category == EhUtils.NONE || category == EhUtils.PRIVATE || category == EhUtils.UNKNOWN) {
             return
         }
-        val lub = ListUrlBuilder(category = category)
-        navigate(lub.asDst())
+        navigate(ListUrlBuilder(category = category).asDst())
     }
     fun onUploaderChipClick(galleryInfo: GalleryInfo) {
         val uploader = galleryInfo.uploader
@@ -202,25 +200,21 @@ fun GalleryDetailContent(
         if (uploader.isNullOrEmpty() || disowned) {
             return
         }
-        val lub = ListUrlBuilder()
-        lub.mode = ListUrlBuilder.MODE_UPLOADER
-        lub.keyword = uploader
-        navigate(lub.asDst())
-    }
-
-    var showBottomSheet by remember { mutableStateOf(false) }
-
-    if (showBottomSheet && galleryDetail != null) {
-        ModalBottomSheet(
-            onDismissRequest = { showBottomSheet = false },
-            contentWindowInsets = { EmptyWindowInsets },
-        ) {
-            GalleryInfoBottomSheet(galleryDetail)
-        }
+        navigate(ListUrlBuilder(mode = ListUrlBuilder.MODE_UPLOADER, mKeyword = uploader).asDst())
     }
 
     fun onGalleryInfoCardClick() {
-        showBottomSheet = true
+        galleryDetail ?: return
+        launch {
+            dialog { cont ->
+                ModalBottomSheet(
+                    onDismissRequest = { cont.cancel() },
+                    contentWindowInsets = { EmptyWindowInsets },
+                ) {
+                    GalleryInfoBottomSheet(galleryDetail)
+                }
+            }
+        }
     }
 
     val filterAdded = stringResource(R.string.filter_added)
@@ -238,8 +232,8 @@ fun GalleryDetailContent(
             showSnackbar(filterAdded)
         }
     }
-    val onDownloadButtonClick = rememberLambda(galleryInfo) {
-        galleryDetail ?: return@rememberLambda
+    fun onDownloadButtonClick() {
+        galleryDetail ?: return
         if (DownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
             launchUI { startDownload(implicit<MainActivity>(), false, galleryDetail.galleryInfo) }
         } else {
@@ -279,7 +273,7 @@ fun GalleryDetailContent(
                 Column {
                     Row {
                         FilledTonalButton(
-                            onClick = onDownloadButtonClick,
+                            onClick = ::onDownloadButtonClick,
                             modifier = Modifier.padding(horizontal = 4.dp).weight(1F),
                         ) {
                             Text(text = downloadButtonText, maxLines = 1)
@@ -344,7 +338,7 @@ fun GalleryDetailContent(
                         }
                         Spacer(modifier = modifier.height(24.dp))
                         FilledTonalButton(
-                            onClick = onDownloadButtonClick,
+                            onClick = ::onDownloadButtonClick,
                             modifier = Modifier.height(56.dp).padding(horizontal = 16.dp).width(192.dp),
                         ) {
                             Text(text = downloadButtonText, maxLines = 1)
@@ -682,10 +676,7 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
         GalleryTags(
             tagGroups = tags,
             onTagClick = {
-                val lub = ListUrlBuilder()
-                lub.mode = ListUrlBuilder.MODE_TAG
-                lub.keyword = it
-                navigate(lub.asDst())
+                navigate(ListUrlBuilder(mode = ListUrlBuilder.MODE_TAG, mKeyword = it).asDst())
             },
             onTagLongClick = { translated, tag ->
                 val index = tag.indexOf(':')
