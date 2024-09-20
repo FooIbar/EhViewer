@@ -17,8 +17,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
+import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader2
-import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.NavigationRegions
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import eu.kanade.tachiyomi.ui.reader.viewer.getAction
@@ -33,7 +33,7 @@ fun WebtoonViewer(
     withGaps: Boolean,
     pageLoader: PageLoader2,
     navigator: () -> NavigationRegions,
-    onSelectPage: (ReaderPage) -> Unit,
+    onSelectPage: (Page) -> Unit,
     onMenuRegionClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

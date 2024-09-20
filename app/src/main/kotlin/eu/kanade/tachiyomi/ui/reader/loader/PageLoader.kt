@@ -3,12 +3,16 @@ package eu.kanade.tachiyomi.ui.reader.loader
 import androidx.annotation.CallSuper
 import androidx.collection.lruCache
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.gallery.Page
+import com.hippo.ehviewer.gallery.PageStatus
+import com.hippo.ehviewer.gallery.reset
+import com.hippo.ehviewer.gallery.status
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
-import eu.kanade.tachiyomi.source.model.Page
-import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.util.lang.withIOContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
@@ -35,7 +39,7 @@ abstract class PageLoader {
 
     val pages by lazy {
         check(size > 0)
-        (0 until size).map { ReaderPage(it) }
+        (0 until size).map { Page(it) }
     }
 
     private val prefetchPageCount = Settings.preloadImage
@@ -58,7 +62,7 @@ abstract class PageLoader {
 
     fun restart() {
         cache.evictAll()
-        pages.forEach(ReaderPage::reset)
+        pages.forEach(Page::reset)
     }
 
     abstract val size: Int
@@ -80,7 +84,7 @@ abstract class PageLoader {
         } else {
             index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
         }
-        val pagesAbsent = prefetchRange.filter { pages[it].status.value == Page.State.QUEUE }
+        val pagesAbsent = prefetchRange.filter { pages[it].status == PageStatus.Queued }
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
         val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
         prefetchPages(pagesAbsent, start - 5 to end + 5)
@@ -110,27 +114,22 @@ abstract class PageLoader {
     }
 
     fun notifyPagePercent(index: Int, percent: Float) {
-        pages[index].progress = (percent * 100).toInt()
-        pages[index].status.compareAndSet(Page.State.QUEUE, Page.State.DOWNLOAD_IMAGE)
+        pages[index].statusFlow.update {
+            when (it) {
+                is PageStatus.Loading -> it.apply { progress.update { percent } }
+                else -> PageStatus.Loading(MutableStateFlow(percent))
+            }
+        }
     }
 
     fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
         if (replaceCache) {
             cache.put(index, image)
         }
-        pages[index].image = image
-        pages[index].status.value = if (image.hasQrCode) Page.State.BLOCKED else Page.State.READY
+        pages[index].statusFlow.update { if (image.hasQrCode) PageStatus.Blocked(image) else PageStatus.Ready(image) }
     }
 
     fun notifyPageFailed(index: Int, error: String?) {
-        pages[index].errorMsg = error
-        pages[index].status.value = Page.State.ERROR
+        pages[index].statusFlow.update { PageStatus.Error(error) }
     }
-}
-
-private fun ReaderPage.reset() {
-    image = null
-    errorMsg = null
-    progress = 0
-    status.value = Page.State.QUEUE
 }
