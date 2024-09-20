@@ -75,8 +75,13 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
         }
     }
 
-    var galleryInfo = ComicInfo(
-        series = title,
+    val galleryInfo = ComicInfo(
+        series =
+        if (Settings.saveJpnAsInfoTitle) {
+            titleJpn?.ifBlank { title }
+        } else {
+            title
+        },
         alternateSeries = titleJpn?.ifBlank { null },
         writer = groups.ifEmpty { null },
         penciller = artists.ifEmpty { null },
@@ -88,12 +93,6 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
         teams = parodies.ifEmpty { null },
         communityRating = "%.1f".format(rating),
     )
-
-    if (Settings.saveJpnAsInfoTitle) {
-        galleryInfo.series = titleJpn?.ifBlank { title }
-    } else {
-        galleryInfo.series = title
-    }
 
     return galleryInfo
 }
