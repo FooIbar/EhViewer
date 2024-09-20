@@ -27,6 +27,13 @@ val Page.statusObserved
     @Composable
     get() = statusFlow.collectAsState().value
 
+val PageStatus.progressObserved
+    @Composable
+    get() = when (this) {
+        is PageStatus.Loading -> progress.collectAsState().value
+        else -> 0f
+    }
+
 sealed interface PageStatus {
     data object Queued : PageStatus
     data class Blocked(val ad: Image) : PageStatus
