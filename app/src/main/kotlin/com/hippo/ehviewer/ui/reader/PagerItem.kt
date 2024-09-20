@@ -34,18 +34,18 @@ import com.google.accompanist.drawablepainter.DrawablePainter
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
+import com.hippo.ehviewer.gallery.Page
+import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.ui.settings.AdsPlaceholderFile
-import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
-import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
 import kotlinx.coroutines.flow.drop
 import moe.tarsin.kt.unreachable
 
 @Composable
 fun PagerItem(
-    page: ReaderPage,
+    page: Page,
     pageLoader: PageLoader,
     contentScale: ContentScale,
     modifier: Modifier = Modifier,
@@ -54,25 +54,26 @@ fun PagerItem(
     LaunchedEffect(Unit) {
         pageLoader.request(page.index)
         page.status.drop(1).collect {
-            if (page.status.value == Page.State.QUEUE) {
+            if (page.status.value == PageStatus.Queued) {
                 pageLoader.request(page.index)
             }
         }
     }
     val defaultError = stringResource(id = R.string.decode_image_error)
     val state by page.status.collectAsState()
-    when (state) {
-        Page.State.QUEUE, Page.State.LOAD_PAGE, Page.State.DOWNLOAD_IMAGE -> {
+    @Suppress("NAME_SHADOWING")
+    when (val state = state) {
+        is PageStatus.Queued, is PageStatus.Loading -> {
             Box(
                 modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
                 contentAlignment = Alignment.Center,
             ) {
-                val progress by page.progressFlow.collectAsState()
+                val progress = (state as? PageStatus.Loading)?.progress?.collectAsState()?.value ?: 0
                 CombinedCircularProgressIndicator(progress = progress / 100f)
             }
         }
-        Page.State.READY -> {
-            val image = page.image!!
+        is PageStatus.Ready -> {
+            val image = state.image
             val painter = remember(image) { image.toPainter() }
             val grayScale by Settings.grayScale.collectAsState()
             val invert by Settings.invertedColors.collectAsState()
@@ -100,7 +101,7 @@ fun PagerItem(
                 },
             )
         }
-        Page.State.BLOCKED -> {
+        is PageStatus.Blocked -> {
             SubcomposeAsyncImage(
                 model = AdsPlaceholderFile,
                 contentDescription = null,
@@ -122,14 +123,14 @@ fun PagerItem(
                 }
             }
         }
-        Page.State.ERROR -> {
+        is PageStatus.Error -> {
             Box(modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
                 Column(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        text = page.errorMsg ?: defaultError,
+                        text = state.message ?: defaultError,
                         modifier = Modifier.padding(8.dp),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,

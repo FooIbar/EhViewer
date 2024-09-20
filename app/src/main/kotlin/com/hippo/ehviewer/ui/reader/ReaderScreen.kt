@@ -60,7 +60,9 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
 import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
+import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader2
+import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
@@ -71,12 +73,10 @@ import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.ui.reader.PageIndicatorText
 import eu.kanade.tachiyomi.ui.reader.ReaderAppBars
 import eu.kanade.tachiyomi.ui.reader.ReaderContentOverlay
 import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
-import eu.kanade.tachiyomi.ui.reader.model.ReaderPage
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
@@ -84,6 +84,7 @@ import kotlin.coroutines.resume
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.kt.unreachable
@@ -216,10 +217,10 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
             Settings.showNavigationOverlayNewUser.value = false
             mutableStateOf(showOnStart)
         }
-        val onSelectPage = { page: ReaderPage ->
+        val onSelectPage = { page: Page ->
             if (Settings.readerLongTapAction.value) {
                 launch {
-                    val pageBlocked = page.status.value == Page.State.BLOCKED
+                    val pageBlocked = page.status.value is PageStatus.Blocked
                     dialog { cont ->
                         fun dispose() = cont.resume(Unit)
                         val state = rememberModalBottomSheetState()
@@ -236,7 +237,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                                 copy = { launchIO { with(pageLoader) { copy(page) } } },
                                 save = { launchIO { with(pageLoader) { save(page) } } },
                                 saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
-                                showAds = { page.status.value = Page.State.READY }.takeIf { pageBlocked },
+                                showAds = { page.status.update { check(it is PageStatus.Blocked).run { PageStatus.Ready(it.ad) } } }.takeIf { pageBlocked },
                                 dismiss = { launch { state.hide().also { dispose() } } },
                             )
                         }
