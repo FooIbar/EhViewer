@@ -75,7 +75,7 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
         }
     }
 
-    val galleryInfo = ComicInfo(
+    var galleryInfo = ComicInfo(
         series = title,
         alternateSeries = titleJpn?.ifBlank { null },
         writer = groups.ifEmpty { null },
