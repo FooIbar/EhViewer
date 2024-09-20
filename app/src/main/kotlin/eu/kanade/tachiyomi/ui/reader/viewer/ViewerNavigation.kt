@@ -24,7 +24,7 @@ abstract class ViewerNavigation {
     data class Region(val rect: Rect, val type: NavigationRegion) {
         fun invert(invertMode: TappingInvertMode): Region {
             if (invertMode == TappingInvertMode.NONE) return this
-            return this.copy(rect = rect.invert(invertMode))
+            return copy(rect = rect.invert(invertMode))
         }
     }
 
