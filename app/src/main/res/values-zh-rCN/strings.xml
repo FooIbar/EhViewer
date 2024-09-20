@@ -335,6 +335,8 @@
     <string name="settings_download_save_as_cbz">保存为 CBZ 压缩包</string>
     <string name="settings_download_archive_metadata">压缩包元数据</string>
     <string name="settings_download_archive_metadata_summary">下载压缩包时生成 ComicInfo.xml</string>
+    <string name="settings_download_save_jpn_as_info_title">将日文标题保存为主标题</string>
+    <string name="settings_download_save_jpn_as_info_title_summary">在ComicInfo.xml中将日文标题保存为主标题（为空则仍然保存原有标题）</string>
     <string name="settings_download_reload_metadata">重新加载元数据</string>
     <string name="settings_download_reload_metadata_summary">为标签可能发生变动的下载项更新 ComicInfo.xml</string>
     <string name="settings_download_reload_metadata_successfully">成功加载 %d 项</string>

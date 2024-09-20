@@ -167,6 +167,11 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
                 summary = stringResource(id = R.string.settings_download_archive_metadata_summary),
                 value = Settings::archiveMetadata,
             )
+            SwitchPreference(
+                title = stringResource(id = R.string.settings_download_save_jpn_as_info_title),
+                summary = stringResource(id = R.string.settings_download_save_jpn_as_info_title_summary),
+                value = Settings::archiveMetadata,
+            )
             WorkPreference(
                 title = stringResource(id = R.string.settings_download_reload_metadata),
                 summary = stringResource(id = R.string.settings_download_reload_metadata_summary),
