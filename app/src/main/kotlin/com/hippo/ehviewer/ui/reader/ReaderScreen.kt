@@ -63,6 +63,8 @@ import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.gallery.PageStatus
+import com.hippo.ehviewer.gallery.status
+import com.hippo.ehviewer.gallery.unblock
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
@@ -84,7 +86,6 @@ import kotlin.coroutines.resume
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.kt.unreachable
@@ -220,7 +221,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
         val onSelectPage = { page: Page ->
             if (Settings.readerLongTapAction.value) {
                 launch {
-                    val pageBlocked = page.statusFlow.value is PageStatus.Blocked
+                    val blocked = page.status is PageStatus.Blocked
                     dialog { cont ->
                         fun dispose() = cont.resume(Unit)
                         val state = rememberModalBottomSheetState()
@@ -237,7 +238,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                                 copy = { launchIO { with(pageLoader) { copy(page) } } },
                                 save = { launchIO { with(pageLoader) { save(page) } } },
                                 saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
-                                showAds = { page.statusFlow.update { check(it is PageStatus.Blocked).run { PageStatus.Ready(it.ad) } } }.takeIf { pageBlocked },
+                                showAds = { page.unblock() }.takeIf { blocked },
                                 dismiss = { launch { state.hide().also { dispose() } } },
                             )
                         }

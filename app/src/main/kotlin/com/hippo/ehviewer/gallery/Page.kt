@@ -11,6 +11,13 @@ class Page(
     val statusFlow: MutableStateFlow<PageStatus> = MutableStateFlow(PageStatus.Queued),
 )
 
+fun Page.unblock() = statusFlow.update { status ->
+    when (status) {
+        is PageStatus.Blocked -> PageStatus.Ready(status.ad)
+        else -> error("Call unblock on page not blocked!!!")
+    }
+}
+
 fun Page.reset() = statusFlow.update { PageStatus.Queued }
 
 val Page.status
