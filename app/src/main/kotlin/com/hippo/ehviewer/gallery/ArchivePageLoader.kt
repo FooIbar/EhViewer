@@ -42,7 +42,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import moe.tarsin.coroutines.NamedMutex
+import moe.tarsin.coroutines.WeakMutexMap
 import moe.tarsin.coroutines.withLock
 import okio.Path
 
@@ -87,17 +87,17 @@ class ArchivePageLoader(
         logcat(DEBUG_TAG) { "Close archive ${file.toUri().displayPath} successfully!" }
     }
 
-    private val mJobMap = hashMapOf<Int, Job>()
-    private val mWorkerMutex = NamedMutex<Int>()
-    private val mSemaphore = Semaphore(4)
+    private val jobs = hashMapOf<Int, Job>()
+    private val mutexes = WeakMutexMap<Int>()
+    private val semaphore = Semaphore(4)
 
     override fun onRequest(index: Int) {
-        synchronized(mJobMap) {
-            val current = mJobMap[index]
+        synchronized(jobs) {
+            val current = jobs[index]
             if (current?.isActive != true) {
-                mJobMap[index] = launch {
-                    mWorkerMutex.withLock(index) {
-                        mSemaphore.withPermit {
+                jobs[index] = launch {
+                    mutexes.withLock(index) {
+                        semaphore.withPermit {
                             doRealWork(index)
                         }
                     }

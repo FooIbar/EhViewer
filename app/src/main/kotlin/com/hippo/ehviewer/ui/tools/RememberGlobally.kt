@@ -46,7 +46,7 @@ inline fun <reified T : Any> rememberInVM(
 ) = with(viewModel<StateMapViewModel>()) {
     val key = currentCompositeKeyHash
     remember(*inputs) {
-        val states = statesMap[key] ?: ArrayDeque<Any>().also { statesMap[key] = it }
+        val states = statesMap.getOrPut(key) { ArrayDeque() }
         states.removeLastOrNull() as T? ?: init()
     }.also { value ->
         val valueState by rememberUpdatedState(value)
