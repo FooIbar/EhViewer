@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -52,13 +53,12 @@ fun WebtoonViewer(
     LazyColumn(
         modifier = modifier.zoomable(
             state = zoomableState,
-            onClick = {
+            onClick = { offset ->
                 scope.launch {
                     with(lazyListState) {
-                        val size = layoutInfo.viewportSize
-                        val x = it.x / size.width
-                        val y = it.y / size.height
-                        when (navigator().getAction(x, y)) {
+                        val (w, h) = layoutInfo.viewportSize
+                        val (x, y) = offset
+                        when (navigator().getAction(Offset(x / w, y / h))) {
                             NavigationRegion.MENU -> onMenuRegionClick()
                             NavigationRegion.NEXT, NavigationRegion.RIGHT -> scrollDown()
                             NavigationRegion.PREV, NavigationRegion.LEFT -> scrollUp()

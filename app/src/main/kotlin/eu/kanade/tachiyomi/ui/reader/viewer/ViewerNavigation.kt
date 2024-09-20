@@ -1,7 +1,8 @@
 package eu.kanade.tachiyomi.ui.reader.viewer
 
-import android.graphics.RectF
 import androidx.annotation.StringRes
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import com.hippo.ehviewer.R
 import eu.kanade.tachiyomi.ui.reader.setting.TappingInvertMode
 import eu.kanade.tachiyomi.ui.reader.viewer.navigation.DisabledNavigation
@@ -20,10 +21,10 @@ abstract class ViewerNavigation {
         data object RIGHT : NavigationRegion(R.string.nav_zone_right, R.color.navigation_right)
     }
 
-    data class Region(val rectF: RectF, val type: NavigationRegion) {
+    data class Region(val rect: Rect, val type: NavigationRegion) {
         fun invert(invertMode: TappingInvertMode): Region {
             if (invertMode == TappingInvertMode.NONE) return this
-            return this.copy(rectF = rectF.invert(invertMode))
+            return this.copy(rect = rect.invert(invertMode))
         }
     }
 
@@ -45,5 +46,4 @@ abstract class ViewerNavigation {
 
 typealias NavigationRegions = List<ViewerNavigation.Region>
 
-fun NavigationRegions.getAction(x: Float, y: Float) =
-    find { it.rectF.contains(x, y) }?.type ?: ViewerNavigation.NavigationRegion.MENU
+fun NavigationRegions.getAction(offset: Offset) = find { offset in it.rect }?.type ?: ViewerNavigation.NavigationRegion.MENU
