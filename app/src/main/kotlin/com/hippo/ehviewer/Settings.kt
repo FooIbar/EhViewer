@@ -163,7 +163,7 @@ object Settings : DataStorePreferences(null) {
     var downloadOriginImage by boolPref("download_origin_image", false)
     var saveAsCbz by boolPref("save_as_cbz", false)
     var archiveMetadata by boolPref("archive_metadata", true)
-    var saveJpnAsInfoTitle by boolpref("save_jpn_as_info_title", false)
+    var saveJpnAsInfoTitle by boolPref("save_jpn_as_info_title", false)
     var desktopSite by boolPref("desktop_site", false)
     var recentFavCat by intPref("recent_fav_cat", FavListUrlBuilder.FAV_CAT_LOCAL)
     var defaultFavSlot by intPref("default_favorite_slot", -2)
