@@ -32,5 +32,5 @@ sealed interface PageStatus {
     data class Blocked(val ad: Image) : PageStatus
     data class Ready(val image: Image) : PageStatus
     data class Error(val message: String?) : PageStatus
-    data class Loading(val progress: MutableStateFlow<Int>) : PageStatus
+    data class Loading(val progress: MutableStateFlow<Float>) : PageStatus
 }

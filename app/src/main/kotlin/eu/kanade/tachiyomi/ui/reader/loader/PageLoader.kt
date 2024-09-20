@@ -11,7 +11,6 @@ import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -115,11 +114,10 @@ abstract class PageLoader {
     }
 
     fun notifyPagePercent(index: Int, percent: Float) {
-        val round = (percent * 100).roundToInt()
         pages[index].statusFlow.update {
             when (it) {
-                is PageStatus.Loading -> it.apply { progress.update { round } }
-                else -> PageStatus.Loading(MutableStateFlow(round))
+                is PageStatus.Loading -> it.apply { progress.update { percent } }
+                else -> PageStatus.Loading(MutableStateFlow(percent))
             }
         }
     }

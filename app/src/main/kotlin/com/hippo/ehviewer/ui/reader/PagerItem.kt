@@ -67,8 +67,8 @@ fun PagerItem(
                 modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
                 contentAlignment = Alignment.Center,
             ) {
-                val progress = (state as? PageStatus.Loading)?.progress?.collectAsState()?.value ?: 0
-                CombinedCircularProgressIndicator(progress = progress / 100f)
+                val progress = (state as? PageStatus.Loading)?.progress?.collectAsState()?.value ?: 0f
+                CombinedCircularProgressIndicator(progress = progress)
             }
         }
         is PageStatus.Ready -> {
