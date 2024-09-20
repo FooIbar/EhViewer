@@ -34,6 +34,7 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.gallery.PageStatus
+import com.hippo.ehviewer.gallery.statusObserved
 import eu.kanade.tachiyomi.ui.reader.viewer.NavigationRegions
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation.NavigationRegion
 import eu.kanade.tachiyomi.ui.reader.viewer.getAction
@@ -137,7 +138,7 @@ private fun PageContainer(
     @Suppress("NAME_SHADOWING")
     val isRtl by rememberUpdatedState(isRtl)
     val zoomableState = rememberZoomableState(zoomSpec = PagerZoomSpec)
-    val status = page.status.collectAsState().value
+    val status = page.statusObserved
     if (status is PageStatus.Ready && layoutSize != Size.Zero) {
         val size = status.image.intrinsicSize.toSize()
         val contentScale = ContentScale.fromPreferences(scaleType, size, layoutSize)

@@ -6,6 +6,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.gallery.reset
+import com.hippo.ehviewer.gallery.status
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
@@ -84,7 +85,7 @@ abstract class PageLoader {
         } else {
             index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
         }
-        val pagesAbsent = prefetchRange.filter { pages[it].status.value == PageStatus.Queued }
+        val pagesAbsent = prefetchRange.filter { pages[it].status == PageStatus.Queued }
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
         val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
         prefetchPages(pagesAbsent, start - 5 to end + 5)
@@ -115,7 +116,7 @@ abstract class PageLoader {
 
     fun notifyPagePercent(index: Int, percent: Float) {
         val round = (percent * 100).roundToInt()
-        pages[index].status.update {
+        pages[index].statusFlow.update {
             when (it) {
                 is PageStatus.Loading -> it.apply { progress.update { round } }
                 else -> PageStatus.Loading(MutableStateFlow(round))
@@ -127,10 +128,10 @@ abstract class PageLoader {
         if (replaceCache) {
             cache.put(index, image)
         }
-        pages[index].status.update { if (image.hasQrCode) PageStatus.Blocked(image) else PageStatus.Ready(image) }
+        pages[index].statusFlow.update { if (image.hasQrCode) PageStatus.Blocked(image) else PageStatus.Ready(image) }
     }
 
     fun notifyPageFailed(index: Int, error: String?) {
-        pages[index].status.update { PageStatus.Error(error) }
+        pages[index].statusFlow.update { PageStatus.Error(error) }
     }
 }

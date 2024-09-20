@@ -36,6 +36,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageStatus
+import com.hippo.ehviewer.gallery.statusObserved
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.ui.settings.AdsPlaceholderFile
 import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
@@ -53,16 +54,14 @@ fun PagerItem(
 ) {
     LaunchedEffect(Unit) {
         pageLoader.request(page.index)
-        page.status.drop(1).collect {
-            if (page.status.value == PageStatus.Queued) {
+        page.statusFlow.drop(1).collect {
+            if (page.statusFlow.value == PageStatus.Queued) {
                 pageLoader.request(page.index)
             }
         }
     }
     val defaultError = stringResource(id = R.string.decode_image_error)
-    val state by page.status.collectAsState()
-    @Suppress("NAME_SHADOWING")
-    when (val state = state) {
+    when (val state = page.statusObserved) {
         is PageStatus.Queued, is PageStatus.Loading -> {
             Box(
                 modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),

@@ -1,15 +1,24 @@
 package com.hippo.ehviewer.gallery
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import com.hippo.ehviewer.image.Image
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
 class Page(
     val index: Int,
-    val status: MutableStateFlow<PageStatus> = MutableStateFlow(PageStatus.Queued),
+    val statusFlow: MutableStateFlow<PageStatus> = MutableStateFlow(PageStatus.Queued),
 )
 
-fun Page.reset() = status.update { PageStatus.Queued }
+fun Page.reset() = statusFlow.update { PageStatus.Queued }
+
+val Page.status
+    get() = statusFlow.value
+
+val Page.statusObserved
+    @Composable
+    get() = statusFlow.collectAsState().value
 
 sealed interface PageStatus {
     data object Queued : PageStatus

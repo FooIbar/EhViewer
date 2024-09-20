@@ -220,7 +220,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
         val onSelectPage = { page: Page ->
             if (Settings.readerLongTapAction.value) {
                 launch {
-                    val pageBlocked = page.status.value is PageStatus.Blocked
+                    val pageBlocked = page.statusFlow.value is PageStatus.Blocked
                     dialog { cont ->
                         fun dispose() = cont.resume(Unit)
                         val state = rememberModalBottomSheetState()
@@ -237,7 +237,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                                 copy = { launchIO { with(pageLoader) { copy(page) } } },
                                 save = { launchIO { with(pageLoader) { save(page) } } },
                                 saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
-                                showAds = { page.status.update { check(it is PageStatus.Blocked).run { PageStatus.Ready(it.ad) } } }.takeIf { pageBlocked },
+                                showAds = { page.statusFlow.update { check(it is PageStatus.Blocked).run { PageStatus.Ready(it.ad) } } }.takeIf { pageBlocked },
                                 dismiss = { launch { state.hide().also { dispose() } } },
                             )
                         }
