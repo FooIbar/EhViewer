@@ -13,9 +13,8 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
  * | N | M | P |   N: Move Left
  * +---+---+---+
  */
-class RightAndLeftNavigation : ViewerNavigation() {
-
-    override val originalRegions: List<Region> = listOf(
+object RightAndLeftNavigation : ViewerNavigation() {
+    override val originalRegions = listOf(
         Region(
             rectF = RectF(0f, 0f, 0.33f, 1f),
             type = NavigationRegion.LEFT,
