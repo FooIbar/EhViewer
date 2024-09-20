@@ -13,9 +13,8 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
  * | N | P | N |   N: Next
  * +---+---+---+
 */
-class EdgeNavigation : ViewerNavigation() {
-
-    override val originalRegions: List<Region> = listOf(
+object EdgeNavigation : ViewerNavigation() {
+    override val originalRegions = listOf(
         Region(
             rectF = RectF(0f, 0f, 0.33f, 1f),
             type = NavigationRegion.NEXT,

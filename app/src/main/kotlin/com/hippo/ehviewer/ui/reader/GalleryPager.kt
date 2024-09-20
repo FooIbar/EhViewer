@@ -61,8 +61,7 @@ fun GalleryPager(
         } else {
             onNavigationModeChange()
         }
-        navigation.invertMode = TappingInvertMode.entries[invertMode]
-        navigation.regions
+        navigation.regions(TappingInvertMode.entries[invertMode])
     }
     val navigator by rememberUpdatedState(regions)
     if (isPagerType) {

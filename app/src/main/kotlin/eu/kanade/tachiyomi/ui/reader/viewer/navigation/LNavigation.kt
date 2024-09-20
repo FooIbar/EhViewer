@@ -13,9 +13,8 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
  * | N | N | N |   N: Next
  * +---+---+---+
  */
-open class LNavigation : ViewerNavigation() {
-
-    override val originalRegions: List<Region> = listOf(
+object LNavigation : ViewerNavigation() {
+    override val originalRegions = listOf(
         Region(
             rectF = RectF(0f, 0.33f, 0.33f, 0.66f),
             type = NavigationRegion.PREV,
