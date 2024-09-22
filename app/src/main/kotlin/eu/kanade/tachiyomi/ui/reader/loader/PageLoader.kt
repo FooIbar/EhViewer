@@ -84,7 +84,12 @@ abstract class PageLoader {
         } else {
             index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
         }
-        val pagesAbsent = prefetchRange.filter { pages[it].status == PageStatus.Queued }
+        val pagesAbsent = prefetchRange.filter {
+            when (pages[it].status) {
+                PageStatus.Queued, is PageStatus.Error -> true
+                else -> false
+            }
+        }
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
         val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
         prefetchPages(pagesAbsent, start - 5 to end + 5)
