@@ -150,7 +150,7 @@ object EhDB {
         if (artists.isNotEmpty()) {
             val dao = db.downloadArtistDao()
             dao.deleteByGid(gid)
-            dao.insert(artists)
+            dao.insertOrIgnore(artists)
         }
     }
 
