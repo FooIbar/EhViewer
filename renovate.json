@@ -6,6 +6,18 @@
   "ignorePaths": [
     "app/build.gradle.kts"
   ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "(^|/)CMakeLists\\.txt$"
+      ],
+      "matchStrings": [
+        "(?<depName>\\S*)\\s*GIT_REPOSITORY https://(?<datasource>.*?)\\.com/(?<packageName>.*?)\\.git\\s*GIT_TAG (?<currentValue>\\S*)"
+      ],
+      "datasourceTemplate": "{{{datasource}}}-tags"
+    }
+  ],
   "packageRules": [
     {
       "description": "Disable updates for SNAPSHOTs",
@@ -36,6 +48,12 @@
         "https://github.com/google/ksp"
       ],
       "recreateWhen": "never"
+    },
+    {
+      "matchDepNames": [
+        "nettle"
+      ],
+      "versioning": "regex:^nettle_(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<patch>\\d+))?(?<prerelease>rc\\d+)?"
     }
   ],
   "lockFileMaintenance": {
