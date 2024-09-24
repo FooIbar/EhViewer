@@ -46,6 +46,7 @@ import com.hippo.files.exists
 import com.hippo.files.find
 import com.hippo.files.isDirectory
 import com.hippo.files.list
+import com.hippo.files.mkdirs
 import com.hippo.files.moveTo
 import com.hippo.files.openFileDescriptor
 import com.hippo.files.openOutputStream
@@ -91,10 +92,10 @@ class SpiderDen(val info: GalleryInfo) {
         mode = value
         if (mode == SpiderQueen.MODE_DOWNLOAD) {
             if (downloadDir == null) {
-                downloadDir = getGalleryDownloadDir(info)
+                downloadDir = getGalleryDownloadDir(info).apply { mkdirs() }
             }
             if (saveAsCbz && tempDownloadDir == null) {
-                tempDownloadDir = info.tempDownloadDir!!
+                tempDownloadDir = info.tempDownloadDir!!.apply { mkdirs() }
             }
         }
     }
@@ -342,7 +343,7 @@ class SpiderDen(val info: GalleryInfo) {
     }
 
     suspend fun initDownloadDir() {
-        downloadDir = getGalleryDownloadDir(info)
+        downloadDir = getGalleryDownloadDir(info).apply { mkdirs() }
     }
 
     suspend fun writeComicInfo(fetchMetadata: Boolean = true) {
