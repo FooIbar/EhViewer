@@ -30,8 +30,9 @@ class AndroidFileSystem(context: Context) : FileSystem() {
             return physicalFileSystem.atomicMove(source, target)
         }
 
-        DocumentsContract.renameDocument(contentResolver, source.toUri(), target.name)
-            ?: throw IOException("Failed to move $source to $target")
+        source.runCatching {
+            DocumentsContract.renameDocument(contentResolver, toUri(), target.name)
+        }.getOrNull() ?: throw IOException("Failed to move $source to $target")
     }
 
     override fun canonicalize(path: Path): Path {
@@ -52,9 +53,9 @@ class AndroidFileSystem(context: Context) : FileSystem() {
             }
         }
 
-        dir.parent?.let {
-            DocumentsContract.createDocument(contentResolver, it.toUri(), Document.MIME_TYPE_DIR, dir.name)
-        } ?: throw IOException("Failed to create directory: $dir")
+        dir.parent?.runCatching {
+            DocumentsContract.createDocument(contentResolver, toUri(), Document.MIME_TYPE_DIR, dir.name)
+        }?.getOrNull() ?: throw IOException("Failed to create directory: $dir")
     }
 
     override fun createSymlink(source: Path, target: Path) {
@@ -74,7 +75,9 @@ class AndroidFileSystem(context: Context) : FileSystem() {
                 uri = DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getDocumentId(uri) + '/')
             }
 
-            val deleted = DocumentsContract.deleteDocument(contentResolver, uri)
+            val deleted = runCatching {
+                DocumentsContract.deleteDocument(contentResolver, uri)
+            }.getOrDefault(false)
             if (!deleted) {
                 throw IOException("Failed to delete $path")
             }
@@ -173,25 +176,20 @@ class AndroidFileSystem(context: Context) : FileSystem() {
     }
 
     fun openFileDescriptor(path: Path, mode: String): ParcelFileDescriptor {
+        if (path.isPhysicalFile()) {
+            return ParcelFileDescriptor.open(path.toFile(), ParcelFileDescriptor.parseMode(mode))
+        }
+
         if ('w' in mode && !exists(path)) {
-            val parent = path.parent ?: throw IOException("Failed to open file: $path")
-            createDirectories(parent)
-            if (path.isPhysicalFile()) {
-                physicalFileSystem.openReadWrite(path).close()
-            } else {
+            path.parent?.runCatching {
                 val displayName = path.name
                 val extension = displayName.substringAfterLast('.', "").ifEmpty { null }?.lowercase()
                 val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
-                DocumentsContract.createDocument(contentResolver, parent.toUri(), mimeType, displayName)
-                    ?: throw IOException("Failed to open file: $path")
-            }
+                DocumentsContract.createDocument(contentResolver, toUri(), mimeType, displayName)
+            }?.getOrNull() ?: throw IOException("Failed to open file: $path")
         }
 
-        return if (path.isPhysicalFile()) {
-            ParcelFileDescriptor.open(path.toFile(), ParcelFileDescriptor.parseMode(mode))
-        } else {
-            contentResolver.openFileDescriptor(path.toUri(), mode)
-        } ?: throw IOException("Failed to open file: $path")
+        return contentResolver.openFileDescriptor(path.toUri(), mode) ?: throw IOException("Failed to open file: $path")
     }
 }
 
