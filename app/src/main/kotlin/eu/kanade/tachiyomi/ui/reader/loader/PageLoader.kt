@@ -142,10 +142,12 @@ abstract class PageLoader : CoroutineScope {
 
     fun unblockPage(page: Page) {
         launch {
-            when (val status = page.status) {
-                is PageStatus.Blocked -> PageStatus.Ready(status.ad)
-                else -> error("Call unblock on page not blocked!!!")
-            }
+            broadcast.emit(
+                page.index to when (val status = page.status) {
+                    is PageStatus.Blocked -> PageStatus.Ready(status.ad)
+                    else -> error("Call unblock on page not blocked!!!")
+                },
+            )
         }
     }
 }
