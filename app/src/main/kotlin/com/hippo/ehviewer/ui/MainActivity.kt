@@ -472,12 +472,10 @@ class MainActivity : EhActivity() {
                             // https://issuetracker.google.com/336140982
                             // SharedTransitionLayout {
                             CompositionLocalProvider(LocalSharedTransitionScope provides NoopSharedTransitionScope) {
-                                val start = if (Settings.needSignIn) {
-                                    SignInScreenDestination
-                                } else if (hasNetwork) {
-                                    StartDestination
-                                } else {
-                                    DownloadsScreenDestination
+                                val start = when {
+                                    Settings.needSignIn -> SignInScreenDestination
+                                    hasNetwork -> StartDestination
+                                    else -> DownloadsScreenDestination
                                 }
                                 DestinationsNavHost(
                                     navGraph = NavGraphs.root,
