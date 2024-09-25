@@ -22,6 +22,7 @@ import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.obtainSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.releaseSpiderQueen
 import eu.kanade.tachiyomi.ui.reader.loader.PageEvent
+import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -48,7 +49,7 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) : Page
                     override suspend fun onGetImageFailure(index: Int, error: String?) = send(PageEvent.Error(index, error))
                 }
                 spiderQueen.addOnSpiderListener(listener)
-                awaitClose { spiderQueen.removeOnSpiderListener(listener) }
+                awaitClose { launchNonCancellable { spiderQueen.removeOnSpiderListener(listener) } }
             }
         }
     }

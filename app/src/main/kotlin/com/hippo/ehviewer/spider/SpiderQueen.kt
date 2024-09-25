@@ -84,12 +84,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     private var mReadReference = 0
     private var mDownloadReference = 0
 
-    fun addOnSpiderListener(listener: OnSpiderListener) {
-        synchronized(mSpiderListeners) { mSpiderListeners.add(listener) }
+    suspend fun addOnSpiderListener(listener: OnSpiderListener) {
+        mutex.withLock { mSpiderListeners.add(listener) }
     }
 
-    fun removeOnSpiderListener(listener: OnSpiderListener) {
-        synchronized(mSpiderListeners) { mSpiderListeners.remove(listener) }
+    suspend fun removeOnSpiderListener(listener: OnSpiderListener) {
+        mutex.withLock { mSpiderListeners.remove(listener) }
     }
 
     private suspend fun notifyGetPages(pages: Int) {
