@@ -22,15 +22,19 @@ import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.obtainSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.releaseSpiderQueen
 import eu.kanade.tachiyomi.ui.reader.loader.PageEvent
-import eu.kanade.tachiyomi.util.lang.launchNonCancellable
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.launch
 import okio.Path
 
 class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) : PageLoader2(mGalleryInfo.gid, startPage) {
-    override lateinit var sourceFlow: Flow<PageEvent>
+    override lateinit var sourceFlow: SharedFlow<PageEvent>
     private lateinit var spiderQueen: SpiderQueen
     override fun start() {
         super.start()
@@ -38,9 +42,7 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) : Page
             spiderQueen = obtainSpiderQueen(mGalleryInfo, SpiderQueen.MODE_READ)
             sourceFlow = callbackFlow {
                 val listener = object : SpiderQueen.OnSpiderListener {
-                    override suspend fun onPageDownload(index: Int, contentLength: Long, receivedSize: Flow<Long>) {
-                        send(PageEvent.Progress(index, receivedSize.map { it.toFloat() / contentLength }))
-                    }
+                    override suspend fun onPageDownload(index: Int, contentLength: Long, receivedSize: Flow<Long>) = send(PageEvent.Progress(index, receivedSize.map { it.toFloat() / contentLength }))
 
                     override suspend fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) = send(PageEvent.Error(index, error))
 
@@ -49,8 +51,12 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) : Page
                     override suspend fun onGetImageFailure(index: Int, error: String?) = send(PageEvent.Error(index, error))
                 }
                 spiderQueen.addOnSpiderListener(listener)
-                awaitClose { launchNonCancellable { spiderQueen.removeOnSpiderListener(listener) } }
-            }
+                awaitClose {
+                    launch(NonCancellable) {
+                        spiderQueen.removeOnSpiderListener(listener)
+                    }
+                }
+            }.shareIn(this, SharingStarted.Eagerly)
         }
     }
 

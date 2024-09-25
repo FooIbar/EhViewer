@@ -13,6 +13,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -43,7 +44,7 @@ abstract class PageLoader : CoroutineScope {
         )
     }
 
-    protected abstract val sourceFlow: Flow<PageEvent>
+    protected abstract val sourceFlow: SharedFlow<PageEvent>
 
     private val broadcast = MutableSharedFlow<Pair<Int, PageStatus>>()
 
