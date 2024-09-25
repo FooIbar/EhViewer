@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -66,7 +67,7 @@ abstract class PageLoader : CoroutineScope {
                     is PageEvent.Wait -> PageStatus.Queued
                 }
             }
-            val overwrite = broadcast.filter { (i, _) -> index == i }.map { (_, e) -> e }
+            val overwrite = broadcast.mapNotNull { (i, e) -> e.takeIf { index == i } }
             Page(index, merge(flow, overwrite).stateIn(this, SharingStarted.Eagerly, PageStatus.Queued))
         }
     }
