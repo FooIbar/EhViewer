@@ -50,15 +50,19 @@ abstract class PageLoader : CoroutineScope {
 
     val pages by lazy {
         check(size > 0)
+        launch {
+            sourceFlow.collect {
+                if (it is PageEvent.Success) {
+                    cache.put(it.index, it.image)
+                }
+            }
+        }
         (0 until size).map { index ->
             val flow = sourceFlow.filter { it.index == index }.map { event ->
                 when (event) {
                     is PageEvent.Error -> PageStatus.Error(event.error)
                     is PageEvent.Progress -> PageStatus.Loading(event.progress.stateIn(this, SharingStarted.Eagerly, 0f))
-                    is PageEvent.Success -> event.image.let {
-                        cache.put(index, it)
-                        if (it.hasQrCode) PageStatus.Blocked(it) else PageStatus.Ready(it)
-                    }
+                    is PageEvent.Success -> with(event.image) { if (hasQrCode) PageStatus.Blocked(this) else PageStatus.Ready(this) }
                     is PageEvent.Wait -> PageStatus.Queued
                 }
             }
