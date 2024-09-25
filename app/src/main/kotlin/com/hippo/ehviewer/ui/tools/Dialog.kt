@@ -459,7 +459,7 @@ class DialogState {
                     style = MaterialTheme.typography.headlineSmall,
                 )
             }
-            FastScrollLazyColumn {
+            LazyColumn {
                 itemsIndexed(items) { index, text ->
                     CheckableItem(
                         text = text,
@@ -495,7 +495,7 @@ class DialogState {
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                 style = MaterialTheme.typography.headlineSmall,
             )
-            FastScrollLazyColumn {
+            LazyColumn {
                 itemsIndexed(items) { index, text ->
                     CheckableItem(
                         text = text,

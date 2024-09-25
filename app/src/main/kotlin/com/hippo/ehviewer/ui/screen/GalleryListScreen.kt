@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -126,7 +127,6 @@ import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
-import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
@@ -375,7 +375,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                     hapticFeedback.performHapticFeedback(HapticFeedbackType.MOVE)
                 }
                 var fromIndex by remember { mutableIntStateOf(-1) }
-                FastScrollLazyColumn(
+                LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     state = quickSearchListState,
                     contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
