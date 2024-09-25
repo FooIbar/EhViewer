@@ -57,6 +57,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
@@ -619,7 +620,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             receivedSize.runningFold(0L) { prev, curr ->
                 mSpeedReminder.onDownload(index, contentLength, curr, (curr - prev).toInt())
                 curr
-            }
+            }.collect()
         }
     }
 
