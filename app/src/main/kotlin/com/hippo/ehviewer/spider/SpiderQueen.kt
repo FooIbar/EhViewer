@@ -458,7 +458,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     interface OnSpiderListener {
         suspend fun onGetPages(pages: Int) {}
         suspend fun onGet509(index: Int) {}
-        suspend fun onPageDownload(index: Int, contentLength: Long, progressFlow: Flow<Long>) {}
+        suspend fun onPageDownload(index: Int, contentLength: Long, bytesReceived: Flow<Long>) {}
         suspend fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {}
         suspend fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) {}
         suspend fun onFinish(finished: Int, downloaded: Int, total: Int) {}

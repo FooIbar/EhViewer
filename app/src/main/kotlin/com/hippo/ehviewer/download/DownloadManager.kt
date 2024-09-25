@@ -611,14 +611,9 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         stopAllDownload()
     }
 
-    override suspend fun onPageDownload(
-        index: Int,
-        contentLength: Long,
-        receivedSize: Flow<Long>,
-    ) {
-        receivedSize.runningFold(0L) { prev, curr ->
-            mSpeedReminder.onDownload(index, contentLength, curr, (curr - prev).toInt())
-            curr
+    override suspend fun onPageDownload(index: Int, contentLength: Long, bytesReceived: Flow<Long>) {
+        bytesReceived.runningFold(0L) { prev, curr ->
+            curr.also { mSpeedReminder.onDownload(index, contentLength, curr, (curr - prev).toInt()) }
         }.launchIn(this)
     }
 
