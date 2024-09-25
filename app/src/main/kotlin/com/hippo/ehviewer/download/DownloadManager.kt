@@ -57,7 +57,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
@@ -616,12 +616,10 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         contentLength: Long,
         receivedSize: Flow<Long>,
     ) {
-        launch {
-            receivedSize.runningFold(0L) { prev, curr ->
-                mSpeedReminder.onDownload(index, contentLength, curr, (curr - prev).toInt())
-                curr
-            }.collect()
-        }
+        receivedSize.runningFold(0L) { prev, curr ->
+            mSpeedReminder.onDownload(index, contentLength, curr, (curr - prev).toInt())
+            curr
+        }.launchIn(this)
     }
 
     override suspend fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {
