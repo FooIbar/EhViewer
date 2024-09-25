@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -47,7 +46,7 @@ abstract class PageLoader : CoroutineScope {
 
     protected abstract val loaderEvent: SharedFlow<PageEvent>
 
-    private val broadcast = MutableSharedFlow<Pair<Int, PageStatus>>()
+    private val broadcast = MutableSharedFlow<PageEvent>()
 
     val pages by lazy {
         check(size > 0)
@@ -59,16 +58,17 @@ abstract class PageLoader : CoroutineScope {
             }
         }
         (0 until size).map { index ->
-            val flow = loaderEvent.filter { it.index == index }.map { event ->
-                when (event) {
-                    is PageEvent.Error -> PageStatus.Error(event.error)
-                    is PageEvent.Progress -> PageStatus.Loading(event.progress.stateIn(this, SharingStarted.Eagerly, 0f))
-                    is PageEvent.Success -> with(event.image) { if (hasQrCode) PageStatus.Blocked(this) else PageStatus.Ready(this) }
-                    is PageEvent.Wait -> PageStatus.Queued
-                }
-            }
-            val overwrite = broadcast.mapNotNull { (i, e) -> e.takeIf { index == i } }
-            Page(index, merge(flow, overwrite).stateIn(this, SharingStarted.Eagerly, PageStatus.Queued))
+            Page(
+                index,
+                merge(loaderEvent, broadcast).filter { it.index == index }.map { event ->
+                    when (event) {
+                        is PageEvent.Error -> PageStatus.Error(event.error)
+                        is PageEvent.Progress -> PageStatus.Loading(event.progress.stateIn(this, SharingStarted.Eagerly, 0f))
+                        is PageEvent.Success -> with(event.image) { if (hasQrCode) PageStatus.Blocked(this) else PageStatus.Ready(this) }
+                        is PageEvent.Wait -> PageStatus.Queued
+                    }
+                }.stateIn(this, SharingStarted.Eagerly, PageStatus.Queued),
+            )
         }
     }
 
@@ -102,7 +102,7 @@ abstract class PageLoader : CoroutineScope {
     fun request(index: Int) {
         val image = cache[index]
         if (image != null) {
-            launch { broadcast.emit(index to PageStatus.Ready(image)) }
+            launch { broadcast.emit(PageEvent.Success(index, image)) }
         } else {
             queuePage(index)
             onRequest(index)
@@ -144,15 +144,18 @@ abstract class PageLoader : CoroutineScope {
 
     protected abstract fun onForceRequest(index: Int, orgImg: Boolean)
 
-    fun queuePage(index: Int) = launch { broadcast.emit(index to PageStatus.Queued) }
+    fun queuePage(index: Int) = launch { broadcast.emit(PageEvent.Wait(index)) }
 
     fun unblockPage(page: Page) {
         launch {
             broadcast.emit(
-                page.index to when (val status = page.status) {
-                    is PageStatus.Blocked -> PageStatus.Ready(status.ad)
-                    else -> error("Call unblock on page not blocked!!!")
-                },
+                PageEvent.Success(
+                    page.index,
+                    when (val status = page.status) {
+                        is PageStatus.Blocked -> status.ad.apply { hasQrCode = false }
+                        else -> error("Call unblock on page not blocked!!!")
+                    },
+                ),
             )
         }
     }

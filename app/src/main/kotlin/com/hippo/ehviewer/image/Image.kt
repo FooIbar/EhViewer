@@ -55,7 +55,7 @@ import splitties.init.appCtx
 class Image private constructor(image: CoilImage, private val src: ImageSource) {
     val intrinsicSize = with(image) { IntSize(width, height) }
     val allocationSize = image.size
-    val hasQrCode = when (image) {
+    var hasQrCode = when (image) {
         is BitmapImageWithExtraInfo -> image.hasQrCode
         else -> false
     }
