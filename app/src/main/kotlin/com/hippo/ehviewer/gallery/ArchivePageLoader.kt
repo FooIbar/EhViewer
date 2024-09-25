@@ -32,6 +32,7 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.displayPath
 import com.hippo.files.openFileDescriptor
 import com.hippo.files.toUri
+import eu.kanade.tachiyomi.ui.reader.loader.PageEvent
 import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineStart
@@ -39,6 +40,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -72,8 +74,9 @@ class ArchivePageLoader(
         size
     }
 
+    override val sourceFlow = MutableSharedFlow<PageEvent>()
+
     override var size = 0
-        private set
 
     override fun start() {
         super.start()
@@ -98,7 +101,7 @@ class ArchivePageLoader(
                 mJobMap[index] = launch {
                     mWorkerMutex.withLock(index) {
                         mSemaphore.withPermit {
-                            doRealWork(index)
+                            sourceFlow.emit(doRealWork(index))
                         }
                     }
                 }
@@ -108,8 +111,8 @@ class ArchivePageLoader(
 
     private fun mayBeAd(index: Int) = index > size - 10
 
-    private suspend fun doRealWork(index: Int) {
-        val buffer = extractToByteBuffer(index) ?: return notifyPageFailed(index, null)
+    private suspend fun doRealWork(index: Int): PageEvent {
+        val buffer = extractToByteBuffer(index) ?: return PageEvent.Error(index, null)
         check(buffer.isDirect)
         val src = object : ByteBufferSource {
             override val source: ByteBuffer = buffer
@@ -124,14 +127,14 @@ class ArchivePageLoader(
             src.close()
             throw it
         }
-        val image = Image.decode(src, hasAds && Settings.stripExtraneousAds.value && mayBeAd(index)) ?: return notifyPageFailed(index, null)
+        val image = Image.decode(src, hasAds && Settings.stripExtraneousAds.value && mayBeAd(index)) ?: return PageEvent.Error(index, null)
         runCatching {
             currentCoroutineContext().ensureActive()
         }.onFailure {
             image.recycle()
             throw it
         }
-        notifyPageSucceed(index, image)
+        return PageEvent.Success(index, image)
     }
 
     override fun onForceRequest(index: Int, orgImg: Boolean) {

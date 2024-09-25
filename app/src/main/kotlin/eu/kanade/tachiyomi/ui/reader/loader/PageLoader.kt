@@ -5,19 +5,25 @@ import androidx.collection.lruCache
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageStatus
-import com.hippo.ehviewer.gallery.reset
 import com.hippo.ehviewer.gallery.status
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
-abstract class PageLoader {
+abstract class PageLoader : CoroutineScope {
     private val cache by lazy {
         lruCache<Int, Image>(
             maxSize = if (isAtLeastO) {
@@ -28,7 +34,7 @@ abstract class PageLoader {
             sizeOf = { _, v -> v.allocationSize.toInt() },
             onEntryRemoved = { _, k, o, n ->
                 if (o.isRecyclable) {
-                    n ?: notifyPageWait(k)
+                    n ?: queuePage(k)
                     o.recycle()
                 } else {
                     o.isRecyclable = true
@@ -37,9 +43,27 @@ abstract class PageLoader {
         )
     }
 
+    protected abstract val sourceFlow: Flow<PageEvent>
+
+    private val broadcast = MutableSharedFlow<Pair<Int, PageStatus>>()
+
     val pages by lazy {
         check(size > 0)
-        (0 until size).map { Page(it) }
+        (0 until size).map { index ->
+            val flow = sourceFlow.filter { it.index == index }.map { event ->
+                when (event) {
+                    is PageEvent.Error -> PageStatus.Error(event.error)
+                    is PageEvent.Progress -> PageStatus.Loading(event.progress.stateIn(this, SharingStarted.Eagerly, 0f))
+                    is PageEvent.Success -> event.image.let {
+                        cache.put(index, it)
+                        if (it.hasQrCode) PageStatus.Blocked(it) else PageStatus.Ready(it)
+                    }
+                    is PageEvent.Wait -> PageStatus.Queued
+                }
+            }
+            val real = merge(flow, broadcast.filter { (i, _) -> index == i }.map { (_, e) -> e })
+            Page(index, real.stateIn(this, SharingStarted.Eagerly, PageStatus.Queued))
+        }
     }
 
     private val prefetchPageCount = Settings.preloadImage
@@ -62,7 +86,7 @@ abstract class PageLoader {
 
     fun restart() {
         cache.evictAll()
-        pages.forEach(Page::reset)
+        pages.forEach { queuePage(it.index) }
     }
 
     abstract val size: Int
@@ -72,9 +96,9 @@ abstract class PageLoader {
     fun request(index: Int) {
         val image = cache[index]
         if (image != null) {
-            notifyPageSucceed(index, image, false)
+            launch { broadcast.emit(index to PageStatus.Ready(image)) }
         } else {
-            notifyPageWait(index)
+            queuePage(index)
             onRequest(index)
         }
 
@@ -104,7 +128,7 @@ abstract class PageLoader {
     }
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
-        notifyPageWait(index)
+        queuePage(index)
         onForceRequest(index, orgImg)
     }
 
@@ -114,27 +138,23 @@ abstract class PageLoader {
 
     protected abstract fun onForceRequest(index: Int, orgImg: Boolean)
 
-    fun notifyPageWait(index: Int) {
-        pages[index].reset()
-    }
+    fun queuePage(index: Int) = launch { broadcast.emit(index to PageStatus.Queued) }
 
-    fun notifyPagePercent(index: Int, percent: Float) {
-        pages[index].statusFlow.update {
-            when (it) {
-                is PageStatus.Loading -> it.apply { progress.update { percent } }
-                else -> PageStatus.Loading(MutableStateFlow(percent))
+    fun unblockPage(page: Page) {
+        launch {
+            when (val status = page.status) {
+                is PageStatus.Blocked -> PageStatus.Ready(status.ad)
+                else -> error("Call unblock on page not blocked!!!")
             }
         }
     }
+}
 
-    fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
-        if (replaceCache) {
-            cache.put(index, image)
-        }
-        pages[index].statusFlow.update { if (image.hasQrCode) PageStatus.Blocked(image) else PageStatus.Ready(image) }
-    }
+sealed interface PageEvent {
+    val index: Int
 
-    fun notifyPageFailed(index: Int, error: String?) {
-        pages[index].statusFlow.update { PageStatus.Error(error) }
-    }
+    data class Error(override val index: Int, val error: String?) : PageEvent
+    data class Success(override val index: Int, val image: Image) : PageEvent
+    data class Progress(override val index: Int, val progress: Flow<Float>) : PageEvent
+    data class Wait(override val index: Int) : PageEvent
 }

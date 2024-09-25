@@ -80,7 +80,7 @@ fun PagerItem(
                 image.isRecyclable = false
                 onDispose {
                     if (image.isRecyclable) {
-                        pageLoader.notifyPageWait(page.index)
+                        pageLoader.queuePage(page.index)
                         image.recycle()
                     } else {
                         image.isRecyclable = true

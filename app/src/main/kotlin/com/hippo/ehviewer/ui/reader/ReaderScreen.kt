@@ -64,7 +64,6 @@ import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.gallery.status
-import com.hippo.ehviewer.gallery.unblock
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
@@ -238,7 +237,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                                 copy = { launchIO { with(pageLoader) { copy(page) } } },
                                 save = { launchIO { with(pageLoader) { save(page) } } },
                                 saveTo = { launchIO { with(pageLoader) { saveTo(page) } } },
-                                showAds = { page.unblock() }.takeIf { blocked },
+                                showAds = { pageLoader.unblockPage(page) }.takeIf { blocked },
                                 dismiss = { launch { state.hide().also { dispose() } } },
                             )
                         }
