@@ -45,21 +45,21 @@ abstract class PageLoader : CoroutineScope {
         )
     }
 
-    protected abstract val sourceFlow: SharedFlow<PageEvent>
+    protected abstract val loaderEvent: SharedFlow<PageEvent>
 
     private val broadcast = MutableSharedFlow<Pair<Int, PageStatus>>()
 
     val pages by lazy {
         check(size > 0)
         launch {
-            sourceFlow.collect {
+            loaderEvent.collect {
                 if (it is PageEvent.Success) {
                     cache.put(it.index, it.image)
                 }
             }
         }
         (0 until size).map { index ->
-            val flow = sourceFlow.filter { it.index == index }.map { event ->
+            val flow = loaderEvent.filter { it.index == index }.map { event ->
                 when (event) {
                     is PageEvent.Error -> PageStatus.Error(event.error)
                     is PageEvent.Progress -> PageStatus.Loading(event.progress.stateIn(this, SharingStarted.Eagerly, 0f))

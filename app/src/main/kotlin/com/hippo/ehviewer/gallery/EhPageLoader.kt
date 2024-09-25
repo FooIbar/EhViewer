@@ -34,13 +34,13 @@ import kotlinx.coroutines.launch
 import okio.Path
 
 class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) : PageLoader2(mGalleryInfo.gid, startPage) {
-    override lateinit var sourceFlow: SharedFlow<PageEvent>
+    override lateinit var loaderEvent: SharedFlow<PageEvent>
     private lateinit var spiderQueen: SpiderQueen
     override fun start() {
         super.start()
         if (!::spiderQueen.isInitialized) {
             spiderQueen = obtainSpiderQueen(mGalleryInfo, SpiderQueen.MODE_READ)
-            sourceFlow = callbackFlow {
+            loaderEvent = callbackFlow {
                 val listener = object : SpiderQueen.OnSpiderListener {
                     override suspend fun onPageDownload(index: Int, contentLength: Long, bytesReceived: Flow<Long>) {
                         if (contentLength > 0) {

@@ -74,7 +74,7 @@ class ArchivePageLoader(
         size
     }
 
-    override val sourceFlow = MutableSharedFlow<PageEvent>()
+    override val loaderEvent = MutableSharedFlow<PageEvent>()
 
     override var size = 0
 
@@ -101,7 +101,7 @@ class ArchivePageLoader(
                 mJobMap[index] = launch {
                     mWorkerMutex.withLock(index) {
                         mSemaphore.withPermit {
-                            sourceFlow.emit(doRealWork(index))
+                            loaderEvent.emit(doRealWork(index))
                         }
                     }
                 }
