@@ -42,7 +42,11 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) : Page
             spiderQueen = obtainSpiderQueen(mGalleryInfo, SpiderQueen.MODE_READ)
             sourceFlow = callbackFlow {
                 val listener = object : SpiderQueen.OnSpiderListener {
-                    override suspend fun onPageDownload(index: Int, contentLength: Long, receivedSize: Flow<Long>) = send(PageEvent.Progress(index, receivedSize.map { it.toFloat() / contentLength }))
+                    override suspend fun onPageDownload(index: Int, contentLength: Long, receivedSize: Flow<Long>) {
+                        if (contentLength > 0) {
+                            send(PageEvent.Progress(index, receivedSize.map { it.toFloat() / contentLength }))
+                        }
+                    }
 
                     override suspend fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) = send(PageEvent.Error(index, error))
 
