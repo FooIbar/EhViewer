@@ -61,8 +61,8 @@ abstract class PageLoader : CoroutineScope {
                     is PageEvent.Wait -> PageStatus.Queued
                 }
             }
-            val real = merge(flow, broadcast.filter { (i, _) -> index == i }.map { (_, e) -> e })
-            Page(index, real.stateIn(this, SharingStarted.Eagerly, PageStatus.Queued))
+            val overwrite = broadcast.filter { (i, _) -> index == i }.map { (_, e) -> e }
+            Page(index, merge(flow, overwrite).stateIn(this, SharingStarted.Eagerly, PageStatus.Queued))
         }
     }
 

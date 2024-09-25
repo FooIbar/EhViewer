@@ -175,7 +175,7 @@ class SpiderDen(val info: GalleryInfo) {
         url: String,
         referer: String?,
         notifyProgress: suspend (Long, Flow<Long>) -> Unit,
-    ) = MutableSharedFlow<Long>(extraBufferCapacity = 10).let { flow ->
+    ) = MutableSharedFlow<Long>().let { flow ->
         ehRequest(url, referer) {
             onDownload { done, _ -> flow.emit(done) }
         }.executeSafely {
