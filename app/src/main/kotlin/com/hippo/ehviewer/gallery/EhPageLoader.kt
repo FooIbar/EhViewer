@@ -50,9 +50,9 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) : Page
 
                     override suspend fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) = send(PageEvent.Error(index, error))
 
-                    override suspend fun onGetImageSuccess(index: Int, image: Image?) = send(PageEvent.Success(index, image!!))
+                    override suspend fun onGetImageSuccess(index: Int, image: Image) = send(PageEvent.Success(index, image))
 
-                    override suspend fun onGetImageFailure(index: Int, error: String?) = send(PageEvent.Error(index, error))
+                    override suspend fun onGetImageFailure(index: Int, error: String) = send(PageEvent.Error(index, error))
                 }
                 spiderQueen.addOnSpiderListener(listener)
                 awaitClose {

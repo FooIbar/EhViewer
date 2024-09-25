@@ -462,8 +462,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         suspend fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {}
         suspend fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) {}
         suspend fun onFinish(finished: Int, downloaded: Int, total: Int) {}
-        suspend fun onGetImageSuccess(index: Int, image: Image?) {}
-        suspend fun onGetImageFailure(index: Int, error: String?) {}
+        suspend fun onGetImageSuccess(index: Int, image: Image) {}
+        suspend fun onGetImageFailure(index: Int, error: String) {}
     }
 
     companion object {
