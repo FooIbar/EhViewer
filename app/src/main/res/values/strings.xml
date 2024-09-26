@@ -491,6 +491,7 @@
     <string name="action_add_tag">Add tag</string>
     <string name="action_add_tag_tip">Enter new tags, separated with comma</string>
     <string name="comment_user_uploader">%s (Uploader)</string>
+    <string name="no_network">No network</string>
     <string name="settings_eh_metered_network_warning">Metered network warning</string>
     <string name="metered_network_warning">Connected to metered networks</string>
     <string name="read_from">Read page %d</string>

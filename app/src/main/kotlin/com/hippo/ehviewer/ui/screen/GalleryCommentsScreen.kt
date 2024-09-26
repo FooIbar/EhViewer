@@ -211,7 +211,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
     val filterAdded = stringResource(R.string.filter_added)
     suspend fun showFilterCommenter(comment: GalleryComment) {
         val commenter = comment.user ?: return
-        awaitPermissionOrCancel { Text(text = stringResource(R.string.filter_the_commenter, commenter)) }
+        awaitConfirmationOrCancel { Text(text = stringResource(R.string.filter_the_commenter, commenter)) }
         Filter(FilterMode.COMMENTER, commenter).remember()
         comments = comments.copy(comments = comments.comments.filterNot { it.user == commenter })
         showSnackbar(filterAdded)

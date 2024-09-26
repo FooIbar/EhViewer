@@ -234,7 +234,7 @@ class MainActivity : EhActivity() {
             suspend fun DialogState.checkDownloadLocation() {
                 val valid = withIOContext { downloadLocation.isDirectory }
                 if (!valid) {
-                    awaitPermissionOrCancel(
+                    awaitConfirmationOrCancel(
                         confirmText = R.string.open_settings,
                         title = R.string.waring,
                         showCancelButton = false,
@@ -248,18 +248,24 @@ class MainActivity : EhActivity() {
                 }
             }
 
+            val hasNetwork = remember { connectivityManager.activeNetwork != null }
             if (!AppConfig.isBenchmark) {
+                val noNetwork = stringResource(R.string.no_network)
                 LaunchedEffect(Unit) {
                     runCatching { dialogState.checkDownloadLocation() }
                     runCatching { dialogState.checkAppLinkVerify() }
-                    runSuspendCatching {
-                        withIOContext {
-                            AppUpdater.checkForUpdate()?.let {
-                                dialogState.showNewVersion(this@MainActivity, it)
+                    if (hasNetwork) {
+                        runSuspendCatching {
+                            withIOContext {
+                                AppUpdater.checkForUpdate()?.let {
+                                    dialogState.showNewVersion(this@MainActivity, it)
+                                }
                             }
+                        }.onFailure {
+                            snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
                         }
-                    }.onFailure {
-                        snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
+                    } else {
+                        snackbarState.showSnackbar(noNetwork)
                     }
                 }
             }
@@ -466,9 +472,14 @@ class MainActivity : EhActivity() {
                             // https://issuetracker.google.com/336140982
                             // SharedTransitionLayout {
                             CompositionLocalProvider(LocalSharedTransitionScope provides NoopSharedTransitionScope) {
+                                val start = when {
+                                    Settings.needSignIn -> SignInScreenDestination
+                                    hasNetwork -> StartDestination
+                                    else -> DownloadsScreenDestination
+                                }
                                 DestinationsNavHost(
                                     navGraph = NavGraphs.root,
-                                    start = if (Settings.needSignIn) SignInScreenDestination else StartDestination,
+                                    start = start,
                                     defaultTransitions = rememberEhNavAnim(),
                                     navController = navController,
                                 )
@@ -495,7 +506,7 @@ class MainActivity : EhActivity() {
             val hasUnverified = userState.hostToStateMap.values.any { it == DOMAIN_STATE_NONE }
             if (hasUnverified) {
                 var checked by mutableStateOf(false)
-                awaitPermissionOrCancel(
+                awaitConfirmationOrCancel(
                     confirmText = R.string.open_settings,
                     title = R.string.app_link_not_verified_title,
                     onCancelButtonClick = {
@@ -526,7 +537,7 @@ class MainActivity : EhActivity() {
                         Uri.parse("package:$packageName"),
                     )
                     startActivity(intent)
-                } catch (t: Throwable) {
+                } catch (_: Throwable) {
                     val intent = Intent(
                         android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                         Uri.parse("package:$packageName"),

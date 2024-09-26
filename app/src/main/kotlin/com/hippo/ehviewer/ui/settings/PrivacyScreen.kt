@@ -89,7 +89,7 @@ fun PrivacyScreen(navigator: DestinationsNavigator) {
                 summary = stringResource(id = R.string.clear_search_history_summary),
             ) {
                 coroutineScope.launch {
-                    dialogState.awaitPermissionOrCancel(
+                    dialogState.awaitConfirmationOrCancel(
                         confirmText = R.string.clear_all,
                         title = R.string.clear_search_history_confirm,
                     )

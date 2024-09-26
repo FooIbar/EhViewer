@@ -10,7 +10,7 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 
 @Dao
 interface HistoryDao {
-    @Query("SELECT * FROM HISTORY ORDER BY TIME")
+    @Query("SELECT HISTORY.* FROM HISTORY JOIN GALLERIES USING(GID) ORDER BY TIME")
     suspend fun list(): List<HistoryInfo>
 
     @Query("SELECT GALLERIES.* FROM HISTORY JOIN GALLERIES USING(GID) ORDER BY TIME DESC")

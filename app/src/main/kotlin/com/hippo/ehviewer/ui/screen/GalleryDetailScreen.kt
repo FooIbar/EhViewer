@@ -328,7 +328,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                 dropdown = false
                                 val gd = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
                                 launchIO {
-                                    awaitPermissionOrCancel(
+                                    awaitConfirmationOrCancel(
                                         confirmText = R.string.clear_all,
                                         title = R.string.clear_image_cache,
                                     ) {
@@ -359,7 +359,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                     val downloadInfo = EhDownloadManager.getDownloadInfo(gid)
                                     val canExport = downloadInfo?.state == DownloadInfo.STATE_FINISH
                                     if (!canExport) {
-                                        awaitPermissionOrCancel(
+                                        awaitConfirmationOrCancel(
                                             showCancelButton = false,
                                             text = { Text(text = stringResource(id = R.string.download_gallery_first)) },
                                         )

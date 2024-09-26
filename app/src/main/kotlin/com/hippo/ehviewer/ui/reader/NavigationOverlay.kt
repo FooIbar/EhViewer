@@ -46,12 +46,17 @@ fun NavigationOverlay(
             val scaleX = maxWidth
             val scaleY = maxHeight
             regions.forEach { region ->
-                val rect = region.rectF
+                val rect = region.rect
                 val color = colorResource(region.type.colorRes)
                 val text = stringResource(region.type.nameRes)
                 Box(
-                    modifier = Modifier.size(scaleX * rect.width(), scaleY * rect.height())
-                        .offset(scaleX * rect.left, scaleY * rect.top).background(color),
+                    modifier = Modifier.size(
+                        width = scaleX * rect.width,
+                        height = scaleY * rect.height,
+                    ).offset(
+                        x = scaleX * rect.left,
+                        y = scaleY * rect.top,
+                    ).background(color),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(text, style = strokeStyle)

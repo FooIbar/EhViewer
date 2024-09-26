@@ -185,11 +185,11 @@ private fun PageContainer(
             with(pagerState) {
                 // Don't use `layoutSize` as it may capture outdated value
                 val size = layoutInfo.viewportSize.toSize()
-                val x = offset.x / size.width
-                val y = offset.y / size.height
+                val (w, h) = size
+                val (x, y) = offset
                 val distance = size.width
                 val bounds = size.toRect()
-                when (navigator().getAction(x, y)) {
+                when (navigator().getAction(Offset(x / w, y / h))) {
                     NavigationRegion.MENU -> onMenuRegionClick()
                     NavigationRegion.NEXT -> {
                         val canPan = if (isRtl) panRight(distance, bounds) else panLeft(distance, bounds)

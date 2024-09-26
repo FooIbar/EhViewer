@@ -12,7 +12,6 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
  * | M | M | M |   N: Next
  * +---+---+---+
 */
-class DisabledNavigation : ViewerNavigation() {
-
-    override val originalRegions: List<Region> = emptyList()
+object DisabledNavigation : ViewerNavigation() {
+    override val originalRegions = emptyList<Region>()
 }

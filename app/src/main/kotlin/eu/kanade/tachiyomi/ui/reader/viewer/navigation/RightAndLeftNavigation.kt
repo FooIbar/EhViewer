@@ -1,6 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.navigation
 
-import android.graphics.RectF
+import androidx.compose.ui.geometry.Rect
 import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
 
 /**
@@ -13,15 +13,14 @@ import eu.kanade.tachiyomi.ui.reader.viewer.ViewerNavigation
  * | N | M | P |   N: Move Left
  * +---+---+---+
  */
-class RightAndLeftNavigation : ViewerNavigation() {
-
-    override val originalRegions: List<Region> = listOf(
+object RightAndLeftNavigation : ViewerNavigation() {
+    override val originalRegions = listOf(
         Region(
-            rectF = RectF(0f, 0f, 0.33f, 1f),
+            rect = Rect(0f, 0f, 0.33f, 1f),
             type = NavigationRegion.LEFT,
         ),
         Region(
-            rectF = RectF(0.66f, 0f, 1f, 1f),
+            rect = Rect(0.66f, 0f, 1f, 1f),
             type = NavigationRegion.RIGHT,
         ),
     )

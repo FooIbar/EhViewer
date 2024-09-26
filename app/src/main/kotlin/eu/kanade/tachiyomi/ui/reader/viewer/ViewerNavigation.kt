@@ -1,7 +1,8 @@
 package eu.kanade.tachiyomi.ui.reader.viewer
 
-import android.graphics.RectF
 import androidx.annotation.StringRes
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import com.hippo.ehviewer.R
 import eu.kanade.tachiyomi.ui.reader.setting.TappingInvertMode
 import eu.kanade.tachiyomi.ui.reader.viewer.navigation.DisabledNavigation
@@ -12,7 +13,6 @@ import eu.kanade.tachiyomi.ui.reader.viewer.navigation.RightAndLeftNavigation
 import eu.kanade.tachiyomi.util.lang.invert
 
 abstract class ViewerNavigation {
-
     sealed class NavigationRegion(@StringRes val nameRes: Int, val colorRes: Int) {
         data object MENU : NavigationRegion(R.string.action_menu, R.color.navigation_menu)
         data object PREV : NavigationRegion(R.string.nav_zone_prev, R.color.navigation_prev)
@@ -21,37 +21,29 @@ abstract class ViewerNavigation {
         data object RIGHT : NavigationRegion(R.string.nav_zone_right, R.color.navigation_right)
     }
 
-    data class Region(
-        val rectF: RectF,
-        val type: NavigationRegion,
-    ) {
+    data class Region(val rect: Rect, val type: NavigationRegion) {
         fun invert(invertMode: TappingInvertMode): Region {
             if (invertMode == TappingInvertMode.NONE) return this
-            return this.copy(
-                rectF = this.rectF.invert(invertMode),
-            )
+            return copy(rect = rect.invert(invertMode))
         }
     }
 
     protected abstract val originalRegions: List<Region>
 
-    val regions get() = originalRegions.map { it.invert(invertMode) }
-
-    var invertMode = TappingInvertMode.NONE
+    fun regions(invertMode: TappingInvertMode = TappingInvertMode.NONE) = originalRegions.map { it.invert(invertMode) }
 
     companion object {
         fun fromPreference(value: Int, isVertical: Boolean) = when (value) {
-            1 -> LNavigation()
-            2 -> KindlishNavigation()
-            3 -> EdgeNavigation()
-            4 -> RightAndLeftNavigation()
-            5 -> DisabledNavigation()
-            else -> if (isVertical) LNavigation() else RightAndLeftNavigation()
+            1 -> LNavigation
+            2 -> KindlishNavigation
+            3 -> EdgeNavigation
+            4 -> RightAndLeftNavigation
+            5 -> DisabledNavigation
+            else -> if (isVertical) LNavigation else RightAndLeftNavigation
         }
     }
 }
 
 typealias NavigationRegions = List<ViewerNavigation.Region>
 
-fun NavigationRegions.getAction(x: Float, y: Float) =
-    find { it.rectF.contains(x, y) }?.type ?: ViewerNavigation.NavigationRegion.MENU
+fun NavigationRegions.getAction(offset: Offset) = find { offset in it.rect }?.type ?: ViewerNavigation.NavigationRegion.MENU
