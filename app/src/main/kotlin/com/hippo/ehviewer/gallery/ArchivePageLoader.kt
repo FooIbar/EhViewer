@@ -32,7 +32,6 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.displayPath
 import com.hippo.files.openFileDescriptor
 import com.hippo.files.toUri
-import eu.kanade.tachiyomi.ui.reader.loader.PageEvent
 import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineStart
