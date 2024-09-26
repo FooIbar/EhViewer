@@ -44,7 +44,7 @@ class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) : Page
                 val listener = object : SpiderQueen.OnSpiderListener {
                     override suspend fun onPageDownload(index: Int, contentLength: Long, bytesReceived: Flow<Long>) {
                         if (contentLength > 0) {
-                            send(PageEvent.Progress(index, bytesReceived.map { it.toFloat() / contentLength }))
+                            send(PageEvent.Downloading(index, bytesReceived.map { it.toFloat() / contentLength }))
                         }
                     }
 

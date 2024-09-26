@@ -11,6 +11,7 @@ import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -63,9 +64,9 @@ abstract class PageLoader : CoroutineScope {
                 merge(loaderEvent, broadcast).filter { it.index == index }.map { event ->
                     when (event) {
                         is PageEvent.Error -> PageStatus.Error(event.error)
-                        is PageEvent.Progress -> PageStatus.Loading(event.progress.stateIn(this, SharingStarted.Eagerly, 0f))
+                        is PageEvent.Downloading -> PageStatus.Loading(event.progress.stateIn(this, SharingStarted.Eagerly, 0f))
                         is PageEvent.Success -> with(event.image) { if (hasQrCode) PageStatus.Blocked(this) else PageStatus.Ready(this) }
-                        is PageEvent.Wait -> PageStatus.Queued
+                        is PageEvent.Queued -> PageStatus.Queued
                     }
                 }.stateIn(this, SharingStarted.Eagerly, PageStatus.Queued),
             )
@@ -102,7 +103,7 @@ abstract class PageLoader : CoroutineScope {
     fun request(index: Int) {
         val image = cache[index]
         if (image != null) {
-            launch { broadcast.emit(PageEvent.Success(index, image)) }
+            launch(Dispatchers.Unconfined) { broadcast.emit(PageEvent.Success(index, image)) }
         } else {
             queuePage(index)
             onRequest(index)
@@ -144,7 +145,7 @@ abstract class PageLoader : CoroutineScope {
 
     protected abstract fun onForceRequest(index: Int, orgImg: Boolean)
 
-    fun queuePage(index: Int) = launch { broadcast.emit(PageEvent.Wait(index)) }
+    fun queuePage(index: Int) = launch(Dispatchers.Unconfined) { broadcast.emit(PageEvent.Queued(index)) }
 
     fun unblockPage(page: Page) {
         launch {
@@ -166,6 +167,6 @@ sealed interface PageEvent {
 
     data class Error(override val index: Int, val error: String?) : PageEvent
     data class Success(override val index: Int, val image: Image) : PageEvent
-    data class Progress(override val index: Int, val progress: Flow<Float>) : PageEvent
-    data class Wait(override val index: Int) : PageEvent
+    data class Downloading(override val index: Int, val progress: Flow<Float>) : PageEvent
+    data class Queued(override val index: Int) : PageEvent
 }
