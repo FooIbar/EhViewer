@@ -64,7 +64,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchNonCancellable
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
@@ -99,10 +98,8 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
                             contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
                             val path = DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri)).toOkioPath()
                             check(path.isDirectory) { "$path is not a directory" }
+                            keepNoMediaFileStatus(path) // Check if the directory is writable
                             downloadLocationState = path
-                            launchNonCancellable {
-                                keepNoMediaFileStatus(downloadLocationState)
-                            }
                         }.onFailure {
                             logcat(it)
                             launchSnackBar(cannotGetDownloadLocation)
