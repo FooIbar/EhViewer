@@ -1,5 +1,37 @@
 # 变更日志
 
+## [1.12.1] - 2024-09-28
+
+### 新功能
+
+* 屏蔽含有二维码的图片（位于高级设置）
+
+### 改进
+
+* 移除高级设置中的自定义 User Agent，改为桌面版网站选项
+* 画廊预览与画廊详情页面合并
+* 为快速搜索和下载标签列表添加了滚动条
+* 无网络条件下启动时自动转到下载页面
+* 杂项优化
+
+### Bug 修复
+
+* 从左到右或右到左模式观看使用鼠标滚轮无法翻页 [#1541](https://github.com/FooIbar/EhViewer/issues/1541)
+* 状态栏颜色未跟随阅读器主题变化 [#1542](https://github.com/FooIbar/EhViewer/issues/1542)
+* 打开 EH 设置时闪退 [#1563](https://github.com/FooIbar/EhViewer/issues/1563)
+* 画廊种子过多时显示没有种子 [#1561](https://github.com/FooIbar/EhViewer/issues/1561)
+* 加载大于 100 MB 的位图时崩溃
+* 阅读器加载小圆圈在黑色背景下不自动变色 [#1579](https://github.com/FooIbar/EhViewer/issues/1579)
+* 因闪退造成的无法挽回的下载失败 [#1602](https://github.com/FooIbar/EhViewer/issues/1602)
+* 某些情况下闪退 [#1548](https://github.com/FooIbar/EhViewer/issues/1548) [#1555](https://github.com/FooIbar/EhViewer/issues/1555) [#1568](https://github.com/FooIbar/EhViewer/issues/1568)
+* Android 7.0 及以下的设备无法加载图片 [#1633](https://github.com/FooIbar/EhViewer/issues/1633)
+* 某些情况下导入数据失败 [#1634](https://github.com/FooIbar/EhViewer/issues/1634)
+* 下载时创建重复文件夹 [#1619](https://github.com/FooIbar/EhViewer/issues/1619)
+* 滚动方向改变后预载图片不生效 [#1560](https://github.com/FooIbar/EhViewer/issues/1560)
+* 选择无效的下载位置后闪退
+* 杂项修复
+
+
 ## [1.12.0] - 2024-08-19
 
 ### 重大变更
