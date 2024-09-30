@@ -16,7 +16,6 @@
 package com.hippo.ehviewer.client.data
 
 import android.os.Parcelable
-import androidx.annotation.IntDef
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
@@ -32,13 +31,12 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class ListUrlBuilder(
-    @get:Mode @Mode
     var mode: Int = MODE_NORMAL,
-    private var mPrev: String? = null,
-    var mNext: String? = null,
+    private var prev: String? = null,
+    var next: String? = null,
     // Reset to null after initial loading
-    var mJumpTo: String? = null,
-    private var mRange: Int = 0,
+    var jumpTo: String? = null,
+    private var range: Int = 0,
     var category: Int = EhUtils.NONE,
     private var mKeyword: String? = null,
     var hash: String? = null,
@@ -47,24 +45,23 @@ data class ListUrlBuilder(
     var minRating: Int = -1,
     var pageFrom: Int = -1,
     var pageTo: Int = -1,
-    var imagePath: String? = null,
 ) : Parcelable {
 
     fun setIndex(index: String, isNext: Boolean = true) {
-        mNext = index.takeIf { isNext }
-        mPrev = index.takeUnless { isNext }
-        mRange = 0
+        next = index.takeIf { isNext }
+        prev = index.takeUnless { isNext }
+        range = 0
     }
 
-    fun setJumpTo(jumpTo: Int) {
-        mJumpTo = jumpTo.takeUnless { it == 0 }?.toString()
+    fun setJumpTo(to: Int) {
+        jumpTo = to.takeUnless { it == 0 }?.toString()
     }
 
-    fun setRange(range: Int) {
-        mRange = range
-        mPrev = null
-        mNext = null
-        mJumpTo = null
+    fun setRange(to: Int) {
+        range = to
+        prev = null
+        next = null
+        jumpTo = null
     }
 
     var keyword: String?
@@ -81,7 +78,7 @@ data class ListUrlBuilder(
         minRating = q.minRating
         pageFrom = q.pageFrom
         pageTo = q.pageTo
-        mNext = q.name.substringAfterLast('@', "").ifEmpty { null }
+        next = q.name.substringAfterLast('@', "").ifEmpty { null }
     }
 
     fun toQuickSearch(name: String): QuickSearch = QuickSearch(
@@ -277,10 +274,10 @@ data class ListUrlBuilder(
                 }
             }
             addQueryParameterIfNotBlank("f_search", query)
-            addQueryParameterIfNotBlank("prev", mPrev)
-            addQueryParameterIfNotBlank("next", mNext)
-            addQueryParameterIfNotBlank("seek", mJumpTo)
-            addQueryParameterIfNotBlank("range", mRange.takeIf { it > 0 }?.toString())
+            addQueryParameterIfNotBlank("prev", prev)
+            addQueryParameterIfNotBlank("next", next)
+            addQueryParameterIfNotBlank("seek", jumpTo)
+            addQueryParameterIfNotBlank("range", range.takeIf { it > 0 }?.toString())
             // Advance search
             if (advanceSearch > 0 || minRating > 0 || pageFrom > 0 || pageTo > 0) {
                 addQueryParameter("advsearch", "1")
@@ -322,10 +319,10 @@ data class ListUrlBuilder(
         MODE_UPLOADER, MODE_TAG -> {
             val path = if (mode == MODE_UPLOADER) "uploader" else "tag"
             ehUrl(listOf(path, requireNotNull(mKeyword))) {
-                addQueryParameterIfNotBlank("prev", mPrev)
-                addQueryParameterIfNotBlank("next", mNext)
-                addQueryParameterIfNotBlank("seek", mJumpTo)
-                addQueryParameterIfNotBlank("range", mRange.takeIf { it > 0 }?.toString())
+                addQueryParameterIfNotBlank("prev", prev)
+                addQueryParameterIfNotBlank("next", next)
+                addQueryParameterIfNotBlank("seek", jumpTo)
+                addQueryParameterIfNotBlank("range", range.takeIf { it > 0 }?.toString())
             }.buildString()
         }
 
@@ -333,27 +330,14 @@ data class ListUrlBuilder(
         MODE_IMAGE_SEARCH -> ehUrl {
             addQueryParameter("f_shash", requireNotNull(hash))
         }.buildString()
-        MODE_TOPLIST -> {
-            ehUrl("toplist.php", EhUrl.DOMAIN_E) {
-                addQueryParameter("tl", requireNotNull(mKeyword))
-                addQueryParameterIfNotBlank("p", mJumpTo)
-            }.buildString()
-        }
+        MODE_TOPLIST -> ehUrl("toplist.php", EhUrl.DOMAIN_E) {
+            addQueryParameter("tl", requireNotNull(mKeyword))
+            addQueryParameterIfNotBlank("p", jumpTo)
+        }.buildString()
 
         else -> throw IllegalStateException("Unexpected value: $mode")
     }
 
-    @IntDef(
-        MODE_NORMAL,
-        MODE_UPLOADER,
-        MODE_TAG,
-        MODE_WHATS_HOT,
-        MODE_IMAGE_SEARCH,
-        MODE_SUBSCRIPTION,
-        MODE_TOPLIST,
-    )
-    @Retention(AnnotationRetention.SOURCE)
-    private annotation class Mode
     companion object {
         const val MODE_NORMAL = 0x0
         const val MODE_UPLOADER = 0x1
