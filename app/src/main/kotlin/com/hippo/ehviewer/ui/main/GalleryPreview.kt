@@ -27,7 +27,7 @@ import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
-import com.hippo.ehviewer.coil.BitmapImageWithExtraInfo
+import com.hippo.ehviewer.coil.hasQrCode
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.reader.AdsPlaceholder
 import com.hippo.ehviewer.ui.tools.CrystalCard
@@ -62,8 +62,8 @@ fun EhAsyncPreview(
             transform = {
                 with(model) {
                     when (it) {
-                        is AsyncImagePainter.State.Success if (it.result.image as? BitmapImageWithExtraInfo)?.hasQrCode == true -> it.also { blocked = true }
-                        is AsyncImagePainter.State.Success if (this is NormalGalleryPreview) -> it.copy(
+                        is AsyncImagePainter.State.Success if it.result.image.hasQrCode -> it.also { blocked = true }
+                        is AsyncImagePainter.State.Success if this is NormalGalleryPreview -> it.copy(
                             painter = BitmapPainter(
                                 (it.result.image as BitmapImage).bitmap.asImageBitmap(),
                                 IntOffset(offsetX, 0),

@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.coil
 
 import coil3.Extras
+import coil3.Image
 import coil3.getExtra
 import coil3.intercept.Interceptor
 import coil3.request.ImageRequest
@@ -31,3 +32,9 @@ object QrCodeInterceptor : Interceptor {
         return result
     }
 }
+
+val Image.hasQrCode
+    get() = when (this) {
+        is BitmapImageWithExtraInfo -> hasQrCode
+        else -> false
+    }
