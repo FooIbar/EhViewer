@@ -33,7 +33,6 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.dao.DownloadArtist
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
-import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
@@ -55,8 +54,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -597,98 +599,75 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     val isIdle: Boolean
         get() = mCurrentTask == null && mWaitList.isEmpty()
 
-    override fun onGetPages(pages: Int) {
-        launch {
-            mCurrentTask?.let { info ->
-                info.total = pages
-                mutableNotifyFlow.emit(info)
-            } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
-        }
+    override suspend fun onGetPages(pages: Int) {
+        mCurrentTask?.let { info ->
+            info.total = pages
+            mutableNotifyFlow.emit(info)
+        } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
     }
 
-    override fun onGet509(index: Int) {
-        launch {
-            mDownloadListener?.onGet509()
-            stopAllDownload()
-        }
+    override suspend fun onGet509(index: Int) {
+        mDownloadListener?.onGet509()
+        stopAllDownload()
     }
 
-    override fun onPageDownload(
-        index: Int,
-        contentLength: Long,
-        receivedSize: Long,
-        bytesRead: Int,
-    ) {
-        launch {
-            mSpeedReminder.onDownload(index, contentLength, receivedSize, bytesRead)
-        }
+    override suspend fun onPageDownload(index: Int, contentLength: Long, bytesReceived: Flow<Long>) {
+        bytesReceived.runningFold(0L) { prev, curr ->
+            curr.also { mSpeedReminder.onDownload(index, contentLength, curr, (curr - prev).toInt()) }
+        }.launchIn(this)
     }
 
-    override fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {
-        launch {
-            mSpeedReminder.onDone(index)
-            mCurrentTask?.let { info ->
-                info.finished = finished
-                info.downloaded = downloaded
-                info.total = total
-                mDownloadListener?.onDownload(info)
-                mutableNotifyFlow.emit(info)
-            } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
-        }
+    override suspend fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {
+        mSpeedReminder.onDone(index)
+        mCurrentTask?.let { info ->
+            info.finished = finished
+            info.downloaded = downloaded
+            info.total = total
+            mDownloadListener?.onDownload(info)
+            mutableNotifyFlow.emit(info)
+        } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
     }
 
-    override fun onPageFailure(
+    override suspend fun onPageFailure(
         index: Int,
         error: String?,
         finished: Int,
         downloaded: Int,
         total: Int,
     ) {
-        launch {
-            mSpeedReminder.onDone(index)
-            mCurrentTask?.let { info ->
-                info.finished = finished
-                info.downloaded = downloaded
-                info.total = total
-                mutableNotifyFlow.emit(info)
-            } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
-        }
+        mSpeedReminder.onDone(index)
+        mCurrentTask?.let { info ->
+            info.finished = finished
+            info.downloaded = downloaded
+            info.total = total
+            mutableNotifyFlow.emit(info)
+        } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
     }
 
-    override fun onFinish(finished: Int, downloaded: Int, total: Int) {
-        launch {
-            mSpeedReminder.onFinish()
-            mCurrentSpider?.let { spider ->
-                mCurrentSpider = null
-                spider.removeOnSpiderListener(DownloadManager)
-                SpiderQueen.releaseSpiderQueen(spider, SpiderQueen.MODE_DOWNLOAD)
+    override suspend fun onFinish(finished: Int, downloaded: Int, total: Int) {
+        mSpeedReminder.onFinish()
+        mCurrentSpider?.let { spider ->
+            mCurrentSpider = null
+            spider.removeOnSpiderListener(DownloadManager)
+            SpiderQueen.releaseSpiderQueen(spider, SpiderQueen.MODE_DOWNLOAD)
+        }
+        mCurrentTask?.let { info ->
+            mCurrentTask = null
+            mSpeedReminder.stop()
+            info.finished = finished
+            info.downloaded = downloaded
+            info.total = total
+            info.legacy = total - finished
+            if (info.legacy == 0) {
+                info.state = DownloadInfo.STATE_FINISH
+            } else {
+                info.state = DownloadInfo.STATE_FAILED
             }
-            mCurrentTask?.let { info ->
-                mCurrentTask = null
-                mSpeedReminder.stop()
-                info.finished = finished
-                info.downloaded = downloaded
-                info.total = total
-                info.legacy = total - finished
-                if (info.legacy == 0) {
-                    info.state = DownloadInfo.STATE_FINISH
-                } else {
-                    info.state = DownloadInfo.STATE_FAILED
-                }
-                EhDB.putDownloadInfo(info)
-                mDownloadListener?.onFinish(info)
-                mutableNotifyFlow.emit(info)
-                ensureDownload()
-            } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
-        }
-    }
-
-    override fun onGetImageSuccess(index: Int, image: Image?) {
-        // Ignore
-    }
-
-    override fun onGetImageFailure(index: Int, error: String?) {
-        // Ignore
+            EhDB.putDownloadInfo(info)
+            mDownloadListener?.onFinish(info)
+            mutableNotifyFlow.emit(info)
+            ensureDownload()
+        } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
     }
 
     interface DownloadListener {

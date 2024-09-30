@@ -56,6 +56,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
@@ -78,45 +79,45 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     private val mDownloadedPages = AtomicInteger(0)
     private val mFinishedPages = AtomicInteger(0)
     private val mSpiderListeners: MutableList<OnSpiderListener> = ArrayList()
+    private val mutex = Mutex()
 
     private var mReadReference = 0
     private var mDownloadReference = 0
 
-    fun addOnSpiderListener(listener: OnSpiderListener) {
-        synchronized(mSpiderListeners) { mSpiderListeners.add(listener) }
+    suspend fun addOnSpiderListener(listener: OnSpiderListener) {
+        mutex.withLock { mSpiderListeners.add(listener) }
     }
 
-    fun removeOnSpiderListener(listener: OnSpiderListener) {
-        synchronized(mSpiderListeners) { mSpiderListeners.remove(listener) }
+    suspend fun removeOnSpiderListener(listener: OnSpiderListener) {
+        mutex.withLock { mSpiderListeners.remove(listener) }
     }
 
-    private fun notifyGetPages(pages: Int) {
-        synchronized(mSpiderListeners) {
+    private suspend fun notifyGetPages(pages: Int) {
+        mutex.withLock {
             mSpiderListeners.forEach { it.onGetPages(pages) }
         }
     }
 
-    fun notifyGet509(index: Int) {
-        synchronized(mSpiderListeners) {
+    suspend fun notifyGet509(index: Int) {
+        mutex.withLock {
             mSpiderListeners.forEach { it.onGet509(index) }
         }
     }
 
-    fun notifyPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {
-        synchronized(mSpiderListeners) {
+    suspend fun notifyPageDownload(index: Int, contentLength: Long, progressFlow: Flow<Long>) {
+        mutex.withLock {
             mSpiderListeners.forEach {
                 it.onPageDownload(
                     index,
                     contentLength,
-                    receivedSize,
-                    bytesRead,
+                    progressFlow,
                 )
             }
         }
     }
 
-    private fun notifyPageSuccess(index: Int) {
-        synchronized(mSpiderListeners) {
+    private suspend fun notifyPageSuccess(index: Int) {
+        mutex.withLock {
             mSpiderListeners.forEach {
                 it.onPageSuccess(
                     index,
@@ -128,8 +129,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    private fun notifyPageFailure(index: Int, error: String?) {
-        synchronized(mSpiderListeners) {
+    private suspend fun notifyPageFailure(index: Int, error: String?) {
+        mutex.withLock {
             mSpiderListeners.forEach {
                 it.onPageFailure(
                     index,
@@ -142,8 +143,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    private fun notifyAllPageDownloaded() {
-        synchronized(mSpiderListeners) {
+    private suspend fun notifyAllPageDownloaded() {
+        mutex.withLock {
             mSpiderListeners.forEach {
                 it.onFinish(
                     mFinishedPages.get(),
@@ -154,16 +155,16 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    fun notifyGetImageSuccess(index: Int, image: Image) {
-        synchronized(mSpiderListeners) {
+    suspend fun notifyGetImageSuccess(index: Int, image: Image) {
+        mutex.withLock {
             mSpiderListeners.forEach {
                 it.onGetImageSuccess(index, image)
             }
         }
     }
 
-    fun notifyGetImageFailure(index: Int, error: String) {
-        synchronized(mSpiderListeners) {
+    suspend fun notifyGetImageFailure(index: Int, error: String) {
+        mutex.withLock {
             mSpiderListeners.forEach {
                 it.onGetImageFailure(index, error)
             }
@@ -289,7 +290,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         mWorkerScope.updateRAList(pages, pair)
     }
 
-    private fun request(index: Int, force: Boolean, orgImg: Boolean = false) {
+    private fun request(index: Int, force: Boolean, orgImg: Boolean = false) = launch {
         // Get page state
         val state = getPageState(index)
 
@@ -418,7 +419,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     private fun isStateDone(state: Int): Boolean = state == STATE_FINISHED || state == STATE_FAILED
 
-    fun updatePageState(index: Int, @State state: Int, error: String? = null) {
+    suspend fun updatePageState(index: Int, @State state: Int, error: String? = null) {
         var oldState: Int
         synchronized<Unit>(mPageStateLock) {
             oldState = mPageStateArray[index]
@@ -455,14 +456,14 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     @Retention(AnnotationRetention.SOURCE)
     annotation class State
     interface OnSpiderListener {
-        fun onGetPages(pages: Int)
-        fun onGet509(index: Int)
-        fun onPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int)
-        fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int)
-        fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int)
-        fun onFinish(finished: Int, downloaded: Int, total: Int)
-        fun onGetImageSuccess(index: Int, image: Image?)
-        fun onGetImageFailure(index: Int, error: String?)
+        suspend fun onGetPages(pages: Int) {}
+        suspend fun onGet509(index: Int) {}
+        suspend fun onPageDownload(index: Int, contentLength: Long, bytesReceived: Flow<Long>) {}
+        suspend fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {}
+        suspend fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) {}
+        suspend fun onFinish(finished: Int, downloaded: Int, total: Int) {}
+        suspend fun onGetImageSuccess(index: Int, image: Image) {}
+        suspend fun onGetImageFailure(index: Int, error: String) {}
     }
 
     companion object {
@@ -676,7 +677,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                                     index,
                                     targetImageUrl,
                                     referer,
-                                    this@SpiderQueen::notifyPageDownload.partially1(index),
+                                    ::notifyPageDownload.partially1(index),
                                 )
                             }
 

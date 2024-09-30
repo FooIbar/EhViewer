@@ -3,22 +3,12 @@ package com.hippo.ehviewer.gallery
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import com.hippo.ehviewer.image.Image
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.StateFlow
 
 class Page(
     val index: Int,
-    val statusFlow: MutableStateFlow<PageStatus> = MutableStateFlow(PageStatus.Queued),
+    val statusFlow: StateFlow<PageStatus>,
 )
-
-fun Page.unblock() = statusFlow.update { status ->
-    when (status) {
-        is PageStatus.Blocked -> PageStatus.Ready(status.ad)
-        else -> error("Call unblock on page not blocked!!!")
-    }
-}
-
-fun Page.reset() = statusFlow.update { PageStatus.Queued }
 
 val Page.status
     get() = statusFlow.value
@@ -39,5 +29,5 @@ sealed interface PageStatus {
     data class Blocked(val ad: Image) : PageStatus
     data class Ready(val image: Image) : PageStatus
     data class Error(val message: String?) : PageStatus
-    data class Loading(val progress: MutableStateFlow<Float>) : PageStatus
+    data class Loading(val progress: StateFlow<Float>) : PageStatus
 }

@@ -21,87 +21,78 @@ import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.obtainSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.releaseSpiderQueen
-import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.launch
 import okio.Path
 
-class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) :
-    PageLoader2(mGalleryInfo.gid, startPage),
-    OnSpiderListener {
-    private lateinit var mSpiderQueen: SpiderQueen
+class EhPageLoader(private val mGalleryInfo: GalleryInfo, startPage: Int) : PageLoader2(mGalleryInfo.gid, startPage) {
+    override lateinit var loaderEvent: SharedFlow<PageEvent>
+    private lateinit var spiderQueen: SpiderQueen
     override fun start() {
         super.start()
-        if (!::mSpiderQueen.isInitialized) {
-            mSpiderQueen = obtainSpiderQueen(mGalleryInfo, SpiderQueen.MODE_READ)
-            mSpiderQueen.addOnSpiderListener(this)
+        if (!::spiderQueen.isInitialized) {
+            spiderQueen = obtainSpiderQueen(mGalleryInfo, SpiderQueen.MODE_READ)
+            loaderEvent = callbackFlow {
+                val listener = object : SpiderQueen.OnSpiderListener {
+                    override suspend fun onPageDownload(index: Int, contentLength: Long, bytesReceived: Flow<Long>) {
+                        if (contentLength > 0) {
+                            send(PageEvent.Downloading(index, bytesReceived.map { it.toFloat() / contentLength }))
+                        }
+                    }
+
+                    override suspend fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) = send(PageEvent.Error(index, error))
+
+                    override suspend fun onGetImageSuccess(index: Int, image: Image) = send(PageEvent.Success(index, image))
+
+                    override suspend fun onGetImageFailure(index: Int, error: String) = send(PageEvent.Error(index, error))
+                }
+                spiderQueen.addOnSpiderListener(listener)
+                awaitClose {
+                    launch(NonCancellable) {
+                        spiderQueen.removeOnSpiderListener(listener)
+                    }
+                }
+            }.shareIn(this, SharingStarted.Eagerly)
         }
     }
 
     override fun stop() {
         super.stop()
-        mSpiderQueen.removeOnSpiderListener(this)
-        releaseSpiderQueen(mSpiderQueen, SpiderQueen.MODE_READ)
+        releaseSpiderQueen(spiderQueen, SpiderQueen.MODE_READ)
     }
 
     override val title by lazy {
         EhUtils.getSuitableTitle(mGalleryInfo)
     }
 
-    override fun getImageExtension(index: Int): String? = mSpiderQueen.getExtension(index)
+    override fun getImageExtension(index: Int): String? = spiderQueen.getExtension(index)
 
-    override fun save(index: Int, file: Path): Boolean = mSpiderQueen.save(index, file)
+    override fun save(index: Int, file: Path): Boolean = spiderQueen.save(index, file)
 
     override val size: Int
-        get() = mSpiderQueen.size
+        get() = spiderQueen.size
 
     override fun onRequest(index: Int) {
-        mSpiderQueen.request(index)
+        spiderQueen.request(index)
     }
 
     override fun onForceRequest(index: Int, orgImg: Boolean) {
-        mSpiderQueen.forceRequest(index, orgImg)
+        spiderQueen.forceRequest(index, orgImg)
     }
 
-    override suspend fun awaitReady(): Boolean = super.awaitReady() && mSpiderQueen.awaitReady()
+    override suspend fun awaitReady(): Boolean = super.awaitReady() && spiderQueen.awaitReady()
 
     override val isReady: Boolean
-        get() = ::mSpiderQueen.isInitialized && mSpiderQueen.isReady
-
-    override fun onGetPages(pages: Int) {}
-
-    override fun onGet509(index: Int) {}
-
-    override fun onPageDownload(
-        index: Int,
-        contentLength: Long,
-        receivedSize: Long,
-        bytesRead: Int,
-    ) {
-        if (contentLength > 0) {
-            notifyPagePercent(index, receivedSize.toFloat() / contentLength)
-        }
-    }
-
-    override fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {}
-    override fun onPageFailure(
-        index: Int,
-        error: String?,
-        finished: Int,
-        downloaded: Int,
-        total: Int,
-    ) {
-        notifyPageFailed(index, error)
-    }
-
-    override fun onFinish(finished: Int, downloaded: Int, total: Int) {}
-    override fun onGetImageSuccess(index: Int, image: Image?) {
-        notifyPageSucceed(index, image!!)
-    }
-
-    override fun onGetImageFailure(index: Int, error: String?) {
-        notifyPageFailed(index, error)
-    }
+        get() = ::spiderQueen.isInitialized && spiderQueen.isReady
 
     override fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>) {
-        mSpiderQueen.preloadPages(pages, bounds)
+        spiderQueen.preloadPages(pages, bounds)
     }
 }

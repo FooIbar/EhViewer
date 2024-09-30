@@ -55,10 +55,14 @@ import io.ktor.client.plugins.onDownload
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.request
+import io.ktor.http.contentLength
 import io.ktor.http.isSuccess
 import io.ktor.utils.io.copyTo
 import kotlin.io.path.readText
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
 import okio.Path
 
 class SpiderDen(val info: GalleryInfo) {
@@ -171,18 +175,22 @@ class SpiderDen(val info: GalleryInfo) {
         index: Int,
         url: String,
         referer: String?,
-        notifyProgress: (Long, Long, Int) -> Unit,
-    ) = ehRequest(url, referer) {
-        var prev = 0L
-        onDownload { done, total ->
-            notifyProgress(total!!, done, (done - prev).toInt())
-            prev = done
-        }
-    }.executeSafely {
-        if (it.status.isSuccess()) {
-            saveFromHttpResponse(index, it)
-        } else {
-            false
+        notifyProgress: suspend (Long, Flow<Long>) -> Unit,
+    ) = Channel<Long>().let { channel ->
+        ehRequest(url, referer) {
+            onDownload { done, _ -> channel.send(done) }
+        }.executeSafely {
+            if (it.status.isSuccess()) {
+                val flow = channel.consumeAsFlow()
+                try {
+                    notifyProgress(it.contentLength()!!, flow)
+                    saveFromHttpResponse(index, it)
+                } finally {
+                    channel.close()
+                }
+            } else {
+                false
+            }
         }
     }
 
