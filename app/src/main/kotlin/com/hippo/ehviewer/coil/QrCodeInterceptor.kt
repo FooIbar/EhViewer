@@ -8,6 +8,8 @@ import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
 import com.hippo.ehviewer.image.hasQrCode
+import eu.kanade.tachiyomi.util.system.logcat
+import moe.tarsin.coroutines.runSuspendCatching
 
 private val detectQrCodeKey = Extras.Key(default = false)
 
@@ -24,7 +26,7 @@ object QrCodeInterceptor : Interceptor {
         if (chain.request.detectQrCode && result is SuccessResult) {
             val image = result.image
             if (image is BitmapImageWithExtraInfo) {
-                val hasQrCode = hasQrCode(image.image.bitmap)
+                val hasQrCode = runSuspendCatching { hasQrCode(image.image.bitmap) }.onFailure { logcat(it) }.getOrThrow()
                 val new = image.copy(hasQrCode = hasQrCode)
                 return result.copy(image = new)
             }
