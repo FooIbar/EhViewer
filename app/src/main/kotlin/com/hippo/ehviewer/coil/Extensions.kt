@@ -11,6 +11,7 @@ import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.size.Size
+import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.CHROME_ACCEPT
 import com.hippo.ehviewer.client.CHROME_ACCEPT_LANGUAGE
@@ -47,7 +48,7 @@ fun ImageRequest.Builder.ehPreview(
     when (preview) {
         is NormalGalleryPreview -> size(Size.ORIGINAL)
         is LargeGalleryPreview -> {
-            if (hasAds && detectAds(position, pages)) {
+            if (hasAds && detectAds(position, pages, BuildConfig.DEBUG)) {
                 size(Size.ORIGINAL)
                 detectQrCode(true)
                 allowHardware(false)

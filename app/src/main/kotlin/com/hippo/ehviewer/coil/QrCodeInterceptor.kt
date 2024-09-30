@@ -50,4 +50,4 @@ val Image.hasQrCode
         else -> false
     }
 
-fun detectAds(index: Int, size: Int) = index > size - 10 && Settings.stripExtraneousAds.value
+fun detectAds(index: Int, size: Int, enable: Boolean = true) = index > size - 10 && Settings.stripExtraneousAds.value && enable
