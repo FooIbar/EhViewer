@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.client.data
 
-import com.hippo.ehviewer.Settings
 import moe.tarsin.kt.unreachable
 
 interface GalleryInfo {
@@ -143,5 +142,3 @@ fun GalleryInfo.findBaseInfo(): BaseGalleryInfo = when (this) {
 }
 
 fun GalleryInfo.asGalleryDetail(): GalleryDetail? = this as? GalleryDetail
-
-fun detectAds(index: Int, size: Int) = index > size - 10 && Settings.stripExtraneousAds.value

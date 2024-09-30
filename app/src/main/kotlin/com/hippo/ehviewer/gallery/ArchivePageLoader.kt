@@ -17,7 +17,7 @@ package com.hippo.ehviewer.gallery
 
 import android.os.ParcelFileDescriptor
 import com.hippo.ehviewer.Settings.archivePasswds
-import com.hippo.ehviewer.client.data.detectAds
+import com.hippo.ehviewer.coil.detectAds
 import com.hippo.ehviewer.image.ByteBufferSource
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.jni.closeArchive

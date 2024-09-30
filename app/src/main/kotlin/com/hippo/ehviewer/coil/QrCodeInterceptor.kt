@@ -9,6 +9,7 @@ import coil3.memory.MemoryCache
 import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.hasQrCode
 import eu.kanade.tachiyomi.util.system.logcat
 import moe.tarsin.coroutines.runSuspendCatching
@@ -48,3 +49,5 @@ val Image.hasQrCode
         is BitmapImageWithExtraInfo -> hasQrCode
         else -> false
     }
+
+fun detectAds(index: Int, size: Int) = index > size - 10 && Settings.stripExtraneousAds.value
