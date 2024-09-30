@@ -52,7 +52,7 @@ fun ImageRequest.Builder.ehPreview(
                 size(Size.ORIGINAL)
                 detectQrCode(true)
                 allowHardware(false)
-                hardwareThreshold(Int.MAX_VALUE)
+                hardwareThreshold(0)
             }
         }
     }
