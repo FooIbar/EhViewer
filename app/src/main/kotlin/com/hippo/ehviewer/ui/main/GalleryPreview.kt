@@ -24,6 +24,7 @@ import coil3.BitmapImage
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.request.ImageRequest
+import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
 import com.hippo.ehviewer.coil.BitmapImageWithExtraInfo
@@ -32,6 +33,7 @@ import com.hippo.ehviewer.ui.reader.AdsPlaceholder
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.shouldCrop
 
+context(GalleryDetail)
 @Composable
 @NonRestartableComposable
 fun requestOf(model: GalleryPreview): ImageRequest {
@@ -39,6 +41,7 @@ fun requestOf(model: GalleryPreview): ImageRequest {
     return remember(model) { context.imageRequest(model) }
 }
 
+context(GalleryDetail)
 @Composable
 fun EhAsyncPreview(
     model: GalleryPreview,
@@ -49,7 +52,7 @@ fun EhAsyncPreview(
     if (blocked) {
         AdsPlaceholder(
             modifier = modifier,
-            contentScale = contentScale,
+            contentScale = ContentScale.Fit,
         )
     } else {
         AsyncImage(
@@ -91,6 +94,7 @@ fun EhAsyncPreview(
     }
 }
 
+context(GalleryDetail)
 @Composable
 @NonRestartableComposable
 fun EhPreviewItem(

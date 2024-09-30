@@ -13,8 +13,10 @@ import coil3.size.Size
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.CHROME_ACCEPT
 import com.hippo.ehviewer.client.CHROME_ACCEPT_LANGUAGE
+import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
+import com.hippo.ehviewer.client.data.LargeGalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
 import com.hippo.ehviewer.client.imageKey
 import com.hippo.ehviewer.spider.DownloadInfoMagics.encodeMagicRequestOrUrl
@@ -34,11 +36,17 @@ fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
     httpHeaders(header)
 }
 
-fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = apply {
+context(GalleryDetail)
+fun ImageRequest.Builder.ehPreview(
+    preview: GalleryPreview,
+) = apply {
     data(preview.url)
     memoryCacheKey(preview.imageKey)
     diskCacheKey(preview.imageKey)
-    if (preview is NormalGalleryPreview) size(Size.ORIGINAL)
+    when (preview) {
+        is NormalGalleryPreview -> size(Size.ORIGINAL)
+        is LargeGalleryPreview -> detectQrCode(hasAds)
+    }
     httpHeaders(header)
 }
 

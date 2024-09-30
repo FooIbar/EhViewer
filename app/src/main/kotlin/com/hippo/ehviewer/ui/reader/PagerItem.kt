@@ -103,7 +103,7 @@ fun PagerItem(
         is PageStatus.Blocked -> {
             AdsPlaceholder(
                 modifier = modifier.fillMaxSize(),
-                contentScale = contentScale,
+                contentScale = if (contentScale == ContentScale.Inside) ContentScale.Fit else contentScale,
             )
         }
         is PageStatus.Error -> {
@@ -161,7 +161,7 @@ fun AdsPlaceholder(
     model = AdsPlaceholderFile,
     contentDescription = null,
     modifier = modifier,
-    contentScale = if (contentScale == ContentScale.Inside) ContentScale.Fit else contentScale,
+    contentScale = contentScale,
 ) {
     val placeholderState by painter.state.collectAsState()
     if (placeholderState is AsyncImagePainter.State.Success) {

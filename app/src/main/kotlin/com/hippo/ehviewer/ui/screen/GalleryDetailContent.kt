@@ -747,8 +747,10 @@ private fun List<GalleryTagGroup>.getArtistTag(): String? {
     return null
 }
 
+typealias Previews = Pair<GalleryDetail, LazyPagingItems<GalleryPreview>>
+
 @Composable
-private fun Context.collectPreviewItems(detail: GalleryDetail, prefetchDistance: Int) = rememberInVM {
+private fun Context.collectPreviewItems(detail: GalleryDetail, prefetchDistance: Int) = rememberInVM(detail) {
     val pageSize = detail.previewList.size
     val pages = detail.pages
     val previewPagesMap = detail.previewList.associateBy { it.position } as MutableMap
@@ -787,15 +789,18 @@ private fun Context.collectPreviewItems(detail: GalleryDetail, prefetchDistance:
             override val jumpingSupported = true
         }
     }.flow.cachedIn(viewModelScope)
-}.collectAsLazyPagingItems()
+}.collectAsLazyPagingItems().let { remember(detail, it) { detail to it } }
 
-private fun LazyGridScope.galleryPreview(data: LazyPagingItems<GalleryPreview>, onClick: (Int) -> Unit) {
+private fun LazyGridScope.galleryPreview(previews: Previews, onClick: (Int) -> Unit) {
+    val (detail, data) = previews
     items(
         count = data.itemCount,
         key = data.itemKey(key = { item -> item.position }),
         contentType = { "preview" },
     ) { index ->
         val item = data[index]
-        EhPreviewItem(item, index) { onClick(index) }
+        with(detail) {
+            EhPreviewItem(item, index) { onClick(index) }
+        }
     }
 }

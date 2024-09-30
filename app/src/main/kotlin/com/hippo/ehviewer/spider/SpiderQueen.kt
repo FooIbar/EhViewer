@@ -17,7 +17,6 @@
 package com.hippo.ehviewer.spider
 
 import androidx.annotation.IntDef
-import androidx.collection.set
 import arrow.core.partially1
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -27,7 +26,6 @@ import com.hippo.ehviewer.client.EhUrl.getGalleryDetailUrl
 import com.hippo.ehviewer.client.EhUrl.getGalleryMultiPageViewerUrl
 import com.hippo.ehviewer.client.EhUrl.referer
 import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.data.hasAds
 import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.client.exception.QuotaExceededException
 import com.hippo.ehviewer.client.fetchUsingAsText
