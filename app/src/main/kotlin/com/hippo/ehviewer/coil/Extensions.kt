@@ -49,6 +49,7 @@ fun ImageRequest.Builder.ehPreview(
         is NormalGalleryPreview -> size(Size.ORIGINAL)
         is LargeGalleryPreview -> {
             if (hasAds && detectAds(position, pages)) {
+                size(Size.ORIGINAL)
                 detectQrCode(true)
                 allowHardware(false)
                 hardwareThreshold(Int.MAX_VALUE)
