@@ -101,26 +101,10 @@ fun PagerItem(
             )
         }
         is PageStatus.Blocked -> {
-            SubcomposeAsyncImage(
-                model = AdsPlaceholderFile,
-                contentDescription = null,
+            AdsPlaceholder(
                 modifier = modifier.fillMaxSize(),
-                contentScale = if (contentScale == ContentScale.Inside) ContentScale.Fit else contentScale,
-            ) {
-                val placeholderState by painter.state.collectAsState()
-                if (placeholderState is AsyncImagePainter.State.Success) {
-                    SubcomposeAsyncImageContent()
-                } else {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        if (placeholderState is AsyncImagePainter.State.Error) {
-                            Text(text = stringResource(id = R.string.blocked_image))
-                        }
-                    }
-                }
-            }
+                contentScale = contentScale,
+            )
         }
         is PageStatus.Error -> {
             Box(modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
@@ -168,3 +152,28 @@ private val grayScaleAndInvertMatrix = ColorMatrix().also { mtx ->
 private val grayScaleFilter = ColorFilter.colorMatrix(grayScaleMatrix)
 private val invertFilter = ColorFilter.colorMatrix(invertMatrix)
 private val grayScaleAndInvertFilter = ColorFilter.colorMatrix(grayScaleAndInvertMatrix)
+
+@Composable
+fun AdsPlaceholder(
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale,
+) = SubcomposeAsyncImage(
+    model = AdsPlaceholderFile,
+    contentDescription = null,
+    modifier = modifier,
+    contentScale = if (contentScale == ContentScale.Inside) ContentScale.Fit else contentScale,
+) {
+    val placeholderState by painter.state.collectAsState()
+    if (placeholderState is AsyncImagePainter.State.Success) {
+        SubcomposeAsyncImageContent()
+    } else {
+        Box(
+            modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (placeholderState is AsyncImagePainter.State.Error) {
+                Text(text = stringResource(id = R.string.blocked_image))
+            }
+        }
+    }
+}
