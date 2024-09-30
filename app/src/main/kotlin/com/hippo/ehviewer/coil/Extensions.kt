@@ -48,9 +48,11 @@ fun ImageRequest.Builder.ehPreview(
     when (preview) {
         is NormalGalleryPreview -> size(Size.ORIGINAL)
         is LargeGalleryPreview -> {
-            detectQrCode(hasAds && detectAds(position, pages))
-            allowHardware(false)
-            hardwareThreshold(Int.MAX_VALUE)
+            if (hasAds && detectAds(position, pages)) {
+                detectQrCode(true)
+                allowHardware(false)
+                hardwareThreshold(Int.MAX_VALUE)
+            }
         }
     }
     httpHeaders(header)
