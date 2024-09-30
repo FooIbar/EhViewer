@@ -9,6 +9,7 @@ import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
+import coil3.request.allowHardware
 import coil3.size.Size
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.CHROME_ACCEPT
@@ -46,7 +47,11 @@ fun ImageRequest.Builder.ehPreview(
     diskCacheKey(imageKey)
     when (preview) {
         is NormalGalleryPreview -> size(Size.ORIGINAL)
-        is LargeGalleryPreview -> detectQrCode(hasAds && detectAds(position, pages))
+        is LargeGalleryPreview -> {
+            detectQrCode(hasAds && detectAds(position, pages))
+            allowHardware(false)
+            hardwareThreshold(Int.MAX_VALUE)
+        }
     }
     httpHeaders(header)
 }
