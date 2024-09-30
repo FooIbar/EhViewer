@@ -73,7 +73,6 @@ class ArchivePageLoader(
     }
 
     override var size = 0
-        private set
 
     override fun start() {
         super.start()
@@ -87,17 +86,17 @@ class ArchivePageLoader(
         logcat(DEBUG_TAG) { "Close archive ${file.toUri().displayPath} successfully!" }
     }
 
-    private val mJobMap = hashMapOf<Int, Job>()
-    private val mWorkerMutex = NamedMutex<Int>()
-    private val mSemaphore = Semaphore(4)
+    private val jobs = hashMapOf<Int, Job>()
+    private val workerMutex = NamedMutex<Int>()
+    private val semaphore = Semaphore(4)
 
     override fun onRequest(index: Int) {
-        synchronized(mJobMap) {
-            val current = mJobMap[index]
+        synchronized(jobs) {
+            val current = jobs[index]
             if (current?.isActive != true) {
-                mJobMap[index] = launch {
-                    mWorkerMutex.withLock(index) {
-                        mSemaphore.withPermit {
+                jobs[index] = launch {
+                    workerMutex.withLock(index) {
+                        semaphore.withPermit {
                             doRealWork(index)
                         }
                     }
