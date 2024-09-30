@@ -150,8 +150,10 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                     galleryDetailCache.put(galleryDetail.gid, galleryDetail)
                     if (Settings.preloadThumbAggressively) {
                         launchIO {
-                            galleryDetail.previewList.forEach {
-                                imageLoader.enqueue(imageRequest(it) { justDownload() })
+                            with(galleryDetail) {
+                                previewList.forEach {
+                                    imageLoader.enqueue(imageRequest(it) { justDownload() })
+                                }
                             }
                         }
                     }

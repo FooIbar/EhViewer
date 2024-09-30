@@ -35,12 +35,12 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.Page
+import com.hippo.ehviewer.gallery.PageLoader
 import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.gallery.progressObserved
 import com.hippo.ehviewer.gallery.statusObserved
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.ui.settings.AdsPlaceholderFile
-import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
 import kotlinx.coroutines.flow.drop
 import moe.tarsin.kt.unreachable
@@ -101,26 +101,10 @@ fun PagerItem(
             )
         }
         is PageStatus.Blocked -> {
-            SubcomposeAsyncImage(
-                model = AdsPlaceholderFile,
-                contentDescription = null,
+            AdsPlaceholder(
                 modifier = modifier.fillMaxSize(),
                 contentScale = if (contentScale == ContentScale.Inside) ContentScale.Fit else contentScale,
-            ) {
-                val placeholderState by painter.state.collectAsState()
-                if (placeholderState is AsyncImagePainter.State.Success) {
-                    SubcomposeAsyncImageContent()
-                } else {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        if (placeholderState is AsyncImagePainter.State.Error) {
-                            Text(text = stringResource(id = R.string.blocked_image))
-                        }
-                    }
-                }
-            }
+            )
         }
         is PageStatus.Error -> {
             Box(modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT)) {
@@ -168,3 +152,28 @@ private val grayScaleAndInvertMatrix = ColorMatrix().also { mtx ->
 private val grayScaleFilter = ColorFilter.colorMatrix(grayScaleMatrix)
 private val invertFilter = ColorFilter.colorMatrix(invertMatrix)
 private val grayScaleAndInvertFilter = ColorFilter.colorMatrix(grayScaleAndInvertMatrix)
+
+@Composable
+fun AdsPlaceholder(
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale,
+) = SubcomposeAsyncImage(
+    model = AdsPlaceholderFile,
+    contentDescription = null,
+    modifier = modifier,
+    contentScale = contentScale,
+) {
+    val placeholderState by painter.state.collectAsState()
+    if (placeholderState is AsyncImagePainter.State.Success) {
+        SubcomposeAsyncImageContent()
+    } else {
+        Box(
+            modifier = Modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (placeholderState is AsyncImagePainter.State.Error) {
+                Text(text = stringResource(id = R.string.blocked_image))
+            }
+        }
+    }
+}

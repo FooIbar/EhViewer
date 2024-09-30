@@ -17,8 +17,6 @@
 package com.hippo.ehviewer.spider
 
 import androidx.annotation.IntDef
-import androidx.collection.LongSparseArray
-import androidx.collection.set
 import arrow.core.partially1
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -28,7 +26,6 @@ import com.hippo.ehviewer.client.EhUrl.getGalleryDetailUrl
 import com.hippo.ehviewer.client.EhUrl.getGalleryMultiPageViewerUrl
 import com.hippo.ehviewer.client.EhUrl.referer
 import com.hippo.ehviewer.client.data.GalleryInfo
-import com.hippo.ehviewer.client.data.hasAds
 import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.client.exception.QuotaExceededException
 import com.hippo.ehviewer.client.fetchUsingAsText
@@ -37,6 +34,7 @@ import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewList
 import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewPages
 import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
+import com.hippo.ehviewer.coil.detectAds
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.displayString
 import com.hippo.files.find
@@ -473,11 +471,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         const val STATE_FINISHED = 2
         const val STATE_FAILED = 3
         const val SPIDER_INFO_FILENAME = ".ehviewer"
-        private val sQueenMap = LongSparseArray<SpiderQueen>()
+        private val sQueenMap = mutableMapOf<Long, SpiderQueen>()
 
         fun obtainSpiderQueen(galleryInfo: GalleryInfo, @Mode mode: Int): SpiderQueen {
             val gid = galleryInfo.gid
-            return (sQueenMap[gid] ?: SpiderQueen(galleryInfo).also { sQueenMap[gid] = it }).apply {
+            return (sQueenMap.getOrPut(gid) { SpiderQueen(galleryInfo) }).apply {
                 setMode(mode)
                 launch { updateMode() }
             }
@@ -740,13 +738,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 }
             }
 
-            private fun mayBeAd(index: Int) = index > size - 10
-
             private val hasAds = galleryInfo.hasAds
 
             private suspend fun doInJob(index: Int) {
                 val src = mSpiderDen.getImageSource(index) ?: return
-                val image = Image.decode(src, hasAds && Settings.stripExtraneousAds.value && mayBeAd(index))
+                val image = Image.decode(src, hasAds && detectAds(index, size))
                 checkNotNull(image)
                 runCatching {
                     currentCoroutineContext().ensureActive()

@@ -37,6 +37,7 @@ interface GalleryInfo {
     var favoriteSlot: Int
     var favoriteName: String?
     var favoriteNote: String?
+    val hasAds: Boolean
 
     fun generateSLang() {
         simpleLanguage = simpleTags?.let { generateSLangFromTags(it) }
@@ -141,6 +142,3 @@ fun GalleryInfo.findBaseInfo(): BaseGalleryInfo = when (this) {
 }
 
 fun GalleryInfo.asGalleryDetail(): GalleryDetail? = this as? GalleryDetail
-
-val GalleryInfo.hasAds
-    get() = simpleTags?.any { "extraneous ads" in it } ?: false

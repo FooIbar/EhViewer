@@ -17,7 +17,6 @@ package com.hippo.ehviewer.gallery
 
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.util.FileUtils
-import eu.kanade.tachiyomi.ui.reader.loader.PageLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
