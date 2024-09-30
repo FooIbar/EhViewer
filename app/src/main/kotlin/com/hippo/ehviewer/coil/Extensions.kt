@@ -40,7 +40,7 @@ fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
 context(GalleryDetail)
 fun ImageRequest.Builder.ehPreview(
     preview: GalleryPreview,
-) = preview.apply {
+) = with(preview) {
     data(url)
     memoryCacheKey(imageKey)
     diskCacheKey(imageKey)
