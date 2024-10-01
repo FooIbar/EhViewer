@@ -16,8 +16,26 @@
         "(?<depName>\\S*)\\s*GIT_REPOSITORY https://(?<datasource>.*?)\\.com/(?<packageName>.*?)\\.git\\s*GIT_TAG (?<currentValue>\\S*)"
       ],
       "datasourceTemplate": "{{{datasource}}}-tags"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "^chrome.version$"
+      ],
+      "matchStrings": [
+        "(?<currentValue>\\S+)"
+      ],
+      "depNameTemplate": "chrome",
+      "datasourceTemplate": "custom.chrome",
+      "extractVersionTemplate": "^(?<version>\\d+)"
     }
   ],
+  "customDatasources": {
+    "chrome": {
+      "defaultRegistryUrlTemplate": "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE",
+      "format": "plain"
+    }
+  },
   "packageRules": [
     {
       "description": "Disable updates for SNAPSHOTs",

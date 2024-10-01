@@ -78,8 +78,7 @@ android {
     }.standardOutput.asText.get().trim().removePrefix("https://github.com/").removePrefix("git@github.com:")
         .removeSuffix(".git")
 
-    val chromeVersion = rootProject.layout.projectDirectory.file("chrome-for-testing/LATEST_RELEASE_STABLE").asFile
-        .readText().substringBefore('.')
+    val chromeVersion = rootProject.layout.projectDirectory.file("chrome.version").asFile.readText().trim()
 
     defaultConfig {
         applicationId = "moe.tarsin.ehviewer"
