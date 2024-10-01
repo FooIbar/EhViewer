@@ -23,7 +23,7 @@ set(XZ_PATCH ${CMAKE_CURRENT_LIST_DIR}/0001-Don-t-build-other-binaries.patch)
 FetchContent_Declare(
         liblzma
         GIT_REPOSITORY https://github.com/tukaani-project/xz.git
-        GIT_TAG v5.6.2
+        GIT_TAG v5.6.3
         PATCH_COMMAND git apply --check -R ${XZ_PATCH} || git apply ${XZ_PATCH}
 )
 
