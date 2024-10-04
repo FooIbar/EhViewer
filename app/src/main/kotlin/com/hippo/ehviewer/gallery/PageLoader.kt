@@ -1,12 +1,8 @@
-package eu.kanade.tachiyomi.ui.reader.loader
+package com.hippo.ehviewer.gallery
 
 import androidx.annotation.CallSuper
 import androidx.collection.lruCache
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.gallery.Page
-import com.hippo.ehviewer.gallery.PageStatus
-import com.hippo.ehviewer.gallery.reset
-import com.hippo.ehviewer.gallery.status
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO

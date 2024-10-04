@@ -1,38 +1,38 @@
 [versions]
 aboutlibraries = "11.2.3"
 accompanist = "0.36.0"
-agp = "8.8.0-alpha04"
+agp = "8.8.0-alpha05"
 androidx-activity = "1.10.0-alpha02"
 androidx-appcompat = "1.7.0"
 androidx-biometric = "1.4.0-alpha02"
 androidx-browser = "1.8.0"
 androidx-constraintlayout-compose = "1.1.0-beta01"
-androidx-core = "1.15.0-alpha02"
+androidx-core = "1.15.0-beta01"
 androidx-core-splashscreen = "1.2.0-alpha02"
 androidx-datastore = "1.1.1"
 androidx-graphics-path = "1.0.1"
-androidx-lifecycle = "2.9.0-alpha03"
+androidx-lifecycle = "2.9.0-alpha04"
 androidx-paging = "3.3.2"
-androidx-room = "2.7.0-alpha08"
-androidx-work = "2.10.0-alpha04"
+androidx-room = "2.7.0-alpha09"
+androidx-work = "2.10.0-beta01"
 arrow = "1.2.4"
 coil = "3.0.0-alpha10"
-compose-bom = "2024.09.02"
+compose-bom = "2024.09.03"
 compose-destinations = "2.1.0-beta12"
 kotlin = "2.1.0-Beta1"
 kotlinx-coroutines = "1.9.0"
 kotlinx-datetime = "0.6.1"
 kotlinx-serialization = "1.7.3"
 ksp = "2.1.0-Beta1-1.0.25"
-ktor = "3.0.0-rc-1"
+ktor = "3.0.0-rc-2"
 okio = "3.9.1"
 splitties = "3.0.0"
 telephoto = "0.13.0"
 xmlutil = "0.90.1"
 junit = "1.2.1"
 uiautomator = "2.4.0-alpha01"
-benchmark = "1.4.0-alpha01"
-profileinstaller = "1.4.0"
+benchmark = "1.4.0-alpha02"
+profileinstaller = "1.4.1"
 
 [libraries]
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
@@ -91,7 +91,7 @@ jsoup = "org.jsoup:jsoup:1.18.1"
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
-ktlint = "com.pinterest:ktlint:1.3.0"
+ktlint = "com.pinterest:ktlint:1.4.0-kotlin-dev-20240924.151646-39"
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 

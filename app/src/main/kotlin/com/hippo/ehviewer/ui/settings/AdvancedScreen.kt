@@ -101,7 +101,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
             )
             val stripAds = Settings.stripExtraneousAds.asMutableState()
             SwitchPreference(
-                title = stringResource(id = R.string.settings_strip_extraneous_ads),
+                title = stringResource(id = R.string.settings_block_extraneous_ads),
                 value = stripAds.rememberedAccessor,
             )
             AnimatedVisibility(visible = stripAds.value) {

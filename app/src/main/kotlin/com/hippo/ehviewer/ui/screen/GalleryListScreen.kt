@@ -221,7 +221,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 override suspend fun load(params: LoadParams<String>) = withIOContext {
                     if (urlBuilder.mode == MODE_TOPLIST) {
                         // TODO: Since we know total pages, let pager support jump
-                        val key = (params.key ?: urlBuilder.mJumpTo)?.toInt() ?: 0
+                        val key = (params.key ?: urlBuilder.jumpTo)?.toInt() ?: 0
                         val prev = (key - 1).takeIf { it > 0 }
                         val next = (key + 1).takeIf { it < TOPLIST_PAGES }
                         runSuspendCatching {
@@ -237,8 +237,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                             is LoadParams.Refresh -> {
                                 val key = params.key
                                 if (key.isNullOrBlank()) {
-                                    if (urlBuilder.mJumpTo != null) {
-                                        urlBuilder.mNext ?: urlBuilder.setIndex("2", true)
+                                    if (urlBuilder.jumpTo != null) {
+                                        urlBuilder.next ?: urlBuilder.setIndex("2", true)
                                     }
                                 } else {
                                     urlBuilder.setIndex(key, false)
@@ -249,7 +249,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                             val url = urlBuilder.build()
                             EhEngine.getGalleryList(url)
                         }.foldToLoadResult { result ->
-                            urlBuilder.mJumpTo = null
+                            urlBuilder.jumpTo = null
                             LoadResult.Page(result.galleryInfoList, result.prev, result.next)
                         }
                     }
@@ -736,7 +736,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         if (urlBuilder.mode != MODE_WHATS_HOT) {
             onClick(EhIcons.Default.GoTo) {
                 if (isTopList) {
-                    val page = urlBuilder.mJumpTo?.toIntOrNull() ?: 0
+                    val page = urlBuilder.jumpTo?.toIntOrNull() ?: 0
                     val hint = getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
                     val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
                         val goto = ensureNotNull(oriText.trim().toIntOrNull()) { invalidNum } - 1
@@ -745,7 +745,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                     urlBuilder.setJumpTo(text)
                 } else {
                     val date = awaitSelectDate()
-                    urlBuilder.mJumpTo = date
+                    urlBuilder.jumpTo = date
                 }
                 data.refresh()
             }

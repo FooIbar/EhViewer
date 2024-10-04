@@ -16,7 +16,9 @@ val Uri.displayPath: String?
 
         val context = appCtx
         if (DocumentsContract.isDocumentUri(context, this)) {
-            val (type, path) = DocumentsContract.getDocumentId(this).split(":", limit = 2)
+            val (type, path) = DocumentsContract.getDocumentId(this).split(":", limit = 2).also {
+                if (it.size < 2) return toString()
+            }
             if (authority == "com.android.externalstorage.documents") {
                 if (type == "primary") {
                     return Environment.getExternalStorageDirectory().path + "/" + path

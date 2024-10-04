@@ -18,7 +18,7 @@ package com.hippo.ehviewer.client.data
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
-interface GalleryPreview : Parcelable {
+sealed interface GalleryPreview : Parcelable {
     val url: String
     val position: Int
 }
