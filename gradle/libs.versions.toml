@@ -92,7 +92,7 @@ jsoup = "org.jsoup:jsoup:1.18.1"
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
-ktlint = "com.pinterest:ktlint:1.4.0-kotlin-dev-20240924.151646-39"
+ktlint = "com.pinterest:ktlint:1.4.0-kotlin-dev-SNAPSHOT"
 
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 
