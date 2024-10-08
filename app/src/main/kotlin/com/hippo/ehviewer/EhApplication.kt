@@ -172,7 +172,7 @@ class EhApplication :
         interceptorCoroutineContext(Dispatchers.Default)
         components {
             serviceLoaderEnabled(false)
-            add(KtorNetworkFetcherFactory { ktorClient })
+            add(KtorNetworkFetcherFactory(httpClient = { ktorClient }))
             add(MergeInterceptor)
             add(DownloadThumbInterceptor)
             if (isAtLeastO) {
