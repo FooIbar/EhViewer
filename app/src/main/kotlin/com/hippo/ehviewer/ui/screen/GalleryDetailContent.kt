@@ -1,8 +1,9 @@
 package com.hippo.ehviewer.ui.screen
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
-import android.os.Environment
+import android.content.Intent
 import android.text.TextUtils.TruncateAt.END
 import androidx.annotation.StringRes
 import androidx.compose.animation.SharedTransitionScope
@@ -29,7 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SwapVerticalCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
@@ -68,10 +68,10 @@ import androidx.paging.compose.itemKey
 import androidx.window.core.layout.WindowWidthSizeClass
 import arrow.core.partially1
 import arrow.fx.coroutines.parMap
+import arrow.fx.coroutines.parZip
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhFilter.remember
 import com.hippo.ehviewer.client.EhUrl
@@ -92,6 +92,8 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.icons.EhIcons
+import com.hippo.ehviewer.icons.filled.Magnet
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ktbuilder.launchIn
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
@@ -126,11 +128,10 @@ import com.hippo.ehviewer.ui.tools.getClippedRefreshKey
 import com.hippo.ehviewer.ui.tools.getLimit
 import com.hippo.ehviewer.ui.tools.getOffset
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FavouriteStatusRouter
-import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.bgWork
+import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.flattenForEach
 import com.hippo.ehviewer.util.isAtLeastQ
 import com.hippo.ehviewer.util.requestPermission
@@ -140,6 +141,7 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
+import io.ktor.http.encodeURLParameter
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -148,7 +150,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
-import splitties.systemservices.downloadManager
 
 context(CoroutineScope, DestinationsNavigator, DialogState, MainActivity, SnackbarHostState, SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
@@ -542,16 +543,18 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
         )
         val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
         val permissionDenied = stringResource(R.string.permission_denied)
-        val downloadTorrentFailed = stringResource(R.string.download_torrent_failure)
-        val downloadTorrentStarted = stringResource(R.string.download_torrent_started)
         val noTorrents = stringResource(R.string.no_torrents)
         val torrentResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
-                EhEngine.getTorrentList(galleryDetail.torrentUrl!!, galleryDetail.gid, galleryDetail.token)
+                parZip(
+                    { EhEngine.getTorrentList(galleryDetail.torrentUrl!!, galleryDetail.gid, galleryDetail.token) },
+                    { EhEngine.getTorrentKey() },
+                    { list, key -> list to key },
+                )
             }
         }
         suspend fun showTorrentDialog() {
-            val torrentList = bgWork { torrentResult.await() }
+            val (torrentList, key) = bgWork { torrentResult.await() }
             if (torrentList.isEmpty()) {
                 showSnackbar(noTorrents)
             } else {
@@ -561,21 +564,20 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
                         onItemClick = { dismissWith(it) },
                     )
                 }
-                val url = selected.url
-                val name = "${selected.name}.torrent"
-                val r = android.app.DownloadManager.Request(url.toUri())
-                r.setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS,
-                    AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
-                )
-                r.setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                EhCookieStore.getCookieHeader(url)?.let { r.addRequestHeader("Cookie", it) }
-                downloadManager.enqueue(r)
-                showSnackbar(downloadTorrentStarted)
+                val hash = selected.url.dropLast(8).takeLast(40)
+                val name = selected.name.encodeURLParameter()
+                val tracker = EhUrl.getTrackerUrl(galleryDetail.gid, key).encodeURLParameter()
+                val link = "magnet:?xt=urn:btih:$hash&dn=$name&tr=$tracker"
+                val intent = Intent(Intent.ACTION_VIEW, link.toUri())
+                try {
+                    startActivity(intent)
+                } catch (_: ActivityNotFoundException) {
+                    withUIContext { addTextToClipboard(link, true) }
+                }
             }
         }
         EhIconButton(
-            icon = Icons.Default.SwapVerticalCircle,
+            icon = EhIcons.Default.Magnet,
             text = torrentText,
             onClick = {
                 launchIO {
@@ -585,8 +587,7 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
                             runSuspendCatching {
                                 showTorrentDialog()
                             }.onFailure {
-                                logcat(it)
-                                showSnackbar(downloadTorrentFailed)
+                                showSnackbar(it.displayString())
                             }
                         } else {
                             showSnackbar(permissionDenied)

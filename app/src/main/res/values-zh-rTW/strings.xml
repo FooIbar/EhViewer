@@ -126,8 +126,6 @@
     <string name="rate_successfully">評分成功</string>
     <string name="rate_failed">評分失敗</string>
     <string name="no_torrents">沒有種子</string>
-    <string name="download_torrent_started">開始下載種子</string>
-    <string name="download_torrent_failure">無法下載種子</string>
     <string name="torrents">種子</string>
     <string name="not_favorited">未收藏</string>
     <string name="add_favorites_dialog_title">新增到收藏裡</string>

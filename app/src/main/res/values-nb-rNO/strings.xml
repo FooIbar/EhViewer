@@ -60,7 +60,6 @@
     <string name="tag_vote_up">Stem opp</string>
     <string name="pref_grayscale">Gråskala</string>
     <string name="action_share">Del</string>
-    <string name="download_torrent_started">Nedlasting av torrent startet</string>
     <string name="filter_the_tag">Blokker etiketten «%s»\?</string>
     <string name="rating9">Underbar</string>
     <string name="error_invalid_url">Ugyldig nettadresse</string>
