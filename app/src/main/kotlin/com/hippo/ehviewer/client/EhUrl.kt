@@ -133,6 +133,11 @@ object EhUrl {
     }.buildString()
 
     fun getTagDefinitionUrl(tag: String) = "https://ehwiki.org/wiki/" + tag.replace(' ', '_')
+
+    fun getTrackerUrl(gid: Long, key: String?) = ehUrl(
+        path = listOfNotNull("$gid", key, "announce"),
+        host = "ehtracker.org",
+    ).buildString()
 }
 
 inline fun ehUrl(path: String? = null, host: String = EhUrl.domain, builder: ParametersBuilder.() -> Unit) = ehUrl(

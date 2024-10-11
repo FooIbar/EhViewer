@@ -180,6 +180,11 @@ object EhEngine {
         return ehRequest(url, referer).fetchUsingAsByteBuffer(TorrentParser::parse)
     }
 
+    suspend fun getTorrentKey() = EhCookieStore.getUserId()?.let { id ->
+        val key = ehRequest(EhUrl.URL_HOME).fetchUsingAsText(HomeParser::parseTorrentKey)
+        "${id}x$key"
+    }
+
     suspend fun getArchiveList(url: String, gid: Long, token: String): ArchiveParser.Result {
         val funds = if (EhUtils.isExHentai) getFunds() else null
         return ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
