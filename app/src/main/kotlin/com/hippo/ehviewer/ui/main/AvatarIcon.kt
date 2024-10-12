@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,10 +67,10 @@ private fun heartbeat(period: Duration) = flow {
 private val limitScope = CoroutineScope(Dispatchers.IO)
 private val userAction = MutableSharedFlow<Unit>()
 
-private val limitFlow = merge(heartbeat(10.seconds), userAction).map { EhEngine.getImageLimits().right() }
+private val limitFlow = merge(heartbeat(30.seconds), userAction).map { EhEngine.getImageLimits().right() }
     .retryWhen<Either<String, HomeParser.Result>> { cause, _ ->
         emit(cause.displayString().left())
-        delay(5.seconds)
+        delay(15.seconds)
         true
     }.map { it.some() }.shareIn(limitScope, started = SharingStarted.WhileSubscribed(), replay = 1)
 
@@ -84,7 +83,6 @@ fun AvatarIcon() {
         val placeholder = stringResource(id = R.string.please_wait)
         val resetImageLimitSucceed = stringResource(id = R.string.reset_limits_succeed)
         val result by limitFlow.collectAsState(none())
-
         IconButton(
             onClick = {
                 launch {
