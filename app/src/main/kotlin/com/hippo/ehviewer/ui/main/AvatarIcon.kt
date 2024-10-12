@@ -149,11 +149,11 @@ fun AvatarIcon() {
                 }
             },
         ) {
-            AnimatedContent(targetState = avatar == null) { needRefresh ->
-                if (needRefresh) {
-                    LaunchedEffect(Unit) {
-                        refreshAccountInfo()
-                    }
+            LaunchedEffect(Unit) {
+                refreshAccountInfo()
+            }
+            AnimatedContent(targetState = avatar != null) { hasAvatar ->
+                if (hasAvatar) {
                     Icon(imageVector = Icons.Default.NoAccounts, contentDescription = null)
                 } else {
                     AsyncImage(
