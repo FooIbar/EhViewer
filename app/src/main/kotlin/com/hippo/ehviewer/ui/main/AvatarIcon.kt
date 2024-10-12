@@ -144,8 +144,8 @@ fun AvatarIcon() {
                 }
             },
         ) {
-            AnimatedContent(targetState = avatar != null) { hasAvatar ->
-                if (hasAvatar) {
+            AnimatedContent(targetState = avatar == null) { noAvatar ->
+                if (noAvatar) {
                     Icon(imageVector = Icons.Default.Person, contentDescription = null)
                 } else {
                     AsyncImage(
