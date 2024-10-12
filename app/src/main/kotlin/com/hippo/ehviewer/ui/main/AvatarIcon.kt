@@ -43,32 +43,22 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.login.refreshAccountInfo
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
-private fun heartbeat(period: Duration) = flow {
-    while (true) {
-        emit(Unit)
-        delay(period)
-    }
-}
-
 private val limitScope = CoroutineScope(Dispatchers.IO)
-private val userAction = MutableSharedFlow<Unit>()
+private val refreshEvent = MutableSharedFlow<Unit>()
 
-private val limitFlow = merge(heartbeat(30.seconds), userAction).map { EhEngine.getImageLimits().right() }
+private val limitFlow = refreshEvent.map { EhEngine.getImageLimits().right() }
     .retryWhen<Either<String, HomeParser.Result>> { cause, _ ->
         emit(cause.displayString().left())
         delay(15.seconds)
@@ -84,6 +74,10 @@ fun AvatarIcon() {
         val placeholder = stringResource(id = R.string.please_wait)
         val resetImageLimitSucceed = stringResource(id = R.string.reset_limits_succeed)
         val result by limitFlow.collectAsState(none())
+        LaunchedEffect(Unit) {
+            refreshEvent.emit(Unit)
+            refreshAccountInfo()
+        }
         IconButton(
             onClick = {
                 launch {
@@ -144,15 +138,12 @@ fun AvatarIcon() {
                     runSuspendCatching {
                         EhEngine.resetImageLimits()
                     }.onSuccess {
-                        userAction.emit(Unit)
+                        refreshEvent.emit(Unit)
                         showSnackbar(resetImageLimitSucceed)
                     }
                 }
             },
         ) {
-            LaunchedEffect(Unit) {
-                refreshAccountInfo()
-            }
             AnimatedContent(targetState = avatar != null) { hasAvatar ->
                 if (hasAvatar) {
                     Icon(imageVector = Icons.Default.Person, contentDescription = null)
