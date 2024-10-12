@@ -523,7 +523,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             IconButton(onClick = { launch { sheetState.open() } }) {
                 Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
             }
-            AvatarIcon {}
+            AvatarIcon()
         },
         filter = {
             SearchFilter(

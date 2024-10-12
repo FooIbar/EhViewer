@@ -1,12 +1,8 @@
 package com.hippo.ehviewer.ui.settings
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -14,10 +10,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -26,15 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -43,38 +32,31 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
-import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhCookieStore
-import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
 import com.hippo.ehviewer.ui.destinations.MyTagsScreenDestination
 import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.destinations.UConfigScreenDestination
-import com.hippo.ehviewer.ui.main.FundsItem
 import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.copyTextToClipboard
-import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastT
 import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
-import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination<RootGraph>
 @Composable
@@ -154,92 +136,6 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 }
             }
             if (hasSignedIn) {
-                val placeholder = stringResource(id = R.string.please_wait)
-                val resetImageLimitSucceed = stringResource(id = R.string.reset_limits_succeed)
-                var result by rememberSaveable { mutableStateOf<HomeParser.Result?>(null) }
-                var error by rememberSaveable { mutableStateOf<String?>(null) }
-                val summary by rememberUpdatedState(
-                    result?.run {
-                        when (limits.maximum) {
-                            -1 -> stringResource(id = R.string.image_limits_restricted)
-                            0 -> stringResource(id = R.string.image_limits_normal)
-                            else -> stringResource(id = R.string.image_limits_summary, limits.current, limits.maximum)
-                        }
-                    } ?: placeholder,
-                )
-                suspend fun getImageLimits() {
-                    result = EhEngine.getImageLimits()
-                    error = null
-                }
-                if (result == null && error == null) {
-                    LaunchedEffect(Unit) {
-                        runSuspendCatching {
-                            withIOContext { getImageLimits() }
-                        }.onFailure {
-                            error = it.displayString()
-                        }
-                    }
-                }
-                Preference(
-                    title = stringResource(id = R.string.image_limits),
-                    summary = summary,
-                ) {
-                    coroutineScope.launch {
-                        dialogState.awaitConfirmationOrCancel(
-                            confirmText = R.string.reset,
-                            title = R.string.image_limits,
-                            confirmButtonEnabled = result?.run { limits.resetCost != 0 } ?: false,
-                        ) {
-                            error?.let {
-                                Text(text = it)
-                            } ?: result?.let { (limits, funds) ->
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    if (limits.maximum > 0) {
-                                        LinearProgressIndicator(
-                                            progress = { limits.current.toFloat() / limits.maximum },
-                                            modifier = Modifier.height(12.dp).fillMaxWidth(),
-                                        )
-                                    }
-                                    Text(text = summary)
-                                    if (limits.resetCost > 0) {
-                                        Text(text = stringResource(id = R.string.reset_cost, limits.resetCost))
-                                    }
-                                    Text(text = stringResource(id = R.string.current_funds))
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceAround,
-                                    ) {
-                                        FundsItem(
-                                            type = "GP",
-                                            amount = funds.gp,
-                                        )
-                                        FundsItem(
-                                            type = "C",
-                                            amount = funds.credit,
-                                        )
-                                    }
-                                }
-                            } ?: run {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                ) {
-                                    CircularProgressIndicator()
-                                    Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-                                    Text(text = placeholder)
-                                }
-                            }
-                        }
-                        runSuspendCatching {
-                            EhEngine.resetImageLimits()
-                            getImageLimits()
-                        }.onSuccess {
-                            launchSnackBar(resetImageLimitSucceed)
-                        }.onFailure {
-                            error = it.displayString()
-                        }
-                    }
-                }
                 SimpleMenuPreferenceInt(
                     title = stringResource(id = R.string.settings_eh_gallery_site),
                     entry = R.array.gallery_site_entries,

@@ -247,7 +247,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             IconButton(onClick = { launch { sheetState.open() } }) {
                 Icon(imageVector = Icons.Outlined.FolderSpecial, contentDescription = null)
             }
-            AvatarIcon {}
+            AvatarIcon()
         },
     ) { contentPadding ->
         val listMode by Settings.listMode.collectAsState()
