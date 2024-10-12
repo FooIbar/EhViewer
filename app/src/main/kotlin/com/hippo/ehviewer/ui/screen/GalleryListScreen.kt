@@ -1,27 +1,18 @@
 package com.hippo.ehviewer.ui.screen
 
 import android.content.Context
-import android.net.Uri
 import android.view.ViewConfiguration
 import androidx.activity.compose.ReportDrawnWhen
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -35,15 +26,11 @@ import androidx.compose.material.icons.automirrored.filled.LastPage
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Reorder
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.Bookmarks
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -64,20 +51,15 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
-import androidx.compose.ui.util.lerp
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
 import androidx.paging.Pager
@@ -122,24 +104,18 @@ import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
-import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
-import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.rememberMutableStateInDataStore
-import com.hippo.ehviewer.ui.tools.snackBarPadding
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.FavouriteStatusRouter
-import com.hippo.ehviewer.util.pickVisualMedia
-import com.hippo.ehviewer.util.sha1
-import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -179,12 +155,10 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     var urlBuilder by rememberSaveable(lub) { mutableStateOf(lub) }
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
-    var showSearchLayout by rememberSaveable { mutableStateOf(false) }
     val animateItems by Settings.animateItems.collectAsState()
 
     var category by rememberMutableStateInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
     var advancedSearchOption by rememberMutableStateInDataStore("AdvancedSearchOption") { AdvancedSearchOption() }
-    var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     DrawerHandle(!searchBarExpanded)
 
@@ -201,11 +175,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         }
     }
 
-    val animatedSearchLayout by animateFloatMergePredictiveBackAsState(
-        enable = showSearchLayout,
-        animationSpec = tween(FAB_ANIMATE_TIME * 2),
-        onBack = { showSearchLayout = false },
-    )
     val density = LocalDensity.current
     val listState = rememberLazyGridState()
     val gridState = rememberLazyStaggeredGridState()
@@ -292,7 +261,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                         Settings.recentToplist = keyword
                         urlBuilder = ListUrlBuilder(MODE_TOPLIST, mKeyword = keyword)
                         data.refresh()
-                        showSearchLayout = false
                         launch { sheetState.close() }
                     },
                     headlineContent = {
@@ -436,7 +404,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                             }
                                             data.refresh()
                                         }
-                                        showSearchLayout = false
                                         launch { sheetState.close() }
                                     },
                                     tonalElevation = 1.dp,
@@ -493,10 +460,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     abstract class UrlSuggestion : Suggestion() {
         override val keyword = openGalleryKeyword
         override val canOpenDirectly = true
-        override fun onClick() {
-            navigator.navigate(destination)
-            showSearchLayout = false
-        }
+        override fun onClick() = navigate(destination)
         abstract val destination: Direction
     }
 
@@ -508,41 +472,30 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         override val destination = ProgressScreenDestination(gid, pToken, page)
     }
 
-    val selectImageFirst = stringResource(R.string.select_image_first)
     fun onApplySearch(query: String) = launchIO {
         val builder = ListUrlBuilder()
         val oldMode = urlBuilder.mode
-        if (!showSearchLayout) {
-            // If it's MODE_SUBSCRIPTION, keep it
-            val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
-            builder.mode = newMode
-            builder.keyword = query
-            builder.category = category
-            builder.language = languageFilter
-            builder.advanceSearch = advancedSearchOption.advanceSearch
-            builder.minRating = advancedSearchOption.minRating
-            builder.pageFrom = advancedSearchOption.fromPage
-            builder.pageTo = advancedSearchOption.toPage
-        } else {
-            if (imageUri == null) {
-                showSnackbar(selectImageFirst)
-                return@launchIO
-            }
-            builder.mode = MODE_IMAGE_SEARCH
-            builder.hash = imageUri!!.toOkioPath().sha1()
-        }
+        // If it's MODE_SUBSCRIPTION, keep it
+        val newMode = if (oldMode == MODE_SUBSCRIPTION) MODE_SUBSCRIPTION else MODE_NORMAL
+        builder.mode = newMode
+        builder.keyword = query
+        builder.category = category
+        builder.language = languageFilter
+        builder.advanceSearch = advancedSearchOption.advanceSearch
+        builder.minRating = advancedSearchOption.minRating
+        builder.pageFrom = advancedSearchOption.fromPage
+        builder.pageTo = advancedSearchOption.toPage
         when (oldMode) {
             MODE_TOPLIST, MODE_WHATS_HOT -> {
                 // Wait for search view to hide
                 delay(300)
-                withUIContext { navigator.navigate(builder.asDst()) }
+                withUIContext { navigate(builder.asDst()) }
             }
             else -> {
                 urlBuilder = builder
                 data.refresh()
             }
         }
-        showSearchLayout = false
     }
 
     SearchBarScreen(
@@ -569,15 +522,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             IconButton(onClick = { launch { sheetState.open() } }) {
                 Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
             }
-            IconButton(onClick = { showSearchLayout = !showSearchLayout }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    modifier = Modifier.graphicsLayer {
-                        rotationZ = lerp(135f, 0f, animatedSearchLayout)
-                    },
-                )
-            }
         },
         filter = {
             SearchFilter(
@@ -589,64 +533,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 onAdvancedOptionChange = { advancedSearchOption = it },
             )
         },
-        floatingActionButton = {
-            val hiddenState by animateFloatAsState(
-                targetValue = if (showSearchLayout && !fabHidden) 1f else 0f,
-                animationSpec = tween(
-                    FAB_ANIMATE_TIME,
-                    if (showSearchLayout && !fabHidden) FAB_ANIMATE_TIME else 0,
-                ),
-                label = "hiddenState",
-            )
-            FloatingActionButton(
-                onClick = { onApplySearch("") },
-                modifier = Modifier.snackBarPadding().graphicsLayer {
-                    rotationZ = lerp(90f, 0f, hiddenState)
-                    scaleX = hiddenState
-                    scaleY = hiddenState
-                },
-            ) {
-                Icon(imageVector = Icons.Default.Search, contentDescription = null)
-            }
-        },
     ) { contentPadding ->
-        val layoutDirection = LocalLayoutDirection.current
-        val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
-        val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
-        ElevatedCard(
-            modifier = Modifier.graphicsLayer {
-                scaleX = 1 - animatedSearchLayout
-                scaleY = 1 - animatedSearchLayout
-                alpha = 1 - animatedSearchLayout
-            }.padding(
-                top = contentPadding.calculateTopPadding() + marginV,
-                start = contentPadding.calculateStartPadding(layoutDirection) + marginH,
-                end = contentPadding.calculateEndPadding(layoutDirection) + marginH,
-                bottom = 8.dp,
-            ).padding(vertical = dimensionResource(id = R.dimen.search_layout_margin_v)),
-        ) {
-            Column(
-                modifier = Modifier.padding(
-                    horizontal = dimensionResource(id = R.dimen.search_category_padding_h),
-                    vertical = dimensionResource(id = R.dimen.search_category_padding_v),
-                ).fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(id = R.string.search_image),
-                    modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                ImageSearch(
-                    image = imageUri,
-                    onSelectImage = {
-                        launch { imageUri = pickVisualMedia(ActivityResultContracts.PickVisualMedia.ImageOnly) }
-                    },
-                )
-            }
-        }
-
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         val searchBarConnection = remember {
@@ -666,11 +553,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             }
         }
         GalleryList(
-            modifier = Modifier.graphicsLayer {
-                scaleX = animatedSearchLayout
-                scaleY = animatedSearchLayout
-                alpha = animatedSearchLayout
-            },
             data = data,
             contentModifier = Modifier.nestedScroll(searchBarConnection),
             contentPadding = contentPadding,
@@ -708,7 +590,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     val outOfRange = stringResource(R.string.error_out_of_range)
 
     val hideFab by delegateSnapshotUpdate {
-        record { fabHidden || showSearchLayout }
+        record { fabHidden }
         transform {
             // Bug: IDE failed to inference 'hide's type
             onEachLatest { hide: Boolean ->
