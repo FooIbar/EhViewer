@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.screen
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
@@ -30,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,11 +67,13 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
-import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.destinations.ImageSearchScreenDestination
+import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.rememberCompositionActiveState
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import kotlinx.coroutines.Dispatchers
@@ -94,6 +98,7 @@ abstract class Suggestion {
 suspend fun SearchDao.suggestions(prefix: String, limit: Int) =
     (if (prefix.isBlank()) list(limit) else rawSuggestions(prefix, limit))
 
+context(DialogState, DestinationsNavigator)
 @Composable
 fun SearchBarScreen(
     onApplySearch: (String) -> Unit,
@@ -114,7 +119,6 @@ fun SearchBarScreen(
     val mSearchDatabase = searchDatabase.searchDao()
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
-    val dialogState = LocalDialogState.current
     val animateItems by Settings.animateItems.collectAsState()
 
     class TagSuggestion(
@@ -189,9 +193,7 @@ fun SearchBarScreen(
 
     fun deleteKeyword(keyword: String) {
         scope.launch {
-            dialogState.awaitConfirmationOrCancel(
-                confirmText = R.string.delete,
-            ) {
+            awaitConfirmationOrCancel(confirmText = R.string.delete) {
                 Text(text = stringResource(id = R.string.delete_search_history, keyword))
             }
             mSearchDatabase.deleteQuery(keyword)
@@ -244,9 +246,15 @@ fun SearchBarScreen(
                     },
                     trailingIcon = {
                         if (expanded) {
-                            if (searchFieldState.text.isNotEmpty()) {
-                                IconButton(onClick = { searchFieldState.clearText() }) {
-                                    Icon(Icons.Default.Close, contentDescription = null)
+                            AnimatedContent(targetState = searchFieldState.text.isNotEmpty()) { hasText ->
+                                if (hasText) {
+                                    IconButton(onClick = { searchFieldState.clearText() }) {
+                                        Icon(Icons.Default.Close, contentDescription = null)
+                                    }
+                                } else {
+                                    IconButton(onClick = { navigate(ImageSearchScreenDestination) }) {
+                                        Icon(Icons.Default.ImageSearch, contentDescription = null)
+                                    }
                                 }
                             }
                         } else {
