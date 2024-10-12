@@ -5,19 +5,22 @@ import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
 import eu.kanade.tachiyomi.util.system.logcat
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import moe.tarsin.coroutines.runSuspendCatching
+
+suspend fun CoroutineScope.refreshAccountInfo() = runSuspendCatching {
+    with(EhEngine.getProfile()) {
+        Settings.displayName.value = displayName
+        Settings.avatar.value = avatar
+    }
+}.onFailure {
+    logcat(it)
+}
 
 suspend fun postLogin() = coroutineScope {
-    launch {
-        runCatching {
-            EhEngine.getProfile().run {
-                Settings.displayName.value = displayName
-            }
-        }.onFailure {
-            logcat(it)
-        }
-    }
+    launch { refreshAccountInfo() }
     runCatching {
         // For the `star` cookie
         EhEngine.getNews(false)
