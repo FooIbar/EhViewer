@@ -65,6 +65,7 @@
     <string name="gallery_list_empty_hit_subscription">请至 设置-&gt;EH-&gt;我的标签 订阅标签</string>
     <string name="keyword_search">关键字搜索</string>
     <string name="image_search">图片搜索</string>
+    <string name="image_search_title">搜图</string>
     <string name="search_image">图片搜索</string>
     <string name="search_sh">已删除</string>
     <string name="search_sto">有种子</string>
