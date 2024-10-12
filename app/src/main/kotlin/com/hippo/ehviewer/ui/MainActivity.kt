@@ -50,7 +50,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.ImageSearch
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.DrawerDefaults
@@ -124,7 +123,6 @@ import com.hippo.ehviewer.ui.destinations.DownloadsScreenDestination
 import com.hippo.ehviewer.ui.destinations.FavouritesScreenDestination
 import com.hippo.ehviewer.ui.destinations.HistoryScreenDestination
 import com.hippo.ehviewer.ui.destinations.HomePageScreenDestination
-import com.hippo.ehviewer.ui.destinations.ImageSearchScreenDestination
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.hippo.ehviewer.ui.destinations.SettingsScreenDestination
 import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
@@ -176,7 +174,6 @@ private val navItems = arrayOf<Triple<Direction, Int, ImageVector>>(
     Triple(FavouritesScreenDestination, R.string.favourite, Icons.Default.Favorite),
     Triple(HistoryScreenDestination, R.string.history, Icons.Default.History),
     Triple(DownloadsScreenDestination, R.string.downloads, Icons.Default.Download),
-    Triple(ImageSearchScreenDestination, R.string.image_search_title, Icons.Default.ImageSearch),
     Triple(SettingsScreenDestination, R.string.settings, Icons.Default.Settings),
 )
 
