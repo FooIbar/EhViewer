@@ -63,7 +63,7 @@ private val limitFlow = refreshEvent.map { EhEngine.getImageLimits().right() }
         emit(cause.displayString().left())
         delay(15.seconds)
         true
-    }.map { it.some() }.shareIn(limitScope, started = SharingStarted.WhileSubscribed(), replay = 1)
+    }.map { it.some() }.shareIn(limitScope, SharingStarted.Eagerly, replay = 1)
 
 context(CoroutineScope, DialogState, SnackbarHostState)
 @Composable
