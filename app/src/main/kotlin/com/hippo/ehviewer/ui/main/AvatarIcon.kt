@@ -60,7 +60,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.coroutines.runSwallowingWithUI
 
 private val limitScope = CoroutineScope(Dispatchers.IO)
 private val refreshEvent = MutableSharedFlow<Unit>()
@@ -163,9 +163,8 @@ fun AvatarIcon() {
                             }
                         }
                     }
-                    runSuspendCatching {
+                    runSwallowingWithUI {
                         EhEngine.resetImageLimits()
-                    }.onSuccess {
                         invalidateEvent.emit(Unit)
                         showSnackbar(resetImageLimitSucceed)
                     }
