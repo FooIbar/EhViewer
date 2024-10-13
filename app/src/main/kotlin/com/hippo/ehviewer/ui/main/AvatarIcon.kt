@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -99,8 +100,9 @@ fun AvatarIcon() {
                                 is Either.Right -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     val (limits, funds) = current.value
                                     if (limits.maximum > 0) {
+                                        val value by animateFloatAsState(limits.current.toFloat() / limits.maximum)
                                         LinearProgressIndicator(
-                                            progress = { limits.current.toFloat() / limits.maximum },
+                                            progress = { value },
                                             modifier = Modifier.height(12.dp).fillMaxWidth(),
                                         )
                                     }
