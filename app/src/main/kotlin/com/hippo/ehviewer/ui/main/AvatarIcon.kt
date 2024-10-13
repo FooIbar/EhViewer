@@ -54,6 +54,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingCommand
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -75,7 +76,7 @@ private val limitFlow: StateFlow<Result> = refreshEvent.conflate()
         limitScope,
         SharingStarted { sub ->
             limitScope.launch {
-                sub.collect { count ->
+                sub.collectLatest { count ->
                     if (count == 0) {
                         // Consider cached value needs invalidate for 2 minutes
                         // If cached value is error, drop immediately
