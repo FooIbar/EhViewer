@@ -41,9 +41,7 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
 import com.hippo.ehviewer.ui.destinations.MyTagsScreenDestination
-import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.destinations.UConfigScreenDestination
-import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
@@ -53,7 +51,6 @@ import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalTime
@@ -126,7 +123,6 @@ fun EhScreen(navigator: DestinationsNavigator) {
                             }
                         }
                         EhUtils.signOut()
-                        withUIContext { navigator.popNavigate(SignInScreenDestination) }
                     }
                 }
                 SimpleMenuPreferenceInt(

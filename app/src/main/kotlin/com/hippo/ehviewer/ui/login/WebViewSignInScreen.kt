@@ -13,19 +13,15 @@ import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.ui.StartDestination
-import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.util.setDefaultSettings
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
-import eu.kanade.tachiyomi.util.lang.withUIContext
 
 @Destination<RootGraph>
 @Composable
-fun WebViewSignInScreen(navigator: DestinationsNavigator) {
+fun WebViewSignInScreen() {
     val coroutineScope = rememberCoroutineScope()
     val state = rememberWebViewState(url = EhUrl.URL_SIGN_IN)
     val client = remember {
@@ -40,7 +36,6 @@ fun WebViewSignInScreen(navigator: DestinationsNavigator) {
                     present = true
                     coroutineScope.launchIO {
                         withNonCancellableContext { postLogin() }
-                        withUIContext { navigator.popNavigate(StartDestination) }
                     }
                 }
             }
