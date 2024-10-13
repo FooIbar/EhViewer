@@ -116,6 +116,7 @@ object Settings : DataStorePreferences(null) {
     val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
     val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
     val hasSignedIn = boolPref("has_signed_in", EhCookieStore.hasSignedIn())
+    val needSignIn = boolPref("need_sign_in", true)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
     val blackDarkTheme = boolPref("black_dark_theme", false)
     val gridView = boolPref("grid_view", false)
@@ -124,6 +125,7 @@ object Settings : DataStorePreferences(null) {
     val security = boolPref("require_unlock", false)
     val animateItems = boolPref("animate_items", true)
     val displayName = stringOrNullPref("display_name", null)
+    val avatar = stringOrNullPref("avatar", null)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
 
     var downloadScheme by stringOrNullPref("image_scheme", null)
@@ -157,7 +159,6 @@ object Settings : DataStorePreferences(null) {
     var saveParseErrorBody by boolPref("save_parse_error_body", true)
     var saveCrashLog by boolPref("save_crash_log", true)
     var removeImageFiles by boolPref("include_pic", true)
-    var needSignIn by boolPref("need_sign_in", true)
     var harmonizeCategoryColor by boolPref("harmonize_category_color", true)
     var preloadThumbAggressively by boolPref("preload_thumb_aggressively", false)
     var downloadOriginImage by boolPref("download_origin_image", false)

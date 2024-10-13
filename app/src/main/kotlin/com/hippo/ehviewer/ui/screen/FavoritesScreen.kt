@@ -68,6 +68,7 @@ import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.LocalSideSheetState
 import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.composing
+import com.hippo.ehviewer.ui.main.AvatarIcon
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
 import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
@@ -246,6 +247,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             IconButton(onClick = { launch { sheetState.open() } }) {
                 Icon(imageVector = Icons.Outlined.FolderSpecial, contentDescription = null)
             }
+            AvatarIcon()
         },
     ) { contentPadding ->
         val listMode by Settings.listMode.collectAsState()

@@ -276,7 +276,7 @@ class DialogState {
         @StringRes confirmText: Int = android.R.string.ok,
         @StringRes dismissText: Int = android.R.string.cancel,
         @StringRes title: Int? = null,
-        confirmButtonEnabled: Boolean = true,
+        showConfirmButton: Boolean = true,
         showCancelButton: Boolean = true,
         onCancelButtonClick: () -> Unit = {},
         secure: Boolean = false,
@@ -285,8 +285,10 @@ class DialogState {
         AlertDialog(
             onDismissRequest = { cont.cancel() },
             confirmButton = {
-                TextButton(onClick = { cont.resume(Unit) }, enabled = confirmButtonEnabled) {
-                    Text(text = stringResource(id = confirmText))
+                if (showConfirmButton) {
+                    TextButton(onClick = { cont.resume(Unit) }) {
+                        Text(text = stringResource(id = confirmText))
+                    }
                 }
             },
             dismissButton = showCancelButton.ifTrueThen {
