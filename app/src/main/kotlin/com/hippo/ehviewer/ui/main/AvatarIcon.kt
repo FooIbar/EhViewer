@@ -30,16 +30,14 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import arrow.core.Either
+import arrow.core.Either.Companion.catch
 import arrow.core.Some
-import arrow.core.left
 import arrow.core.none
-import arrow.core.right
 import coil3.compose.AsyncImage
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
@@ -53,7 +51,6 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
@@ -63,8 +60,8 @@ private val refreshEvent = MutableSharedFlow<Unit>()
 private suspend fun refresh() = refreshEvent.emit(Unit)
 private fun <T> Flow<T>.keepIf(predicate: (old: T, new: T) -> Boolean) = distinctUntilChanged(predicate)
 
-private val limitFlow = refreshEvent.conflate().map { EhEngine.getImageLimits().right() }
-    .retryWhen<Either<String, HomeParser.Result>> { e, _ -> emit(e.displayString().left()).let { true } }
+private val limitFlow = refreshEvent.conflate()
+    .map { catch { EhEngine.getImageLimits() }.mapLeft { e -> e.displayString() } }
     .map(::Some).let { merge(it, refreshEvent.map { none() }) }
     .keepIf { o, n -> o.isSome { it.isRight() } && n.isNone() }
     .stateIn(limitScope, SharingStarted.Eagerly, none())
