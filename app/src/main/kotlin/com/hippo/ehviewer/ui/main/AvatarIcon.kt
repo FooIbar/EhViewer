@@ -46,14 +46,11 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -77,15 +74,6 @@ private val limitFlow: StateFlow<Result> = refreshEvent.conflate()
     .map { catch { EhEngine.getImageLimits() }.mapLeft { e -> e.displayString() }.some() }
     .let { src -> merge(src, invalidateEvent.map { none() }) }
     .stateIn(limitScope, SharingStarted.Eagerly, none())
-    .apply {
-        limitScope.launch {
-            collectLatest {
-                // Consider cached value needs invalidate for 2 minutes
-                delay(120.seconds)
-                invalidateEvent.emit(Unit)
-            }
-        }
-    }
 
 context(CoroutineScope, DialogState, SnackbarHostState, DestinationsNavigator)
 @Composable
