@@ -51,14 +51,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingCommand
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.conflate
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSwallowingWithUI
@@ -70,26 +69,26 @@ private val invalidateEvent = MutableSharedFlow<Unit>()
 typealias Result = Option<Either<String, HomeParser.Result>>
 
 private val limitFlow: StateFlow<Result> = refreshEvent.conflate()
+    .onEach {
+        // If cached value is error, drop it when refresh
+        val isError = limitFlow.value.isSome { it.isLeft() }
+        if (isError) invalidateEvent.emit(Unit)
+    }
     .map { catch { EhEngine.getImageLimits() }.mapLeft { e -> e.displayString() } }
     .let { src -> merge(src.map { v -> v.some() }, invalidateEvent.map { none() }) }
     .stateIn(
         limitScope,
-        SharingStarted { sub ->
-            limitScope.launch {
-                sub.collectLatest { count ->
-                    if (count == 0) {
-                        // Consider cached value needs invalidate for 2 minutes
-                        // If cached value is error, drop immediately
-                        val isError = limitFlow.value.isSome { it.isLeft() }
-                        if (!isError) delay(120.seconds)
-                        invalidateEvent.emit(Unit)
-                    }
-                }
-            }
-            flowOf(SharingCommand.START)
-        },
+        SharingStarted.Eagerly,
         none(),
-    )
+    ).apply {
+        limitScope.launch {
+            collectLatest {
+                // Consider cached value needs invalidate for 2 minutes
+                delay(120.seconds)
+                invalidateEvent.emit(Unit)
+            }
+        }
+    }
 
 context(CoroutineScope, DialogState, SnackbarHostState, DestinationsNavigator)
 @Composable
