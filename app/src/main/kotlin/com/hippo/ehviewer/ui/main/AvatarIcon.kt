@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.main
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,12 +22,13 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -95,54 +97,54 @@ fun AvatarIcon() {
                         },
                         title = R.string.image_limits,
                     ) {
-                        result.onNone {
-                            LaunchedEffect(Unit) {
-                                refreshEvent.emit(Unit)
+                        val animatedAlpha by animateFloatAsState(if (remember { result } == result) 0.5f else 1f)
+                        Box(modifier = Modifier.graphicsLayer { alpha = animatedAlpha }) {
+                            result.onNone {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    CircularProgressIndicator()
+                                    Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+                                    Text(text = placeholder)
+                                }
                             }
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                CircularProgressIndicator()
-                                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-                                Text(text = placeholder)
-                            }
-                        }
-                        result.onSome { current ->
-                            when (current) {
-                                is Either.Left -> Text(text = current.value)
-                                is Either.Right -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    val (limits, funds) = current.value
-                                    if (limits.maximum > 0) {
-                                        val value by animateFloatAsState(limits.current.toFloat() / limits.maximum)
-                                        LinearProgressIndicator(
-                                            progress = { value },
-                                            modifier = Modifier.height(12.dp).fillMaxWidth(),
+                            result.onSome { current ->
+                                when (current) {
+                                    is Either.Left -> Text(text = current.value)
+                                    is Either.Right -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        val (limits, funds) = current.value
+                                        if (limits.maximum > 0) {
+                                            val value by animateFloatAsState(limits.current.toFloat() / limits.maximum)
+                                            LinearProgressIndicator(
+                                                progress = { value },
+                                                modifier = Modifier.height(12.dp).fillMaxWidth(),
+                                            )
+                                        }
+                                        Text(
+                                            text = when (limits.maximum) {
+                                                -1 -> stringResource(id = R.string.image_limits_restricted)
+                                                0 -> stringResource(id = R.string.image_limits_normal)
+                                                else -> stringResource(id = R.string.image_limits_summary, limits.current, limits.maximum)
+                                            },
                                         )
-                                    }
-                                    Text(
-                                        text = when (limits.maximum) {
-                                            -1 -> stringResource(id = R.string.image_limits_restricted)
-                                            0 -> stringResource(id = R.string.image_limits_normal)
-                                            else -> stringResource(id = R.string.image_limits_summary, limits.current, limits.maximum)
-                                        },
-                                    )
-                                    if (limits.resetCost > 0) {
-                                        Text(text = stringResource(id = R.string.reset_cost, limits.resetCost))
-                                    }
-                                    Text(text = stringResource(id = R.string.current_funds))
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceAround,
-                                    ) {
-                                        FundsItem(
-                                            type = "GP",
-                                            amount = funds.gp,
-                                        )
-                                        FundsItem(
-                                            type = "C",
-                                            amount = funds.credit,
-                                        )
+                                        if (limits.resetCost > 0) {
+                                            Text(text = stringResource(id = R.string.reset_cost, limits.resetCost))
+                                        }
+                                        Text(text = stringResource(id = R.string.current_funds))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceAround,
+                                        ) {
+                                            FundsItem(
+                                                type = "GP",
+                                                amount = funds.gp,
+                                            )
+                                            FundsItem(
+                                                type = "C",
+                                                amount = funds.credit,
+                                            )
+                                        }
                                     }
                                 }
                             }

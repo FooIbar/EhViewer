@@ -4,6 +4,7 @@ import android.os.Parcelable
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
 import com.hippo.ehviewer.client.exception.ParseException
 import java.nio.ByteBuffer
+import kotlin.random.Random
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -35,7 +36,7 @@ object HomeParser {
     }
 
     @Parcelize
-    data class Result(val limits: Limits, val funds: Funds) : Parcelable
+    data class Result(val limits: Limits, val funds: Funds, private val id: Int = Random.nextInt()) : Parcelable
 }
 
 @Parcelize
