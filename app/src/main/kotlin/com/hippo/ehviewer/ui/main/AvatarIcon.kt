@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
@@ -56,7 +56,7 @@ private val refreshEvent = MutableSharedFlow<Unit>()
 
 private val limitFlow = refreshEvent.map { EhEngine.getImageLimits().right() }
     .catch<Either<String, HomeParser.Result>> { e -> emit(e.displayString().left()) }
-    .map { it.some() }.shareIn(limitScope, SharingStarted.Eagerly, replay = 1)
+    .map { it.some() }.stateIn(limitScope, SharingStarted.Eagerly, none())
 
 context(CoroutineScope, DialogState, SnackbarHostState)
 @Composable
@@ -65,7 +65,7 @@ fun AvatarIcon() {
     if (hasSignedIn) {
         val placeholder = stringResource(id = R.string.please_wait)
         val resetImageLimitSucceed = stringResource(id = R.string.reset_limits_succeed)
-        val result by limitFlow.collectAsState(none())
+        val result by limitFlow.collectAsState()
         IconButton(
             onClick = {
                 launch {
