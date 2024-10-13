@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.google.accompanist.web.AccompanistWebViewClient
 import com.google.accompanist.web.WebView
@@ -16,27 +15,17 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.util.setDefaultSettings
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 
 @Destination<RootGraph>
 @Composable
 fun WebViewSignInScreen() {
-    val coroutineScope = rememberCoroutineScope()
     val state = rememberWebViewState(url = EhUrl.URL_SIGN_IN)
     val client = remember {
         object : AccompanistWebViewClient() {
-            private var present = false
             override fun onPageFinished(view: WebView, url: String?) {
-                if (present) {
-                    view.destroy()
-                    return
-                }
                 if (EhCookieStore.hasSignedIn()) {
-                    present = true
-                    coroutineScope.launchIO {
-                        withNonCancellableContext { postLogin() }
-                    }
+                    postLogin()
+                    view.destroy()
                 }
             }
         }
@@ -47,9 +36,7 @@ fun WebViewSignInScreen() {
     WebView(
         state = state,
         modifier = Modifier.fillMaxSize(),
-        onCreated = {
-            it.setDefaultSettings()
-        },
+        onCreated = { it.setDefaultSettings() },
         client = client,
     )
 }

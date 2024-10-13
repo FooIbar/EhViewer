@@ -70,7 +70,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Job
 
@@ -130,7 +129,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                     isProgressIndicatorVisible = false
                 }
             }.onSuccess {
-                withNonCancellableContext { postLogin() }
+                postLogin()
             }
         }
     }
