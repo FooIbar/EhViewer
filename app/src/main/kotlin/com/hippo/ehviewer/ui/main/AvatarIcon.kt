@@ -41,10 +41,13 @@ import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
@@ -53,13 +56,16 @@ import moe.tarsin.coroutines.runSuspendCatching
 
 private val limitScope = CoroutineScope(Dispatchers.IO)
 private val refreshEvent = MutableSharedFlow<Unit>()
+private suspend fun refresh() = refreshEvent.emit(Unit)
 
-private val limitFlow = refreshEvent.map { EhEngine.getImageLimits().right() }
+private val limitFlow = refreshEvent.conflate().map { EhEngine.getImageLimits().right() }
     .retryWhen<Either<String, HomeParser.Result>> { e, _ ->
         emit(e.displayString().left())
-        true
-    }
-    .map { it.some() }.stateIn(limitScope, SharingStarted.Eagerly, none())
+        limitScope.launch {
+            delay(15.seconds)
+            refresh()
+        }.let { true }
+    }.map { it.some() }.stateIn(limitScope, SharingStarted.Eagerly, none())
 
 context(CoroutineScope, DialogState, SnackbarHostState)
 @Composable
@@ -71,8 +77,8 @@ fun AvatarIcon() {
         val result by limitFlow.collectAsState()
         IconButton(
             onClick = {
-                launch { refreshEvent.emit(Unit) }
                 launch {
+                    refresh()
                     awaitConfirmationOrCancel(
                         confirmText = R.string.reset,
                         title = R.string.image_limits,
