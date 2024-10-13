@@ -82,7 +82,6 @@ fun EhScreen(navigator: DestinationsNavigator) {
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
-        val guestMode = stringResource(id = R.string.settings_eh_identity_cookies_guest)
         val copiedToClipboard = stringResource(id = R.string.copied_to_clipboard)
         Column(
             modifier = Modifier
@@ -90,21 +89,21 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues),
         ) {
-            val displayName by Settings.displayName.collectAsState()
-            Preference(
-                title = stringResource(id = R.string.account_name),
-                summary = displayName ?: guestMode,
-            ) {
-                coroutineScope.launch {
-                    val cookies = EhCookieStore.getIdentityCookies()
-                    dialogState.awaitConfirmationOrCancel(
-                        confirmText = R.string.settings_eh_sign_out,
-                        dismissText = R.string.settings_eh_clear_igneous,
-                        showCancelButton = cookies.last().second != null,
-                        onCancelButtonClick = { EhCookieStore.clearIgneous() },
-                        secure = hasSignedIn,
-                    ) {
-                        if (hasSignedIn) {
+            if (hasSignedIn) {
+                val displayName by Settings.displayName.collectAsState()
+                Preference(
+                    title = stringResource(id = R.string.account_name),
+                    summary = displayName ?: "???",
+                ) {
+                    coroutineScope.launch {
+                        val cookies = EhCookieStore.getIdentityCookies()
+                        dialogState.awaitConfirmationOrCancel(
+                            confirmText = R.string.settings_eh_sign_out,
+                            dismissText = R.string.settings_eh_clear_igneous,
+                            showCancelButton = cookies.last().second != null,
+                            onCancelButtonClick = { EhCookieStore.clearIgneous() },
+                            secure = true,
+                        ) {
                             Column {
                                 val warning = stringResource(id = R.string.settings_eh_identity_cookies_signed)
                                 val str = cookies.joinToString("\n") { (k, v) -> "$k: $v" }
@@ -125,17 +124,11 @@ fun EhScreen(navigator: DestinationsNavigator) {
                                     },
                                 )
                             }
-                        } else {
-                            Text(text = guestMode)
                         }
-                    }
-                    EhUtils.signOut()
-                    withUIContext {
-                        navigator.popNavigate(SignInScreenDestination)
+                        EhUtils.signOut()
+                        withUIContext { navigator.popNavigate(SignInScreenDestination) }
                     }
                 }
-            }
-            if (hasSignedIn) {
                 SimpleMenuPreferenceInt(
                     title = stringResource(id = R.string.settings_eh_gallery_site),
                     entry = R.array.gallery_site_entries,

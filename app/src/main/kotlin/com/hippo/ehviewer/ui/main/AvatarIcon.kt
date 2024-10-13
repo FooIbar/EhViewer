@@ -38,10 +38,12 @@ import coil3.compose.AsyncImage
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
+import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -67,7 +69,7 @@ private val limitFlow = refreshEvent.conflate().map { EhEngine.getImageLimits().
     .keepIf { o, n -> o.isSome { it.isRight() } && n.isNone() }
     .stateIn(limitScope, SharingStarted.Eagerly, none())
 
-context(CoroutineScope, DialogState, SnackbarHostState)
+context(CoroutineScope, DialogState, SnackbarHostState, DestinationsNavigator)
 @Composable
 fun AvatarIcon() {
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
@@ -158,7 +160,18 @@ fun AvatarIcon() {
             }
         }
     } else {
-        IconButton(onClick = {}) {
+        IconButton(
+            onClick = {
+                launch {
+                    awaitConfirmationOrCancel(
+                        confirmText = R.string.sign_in,
+                        showCancelButton = false,
+                        text = { Text(text = stringResource(id = R.string.settings_eh_identity_cookies_guest)) },
+                    )
+                    EhUtils.signOut()
+                }
+            },
+        ) {
             Icon(imageVector = Icons.Default.NoAccounts, contentDescription = null)
         }
     }

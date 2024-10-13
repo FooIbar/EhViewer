@@ -60,10 +60,8 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.ui.StartDestination
 import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
-import com.hippo.ehviewer.ui.screen.popNavigate
 import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.ui.tools.autofill
@@ -133,7 +131,6 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                 }
             }.onSuccess {
                 withNonCancellableContext { postLogin() }
-                withUIContext { navigator.popNavigate(StartDestination) }
             }
         }
     }
@@ -236,9 +233,8 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                         }
                         TextButton(
                             onClick = {
-                                Settings.needSignIn = false
                                 Settings.gallerySite = EhUrl.SITE_E
-                                navigator.popNavigate(StartDestination)
+                                Settings.needSignIn.value = false
                             },
                             modifier = Modifier.weight(1f),
                         ) {
@@ -319,9 +315,8 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                             }
                             TextButton(
                                 onClick = {
-                                    Settings.needSignIn = false
                                     Settings.gallerySite = EhUrl.SITE_E
-                                    navigator.popNavigate(StartDestination)
+                                    Settings.needSignIn.value = false
                                 },
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
