@@ -540,7 +540,6 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
             },
         )
         val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
-        val permissionDenied = stringResource(R.string.permission_denied)
         val noTorrents = stringResource(R.string.no_torrents)
         val torrentResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
