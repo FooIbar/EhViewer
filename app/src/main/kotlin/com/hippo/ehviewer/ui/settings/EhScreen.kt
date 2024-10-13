@@ -90,7 +90,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 val displayName by Settings.displayName.collectAsState()
                 Preference(
                     title = stringResource(id = R.string.account_name),
-                    summary = displayName ?: "???",
+                    summary = displayName,
                 ) {
                     coroutineScope.launch {
                         val cookies = EhCookieStore.getIdentityCookies()
