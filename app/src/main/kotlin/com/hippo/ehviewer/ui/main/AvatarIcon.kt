@@ -29,10 +29,10 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import arrow.core.Either
+import arrow.core.Some
 import arrow.core.left
 import arrow.core.none
 import arrow.core.right
-import arrow.core.some
 import coil3.compose.AsyncImage
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -41,10 +41,8 @@ import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.conflate
@@ -59,13 +57,8 @@ private val refreshEvent = MutableSharedFlow<Unit>()
 private suspend fun refresh() = refreshEvent.emit(Unit)
 
 private val limitFlow = refreshEvent.conflate().map { EhEngine.getImageLimits().right() }
-    .retryWhen<Either<String, HomeParser.Result>> { e, _ ->
-        emit(e.displayString().left())
-        limitScope.launch {
-            delay(15.seconds)
-            refresh()
-        }.let { true }
-    }.map { it.some() }.stateIn(limitScope, SharingStarted.Eagerly, none())
+    .retryWhen<Either<String, HomeParser.Result>> { e, _ -> emit(e.displayString().left()).let { true } }
+    .map(::Some).stateIn(limitScope, SharingStarted.Eagerly, none())
 
 context(CoroutineScope, DialogState, SnackbarHostState)
 @Composable
@@ -136,7 +129,7 @@ fun AvatarIcon() {
                     runSuspendCatching {
                         EhEngine.resetImageLimits()
                     }.onSuccess {
-                        refreshEvent.emit(Unit)
+                        refresh()
                         showSnackbar(resetImageLimitSucceed)
                     }
                 }
