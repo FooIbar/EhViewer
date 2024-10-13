@@ -74,8 +74,8 @@ private val limitFlow: StateFlow<Result> = refreshEvent.conflate()
         val isError = limitFlow.value.isSome { it.isLeft() }
         if (isError) invalidateEvent.emit(Unit)
     }
-    .map { catch { EhEngine.getImageLimits() }.mapLeft { e -> e.displayString() } }
-    .let { src -> merge(src.map { v -> v.some() }, invalidateEvent.map { none() }) }
+    .map { catch { EhEngine.getImageLimits() }.mapLeft { e -> e.displayString() }.some() }
+    .let { src -> merge(src, invalidateEvent.map { none() }) }
     .stateIn(limitScope, SharingStarted.Eagerly, none())
     .apply {
         limitScope.launch {

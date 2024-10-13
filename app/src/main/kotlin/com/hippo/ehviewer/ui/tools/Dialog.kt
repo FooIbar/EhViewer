@@ -276,14 +276,13 @@ class DialogState {
         @StringRes confirmText: Int = android.R.string.ok,
         @StringRes dismissText: Int = android.R.string.cancel,
         @StringRes title: Int? = null,
-        confirmButtonEnabled: Boolean = true,
         showCancelButton: Boolean = true,
         onCancelButtonClick: () -> Unit = {},
         secure: Boolean = false,
         text: @Composable (() -> Unit)? = null,
     ) = awaitConfirmationOrCancel(
         confirmButton = {
-            TextButton(onClick = it, enabled = confirmButtonEnabled) {
+            TextButton(onClick = it) {
                 Text(text = stringResource(id = confirmText))
             }
         },
