@@ -83,6 +83,7 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
+import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -195,7 +196,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                             ArchiveList(
                                 funds = funds,
                                 items = archiveList,
-                                onItemClick = { dismissWith(it) },
+                                onItemClick = { resume(it) },
                             )
                         }
                         EhEngine.downloadArchive(gid, token, paramOr, selected.res, selected.isHAtH)?.let {
