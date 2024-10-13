@@ -276,28 +276,7 @@ class DialogState {
         @StringRes confirmText: Int = android.R.string.ok,
         @StringRes dismissText: Int = android.R.string.cancel,
         @StringRes title: Int? = null,
-        showCancelButton: Boolean = true,
-        onCancelButtonClick: () -> Unit = {},
-        secure: Boolean = false,
-        text: @Composable (() -> Unit)? = null,
-    ) = awaitConfirmationOrCancel(
-        confirmButton = {
-            TextButton(onClick = it) {
-                Text(text = stringResource(id = confirmText))
-            }
-        },
-        dismissText = dismissText,
-        title = title,
-        showCancelButton = showCancelButton,
-        onCancelButtonClick = onCancelButtonClick,
-        secure = secure,
-        text = text,
-    )
-
-    suspend fun awaitConfirmationOrCancel(
-        confirmButton: @Composable (() -> Unit) -> Unit,
-        @StringRes dismissText: Int = android.R.string.cancel,
-        @StringRes title: Int? = null,
+        showConfirmButton: Boolean = true,
         showCancelButton: Boolean = true,
         onCancelButtonClick: () -> Unit = {},
         secure: Boolean = false,
@@ -305,7 +284,13 @@ class DialogState {
     ) = dialog { cont ->
         AlertDialog(
             onDismissRequest = { cont.cancel() },
-            confirmButton = { confirmButton { cont.resume(Unit) } },
+            confirmButton = {
+                if (showConfirmButton) {
+                    TextButton(onClick = { cont.resume(Unit) }) {
+                        Text(text = stringResource(id = confirmText))
+                    }
+                }
+            },
             dismissButton = showCancelButton.ifTrueThen {
                 TextButton(onClick = {
                     onCancelButtonClick()

@@ -425,7 +425,7 @@
     <string name="image_limits_summary">已用：%1$d / %2$d</string>
     <string name="image_limits_normal">无限制</string>
     <string name="image_limits_restricted">图片分辨率限制为 1280x</string>
-    <string name="reset_cost">重置花费：%d GP</string>
+    <string name="reset_cost">花费 %d GP 重置</string>
     <string name="reset">重置</string>
     <string name="settings_privacy">隐私</string>
     <string name="settings_privacy_secure">不允许屏幕抓取</string>

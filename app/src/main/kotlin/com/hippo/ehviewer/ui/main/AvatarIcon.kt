@@ -14,13 +14,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NoAccounts
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -90,23 +91,9 @@ fun AvatarIcon() {
                 launch {
                     refreshEvent.emit(Unit)
                     awaitConfirmationOrCancel(
-                        confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    launchIO {
-                                        runSwallowingWithUI {
-                                            invalidateEvent.emit(Unit)
-                                            EhEngine.resetImageLimits()
-                                            refreshEvent.emit(Unit)
-                                        }
-                                    }
-                                },
-                                enabled = result.isSome { it.isRight { it.limits.resetCost != 0 } },
-                            ) {
-                                Text(text = stringResource(id = R.string.reset))
-                            }
-                        },
                         title = R.string.image_limits,
+                        showConfirmButton = false,
+                        showCancelButton = false,
                     ) {
                         val animatedAlpha by animateFloatAsState(if (remember { result } == result) 0.5f else 1f)
                         result.onNone {
@@ -139,9 +126,6 @@ fun AvatarIcon() {
                                                 else -> stringResource(id = R.string.image_limits_summary, limits.current, limits.maximum)
                                             },
                                         )
-                                        if (limits.resetCost > 0) {
-                                            Text(text = stringResource(id = R.string.reset_cost, limits.resetCost))
-                                        }
                                         Text(text = stringResource(id = R.string.current_funds))
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
@@ -155,6 +139,26 @@ fun AvatarIcon() {
                                                 type = "C",
                                                 amount = funds.credit,
                                             )
+                                        }
+                                        if (limits.resetCost > 0) {
+                                            Button(
+                                                onClick = {
+                                                    launchIO {
+                                                        runSwallowingWithUI {
+                                                            invalidateEvent.emit(Unit)
+                                                            EhEngine.resetImageLimits()
+                                                            refreshEvent.emit(Unit)
+                                                        }
+                                                    }
+                                                },
+                                                modifier = Modifier.align(Alignment.CenterHorizontally),
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.RestartAlt,
+                                                    contentDescription = stringResource(id = R.string.reset),
+                                                )
+                                                Text(text = stringResource(id = R.string.reset_cost, limits.resetCost))
+                                            }
                                         }
                                     }
                                 }
