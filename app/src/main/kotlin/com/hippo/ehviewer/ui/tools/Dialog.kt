@@ -51,6 +51,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -95,18 +96,19 @@ fun interface DismissDialogScope<R> {
     fun dismissWith(value: R)
 }
 
-class DialogState {
-    var content: (@Composable () -> Unit)? by mutableStateOf(null)
+typealias MutableComposable = MutableState<(@Composable () -> Unit)?>
 
+@JvmInline
+value class DialogState(val field: MutableComposable = mutableStateOf(null)) : MutableComposable by field {
     @Composable
-    fun Intercept() = content?.invoke()
+    fun Intercept() = value?.invoke()
 
     fun dismiss() {
-        content = null
+        value = null
     }
 
     suspend inline fun <R> dialog(crossinline block: @Composable (CancellableContinuation<R>) -> Unit) = try {
-        suspendCancellableCoroutine { cont -> content = { block(cont) } }
+        suspendCancellableCoroutine { cont -> value = { block(cont) } }
     } finally {
         dismiss()
     }
