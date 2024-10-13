@@ -76,11 +76,8 @@ private val limitFlow: StateFlow<Result> = refreshEvent.conflate()
     }
     .map { catch { EhEngine.getImageLimits() }.mapLeft { e -> e.displayString() } }
     .let { src -> merge(src.map { v -> v.some() }, invalidateEvent.map { none() }) }
-    .stateIn(
-        limitScope,
-        SharingStarted.Eagerly,
-        none(),
-    ).apply {
+    .stateIn(limitScope, SharingStarted.Eagerly, none())
+    .apply {
         limitScope.launch {
             collectLatest {
                 // Consider cached value needs invalidate for 2 minutes
