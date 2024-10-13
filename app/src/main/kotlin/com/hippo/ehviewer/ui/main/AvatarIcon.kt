@@ -43,10 +43,13 @@ import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -55,10 +58,13 @@ import moe.tarsin.coroutines.runSuspendCatching
 private val limitScope = CoroutineScope(Dispatchers.IO)
 private val refreshEvent = MutableSharedFlow<Unit>()
 private suspend fun refresh() = refreshEvent.emit(Unit)
+private fun <T> Flow<T>.keepIf(predicate: (old: T, new: T) -> Boolean) = distinctUntilChanged(predicate)
 
 private val limitFlow = refreshEvent.conflate().map { EhEngine.getImageLimits().right() }
     .retryWhen<Either<String, HomeParser.Result>> { e, _ -> emit(e.displayString().left()).let { true } }
-    .map(::Some).stateIn(limitScope, SharingStarted.Eagerly, none())
+    .map(::Some).let { merge(it, refreshEvent.map { none() }) }
+    .keepIf { o, n -> o.isSome { it.isRight() } && n.isNone() }
+    .stateIn(limitScope, SharingStarted.Eagerly, none())
 
 context(CoroutineScope, DialogState, SnackbarHostState)
 @Composable
