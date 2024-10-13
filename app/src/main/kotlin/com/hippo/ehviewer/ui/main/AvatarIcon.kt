@@ -110,6 +110,7 @@ fun AvatarIcon() {
                         },
                         title = R.string.image_limits,
                     ) {
+                        val animatedAlpha by animateFloatAsState(if (remember { result } == result) 0.5f else 1f)
                         result.onNone {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
@@ -121,7 +122,6 @@ fun AvatarIcon() {
                             }
                         }
                         result.onSome { current ->
-                            val animatedAlpha by animateFloatAsState(if (remember { result } == result) 0.5f else 1f)
                             Box(modifier = Modifier.graphicsLayer { alpha = animatedAlpha }) {
                                 when (current) {
                                     is Either.Left -> Text(text = current.value)
