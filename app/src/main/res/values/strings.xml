@@ -447,7 +447,6 @@
     <string name="image_limits_normal">No restrictions</string>
     <string name="image_limits_restricted">Image resolution restricted to 1280x</string>
     <string name="reset_cost">Reset Cost: %d GP</string>
-    <string name="reset_limits_succeed">Image limit was successfully reset</string>
     <string name="reset">Reset</string>
     <string name="settings_privacy">Privacy</string>
     <string name="settings_privacy_secure">Prevent screenshots</string>

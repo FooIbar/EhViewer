@@ -84,7 +84,6 @@ fun AvatarIcon() {
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
     if (hasSignedIn) {
         val placeholder = stringResource(id = R.string.please_wait)
-        val resetImageLimitSucceed = stringResource(id = R.string.reset_limits_succeed)
         val result by limitFlow.collectAsState()
         IconButton(
             onClick = {
@@ -99,7 +98,6 @@ fun AvatarIcon() {
                                             invalidateEvent.emit(Unit)
                                             EhEngine.resetImageLimits()
                                             refreshEvent.emit(Unit)
-                                            showSnackbar(resetImageLimitSucceed)
                                         }
                                     }
                                 },
