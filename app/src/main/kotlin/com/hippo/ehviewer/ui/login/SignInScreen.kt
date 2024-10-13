@@ -113,6 +113,7 @@ fun SignInScreen(navigator: DestinationsNavigator) {
             }.onFailure {
                 withUIContext {
                     focusManager.clearFocus()
+                    isProgressIndicatorVisible = false
                     dialogState.awaitConfirmationOrCancel(
                         confirmText = R.string.get_it,
                         title = R.string.sign_in_failed,
@@ -126,7 +127,6 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                             )
                         },
                     )
-                    isProgressIndicatorVisible = false
                 }
             }.onSuccess {
                 postLogin()
