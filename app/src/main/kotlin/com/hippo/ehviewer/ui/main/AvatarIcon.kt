@@ -48,6 +48,7 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -91,25 +92,37 @@ fun AvatarIcon() {
                     refreshEvent.emit(Unit)
                     awaitConfirmationOrCancel(
                         confirmButton = {
-                            TextButton(onClick = it, enabled = result.isSome { it.isRight { it.limits.resetCost != 0 } }) {
+                            TextButton(
+                                onClick = {
+                                    launchIO {
+                                        runSwallowingWithUI {
+                                            invalidateEvent.emit(Unit)
+                                            EhEngine.resetImageLimits()
+                                            refreshEvent.emit(Unit)
+                                            showSnackbar(resetImageLimitSucceed)
+                                        }
+                                    }
+                                },
+                                enabled = result.isSome { it.isRight { it.limits.resetCost != 0 } },
+                            ) {
                                 Text(text = stringResource(id = R.string.reset))
                             }
                         },
                         title = R.string.image_limits,
                     ) {
-                        val animatedAlpha by animateFloatAsState(if (remember { result } == result) 0.5f else 1f)
-                        Box(modifier = Modifier.graphicsLayer { alpha = animatedAlpha }) {
-                            result.onNone {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                ) {
-                                    CircularProgressIndicator()
-                                    Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-                                    Text(text = placeholder)
-                                }
+                        result.onNone {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                CircularProgressIndicator()
+                                Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
+                                Text(text = placeholder)
                             }
-                            result.onSome { current ->
+                        }
+                        result.onSome { current ->
+                            val animatedAlpha by animateFloatAsState(if (remember { result } == result) 0.5f else 1f)
+                            Box(modifier = Modifier.graphicsLayer { alpha = animatedAlpha }) {
                                 when (current) {
                                     is Either.Left -> Text(text = current.value)
                                     is Either.Right -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -149,11 +162,6 @@ fun AvatarIcon() {
                                 }
                             }
                         }
-                    }
-                    runSwallowingWithUI {
-                        EhEngine.resetImageLimits()
-                        invalidateEvent.emit(Unit)
-                        showSnackbar(resetImageLimitSucceed)
                     }
                 }
             },
