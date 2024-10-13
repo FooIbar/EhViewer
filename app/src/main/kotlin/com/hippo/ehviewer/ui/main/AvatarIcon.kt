@@ -19,7 +19,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,7 +39,6 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.ui.login.refreshAccountInfo
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
 import kotlin.time.Duration.Companion.seconds
@@ -69,18 +67,14 @@ context(CoroutineScope, DialogState, SnackbarHostState)
 @Composable
 fun AvatarIcon() {
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
-    val avatar by Settings.avatar.collectAsState()
     if (hasSignedIn) {
         val placeholder = stringResource(id = R.string.please_wait)
         val resetImageLimitSucceed = stringResource(id = R.string.reset_limits_succeed)
         val result by limitFlow.collectAsState(none())
-        LaunchedEffect(Unit) {
-            refreshEvent.emit(Unit)
-            refreshAccountInfo()
-        }
         IconButton(
             onClick = {
                 launch {
+                    refreshEvent.emit(Unit)
                     awaitConfirmationOrCancel(
                         confirmText = R.string.reset,
                         title = R.string.image_limits,
@@ -144,6 +138,7 @@ fun AvatarIcon() {
                 }
             },
         ) {
+            val avatar by Settings.avatar.collectAsState()
             AnimatedContent(targetState = avatar == null) { noAvatar ->
                 if (noAvatar) {
                     Icon(imageVector = Icons.Default.Person, contentDescription = null)
