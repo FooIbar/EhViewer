@@ -138,6 +138,7 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.http.encodeURLParameter
+import kotlin.coroutines.resume
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -558,7 +559,7 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
                 val selected = showNoButton(false) {
                     TorrentList(
                         items = torrentList,
-                        onItemClick = { dismissWith(it) },
+                        onItemClick = { resume(it) },
                     )
                 }
                 val hash = selected.url.dropLast(8).takeLast(40)

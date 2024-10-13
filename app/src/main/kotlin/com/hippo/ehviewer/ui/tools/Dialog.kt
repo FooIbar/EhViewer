@@ -78,6 +78,7 @@ import arrow.core.raise.either
 import arrow.core.right
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
+import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.flow.collectLatest
@@ -90,10 +91,6 @@ fun interface ActionScope {
 
 interface DialogScope<R> {
     var expectedValue: R
-}
-
-fun interface DismissDialogScope<R> {
-    fun dismissWith(value: R)
 }
 
 typealias MutableComposable = MutableState<(@Composable () -> Unit)?>
@@ -353,12 +350,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
         }
     }
 
-    suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable DismissDialogScope<R>.() -> Unit): R = dialog { cont ->
-        val impl = remember(cont) {
-            DismissDialogScope<R> {
-                cont.resume(it)
-            }
-        }
+    suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable Continuation<R>.() -> Unit): R = dialog { cont ->
         BasicAlertDialog(
             onDismissRequest = { cont.cancel() },
             properties = DialogProperties(usePlatformDefaultWidth = respectDefaultWidth),
@@ -368,7 +360,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                     shape = AlertDialogDefaults.shape,
                     color = AlertDialogDefaults.containerColor,
                     tonalElevation = AlertDialogDefaults.TonalElevation,
-                    content = { block(impl) },
+                    content = { block(cont) },
                 )
             },
         )
@@ -431,11 +423,10 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
             }
             items.forEachIndexed { index, text ->
                 Row(
-                    modifier = Modifier.clickable { dismissWith(index) }.fillMaxWidth()
-                        .padding(horizontal = 8.dp),
+                    modifier = Modifier.clickable { resume(index) }.fillMaxWidth().padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    RadioButton(selected = index == selected, onClick = { dismissWith(index) })
+                    RadioButton(selected = index == selected, onClick = { resume(index) })
                     Text(text = text)
                 }
             }
@@ -468,7 +459,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                     CheckableItem(
                         text = text,
                         checked = index == selected,
-                        modifier = Modifier.fillMaxWidth().clickable { dismissWith(index) }.padding(horizontal = 8.dp),
+                        modifier = Modifier.fillMaxWidth().clickable { resume(index) }.padding(horizontal = 8.dp),
                     )
                 }
             }
@@ -480,7 +471,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
         selected: Int = -1,
         builder: ActionScope.() -> Unit,
     ): suspend () -> Unit {
-        val (items, actions) = buildList { builder(ActionScope { action, that -> add(action to that) }) }.unzip()
+        val (items, actions) = buildList { builder { action, that -> add(action to that) } }.unzip()
         val index = awaitSelectItem(items, title, selected)
         return actions[index]
     }
@@ -504,7 +495,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                     CheckableItem(
                         text = text,
                         checked = index == selected,
-                        modifier = Modifier.fillMaxWidth().clickable { dismissWith(index to checked) }.padding(horizontal = 8.dp),
+                        modifier = Modifier.fillMaxWidth().clickable { resume(index to checked) }.padding(horizontal = 8.dp),
                     )
                 }
             }
@@ -527,13 +518,9 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
             }
             itemsIndexed(items) { index, (icon, text) ->
                 ListItem(
-                    headlineContent = {
-                        Text(text = stringResource(id = text), style = MaterialTheme.typography.titleMedium)
-                    },
-                    modifier = Modifier.clickable { dismissWith(index) }.padding(horizontal = 8.dp),
-                    leadingContent = {
-                        Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
-                    },
+                    headlineContent = { Text(text = stringResource(id = text), style = MaterialTheme.typography.titleMedium) },
+                    modifier = Modifier.clickable { resume(index) }.padding(horizontal = 8.dp),
+                    leadingContent = { Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 )
             }
@@ -581,8 +568,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                 )
                 items.forEachIndexed { index, (icon, text) ->
                     Column(
-                        modifier = Modifier.clip(IconWithTextCorner).clickable { dismissWith(index to note) }
-                            .fillMaxWidth(0.2F),
+                        modifier = Modifier.clip(IconWithTextCorner).clickable { resume(index to note) }.fillMaxWidth(0.2F),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
