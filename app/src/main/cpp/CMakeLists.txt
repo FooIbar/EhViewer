@@ -48,7 +48,7 @@ ExternalProject_Add(
         GIT_TAG nettle_3.10_release_20240616
         GIT_CONFIG core.autocrlf=input
         CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
-        BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS}'"
+        BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS} -Qunused-arguments'"
         INSTALL_COMMAND ""
         BUILD_IN_SOURCE 1
         BUILD_BYPRODUCTS nettle/src/nettle/libnettle.a
