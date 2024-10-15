@@ -51,7 +51,6 @@ import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.imageLoader
 import com.hippo.ehviewer.ktor.Cronet
-import com.hippo.ehviewer.legacy.cleanObsoleteCache
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
 import com.hippo.ehviewer.ui.screen.detailCache
@@ -135,9 +134,6 @@ class EhApplication :
                 launch {
                     checkDawn()
                 }
-            }
-            launch {
-                cleanObsoleteCache()
             }
         }
         if (BuildConfig.DEBUG) {
