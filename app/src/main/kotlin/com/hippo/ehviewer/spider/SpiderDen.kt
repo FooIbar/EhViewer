@@ -77,7 +77,7 @@ class SpiderDen(val info: GalleryInfo) {
 
     // Search in both directories to maintain compatibility
     private val fileCache by lazy {
-        listOf(tempDownloadDir, downloadDir).mapNotNull { it?.list() }.flatten().associateBy { it.name } as MutableMap
+        listOfNotNull(tempDownloadDir, downloadDir).map(Path::list).flatten().associateBy { it.name } as MutableMap
     }
 
     private val imageDir
@@ -159,9 +159,9 @@ class SpiderDen(val info: GalleryInfo) {
         removeTempFile(index)
     }
 
-    private fun Path.findDownloadFileForIndex(index: Int, extension: String): Path {
+    private fun Path.findDownloadFileForIndex(index: Int, extension: String) = with(lock) {
         val name = perFilename(index, extension)
-        return lock.write { fileCache.getOrPut(name) { resolve(name) } }
+        read { fileCache[name] } ?: resolve(name).also { write { fileCache[name] = it } }
     }
 
     suspend fun makeHttpCallAndSaveImage(
