@@ -6,32 +6,30 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import moe.tarsin.kt.sync
 
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
 abstract class PageLoader {
-    private val cache by lazy {
-        SieveCache<Int, Image>(
-            maxSize = if (isAtLeastO) {
-                (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
+    private val cache = SieveCache<Int, Image>(
+        maxSize = if (isAtLeastO) {
+            (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
+        } else {
+            (OSUtils.appMaxMemory / 3 * 2).toInt()
+        },
+        sizeOf = { _, v -> v.allocationSize.toInt() },
+        onEntryRemoved = { k, o, n, _ ->
+            if (o.isRecyclable) {
+                n ?: notifyPageWait(k)
+                o.recycle()
             } else {
-                (OSUtils.appMaxMemory / 3 * 2).toInt()
-            },
-            sizeOf = { _, v -> v.allocationSize.toInt() },
-            onEntryRemoved = { k, o, n, _ ->
-                if (o.isRecyclable) {
-                    n ?: notifyPageWait(k)
-                    o.recycle()
-                } else {
-                    o.isRecyclable = true
-                }
-            },
-        )
-    }
+                o.isRecyclable = true
+            }
+        },
+    )
 
     val pages by lazy {
         check(size > 0)
@@ -41,10 +39,7 @@ abstract class PageLoader {
     private val prefetchPageCount = Settings.preloadImage
 
     @CallSuper
-    open suspend fun awaitReady(): Boolean {
-        withIOContext { cache }
-        return true
-    }
+    open suspend fun awaitReady() = true
 
     abstract val isReady: Boolean
 
@@ -53,11 +48,11 @@ abstract class PageLoader {
 
     @CallSuper
     open fun stop() {
-        cache.evictAll()
+        cache.sync { evictAll() }
     }
 
     fun restart() {
-        cache.evictAll()
+        cache.sync { evictAll() }
         pages.forEach(Page::reset)
     }
 
@@ -66,7 +61,7 @@ abstract class PageLoader {
     private var lastRequestIndex = -1
 
     fun request(index: Int) {
-        val image = cache[index]
+        val image = cache.sync { cache[index] }
         if (image != null) {
             notifyPageSucceed(index, image, false)
         } else {
@@ -125,7 +120,7 @@ abstract class PageLoader {
 
     fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
         if (replaceCache) {
-            cache.put(index, image)
+            cache.sync { cache[index] = image }
         }
         pages[index].statusFlow.update { if (image.hasQrCode) PageStatus.Blocked(image) else PageStatus.Ready(image) }
     }

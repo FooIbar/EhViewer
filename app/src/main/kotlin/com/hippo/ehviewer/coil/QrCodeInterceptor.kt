@@ -13,6 +13,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.hasQrCode
 import eu.kanade.tachiyomi.util.system.logcat
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.kt.sync
 
 private val detectQrCodeKey = Extras.Key(default = false)
 
@@ -33,7 +34,7 @@ object QrCodeInterceptor : Interceptor {
             if (image is BitmapImageWithExtraInfo) {
                 fun compute() = runSuspendCatching { hasQrCode(image.image.bitmap) }.onFailure { logcat(it) }.getOrThrow()
                 val hasQrCode = when (val key = result.memoryCacheKey) {
-                    is MemoryCache.Key -> synchronized(cache) { cache[key] } ?: compute().also { synchronized(cache) { cache[key] = it } }
+                    is MemoryCache.Key -> cache.sync { cache[key] } ?: compute().also { cache.sync { cache[key] = it } }
                     null -> compute()
                 }
                 val new = image.copy(hasQrCode = hasQrCode)
