@@ -206,11 +206,10 @@ class DrawerState2(
         /**
          * The default [Saver] implementation for [DrawerState2].
          */
-        fun Saver(confirmStateChange: (DrawerValue) -> Boolean) =
-            Saver<DrawerState2, DrawerValue>(
-                save = { it.currentValue },
-                restore = { DrawerState2(it, confirmStateChange) },
-            )
+        fun Saver(confirmStateChange: (DrawerValue) -> Boolean) = Saver<DrawerState2, DrawerValue>(
+            save = { it.currentValue },
+            restore = { DrawerState2(it, confirmStateChange) },
+        )
     }
 }
 
