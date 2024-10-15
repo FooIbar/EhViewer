@@ -116,8 +116,7 @@ abstract class RangeSet<T : Comparable<T>> :
      * @param elements ranges of values to determine presence of
      * @return whether all values are all contained within the set
      */
-    override fun containsAll(elements: Collection<ClosedRange<T>>): Boolean =
-        elements.all { contains(it) }
+    override fun containsAll(elements: Collection<ClosedRange<T>>): Boolean = elements.all { contains(it) }
 
     /**
      * @return whether the set contains any values

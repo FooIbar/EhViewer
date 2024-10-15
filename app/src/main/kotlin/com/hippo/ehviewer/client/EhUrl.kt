@@ -108,11 +108,10 @@ object EhUrl {
             else -> URL_IMAGE_SEARCH_E
         }
 
-    fun getGalleryDetailUrl(gid: Long, token: String, index: Int = 0, allComment: Boolean = false) =
-        ehUrl(listOf("g", "$gid", token)) {
-            if (index != 0) addQueryParameter("p", "$index")
-            if (allComment) addQueryParameter("hc", "1")
-        }.buildString()
+    fun getGalleryDetailUrl(gid: Long, token: String, index: Int = 0, allComment: Boolean = false) = ehUrl(listOf("g", "$gid", token)) {
+        if (index != 0) addQueryParameter("p", "$index")
+        if (allComment) addQueryParameter("hc", "1")
+    }.buildString()
 
     fun getGalleryMultiPageViewerUrl(gid: Long, token: String) = ehUrl(listOf("mpv", "$gid", token)).buildString()
 

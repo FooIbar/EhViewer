@@ -95,8 +95,7 @@ abstract class Suggestion {
     open val canOpenDirectly: Boolean = false
 }
 
-suspend fun SearchDao.suggestions(prefix: String, limit: Int) =
-    (if (prefix.isBlank()) list(limit) else rawSuggestions(prefix, limit))
+suspend fun SearchDao.suggestions(prefix: String, limit: Int) = (if (prefix.isBlank()) list(limit) else rawSuggestions(prefix, limit))
 
 context(DialogState, DestinationsNavigator)
 @Composable

@@ -4,11 +4,9 @@ import androidx.compose.runtime.Composable
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-fun Any?.ifNotNullThen(content: @Composable () -> Unit): (@Composable () -> Unit)? =
-    if (this != null) content else null
+fun Any?.ifNotNullThen(content: @Composable () -> Unit): (@Composable () -> Unit)? = if (this != null) content else null
 
-fun Boolean.ifTrueThen(content: @Composable () -> Unit): (@Composable () -> Unit)? =
-    if (this) content else null
+fun Boolean.ifTrueThen(content: @Composable () -> Unit): (@Composable () -> Unit)? = if (this) content else null
 
 fun roundToDP(value: Double, places: Int): Double = BigDecimal(value).setScale(places, RoundingMode.HALF_EVEN).toDouble()
 

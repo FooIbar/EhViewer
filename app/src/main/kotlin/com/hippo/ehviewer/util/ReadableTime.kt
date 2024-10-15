@@ -156,6 +156,5 @@ object ReadableTime {
         }
     }
 
-    fun getFilenamableTime(time: Instant = Clock.System.now()): String =
-        FILENAMABLE_DATE_FORMAT.format(time.toLocalDateTime(TimeZone.currentSystemDefault()))
+    fun getFilenamableTime(time: Instant = Clock.System.now()): String = FILENAMABLE_DATE_FORMAT.format(time.toLocalDateTime(TimeZone.currentSystemDefault()))
 }

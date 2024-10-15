@@ -98,16 +98,14 @@ fun rememberSystemUiController(
 }
 
 @Composable
-private fun findWindow(): Window? =
-    (LocalView.current.parent as? DialogWindowProvider)?.window
-        ?: LocalView.current.context.findWindow()
+private fun findWindow(): Window? = (LocalView.current.parent as? DialogWindowProvider)?.window
+    ?: LocalView.current.context.findWindow()
 
-private tailrec fun Context.findWindow(): Window? =
-    when (this) {
-        is Activity -> window
-        is ContextWrapper -> baseContext.findWindow()
-        else -> null
-    }
+private tailrec fun Context.findWindow(): Window? = when (this) {
+    is Activity -> window
+    is ContextWrapper -> baseContext.findWindow()
+    else -> null
+}
 
 /**
  * A helper class for setting the navigation and status bar colors for a [View], gracefully
