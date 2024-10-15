@@ -42,12 +42,12 @@ class StateMapViewModel : ViewModel() {
 
 @Composable
 inline fun <reified T : Any> rememberInVM(
-    vararg inputs: Any?,
+    userKey: Any? = null,
     crossinline init: @DisallowComposableCalls ViewModel.() -> T,
 ) = with(viewModel<StateMapViewModel>()) {
     val key = currentCompositeKeyHash
-    remember(*inputs) {
-        val states = statesMap.getOrPut(key) { ArrayDeque() }
+    remember(userKey) {
+        val states = statesMap.getOrPut(key, ::ArrayDeque)
         states.removeLastOrNull() as T? ?: init()
     }.also { value ->
         val valueState by rememberUpdatedState(value)
