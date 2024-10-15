@@ -21,7 +21,6 @@ import android.content.Context
 import android.os.StrictMode
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.collection.LruCache
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.coroutineScope
 import coil3.EventListener
@@ -37,7 +36,6 @@ import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhTagDatabase
-import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.coil.CropBorderInterceptor
 import com.hippo.ehviewer.coil.DetectBorderInterceptor
 import com.hippo.ehviewer.coil.DownloadThumbInterceptor
@@ -56,6 +54,7 @@ import com.hippo.ehviewer.ktor.Cronet
 import com.hippo.ehviewer.legacy.cleanObsoleteCache
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
+import com.hippo.ehviewer.ui.screen.detailCache
 import com.hippo.ehviewer.ui.tools.dataStateFlow
 import com.hippo.ehviewer.ui.tools.initSETConnection
 import com.hippo.ehviewer.util.AppConfig
@@ -114,6 +113,7 @@ class EhApplication :
         super.onCreate()
         System.loadLibrary("ehviewer")
         lifecycleScope.launchIO {
+            launch { FavouriteStatusRouter.collect { (gid, slot) -> detailCache[gid]?.favoriteSlot = slot } }
             launch { EhTagDatabase }
             launch { EhDB }
             dataStateFlow.value
@@ -222,14 +222,6 @@ class EhApplication :
                 followRedirects = false
                 install(HttpCookies) {
                     storage = EhCookieStore
-                }
-            }
-        }
-
-        val galleryDetailCache by lazy {
-            LruCache<Long, GalleryDetail>(25).also {
-                lifecycleScope.launch {
-                    FavouriteStatusRouter.globalFlow.collect { (gid, slot) -> it[gid]?.favoriteSlot = slot }
                 }
             }
         }

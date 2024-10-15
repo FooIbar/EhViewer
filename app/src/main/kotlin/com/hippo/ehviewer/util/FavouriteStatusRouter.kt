@@ -28,19 +28,19 @@ import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberUpdatedStateInVM
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 
 object FavouriteStatusRouter {
     fun modifyFavourites(gid: Long, slot: Int) {
-        _globalFlow.tryEmit(gid to slot)
+        globalFlow.tryEmit(gid to slot)
     }
 
     private val listenerScope = CoroutineScope(Dispatchers.IO)
 
-    private val _globalFlow = MutableSharedFlow<Pair<Long, Int>>(extraBufferCapacity = 1).apply {
+    val globalFlow = MutableSharedFlow<Pair<Long, Int>>(extraBufferCapacity = 1).apply {
         listenerScope.launch {
             collect { (gid, slot) ->
                 EhDB.updateFavoriteSlot(gid, slot)
@@ -48,7 +48,7 @@ object FavouriteStatusRouter {
         }
     }
 
-    val globalFlow = _globalFlow.asSharedFlow()
+    suspend fun collect(collector: FlowCollector<Pair<Long, Int>>): Nothing = globalFlow.collect(collector)
 
     @Stable
     @Composable
@@ -60,7 +60,7 @@ object FavouriteStatusRouter {
     fun Observe(list: LazyPagingItems<out GalleryInfo>) {
         val realList by rememberUpdatedStateInVM(newValue = list.itemSnapshotList.items)
         launchInVM {
-            globalFlow.collect { (gid, newSlot) ->
+            collect { (gid, newSlot) ->
                 realList.forEach { info ->
                     if (info.gid == gid) info.favoriteSlot = newSlot
                 }

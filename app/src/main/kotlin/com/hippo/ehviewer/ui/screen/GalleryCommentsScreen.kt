@@ -75,7 +75,6 @@ import androidx.compose.ui.unit.max
 import androidx.compose.ui.util.lerp
 import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
-import com.hippo.ehviewer.EhApplication
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -156,7 +155,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
     val animationProgress by animateFloatMergePredictiveBackAsState(enable = commenting) { commenting = false }
     val animateItems by Settings.animateItems.collectAsState()
 
-    val galleryDetail = remember { EhApplication.galleryDetailCache[gid]!! }
+    val galleryDetail = remember { detailCache[gid]!! }
     val userCommentBackField = remember { mutableStateOf(TextFieldValue()) }
     var userComment by userCommentBackField
     var commentId by remember { mutableLongStateOf(-1) }

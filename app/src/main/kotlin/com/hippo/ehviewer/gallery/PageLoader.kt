@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.gallery
 
 import androidx.annotation.CallSuper
-import androidx.collection.lruCache
+import androidx.collection.SieveCache
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
@@ -15,14 +15,14 @@ private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
 abstract class PageLoader {
     private val cache by lazy {
-        lruCache<Int, Image>(
+        SieveCache<Int, Image>(
             maxSize = if (isAtLeastO) {
                 (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
             } else {
                 (OSUtils.appMaxMemory / 3 * 2).toInt()
             },
             sizeOf = { _, v -> v.allocationSize.toInt() },
-            onEntryRemoved = { _, k, o, n ->
+            onEntryRemoved = { k, o, n, _ ->
                 if (o.isRecyclable) {
                     n ?: notifyPageWait(k)
                     o.recycle()
