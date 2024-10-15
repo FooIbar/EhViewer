@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
+import androidx.collection.SieveCache
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,7 +41,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import coil3.imageLoader
-import com.hippo.ehviewer.EhApplication.Companion.galleryDetailCache
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
@@ -91,6 +91,8 @@ import kotlinx.coroutines.async
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.downloadManager
+
+val detailCache = SieveCache<Long, GalleryDetail>(25)
 
 sealed interface GalleryDetailScreenArgs : Parcelable
 
@@ -144,11 +146,11 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
 
     if (galleryInfo !is GalleryDetail && getDetailError.isBlank()) {
         LaunchedEffect(Unit) {
-            val galleryDetail = galleryDetailCache[gid]
+            val galleryDetail = detailCache[gid]
                 ?: runSuspendCatching {
                     withIOContext { EhEngine.getGalleryDetail(galleryDetailUrl) }
                 }.onSuccess { galleryDetail ->
-                    galleryDetailCache.put(galleryDetail.gid, galleryDetail)
+                    detailCache[galleryDetail.gid] = galleryDetail
                     if (Settings.preloadThumbAggressively) {
                         launchIO {
                             with(galleryDetail) {
@@ -317,7 +319,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                             onClick = {
                                 dropdown = false
                                 // Invalidate cache
-                                galleryDetailCache.remove(gid)
+                                detailCache.remove(gid)
 
                                 // Trigger recompose
                                 galleryInfo = galleryInfo?.findBaseInfo()
