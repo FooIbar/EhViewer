@@ -5,22 +5,19 @@ import io.ktor.utils.io.pool.DefaultPool
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class MutexTracker(
-    val mutex: Mutex = Mutex(),
-    var count: Int = 0,
-)
+class MutexTracker(val mutex: Mutex = Mutex(), var count: Int = 0) {
+    operator fun inc() = apply { count++ }
+    operator fun dec() = apply { count-- }
+}
 
-val MutexTracker.free
+val MutexTracker.isFree
     get() = count == 0
-
-operator fun MutexTracker.inc() = apply { count++ }
-operator fun MutexTracker.dec() = apply { count-- }
 
 class MutexPool(capacity: Int) : DefaultPool<MutexTracker>(capacity) {
     override fun produceInstance() = MutexTracker()
     override fun validateInstance(mutex: MutexTracker) {
         check(!mutex.mutex.isLocked)
-        check(mutex.free)
+        check(mutex.isFree)
     }
 }
 
@@ -37,7 +34,7 @@ suspend inline fun <K, R> NamedMutex<K>.withLock(key: K, owner: Any? = null, act
     } finally {
         synchronized(lock) {
             mutex.dec()
-            if (mutex.free) {
+            if (mutex.isFree) {
                 active.remove(key)
                 pool.recycle(mutex)
             }
