@@ -243,9 +243,8 @@ private class AnchoredHorizontalDraggableNode<T>(
     private fun Offset.reverseIfNeeded() = if (isReverseDirection) this * -1f else this * 1f
 }
 
-internal fun <T> AnchoredDraggableState<T>.newOffsetForDelta(delta: Float) =
-    ((if (offset.isNaN()) 0f else offset) + delta)
-        .coerceIn(anchors.minPosition(), anchors.maxPosition())
+internal fun <T> AnchoredDraggableState<T>.newOffsetForDelta(delta: Float) = ((if (offset.isNaN()) 0f else offset) + delta)
+    .coerceIn(anchors.minPosition(), anchors.maxPosition())
 
 /**
  * Compute the target anchor based on the [currentOffset], [velocity] and [positionalThreshold] and
@@ -299,17 +298,16 @@ internal fun <T> anchoredDraggableFlingBehavior(
     density: Density,
     positionalThreshold: (totalDistance: Float) -> Float,
     snapAnimationSpec: AnimationSpec<Float>,
-): TargetedFlingBehavior =
-    snapFlingBehavior(
-        decayAnimationSpec = NoOpDecayAnimationSpec,
-        snapAnimationSpec = snapAnimationSpec,
-        snapLayoutInfoProvider =
-        AnchoredDraggableLayoutInfoProvider(
-            state = state,
-            positionalThreshold = positionalThreshold,
-            velocityThreshold = { with(density) { 125.dp.toPx() } },
-        ),
-    )
+): TargetedFlingBehavior = snapFlingBehavior(
+    decayAnimationSpec = NoOpDecayAnimationSpec,
+    snapAnimationSpec = snapAnimationSpec,
+    snapLayoutInfoProvider =
+    AnchoredDraggableLayoutInfoProvider(
+        state = state,
+        positionalThreshold = positionalThreshold,
+        velocityThreshold = { with(density) { 125.dp.toPx() } },
+    ),
+)
 
 @Suppress("FunctionName")
 @OptIn(ExperimentalFoundationApi::class)
@@ -317,25 +315,24 @@ private fun <T> AnchoredDraggableLayoutInfoProvider(
     state: AnchoredDraggableState<T>,
     positionalThreshold: (totalDistance: Float) -> Float,
     velocityThreshold: () -> Float,
-): SnapLayoutInfoProvider =
-    object : SnapLayoutInfoProvider {
+): SnapLayoutInfoProvider = object : SnapLayoutInfoProvider {
 
-        // We never decay in AnchoredDraggable's fling
-        override fun calculateApproachOffset(velocity: Float, decayOffset: Float) = 0f
+    // We never decay in AnchoredDraggable's fling
+    override fun calculateApproachOffset(velocity: Float, decayOffset: Float) = 0f
 
-        override fun calculateSnapOffset(velocity: Float): Float {
-            val currentOffset = state.requireOffset()
-            val target =
-                state.anchors.computeTarget(
-                    currentOffset = currentOffset,
-                    currentValue = state.currentValue,
-                    velocity = velocity,
-                    positionalThreshold = positionalThreshold,
-                    velocityThreshold = velocityThreshold,
-                )
-            return state.anchors.positionOf(target) - currentOffset
-        }
+    override fun calculateSnapOffset(velocity: Float): Float {
+        val currentOffset = state.requireOffset()
+        val target =
+            state.anchors.computeTarget(
+                currentOffset = currentOffset,
+                currentValue = state.currentValue,
+                velocity = velocity,
+                positionalThreshold = positionalThreshold,
+                velocityThreshold = velocityThreshold,
+            )
+        return state.anchors.positionOf(target) - currentOffset
     }
+}
 
 private val NoOpDecayAnimationSpec: DecayAnimationSpec<Float> =
     object : FloatDecayAnimationSpec {

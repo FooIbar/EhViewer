@@ -238,21 +238,19 @@ private fun PageContainer(
     }
 }
 
-private suspend fun ZoomableState?.panLeft(distance: Float, bounds: Rect): Boolean =
-    if (canPan { it.right - bounds.right }) {
-        panBy(Offset(-distance, 0f))
-        true
-    } else {
-        false
-    }
+private suspend fun ZoomableState?.panLeft(distance: Float, bounds: Rect): Boolean = if (canPan { it.right - bounds.right }) {
+    panBy(Offset(-distance, 0f))
+    true
+} else {
+    false
+}
 
-private suspend fun ZoomableState?.panRight(distance: Float, bounds: Rect): Boolean =
-    if (canPan { bounds.left - it.left }) {
-        panBy(Offset(distance, 0f))
-        true
-    } else {
-        false
-    }
+private suspend fun ZoomableState?.panRight(distance: Float, bounds: Rect): Boolean = if (canPan { bounds.left - it.left }) {
+    panBy(Offset(distance, 0f))
+    true
+} else {
+    false
+}
 
 private inline fun ZoomableState?.canPan(getRemaining: (Rect) -> Float): Boolean {
     // TODO: Remove when K2 mode in IDE is stable

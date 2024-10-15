@@ -66,22 +66,21 @@ object AppUpdater {
         return null
     }
 
-    suspend fun downloadUpdate(url: String, file: File) =
-        ghStatement(url).executeSafely { response ->
-            response.status.ensureSuccess()
-            if (url.endsWith("zip")) {
-                response.bodyAsChannel().toInputStream().use { stream ->
-                    ZipInputStream(stream).use { zip ->
-                        zip.nextEntry
-                        file.outputStream().use {
-                            zip.copyTo(it)
-                        }
+    suspend fun downloadUpdate(url: String, file: File) = ghStatement(url).executeSafely { response ->
+        response.status.ensureSuccess()
+        if (url.endsWith("zip")) {
+            response.bodyAsChannel().toInputStream().use { stream ->
+                ZipInputStream(stream).use { zip ->
+                    zip.nextEntry
+                    file.outputStream().use {
+                        zip.copyTo(it)
                     }
                 }
-            } else {
-                response.bodyAsChannel().copyTo(file)
             }
+        } else {
+            response.bodyAsChannel().copyTo(file)
         }
+    }
 }
 
 private suspend inline fun ghStatement(url: String) = ktorClient.prepareGet(url) {

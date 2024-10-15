@@ -125,8 +125,7 @@ object EhTagDatabase : CoroutineScope {
 
     private fun String.removeSpace(): String = replace(" ", "")
 
-    private fun String.containsIgnoreSpace(other: String, ignoreCase: Boolean = true): Boolean =
-        removeSpace().contains(other.removeSpace(), ignoreCase)
+    private fun String.containsIgnoreSpace(other: String, ignoreCase: Boolean = true): Boolean = removeSpace().contains(other.removeSpace(), ignoreCase)
 
     private fun getMetadata(context: Context): Array<String>? = context.resources.getStringArray(R.array.tag_translation_metadata)
         .takeIf { it.size == 4 }

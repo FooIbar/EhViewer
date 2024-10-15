@@ -12,8 +12,7 @@ import java.io.FileDescriptor
 import okio.Path
 
 @RequiresApi(Build.VERSION_CODES.P)
-private fun sendFileTotally(from: FileDescriptor, to: FileDescriptor): Long =
-    Os.sendfile(to, from, Int64Ref(0), Long.MAX_VALUE)
+private fun sendFileTotally(from: FileDescriptor, to: FileDescriptor): Long = Os.sendfile(to, from, Int64Ref(0), Long.MAX_VALUE)
 
 infix fun Path.sendTo(file: Path): Long {
     if (isAtLeastP) {

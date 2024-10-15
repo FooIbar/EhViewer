@@ -106,8 +106,7 @@ suspend fun keepNoMediaFileStatus(downloadDir: Path = downloadLocation) {
     }
 }
 
-fun getFavoriteIcon(favorited: Boolean) =
-    if (favorited) Icons.Default.Favorite else Icons.Default.FavoriteBorder
+fun getFavoriteIcon(favorited: Boolean) = if (favorited) Icons.Default.Favorite else Icons.Default.FavoriteBorder
 
 suspend fun DialogState.startDownload(
     context: Context,
@@ -281,14 +280,11 @@ suspend fun removeFromFavorites(galleryInfo: BaseGalleryInfo) = doModifyFavorite
     localFavorited = EhDB.containLocalFavorites(galleryInfo.gid),
 )
 
-fun DestinationsNavigator.navToReader(info: BaseGalleryInfo, page: Int = -1) =
-    navToReader(ReaderScreenArgs.Gallery(info, page))
+fun DestinationsNavigator.navToReader(info: BaseGalleryInfo, page: Int = -1) = navToReader(ReaderScreenArgs.Gallery(info, page))
 
-fun DestinationsNavigator.navToReader(uri: Uri) =
-    navToReader(ReaderScreenArgs.Archive(uri))
+fun DestinationsNavigator.navToReader(uri: Uri) = navToReader(ReaderScreenArgs.Archive(uri))
 
-private fun DestinationsNavigator.navToReader(args: ReaderScreenArgs) =
-    navigate(ReaderScreenDestination(args)) { launchSingleTop = true }
+private fun DestinationsNavigator.navToReader(args: ReaderScreenArgs) = navigate(ReaderScreenDestination(args)) { launchSingleTop = true }
 
 context(DialogState, Context, DestinationsNavigator)
 suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
