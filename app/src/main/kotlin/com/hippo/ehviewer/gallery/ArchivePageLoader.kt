@@ -87,7 +87,7 @@ class ArchivePageLoader(
     }
 
     private val jobs = hashMapOf<Int, Job>()
-    private val workerMutex = NamedMutex<Int>()
+    private val workerMutex = NamedMutex<Int>(12)
     private val semaphore = Semaphore(4)
 
     override fun onRequest(index: Int) {
