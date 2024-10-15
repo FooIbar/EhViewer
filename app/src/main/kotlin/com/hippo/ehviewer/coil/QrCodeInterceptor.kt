@@ -33,7 +33,7 @@ object QrCodeInterceptor : Interceptor {
             if (image is BitmapImageWithExtraInfo) {
                 fun compute() = runSuspendCatching { hasQrCode(image.image.bitmap) }.onFailure { logcat(it) }.getOrThrow()
                 val hasQrCode = when (val key = result.memoryCacheKey) {
-                    is MemoryCache.Key -> cache[key] ?: compute().also { cache[key] = it }
+                    is MemoryCache.Key -> synchronized(cache) { cache[key] } ?: compute().also { synchronized(cache) { cache[key] = it } }
                     null -> compute()
                 }
                 val new = image.copy(hasQrCode = hasQrCode)
