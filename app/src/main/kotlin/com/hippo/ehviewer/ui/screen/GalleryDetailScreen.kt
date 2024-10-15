@@ -66,6 +66,7 @@ import com.hippo.ehviewer.ui.main.ArchiveList
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
+import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.AppHelper
@@ -111,36 +112,20 @@ data class TokenArgs(
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
-    var galleryInfo by rememberInVM {
-        val casted = args as? GalleryInfoArgs
-        mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
-    }
-    val (gid, token) = remember {
+    val (gid, token) = remember(args) {
         when (args) {
             is GalleryInfoArgs -> with(args.galleryInfo) { gid to token }
             is TokenArgs -> args.gid to args.token
         }
     }
-    val galleryDetailUrl = remember { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
-    var showReadAction by rememberSaveable { mutableStateOf(true) }
-    LaunchedEffect(args, galleryInfo) {
-        if (showReadAction) {
-            val page = (args as? TokenArgs)?.page ?: 0
-            val gi = galleryInfo
-            if (page != 0 && gi != null) {
-                showReadAction = false
-                val result = showSnackbar(
-                    getString(R.string.read_from, page),
-                    getString(R.string.read),
-                    true,
-                )
-                if (result == SnackbarResult.ActionPerformed) {
-                    navToReader(gi.findBaseInfo(), page)
-                }
-            }
-        }
-    }
+    val galleryDetailUrl = remember(gid, token) { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
     ProvideAssistContent(galleryDetailUrl)
+
+    var galleryInfo by rememberInVM {
+        val casted = args as? GalleryInfoArgs
+        mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
+    }
+
     var getDetailError by rememberSaveable { mutableStateOf("") }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -402,6 +387,16 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
     ) {
         val gi = galleryInfo
         if (gi != null) {
+            if (args is TokenArgs && args.page != 0) {
+                val from = stringResource(id = R.string.read_from, args.page)
+                val read = stringResource(id = R.string.read)
+                launchInVM {
+                    val result = showSnackbar(from, read, true)
+                    if (result == SnackbarResult.ActionPerformed) {
+                        navToReader(gi.findBaseInfo(), args.page)
+                    }
+                }
+            }
             GalleryDetailContent(
                 galleryInfo = gi,
                 contentPadding = it,
