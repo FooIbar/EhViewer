@@ -57,7 +57,7 @@ import com.hippo.ehviewer.ui.screen.detailCache
 import com.hippo.ehviewer.ui.tools.dataStateFlow
 import com.hippo.ehviewer.ui.tools.initSETConnection
 import com.hippo.ehviewer.util.AppConfig
-import com.hippo.ehviewer.util.Crash
+import com.hippo.ehviewer.util.CrashHandler
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.isAtLeastO
@@ -100,16 +100,7 @@ class EhApplication :
             }
         }
         lifecycle.addObserver(lockObserver)
-        val handler = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler { t, e ->
-            try {
-                if (Settings.saveCrashLog) {
-                    Crash.saveCrashLog(e)
-                }
-            } catch (ignored: Throwable) {
-            }
-            handler?.uncaughtException(t, e)
-        }
+        CrashHandler.install()
         super.onCreate()
         System.loadLibrary("ehviewer")
         lifecycleScope.launchIO {
