@@ -6,9 +6,11 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import moe.tarsin.kt.sync
 
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
@@ -31,6 +33,8 @@ abstract class PageLoader {
         },
     )
 
+    private val lock = ReentrantReadWriteLock()
+
     val pages by lazy {
         check(size > 0)
         (0 until size).map { Page(it) }
@@ -48,11 +52,11 @@ abstract class PageLoader {
 
     @CallSuper
     open fun stop() {
-        cache.sync { evictAll() }
+        lock.write { cache.evictAll() }
     }
 
     fun restart() {
-        cache.sync { evictAll() }
+        lock.write { cache.evictAll() }
         pages.forEach(Page::reset)
     }
 
@@ -61,7 +65,7 @@ abstract class PageLoader {
     private var lastRequestIndex = -1
 
     fun request(index: Int) {
-        val image = cache.sync { cache[index] }
+        val image = lock.read { cache[index] }
         if (image != null) {
             notifyPageSucceed(index, image, false)
         } else {
@@ -120,7 +124,7 @@ abstract class PageLoader {
 
     fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
         if (replaceCache) {
-            cache.sync { cache[index] = image }
+            lock.write { cache[index] = image }
         }
         pages[index].statusFlow.update { if (image.hasQrCode) PageStatus.Blocked(image) else PageStatus.Ready(image) }
     }
