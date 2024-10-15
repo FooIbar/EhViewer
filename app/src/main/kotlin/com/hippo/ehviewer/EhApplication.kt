@@ -60,6 +60,7 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.CrashHandler
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
+import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastS
@@ -107,7 +108,8 @@ class EhApplication :
             launchUI { FavouriteStatusRouter.collect { (gid, slot) -> detailCache[gid]?.favoriteSlot = slot } }
             launch { EhTagDatabase }
             launch { EhDB }
-            dataStateFlow.value
+            launchIO { dataStateFlow.value }
+            launchIO { OSUtils.totalMemory }
             launch {
                 if (DownloadManager.labelList.isNotEmpty() && Settings.downloadFilterMode.key !in Settings.prefs) {
                     Settings.downloadFilterMode.value = DownloadsFilterMode.CUSTOM.flag
@@ -118,13 +120,9 @@ class EhApplication :
                 FileUtils.cleanupDirectory(AppConfig.externalCrashDir)
                 FileUtils.cleanupDirectory(AppConfig.externalParseErrorDir)
             }
-            launch {
-                cleanupDownload()
-            }
+            launch { cleanupDownload() }
             if (Settings.requestNews) {
-                launch {
-                    checkDawn()
-                }
+                launch { checkDawn() }
             }
         }
         if (BuildConfig.DEBUG) {
