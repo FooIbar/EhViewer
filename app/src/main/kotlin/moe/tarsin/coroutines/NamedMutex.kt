@@ -16,7 +16,7 @@ val MutexTracker.free
 operator fun MutexTracker.inc() = apply { count++ }
 operator fun MutexTracker.dec() = apply { count-- }
 
-class MutexPool(capacity: Int = 16) : DefaultPool<MutexTracker>(capacity) {
+class MutexPool(capacity: Int) : DefaultPool<MutexTracker>(capacity) {
     override fun produceInstance() = MutexTracker()
     override fun validateInstance(mutex: MutexTracker) {
         check(!mutex.mutex.isLocked)
@@ -24,8 +24,8 @@ class MutexPool(capacity: Int = 16) : DefaultPool<MutexTracker>(capacity) {
     }
 }
 
-class NamedMutex<K> {
-    val pool = MutexPool()
+class NamedMutex<K>(capacity: Int) {
+    val pool = MutexPool(capacity)
     val active = mutableScatterMapOf<K, MutexTracker>()
     val lock = Any()
 }
