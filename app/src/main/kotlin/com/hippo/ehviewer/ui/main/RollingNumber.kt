@@ -60,20 +60,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                 }
                 Column(
                     modifier = Modifier.offset {
-                        val degree = atan2(rotate.y, rotate.x)
-                        val normalized = normalize(zeroDegree - degree)
-                        val number = if (normalized > 9 * gap) {
-                            val reNormalized = normalized - 9 * gap - gap / 2
-                            if (reNormalized > 0) {
-                                // 0 side
-                                reNormalized / gap * 2 - 1
-                            } else {
-                                // 9 side
-                                10 + reNormalized / gap * 2
-                            }
-                        } else {
-                            normalized / gap
-                        }
+                        val number = partialCircleToLinearUIOffset(rotate)
                         numberToOffset(size, 9 - number)
                     },
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -120,6 +107,24 @@ private fun mapSimplyConnectedElementToEuclideanPartialCircle(value: Int?): Offs
         return Offset(cos(theta), sin(theta)) * factor
     } else {
         return Offset(0f, -2f) * factor
+    }
+}
+
+// Output: -1 ~ 10, where -1 and 10 shows nothing
+private fun partialCircleToLinearUIOffset(circleOffset: Offset): Float {
+    val degree = atan2(circleOffset.y, circleOffset.x)
+    val normalized = normalize(zeroDegree - degree)
+    return if (normalized > 9 * gap) {
+        val reNormalized = normalized - 9 * gap - gap / 2
+        if (reNormalized > 0) {
+            // 0 side
+            reNormalized / gap * 2 - 1
+        } else {
+            // 9 side
+            10 + reNormalized / gap * 2
+        }
+    } else {
+        normalized / gap
     }
 }
 
