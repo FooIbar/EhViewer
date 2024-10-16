@@ -57,13 +57,12 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                 val len = str.length
                 val absent = max - len
                 val v = if (where < absent) null else str[where - absent].digitToInt()
-                mapSimplyConnectedToEuclidean(v)
+                mapSimplyConnectedElementToEuclideanPartialCircle(v)
             }
             Column(
                 modifier = Modifier.offset {
                     val degree = atan2(rotate.y, rotate.x)
                     val normalized = normalize(degree - zeroDegree)
-                    println(normalized / gap)
                     val number = if (normalized > 9 * gap) {
                         val reNormalized = normalized - 9 * gap - gap / 2
                         if (reNormalized > 0) {
@@ -106,8 +105,10 @@ private const val gap = (2 * PI / 10).toFloat()
 private const val zeroDegree = -(PI / 2 + gap / 2).toFloat()
 
 // Convert a number which belongs **1-connected** animation space to 2d euclidean space
-// where null is a special element which connected to 0 and 9, with same norm
-private fun mapSimplyConnectedToEuclidean(value: Int?): Offset {
+// Input 1-connected space: 0 1 2 3 4 6 6 7 8 9 null. where 0 is connected to null, so **1-connected**
+// Output: partial circle in 2d euclidean space, the radius is controlled by [factor]
+// but null is always mapped to (0, 2 * factor), and keep same norm (distance) with 0 and 9
+private fun mapSimplyConnectedElementToEuclideanPartialCircle(value: Int?): Offset {
     if (value != null) {
         val theta = zeroDegree + value * gap
         return Offset(cos(theta), sin(theta)) * factor
@@ -119,4 +120,5 @@ private fun mapSimplyConnectedToEuclidean(value: Int?): Offset {
 // Normalize radian to [0, 2 * PI]
 private fun normalize(degree: Float) = (degree - 2 * PI * floor(degree / (2 * PI))).toFloat()
 
+// Convert 2d euclidean space partial circle to UI Offset
 private fun numberToOffset(size: IntSize, number: Float) = IntOffset(0, -(size.height * (number + 1)).toInt())
