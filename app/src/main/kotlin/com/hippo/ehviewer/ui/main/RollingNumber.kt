@@ -97,6 +97,9 @@ private const val factor = 10f
 private const val gap = (2 * PI / 10).toFloat()
 private const val zeroDegree = -(PI / 2 + gap / 2).toFloat()
 
+// A special factor depends on gaps to keep 0 ~ null, null ~ 9 have same distance
+private const val specialNodeDistanceFactor = 1.528f
+
 // Convert a number which belongs **1-connected** animation space to 2d euclidean space
 // Input 1-connected space: 0 1 2 3 4 6 6 7 8 9 null. where 0 is connected to null, so **1-connected**
 // Output: partial circle in 2d euclidean space, the radius is controlled by [factor]
@@ -106,7 +109,7 @@ private fun mapSimplyConnectedElementToEuclideanPartialCircle(value: Int?): Offs
         val theta = zeroDegree - value * gap
         return Offset(cos(theta), sin(theta)) * factor
     } else {
-        return Offset(0f, -2f) * factor
+        return Offset(0f, -specialNodeDistanceFactor) * factor
     }
 }
 
