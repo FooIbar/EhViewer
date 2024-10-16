@@ -61,7 +61,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                 Column(
                     modifier = Modifier.offset {
                         val degree = atan2(rotate.y, rotate.x)
-                        val normalized = normalize(degree - zeroDegree)
+                        val normalized = normalize(zeroDegree - degree)
                         val number = if (normalized > 9 * gap) {
                             val reNormalized = normalized - 9 * gap - gap / 2
                             if (reNormalized > 0) {
@@ -116,7 +116,7 @@ private const val zeroDegree = -(PI / 2 + gap / 2).toFloat()
 // but null is always mapped to (0, 2 * factor), and keep same norm (distance) with 0 and 9
 private fun mapSimplyConnectedElementToEuclideanPartialCircle(value: Int?): Offset {
     if (value != null) {
-        val theta = zeroDegree + value * gap
+        val theta = zeroDegree - value * gap
         return Offset(cos(theta), sin(theta)) * factor
     } else {
         return Offset(0f, -2f) * factor
