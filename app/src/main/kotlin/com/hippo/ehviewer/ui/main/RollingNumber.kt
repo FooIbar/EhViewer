@@ -78,20 +78,16 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                     },
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text(
-                        text = " ",
-                        style = style,
-                    )
                     repeat(10) { i ->
                         Text(
                             text = "${9 - i}",
                             style = style,
                         )
+                        Text(
+                            text = " ",
+                            style = style,
+                        )
                     }
-                    Text(
-                        text = " ",
-                        style = style,
-                    )
                 }
             }
             (0 until maxNumber).map {
@@ -131,4 +127,4 @@ private fun mapSimplyConnectedElementToEuclideanPartialCircle(value: Int?): Offs
 private fun normalize(degree: Float) = (degree - 2 * PI * floor(degree / (2 * PI))).toFloat()
 
 // Convert 2d euclidean space partial circle to UI Offset
-private fun numberToOffset(size: IntSize, number: Float) = IntOffset(0, -(size.height * (number + 1)).toInt())
+private fun numberToOffset(size: IntSize, number: Float) = IntOffset(0, -(size.height * 2 * number).toInt())
