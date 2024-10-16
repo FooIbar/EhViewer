@@ -65,11 +65,11 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                         val number = if (normalized > 9 * gap) {
                             val reNormalized = normalized - 9 * gap - gap / 2
                             if (reNormalized > 0) {
-                                // 9 side
-                                9 + reNormalized / gap * 2
-                            } else {
                                 // 0 side
-                                reNormalized / gap * 2
+                                reNormalized / gap * 2 - 1
+                            } else {
+                                // 9 side
+                                10 + reNormalized / gap * 2
                             }
                         } else {
                             normalized / gap
