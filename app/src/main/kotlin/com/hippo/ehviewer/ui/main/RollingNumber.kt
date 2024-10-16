@@ -13,6 +13,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,7 +49,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
         horizontalArrangement = Arrangement.End,
     ) {
         val content = remember {
-            @Composable { reversed: Int ->
+            val meta = @Composable { reversed: Int ->
                 val max = with(transition) { max(currentState.length, targetState.length) }
                 val rotate by transition.animateOffset { str ->
                     val len = str.length
@@ -93,13 +94,19 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                     )
                 }
             }
+            (0 until maxNumber).map {
+                movableContentOf { meta(it) }
+            }
         }
         val max = with(transition) { max(currentState.length, targetState.length) }
+        check(max <= maxNumber)
         repeat(max) { index ->
-            content(max - index - 1)
+            content[max - index - 1]()
         }
     }
 }
+
+private const val maxNumber = 5
 
 // This factor controls animation speed
 private const val factor = 10f
