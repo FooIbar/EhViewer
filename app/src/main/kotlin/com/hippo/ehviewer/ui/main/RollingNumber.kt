@@ -47,53 +47,55 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
         },
         horizontalArrangement = Arrangement.End,
     ) {
-        val from = transition.currentState
-        val fromLen = from.length
-        val to = transition.targetState
-        val toLen = to.length
-        val max = max(fromLen, toLen)
-        repeat(max) { where ->
-            val rotate by transition.animateOffset { str ->
-                val len = str.length
-                val absent = max - len
-                val v = if (where < absent) null else str[where - absent].digitToInt()
-                mapSimplyConnectedElementToEuclideanPartialCircle(v)
-            }
-            Column(
-                modifier = Modifier.offset {
-                    val degree = atan2(rotate.y, rotate.x)
-                    val normalized = normalize(degree - zeroDegree)
-                    val number = if (normalized > 9 * gap) {
-                        val reNormalized = normalized - 9 * gap - gap / 2
-                        if (reNormalized > 0) {
-                            // 9 side
-                            9 + reNormalized / gap * 2
+        val content = remember {
+            @Composable { where: Int ->
+                val max = with(transition) { max(currentState.length, targetState.length) }
+                val rotate by transition.animateOffset { str ->
+                    val len = str.length
+                    val absent = max - len
+                    val v = if (where < absent) null else str[where - absent].digitToInt()
+                    mapSimplyConnectedElementToEuclideanPartialCircle(v)
+                }
+                Column(
+                    modifier = Modifier.offset {
+                        val degree = atan2(rotate.y, rotate.x)
+                        val normalized = normalize(degree - zeroDegree)
+                        val number = if (normalized > 9 * gap) {
+                            val reNormalized = normalized - 9 * gap - gap / 2
+                            if (reNormalized > 0) {
+                                // 9 side
+                                9 + reNormalized / gap * 2
+                            } else {
+                                // 0 side
+                                reNormalized / gap * 2
+                            }
                         } else {
-                            // 0 side
-                            reNormalized / gap * 2
+                            normalized / gap
                         }
-                    } else {
-                        normalized / gap
-                    }
-                    numberToOffset(size, 9 - number)
-                },
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = " ",
-                    style = style,
-                )
-                repeat(10) { i ->
+                        numberToOffset(size, 9 - number)
+                    },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
                     Text(
-                        text = "${9 - i}",
+                        text = " ",
+                        style = style,
+                    )
+                    repeat(10) { i ->
+                        Text(
+                            text = "${9 - i}",
+                            style = style,
+                        )
+                    }
+                    Text(
+                        text = " ",
                         style = style,
                     )
                 }
-                Text(
-                    text = " ",
-                    style = style,
-                )
             }
+        }
+        val max = with(transition) { max(currentState.length, targetState.length) }
+        repeat(max) { where ->
+            content(where)
         }
     }
 }
