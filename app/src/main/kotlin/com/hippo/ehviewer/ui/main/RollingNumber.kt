@@ -75,7 +75,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                     } else {
                         normalized / gap
                     }
-                    numberToOffset(size, number)
+                    numberToOffset(size, 9 - number)
                 },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -85,7 +85,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                 )
                 repeat(10) { i ->
                     Text(
-                        text = "$i",
+                        text = "${9 - i}",
                         style = style,
                     )
                 }
