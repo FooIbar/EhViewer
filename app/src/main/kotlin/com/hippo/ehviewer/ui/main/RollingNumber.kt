@@ -57,7 +57,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                 val len = str.length
                 val absent = max - len
                 val v = if (where < absent) null else str[where - absent].digitToInt()
-                mapToOffset(v)
+                mapSimplyConnectedToEuclidean(v)
             }
             Column(
                 modifier = Modifier.offset {
@@ -99,11 +99,15 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
     }
 }
 
-private const val gap = (2 * PI / 10).toFloat()
-private const val zeroDegree = - (PI / 2 + gap / 2).toFloat()
+// This factor controls animation speed
 private const val factor = 10f
 
-private fun mapToOffset(value: Int?): Offset {
+private const val gap = (2 * PI / 10).toFloat()
+private const val zeroDegree = -(PI / 2 + gap / 2).toFloat()
+
+// Convert a number which belongs **1-connected** animation space to 2d euclidean space
+// where null is a special element which connected to 0 and 9, with same norm
+private fun mapSimplyConnectedToEuclidean(value: Int?): Offset {
     if (value != null) {
         val theta = zeroDegree + value * gap
         return Offset(cos(theta), sin(theta)) * factor
@@ -112,6 +116,7 @@ private fun mapToOffset(value: Int?): Offset {
     }
 }
 
+// Normalize radian to [0, 2 * PI]
 private fun normalize(degree: Float) = (degree - 2 * PI * floor(degree / (2 * PI))).toFloat()
 
-private fun numberToOffset(size: IntSize, number: Float): IntOffset = IntOffset(0, -(size.height * (number + 1)).toInt())
+private fun numberToOffset(size: IntSize, number: Float) = IntOffset(0, -(size.height * (number + 1)).toInt())
