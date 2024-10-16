@@ -48,11 +48,12 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
         horizontalArrangement = Arrangement.End,
     ) {
         val content = remember {
-            @Composable { where: Int ->
+            @Composable { reversed: Int ->
                 val max = with(transition) { max(currentState.length, targetState.length) }
                 val rotate by transition.animateOffset { str ->
                     val len = str.length
                     val absent = max - len
+                    val where = max - reversed - 1
                     val v = if (where < absent) null else str[where - absent].digitToInt()
                     mapSimplyConnectedElementToEuclideanPartialCircle(v)
                 }
@@ -94,8 +95,8 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
             }
         }
         val max = with(transition) { max(currentState.length, targetState.length) }
-        repeat(max) { where ->
-            content(where)
+        repeat(max) { index ->
+            content(max - index - 1)
         }
     }
 }
