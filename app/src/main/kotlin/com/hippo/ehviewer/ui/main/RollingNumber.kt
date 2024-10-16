@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,8 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -33,12 +30,12 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
         remember(str) { textMeasurer.measure(str, style).size }
     }
     Row(
-        modifier = Modifier.clip(RectangleShape).layout { measurable, constraints ->
+        modifier = Modifier.clipToBounds().layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
             layout(width = placeable.width, height = size.height) {
                 placeable.place(0, 0)
             }
-        }.wrapContentWidth(),
+        },
         horizontalArrangement = Arrangement.End,
     ) {
         val from = transition.currentState
@@ -53,9 +50,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                 if (where < absent) 1f else str[where - absent].digitToInt().toFloat()
             }
             Column(
-                modifier = Modifier.offset {
-                    IntOffset(0, -(size.height * offset).toInt())
-                },
+                modifier = Modifier.offset { IntOffset(0, -(size.height * offset).toInt()) },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 repeat(10) { i ->
