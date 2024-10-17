@@ -148,7 +148,15 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width:
                     }
                 }
             }
-            (0 until maxNumber).map { unsafeLazy { movableContentOf { meta(it) } } }
+            (0 until maxNumber).map {
+                unsafeLazy {
+                    if (width != null) {
+                        { meta(it) }
+                    } else {
+                        movableContentOf { meta(it) }
+                    }
+                }
+            }
         }
         val max = width ?: with(transition) { max(currentState.length, targetState.length) }
         check(max <= maxNumber)
