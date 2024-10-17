@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:property-naming")
-
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.animation.core.animateIntSize
@@ -48,41 +46,41 @@ import kotlin.math.sin
 //    radian of point in Intermediate space is mapped to here discontinuously
 
 // This controls animation speed
-private const val radius = 100f
+private const val RADIUS = 100f
 
 // Gaps between number in radian
-private const val gap = (2 * PI / 10).toFloat()
-private const val zeroDegree = -(PI / 2 - gap / 2).toFloat()
+private const val GAP = (2 * PI / 10).toFloat()
+private const val ZERO_RADIAN = -(PI / 2 - GAP / 2).toFloat()
 
 // null is mapped to (0, - 1.528f * radius)
-private const val specialNodeDistanceFactor = 1.528f
+private const val NULL_NODE_DISTANCE = 1.528f
 
 // Input: Concept space: 1 2 3 4 6 6 7 8 9 0 null
 // Output: Position in 2d euclidean space partial circle
 private fun conceptSpaceToIntermediate(value: Int?): Offset {
     if (value != null) {
-        val theta = zeroDegree - value * gap
-        return Offset(cos(theta), sin(theta)) * radius
+        val theta = ZERO_RADIAN - value * GAP
+        return Offset(cos(theta), sin(theta)) * RADIUS
     } else {
-        return Offset(0f, -specialNodeDistanceFactor) * radius
+        return Offset(0f, -NULL_NODE_DISTANCE) * RADIUS
     }
 }
 
 // Output: -1 ~ 10, where -1 and 10 shows nothing
 private fun intermediateToNumberOffset(circleOffset: Offset): Float {
     val degree = atan2(circleOffset.y, circleOffset.x)
-    val normalized = normalize(zeroDegree - degree)
-    return if (normalized > 9 * gap) {
-        val reNormalized = normalized - 9 * gap - gap / 2
+    val normalized = normalize(ZERO_RADIAN - degree)
+    return if (normalized > 9 * GAP) {
+        val reNormalized = normalized - 9 * GAP - GAP / 2
         if (reNormalized > 0) {
             // 0 side
-            reNormalized / gap * 2 - 1
+            reNormalized / GAP * 2 - 1
         } else {
             // 9 side
-            10 + reNormalized / gap * 2
+            10 + reNormalized / GAP * 2
         }
     } else {
-        normalized / gap
+        normalized / GAP
     }
 }
 
@@ -147,7 +145,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width:
                     }
                 }
             }
-            (0 until maxNumber).map {
+            (0 until MAX_NUMBER).map {
                 unsafeLazy {
                     if (width != null) {
                         { meta(it) }
@@ -158,11 +156,11 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width:
             }
         }
         val max = width ?: with(transition) { max(currentState.length, targetState.length) }
-        check(max <= maxNumber)
+        check(max <= MAX_NUMBER)
         repeat(max) { index ->
             content[max - index - 1].value()
         }
     }
 }
 
-private const val maxNumber = 16
+private const val MAX_NUMBER = 16
