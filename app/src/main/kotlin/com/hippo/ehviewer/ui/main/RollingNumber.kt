@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -114,7 +115,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width:
             layout(width = placeable.width, height = size.height) {
                 placeable.place(0, 0)
             }
-        },
+        }.padding(horizontal = spacing),
         horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.End),
     ) {
         val content = remember {
