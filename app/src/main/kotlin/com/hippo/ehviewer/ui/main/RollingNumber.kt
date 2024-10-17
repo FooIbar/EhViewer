@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
@@ -148,8 +149,9 @@ fun RollingNumber(
     style: TextStyle = LocalTextStyle.current,
     length: Int? = null,
 ) {
+    val isNegative = number < 0
     val textColor = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
-    val string = remember(number) { "$number" }
+    val string = remember(number) { "${abs(number)}" }
     val transition = updateTransition(string)
     val (styleNoSpacing, spacing) = extractSpacingFromTextStyle(style.merge(color = textColor))
     val size = rememberTextStyleNumberMaxSize(styleNoSpacing)
@@ -193,6 +195,16 @@ fun RollingNumber(
                         textAlign = TextAlign.Center,
                     )
                 }
+            }
+        }
+        if (isNegative) {
+            item(key = -1) {
+                Text(
+                    text = "-",
+                    modifier = Modifier.size(size).animateItem(),
+                    style = styleNoSpacing,
+                    textAlign = TextAlign.Center,
+                )
             }
         }
     }
