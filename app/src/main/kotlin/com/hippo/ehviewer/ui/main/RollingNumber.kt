@@ -36,12 +36,12 @@ import kotlin.math.max
 import kotlin.math.sin
 
 // We have three space to make animation looks continuous
-// 1. Concept space, where we have elements 0 1 2 3 4 5 6 7 8 9 null
-//    0, 9, null is connected and the have same norm(distance) to each other
+// 1. Concept space, where we have elements 1 2 3 4 5 6 7 8 9 0 null
+//    0, 1, null is connected and the have same norm(distance) to each other
 // 2. Intermediate, which is 2d euclidean space
 //    0 ~ 9 in Concept space is mapped to a circle rigidly
 //    null is mapped to a special point(0, - 1.528f * radius)
-//    keeping null - 0, null - 9, 0 - 9 have same distance
+//    keeping null - 0, null - 1, 0 - 1 have same distance
 // 3. Number Offset Space
 //    value is from -1 ~ 10, where -1 and 10 shows nothing
 //    radian of point in Intermediate space is mapped to here discontinuously
@@ -56,7 +56,7 @@ private const val zeroDegree = -(PI / 2 - gap / 2).toFloat()
 // null is mapped to (0, - 1.528f * radius)
 private const val specialNodeDistanceFactor = 1.528f
 
-// Input: Concept space: 0 null 1 2 3 4 6 6 7 8 9
+// Input: Concept space: 1 2 3 4 6 6 7 8 9 0 null
 // Output: Position in 2d euclidean space partial circle
 private fun conceptSpaceToIntermediate(value: Int?): Offset {
     if (value != null) {
