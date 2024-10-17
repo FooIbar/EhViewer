@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import com.hippo.ehviewer.util.unsafeLazy
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -147,18 +148,16 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width:
                     }
                 }
             }
-            (0 until maxNumber).map {
-                movableContentOf { meta(it) }
-            }
+            (0 until maxNumber).map { unsafeLazy { movableContentOf { meta(it) } } }
         }
         val max = width ?: with(transition) { max(currentState.length, targetState.length) }
         check(max <= maxNumber)
         repeat(max) { index ->
             Spacer(modifier = Modifier.size(spacing))
-            content[max - index - 1]()
+            content[max - index - 1].value()
         }
         Spacer(modifier = Modifier.size(spacing))
     }
 }
 
-private const val maxNumber = 5
+private const val maxNumber = 16
