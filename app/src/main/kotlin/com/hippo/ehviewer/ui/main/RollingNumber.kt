@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.main
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateOffset
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,7 +17,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -138,13 +141,20 @@ private fun normalize(degree: Float) = (degree - 2 * PI * floor(degree / (2 * PI
 private fun numberOffsetToUIOffset(heightPx: Int, number: Float) = IntOffset(0, -(heightPx * 2 * number).toInt())
 
 @Composable
-fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, length: Int? = null) {
+fun RollingNumber(
+    number: Int,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    style: TextStyle = LocalTextStyle.current,
+    length: Int? = null,
+) {
+    val textColor = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
     val string = remember(number) { "$number" }
     val transition = updateTransition(string)
-    val (styleNoSpacing, spacing) = extractSpacingFromTextStyle(style)
+    val (styleNoSpacing, spacing) = extractSpacingFromTextStyle(style.merge(color = textColor))
     val size = rememberTextStyleNumberMaxSize(styleNoSpacing)
     LazyRow(
-        modifier = Modifier.animateContentSize().padding(horizontal = spacing).layout { measurable, constraints ->
+        modifier = modifier.clipToBounds().padding(horizontal = spacing).layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
             layout(width = placeable.width, height = size.height.roundToPx()) {
                 placeable.place(0, 0)
