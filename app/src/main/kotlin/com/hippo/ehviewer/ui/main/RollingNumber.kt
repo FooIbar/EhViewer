@@ -47,7 +47,7 @@ import kotlin.math.sin
 //    radian of point in Intermediate space is mapped to here discontinuously
 
 // This controls animation speed
-private const val radius = 10f
+private const val radius = 100f
 
 // Gaps between number in radian
 private const val gap = (2 * PI / 10).toFloat()
