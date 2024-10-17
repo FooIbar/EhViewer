@@ -14,6 +14,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.hippo.ehviewer.ui.main.RollingNumber
+import com.hippo.ehviewer.ui.main.RollingNumberPlaceholder
 
 @Composable
 fun PageIndicatorText(
@@ -38,16 +39,16 @@ fun PageIndicatorText(
 
     Row(modifier = modifier, horizontalArrangement = Arrangement.Center) {
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
-            RollingNumber(number = currentPage, style = strokeStyle, width = total.length)
-            RollingNumber(number = currentPage, style = style, width = total.length)
+            RollingNumber(number = currentPage, style = strokeStyle, length = total.length)
+            RollingNumber(number = currentPage, style = style, length = total.length)
         }
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
             Text(text = " / ", style = strokeStyle)
             Text(text = " / ", style = style)
         }
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
-            Text(text = total, style = strokeStyle)
-            Text(text = total, style = style)
+            RollingNumberPlaceholder(number = totalPages, style = strokeStyle)
+            RollingNumberPlaceholder(number = totalPages, style = style)
         }
     }
 }

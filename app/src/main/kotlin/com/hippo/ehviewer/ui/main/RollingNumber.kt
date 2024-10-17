@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.main
 
-import androidx.compose.animation.core.animateIntSize
 import androidx.compose.animation.core.animateOffset
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Arrangement
@@ -8,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,17 +22,64 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.util.unsafeLazy
+import androidx.compose.ui.unit.toSize
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.sin
+
+@Composable
+fun rememberTextStyleNumberMaxSize(textStyle: TextStyle): DpSize {
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    return remember(textStyle, textMeasurer, density) {
+        with(density) {
+            "0123456789".maxOfWith({ (aw, _), (bw, _) -> aw - bw }) { char ->
+                textMeasurer.measure("$char", textStyle).size
+            }.toSize().toDpSize()
+        }
+    }
+}
+
+@Composable
+fun extractSpacingFromTextStyle(style: TextStyle): Pair<TextStyle, Dp> {
+    val density = LocalDensity.current
+    return remember(density, style) {
+        if (style.letterSpacing != TextUnit.Unspecified) {
+            val spacing = with(density) { style.letterSpacing.toDp() }
+            style.copy(letterSpacing = TextUnit.Unspecified) to spacing
+        } else {
+            style to 0.dp
+        }
+    }
+}
+
+@Composable
+fun RollingNumberPlaceholder(number: Int, style: TextStyle = LocalTextStyle.current) {
+    val (styleNoSpacing, spacing) = extractSpacingFromTextStyle(style)
+    val size = rememberTextStyleNumberMaxSize(styleNoSpacing)
+    Row(
+        modifier = Modifier.padding(horizontal = spacing),
+        horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
+    ) {
+        "$number".forEach { char ->
+            Text(
+                text = "$char",
+                style = styleNoSpacing,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.size(size),
+            )
+        }
+    }
+}
 
 // We have three space to make animation looks continuous
 // 1. Concept space, where we have elements 1 2 3 4 5 6 7 8 9 0 null
@@ -88,37 +135,26 @@ private fun intermediateToNumberOffset(circleOffset: Offset): Float {
 private fun normalize(degree: Float) = (degree - 2 * PI * floor(degree / (2 * PI))).toFloat()
 
 // Convert 2d euclidean space partial circle to UI Offset
-private fun numberOffsetToUIOffset(size: IntSize, number: Float) = IntOffset(0, -(size.height * 2 * number).toInt())
+private fun numberOffsetToUIOffset(heightPx: Int, number: Float) = IntOffset(0, -(heightPx * 2 * number).toInt())
 
 @Composable
-fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width: Int? = null) {
+fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, length: Int? = null) {
     val string = remember(number) { "$number" }
     val transition = updateTransition(string)
-    val textMeasurer = rememberTextMeasurer()
-    val size by transition.animateIntSize { str ->
-        remember(str) { textMeasurer.measure(str, style).size }
-    }
-    val density = LocalDensity.current
-    val (styleNoSpacing, spacing) = remember(density, style) {
-        if (style.letterSpacing != TextUnit.Unspecified) {
-            val spacing = with(density) { style.letterSpacing.toDp() }
-            style.copy(letterSpacing = TextUnit.Unspecified) to spacing
-        } else {
-            style to 0.dp
-        }
-    }
+    val (styleNoSpacing, spacing) = extractSpacingFromTextStyle(style)
+    val size = rememberTextStyleNumberMaxSize(styleNoSpacing)
     Row(
-        modifier = Modifier.clipToBounds().layout { measurable, constraints ->
+        modifier = Modifier.clipToBounds().padding(horizontal = spacing).layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
-            layout(width = placeable.width, height = size.height) {
+            layout(width = placeable.width, height = size.height.roundToPx()) {
                 placeable.place(0, 0)
             }
-        }.padding(horizontal = spacing),
-        horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.End),
+        },
+        horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
     ) {
         val content = remember {
             val meta = @Composable { reversed: Int ->
-                val max = width ?: with(transition) { max(currentState.length, targetState.length) }
+                val max = length ?: with(transition) { max(currentState.length, targetState.length) }
                 val rotate by transition.animateOffset { str ->
                     val len = str.length
                     val absent = max - len
@@ -129,36 +165,38 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width:
                 Column(
                     modifier = Modifier.offset {
                         val number = intermediateToNumberOffset(rotate)
-                        numberOffsetToUIOffset(size, number)
+                        numberOffsetToUIOffset(size.height.roundToPx(), number)
                     },
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     repeat(10) { i ->
                         Text(
                             text = "$i",
+                            modifier = Modifier.size(size),
                             style = styleNoSpacing,
+                            textAlign = TextAlign.Center,
                         )
                         Text(
                             text = "",
+                            modifier = Modifier.size(size),
                             style = styleNoSpacing,
+                            textAlign = TextAlign.Center,
                         )
                     }
                 }
             }
             (0 until MAX_NUMBER).map {
-                unsafeLazy {
-                    if (width != null) {
-                        { meta(it) }
-                    } else {
-                        movableContentOf { meta(it) }
-                    }
+                if (length != null) {
+                    { meta(it) }
+                } else {
+                    movableContentOf { meta(it) }
                 }
             }
         }
-        val max = width ?: with(transition) { max(currentState.length, targetState.length) }
+        val max = length ?: with(transition) { max(currentState.length, targetState.length) }
         check(max <= MAX_NUMBER)
         repeat(max) { index ->
-            content[max - index - 1].value()
+            content[max - index - 1]()
         }
     }
 }
