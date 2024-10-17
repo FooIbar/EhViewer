@@ -132,13 +132,13 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width:
                 Column(
                     modifier = Modifier.offset {
                         val number = intermediateToNumberOffset(rotate)
-                        numberOffsetToUIOffset(size, 9 - number)
+                        numberOffsetToUIOffset(size, number)
                     },
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     repeat(10) { i ->
                         Text(
-                            text = "${9 - i}",
+                            text = "$i",
                             style = styleNoSpacing,
                         )
                         Text(
