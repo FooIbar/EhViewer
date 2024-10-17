@@ -8,9 +8,7 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -117,7 +115,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width:
                 placeable.place(0, 0)
             }
         },
-        horizontalArrangement = Arrangement.End,
+        horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.End),
     ) {
         val content = remember {
             val meta = @Composable { reversed: Int ->
@@ -161,10 +159,8 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width:
         val max = width ?: with(transition) { max(currentState.length, targetState.length) }
         check(max <= maxNumber)
         repeat(max) { index ->
-            Spacer(modifier = Modifier.size(spacing))
             content[max - index - 1].value()
         }
-        Spacer(modifier = Modifier.size(spacing))
     }
 }
 
