@@ -39,8 +39,8 @@ fun PageIndicatorText(
 
     Row(modifier = modifier, horizontalArrangement = Arrangement.Center) {
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
-            RollingNumber(number = currentPage, style = strokeStyle)
-            RollingNumber(number = currentPage, style = style)
+            RollingNumber(number = currentPage, style = strokeStyle, length = total.length)
+            RollingNumber(number = currentPage, style = style, length = total.length)
         }
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
             Text(text = " / ", style = strokeStyle)
