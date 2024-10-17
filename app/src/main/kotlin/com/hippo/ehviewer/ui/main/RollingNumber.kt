@@ -71,7 +71,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                             style = style,
                         )
                         Text(
-                            text = " ",
+                            text = "",
                             style = style,
                         )
                     }
