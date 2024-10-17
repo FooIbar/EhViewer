@@ -106,7 +106,7 @@ private const val ZERO_RADIAN = -(PI / 2 - GAP / 2).toFloat()
 // null is mapped to (0, - 1.528f * radius)
 private const val NULL_NODE_DISTANCE = 1.528f
 
-// Input: Concept space: 1 2 3 4 6 6 7 8 9 0 null
+// Input: Concept space: 1 2 3 4 5 6 7 8 9 0 null
 // Output: Position in 2d euclidean space partial circle
 private fun conceptSpaceToIntermediate(value: Int?): Offset {
     if (value != null) {
