@@ -104,6 +104,7 @@ jobs:
           path: app/build/outputs/apk/default/release/app-default-armeabi-v7a-release.apk
 
       - name: Upload mapping
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: default-mapping-${{ github.sha }}
@@ -171,6 +172,7 @@ jobs:
           path: app/build/outputs/apk/marshmallow/release/app-marshmallow-armeabi-v7a-release.apk
 
       - name: Upload mapping
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: marshmallow-mapping-${{ github.sha }}
