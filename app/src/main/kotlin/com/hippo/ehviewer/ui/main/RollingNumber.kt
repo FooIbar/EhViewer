@@ -37,7 +37,7 @@ import kotlin.math.max
 import kotlin.math.sin
 
 @Composable
-fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
+fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, width: Int? = null) {
     val string = remember(number) { "$number" }
     val transition = updateTransition(string)
     val textMeasurer = rememberTextMeasurer()
@@ -64,7 +64,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
     ) {
         val content = remember {
             val meta = @Composable { reversed: Int ->
-                val max = with(transition) { max(currentState.length, targetState.length) }
+                val max = width ?: with(transition) { max(currentState.length, targetState.length) }
                 val rotate by transition.animateOffset { str ->
                     val len = str.length
                     val absent = max - len
@@ -95,7 +95,7 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                 movableContentOf { meta(it) }
             }
         }
-        val max = with(transition) { max(currentState.length, targetState.length) }
+        val max = width ?: with(transition) { max(currentState.length, targetState.length) }
         check(max <= maxNumber)
         repeat(max) { index ->
             Spacer(modifier = Modifier.size(spacing))

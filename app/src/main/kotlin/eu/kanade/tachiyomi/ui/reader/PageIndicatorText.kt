@@ -34,18 +34,20 @@ fun PageIndicatorText(
         drawStyle = Stroke(width = 4f),
     )
 
+    val total = "$totalPages"
+
     Row(modifier = modifier, horizontalArrangement = Arrangement.Center) {
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
-            RollingNumber(number = currentPage, style = strokeStyle)
-            RollingNumber(number = currentPage, style = style)
+            RollingNumber(number = currentPage, style = strokeStyle, width = total.length)
+            RollingNumber(number = currentPage, style = style, width = total.length)
         }
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
             Text(text = " / ", style = strokeStyle)
             Text(text = " / ", style = style)
         }
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
-            Text(text = "$totalPages", style = strokeStyle)
-            Text(text = "$totalPages", style = style)
+            Text(text = total, style = strokeStyle)
+            Text(text = total, style = style)
         }
     }
 }
