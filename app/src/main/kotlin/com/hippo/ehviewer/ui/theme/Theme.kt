@@ -59,7 +59,7 @@ fun EhTheme(useDarkTheme: Boolean, content: @Composable () -> Unit) {
 
 // https://issuetracker.google.com/363892346
 object CustomMotionScheme : MotionScheme {
-    private val motionScheme = MotionScheme.standardMotionScheme()
+    private val motionScheme = MotionScheme.standard()
 
     override fun <T> defaultSpatialSpec() = motionScheme.defaultEffectsSpec<T>()
 
