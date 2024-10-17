@@ -8,7 +8,9 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,10 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -38,6 +43,15 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
     val textMeasurer = rememberTextMeasurer()
     val size by transition.animateIntSize { str ->
         remember(str) { textMeasurer.measure(str, style).size }
+    }
+    val density = LocalDensity.current
+    val (styleNoSpacing, spacing) = remember(density, style) {
+        if (style.letterSpacing != TextUnit.Unspecified) {
+            val spacing = with(density) { style.letterSpacing.toDp() }
+            style.copy(letterSpacing = TextUnit.Unspecified) to spacing
+        } else {
+            style to 0.dp
+        }
     }
     Row(
         modifier = Modifier.clipToBounds().layout { measurable, constraints ->
@@ -68,11 +82,11 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
                     repeat(10) { i ->
                         Text(
                             text = "${9 - i}",
-                            style = style,
+                            style = styleNoSpacing,
                         )
                         Text(
                             text = "",
-                            style = style,
+                            style = styleNoSpacing,
                         )
                     }
                 }
@@ -84,8 +98,10 @@ fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current) {
         val max = with(transition) { max(currentState.length, targetState.length) }
         check(max <= maxNumber)
         repeat(max) { index ->
+            Spacer(modifier = Modifier.size(spacing))
             content[max - index - 1]()
         }
+        Spacer(modifier = Modifier.size(spacing))
     }
 }
 
