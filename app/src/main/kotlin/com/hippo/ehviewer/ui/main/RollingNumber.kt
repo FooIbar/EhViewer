@@ -51,12 +51,12 @@ private const val radius = 100f
 
 // Gaps between number in radian
 private const val gap = (2 * PI / 10).toFloat()
-private const val zeroDegree = -(PI / 2 + gap / 2).toFloat()
+private const val zeroDegree = -(PI / 2 - gap / 2).toFloat()
 
 // null is mapped to (0, - 1.528f * radius)
 private const val specialNodeDistanceFactor = 1.528f
 
-// Input: Concept space: 0 1 2 3 4 6 6 7 8 9 null
+// Input: Concept space: 0 null 1 2 3 4 6 6 7 8 9
 // Output: Position in 2d euclidean space partial circle
 private fun conceptSpaceToIntermediate(value: Int?): Offset {
     if (value != null) {
