@@ -8,16 +8,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -30,6 +33,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
@@ -102,7 +106,7 @@ private const val ZERO_RADIAN = -(PI / 2 - GAP / 2).toFloat()
 // null is mapped to (0, - 1.528f * radius)
 private const val NULL_NODE_DISTANCE = 1.528f
 
-// Input: Concept space: 1 2 3 4 6 6 7 8 9 0 null
+// Input: Concept space: 1 2 3 4 5 6 7 8 9 0 null
 // Output: Position in 2d euclidean space partial circle
 private fun conceptSpaceToIntermediate(value: Int?): Offset {
     if (value != null) {
@@ -138,67 +142,70 @@ private fun normalize(degree: Float) = (degree - 2 * PI * floor(degree / (2 * PI
 private fun numberOffsetToUIOffset(heightPx: Int, number: Float) = IntOffset(0, -(heightPx * 2 * number).toInt())
 
 @Composable
-fun RollingNumber(number: Int, style: TextStyle = LocalTextStyle.current, length: Int? = null) {
-    val string = remember(number) { "$number" }
+fun RollingNumber(
+    number: Int,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    style: TextStyle = LocalTextStyle.current,
+    length: Int? = null,
+) {
+    val isNegative = number < 0
+    val textColor = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
+    val string = remember(number) { "${abs(number)}" }
     val transition = updateTransition(string)
-    val (styleNoSpacing, spacing) = extractSpacingFromTextStyle(style)
+    val (styleNoSpacing, spacing) = extractSpacingFromTextStyle(style.merge(color = textColor))
     val size = rememberTextStyleNumberMaxSize(styleNoSpacing)
-    Row(
-        modifier = Modifier.clipToBounds().padding(horizontal = spacing).layout { measurable, constraints ->
+    LazyRow(
+        modifier = modifier.clipToBounds().padding(horizontal = spacing).layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
             layout(width = placeable.width, height = size.height.roundToPx()) {
                 placeable.place(0, 0)
             }
         },
+        reverseLayout = true,
         horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
     ) {
-        val content = remember {
-            val meta = @Composable { reversed: Int ->
-                val max = length ?: with(transition) { max(currentState.length, targetState.length) }
-                val rotate by transition.animateOffset { str ->
-                    val len = str.length
-                    val absent = max - len
-                    val where = max - reversed - 1
-                    val v = if (where < absent) null else str[where - absent].digitToInt()
-                    conceptSpaceToIntermediate(v)
-                }
-                Column(
-                    modifier = Modifier.offset {
-                        val number = intermediateToNumberOffset(rotate)
-                        numberOffsetToUIOffset(size.height.roundToPx(), number)
-                    },
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    repeat(10) { i ->
-                        Text(
-                            text = "$i",
-                            modifier = Modifier.size(size),
-                            style = styleNoSpacing,
-                            textAlign = TextAlign.Center,
-                        )
-                        Text(
-                            text = "",
-                            modifier = Modifier.size(size),
-                            style = styleNoSpacing,
-                            textAlign = TextAlign.Center,
-                        )
-                    }
-                }
+        val max = length ?: with(transition) { max(currentState.length, targetState.length) }
+        items(max, key = { it }) { reversed ->
+            val rotate by transition.animateOffset { str ->
+                val len = str.length
+                val absent = max - len
+                val where = max - reversed - 1
+                val v = if (where < absent) null else str[where - absent].digitToInt()
+                conceptSpaceToIntermediate(v)
             }
-            (0 until MAX_NUMBER).map {
-                if (length != null) {
-                    { meta(it) }
-                } else {
-                    movableContentOf { meta(it) }
+            Column(
+                modifier = Modifier.animateItem().offset {
+                    val number = intermediateToNumberOffset(rotate)
+                    numberOffsetToUIOffset(size.height.roundToPx(), number)
+                },
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                repeat(10) { i ->
+                    Text(
+                        text = "$i",
+                        modifier = Modifier.size(size),
+                        style = styleNoSpacing,
+                        textAlign = TextAlign.Center,
+                    )
+                    Text(
+                        text = "",
+                        modifier = Modifier.size(size),
+                        style = styleNoSpacing,
+                        textAlign = TextAlign.Center,
+                    )
                 }
             }
         }
-        val max = length ?: with(transition) { max(currentState.length, targetState.length) }
-        check(max <= MAX_NUMBER)
-        repeat(max) { index ->
-            content[max - index - 1]()
+        if (isNegative) {
+            item(key = -1) {
+                Text(
+                    text = "-",
+                    modifier = Modifier.size(size).animateItem(),
+                    style = styleNoSpacing,
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
     }
 }
-
-private const val MAX_NUMBER = 16
