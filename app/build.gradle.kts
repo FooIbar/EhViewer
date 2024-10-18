@@ -140,6 +140,7 @@ android {
             excludes += listOf(
                 "META-INF/DEPENDENCIES",
                 "com", // Compose Destination
+                "org", // Apache 5 HC version info
             )
         }
     }
