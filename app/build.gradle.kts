@@ -137,7 +137,10 @@ android {
             useLegacyPackaging = false
         }
         resources {
-            excludes += "META-INF/DEPENDENCIES"
+            excludes += listOf(
+                "META-INF/DEPENDENCIES",
+                "com", // Compose Destination
+            )
         }
     }
 
