@@ -30,7 +30,6 @@
  * negative chars in their default char type.
  */
 
-#include <stddef.h>     /* size_t */
 #include <ctype.h>
 
 #include "strnatcmp.h"
@@ -39,28 +38,21 @@
 /* These are defined as macros to make it easier to adapt this code to
  * different characters types or comparison functions. */
 static inline int
-nat_isdigit(nat_char a)
+nat_isdigit(const char *a)
 {
-     return isdigit((unsigned char) a);
+     return isdigit((unsigned char) *a);
 }
 
 
 static inline int
-nat_isspace(nat_char a)
+nat_isspace(const char *a)
 {
-     return isspace((unsigned char) a);
-}
-
-
-static inline nat_char
-nat_toupper(nat_char a)
-{
-     return toupper((unsigned char) a);
+     return isspace((unsigned char) *a) || *a == '0' && nat_isdigit(a + 1);
 }
 
 
 static int
-compare_right(nat_char const *a, nat_char const *b)
+compare_right(const char *a, const char *b)
 {
      int bias = 0;
 
@@ -69,11 +61,11 @@ compare_right(nat_char const *a, nat_char const *b)
         both numbers to know that they have the same magnitude, so we
         remember it in BIAS. */
      for (;; a++, b++) {
-          if (!nat_isdigit(*a)  &&  !nat_isdigit(*b))
+          if (!nat_isdigit(a)  &&  !nat_isdigit(b))
                return bias;
-          if (!nat_isdigit(*a))
+          if (!nat_isdigit(a))
                return -1;
-          if (!nat_isdigit(*b))
+          if (!nat_isdigit(b))
                return +1;
           if (*a < *b) {
                if (!bias)
@@ -87,60 +79,38 @@ compare_right(nat_char const *a, nat_char const *b)
 }
 
 
-static int
-strnatcmp0(nat_char const *a, nat_char const *b, int fold_case)
+int
+strnatcmp(const char *a, const char *b)
 {
-     int ai, bi;
-     nat_char ca, cb;
-     int result;
+    int result;
 
-     ai = bi = 0;
-     while (1) {
-          ca = a[ai]; cb = b[bi];
+    while (1) {
+         /* skip over leading spaces or zeros */
+          while (nat_isspace(a))
+               a++;
 
-          /* skip over leading spaces or zeros */
-          while (nat_isspace(ca) || ca == '0')
-               ca = a[++ai];
-
-          while (nat_isspace(cb) || cb == '0')
-               cb = b[++bi];
+          while (nat_isspace(b))
+               b++;
 
           /* process run of digits */
-          if (nat_isdigit(ca)  &&  nat_isdigit(cb)) {
-               if ((result = compare_right(a+ai, b+bi)) != 0)
+          if (nat_isdigit(a)  &&  nat_isdigit(b)) {
+               if ((result = compare_right(a, b)) != 0)
                     return result;
           }
 
-          if (!ca && !cb) {
+          if (!*a && !*b) {
                /* The strings compare the same.  Perhaps the caller
                   will want to call strcmp to break the tie. */
                return 0;
           }
 
-          if (fold_case) {
-               ca = nat_toupper(ca);
-               cb = nat_toupper(cb);
-          }
-
-          if (ca < cb)
+          if (*a < *b)
                return -1;
 
-          if (ca > cb)
+          if (*a > *b)
                return +1;
 
-          ++ai; ++bi;
+          a++; b++;
      }
 }
 
-
-int
-strnatcmp(nat_char const *a, nat_char const *b) {
-     return strnatcmp0(a, b, 0);
-}
-
-
-/* Compare, recognizing numeric string and ignoring case. */
-int
-strnatcasecmp(nat_char const *a, nat_char const *b) {
-     return strnatcmp0(a, b, 1);
-}
