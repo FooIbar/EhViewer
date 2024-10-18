@@ -3,7 +3,6 @@ package com.hippo.ehviewer.ktor
 import android.net.DnsResolver
 import android.os.Build
 import androidx.annotation.RequiresApi
-import arrow.fx.coroutines.parZip
 import com.hippo.ehviewer.util.isAtLeastQ
 import io.ktor.client.engine.apache5.Apache5EngineConfig
 import java.net.InetAddress
@@ -31,7 +30,6 @@ fun Apache5EngineConfig.configureClient() {
     customizeClient {
         setConnectionManager(
             PoolingAsyncClientConnectionManagerBuilder.create().apply {
-                setMaxConnPerRoute(5)
                 setDefaultConnectionConfig(
                     ConnectionConfig.custom().apply {
                         setConnectTimeout(Timeout.ofMilliseconds(connectTimeout))
@@ -59,32 +57,25 @@ fun Apache5EngineConfig.configureClient() {
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
-fun query(host: String, resolver: DnsResolver, executor: Executor) = runBlocking {
-    suspend fun doQuery(type: Int) = suspendCoroutine { cont ->
-        resolver.query(
-            null,
-            host,
-            type,
-            DnsResolver.FLAG_EMPTY,
-            executor,
-            null,
-            object : DnsResolver.Callback<List<InetAddress>> {
-                override fun onAnswer(result: List<InetAddress>, r: Int) {
-                    cont.resume(result)
-                }
-                override fun onError(e: DnsResolver.DnsException) {
-                    cont.resumeWithException(e)
-                }
-            },
-        )
-    }
-
+fun query(host: String, resolver: DnsResolver, executor: Executor): List<InetAddress> = runBlocking {
     try {
-        parZip(
-            { doQuery(DnsResolver.TYPE_A) },
-            { doQuery(DnsResolver.TYPE_AAAA) },
-            { a, b -> (a + b).shuffled() },
-        )
+        suspendCoroutine { cont ->
+            resolver.query(
+                null,
+                host,
+                DnsResolver.FLAG_EMPTY,
+                executor,
+                null,
+                object : DnsResolver.Callback<List<InetAddress>> {
+                    override fun onAnswer(result: List<InetAddress>, r: Int) {
+                        cont.resume(result)
+                    }
+                    override fun onError(e: DnsResolver.DnsException) {
+                        cont.resumeWithException(e)
+                    }
+                },
+            )
+        }
     } catch (e: Exception) {
         throw UnknownHostException(e.message).apply { initCause(e) }
     }
