@@ -8,7 +8,6 @@ import android.os.Build
 import androidx.annotation.RequiresExtension
 import io.ktor.client.engine.HttpClientEngineConfig
 
-class CronetConfig : HttpClientEngineConfig() {
-    var context: Context? = null
+class CronetConfig(val context: Context) : HttpClientEngineConfig() {
     var config: HttpEngine.Builder.() -> Unit = {}
 }

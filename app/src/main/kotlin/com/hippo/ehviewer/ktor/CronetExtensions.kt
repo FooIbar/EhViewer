@@ -7,16 +7,14 @@ import android.os.Build
 import androidx.annotation.RequiresExtension
 import com.hippo.ehviewer.Settings
 import java.io.File
-import splitties.init.appCtx
 
 fun CronetConfig.configureClient() {
-    context = appCtx
     config = {
         setEnableBrotli(true)
         setUserAgent(Settings.userAgent)
 
         // Cache Quic hint only since the real cache mechanism should on Ktor layer
-        val cache = File(appCtx.cacheDir, "http_cache").apply { mkdirs() }
+        val cache = File(context.cacheDir, "http_cache").apply { mkdirs() }
         setStoragePath(cache.path)
         setEnableHttpCache(HttpEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 4096)
 

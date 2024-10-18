@@ -44,7 +44,7 @@ class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cr
     private val executor = dispatcher.asExecutor()
     private val pool = DirectByteBufferPool(32)
     private val client by lazy {
-        with(config) { HttpEngine.Builder(context!!).apply(config).build() }
+        with(config) { HttpEngine.Builder(context).apply(config).build() }
     }
 
     @InternalAPI
