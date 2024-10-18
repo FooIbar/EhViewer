@@ -24,6 +24,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.HorizontalDragEvent.DragDelta
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.snapFlingBehavior
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputChange
@@ -255,31 +257,49 @@ internal fun <T> AnchoredDraggableState<T>.newOffsetForDelta(delta: Float) = ((i
 @ExperimentalFoundationApi
 private fun <T> DraggableAnchors<T>.computeTarget(
     currentOffset: Float,
-    currentValue: T,
     velocity: Float,
     positionalThreshold: (totalDistance: Float) -> Float,
     velocityThreshold: () -> Float,
 ): T {
     val currentAnchors = this
-    val currentAnchorPosition = currentAnchors.positionOf(currentValue)
-    val velocityThresholdPx = velocityThreshold()
-    return if (currentAnchorPosition == currentOffset || currentAnchorPosition.isNaN()) {
-        currentValue
+    require(!currentOffset.isNaN()) { "The offset provided to computeTarget must not be NaN." }
+    val velocitySign = sign(velocity)
+    val isMovingForward = velocitySign == 1.0f
+    val isMoving = isMovingForward || velocitySign == -1.0f
+    // When we're not moving, just pick the closest anchor and don't consider directionality
+    return if (!isMoving) {
+        currentAnchors.closestAnchor(currentOffset)!!
+    } else if (abs(velocity) >= abs(velocityThreshold())) {
+        currentAnchors.closestAnchor(currentOffset, searchUpwards = isMovingForward)!!
     } else {
-        if (abs(velocity) >= abs(velocityThresholdPx)) {
-            currentAnchors.closestAnchor(currentOffset, sign(velocity) > 0)!!
-        } else {
-            val neighborAnchor =
-                currentAnchors.closestAnchor(
-                    currentOffset,
-                    currentOffset - currentAnchorPosition > 0,
-                )!!
-            val neighborAnchorPosition = currentAnchors.positionOf(neighborAnchor)
-            val distance = abs(currentAnchorPosition - neighborAnchorPosition)
-            val relativeThreshold = abs(positionalThreshold(distance))
-            val relativePosition = abs(currentAnchorPosition - currentOffset)
-            if (relativePosition <= relativeThreshold) currentValue else neighborAnchor
-        }
+        val left = currentAnchors.closestAnchor(currentOffset, false)!!
+        val leftAnchorPosition = currentAnchors.positionOf(left)
+        val right = currentAnchors.closestAnchor(currentOffset, true)!!
+        val rightAnchorPosition = currentAnchors.positionOf(right)
+        val distance = abs(leftAnchorPosition - rightAnchorPosition)
+        val relativeThreshold = abs(positionalThreshold(distance))
+        val closestAnchorFromStart =
+            if (isMovingForward) leftAnchorPosition else rightAnchorPosition
+        val relativePosition = abs(closestAnchorFromStart - currentOffset)
+        if (relativePosition <= relativeThreshold) left else right
+    }
+}
+
+// https://issuetracker.google.com/374241709
+@Composable
+fun <T> flingBehavior(
+    state: AnchoredDraggableState<T>,
+    positionalThreshold: (totalDistance: Float) -> Float = AnchoredDraggableDefaults.PositionalThreshold,
+    animationSpec: AnimationSpec<Float> = AnchoredDraggableDefaults.SnapAnimationSpec,
+): TargetedFlingBehavior {
+    val density = LocalDensity.current
+    return remember(density, state, positionalThreshold, animationSpec) {
+        anchoredDraggableFlingBehavior(
+            state = state,
+            density = density,
+            positionalThreshold = positionalThreshold,
+            snapAnimationSpec = animationSpec,
+        )
     }
 }
 
@@ -325,7 +345,6 @@ private fun <T> AnchoredDraggableLayoutInfoProvider(
         val target =
             state.anchors.computeTarget(
                 currentOffset = currentOffset,
-                currentValue = state.currentValue,
                 velocity = velocity,
                 positionalThreshold = positionalThreshold,
                 velocityThreshold = velocityThreshold,
