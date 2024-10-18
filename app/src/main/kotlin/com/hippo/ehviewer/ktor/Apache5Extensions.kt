@@ -4,6 +4,7 @@ import com.hippo.ehviewer.util.isAtLeastQ
 import io.ktor.client.engine.apache5.Apache5EngineConfig
 import org.apache.hc.client5.http.config.ConnectionConfig
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder
+import org.apache.hc.core5.reactor.IOReactorConfig
 import org.apache.hc.core5.reactor.ssl.SSLBufferMode
 import org.apache.hc.core5.ssl.SSLContexts
 import org.apache.hc.core5.util.Timeout
@@ -18,6 +19,11 @@ fun Apache5EngineConfig.configureClient() {
                         setConnectTimeout(Timeout.ofMilliseconds(connectTimeout))
                         setSocketTimeout(Timeout.ofMilliseconds(socketTimeout.toLong()))
                     }.build(),
+                )
+                setIOReactorConfig(
+                    IOReactorConfig.custom().apply {
+                        setIoThreadCount(1)
+                    }.build()
                 )
                 if (!isAtLeastQ) {
                     val context = SSLContexts.createSystemDefault()
