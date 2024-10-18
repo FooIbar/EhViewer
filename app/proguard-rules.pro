@@ -14,7 +14,9 @@
 # Ktor logger
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 
--dontwarn org.conscrypt.Conscrypt
+# Conscrypt
+-dontwarn com.android.org.conscrypt.SSLParametersImpl
+-dontwarn org.apache.harmony.xnet.provider.jsse.SSLParametersImpl
 
 # https://issuetracker.google.com/222232895
 -dontwarn androidx.window.extensions.**
