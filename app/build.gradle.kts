@@ -136,9 +136,6 @@ android {
         dex {
             useLegacyPackaging = false
         }
-        resources {
-            excludes += "META-INF/DEPENDENCIES"
-        }
     }
 
     dependenciesInfo.includeInApk = false
@@ -248,7 +245,7 @@ dependencies {
 
     implementation(libs.telephoto.zoomable)
 
-    implementation(libs.ktor.client.apache5)
+    implementation(libs.ktor.client.core)
 
     implementation(libs.bundles.kotlinx.serialization)
 
@@ -257,6 +254,8 @@ dependencies {
     implementation(libs.jsoup)
 
     coreLibraryDesugaring(libs.desugar)
+
+    implementation(libs.cronet.embedded)
 
     implementation(libs.androidx.profileinstaller)
     "baselineProfile"(project(":benchmark"))

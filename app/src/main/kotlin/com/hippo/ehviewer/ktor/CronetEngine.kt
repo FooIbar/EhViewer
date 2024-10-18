@@ -1,15 +1,5 @@
-@file:RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
-
 package com.hippo.ehviewer.ktor
 
-import android.net.http.HttpEngine
-import android.net.http.HttpException
-import android.net.http.UploadDataProvider
-import android.net.http.UploadDataSink
-import android.net.http.UrlRequest
-import android.net.http.UrlResponseInfo
-import android.os.Build
-import androidx.annotation.RequiresExtension
 import io.ktor.client.engine.HttpClientEngineBase
 import io.ktor.client.engine.callContext
 import io.ktor.client.request.HttpRequestData
@@ -37,15 +27,17 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.job
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.chromium.net.CronetException
+import org.chromium.net.UrlRequest
+import org.chromium.net.UrlResponseInfo
+import org.chromium.net.apihelpers.UploadDataProviders
 
 class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cronet") {
     // Limit thread to 1 since we are async & non-blocking
     override val dispatcher = Dispatchers.Default.limitedParallelism(1)
     private val executor = dispatcher.asExecutor()
     private val pool = DirectByteBufferPool(32)
-    private val client by lazy {
-        with(config) { HttpEngine.Builder(context).apply(config).build() }
-    }
+    private val client = config.client ?: error("Cronet client is not configured")
 
     @InternalAPI
     override suspend fun execute(data: HttpRequestData) = executeHttpRequest(callContext(), data)
@@ -56,7 +48,7 @@ class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cr
     ) = suspendCancellableCoroutine { continuation ->
         val requestTime = GMTDate()
 
-        val callback = object : UrlRequest.Callback {
+        val callback = object : UrlRequest.Callback() {
             val chunkChan = Channel<ByteBuffer>()
             override fun onRedirectReceived(request: UrlRequest, info: UrlResponseInfo, newLocationUrl: String) {
                 continuation.resume(
@@ -95,18 +87,16 @@ class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cr
                 chunkChan.close()
             }
 
-            override fun onFailed(request: UrlRequest, info: UrlResponseInfo?, error: HttpException) {
+            override fun onFailed(request: UrlRequest, info: UrlResponseInfo?, error: CronetException) {
                 if (continuation.isActive) {
                     continuation.resumeWithException(error)
                 } else {
                     chunkChan.close(error)
                 }
             }
-
-            override fun onCanceled(request: UrlRequest, info: UrlResponseInfo?) = Unit
         }
 
-        client.newUrlRequestBuilder(data.url.toString(), executor, callback).apply {
+        client.newUrlRequestBuilder(data.url.toString(), callback, executor).apply {
             setHttpMethod(data.method.value)
             data.headers.flattenForEach { key, value -> addHeader(key, value) }
             data.body.contentType?.let { addHeader(HttpHeaders.ContentType, it.toString()) }
@@ -127,7 +117,7 @@ private fun UrlResponseInfo.toHttpResponseData(
     statusCode = HttpStatusCode.fromValue(httpStatusCode),
     requestTime = requestTime,
     headers = headers {
-        headers.asMap.forEach { (key, value) ->
+        allHeaders.forEach { (key, value) ->
             appendAll(key, value)
         }
     },
@@ -143,17 +133,6 @@ private fun UrlResponseInfo.toHttpResponseData(
 
 private fun OutgoingContent.toUploadDataProvider() = when (this) {
     is OutgoingContent.NoContent -> null
-    is OutgoingContent.ByteArrayContent -> object : UploadDataProvider() {
-        val buffer = ByteBuffer.wrap(bytes()).slice()
-        override fun getLength() = buffer.limit().toLong()
-        override fun read(uploadDataSink: UploadDataSink, byteBuffer: ByteBuffer) {
-            byteBuffer.put(buffer)
-            uploadDataSink.onReadSucceeded(false)
-        }
-        override fun rewind(uploadDataSink: UploadDataSink) {
-            buffer.position(0)
-            uploadDataSink.onRewindSucceeded()
-        }
-    }
+    is OutgoingContent.ByteArrayContent -> UploadDataProviders.create(bytes())
     else -> error("UnsupportedContentType $this")
 }

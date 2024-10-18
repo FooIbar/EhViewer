@@ -43,6 +43,7 @@ import com.hippo.ehviewer.coil.HardwareBitmapInterceptor
 import com.hippo.ehviewer.coil.MapExtraInfoInterceptor
 import com.hippo.ehviewer.coil.MergeInterceptor
 import com.hippo.ehviewer.coil.QrCodeInterceptor
+import com.hippo.ehviewer.cronet.cronetHttpClient
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
@@ -50,7 +51,6 @@ import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.imageLoader
 import com.hippo.ehviewer.ktor.Cronet
-import com.hippo.ehviewer.ktor.configureClient
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
 import com.hippo.ehviewer.ui.screen.detailCache
@@ -64,13 +64,11 @@ import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastS
-import com.hippo.ehviewer.util.isAtLeastSExtension7
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache5.Apache5
 import io.ktor.client.plugins.cookies.HttpCookies
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -195,23 +193,12 @@ class EhApplication :
 
     companion object {
         val ktorClient by lazy {
-            if (isAtLeastSExtension7) {
-                HttpClient(Cronet) {
-                    engine {
-                        configureClient()
-                    }
-                    install(HttpCookies) {
-                        storage = EhCookieStore
-                    }
+            HttpClient(Cronet) {
+                engine {
+                    client = cronetHttpClient
                 }
-            } else {
-                HttpClient(Apache5) {
-                    engine {
-                        configureClient()
-                    }
-                    install(HttpCookies) {
-                        storage = EhCookieStore
-                    }
+                install(HttpCookies) {
+                    storage = EhCookieStore
                 }
             }
         }
