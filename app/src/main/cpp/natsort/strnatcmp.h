@@ -24,14 +24,7 @@
 extern "C" {
 #endif
 
-/* CUSTOMIZATION SECTION
- *
- * You can change this typedef, but must then also change the inline
- * functions in strnatcmp.c */
-typedef char nat_char;
-
-int strnatcmp(nat_char const *a, nat_char const *b);
-int strnatcasecmp(nat_char const *a, nat_char const *b);
+int strnatcmp(const char *a, const char *b);
 
 #ifdef __cplusplus
 }
