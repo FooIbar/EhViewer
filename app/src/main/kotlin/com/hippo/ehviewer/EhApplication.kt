@@ -195,7 +195,7 @@ class EhApplication :
 
     companion object {
         val ktorClient by lazy {
-            if (isAtLeastSExtension7) {
+            if (isAtLeastSExtension7 && Settings.enableCronet) {
                 HttpClient(Cronet) {
                     engine {
                         configureClient()
