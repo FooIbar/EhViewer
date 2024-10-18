@@ -81,7 +81,7 @@ compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinat
 
 material-motion-core = "io.github.fornewid:material-motion-compose-core:2.0.1"
 
-cronet-embedded = "org.chromium.net:cronet-embedded:119.6045.31"
+conscrypt = "org.conscrypt:conscrypt-android:2.5.3"
 
 desugar = "com.android.tools:desugar_jdk_libs_nio:2.1.2"
 
@@ -93,7 +93,7 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 
 ktlint = "com.pinterest:ktlint:1.4.0-kotlin-dev-SNAPSHOT"
 
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-apache5 = { module = "io.ktor:ktor-client-apache5", version.ref = "ktor" }
 
 logcat = "com.squareup.logcat:logcat:0.1"
 
@@ -122,6 +122,7 @@ androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstall
 [bundles]
 coil = ["coil-compose", "coil-gif", "coil-network"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-adaptive", "compose-ui-util"]
+http-client = ["conscrypt", "ktor-client-apache5"]
 kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-okio", "serialization-xml"]
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
 
