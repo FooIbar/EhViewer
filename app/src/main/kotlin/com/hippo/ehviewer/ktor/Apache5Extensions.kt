@@ -5,6 +5,7 @@ import io.ktor.client.engine.apache5.Apache5EngineConfig
 import java.security.Security
 import org.apache.hc.client5.http.config.ConnectionConfig
 import org.apache.hc.client5.http.impl.nio.PoolingAsyncClientConnectionManagerBuilder
+import org.apache.hc.core5.reactor.IOReactorConfig
 import org.apache.hc.core5.util.Timeout
 import org.conscrypt.Conscrypt
 
@@ -20,6 +21,11 @@ fun Apache5EngineConfig.configureClient() {
                     ConnectionConfig.custom().apply {
                         setConnectTimeout(Timeout.ofMilliseconds(connectTimeout))
                         setSocketTimeout(Timeout.ofMilliseconds(socketTimeout.toLong()))
+                    }.build(),
+                )
+                setIOReactorConfig(
+                    IOReactorConfig.custom().apply {
+                        setIoThreadCount(1)
                     }.build(),
                 )
             }.build(),
