@@ -31,7 +31,7 @@ fun Apache5EngineConfig.configureClient() {
     customizeClient {
         setConnectionManager(
             PoolingAsyncClientConnectionManagerBuilder.create().apply {
-                setMaxConnPerRoute(1)
+                setMaxConnPerRoute(5)
                 setDefaultConnectionConfig(
                     ConnectionConfig.custom().apply {
                         setConnectTimeout(Timeout.ofMilliseconds(connectTimeout))
