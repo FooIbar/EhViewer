@@ -418,7 +418,7 @@
     <string name="current_funds">目前資金：</string>
     <string name="insufficient_funds">餘額不足</string>
     <string name="image_limits">圖片配額</string>
-    <string name="image_limits_summary">已用：%1$d / %2$d</string>
+    <string name="image_limits_summary">已用：</string>
     <string name="reset_cost">花費 %d GP 重置</string>
     <string name="reset">重置</string>
     <string name="settings_privacy">隱私</string>

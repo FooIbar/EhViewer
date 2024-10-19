@@ -119,13 +119,16 @@ fun AvatarIcon() {
                                                 modifier = Modifier.height(12.dp).fillMaxWidth(),
                                             )
                                         }
-                                        Text(
-                                            text = when (limits.maximum) {
-                                                -1 -> stringResource(id = R.string.image_limits_restricted)
-                                                0 -> stringResource(id = R.string.image_limits_normal)
-                                                else -> stringResource(id = R.string.image_limits_summary, limits.current, limits.maximum)
-                                            },
-                                        )
+                                        when (limits.maximum) {
+                                            -1 -> Text(text = stringResource(id = R.string.image_limits_restricted))
+                                            0 -> Text(text = stringResource(id = R.string.image_limits_normal))
+                                            else -> Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(text = stringResource(id = R.string.image_limits_summary))
+                                                RollingNumber(number = limits.current)
+                                                Text(text = " / ")
+                                                RollingNumberPlaceholder(number = limits.maximum)
+                                            }
+                                        }
                                         Text(text = stringResource(id = R.string.current_funds))
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
