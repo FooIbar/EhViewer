@@ -137,10 +137,16 @@ android {
             useLegacyPackaging = false
         }
         resources {
+            // Required by Layout Inspector
+            pickFirsts += "/META-INF/androidx.compose.ui_ui.version"
+
             excludes += listOf(
-                "META-INF/DEPENDENCIES",
-                "com", // Compose Destination
-                "org", // Apache 5 HC version info
+                "/META-INF/**",
+                "/kotlin/**",
+                "**.txt",
+                "**.bin",
+                "**.{html,mmd}", // Compose Destination
+                "**.properties", // Apache 5 HC version info
             )
         }
     }
@@ -176,17 +182,6 @@ android {
 
 composeCompiler {
     featureFlags = setOf(ComposeFeatureFlag.OptimizeNonSkippingGroups)
-}
-
-androidComponents {
-    onVariants(selector().withBuildType("release")) {
-        it.packaging.resources.excludes.addAll(
-            "/META-INF/**",
-            "/kotlin/**",
-            "**.txt",
-            "**.bin",
-        )
-    }
 }
 
 baselineProfile {
