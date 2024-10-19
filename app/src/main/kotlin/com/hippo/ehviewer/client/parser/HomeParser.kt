@@ -29,7 +29,7 @@ object HomeParser {
     fun parseFunds(body: String): Funds {
         FundsRegex.find(body)?.groupValues?.run {
             val fundsC = ParserUtils.parseInt(get(1), 0)
-            val fundsGP = ParserUtils.parseInt(get(2), 0) * 1000
+            val fundsGP = ParserUtils.parseInt(get(2), 0)
             return Funds(fundsGP, fundsC)
         }
         throw ParseException("Parse funds error")
