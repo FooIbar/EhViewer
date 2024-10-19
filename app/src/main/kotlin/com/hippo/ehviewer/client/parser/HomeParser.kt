@@ -30,7 +30,7 @@ object HomeParser {
         FundsRegex.find(body)?.groupValues?.run {
             val fundsC = ParserUtils.parseInt(get(1), 0)
             val fundsGP = ParserUtils.parseInt(get(2), 0) * 1000
-            return Funds("%,d+".format(fundsGP), "%,d".format(fundsC))
+            return Funds(fundsGP, fundsC)
         }
         throw ParseException("Parse funds error")
     }
@@ -40,7 +40,7 @@ object HomeParser {
 }
 
 @Parcelize
-data class Funds(val gp: String, val credit: String) : Parcelable
+data class Funds(val gp: Int, val credit: Int) : Parcelable
 
 @Parcelize
 @Serializable
