@@ -27,6 +27,6 @@ fun FundsItem(
         Badge(containerColor = MaterialTheme.colorScheme.primaryContainer) {
             Text(text = type)
         }
-        RollingNumber(number = amount, style = textStyle)
+        RollingNumber(number = amount, style = textStyle, separator = true)
     }
 }
