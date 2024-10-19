@@ -8,7 +8,7 @@ import moe.tarsin.coroutines.NamedMutex
 import moe.tarsin.coroutines.withLock
 
 object MergeInterceptor : Interceptor {
-    private val mutex = NamedMutex<String>(capacity = 24)
+    private val mutex = NamedMutex<String>()
 
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
         val req = chain.request

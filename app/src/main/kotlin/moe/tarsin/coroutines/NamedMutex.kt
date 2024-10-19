@@ -1,5 +1,6 @@
 package moe.tarsin.coroutines
 
+import androidx.collection.MutableScatterMap
 import androidx.collection.mutableScatterMapOf
 import io.ktor.utils.io.pool.DefaultPool
 import kotlinx.coroutines.sync.Mutex
@@ -12,7 +13,7 @@ class MutexTracker(mutex: Mutex = Mutex(), private var count: Int = 0) : Mutex b
         get() = count == 0
 }
 
-class MutexPool(capacity: Int) : DefaultPool<MutexTracker>(capacity) {
+val mutexPool = object : DefaultPool<MutexTracker>(capacity = 32) {
     override fun produceInstance() = MutexTracker()
     override fun validateInstance(mutex: MutexTracker) {
         check(!mutex.isLocked)
@@ -20,13 +21,11 @@ class MutexPool(capacity: Int) : DefaultPool<MutexTracker>(capacity) {
     }
 }
 
-class NamedMutex<K>(capacity: Int) {
-    val pool = MutexPool(capacity)
-    val active = mutableScatterMapOf<K, MutexTracker>()
-}
+@JvmInline
+value class NamedMutex<K>(val active: MutableScatterMap<K, MutexTracker> = mutableScatterMapOf())
 
 suspend inline fun <K, R> NamedMutex<K>.withLock(key: K, owner: Any? = null, action: () -> R): R {
-    val mutex = synchronized(active) { active.getOrPut(key) { pool.borrow() }.inc() }
+    val mutex = synchronized(active) { active.getOrPut(key) { mutexPool.borrow() }.inc() }
     return try {
         mutex.withLock(owner, action)
     } finally {
@@ -34,7 +33,7 @@ suspend inline fun <K, R> NamedMutex<K>.withLock(key: K, owner: Any? = null, act
             mutex.dec()
             if (mutex.isFree) {
                 active.remove(key)
-                pool.recycle(mutex)
+                mutexPool.recycle(mutex)
             }
         }
     }
