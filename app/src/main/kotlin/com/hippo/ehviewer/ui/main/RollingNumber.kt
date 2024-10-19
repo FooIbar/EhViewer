@@ -157,7 +157,7 @@ fun RollingNumber(
     val size = rememberTextStyleNumberMaxSize(styleNoSpacing)
     LazyRow(
         modifier = modifier.clipToBounds().padding(horizontal = spacing).layout { measurable, constraints ->
-            val placeable = measurable.measure(constraints)
+            val placeable = measurable.measure(constraints.copy(maxHeight = Int.MAX_VALUE))
             layout(width = placeable.width, height = size.height.roundToPx()) {
                 placeable.place(0, 0)
             }
