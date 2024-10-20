@@ -146,7 +146,7 @@ android {
                 "**.txt",
                 "**.bin",
                 "**.{html,mmd}", // Compose Destination
-                "okhttp3", // Okhttp public suffix
+                "/okhttp3/**", // Okhttp public suffix
             )
         }
     }
