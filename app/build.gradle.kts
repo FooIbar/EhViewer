@@ -146,7 +146,7 @@ android {
                 "**.txt",
                 "**.bin",
                 "**.{html,mmd}", // Compose Destination
-                "**.properties", // Apache 5 HC version info
+                "/okhttp3/**", // Okhttp public suffix
             )
         }
     }
@@ -247,7 +247,7 @@ dependencies {
 
     implementation(libs.telephoto.zoomable)
 
-    implementation(libs.bundles.http.client)
+    implementation(libs.ktor.client.okhttp)
 
     implementation(libs.bundles.kotlinx.serialization)
 
