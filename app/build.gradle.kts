@@ -247,7 +247,7 @@ dependencies {
 
     implementation(libs.telephoto.zoomable)
 
-    implementation(libs.bundles.http.client)
+    implementation(libs.ktor.client.okhttp)
 
     implementation(libs.bundles.kotlinx.serialization)
 

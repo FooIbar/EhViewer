@@ -70,7 +70,7 @@ import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache5.Apache5
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.cookies.HttpCookies
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -205,7 +205,7 @@ class EhApplication :
                     }
                 }
             } else {
-                HttpClient(Apache5) {
+                HttpClient(OkHttp) {
                     engine {
                         configureClient()
                     }
