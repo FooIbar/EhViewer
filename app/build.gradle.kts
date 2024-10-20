@@ -146,7 +146,6 @@ android {
                 "**.txt",
                 "**.bin",
                 "**.{html,mmd}", // Compose Destination
-                "**.properties", // Apache 5 HC version info
             )
         }
     }
@@ -247,7 +246,7 @@ dependencies {
 
     implementation(libs.telephoto.zoomable)
 
-    implementation(libs.bundles.http.client)
+    implementation(libs.ktor.client.core)
 
     implementation(libs.bundles.kotlinx.serialization)
 
@@ -256,6 +255,8 @@ dependencies {
     implementation(libs.jsoup)
 
     coreLibraryDesugaring(libs.desugar)
+
+    implementation(libs.cronet.embedded)
 
     implementation(libs.androidx.profileinstaller)
     "baselineProfile"(project(":benchmark"))

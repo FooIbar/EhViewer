@@ -176,12 +176,6 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 useSelectedAsSummary = true,
                 entries = languages,
             )
-            if (BuildConfig.DEBUG) {
-                SwitchPreference(
-                    title = "Enable Cronet",
-                    value = Settings::enableCronet,
-                )
-            }
             if (isAtLeastO) {
                 IntSliderPreference(
                     maxValue = 16384,
