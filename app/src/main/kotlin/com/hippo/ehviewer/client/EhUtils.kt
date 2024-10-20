@@ -20,12 +20,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.core.graphics.ColorUtils
 import arrow.core.memoize
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.GalleryInfo
-import kotlin.math.abs
+import com.materialkolor.ktx.harmonize
 
 object EhUtils {
     const val NONE = -1 // Use it for homepage
@@ -99,51 +97,33 @@ object EhUtils {
 
     fun getCategory(type: Int): String = CATEGORY_VALUES.getOrDefault(type, CATEGORY_VALUES[UNKNOWN])!![0]
 
-    private fun differenceDegrees(a: Float, b: Float): Float = 180.0f - abs(abs(a - b) - 180.0f)
-
-    private fun sanitizeDegreesDouble(degrees: Float): Float {
-        val deg = degrees % 360.0f
-        return if (deg < 0) deg + 360.0f else deg
-    }
-
-    private fun rotationDirection(from: Float, to: Float): Float {
-        val increasingDifference = sanitizeDegreesDouble(to - from)
-        return if (increasingDifference <= 180.0) 1.0f else -1.0f
-    }
-
-    val harmonizeWithRole = { primaryContainer: Int, src: Int ->
-        val fromHct = FloatArray(3).apply { ColorUtils.colorToM3HCT(src, this) }
-        val toHct = FloatArray(3).apply { ColorUtils.colorToM3HCT(primaryContainer, this) }
-        val differenceDegrees = differenceDegrees(fromHct[0], toHct[0])
-        val rotationDegrees = minOf(differenceDegrees * 0.5f, 15.0f)
-        val outputHue = sanitizeDegreesDouble(fromHct[0] + rotationDegrees * rotationDirection(fromHct[0], toHct[0]))
-        ColorUtils.M3HCTToColor(outputHue, toHct[1], toHct[2])
-    }.memoize()
+    val harmonizeWithRole = { primaryContainer: Color, src: Color -> primaryContainer.harmonize(src) }.memoize()
 
     @Stable
     @ReadOnlyComposable
     @Composable
     fun getCategoryColor(category: Int): Color {
-        val primary = when (category) {
-            DOUJINSHI -> BG_COLOR_DOUJINSHI
-            MANGA -> BG_COLOR_MANGA
-            ARTIST_CG -> BG_COLOR_ARTIST_CG
-            GAME_CG -> BG_COLOR_GAME_CG
-            WESTERN -> BG_COLOR_WESTERN
-            NON_H -> BG_COLOR_NON_H
-            IMAGE_SET -> BG_COLOR_IMAGE_SET
-            COSPLAY -> BG_COLOR_COSPLAY
-            ASIAN_PORN -> BG_COLOR_ASIAN_PORN
-            MISC -> BG_COLOR_MISC
-            else -> BG_COLOR_UNKNOWN
-        }.toInt()
-        val color = if (Settings.harmonizeCategoryColor) {
-            val primaryContainer = MaterialTheme.colorScheme.primaryContainer.toArgb()
+        val primary = Color(
+            when (category) {
+                DOUJINSHI -> BG_COLOR_DOUJINSHI
+                MANGA -> BG_COLOR_MANGA
+                ARTIST_CG -> BG_COLOR_ARTIST_CG
+                GAME_CG -> BG_COLOR_GAME_CG
+                WESTERN -> BG_COLOR_WESTERN
+                NON_H -> BG_COLOR_NON_H
+                IMAGE_SET -> BG_COLOR_IMAGE_SET
+                COSPLAY -> BG_COLOR_COSPLAY
+                ASIAN_PORN -> BG_COLOR_ASIAN_PORN
+                MISC -> BG_COLOR_MISC
+                else -> BG_COLOR_UNKNOWN
+            }.toInt(),
+        )
+        return if (Settings.harmonizeCategoryColor) {
+            val primaryContainer = MaterialTheme.colorScheme.primaryContainer
             harmonizeWithRole(primaryContainer, primary)
         } else {
             primary
         }
-        return Color(color)
     }
 
     val categoryTextColor = Color(0xffe6e0e9)
