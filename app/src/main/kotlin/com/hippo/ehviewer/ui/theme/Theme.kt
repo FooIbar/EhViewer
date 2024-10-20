@@ -7,7 +7,7 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.expressiveLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -43,7 +43,7 @@ fun EhTheme(useDarkTheme: Boolean, content: @Composable () -> Unit) {
         if (isAtLeastS) {
             dynamicLightColorScheme(context)
         } else {
-            lightColorScheme()
+            expressiveLightColorScheme()
         }
     }
 
@@ -58,18 +58,6 @@ fun EhTheme(useDarkTheme: Boolean, content: @Composable () -> Unit) {
 }
 
 // https://issuetracker.google.com/363892346
-object CustomMotionScheme : MotionScheme {
-    private val motionScheme = MotionScheme.standard()
-
-    override fun <T> defaultSpatialSpec() = motionScheme.defaultEffectsSpec<T>()
-
-    override fun <T> fastSpatialSpec() = motionScheme.fastSpatialSpec<T>()
-
-    override fun <T> slowSpatialSpec() = motionScheme.slowSpatialSpec<T>()
-
-    override fun <T> defaultEffectsSpec() = motionScheme.defaultEffectsSpec<T>()
-
-    override fun <T> fastEffectsSpec() = motionScheme.fastEffectsSpec<T>()
-
-    override fun <T> slowEffectsSpec() = motionScheme.slowEffectsSpec<T>()
+object CustomMotionScheme : MotionScheme by MotionScheme.expressive() {
+    override fun <T> defaultSpatialSpec() = defaultEffectsSpec<T>()
 }
