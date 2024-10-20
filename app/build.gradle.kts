@@ -222,6 +222,7 @@ dependencies {
 
     implementation(libs.androidx.work.runtime)
     implementation(libs.material.motion.core)
+    implementation(libs.material.kolor)
 
     implementation(libs.bundles.splitties)
 
