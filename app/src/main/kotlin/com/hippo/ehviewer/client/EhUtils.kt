@@ -23,7 +23,10 @@ import androidx.compose.ui.graphics.Color
 import arrow.core.memoize
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.GalleryInfo
-import com.materialkolor.ktx.harmonize
+import com.materialkolor.hct.Hct
+import com.materialkolor.ktx.from
+import com.materialkolor.ktx.toColor
+import kotlin.math.abs
 
 object EhUtils {
     const val NONE = -1 // Use it for homepage
@@ -97,7 +100,26 @@ object EhUtils {
 
     fun getCategory(type: Int): String = CATEGORY_VALUES.getOrDefault(type, CATEGORY_VALUES[UNKNOWN])!![0]
 
-    val harmonizeWithRole = { primaryContainer: Color, src: Color -> primaryContainer.harmonize(src) }.memoize()
+    private fun differenceDegrees(a: Double, b: Double): Double = 180.0 - abs(abs(a - b) - 180.0)
+
+    private fun sanitizeDegreesDouble(degrees: Double): Double {
+        val deg = degrees % 360.0
+        return if (deg < 0) deg + 360.0 else deg
+    }
+
+    private fun rotationDirection(from: Double, to: Double): Double {
+        val increasingDifference = sanitizeDegreesDouble(to - from)
+        return if (increasingDifference <= 180.0) 1.0 else -1.0
+    }
+
+    val harmonizeWithRole = { primaryContainer: Color, src: Color ->
+        val fromHct = Hct.from(src)
+        val toHct = Hct.from(primaryContainer)
+        val differenceDegrees = differenceDegrees(toHct.hue, fromHct.hue)
+        val rotationDegrees = minOf(differenceDegrees * 0.5, 15.0)
+        val outputHue = sanitizeDegreesDouble(fromHct.hue + rotationDegrees * rotationDirection(fromHct.hue, toHct.hue))
+        Hct.from(outputHue, toHct.chroma, toHct.tone).toColor()
+    }.memoize()
 
     @Stable
     @ReadOnlyComposable
