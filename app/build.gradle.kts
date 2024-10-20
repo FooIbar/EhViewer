@@ -146,7 +146,7 @@ android {
                 "**.txt",
                 "**.bin",
                 "**.{html,mmd}", // Compose Destination
-                "**.properties", // Apache 5 HC version info
+                "okhttp3", // Okhttp public suffix
             )
         }
     }
