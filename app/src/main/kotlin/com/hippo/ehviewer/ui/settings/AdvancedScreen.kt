@@ -182,6 +182,13 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     value = Settings::enableCronet,
                 )
             }
+            IntSliderPreference(
+                maxValue = 16,
+                minValue = 2,
+                step = 1,
+                title = "Thumb Concurrency (Restart required)",
+                value = Settings::thumbConcurrency,
+            )
             if (isAtLeastO) {
                 IntSliderPreference(
                     maxValue = 16384,
