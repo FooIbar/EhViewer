@@ -24,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -90,6 +91,15 @@ fun launchInVM(
     block: suspend CoroutineScope.() -> Unit,
 ) = rememberInVM {
     viewModelScope.launch(context, start, block)
+}
+
+@Composable
+fun <R> asyncInVM(
+    context: CoroutineContext = EmptyCoroutineContext,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend CoroutineScope.() -> R,
+) = rememberInVM {
+    viewModelScope.async(context, start, block)
 }
 
 @Composable
