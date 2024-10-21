@@ -185,7 +185,6 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
             IntSliderPreference(
                 maxValue = 16,
                 minValue = 2,
-                step = 1,
                 title = "Thumb Concurrency (Restart required)",
                 value = Settings::thumbConcurrency,
             )
