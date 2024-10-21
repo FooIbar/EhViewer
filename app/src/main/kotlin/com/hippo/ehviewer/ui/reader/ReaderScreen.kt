@@ -70,6 +70,7 @@ import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.asyncInVM
+import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.util.displayString
 import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
@@ -110,18 +111,16 @@ private fun Background(
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
-    val pageLoader = asyncInVM {
-        preparePageLoader(args).apply {
-            start()
+    val deferredLoader = asyncInVM { preparePageLoader(args) }
+    Await({ deferredLoader.await() }) { loader ->
+        launchInVM {
+            loader.start()
             try {
                 awaitCancellation()
             } finally {
-                stop()
+                loader.stop()
             }
         }
-    }
-
-    Await({ pageLoader.await() }) { pageLoader ->
         val bgColor by collectBackgroundColorAsState()
         val readingFailed = stringResource(R.string.error_reading_failed)
         val uiController = rememberSystemUiController()
@@ -137,7 +136,7 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
             }
         }
         Await(
-            block = { catch { readingFailed.takeUnless { pageLoader.awaitReady() } }.fold({ it.displayString() }, { it }) },
+            block = { catch { readingFailed.takeUnless { loader.awaitReady() } }.fold({ it.displayString() }, { it }) },
             placeholder = {
                 Background(bgColor) {
                     CircularProgressIndicator()
@@ -146,8 +145,8 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
         ) { error ->
             if (error == null) {
                 val info = (args as? ReaderScreenArgs.Gallery)?.info
-                key(pageLoader) {
-                    ReaderScreen(pageLoader, info, navigator)
+                key(loader) {
+                    ReaderScreen(loader, info, navigator)
                 }
             } else {
                 Background(bgColor) {
