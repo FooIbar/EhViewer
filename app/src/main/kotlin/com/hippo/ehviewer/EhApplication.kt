@@ -28,7 +28,7 @@ import coil3.SingletonImageLoader
 import coil3.asImage
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
-import coil3.network.ktor3.KtorNetworkFetcherFactory
+import coil3.network.NetworkFetcher
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -43,6 +43,7 @@ import com.hippo.ehviewer.coil.HardwareBitmapInterceptor
 import com.hippo.ehviewer.coil.MapExtraInfoInterceptor
 import com.hippo.ehviewer.coil.MergeInterceptor
 import com.hippo.ehviewer.coil.QrCodeInterceptor
+import com.hippo.ehviewer.coil.limitConcurrency
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
@@ -161,7 +162,7 @@ class EhApplication :
         interceptorCoroutineContext(Dispatchers.Default)
         components {
             serviceLoaderEnabled(false)
-            add(KtorNetworkFetcherFactory(httpClient = { ktorClient }))
+            add(NetworkFetcher.Factory({ ktorClient.limitConcurrency() }))
             add(MergeInterceptor)
             add(DownloadThumbInterceptor)
             if (isAtLeastO) {
