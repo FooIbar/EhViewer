@@ -26,15 +26,15 @@ class NamedSemaphore<K>(val permits: Int) {
 }
 
 suspend inline fun <K, R> NamedSemaphore<K>.withPermit(key: K, action: () -> R): R {
-    val mutex = synchronized(active) { active.getOrPut(key) { pool.borrow() }.inc() }
+    val semaphore = synchronized(active) { active.getOrPut(key) { pool.borrow() }.inc() }
     return try {
-        mutex.withPermit(action)
+        semaphore.withPermit(action)
     } finally {
         synchronized(active) {
-            mutex.dec()
-            if (mutex.isFree) {
+            semaphore.dec()
+            if (semaphore.isFree) {
                 active.remove(key)
-                pool.recycle(mutex)
+                pool.recycle(semaphore)
             }
         }
     }
