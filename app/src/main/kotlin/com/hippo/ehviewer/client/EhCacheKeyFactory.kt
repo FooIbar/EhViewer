@@ -25,7 +25,7 @@ import com.hippo.ehviewer.client.data.NormalGalleryPreview
 
 const val URL_PREFIX_THUMB_E = "https://ehgt.org/"
 const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/t/"
-const val URL_SIGNATURE_THUMB_NORMAL = ".hath.network"
+const val URL_SIGNATURE_THUMB_NORMAL = ".hath.network/cm/"
 private const val NORMAL_PREVIEW_PREFIX = "$"
 private val NormalPreviewKeyRegex = Regex("/(\\d+-\\d+)\\.jpg$")
 
