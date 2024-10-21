@@ -38,10 +38,10 @@ jobs:
           workspaces: "./app/src/main/rust"
 
       - name: CMake Cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: app/.cxx
-          key: cmake-${{ hashFiles('gradle/libs.versions.toml', 'app/build.gradle.kts', 'app/src/main/cpp/CMakeLists.txt') }}
+          key: cmake-
           restore-keys: cmake-
 
       - name: Setup Gradle
