@@ -111,8 +111,7 @@ private fun Background(
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
-    val deferredLoader = asyncInVM { preparePageLoader(args) }
-    Await({ deferredLoader.await() }) { loader ->
+    Await(with(asyncInVM { preparePageLoader(args) }) { { await() } }) { loader ->
         launchInVM {
             loader.start()
             try {
