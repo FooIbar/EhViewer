@@ -51,6 +51,7 @@ import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.imageLoader
 import com.hippo.ehviewer.ktor.Cronet
 import com.hippo.ehviewer.ktor.configureClient
+import com.hippo.ehviewer.ktor.configureCommon
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
 import com.hippo.ehviewer.ui.screen.detailCache
@@ -197,21 +198,13 @@ class EhApplication :
         val ktorClient by lazy {
             if (isAtLeastSExtension7 && Settings.enableCronet) {
                 HttpClient(Cronet) {
-                    engine {
-                        configureClient()
-                    }
-                    install(HttpCookies) {
-                        storage = EhCookieStore
-                    }
+                    engine { configureClient() }
+                    configureCommon()
                 }
             } else {
                 HttpClient(OkHttp) {
-                    engine {
-                        configureClient()
-                    }
-                    install(HttpCookies) {
-                        storage = EhCookieStore
-                    }
+                    engine { configureClient() }
+                    configureCommon()
                 }
             }
         }
