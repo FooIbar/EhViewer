@@ -85,7 +85,7 @@ object EhUtils {
     private val CATEGORY_STRINGS = CATEGORY_VALUES.entries.map { (k, v) -> v to k }
 
     val isExHentai: Boolean
-        get() = Settings.gallerySite == EhUrl.SITE_EX
+        get() = Settings.gallerySite.value == EhUrl.SITE_EX
 
     fun getCategory(type: String?): Int {
         for (entry in CATEGORY_STRINGS) {
@@ -154,7 +154,7 @@ object EhUtils {
         EhCookieStore.removeAllCookies()
         Settings.displayName.value = null
         Settings.hasSignedIn.value = false
-        Settings.gallerySite = EhUrl.SITE_E
+        Settings.gallerySite.value = EhUrl.SITE_E
         Settings.needSignIn.value = true
     }
 
