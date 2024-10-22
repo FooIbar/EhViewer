@@ -100,6 +100,8 @@ object EhUtils {
 
     fun getCategory(type: Int): String = CATEGORY_VALUES.getOrDefault(type, CATEGORY_VALUES[UNKNOWN])!![0]
 
+    fun invCategory(category: Int): Int = category.inv() and ALL_CATEGORY
+
     private fun differenceDegrees(a: Double, b: Double): Double = 180.0 - abs(abs(a - b) - 180.0)
 
     private fun sanitizeDegreesDouble(degrees: Double): Double {
