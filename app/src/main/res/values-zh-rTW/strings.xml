@@ -301,6 +301,8 @@
     <string name="settings_eh_thumb_resolution">縮圖解析度</string>
     <string name="settings_eh_thumb_resolution_summary">%s，指定解析度可能會使縮圖取得失敗</string>
     <string name="settings_eh_thumb_resolution_auto">自動</string>
+    <string name="settings_eh_force_eh_thumb">使用 e-hentai 縮圖伺服器</string>
+    <string name="settings_eh_force_eh_thumb_summary">若縮圖載入遇到問題可嘗試停用此項</string>
     <string name="settings_eh_show_jpn_title">顯示日文標題</string>
     <string name="settings_eh_show_jpn_title_summary">需同時在 EHentai 網站設定中啟用 Japanese Title</string>
     <string name="settings_eh_show_gallery_pages">顯示圖庫頁數</string>

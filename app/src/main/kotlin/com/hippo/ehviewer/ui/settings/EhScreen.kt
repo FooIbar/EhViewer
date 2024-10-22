@@ -38,6 +38,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhTagDatabase
+import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
@@ -125,12 +126,22 @@ fun EhScreen(navigator: DestinationsNavigator) {
                         EhUtils.signOut()
                     }
                 }
+                val gallerySite = Settings.gallerySite.asMutableState()
                 SimpleMenuPreferenceInt(
                     title = stringResource(id = R.string.settings_eh_gallery_site),
                     entry = R.array.gallery_site_entries,
                     entryValueRes = R.array.gallery_site_entry_values,
-                    value = Settings::gallerySite.observed,
+                    value = gallerySite,
                 )
+                AnimatedVisibility(gallerySite.value == EhUrl.SITE_EX) {
+                    var forceEhThumb by Settings.forceEhThumb.asMutableState()
+                    SwitchPref(
+                        checked = forceEhThumb,
+                        onMutate = { forceEhThumb = !forceEhThumb },
+                        title = stringResource(id = R.string.settings_eh_force_eh_thumb),
+                        summary = stringResource(id = R.string.settings_eh_force_eh_thumb_summary),
+                    )
+                }
                 Preference(
                     title = stringResource(id = R.string.settings_u_config),
                     summary = stringResource(id = R.string.settings_u_config_summary),

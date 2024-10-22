@@ -40,13 +40,11 @@ fun postLogin() = GlobalScope.async(Dispatchers.IO) {
         }
 
         // Sad panda check
-        Settings.gallerySite = EhUrl.SITE_EX
-
-        // Explicitly use ex url since https://github.com/Ehviewer-Overhauled/Ehviewer/issues/1239#issuecomment-1632584525
         EhEngine.getUConfig(EhUrl.URL_UCONFIG_EX)
         EhCookieStore.flush()
+        Settings.gallerySite.value = EhUrl.SITE_EX
     }.onFailure {
-        Settings.gallerySite = EhUrl.SITE_E
+        Settings.gallerySite.value = EhUrl.SITE_E
     }
 
     Settings.hasSignedIn.value = true
