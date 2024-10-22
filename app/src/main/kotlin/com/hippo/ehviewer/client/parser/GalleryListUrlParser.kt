@@ -15,124 +15,57 @@
  */
 package com.hippo.ehviewer.client.parser
 
-import android.net.Uri
-import android.os.Build
+import arrow.core.Either
 import com.hippo.ehviewer.client.EhUrl
+import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.ListUrlBuilder
-import eu.kanade.tachiyomi.util.system.logcat
-import java.io.UnsupportedEncodingException
-import java.net.MalformedURLException
-import java.net.URL
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
+import io.ktor.http.Url
+import io.ktor.http.decodeURLQueryComponent
 
 object GalleryListUrlParser {
-    private val VALID_HOSTS = arrayOf(EhUrl.DOMAIN_EX, EhUrl.DOMAIN_E)
-    private const val PATH_NORMAL = "/"
-    private const val PATH_UPLOADER = "/uploader/"
-    private const val PATH_TAG = "/tag/"
-    private const val PATH_TOPLIST = "/toplist.php"
-    fun parse(urlStr: String): ListUrlBuilder? {
-        val url = try {
-            URL(urlStr)
-        } catch (e: MalformedURLException) {
+    fun parse(urlStr: String) = Either.catch {
+        val url = Url(urlStr)
+        if (url.host != EhUrl.DOMAIN_E && url.host != EhUrl.DOMAIN_EX) {
             return null
         }
-        if (url.host !in VALID_HOSTS) {
-            return null
-        }
-        val path = url.path ?: return null
-        return if (PATH_NORMAL == path || path.isEmpty()) {
-            ListUrlBuilder(url.query)
-        } else if (path.startsWith(PATH_UPLOADER)) {
-            parseUploader(path)
-        } else if (path.startsWith(PATH_TAG)) {
-            parseTag(path)
-        } else if (path.startsWith(PATH_TOPLIST)) {
-            parseToplist(urlStr)
-        } else if (path.startsWith("/")) {
-            val category = try {
-                path.substring(1).toInt()
-            } catch (e: NumberFormatException) {
-                return null
+        // https://youtrack.jetbrains.com/issue/KTOR-7625
+        val segments = url.rawSegments
+        if (segments.size < 2) {
+            ListUrlBuilder(url.parameters).apply {
+                url.parameters["f_shash"]?.let {
+                    mode = ListUrlBuilder.MODE_IMAGE_SEARCH
+                    hash = it
+                }
             }
-            ListUrlBuilder(url.query).also { it.category = category }
         } else {
-            null
-        }
-    }
+            when (val head = segments[1]) {
+                "uploader", "tag" -> ListUrlBuilder(url.parameters).apply {
+                    mode = if (head == "uploader") ListUrlBuilder.MODE_UPLOADER else ListUrlBuilder.MODE_TAG
+                    keyword = segments[2].decodeURLQueryComponent(plusIsSpace = true)
+                }
 
-    // TODO get page
-    private fun parseUploader(path: String): ListUrlBuilder? {
-        var uploader: String?
-        val prefixLength = PATH_UPLOADER.length
-        val index = path.indexOf('/', prefixLength)
-        uploader = if (index < 0) {
-            path.substring(prefixLength)
-        } else {
-            path.substring(prefixLength, index)
-        }
-        uploader = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            URLDecoder.decode(uploader, StandardCharsets.UTF_8)
-        } else {
-            try {
-                URLDecoder.decode(uploader, StandardCharsets.UTF_8.displayName())
-            } catch (e: UnsupportedEncodingException) {
-                logcat(e)
-                return null
+                "toplist.php" -> {
+                    val tl = url.parameters["tl"]
+                    if (tl != null && tl in arrayOf("11", "12", "13", "15")) {
+                        ListUrlBuilder(
+                            mode = ListUrlBuilder.MODE_TOPLIST,
+                            jumpTo = url.parameters["p"],
+                            mKeyword = tl,
+                        )
+                    } else {
+                        null
+                    }
+                }
+
+                else -> {
+                    val category = EhUtils.getCategory(head)
+                    if (category != EhUtils.UNKNOWN) {
+                        ListUrlBuilder(url.parameters).also { it.category = category }
+                    } else {
+                        null
+                    }
+                }
             }
         }
-        if (uploader.isNullOrEmpty()) {
-            return null
-        }
-        val builder = ListUrlBuilder()
-        builder.mode = ListUrlBuilder.MODE_UPLOADER
-        builder.keyword = uploader
-        return builder
-    }
-
-    // TODO get page
-    private fun parseTag(path: String): ListUrlBuilder? {
-        var tag: String?
-        val prefixLength = PATH_TAG.length
-        val index = path.indexOf('/', prefixLength)
-        tag = if (index < 0) {
-            path.substring(prefixLength)
-        } else {
-            path.substring(prefixLength, index)
-        }
-        tag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            URLDecoder.decode(tag, StandardCharsets.UTF_8)
-        } else {
-            try {
-                URLDecoder.decode(tag, StandardCharsets.UTF_8.displayName())
-            } catch (e: UnsupportedEncodingException) {
-                logcat(e)
-                return null
-            }
-        }
-        if (tag.isNullOrEmpty()) {
-            return null
-        }
-        val builder = ListUrlBuilder()
-        builder.mode = ListUrlBuilder.MODE_TAG
-        builder.keyword = tag
-        return builder
-    }
-
-    // TODO get page
-    private fun parseToplist(path: String): ListUrlBuilder? {
-        val uri = Uri.parse(path)
-        if (uri == null || uri.getQueryParameter("tl").isNullOrEmpty()) {
-            return null
-        }
-        val tl = uri.getQueryParameter("tl")!!.toInt()
-        if (tl > 15 || tl < 11) {
-            return null
-        }
-        val builder = ListUrlBuilder()
-        builder.mode = ListUrlBuilder.MODE_TOPLIST
-        builder.keyword = tl.toString()
-        return builder
-    }
+    }.getOrNull()
 }
