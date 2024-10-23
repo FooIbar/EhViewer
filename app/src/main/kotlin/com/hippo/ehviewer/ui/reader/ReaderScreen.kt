@@ -48,7 +48,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowInsetsControllerCompat
-import arrow.core.Either
+import arrow.core.Either.Companion.catch
 import arrow.core.raise.ensure
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hippo.ehviewer.R
@@ -69,6 +69,8 @@ import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
+import com.hippo.ehviewer.ui.tools.asyncInVM
+import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.util.displayString
 import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
@@ -82,6 +84,7 @@ import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlin.coroutines.resume
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
@@ -108,11 +111,14 @@ private fun Background(
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
-    Await({ preparePageLoader(args) }) { pageLoader ->
-        DisposableEffect(pageLoader) {
-            pageLoader.start()
-            onDispose {
-                pageLoader.stop()
+    val pageLoader by asyncInVM(args) { preparePageLoader(args) }
+    Await({ pageLoader.await() }) { loader ->
+        launchInVM(loader) {
+            loader.start()
+            try {
+                awaitCancellation()
+            } finally {
+                loader.stop()
             }
         }
         val bgColor by collectBackgroundColorAsState()
@@ -130,11 +136,7 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
             }
         }
         Await(
-            {
-                Either.catch {
-                    readingFailed.takeUnless { pageLoader.awaitReady() }
-                }.fold({ it.displayString() }, { it })
-            },
+            block = { catch { readingFailed.takeUnless { loader.awaitReady() } }.fold({ it.displayString() }, { it }) },
             placeholder = {
                 Background(bgColor) {
                     CircularProgressIndicator()
@@ -143,8 +145,8 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
         ) { error ->
             if (error == null) {
                 val info = (args as? ReaderScreenArgs.Gallery)?.info
-                key(pageLoader) {
-                    ReaderScreen(pageLoader, info, navigator)
+                key(loader) {
+                    ReaderScreen(loader, info, navigator)
                 }
             } else {
                 Background(bgColor) {
