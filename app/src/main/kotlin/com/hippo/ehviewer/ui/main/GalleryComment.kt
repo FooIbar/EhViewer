@@ -1,30 +1,27 @@
 package com.hippo.ehviewer.ui.main
 
-import android.text.style.ClickableSpan
-import android.text.style.URLSpan
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.LinkInteractionListener
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.fromHtml
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.GalleryComment
-import com.hippo.ehviewer.ui.legacy.LinkifyTextView
 import com.hippo.ehviewer.util.ReadableTime
 
 @Composable
@@ -34,22 +31,13 @@ fun GalleryCommentCard(
     onCardClick: () -> Unit,
     onUserClick: () -> Unit,
     onUrlClick: (String) -> Unit,
-    update: LinkifyTextView.() -> Unit,
-) = comment.run {
-    var currentSpan by remember(comment) { mutableStateOf<ClickableSpan?>(null) }
-    Card(
-        onClick = {
-            val span = currentSpan.apply { currentSpan = null }
-            if (span is URLSpan) {
-                onUrlClick(span.url)
-            } else {
-                onCardClick()
-            }
-        },
-        modifier = modifier,
-    ) {
-        val keylineMargin = dimensionResource(id = R.dimen.keyline_margin)
-        ConstraintLayout(modifier = Modifier.padding(horizontal = keylineMargin, vertical = 8.dp).fillMaxWidth()) {
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Clip,
+    processComment: @Composable (GalleryComment, TextLinkStyles, LinkInteractionListener) -> AnnotatedString = { c, s, l -> AnnotatedString.fromHtml(c.comment, s, l) },
+) = with(comment) {
+    Card(onClick = onCardClick, modifier = modifier) {
+        val margin = dimensionResource(id = R.dimen.keyline_margin)
+        ConstraintLayout(modifier = Modifier.padding(horizontal = margin, vertical = 8.dp).fillMaxWidth()) {
             val (userRef, timeRef, commentRef) = createRefs()
             ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
                 val userText = if (uploader) stringResource(id = R.string.comment_user_uploader, user.orEmpty()) else user.orEmpty()
@@ -68,20 +56,21 @@ fun GalleryCommentCard(
                     },
                 )
             }
-            val textColor = LocalContentColor.current.toArgb()
-            val linkTextColor = MaterialTheme.colorScheme.primary.toArgb()
-            AndroidView(
-                factory = { context ->
-                    LinkifyTextView(context) { currentSpan = it }.apply {
-                        setTextColor(textColor)
-                        setLinkTextColor(linkTextColor)
-                    }
+            val linkColor = MaterialTheme.colorScheme.primary
+            Text(
+                text = processComment(
+                    comment,
+                    TextLinkStyles(style = SpanStyle(color = linkColor)),
+                ) { link ->
+                    check(link is LinkAnnotation.Url)
+                    onUrlClick(link.url)
                 },
                 modifier = Modifier.constrainAs(commentRef) {
                     start.linkTo(parent.start)
                     top.linkTo(userRef.bottom, margin = 8.dp)
                 },
-                update = update,
+                maxLines = maxLines,
+                overflow = overflow,
             )
         }
     }

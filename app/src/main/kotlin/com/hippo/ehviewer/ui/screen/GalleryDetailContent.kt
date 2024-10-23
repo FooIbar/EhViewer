@@ -3,7 +3,6 @@ package com.hippo.ehviewer.ui.screen
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.text.TextUtils.TruncateAt.END
 import androidx.annotation.StringRes
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.MutatorMutex
@@ -52,9 +51,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.LocalPinnableContainer
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.core.text.parseAsHtml
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -101,7 +100,6 @@ import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.destinations.GalleryCommentsScreenDestination
 import com.hippo.ehviewer.ui.getFavoriteIcon
 import com.hippo.ehviewer.ui.jumpToReaderByPage
-import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
@@ -411,11 +409,9 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
                     onCardClick = ::onNavigateToCommentScene,
                     onUserClick = ::onNavigateToCommentScene,
                     onUrlClick = { if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it) },
-                ) {
-                    maxLines = 5
-                    ellipsize = END
-                    text = item.comment.parseAsHtml(imageGetter = CoilImageGetter(this))
-                }
+                    maxLines = 5,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
             Box(
                 modifier = Modifier
