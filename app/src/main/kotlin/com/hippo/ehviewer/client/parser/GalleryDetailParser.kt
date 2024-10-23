@@ -15,12 +15,13 @@
  */
 package com.hippo.ehviewer.client.parser
 
+import arrow.core.Either
+import arrow.core.getOrElse
 import arrow.core.unzip
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhFilter
 import com.hippo.ehviewer.client.EhUtils
-import com.hippo.ehviewer.client.EhUtils.getCategory
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.GalleryCommentList
@@ -37,7 +38,6 @@ import com.hippo.ehviewer.client.exception.ParseException
 import com.hippo.ehviewer.client.exception.PiningException
 import com.hippo.ehviewer.client.getNormalPreviewKey
 import com.hippo.ehviewer.client.getThumbKey
-import com.hippo.ehviewer.util.ExceptionUtils
 import com.hippo.ehviewer.util.toEpochMillis
 import com.hippo.ehviewer.util.toFloatOrDefault
 import com.hippo.ehviewer.util.toIntOrDefault
@@ -136,7 +136,7 @@ object GalleryDetailParser {
         PATTERN_ARCHIVE.find(body)?.run {
             gd.archiveUrl = groupValues[1].trim().unescapeXml()
         }
-        try {
+        Either.catch {
             val gm = d.getElementsByClass("gm")[0]
             // Thumb url
             gm.getElementById("gd1")?.child(0)?.attr("style")?.trim()?.let {
@@ -147,16 +147,15 @@ object GalleryDetailParser {
             gd.titleJpn = gm.getElementById("gj")?.text()?.trim()
 
             // Category
-            try {
+            gd.category = Either.catch {
                 val gdc = gm.getElementById("gdc")!!
                 var ce = gdc.getElementsByClass("cn").first()
                 if (ce == null) {
                     ce = gdc.getElementsByClass("cs").first()
                 }
-                gd.category = getCategory(ce!!.text())
-            } catch (e: Throwable) {
-                ExceptionUtils.throwIfFatal(e)
-                gd.category = EhUtils.UNKNOWN
+                EhUtils.getCategory(ce!!.text())
+            }.getOrElse {
+                EhUtils.UNKNOWN
             }
 
             // Uploader
@@ -219,8 +218,7 @@ object GalleryDetailParser {
             if (gd.favoriteSlot == NOT_FAVORITED && EhDB.containLocalFavorites(gd.gid)) {
                 gd.favoriteSlot = LOCAL_FAVORITED
             }
-        } catch (e: Throwable) {
-            ExceptionUtils.throwIfFatal(e)
+        }.getOrElse {
             throw ParseException("Can't parse gallery detail")
         }
 
@@ -279,7 +277,7 @@ object GalleryDetailParser {
         }
     }
 
-    private fun parseTagGroup(element: Element): GalleryTagGroup? = try {
+    private fun parseTagGroup(element: Element): GalleryTagGroup? = Either.catch {
         var nameSpace = element.child(0).text()
         // Remove last ':'
         nameSpace = nameSpace.substring(0, nameSpace.length - 1)
@@ -297,143 +295,134 @@ object GalleryDetailParser {
             }
             group.add(tag)
         }
-        if (group.size > 0) group else null
-    } catch (e: Throwable) {
-        ExceptionUtils.throwIfFatal(e)
-        logcat(e)
+        group.takeIf { it.isNotEmpty() }
+    }.getOrElse {
+        logcat(it)
         null
     }
 
     /**
      * Parse tag groups with html parser
      */
-    private fun parseTagGroups(document: Document): List<GalleryTagGroup> = try {
+    private fun parseTagGroups(document: Document): List<GalleryTagGroup> = Either.catch {
         val taglist = document.getElementById("taglist")!!
         val tagGroups = taglist.child(0).child(0).children()
         parseTagGroups(tagGroups)
-    } catch (e: Throwable) {
-        ExceptionUtils.throwIfFatal(e)
-        logcat(e)
+    }.getOrElse {
+        logcat(it)
         emptyList()
     }
 
-    private fun parseTagGroups(trs: Elements): List<GalleryTagGroup> = try {
+    private fun parseTagGroups(trs: Elements): List<GalleryTagGroup> = Either.catch {
         trs.mapNotNull { parseTagGroup(it) }
-    } catch (e: Throwable) {
-        ExceptionUtils.throwIfFatal(e)
-        logcat(e)
+    }.getOrElse {
+        logcat(it)
         emptyList()
     }
 
-    private suspend fun parseComment(element: Element): GalleryComment? {
-        return try {
-            // Id
-            val a = element.previousElementSibling()
-            val name = a!!.attr("name")
-            val id = name trimAnd { substring(1).toInt().toLong() }
-            // Editable, vote up and vote down
-            val c4 = element.getElementsByClass("c4").first()
-            var voteUpAble = false
-            var voteUpEd = false
-            var voteDownAble = false
-            var voteDownEd = false
-            var editable = false
-            var uploader = false
-            if (null != c4) {
-                if ("Uploader Comment" == c4.text()) {
-                    uploader = true
-                }
-                for (e in c4.children()) {
-                    when (e.text()) {
-                        "Vote+" -> {
-                            voteUpAble = true
-                            voteUpEd = e.attr("style").trim().isNotEmpty()
-                        }
-
-                        "Vote-" -> {
-                            voteDownAble = true
-                            voteDownEd = e.attr("style").trim().isNotEmpty()
-                        }
-
-                        "Edit" -> editable = true
+    private suspend fun parseComment(element: Element): GalleryComment? = Either.catch {
+        // Id
+        val a = element.previousElementSibling()
+        val name = a!!.attr("name")
+        val id = name trimAnd { substring(1).toInt().toLong() }
+        // Editable, vote up and vote down
+        val c4 = element.getElementsByClass("c4").first()
+        var voteUpAble = false
+        var voteUpEd = false
+        var voteDownAble = false
+        var voteDownEd = false
+        var editable = false
+        var uploader = false
+        if (null != c4) {
+            if ("Uploader Comment" == c4.text()) {
+                uploader = true
+            }
+            for (e in c4.children()) {
+                when (e.text()) {
+                    "Vote+" -> {
+                        voteUpAble = true
+                        voteUpEd = e.attr("style").trim().isNotEmpty()
                     }
+
+                    "Vote-" -> {
+                        voteDownAble = true
+                        voteDownEd = e.attr("style").trim().isNotEmpty()
+                    }
+
+                    "Edit" -> editable = true
                 }
             }
-            // Vote state
-            val c7 = element.getElementsByClass("c7").first()
-            val voteState = c7?.text()?.trim()
-            // Score
-            val c5 = element.getElementsByClass("c5").first()
-            val score = c5?.children()?.first()?.text()?.trim()?.toIntOrDefault(0) ?: 0
-            // time
-            val c3 = element.getElementsByClass("c3").first()
-            val temp = c3!!.ownText()
-            val (timeStr, user) = if (temp.endsWith(':')) {
-                temp.substring("Posted on ".length, temp.length - " by:".length) to c3.child(0).text()
-            } else {
-                temp.substring("Posted on ".length) to null
-            }
-            val time = WEB_COMMENT_DATE_FORMAT.parse(timeStr).toEpochMillis()
-            // comment
-            val c6 = element.getElementsByClass("c6").first()
-            // fix underline support
-            for (e in c6!!.children()) {
-                if ("span" == e.tagName() && "text-decoration:underline;" == e.attr("style")) {
-                    e.tagName("u")
-                }
-            }
-            val commentHtml = c6.html()
-            // filter comment
-            if (!uploader) {
-                val sEhFilter = EhFilter
-                if (score <= Settings.commentThreshold || sEhFilter.filterCommenter(user.orEmpty()) || sEhFilter.filterComment(commentHtml)) {
-                    return null
-                }
-            }
-            // last edited
-            val c8 = element.getElementsByClass("c8").first()
-            val lastEdited = c8?.children()?.first()?.run { WEB_COMMENT_DATE_FORMAT.parse(text()).toEpochMillis() } ?: 0
-            GalleryComment(
-                id, score, editable, voteUpAble, voteUpEd, voteDownAble,
-                voteDownEd, uploader, voteState, time, user, commentHtml, lastEdited,
-            )
-        } catch (e: Throwable) {
-            ExceptionUtils.throwIfFatal(e)
-            logcat(e)
-            null
         }
+        // Vote state
+        val c7 = element.getElementsByClass("c7").first()
+        val voteState = c7?.text()?.trim()
+        // Score
+        val c5 = element.getElementsByClass("c5").first()
+        val score = c5?.children()?.first()?.text()?.trim()?.toIntOrDefault(0) ?: 0
+        // time
+        val c3 = element.getElementsByClass("c3").first()
+        val temp = c3!!.ownText()
+        val (timeStr, user) = if (temp.endsWith(':')) {
+            temp.substring("Posted on ".length, temp.length - " by:".length) to c3.child(0).text()
+        } else {
+            temp.substring("Posted on ".length) to null
+        }
+        val time = WEB_COMMENT_DATE_FORMAT.parse(timeStr).toEpochMillis()
+        // comment
+        val c6 = element.getElementsByClass("c6").first()
+        // fix underline support
+        for (e in c6!!.children()) {
+            if ("span" == e.tagName() && "text-decoration:underline;" == e.attr("style")) {
+                e.tagName("u")
+            }
+        }
+        val commentHtml = c6.html()
+        // filter comment
+        if (!uploader) {
+            val sEhFilter = EhFilter
+            if (score <= Settings.commentThreshold || sEhFilter.filterCommenter(user.orEmpty()) || sEhFilter.filterComment(commentHtml)) {
+                return null
+            }
+        }
+        // last edited
+        val c8 = element.getElementsByClass("c8").first()
+        val lastEdited = c8?.children()?.first()?.run { WEB_COMMENT_DATE_FORMAT.parse(text()).toEpochMillis() } ?: 0
+        GalleryComment(
+            id, score, editable, voteUpAble, voteUpEd, voteDownAble,
+            voteDownEd, uploader, voteState, time, user, commentHtml, lastEdited,
+        )
+    }.getOrElse {
+        logcat(it)
+        null
     }
 
     /**
      * Parse comments with html parser
      */
-    suspend fun parseComments(document: Document): GalleryCommentList {
+    suspend fun parseComments(document: Document): GalleryCommentList = Either.catch {
         // Disable pretty print to get comments in raw html
         document.outputSettings().prettyPrint(false)
-        return try {
-            val cdiv = document.getElementById("cdiv")!!
-            val c1s = cdiv.getElementsByClass("c1")
-            val list = c1s.mapNotNull { parseComment(it) }
-            val chd = cdiv.getElementById("chd")
-            var hasMore = false
-            NodeTraversor.traverse(
-                object : NodeVisitor {
-                    override fun head(node: Node, depth: Int) {
-                        if (node is Element && node.text() == "click to show all") {
-                            hasMore = true
-                        }
+        val cdiv = document.getElementById("cdiv")!!
+        val c1s = cdiv.getElementsByClass("c1")
+        val list = c1s.mapNotNull { parseComment(it) }
+        val chd = cdiv.getElementById("chd")
+        var hasMore = false
+        NodeTraversor.traverse(
+            object : NodeVisitor {
+                override fun head(node: Node, depth: Int) {
+                    if (node is Element && node.text() == "click to show all") {
+                        hasMore = true
                     }
+                }
 
-                    override fun tail(node: Node, depth: Int) {}
-                },
-                chd!!,
-            )
-            GalleryCommentList(list, hasMore)
-        } catch (e: Throwable) {
-            ExceptionUtils.throwIfFatal(e)
-            logcat(e)
-            EMPTY_GALLERY_COMMENT_LIST
-        }
+                override fun tail(node: Node, depth: Int) {}
+            },
+            chd!!,
+        )
+        GalleryCommentList(list, hasMore)
+    }.getOrElse {
+        logcat(it)
+        EMPTY_GALLERY_COMMENT_LIST
     }
 
     /**
