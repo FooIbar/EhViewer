@@ -108,6 +108,7 @@ object Settings : DataStorePreferences(null) {
     var favCount by intArrayPref("fav_count", 10).emitTo(_favFlow)
     var favCloudCount by intPref("fav_cloud", 0).emitTo(_favFlow)
 
+    val gallerySite = intPref("gallery_site_2", 0).observed { updateWhenGallerySiteChanges() }
     val listMode = intPref("list_mode_2", 0)
     val detailSize = intPref("detail_size_2", 0)
     val thumbColumns = intPref("thumb_columns", 3)
@@ -115,6 +116,9 @@ object Settings : DataStorePreferences(null) {
     val languageFilter = intPref("language_filter", -1)
     val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
     val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
+
+    // Enabled by default as some ExHentai thumbnail servers do not support HTTP/2
+    val forceEhThumb = boolPref("force_eh_thumb", true)
     val hasSignedIn = boolPref("has_signed_in", EhCookieStore.hasSignedIn())
     val needSignIn = boolPref("need_sign_in", true)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
@@ -135,7 +139,6 @@ object Settings : DataStorePreferences(null) {
     var downloadFragment by stringOrNullPref("image_fragment", null)
     var archivePasswds by stringSetOrNullPref("archive_passwds")
     var downloadDelay by intPref("download_delay_3", 1000)
-    var gallerySite by intPref("gallery_site_2", 0).observed { updateWhenGallerySiteChanges() }
     var multiThreadDownload by intPref("download_thread_2", 3)
     var preloadImage by intPref("preload_image_2", 5)
     var downloadTimeout by intPref("download_timeout", 60)

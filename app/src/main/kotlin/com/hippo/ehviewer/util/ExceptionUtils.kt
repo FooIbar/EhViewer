@@ -17,44 +17,9 @@ package com.hippo.ehviewer.util
 
 import com.hippo.ehviewer.R
 import eu.kanade.tachiyomi.util.system.logcat
-import java.io.IOException
-import java.net.MalformedURLException
-import java.net.ProtocolException
-import java.net.SocketException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import javax.net.ssl.SSLException
 import splitties.init.appCtx
 
 fun Throwable.displayString(): String {
     logcat(this)
-    val cause = cause
-    return when {
-        cause != null && this is IOException -> getReadableStringInternal(cause)
-        else -> getReadableStringInternal(this)
-    }
-}
-
-private fun getReadableStringInternal(e: Throwable) = when (e) {
-    is MalformedURLException -> appCtx.getString(R.string.error_invalid_url)
-    is SocketTimeoutException -> appCtx.getString(R.string.error_timeout)
-    is UnknownHostException -> appCtx.getString(R.string.error_unknown_host)
-    is ProtocolException -> if (e.message!!.startsWith("Too many follow-up requests:")) {
-        appCtx.getString(R.string.error_redirection)
-    } else {
-        appCtx.getString(R.string.error_socket)
-    }
-    is SocketException, is SSLException -> appCtx.getString(R.string.error_socket)
-    else -> e.message ?: appCtx.getString(R.string.error_unknown)
-}
-
-object ExceptionUtils {
-    fun throwIfFatal(t: Throwable) {
-        // values here derived from https://github.com/ReactiveX/RxJava/issues/748#issuecomment-32471495
-        when (t) {
-            is VirtualMachineError, is ThreadDeath, is LinkageError -> {
-                throw t
-            }
-        }
-    }
+    return message ?: appCtx.getString(R.string.error_unknown)
 }

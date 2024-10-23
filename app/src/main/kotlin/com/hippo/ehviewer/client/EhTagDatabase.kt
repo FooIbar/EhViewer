@@ -32,7 +32,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
 import java.io.File
-import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -133,7 +132,7 @@ object EhTagDatabase : CoroutineScope {
     fun isTranslatable(context: Context): Boolean = context.resources.getBoolean(R.bool.tag_translatable)
 
     private fun getFileContent(file: File): String? = runCatching {
-        file.source().buffer().use { it.readString(StandardCharsets.UTF_8) }
+        file.source().buffer().use { it.readUtf8() }
     }.getOrNull()
 
     private fun checkData(sha1: String?, data: File): Boolean = sha1 != null && sha1 == data.toOkioPath().sha1()

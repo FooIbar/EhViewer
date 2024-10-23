@@ -15,18 +15,19 @@
  */
 package com.hippo.ehviewer.client.parser
 
+import arrow.core.Either
+import arrow.core.getOrElse
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.exception.ParseException
-import com.hippo.ehviewer.util.ExceptionUtils
 import eu.kanade.tachiyomi.util.system.logcat
 import org.jsoup.Jsoup
 
 object ProfileParser {
-    fun parse(body: String): Result = runCatching {
+    fun parse(body: String): Result = Either.catch {
         val d = Jsoup.parse(body)
         val profilename = d.getElementById("profilename")
         val displayName = profilename!!.child(0).text()
-        val avatar = runCatching {
+        val avatar = Either.catch {
             val avatar =
                 profilename.nextElementSibling()!!.nextElementSibling()!!.child(0).attr("src")
             if (avatar.isEmpty()) {
@@ -37,13 +38,11 @@ object ProfileParser {
                 avatar
             }
         }.getOrElse {
-            ExceptionUtils.throwIfFatal(it)
             logcat { "No avatar" }
             null
         }
         Result(displayName, avatar)
     }.getOrElse {
-        ExceptionUtils.throwIfFatal(it)
         throw ParseException("Parse forums error")
     }
 

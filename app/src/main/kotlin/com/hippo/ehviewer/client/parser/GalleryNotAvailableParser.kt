@@ -17,16 +17,16 @@
  */
 package com.hippo.ehviewer.client.parser
 
-import com.hippo.ehviewer.util.ExceptionUtils
+import arrow.core.Either
+import arrow.core.getOrElse
 import eu.kanade.tachiyomi.util.system.logcat
 import org.jsoup.Jsoup
 
 object GalleryNotAvailableParser {
-    fun parse(body: String): String? = runCatching {
+    fun parse(body: String): String? = Either.catch {
         val e = Jsoup.parse(body).getElementsByClass("d").first()
         e!!.child(0).html().replace("<br>", "\n")
     }.getOrElse {
-        ExceptionUtils.throwIfFatal(it)
         logcat(it)
         null
     }

@@ -53,56 +53,56 @@ object EhUrl {
     const val ORIGIN_E = REFERER_E
 
     val domain: String
-        get() = when (Settings.gallerySite) {
+        get() = when (Settings.gallerySite.value) {
             SITE_E -> DOMAIN_E
             SITE_EX -> DOMAIN_EX
             else -> DOMAIN_E
         }
 
     val apiUrl: String
-        get() = when (Settings.gallerySite) {
+        get() = when (Settings.gallerySite.value) {
             SITE_E -> API_E
             SITE_EX -> API_EX
             else -> API_E
         }
 
     val referer: String
-        get() = when (Settings.gallerySite) {
+        get() = when (Settings.gallerySite.value) {
             SITE_E -> REFERER_E
             SITE_EX -> REFERER_EX
             else -> REFERER_E
         }
 
     val origin: String
-        get() = when (Settings.gallerySite) {
+        get() = when (Settings.gallerySite.value) {
             SITE_E -> ORIGIN_E
             SITE_EX -> ORIGIN_EX
             else -> ORIGIN_E
         }
 
     val uConfigUrl: String
-        get() = when (Settings.gallerySite) {
+        get() = when (Settings.gallerySite.value) {
             SITE_E -> URL_UCONFIG_E
             SITE_EX -> URL_UCONFIG_EX
             else -> URL_UCONFIG_E
         }
 
     val myTagsUrl: String
-        get() = when (Settings.gallerySite) {
+        get() = when (Settings.gallerySite.value) {
             SITE_E -> URL_MY_TAGS_E
             SITE_EX -> URL_MY_TAGS_EX
             else -> URL_MY_TAGS_E
         }
 
     val popularUrl: String
-        get() = when (Settings.gallerySite) {
+        get() = when (Settings.gallerySite.value) {
             SITE_E -> URL_POPULAR_E
             SITE_EX -> URL_POPULAR_EX
             else -> URL_POPULAR_E
         }
 
     val imageSearchUrl: String
-        get() = when (Settings.gallerySite) {
+        get() = when (Settings.gallerySite.value) {
             SITE_E -> URL_IMAGE_SEARCH_E
             SITE_EX -> URL_IMAGE_SEARCH_EX
             else -> URL_IMAGE_SEARCH_E
