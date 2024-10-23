@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
@@ -20,9 +21,14 @@ import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import arrow.core.Either
+import coil3.compose.AsyncImage
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.GalleryComment
+import com.hippo.ehviewer.ui.screen.breakToTextAndUrl
 import com.hippo.ehviewer.util.ReadableTime
+
+typealias TextOrUrlList = List<Either<String, AnnotatedString>>
 
 @Composable
 fun GalleryCommentCard(
@@ -56,23 +62,36 @@ fun GalleryCommentCard(
                     },
                 )
             }
-            ProvideTextStyle(value = MaterialTheme.typography.bodyMedium) {
-                val linkColor = MaterialTheme.colorScheme.primary
-                Text(
-                    text = processComment(
+            Column(
+                modifier = Modifier.constrainAs(commentRef) {
+                    start.linkTo(parent.start)
+                    top.linkTo(userRef.bottom, margin = 8.dp)
+                },
+            ) {
+                ProvideTextStyle(value = MaterialTheme.typography.bodyMedium) {
+                    val linkColor = MaterialTheme.colorScheme.primary
+                    val processed = processComment(
                         comment,
                         TextLinkStyles(style = SpanStyle(color = linkColor)),
                     ) { link ->
                         check(link is LinkAnnotation.Url)
                         onUrlClick(link.url)
-                    },
-                    modifier = Modifier.constrainAs(commentRef) {
-                        start.linkTo(parent.start)
-                        top.linkTo(userRef.bottom, margin = 8.dp)
-                    },
-                    maxLines = maxLines,
-                    overflow = overflow,
-                )
+                    }
+                    val list = breakToTextAndUrl(comment.comment, processed)
+                    list.forEach {
+                        when (it) {
+                            is Either.Left -> AsyncImage(
+                                model = it.value,
+                                contentDescription = null,
+                            )
+                            is Either.Right -> Text(
+                                text = it.value,
+                                maxLines = maxLines,
+                                overflow = overflow,
+                            )
+                        }
+                    }
+                }
             }
         }
     }
