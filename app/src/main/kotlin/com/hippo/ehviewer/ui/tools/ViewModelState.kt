@@ -4,6 +4,7 @@ import androidx.collection.mutableIntObjectMapOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.currentCompositeKeyHash
 import androidx.compose.runtime.getValue
@@ -18,13 +19,14 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
+
+@Suppress("UNCHECKED_CAST")
+inline fun <T : Any> nonNullState(block: MutableState<T>.() -> Unit) = (mutableStateOf<T?>(null) as MutableState<T>).apply(block) as State<T>
 
 class StateMapViewModel : ViewModel() {
     val statesMap = mutableIntObjectMapOf<ArrayDeque<Any>>()
@@ -84,16 +86,15 @@ fun launchInVM(
     block: suspend CoroutineScope.() -> Unit,
 ) = rememberUpdatedStateInVM(key).let { key ->
     val f by rememberUpdatedStateInVM(block)
-    @Suppress("UNCHECKED_CAST")
     rememberInVM {
-        mutableStateOf<Job?>(null).apply {
+        nonNullState {
             viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
                 snapshotFlow { key.value }.mapLatest {
                     coroutineScope { value = launch(context, start, f) }
                 }.collect()
             }
         }
-    } as State<Job>
+    }
 }
 
 @Composable
@@ -113,16 +114,15 @@ fun <R> asyncInVM(
     block: suspend CoroutineScope.() -> R,
 ) = rememberUpdatedStateInVM(key).let { key ->
     val f by rememberUpdatedStateInVM(block)
-    @Suppress("UNCHECKED_CAST")
     rememberInVM {
-        mutableStateOf<Deferred<R>?>(null).apply {
+        nonNullState {
             viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
                 snapshotFlow { key.value }.mapLatest {
                     coroutineScope { value = async(context, start, f) }
                 }.collect()
             }
         }
-    } as State<Deferred<R>>
+    }
 }
 
 @Composable
