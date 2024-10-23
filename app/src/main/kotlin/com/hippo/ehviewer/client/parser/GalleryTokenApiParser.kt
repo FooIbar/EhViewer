@@ -15,9 +15,10 @@
  */
 package com.hippo.ehviewer.client.parser
 
+import arrow.core.Either
+import arrow.core.getOrElse
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.parseAs
-import com.hippo.ehviewer.util.ExceptionUtils
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -32,10 +33,9 @@ object GalleryTokenApiParser {
      * ]
      * }
      */
-    fun parse(body: String): String = runCatching {
+    fun parse(body: String): String = Either.catch {
         body.parseAs<Result>().tokenList[0].token
     }.getOrElse {
-        ExceptionUtils.throwIfFatal(it)
         throw EhException(body.parseAs<Error>().error)
     }
 
