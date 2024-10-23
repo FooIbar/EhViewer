@@ -83,7 +83,7 @@ compose-destinations-compiler = { module = "io.github.raamcosta.compose-destinat
 material-motion-core = "io.github.fornewid:material-motion-compose-core:2.0.1"
 material-kolor = "com.materialkolor:material-kolor:2.0.0"
 
-desugar = "com.android.tools:desugar_jdk_libs_nio:2.1.2"
+desugar = "com.android.tools:desugar_jdk_libs:2.1.2"
 
 diff = "io.github.petertrr:kotlin-multiplatform-diff:0.7.0"
 jsoup = "org.jsoup:jsoup:1.18.1"
