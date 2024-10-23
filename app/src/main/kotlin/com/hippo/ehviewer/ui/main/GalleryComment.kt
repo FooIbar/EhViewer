@@ -56,22 +56,24 @@ fun GalleryCommentCard(
                     },
                 )
             }
-            val linkColor = MaterialTheme.colorScheme.primary
-            Text(
-                text = processComment(
-                    comment,
-                    TextLinkStyles(style = SpanStyle(color = linkColor)),
-                ) { link ->
-                    check(link is LinkAnnotation.Url)
-                    onUrlClick(link.url)
-                },
-                modifier = Modifier.constrainAs(commentRef) {
-                    start.linkTo(parent.start)
-                    top.linkTo(userRef.bottom, margin = 8.dp)
-                },
-                maxLines = maxLines,
-                overflow = overflow,
-            )
+            ProvideTextStyle(value = MaterialTheme.typography.bodyMedium) {
+                val linkColor = MaterialTheme.colorScheme.primary
+                Text(
+                    text = processComment(
+                        comment,
+                        TextLinkStyles(style = SpanStyle(color = linkColor)),
+                    ) { link ->
+                        check(link is LinkAnnotation.Url)
+                        onUrlClick(link.url)
+                    },
+                    modifier = Modifier.constrainAs(commentRef) {
+                        start.linkTo(parent.start)
+                        top.linkTo(userRef.bottom, margin = 8.dp)
+                    },
+                    maxLines = maxLines,
+                    overflow = overflow,
+                )
+            }
         }
     }
 }
