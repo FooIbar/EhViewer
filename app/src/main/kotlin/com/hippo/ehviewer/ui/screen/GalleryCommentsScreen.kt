@@ -75,6 +75,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.util.lerp
 import androidx.core.text.parseAsHtml
+import arrow.core.left
 import arrow.core.right
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -89,6 +90,7 @@ import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
+import com.hippo.ehviewer.ui.main.TextOrUrl
 import com.hippo.ehviewer.ui.main.TextOrUrlList
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
@@ -118,10 +120,19 @@ private val URL_PATTERN = Regex("(http|https)://[a-z0-9A-Z%-]+(\\.[a-z0-9A-Z%-]+
 
 fun breakToTextAndUrl(origin: String, text: AnnotatedString): TextOrUrlList {
     val urls = IMAGE_PATTERN.findAll(origin).toList()
-    // No image to load
     if (urls.isEmpty()) return listOf(text.right())
-    // TODO
-    return listOf(text.right())
+    val iter = urls.iterator()
+    var currentOfs = 0
+    return buildList<TextOrUrl> {
+        while (true) {
+            val index = text.text.indexOf(IMAGE_OBJ, currentOfs)
+            if (index == -1) break
+            add(text.subSequence(currentOfs, index).right())
+            add(iter.next().groupValues[1].left())
+            currentOfs += index + 1
+        }
+        add(text.subSequence(currentOfs, text.length - 1).right())
+    }
 }
 
 @Composable

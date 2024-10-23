@@ -28,7 +28,8 @@ import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.ui.screen.breakToTextAndUrl
 import com.hippo.ehviewer.util.ReadableTime
 
-typealias TextOrUrlList = List<Either<String, AnnotatedString>>
+typealias TextOrUrl = Either<String, AnnotatedString>
+typealias TextOrUrlList = List<TextOrUrl>
 
 @Composable
 fun GalleryCommentCard(
