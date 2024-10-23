@@ -60,7 +60,6 @@ import io.ktor.utils.io.copyTo
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
-import kotlin.io.path.readText
 import kotlinx.coroutines.CancellationException
 import okio.Path
 
@@ -254,7 +253,7 @@ class SpiderDen(val info: GalleryInfo) {
 
     fun getExtension(index: Int): String? {
         val key = getImageKey(gid, index)
-        return sCache.read(key) { metadata.toNioPath().readText() }
+        return sCache.read(key) { metadata.toFile().readText() }
             ?: findImageFile(index)?.name.let { FileUtils.getExtensionFromFilename(it) }
     }
 
@@ -266,7 +265,7 @@ class SpiderDen(val info: GalleryInfo) {
                 return object : PathSource, AutoCloseable by snapshot {
                     override val source = snapshot.data
                     override val type by lazy {
-                        snapshot.metadata.toNioPath().readText()
+                        snapshot.metadata.toFile().readText()
                     }
                 }
             }
