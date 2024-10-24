@@ -412,6 +412,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                         onCardClick = { launch { doCommentAction(item) } },
                         onUrlClick = { if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it) },
                         processComment = { c, s, l -> processComment(c, s, l) },
+                        showImage = true,
                     )
                 }
                 if (comments.hasMore) {

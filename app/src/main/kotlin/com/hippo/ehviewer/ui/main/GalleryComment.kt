@@ -20,6 +20,7 @@ import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastFold
 import androidx.constraintlayout.compose.ConstraintLayout
 import arrow.core.Either
 import coil3.compose.AsyncImage
@@ -40,6 +41,7 @@ fun GalleryCommentCard(
     onUrlClick: (String) -> Unit,
     maxLines: Int = Int.MAX_VALUE,
     overflow: TextOverflow = TextOverflow.Clip,
+    showImage: Boolean = false,
     processComment: @Composable (GalleryComment, TextLinkStyles, LinkInteractionListener) -> AnnotatedString = { c, s, l -> AnnotatedString.fromHtml(c.comment, s, l) },
 ) = with(comment) {
     Card(onClick = onCardClick, modifier = modifier) {
@@ -79,18 +81,27 @@ fun GalleryCommentCard(
                         onUrlClick(link.url)
                     }
                     val list = breakToTextAndUrl(comment.comment, processed)
-                    list.forEach {
-                        when (it) {
-                            is Either.Left -> AsyncImage(
-                                model = it.value,
-                                contentDescription = null,
-                            )
-                            is Either.Right -> Text(
-                                text = it.value,
-                                maxLines = maxLines,
-                                overflow = overflow,
-                            )
+                    if (showImage) {
+                        list.forEach {
+                            when (it) {
+                                is Either.Left -> AsyncImage(
+                                    model = it.value,
+                                    contentDescription = null,
+                                )
+                                is Either.Right -> Text(text = it.value)
+                            }
                         }
+                    } else {
+                        Text(
+                            text = list.fastFold(AnnotatedString("")) { a, e ->
+                                when (e) {
+                                    is Either.Left -> a
+                                    is Either.Right -> a + e.value
+                                }
+                            },
+                            maxLines = maxLines,
+                            overflow = overflow,
+                        )
                     }
                 }
             }

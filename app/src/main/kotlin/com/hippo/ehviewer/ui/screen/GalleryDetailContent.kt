@@ -411,6 +411,7 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
                     onUrlClick = { if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it) },
                     maxLines = 5,
                     overflow = TextOverflow.Ellipsis,
+                    showImage = false,
                 )
             }
             Box(
