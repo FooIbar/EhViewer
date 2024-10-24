@@ -142,7 +142,7 @@ fun processComment(
     onLinkClick: LinkInteractionListener,
 ) = AnnotatedString.fromHtml(comment.comment, linkStyle, onLinkClick).let { text ->
     buildAnnotatedString {
-        val outline = MaterialTheme.colorScheme.outline
+        val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
         append(text)
         URL_PATTERN.findAll(text).forEach { result ->
             val start = result.range.first
@@ -151,7 +151,7 @@ fun processComment(
                 addLink(LinkAnnotation.Url(result.groupValues[0], linkStyle, onLinkClick), start, end)
             }
         }
-        val style = SpanStyle(fontSize = 0.8f.em, fontWeight = FontWeight.Bold, color = outline)
+        val style = SpanStyle(fontSize = 0.8f.em, fontWeight = FontWeight.Bold, color = onSurfaceVariant)
         if (comment.id != 0L && comment.score != 0) {
             val score = comment.score
             val scoreString = if (score > 0) "+$score" else score.toString()
