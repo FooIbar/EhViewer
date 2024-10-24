@@ -68,7 +68,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
@@ -150,7 +149,6 @@ fun processComment(
             val end = result.range.last + 1
             if (!text.hasLinkAnnotations(start, end)) {
                 addLink(LinkAnnotation.Url(result.groupValues[0], linkStyle, onLinkClick), start, end)
-                addStyle(SpanStyle(textDecoration = TextDecoration.Underline), start, end)
             }
         }
         val style = SpanStyle(fontSize = 0.8f.em, fontWeight = FontWeight.Bold, color = onSurfaceVariant)
