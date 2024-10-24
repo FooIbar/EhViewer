@@ -20,7 +20,6 @@ import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastFold
 import androidx.constraintlayout.compose.ConstraintLayout
 import arrow.core.Either
 import coil3.compose.AsyncImage
@@ -80,8 +79,8 @@ fun GalleryCommentCard(
                         check(link is LinkAnnotation.Url)
                         onUrlClick(link.url)
                     }
-                    val list = breakToTextAndUrl(comment.comment, processed)
                     if (showImage) {
+                        val list = breakToTextAndUrl(comment.comment, processed)
                         list.forEach {
                             when (it) {
                                 is Either.Left -> AsyncImage(
@@ -93,12 +92,7 @@ fun GalleryCommentCard(
                         }
                     } else {
                         Text(
-                            text = list.fastFold(AnnotatedString("")) { a, e ->
-                                when (e) {
-                                    is Either.Left -> a
-                                    is Either.Right -> a + e.value
-                                }
-                            },
+                            text = processed,
                             maxLines = maxLines,
                             overflow = overflow,
                         )
