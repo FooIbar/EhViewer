@@ -129,10 +129,9 @@ fun breakToTextAndUrl(origin: String, text: AnnotatedString): TextOrUrlList {
             if (index == -1) break
             add(text.subSequence(currentOfs, index).right())
             add(iter.next().groupValues[1].left())
-            currentOfs += index + 1
+            currentOfs = index + 1
         }
-        val limit = text.length
-        add(text.subSequence(currentOfs.coerceAtMost(limit), limit).right())
+        add(text.subSequence(currentOfs, text.length).right())
     }
 }
 
