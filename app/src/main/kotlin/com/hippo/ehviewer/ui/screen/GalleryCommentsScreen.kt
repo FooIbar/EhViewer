@@ -115,7 +115,7 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
 private const val IMAGE_OBJ = '￼'
-private val IMAGE_PATTERN = Regex("<img\\s+[^>]*src=[\"']([^\"']+)[\"']")
+private val IMAGE_PATTERN = Regex("<img src=\"([^\"]+)\"")
 private val URL_PATTERN = Regex("(http|https)://[a-z0-9A-Z%-]+(\\.[a-z0-9A-Z%-]+)+(:\\d{1,5})?(/[a-zA-Z0-9-_~:#@!&',;=%/*.?+$\\[\\]()]+)?/?")
 
 fun breakToTextAndUrl(origin: String, text: AnnotatedString): TextOrUrlList {
