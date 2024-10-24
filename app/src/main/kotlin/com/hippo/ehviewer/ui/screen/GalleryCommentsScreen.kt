@@ -1,12 +1,5 @@
 package com.hippo.ehviewer.ui.screen
 
-import android.content.Context
-import android.graphics.Typeface
-import android.text.SpannableStringBuilder
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
-import android.text.style.StyleSpan
-import android.widget.TextView
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
@@ -67,14 +60,23 @@ import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.LinkInteractionListener
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.util.lerp
-import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
+import arrow.core.left
+import arrow.core.right
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -87,8 +89,9 @@ import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.jumpToReaderByPage
-import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
+import com.hippo.ehviewer.ui.main.TextOrUrl
+import com.hippo.ehviewer.ui.main.TextOrUrlList
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.normalizeSpan
@@ -98,7 +101,6 @@ import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.ui.tools.toBBCode
 import com.hippo.ehviewer.ui.tools.updateSpan
 import com.hippo.ehviewer.util.ReadableTime
-import com.hippo.ehviewer.util.TextUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
@@ -108,41 +110,68 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlin.math.roundToInt
+import kotlin.sequences.forEach
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
-import rikka.core.res.resolveColor
 
-private fun Context.generateComment(
-    textView: TextView,
+private const val IMAGE_OBJ = '￼'
+private val IMAGE_PATTERN = Regex("<img src=\"([^\"]+)\"")
+private val URL_PATTERN = Regex("(http|https)://[a-z0-9A-Z%-]+(\\.[a-z0-9A-Z%-]+)+(:\\d{1,5})?(/[a-zA-Z0-9-_~:#@!&',;=%/*.?+$\\[\\]()]+)?/?")
+
+fun breakToTextAndUrl(origin: String, text: AnnotatedString): TextOrUrlList {
+    val urls = IMAGE_PATTERN.findAll(origin).toList()
+    if (urls.isEmpty()) return listOf(text.right())
+    val iter = urls.iterator()
+    var currentOfs = 0
+    return buildList<TextOrUrl> {
+        while (true) {
+            val index = text.text.indexOf(IMAGE_OBJ, currentOfs)
+            if (index == -1) break
+            add(text.subSequence(currentOfs, index).right())
+            add(iter.next().groupValues[1].left())
+            currentOfs = index + 1
+        }
+        add(text.subSequence(currentOfs, text.length).right())
+    }
+}
+
+@Composable
+fun processComment(
     comment: GalleryComment,
-): CharSequence {
-    val sp = comment.comment.parseAsHtml(imageGetter = CoilImageGetter(textView))
-    val ssb = SpannableStringBuilder(sp)
-    if (0L != comment.id && 0 != comment.score) {
-        val score = comment.score
-        val scoreString = if (score > 0) "+$score" else score.toString()
-        ssb.append("  ").inSpans(
-            RelativeSizeSpan(0.8f),
-            StyleSpan(Typeface.BOLD),
-            ForegroundColorSpan(theme.resolveColor(android.R.attr.textColorSecondary)),
-        ) {
-            append(scoreString)
+    linkStyle: TextLinkStyles,
+    onLinkClick: LinkInteractionListener,
+) = AnnotatedString.fromHtml(comment.comment, linkStyle, onLinkClick).let { text ->
+    buildAnnotatedString {
+        val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+        append(text)
+        URL_PATTERN.findAll(text).forEach { result ->
+            val start = result.range.first
+            val end = result.range.last + 1
+            if (!text.hasLinkAnnotations(start, end)) {
+                addLink(LinkAnnotation.Url(result.groupValues[0], linkStyle, onLinkClick), start, end)
+            }
+        }
+        val style = SpanStyle(fontSize = 0.8f.em, fontWeight = FontWeight.Bold, color = onSurfaceVariant)
+        if (comment.id != 0L && comment.score != 0) {
+            val score = comment.score
+            val scoreString = if (score > 0) "+$score" else score.toString()
+            append("  ")
+            withStyle(style) {
+                append(scoreString)
+            }
+        }
+        if (comment.lastEdited != 0L) {
+            append("\n\n")
+            withStyle(style) {
+                append(
+                    stringResource(
+                        R.string.last_edited,
+                        ReadableTime.getTimeAgo(comment.lastEdited),
+                    ),
+                )
+            }
         }
     }
-    if (comment.lastEdited != 0L) {
-        val str = getString(
-            R.string.last_edited,
-            ReadableTime.getTimeAgo(comment.lastEdited),
-        )
-        ssb.append("\n\n").inSpans(
-            RelativeSizeSpan(0.8f),
-            StyleSpan(Typeface.BOLD),
-            ForegroundColorSpan(theme.resolveColor(android.R.attr.textColorSecondary)),
-        ) {
-            append(str)
-        }
-    }
-    return TextUrl.handleTextUrl(ssb)
 }
 
 private val MinimumContentPaddingEditText = 88.dp
@@ -380,9 +409,9 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                         },
                         onCardClick = { launch { doCommentAction(item) } },
                         onUrlClick = { if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it) },
-                    ) {
-                        text = generateComment(this, item)
-                    }
+                        processComment = { c, s, l -> processComment(c, s, l) },
+                        showImage = true,
+                    )
                 }
                 if (comments.hasMore) {
                     item {

@@ -15,6 +15,9 @@
  */
 package com.hippo.ehviewer.util
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.R
 import java.util.Locale
 import kotlinx.datetime.Clock
@@ -95,38 +98,28 @@ object ReadableTime {
     }
     private val resources = appCtx.resources
 
+    @Composable
     fun getTimeAgo(time: Long): String {
         val nowInstant = Clock.System.now()
         val now = nowInstant.toEpochMilliseconds()
         val diff = now - time
         return when {
-            (diff < 0 || time <= 0) -> {
-                resources.getString(R.string.from_the_future)
-            }
-            diff < MINUTE_MILLIS -> {
-                resources.getString(R.string.just_now)
-            }
-            diff < 2 * MINUTE_MILLIS -> {
-                resources.getQuantityString(R.plurals.some_minutes_ago, 1, 1)
-            }
+            (diff < 0 || time <= 0) -> stringResource(id = R.string.from_the_future)
+            diff < MINUTE_MILLIS -> stringResource(id = R.string.just_now)
+            diff < 2 * MINUTE_MILLIS -> pluralStringResource(R.plurals.some_minutes_ago, 1, 1)
             diff < 50 * MINUTE_MILLIS -> {
                 val minutes = (diff / MINUTE_MILLIS).toInt()
-                resources.getQuantityString(R.plurals.some_minutes_ago, minutes, minutes)
+                pluralStringResource(R.plurals.some_minutes_ago, minutes, minutes)
             }
-            diff < 90 * MINUTE_MILLIS -> {
-                resources.getQuantityString(R.plurals.some_hours_ago, 1, 1)
-            }
+            diff < 90 * MINUTE_MILLIS -> pluralStringResource(R.plurals.some_hours_ago, 1, 1)
             diff < 24 * HOUR_MILLIS -> {
                 val hours = (diff / HOUR_MILLIS).toInt()
-                resources.getQuantityString(R.plurals.some_hours_ago, hours, hours)
+                pluralStringResource(R.plurals.some_hours_ago, hours, hours)
             }
             diff < 48 * HOUR_MILLIS -> {
-                resources.getString(R.string.yesterday)
+                stringResource(id = R.string.yesterday)
             }
-            diff < WEEK_MILLIS -> {
-                val days = (diff / DAY_MILLIS).toInt()
-                resources.getString(R.string.some_days_ago, days)
-            }
+            diff < WEEK_MILLIS -> stringResource(R.string.some_days_ago, (diff / DAY_MILLIS).toInt())
             else -> {
                 val timeZone = TimeZone.currentSystemDefault()
                 val nowDate = nowInstant.toLocalDateTime(timeZone).date
