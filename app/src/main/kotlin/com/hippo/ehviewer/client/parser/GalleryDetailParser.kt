@@ -72,8 +72,12 @@ object GalleryDetailParser {
         Regex("<td[^>]+><a[^>]+>([\\d,]+)</a></td><td[^>]+>(?:<a[^>]+>)?&gt;(?:</a>)?</td>")
     private val PATTERN_NORMAL_PREVIEW =
         Regex("<div class=\"gdtm\"[^<>]*><div[^<>]*width:(\\d+)[^<>]*height:(\\d+)[^<>]*\\((.+?)\\)[^<>]*-(\\d+)px[^<>]*><a[^<>]*href=\"(.+?)\"[^<>]*><img alt=\"([\\d,]+)\"")
+    private val PATTERN_NORMAL_PREVIEW_NEW =
+        Regex("<a href=\"(.+?)\"><div[^<>]*title=\"Page (\\d+):[^<>]*width:(\\d+)[^<>]*height:(\\d+)[^<>]*\\((.+?)\\)[^<>]*-(\\d+)px[^<>]*>")
     private val PATTERN_LARGE_PREVIEW =
         Regex("<div class=\"gdtl\".+?<a href=\"(.+?)\"><img alt=\"([\\d,]+)\".+?src=\"(.+?)\"")
+    private val PATTERN_LARGE_PREVIEW_NEW =
+        Regex("<a href=\"(.+?)\"><div[^<>]*title=\"Page (\\d+):[^<>]*\\((.+?)\\)[^<>]*0 0[^<>]*>")
     private val PATTERN_NEWER_DATE = Regex(", added (.+?)<br />")
     private val PATTERN_FAVORITE_SLOT =
         Regex("/fav.png\\); background-position:0px -(\\d+)px")
@@ -440,8 +444,10 @@ object GalleryDetailParser {
     fun parsePreviewList(body: String): Pair<List<GalleryPreview>, List<String>> = runCatching { parseNormalPreview(body) }.getOrElse { parseLargePreview(body) }
 
     private fun parseLargePreview(body: String): Pair<List<GalleryPreview>, List<String>> {
-        check(PATTERN_LARGE_PREVIEW.containsMatchIn(body))
-        return PATTERN_LARGE_PREVIEW.findAll(body).unzip {
+        val isOld = PATTERN_LARGE_PREVIEW.containsMatchIn(body)
+        check(isOld || PATTERN_LARGE_PREVIEW_NEW.containsMatchIn(body))
+        val patternLarge = if (isOld) PATTERN_LARGE_PREVIEW else PATTERN_LARGE_PREVIEW_NEW
+        return patternLarge.findAll(body).unzip {
             val position = it.groupValues[2].toInt() - 1
             val imageKey = getThumbKey(it.groupValues[3].trim())
             val pageUrl = it.groupValues[1].trim()
@@ -452,16 +458,30 @@ object GalleryDetailParser {
     }
 
     private fun parseNormalPreview(body: String): Pair<List<GalleryPreview>, List<String>> {
-        check(PATTERN_NORMAL_PREVIEW.containsMatchIn(body))
-        return PATTERN_NORMAL_PREVIEW.findAll(body).unzip {
-            val position = it.groupValues[6].toInt() - 1
-            val url = it.groupValues[3].trim()
-            val imageKey = getNormalPreviewKey(url)
-            val xOffset = it.groupValues[4].toIntOrNull() ?: 0
-            val width = it.groupValues[1].toInt()
-            val height = it.groupValues[2].toInt()
-            val pageUrl = it.groupValues[5].trim()
-            NormalGalleryPreview(url, imageKey, position, xOffset, width, height) to pageUrl
+        val isOld = PATTERN_NORMAL_PREVIEW.containsMatchIn(body)
+        check(isOld || PATTERN_NORMAL_PREVIEW_NEW.containsMatchIn(body))
+        return if (isOld) {
+            PATTERN_NORMAL_PREVIEW.findAll(body).unzip {
+                val position = it.groupValues[6].toInt() - 1
+                val url = it.groupValues[3].trim()
+                val imageKey = getNormalPreviewKey(url)
+                val xOffset = it.groupValues[4].toIntOrNull() ?: 0
+                val width = it.groupValues[1].toInt()
+                val height = it.groupValues[2].toInt()
+                val pageUrl = it.groupValues[5].trim()
+                NormalGalleryPreview(url, imageKey, position, xOffset, width, height) to pageUrl
+            }
+        } else {
+            PATTERN_NORMAL_PREVIEW_NEW.findAll(body).unzip {
+                val position = it.groupValues[2].toInt() - 1
+                val url = it.groupValues[5].trim()
+                val imageKey = getNormalPreviewKey(url)
+                val xOffset = it.groupValues[6].toIntOrNull() ?: 0
+                val width = it.groupValues[3].toInt()
+                val height = it.groupValues[4].toInt()
+                val pageUrl = it.groupValues[1].trim()
+                NormalGalleryPreview(url, imageKey, position, xOffset, width, height) to pageUrl
+            }
         }.run {
             first.toList() to second.toList()
         }
