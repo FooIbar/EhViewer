@@ -42,9 +42,9 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
     val otherTags = mutableListOf<String>()
     with(TagNamespace) {
         when (this@getComicInfo) {
-            is GalleryDetail -> tags.forEach { tagList ->
-                val list = tagList.filterNot { it == TAG_ORIGINAL || it.startsWith('_') }
-                when (val ns = TagNamespace(tagList.groupName)) {
+            is GalleryDetail -> tagGroups.forEach { group ->
+                val list = group.tags.filterNot { it == TAG_ORIGINAL || it.startsWith('_') }
+                when (val ns = TagNamespace(group.name)) {
                     Artist, Cosplayer -> artists.addAll(list)
                     Group -> groups.addAll(list)
                     Character -> characters.addAll(list)

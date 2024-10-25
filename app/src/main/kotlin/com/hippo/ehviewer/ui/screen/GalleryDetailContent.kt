@@ -499,7 +499,7 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
             text = stringResource(id = R.string.similar_gallery),
             onClick = {
                 val keyword = EhUtils.extractTitle(galleryDetail.title)
-                val artistTag = galleryDetail.tags.getArtistTag()
+                val artistTag = galleryDetail.tagGroups.getArtistTag()
                 if (null != keyword) {
                     navigate(
                         ListUrlBuilder(
@@ -643,7 +643,7 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
         }
     }
     Spacer(modifier = Modifier.size(keylineMargin))
-    val tags = galleryDetail.tags
+    val tags = galleryDetail.tagGroups
     if (tags.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -723,11 +723,9 @@ private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt())
 
 private fun List<GalleryTagGroup>.getArtistTag(): String? {
     for (tagGroup in this) {
-        if (tagGroup.isNotEmpty()) {
-            val namespace = tagGroup.groupName
-            if (namespace == TagNamespace.Artist.value || namespace == TagNamespace.Cosplayer.value) {
-                return "$namespace:${tagGroup[0].removePrefix("_")}"
-            }
+        val namespace = tagGroup.name
+        if (namespace == TagNamespace.Artist.value || namespace == TagNamespace.Cosplayer.value) {
+            return "$namespace:${tagGroup.tags[0].removePrefix("_")}"
         }
     }
     return null
