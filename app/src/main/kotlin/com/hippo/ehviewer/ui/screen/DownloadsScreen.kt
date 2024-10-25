@@ -152,8 +152,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
     fun getTranslation(tag: String) = ehTags?.run {
-        getTranslation(TagNamespace.Artist.toPrefix(), tag)
-            ?: getTranslation(TagNamespace.Cosplayer.toPrefix(), tag)
+        getTranslation(TagNamespace.Artist.prefix, tag) ?: getTranslation(TagNamespace.Cosplayer.prefix, tag)
     } ?: tag
     val allName = stringResource(R.string.download_all)
     val defaultName = stringResource(R.string.default_download_label_name)

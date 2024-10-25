@@ -723,8 +723,8 @@ private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt())
 
 private fun List<GalleryTagGroup>.getArtistTag(): String? {
     for (tagGroup in this) {
-        val namespace = tagGroup.name
-        if (namespace == TagNamespace.Artist.value || namespace == TagNamespace.Cosplayer.value) {
+        val namespace = tagGroup.nameSpace
+        if (namespace == TagNamespace.Artist || namespace == TagNamespace.Cosplayer) {
             return "$namespace:${tagGroup.tags[0].removePrefix("_")}"
         }
     }

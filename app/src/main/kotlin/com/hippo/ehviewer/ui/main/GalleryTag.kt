@@ -33,22 +33,22 @@ fun GalleryTags(
     val context = LocalContext.current
     val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(context) && EhTagDatabase.initialized
     val ehTags = EhTagDatabase.takeIf { canTranslate }
-    fun String.translate() = ehTags?.getTranslation(tag = this) ?: this
-    fun String.translate(prefix: String?) = ehTags?.getTranslation(prefix = prefix, tag = this) ?: this
+    fun TagNamespace.translate() = ehTags?.getTranslation(tag = value) ?: value
+    fun String.translate(ns: TagNamespace) = ehTags?.getTranslation(prefix = ns.prefix, tag = this) ?: this
     Column(modifier) {
         tagGroups.forEach { tagGroup ->
             Row {
+                val ns = tagGroup.nameSpace
                 BaseRoundText(
-                    text = tagGroup.name.translate(),
+                    text = ns.translate(),
                     isGroup = true,
                 )
-                val prefix = TagNamespace(tagGroup.name).toPrefix()
                 FlowRow {
                     tagGroup.tags.forEach {
                         val weak = it.startsWith('_')
                         val real = it.removePrefix("_")
-                        val translated = real.translate(prefix)
-                        val tag = tagGroup.name + ":" + real
+                        val translated = real.translate(ns)
+                        val tag = tagGroup.nameSpace.value + ":" + real
                         val hapticFeedback = LocalHapticFeedback.current
                         BaseRoundText(
                             text = translated,

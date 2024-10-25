@@ -1,33 +1,38 @@
 package com.hippo.ehviewer.client.data
 
-@JvmInline
-value class TagNamespace(val value: String) {
-    fun toPrefix(): String? = prefixMap[this]
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+sealed class TagNamespace(val value: String, val prefix: String?) : Parcelable {
+    object Artist : TagNamespace("artist", "a")
+    object Cosplayer : TagNamespace("cosplayer", "cos")
+    object Character : TagNamespace("character", "c")
+    object Female : TagNamespace("female", "f")
+    object Group : TagNamespace("group", "g")
+    object Language : TagNamespace("language", "l")
+    object Male : TagNamespace("male", "m")
+    object Mixed : TagNamespace("mixed", "x")
+    object Other : TagNamespace("other", "o")
+    object Parody : TagNamespace("parody", "p")
+    object Reclass : TagNamespace("reclass", "r")
+    object Temp : TagNamespace("temp", null)
 
     companion object {
-        val Artist = TagNamespace("artist")
-        val Cosplayer = TagNamespace("cosplayer")
-        val Character = TagNamespace("character")
-        val Female = TagNamespace("female")
-        val Group = TagNamespace("group")
-        val Language = TagNamespace("language")
-        val Male = TagNamespace("male")
-        val Mixed = TagNamespace("mixed")
-        val Other = TagNamespace("other")
-        val Parody = TagNamespace("parody")
-        val Reclass = TagNamespace("reclass")
-        private val prefixMap = mapOf(
-            Artist to "a",
-            Cosplayer to "cos",
-            Character to "c",
-            Female to "f",
-            Group to "g",
-            Language to "l",
-            Male to "m",
-            Mixed to "x",
-            Other to "o",
-            Parody to "p",
-            Reclass to "r",
-        )
+        fun from(value: String) = when (value) {
+            Artist.value -> Artist
+            Cosplayer.value -> Cosplayer
+            Character.value -> Character
+            Female.value -> Female
+            Group.value -> Group
+            Language.value -> Language
+            Male.value -> Male
+            Mixed.value -> Mixed
+            Other.value -> Other
+            Parody.value -> Parody
+            Reclass.value -> Reclass
+            Temp.value -> Temp
+            else -> null
+        }
     }
 }
