@@ -20,6 +20,6 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class GalleryTagGroup(
-    val name: String,
+    val nameSpace: TagNamespace,
     val tags: List<String>,
 ) : Parcelable

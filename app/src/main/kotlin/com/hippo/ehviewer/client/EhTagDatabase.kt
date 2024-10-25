@@ -103,7 +103,7 @@ object EhTagDatabase : CoroutineScope {
         val prefix = keyword.dropLast(mKeyword.length)
         val namespace = mKeyword.substringBefore(':')
         val tagKeyword = mKeyword.drop(namespace.length + 1)
-        val namespacePrefix = TagNamespace(namespace).toPrefix() ?: namespace
+        val namespacePrefix = TagNamespace.from(namespace)?.prefix ?: namespace
         val tags = tagGroups[namespacePrefix.takeIf { tagKeyword.isNotEmpty() && it != NAMESPACE_PREFIX }]
         tags?.let {
             internalSuggestFlow(it, tagKeyword, translate, exactly).collect { (hint, tag) ->

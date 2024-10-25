@@ -32,6 +32,7 @@ import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.LargeGalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
+import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.OffensiveException
 import com.hippo.ehviewer.client.exception.ParseException
@@ -279,10 +280,11 @@ object GalleryDetailParser {
     }
 
     private fun parseSingleTagGroup(element: Element): GalleryTagGroup? = Either.catch {
-        val nameSpace = element.child(0).text().run {
+        val nameSpace = with(element.child(0).text()) {
             // Remove last ':'
-            substring(0, length - 1)
+            TagNamespace.from(substring(0, length - 1))
         }
+        checkNotNull(nameSpace) { "$nameSpace is not a valid tag namespace!" }
         val tags = element.child(1).children().map { e ->
             val text = e.text()
             // Sometimes parody tag is followed with '|' and english translate, just remove them

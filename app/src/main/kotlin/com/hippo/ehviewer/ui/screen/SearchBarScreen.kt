@@ -308,7 +308,7 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String = if (ke
     val tag = keyword.substringAfter(':')
     val prefix = keyword.dropLast(tag.length + 1)
     if (translate) {
-        val namespacePrefix = TagNamespace(prefix).toPrefix()
+        val namespacePrefix = TagNamespace.from(prefix)?.prefix
         val newPrefix = EhTagDatabase.getTranslation(tag = prefix) ?: prefix
         val newTag = EhTagDatabase.getTranslation(namespacePrefix, tag) ?: tag
         "$newPrefix：$newTag"
