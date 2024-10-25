@@ -51,7 +51,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node
-import org.jsoup.select.Elements
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
 
@@ -281,7 +280,7 @@ object GalleryDetailParser {
         }
     }
 
-    private fun parseTagGroup(element: Element): GalleryTagGroup? = Either.catch {
+    private fun parseSingleTagGroup(element: Element): GalleryTagGroup? = Either.catch {
         val nameSpace = element.child(0).text().run {
             // Remove last ':'
             substring(0, length - 1)
@@ -306,15 +305,7 @@ object GalleryDetailParser {
      */
     private fun parseTagGroups(document: Document): List<GalleryTagGroup> = Either.catch {
         val taglist = document.getElementById("taglist")!!
-        val tagGroups = taglist.child(0).child(0).children()
-        parseTagGroups(tagGroups)
-    }.getOrElse {
-        logcat(it)
-        emptyList()
-    }
-
-    private fun parseTagGroups(trs: Elements): List<GalleryTagGroup> = Either.catch {
-        trs.mapNotNull { parseTagGroup(it) }
+        taglist.child(0).child(0).children().mapNotNull(::parseSingleTagGroup)
     }.getOrElse {
         logcat(it)
         emptyList()
