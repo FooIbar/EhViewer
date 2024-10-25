@@ -73,11 +73,9 @@ object GalleryDetailParser {
     private val PATTERN_NORMAL_PREVIEW =
         Regex("<div class=\"gdtm\"[^>]*><div[^>]*width:(\\d+)[^>]*height:(\\d+)[^>]*\\(([^)]+)\\)[^>]*-(\\d+)px[^>]*><a[^>]*href=\"([^\"]+)\"[^>]*><img alt=\"([\\d,]+)\"")
     private val PATTERN_NORMAL_PREVIEW_NEW =
-        Regex("<a href=\"([^\"]+)\"><div[^>]*title=\"Page (\\d+):[^>]*width:(\\d+)[^>]*height:(\\d+)[^>]*\\(([^)]+)\\)[^>]*-(\\d+)px[^>]*>")
+        Regex("<a href=\"([^\"]+)\">(?:<div>)?<div[^>]*title=\"Page (\\d+):[^>]*width:(\\d+)[^>]*height:(\\d+)[^>]*\\(([^)]+)\\)[^>]*-(\\d+)px[^>]*>")
     private val PATTERN_LARGE_PREVIEW =
-        Regex("<div class=\"gdtl\"[^>]*><a href=\"([^\"]+)\"><img alt=\"([\\d,]+)\"[^>]*src=\"([^\"]+)\"")
-    private val PATTERN_LARGE_PREVIEW_NEW =
-        Regex("<a href=\"([^\"]+)\"><div[^>]*title=\"Page (\\d+):[^>]*\\(([^)]+)\\)[^>]*0 0[^>]*>")
+        Regex("<a href=\"([^\"]+)\">(?:<div>)?<[^>]*title=\"Page (\\d+):[^>]*(?:url\\(|src=\")([^)\"]+)[)\"]")
     private val PATTERN_NEWER_DATE = Regex(", added (.+?)<br />")
     private val PATTERN_FAVORITE_SLOT =
         Regex("/fav.png\\); background-position:0px -(\\d+)px")
@@ -444,10 +442,8 @@ object GalleryDetailParser {
     fun parsePreviewList(body: String): Pair<List<GalleryPreview>, List<String>> = runCatching { parseNormalPreview(body) }.getOrElse { parseLargePreview(body) }
 
     private fun parseLargePreview(body: String): Pair<List<GalleryPreview>, List<String>> {
-        val isOld = PATTERN_LARGE_PREVIEW.containsMatchIn(body)
-        check(isOld || PATTERN_LARGE_PREVIEW_NEW.containsMatchIn(body))
-        val patternLarge = if (isOld) PATTERN_LARGE_PREVIEW else PATTERN_LARGE_PREVIEW_NEW
-        return patternLarge.findAll(body).unzip {
+        check(PATTERN_LARGE_PREVIEW.containsMatchIn(body))
+        return PATTERN_LARGE_PREVIEW.findAll(body).unzip {
             val position = it.groupValues[2].toInt() - 1
             val imageKey = getThumbKey(it.groupValues[3].trim())
             val pageUrl = it.groupValues[1].trim()
