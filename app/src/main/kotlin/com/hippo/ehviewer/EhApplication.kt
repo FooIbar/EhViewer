@@ -21,7 +21,6 @@ import android.content.Context
 import android.os.StrictMode
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.collection.LruCache
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.coroutineScope
 import coil3.EventListener
@@ -29,7 +28,7 @@ import coil3.SingletonImageLoader
 import coil3.asImage
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
-import coil3.network.ktor3.KtorNetworkFetcherFactory
+import coil3.network.NetworkFetcher
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -37,7 +36,6 @@ import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhTagDatabase
-import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.coil.CropBorderInterceptor
 import com.hippo.ehviewer.coil.DetectBorderInterceptor
 import com.hippo.ehviewer.coil.DownloadThumbInterceptor
@@ -45,7 +43,7 @@ import com.hippo.ehviewer.coil.HardwareBitmapInterceptor
 import com.hippo.ehviewer.coil.MapExtraInfoInterceptor
 import com.hippo.ehviewer.coil.MergeInterceptor
 import com.hippo.ehviewer.coil.QrCodeInterceptor
-import com.hippo.ehviewer.cronet.cronetHttpClient
+import com.hippo.ehviewer.coil.limitConcurrency
 import com.hippo.ehviewer.dailycheck.checkDawn
 import com.hippo.ehviewer.dao.SearchDatabase
 import com.hippo.ehviewer.download.DownloadManager
@@ -53,22 +51,28 @@ import com.hippo.ehviewer.download.DownloadsFilterMode
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.ktbuilder.imageLoader
 import com.hippo.ehviewer.ktor.Cronet
-import com.hippo.ehviewer.legacy.cleanObsoleteCache
+import com.hippo.ehviewer.ktor.configureClient
+import com.hippo.ehviewer.ktor.configureCommon
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.lockObserver
+import com.hippo.ehviewer.ui.screen.detailCache
 import com.hippo.ehviewer.ui.tools.dataStateFlow
 import com.hippo.ehviewer.ui.tools.initSETConnection
 import com.hippo.ehviewer.util.AppConfig
-import com.hippo.ehviewer.util.Crash
+import com.hippo.ehviewer.util.CrashHandler
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.FileUtils
+import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastS
+import com.hippo.ehviewer.util.isAtLeastSExtension7
 import eu.kanade.tachiyomi.util.lang.launchIO
+import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.cookies.HttpCookies
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -101,22 +105,15 @@ class EhApplication :
             }
         }
         lifecycle.addObserver(lockObserver)
-        val handler = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler { t, e ->
-            try {
-                if (Settings.saveCrashLog) {
-                    Crash.saveCrashLog(e)
-                }
-            } catch (ignored: Throwable) {
-            }
-            handler?.uncaughtException(t, e)
-        }
+        CrashHandler.install()
         super.onCreate()
         System.loadLibrary("ehviewer")
         lifecycleScope.launchIO {
+            launchUI { FavouriteStatusRouter.collect { (gid, slot) -> detailCache[gid]?.favoriteSlot = slot } }
             launch { EhTagDatabase }
             launch { EhDB }
-            dataStateFlow.value
+            launchIO { dataStateFlow.value }
+            launchIO { OSUtils.totalMemory }
             launch {
                 if (DownloadManager.labelList.isNotEmpty() && Settings.downloadFilterMode.key !in Settings.prefs) {
                     Settings.downloadFilterMode.value = DownloadsFilterMode.CUSTOM.flag
@@ -127,16 +124,9 @@ class EhApplication :
                 FileUtils.cleanupDirectory(AppConfig.externalCrashDir)
                 FileUtils.cleanupDirectory(AppConfig.externalParseErrorDir)
             }
-            launch {
-                cleanupDownload()
-            }
+            launch { cleanupDownload() }
             if (Settings.requestNews) {
-                launch {
-                    checkDawn()
-                }
-            }
-            launch {
-                cleanObsoleteCache()
+                launch { checkDawn() }
             }
         }
         if (BuildConfig.DEBUG) {
@@ -172,7 +162,7 @@ class EhApplication :
         interceptorCoroutineContext(Dispatchers.Default)
         components {
             serviceLoaderEnabled(false)
-            add(KtorNetworkFetcherFactory { ktorClient })
+            add(NetworkFetcher.Factory({ ktorClient.limitConcurrency() }))
             add(MergeInterceptor)
             add(DownloadThumbInterceptor)
             if (isAtLeastO) {
@@ -207,12 +197,15 @@ class EhApplication :
 
     companion object {
         val ktorClient by lazy {
-            HttpClient(Cronet) {
-                engine {
-                    client = cronetHttpClient
+            if (isAtLeastSExtension7 && Settings.enableCronet) {
+                HttpClient(Cronet) {
+                    engine { configureClient() }
+                    configureCommon()
                 }
-                install(HttpCookies) {
-                    storage = EhCookieStore
+            } else {
+                HttpClient(OkHttp) {
+                    engine { configureClient() }
+                    configureCommon()
                 }
             }
         }
@@ -222,14 +215,6 @@ class EhApplication :
                 followRedirects = false
                 install(HttpCookies) {
                     storage = EhCookieStore
-                }
-            }
-        }
-
-        val galleryDetailCache by lazy {
-            LruCache<Long, GalleryDetail>(25).also {
-                lifecycleScope.launch {
-                    FavouriteStatusRouter.globalFlow.collect { (gid, slot) -> it[gid]?.favoriteSlot = slot }
                 }
             }
         }

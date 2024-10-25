@@ -33,6 +33,8 @@ object EhCookieStore : CookiesStorage {
         )
     }
 
+    fun getUserId() = getCookies(EhUrl.HOST_E)?.get(KEY_IPB_MEMBER_ID)
+
     fun getIdentityCookies(): List<Pair<String, String?>> {
         val eCookies = getCookies(EhUrl.HOST_E)
         val exCookies = getCookies(EhUrl.HOST_EX)
@@ -47,8 +49,6 @@ object EhCookieStore : CookiesStorage {
     }
 
     fun flush() = manager.flush()
-
-    fun getCookieHeader(url: String): String? = manager.getCookie(url)
 
     // See https://github.com/Ehviewer-Overhauled/Ehviewer/issues/873
     override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {

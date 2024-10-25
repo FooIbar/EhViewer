@@ -60,9 +60,9 @@ object ArchiveParser {
             archiveList.add(item)
         }
         val funds = maybeFunds ?: PATTERN_CURRENT_FUNDS.find(body)!!.groupValues.run {
-            val fundsGP = ParserUtils.parseInt(get(1), 0)
+            val fundsGP = ParserUtils.parseInt(get(1), 0) / 1000
             val fundsC = ParserUtils.parseInt(get(2), 0)
-            Funds("%,d".format(fundsGP), "%,d".format(fundsC))
+            Funds(fundsGP, fundsC)
         }
         return Result(paramOr, archiveList, funds)
     }

@@ -22,10 +22,8 @@ import soup.compose.material.motion.animation.rememberSlideDistance
 inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -> Unit) = setContent {
     EhTheme(useDarkTheme = isSystemInDarkTheme()) {
         ProvideVectorPainterCache {
-            val dialogState = remember { DialogState() }
-            dialogState.Intercept()
             CompositionLocalProvider(
-                LocalDialogState provides dialogState,
+                LocalDialogState provides remember { DialogState() }.apply { Intercept() },
             ) {
                 content()
             }

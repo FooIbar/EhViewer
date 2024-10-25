@@ -28,8 +28,7 @@ object FileUtils {
     // ext4 through a FUSE layer, so use that limit.
     private const val MAX_FILENAME_BYTES = 255
 
-    fun ensureDirectory(file: File?) =
-        file?.let { if (it.exists()) it.isDirectory else it.mkdirs() } ?: false
+    fun ensureDirectory(file: File?) = file?.let { if (it.exists()) it.isDirectory else it.mkdirs() } ?: false
 
     /**
      * Convert byte to human readable string.<br></br>
@@ -81,22 +80,21 @@ object FileUtils {
         }
     }
 
-    private fun isValidFatFilenameChar(c: Char) =
-        when (c.code) {
-            in 0x00..0x1F,
-            '"'.code,
-            '*'.code,
-            '/'.code,
-            ':'.code,
-            '<'.code,
-            '>'.code,
-            '?'.code,
-            '\\'.code,
-            '|'.code,
-            0x7F,
-            -> false
-            else -> true
-        }
+    private fun isValidFatFilenameChar(c: Char) = when (c.code) {
+        in 0x00..0x1F,
+        '"'.code,
+        '*'.code,
+        '/'.code,
+        ':'.code,
+        '<'.code,
+        '>'.code,
+        '?'.code,
+        '\\'.code,
+        '|'.code,
+        0x7F,
+        -> false
+        else -> true
+    }
 
     // From https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/FileUtils.java;l=1142;drc=7b647e4ea0e92f33c19b315eaed364ee067ba0aa
     /**
@@ -135,8 +133,7 @@ object FileUtils {
      * @param filename the complete filename
      * @return null for can't find extension
      */
-    fun getExtensionFromFilename(filename: String?) =
-        filename?.substringAfterLast('.', "")?.ifEmpty { null }
+    fun getExtensionFromFilename(filename: String?) = filename?.substringAfterLast('.', "")?.ifEmpty { null }
 
     /**
      * Get name from filename
@@ -144,8 +141,7 @@ object FileUtils {
      * @param filename the complete filename
      * @return null for start with . dot
      */
-    fun getNameFromFilename(filename: String?) =
-        filename?.substringBeforeLast('.')?.ifEmpty { null }
+    fun getNameFromFilename(filename: String?) = filename?.substringBeforeLast('.')?.ifEmpty { null }
 
     /**
      * Create a temp file, you need to delete it by you self.

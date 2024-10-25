@@ -94,8 +94,7 @@ class SecurityActivity : AppCompatActivity() {
             result: BiometricPrompt.AuthenticationResult,
         ) = onAuthenticationSucceeded(activity, result)
 
-        override fun onAuthenticationFailed(activity: FragmentActivity?) =
-            onAuthenticationFailed(activity)
+        override fun onAuthenticationFailed(activity: FragmentActivity?) = onAuthenticationFailed(activity)
     }
 
     private fun onSuccess() {

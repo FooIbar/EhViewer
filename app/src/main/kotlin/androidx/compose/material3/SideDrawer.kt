@@ -7,11 +7,11 @@ import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animate
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.anchoredHorizontalDraggable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.flingBehavior
 import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -206,11 +206,10 @@ class DrawerState2(
         /**
          * The default [Saver] implementation for [DrawerState2].
          */
-        fun Saver(confirmStateChange: (DrawerValue) -> Boolean) =
-            Saver<DrawerState2, DrawerValue>(
-                save = { it.currentValue },
-                restore = { DrawerState2(it, confirmStateChange) },
-            )
+        fun Saver(confirmStateChange: (DrawerValue) -> Boolean) = Saver<DrawerState2, DrawerValue>(
+            save = { it.currentValue },
+            restore = { DrawerState2(it, confirmStateChange) },
+        )
     }
 }
 
@@ -258,7 +257,7 @@ fun ModalSideDrawer(
             enableDragFromStartToEnd = drawerState.isOpen,
             enableDragFromEndToStart = drawerState.isClosed,
             enabled = gesturesEnabled,
-            flingBehavior = AnchoredDraggableDefaults.flingBehavior(
+            flingBehavior = flingBehavior(
                 state = drawerState.anchoredDraggableState,
                 animationSpec = AnimationSpec,
             ),

@@ -1,7 +1,10 @@
 package com.hippo.ehviewer.ui.settings
 
+import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+import android.os.Environment
 import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -51,13 +54,17 @@ import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
+import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.displayPath
 import com.hippo.ehviewer.util.displayString
+import com.hippo.ehviewer.util.isAtLeastQ
+import com.hippo.ehviewer.util.requestPermission
 import com.hippo.files.delete
 import com.hippo.files.find
 import com.hippo.files.isDirectory
 import com.hippo.files.list
 import com.hippo.files.metadataOrNull
+import com.hippo.files.mkdirs
 import com.hippo.files.toOkioPath
 import com.hippo.files.toUri
 import com.ramcosta.composedestinations.annotation.Destination
@@ -68,6 +75,7 @@ import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import okio.Path
+import okio.Path.Companion.toOkioPath
 import splitties.init.appCtx
 
 @Destination<RootGraph>
@@ -111,7 +119,44 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
                 title = stringResource(id = R.string.settings_download_download_location),
                 summary = downloadLocationState.toUri().displayPath,
             ) {
-                selectDownloadDirLauncher.launch(null)
+                launchIO {
+                    val defaultDownloadDir = AppConfig.defaultDownloadDir
+                    if (defaultDownloadDir?.delete() == false) {
+                        val path = defaultDownloadDir.toOkioPath()
+                        awaitConfirmationOrCancel(
+                            confirmText = R.string.pick_new_download_location,
+                            dismissText = if (downloadLocationState != path) {
+                                R.string.reset_download_location
+                            } else {
+                                android.R.string.cancel
+                            },
+                            title = R.string.waring,
+                            onCancelButtonClick = {
+                                downloadLocationState = path
+                            },
+                        ) {
+                            Text(stringResource(id = R.string.default_download_dir_not_empty))
+                        }
+                    }
+                    try {
+                        selectDownloadDirLauncher.launch(null)
+                    } catch (_: ActivityNotFoundException) {
+                        // Best effort for devices without DocumentsUI
+                        if (!isAtLeastQ && requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                            runCatching {
+                                val path = Environment.getExternalStorageDirectory().toOkioPath() / AppConfig.APP_DIRNAME
+                                path.mkdirs()
+                                check(path.isDirectory) { "$path is not a directory" }
+                                keepNoMediaFileStatus(path) // Check if the directory is writable
+                                downloadLocationState = path
+                                return@launchIO
+                            }.onFailure {
+                                logcat(it)
+                            }
+                        }
+                        launchSnackBar(cannotGetDownloadLocation)
+                    }
+                }
             }
             val mediaScan = Settings::mediaScan.observed
             SwitchPreference(

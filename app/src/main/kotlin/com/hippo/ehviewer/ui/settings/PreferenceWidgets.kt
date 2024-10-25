@@ -107,7 +107,7 @@ fun SwitchPreference(title: String, summary: String? = null, value: KMutableProp
 fun IntSliderPreference(maxValue: Int, minValue: Int = 0, step: Int = maxValue - minValue - 1, showTicks: Boolean = true, title: String, summary: String? = null, value: KMutableProperty0<Int>, enabled: Boolean = true) {
     var v by remember { mutableIntStateOf(value.get()) }
     fun set(float: Float) = value.set(float.roundToInt().also { v = it })
-    SliderPref(title = title, summary = summary, defaultValue = v.toFloat(), onValueChangeFinished = ::set, valueRange = minValue.toFloat()..maxValue.toFloat(), showValue = true, showInteger = true, steps = step, showTicks = showTicks, enabled = enabled)
+    SliderPref(title = title, summary = summary, defaultValue = v.toFloat(), onValueChangeFinished = ::set, valueRange = minValue.toFloat()..maxValue.toFloat(), showValue = true, steps = step, showTicks = showTicks, enabled = enabled)
 }
 
 @Composable

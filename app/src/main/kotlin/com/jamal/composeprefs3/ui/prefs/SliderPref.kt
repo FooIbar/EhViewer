@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -18,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.jamal.composeprefs3.ui.roundToDP
+import com.hippo.ehviewer.ui.main.RollingNumber
 import kotlin.math.roundToInt
 
 @Composable
@@ -30,7 +29,6 @@ fun SliderPref(
     onValueChangeFinished: ((Float) -> Unit)? = null,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     showValue: Boolean = false,
-    showInteger: Boolean = false,
     showTicks: Boolean = true,
     steps: Int = 0,
     textColor: Color = MaterialTheme.colorScheme.onBackground,
@@ -73,10 +71,10 @@ fun SliderPref(
                 },
             )
             if (showValue) {
-                Text(
-                    text = if (showInteger) value.roundToInt().toString() else roundToDP(value, 2).toString(),
+                RollingNumber(
+                    number = value.roundToInt(),
                     color = textColor,
-                    modifier = Modifier.weight(0.5f).padding(start = 8.dp),
+                    modifier = Modifier.weight(0.5f),
                 )
             }
         }

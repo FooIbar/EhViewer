@@ -24,9 +24,8 @@ import com.hippo.ehviewer.client.addQueryParameterIfNotBlank
 import com.hippo.ehviewer.client.ehUrl
 import com.hippo.ehviewer.dao.QuickSearch
 import com.hippo.ehviewer.ui.main.AdvanceTable
-import com.hippo.ehviewer.util.toIntOrDefault
-import java.io.UnsupportedEncodingException
-import java.net.URLDecoder
+import io.ktor.http.Parameters
+import kotlin.text.toIntOrNull
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -70,18 +69,18 @@ data class ListUrlBuilder(
             mKeyword = keyword
         }
 
-    constructor(q: QuickSearch) : this() {
-        mode = q.mode
-        this.category = q.category
-        mKeyword = q.keyword
-        advanceSearch = q.advanceSearch
-        minRating = q.minRating
-        pageFrom = q.pageFrom
-        pageTo = q.pageTo
-        next = q.name.substringAfterLast('@', "").ifEmpty { null }
-    }
+    constructor(q: QuickSearch) : this(
+        mode = q.mode,
+        category = q.category,
+        mKeyword = q.keyword,
+        advanceSearch = q.advanceSearch,
+        minRating = q.minRating,
+        pageFrom = q.pageFrom,
+        pageTo = q.pageTo,
+        next = q.name.substringAfterLast('@', "").ifEmpty { null },
+    )
 
-    fun toQuickSearch(name: String): QuickSearch = QuickSearch(
+    fun toQuickSearch(name: String) = QuickSearch(
         name = name,
         mode = mode,
         category = category,
@@ -118,140 +117,34 @@ data class ListUrlBuilder(
         }
     }
 
-    /**
-     * @param query xxx=yyy&mmm=nnn
-     */
-    constructor(query: String?) : this() {
-        // TODO page
-        if (query.isNullOrEmpty()) {
-            return
-        }
-        val queries = query.split('&')
-        var category = 0
-        var keyword: String? = null
-        var enableAdvanceSearch = false
-        var advanceSearch = 0
-        var enableMinRating = false
-        var minRating = -1
-        var enablePage = false
-        var pageFrom = -1
-        var pageTo = -1
-        for (str in queries) {
-            val index = str.indexOf('=')
-            if (index < 0) {
-                continue
+    constructor(params: Parameters) : this(
+        prev = params["prev"],
+        next = params["next"],
+        jumpTo = params["seek"],
+        range = params["range"]?.toIntOrNull() ?: 0,
+        category = params["f_cats"]?.toIntOrNull()?.let(EhUtils::invCategory) ?: EhUtils.NONE,
+        mKeyword = params["f_search"],
+    ) {
+        if (params["advsearch"] == "1") {
+            advanceSearch = 0
+            if (params["f_sh"] == "on") {
+                advanceSearch = advanceSearch or AdvanceTable.SH
             }
-            val key = str.substring(0, index)
-            val value = str.substring(index + 1)
-            when (key) {
-                "f_cats" -> {
-                    val cats = value.toIntOrDefault(EhUtils.ALL_CATEGORY)
-                    category = category or (cats.inv() and EhUtils.ALL_CATEGORY)
-                }
-
-                "f_doujinshi" -> if ("1" == value) {
-                    category = category or EhUtils.DOUJINSHI
-                }
-
-                "f_manga" -> if ("1" == value) {
-                    category = category or EhUtils.MANGA
-                }
-
-                "f_artistcg" -> if ("1" == value) {
-                    category = category or EhUtils.ARTIST_CG
-                }
-
-                "f_gamecg" -> if ("1" == value) {
-                    category = category or EhUtils.GAME_CG
-                }
-
-                "f_western" -> if ("1" == value) {
-                    category = category or EhUtils.WESTERN
-                }
-
-                "f_non-h" -> if ("1" == value) {
-                    category = category or EhUtils.NON_H
-                }
-
-                "f_imageset" -> if ("1" == value) {
-                    category = category or EhUtils.IMAGE_SET
-                }
-
-                "f_cosplay" -> if ("1" == value) {
-                    category = category or EhUtils.COSPLAY
-                }
-
-                "f_asianporn" -> if ("1" == value) {
-                    category = category or EhUtils.ASIAN_PORN
-                }
-
-                "f_misc" -> if ("1" == value) {
-                    category = category or EhUtils.MISC
-                }
-
-                "f_search" -> try {
-                    keyword = URLDecoder.decode(value, "utf-8")
-                } catch (e: UnsupportedEncodingException) {
-                    // Ignore
-                } catch (_: IllegalArgumentException) {
-                }
-
-                "advsearch" -> if ("1" == value) {
-                    enableAdvanceSearch = true
-                }
-
-                "f_sh" -> if ("on" == value) {
-                    advanceSearch = advanceSearch or AdvanceTable.SH
-                }
-
-                "f_sto" -> if ("on" == value) {
-                    advanceSearch = advanceSearch or AdvanceTable.STO
-                }
-
-                "f_sfl" -> if ("on" == value) {
-                    advanceSearch = advanceSearch or AdvanceTable.SFL
-                }
-
-                "f_sfu" -> if ("on" == value) {
-                    advanceSearch = advanceSearch or AdvanceTable.SFU
-                }
-
-                "f_sft" -> if ("on" == value) {
-                    advanceSearch = advanceSearch or AdvanceTable.SFT
-                }
-
-                "f_sr" -> if ("on" == value) {
-                    enableMinRating = true
-                }
-
-                "f_srdd" -> minRating = value.toIntOrDefault(-1)
-                "f_sp" -> if ("on" == value) {
-                    enablePage = true
-                }
-
-                "f_spf" -> pageFrom = value.toIntOrDefault(-1)
-                "f_spt" -> pageTo = value.toIntOrDefault(-1)
-                "f_shash" -> hash = value
+            if (params["f_sto"] == "on") {
+                advanceSearch = advanceSearch or AdvanceTable.STO
             }
-        }
-        this.category = category
-        mKeyword = keyword
-        if (enableAdvanceSearch) {
-            this.advanceSearch = advanceSearch
-            if (enableMinRating) {
-                this.minRating = minRating
-            } else {
-                this.minRating = -1
+            if (params["f_sfl"] == "on") {
+                advanceSearch = advanceSearch or AdvanceTable.SFL
             }
-            if (enablePage) {
-                this.pageFrom = pageFrom
-                this.pageTo = pageTo
-            } else {
-                this.pageFrom = -1
-                this.pageTo = -1
+            if (params["f_sfu"] == "on") {
+                advanceSearch = advanceSearch or AdvanceTable.SFU
             }
-        } else {
-            this.advanceSearch = -1
+            if (params["f_sft"] == "on") {
+                advanceSearch = advanceSearch or AdvanceTable.SFT
+            }
+            minRating = params["f_srdd"]?.toIntOrNull() ?: -1
+            pageFrom = params["f_spf"]?.toIntOrNull() ?: -1
+            pageTo = params["f_spt"]?.toIntOrNull() ?: -1
         }
     }
 
@@ -259,7 +152,7 @@ data class ListUrlBuilder(
         MODE_NORMAL, MODE_SUBSCRIPTION -> ehUrl(EhUrl.WATCHED_PATH.takeIf { mode == MODE_SUBSCRIPTION }) {
             val category = if (!Settings.hasSignedIn.value && category <= 0) EhUtils.NON_H else category
             if (category > 0) {
-                addQueryParameter("f_cats", (category.inv() and EhUtils.ALL_CATEGORY).toString())
+                addQueryParameter("f_cats", "${EhUtils.invCategory(category)}")
             }
             val query = mKeyword?.let { keyword ->
                 if (language == -1 || "gid:" in keyword || "l:" in keyword || "language:" in keyword) {
@@ -298,12 +191,10 @@ data class ListUrlBuilder(
                 }
                 // Set min star
                 if (minRating > 0) {
-                    addQueryParameter("f_sr", "on")
                     addQueryParameter("f_srdd", "$minRating")
                 }
                 // Pages
                 if (pageFrom > 0 || pageTo > 0) {
-                    addQueryParameter("f_sp", "on")
                     addQueryParameterIfNotBlank(
                         "f_spf",
                         pageFrom.takeIf { it > 0 }?.toString(),

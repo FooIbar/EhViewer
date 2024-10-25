@@ -48,7 +48,7 @@ ExternalProject_Add(
         GIT_TAG nettle_3.10_release_20240616
         GIT_CONFIG core.autocrlf=input
         CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
-        BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS}'"
+        BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS} -Qunused-arguments'"
         INSTALL_COMMAND ""
         BUILD_IN_SOURCE 1
         BUILD_BYPRODUCTS nettle/src/nettle/libnettle.a
@@ -90,7 +90,7 @@ set(LIBARCHIVE_PATCH ${CMAKE_CURRENT_LIST_DIR}/0001-Insert-link-libs.patch)
 FetchContent_Declare(
         libarchive
         GIT_REPOSITORY https://github.com/libarchive/libarchive.git
-        GIT_TAG v3.7.6
+        GIT_TAG v3.7.7
         PATCH_COMMAND git apply --check -R ${LIBARCHIVE_PATCH} || git apply ${LIBARCHIVE_PATCH}
 )
 
@@ -104,7 +104,7 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(Corrosion)
-corrosion_import_crate(MANIFEST_PATH ../rust/Cargo.toml)
+corrosion_import_crate(MANIFEST_PATH ../rust/Cargo.toml LOCKED)
 corrosion_add_target_local_rustflags(ehviewer_rust "-Clink-args=-Wl,-z,max-page-size=16384")
 if (ANDROID_NATIVE_API_LEVEL GREATER_EQUAL 26)
     corrosion_set_features(ehviewer_rust FEATURES api-level-26)

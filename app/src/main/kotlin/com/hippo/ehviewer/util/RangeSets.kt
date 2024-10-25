@@ -34,8 +34,7 @@ class IntRangeSet : RangeSet<Int> {
 
     private constructor(rangeSet: IntRangeSet) : super(rangeSet)
 
-    override fun createRange(start: Int, endInclusive: Int): IntRange =
-        IntRange(start, endInclusive)
+    override fun createRange(start: Int, endInclusive: Int): IntRange = IntRange(start, endInclusive)
 
     override fun incrementValue(value: Int): Int = value + 1
 

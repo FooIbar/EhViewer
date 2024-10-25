@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.util
 
 import androidx.compose.runtime.snapshots.SnapshotStateMap
+import androidx.compose.ui.util.fastForEach
 
 fun <T> MutableList<T>.insertWith(element: T, comparator: Comparator<T>) {
     val index = binarySearch(element, comparator).let {
@@ -9,12 +10,8 @@ fun <T> MutableList<T>.insertWith(element: T, comparator: Comparator<T>) {
     add(index, element)
 }
 
-inline fun <T> Iterable<Iterable<T>>.flattenForEach(action: (T) -> Unit) {
-    for (element in this) {
-        for (item in element) {
-            action(item)
-        }
-    }
+inline fun <T> List<List<T>>.flattenForEach(action: (T) -> Unit) = fastForEach { list ->
+    list.fastForEach { item -> action(item) }
 }
 
 fun <K, V> SnapshotStateMap<K, V>.takeAndClear() = toMap().values.also { clear() }

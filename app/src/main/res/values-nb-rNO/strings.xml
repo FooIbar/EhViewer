@@ -60,7 +60,6 @@
     <string name="tag_vote_up">Stem opp</string>
     <string name="pref_grayscale">Gråskala</string>
     <string name="action_share">Del</string>
-    <string name="download_torrent_started">Nedlasting av torrent startet</string>
     <string name="filter_the_tag">Blokker etiketten «%s»\?</string>
     <string name="rating9">Underbar</string>
     <string name="error_invalid_url">Ugyldig nettadresse</string>
@@ -139,6 +138,7 @@
     <string name="toplist_pastyear">Forrige år</string>
     <string name="toplist_yesterday">I går</string>
     <string name="action_add_tag">Legg til etikett</string>
+    <string name="reset_download_location">Tilbakestill til forvalg</string>
     <string name="dont_show_again">Ikke vis igjen</string>
     <string name="comment_user_uploader">%s (opplaster)</string>
     <string name="copy_trans">Kopier oversettelse</string>

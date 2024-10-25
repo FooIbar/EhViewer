@@ -57,7 +57,9 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.request
 import io.ktor.http.isSuccess
 import io.ktor.utils.io.copyTo
-import kotlin.io.path.readText
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 import kotlinx.coroutines.CancellationException
 import okio.Path
 
@@ -70,10 +72,11 @@ class SpiderDen(val info: GalleryInfo) {
     private val saveAsCbz = Settings.saveAsCbz
     private val archiveName = "$gid.cbz"
 
+    private val lock = ReentrantReadWriteLock()
+
     // Search in both directories to maintain compatibility
     private val fileCache by lazy {
-        (tempDownloadDir?.list().orEmpty() + downloadDir?.list().orEmpty())
-            .associateBy { it.name } as MutableMap
+        listOfNotNull(tempDownloadDir, downloadDir).map(Path::list).flatten().associateBy { it.name } as MutableMap
     }
 
     private val imageDir
@@ -102,14 +105,12 @@ class SpiderDen(val info: GalleryInfo) {
 
     private fun containInCache(index: Int): Boolean {
         val key = getImageKey(gid, index)
-        return sCache.read(key) { true } ?: false
+        return sCache.read(key) {} != null
     }
 
-    private fun findImageFile(index: Int, temp: Boolean = false) = synchronized(fileCache) {
+    private fun findImageFile(index: Int, temp: Boolean = false) = lock.read {
         val head = perFilename(index)
-        fileCache.entries.firstOrNull { (name) ->
-            name.startsWith(head) && temp == name.endsWith(TEMP_SUFFIX)
-        }?.value
+        fileCache.entries.firstOrNull { (name) -> name.startsWith(head) && temp == name.endsWith(TEMP_SUFFIX) }?.value
     }
 
     private fun containInDownloadDir(index: Int): Boolean = findImageFile(index) != null
@@ -122,8 +123,7 @@ class SpiderDen(val info: GalleryInfo) {
                 val extension = metadata.toFile().readText()
                 val file = dir.findDownloadFileForIndex(index, extension)
                 data sendTo file
-                true
-            } ?: false
+            } != null
         }.onFailure {
             logcat(it)
         }.getOrDefault(false)
@@ -148,11 +148,9 @@ class SpiderDen(val info: GalleryInfo) {
         return sCache.remove(key)
     }
 
-    private fun removeTempFile(index: Int) = findImageFile(index, temp = true)?.run {
-        delete()
-        synchronized(fileCache) {
-            fileCache.remove(name)
-        }
+    private fun removeTempFile(index: Int) = findImageFile(index, temp = true)?.let { file ->
+        file.delete()
+        lock.write { fileCache.remove(file.name) }
     }
 
     fun removeIntermediateFiles(index: Int) {
@@ -160,11 +158,9 @@ class SpiderDen(val info: GalleryInfo) {
         removeTempFile(index)
     }
 
-    private fun Path.findDownloadFileForIndex(index: Int, extension: String): Path {
+    private fun Path.findDownloadFileForIndex(index: Int, extension: String) = with(lock) {
         val name = perFilename(index, extension)
-        return synchronized(fileCache) {
-            fileCache.getOrPut(name) { resolve(name) }
-        }
+        read { fileCache[name] } ?: resolve(name).also { write { fileCache[name] = it } }
     }
 
     suspend fun makeHttpCallAndSaveImage(
@@ -196,8 +192,9 @@ class SpiderDen(val info: GalleryInfo) {
             fops(tempFile)
             val file = resolve(tempFile.name.removeSuffix(TEMP_SUFFIX))
             file.delete()
+            lock.write { fileCache.remove(file.name) }
             tempFile.moveTo(file)
-            synchronized(fileCache) {
+            lock.write {
                 fileCache.remove(tempFile.name)
                 fileCache[file.name] = file
             }
@@ -256,7 +253,7 @@ class SpiderDen(val info: GalleryInfo) {
 
     fun getExtension(index: Int): String? {
         val key = getImageKey(gid, index)
-        return sCache.read(key) { metadata.toNioPath().readText() }
+        return sCache.read(key) { metadata.toFile().readText() }
             ?: findImageFile(index)?.name.let { FileUtils.getExtensionFromFilename(it) }
     }
 
@@ -268,7 +265,7 @@ class SpiderDen(val info: GalleryInfo) {
                 return object : PathSource, AutoCloseable by snapshot {
                     override val source = snapshot.data
                     override val type by lazy {
-                        snapshot.metadata.toNioPath().readText()
+                        snapshot.metadata.toFile().readText()
                     }
                 }
             }
@@ -315,8 +312,7 @@ class SpiderDen(val info: GalleryInfo) {
         return archived
     }
 
-    suspend fun exportAsCbz(file: Path) =
-        downloadDir!!.find(archiveName)?.sendTo(file) ?: archiveTo(file)
+    suspend fun exportAsCbz(file: Path) = downloadDir!!.find(archiveName)?.sendTo(file) ?: archiveTo(file)
 
     private suspend fun archiveTo(file: Path) = resourceScope {
         val comicInfo = closeable {

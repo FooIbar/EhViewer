@@ -142,8 +142,6 @@
     <string name="rate_successfully">Rate successfully</string>
     <string name="rate_failed">Rate failed</string>
     <string name="no_torrents">No torrents</string>
-    <string name="download_torrent_started">Torrent download started</string>
-    <string name="download_torrent_failure">Failed to download torrent</string>
     <string name="torrents">Torrents</string>
     <string name="not_favorited">Not favorited</string>
     <string name="add_favorites_dialog_title">Add to favorites</string>
@@ -319,6 +317,8 @@
     <string name="settings_eh_thumb_resolution">Thumb resolution</string>
     <string name="settings_eh_thumb_resolution_summary">Currently %s. Certain resolutions might cause getting thumb failed</string>
     <string name="settings_eh_thumb_resolution_auto">Auto</string>
+    <string name="settings_eh_force_eh_thumb">Use e-hentai thumbnail server</string>
+    <string name="settings_eh_force_eh_thumb_summary">Try disabling this if you have trouble loading thumbnails</string>
     <string name="settings_eh_show_jpn_title">Show Japanese title</string>
     <string name="settings_eh_show_jpn_title_summary">Require enabling Japanese Title in Settings on EHentai website</string>
     <string name="settings_eh_show_gallery_pages">Show gallery pages</string>
@@ -447,11 +447,10 @@
     <string name="current_funds">Current Funds:</string>
     <string name="insufficient_funds">Insufficient Funds</string>
     <string name="image_limits">Image Limits</string>
-    <string name="image_limits_summary">Used: %1$d / %2$d</string>
+    <string name="image_limits_summary">Used: </string>
     <string name="image_limits_normal">No restrictions</string>
     <string name="image_limits_restricted">Image resolution restricted to 1280x</string>
-    <string name="reset_cost">Reset Cost: %d GP</string>
-    <string name="reset_limits_succeed">Image limit was successfully reset</string>
+    <string name="reset_cost">Spend %d GP to reset</string>
     <string name="reset">Reset</string>
     <string name="settings_privacy">Privacy</string>
     <string name="settings_privacy_secure">Prevent screenshots</string>
@@ -498,6 +497,9 @@
     <string name="settings_eh_request_news">Timed request news page</string>
     <string name="settings_eh_hide_hv_events">Hide HV event Notifications</string>
     <string name="copy_trans">Copy translation</string>
+    <string name="default_download_dir_not_empty">The default download directory is not empty!</string>
+    <string name="reset_download_location">Reset to default</string>
+    <string name="pick_new_download_location">Pick a new location</string>
     <string name="dont_show_again">Don\'t show again</string>
     <string name="open_settings">Open settings</string>
     <string name="app_link_not_verified_message">For Android 12 and newer, you need to manually add link to verified links in order to open E-Hentai links in EhViewer.</string>

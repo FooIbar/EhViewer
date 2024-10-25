@@ -12,6 +12,9 @@ import coil3.request.SuccessResult
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.hasQrCode
 import eu.kanade.tachiyomi.util.system.logcat
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
+import kotlin.concurrent.write
 import moe.tarsin.coroutines.runSuspendCatching
 
 private val detectQrCodeKey = Extras.Key(default = false)
@@ -20,7 +23,8 @@ fun ImageRequest.Builder.detectQrCode(enable: Boolean) = apply {
     extras[detectQrCodeKey] = enable
 }
 
-private val lruCache = SieveCache<MemoryCache.Key, Boolean>(50)
+private val cache = SieveCache<MemoryCache.Key, Boolean>(50)
+private val lock = ReentrantReadWriteLock()
 
 val ImageRequest.detectQrCode: Boolean
     get() = getExtra(detectQrCodeKey)
@@ -33,7 +37,7 @@ object QrCodeInterceptor : Interceptor {
             if (image is BitmapImageWithExtraInfo) {
                 fun compute() = runSuspendCatching { hasQrCode(image.image.bitmap) }.onFailure { logcat(it) }.getOrThrow()
                 val hasQrCode = when (val key = result.memoryCacheKey) {
-                    is MemoryCache.Key -> lruCache[key] ?: compute().also { lruCache[key] = it }
+                    is MemoryCache.Key -> lock.read { cache[key] } ?: compute().also { lock.write { cache[key] = it } }
                     null -> compute()
                 }
                 val new = image.copy(hasQrCode = hasQrCode)

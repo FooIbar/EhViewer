@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Help
@@ -22,13 +25,13 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -84,17 +87,17 @@ fun FilterScreen(navigator: DestinationsNavigator) {
         scope.launch {
             dialogState.dialog { cont ->
                 val types = stringArrayResource(id = R.array.filter_entries)
-                var type by remember { mutableStateOf(types[0]) }
-                var value by remember { mutableStateOf("") }
+                val type = rememberTextFieldState(types[0])
+                val state = rememberTextFieldState()
                 var error by remember { mutableStateOf<String?>(null) }
                 fun invalidateAndSave() {
-                    if (value.isBlank()) {
+                    if (state.text.isBlank()) {
                         error = textIsEmpty
                         return
                     }
                     error = null
-                    val mode = FilterMode.entries[types.indexOf(type)]
-                    val filter = Filter(mode, value)
+                    val mode = FilterMode.entries[types.indexOf(type.text)]
+                    val filter = Filter(mode, state.text.toString())
                     filter.remember {
                         if (it) {
                             cont.resume(Unit)
@@ -127,10 +130,9 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                                 onExpandedChange = { expanded = !expanded },
                             ) {
                                 OutlinedTextField(
-                                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
                                     readOnly = true,
-                                    value = type,
-                                    onValueChange = {},
+                                    state = type,
                                     label = {
                                         Text(text = stringResource(id = R.string.filter_label))
                                     },
@@ -146,7 +148,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                                             text = { Text(text = it) },
                                             onClick = {
                                                 expanded = false
-                                                type = it
+                                                type.setTextAndPlaceCursorAtEnd(it)
                                             },
                                             contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                                         )
@@ -156,8 +158,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                             Spacer(modifier = Modifier.size(16.dp))
                             val isError = error != null
                             OutlinedTextField(
-                                value = value,
-                                onValueChange = { value = it },
+                                state = state,
                                 label = { Text(text = stringResource(id = R.string.filter_text)) },
                                 supportingText = { error?.let { Text(text = it) } },
                                 trailingIcon = {
@@ -169,7 +170,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                                     }
                                 },
                                 isError = isError,
-                                maxLines = 1,
+                                lineLimits = TextFieldLineLimits.SingleLine,
                                 keyboardOptions = KeyboardOptions(
                                     imeAction = ImeAction.Done,
                                 ),

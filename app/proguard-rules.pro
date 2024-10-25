@@ -14,8 +14,6 @@
 # Ktor logger
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 
--dontwarn org.conscrypt.Conscrypt
-
 # https://issuetracker.google.com/222232895
 -dontwarn androidx.window.extensions.**
 -dontwarn androidx.window.sidecar.Sidecar*

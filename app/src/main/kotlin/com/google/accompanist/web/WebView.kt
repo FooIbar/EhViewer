@@ -635,8 +635,7 @@ data class WebViewError(
 fun rememberWebViewState(
     url: String,
     additionalHttpHeaders: Map<String, String> = emptyMap(),
-): WebViewState =
-// Rather than using .apply {} here we will recreate the state, this prevents
+): WebViewState = // Rather than using .apply {} here we will recreate the state, this prevents
     // a recomposition loop when the webview updates the url itself.
     remember {
         WebViewState(

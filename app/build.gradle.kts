@@ -136,6 +136,19 @@ android {
         dex {
             useLegacyPackaging = false
         }
+        resources {
+            // Required by Layout Inspector
+            pickFirsts += "/META-INF/androidx.compose.ui_ui.version"
+
+            excludes += listOf(
+                "/META-INF/**",
+                "/kotlin/**",
+                "**.txt",
+                "**.bin",
+                "**.{html,mmd}", // Compose Destination
+                "/okhttp3/**", // Okhttp public suffix
+            )
+        }
     }
 
     dependenciesInfo.includeInApk = false
@@ -169,17 +182,6 @@ android {
 
 composeCompiler {
     featureFlags = setOf(ComposeFeatureFlag.OptimizeNonSkippingGroups)
-}
-
-androidComponents {
-    onVariants(selector().withBuildType("release")) {
-        it.packaging.resources.excludes.addAll(
-            "/META-INF/**",
-            "/kotlin/**",
-            "**.txt",
-            "**.bin",
-        )
-    }
 }
 
 baselineProfile {
@@ -220,8 +222,13 @@ dependencies {
 
     implementation(libs.androidx.work.runtime)
     implementation(libs.material.motion.core)
+    implementation(libs.material.kolor)
 
     implementation(libs.bundles.splitties)
+
+    // https://square.github.io/okhttp/changelogs/changelog/
+    implementation(platform(libs.okhttp.bom))
+    implementation(libs.okhttp.android)
 
     implementation(libs.okio.jvm)
 
@@ -245,7 +252,7 @@ dependencies {
 
     implementation(libs.telephoto.zoomable)
 
-    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
 
     implementation(libs.bundles.kotlinx.serialization)
 
@@ -254,8 +261,6 @@ dependencies {
     implementation(libs.jsoup)
 
     coreLibraryDesugaring(libs.desugar)
-
-    implementation(libs.cronet.embedded)
 
     implementation(libs.androidx.profileinstaller)
     "baselineProfile"(project(":benchmark"))
@@ -278,6 +283,7 @@ kotlin {
             "-opt-in=coil3.annotation.ExperimentalCoilApi",
             "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
             "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
             "-opt-in=androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
             "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
             "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",

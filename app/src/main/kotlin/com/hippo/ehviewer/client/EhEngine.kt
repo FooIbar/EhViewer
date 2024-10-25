@@ -180,6 +180,11 @@ object EhEngine {
         return ehRequest(url, referer).fetchUsingAsByteBuffer(TorrentParser::parse)
     }
 
+    suspend fun getTorrentKey() = EhCookieStore.getUserId()?.let { id ->
+        val key = ehRequest(EhUrl.URL_HOME).fetchUsingAsText(HomeParser::parseTorrentKey)
+        "${id}x$key"
+    }
+
     suspend fun getArchiveList(url: String, gid: Long, token: String): ArchiveParser.Result {
         val funds = if (EhUtils.isExHentai) getFunds() else null
         return ehRequest(url, EhUrl.getGalleryDetailUrl(gid, token))
@@ -273,7 +278,7 @@ object EhEngine {
         ehRequest(location, url).fetchUsingAsText {
             val document = Jsoup.parse(this)
             val elements = document.select("#chd + p")
-            if (elements.size > 0) {
+            if (elements.isNotEmpty()) {
                 throw EhException(elements[0].text())
             }
             GalleryDetailParser.parseComments(document)
@@ -298,9 +303,8 @@ object EhEngine {
         }.executeSafely { }
     }
 
-    suspend fun getFavoriteNote(gid: Long, token: String) =
-        ehRequest(EhUrl.getAddFavorites(gid, token), EhUrl.getGalleryDetailUrl(gid, token))
-            .fetchUsingAsText(FavoritesParser::parseNote)
+    suspend fun getFavoriteNote(gid: Long, token: String) = ehRequest(EhUrl.getAddFavorites(gid, token), EhUrl.getGalleryDetailUrl(gid, token))
+        .fetchUsingAsText(FavoritesParser::parseNote)
 
     suspend fun downloadArchive(gid: Long, token: String, or: String, res: String, isHAtH: Boolean): String? {
         val url = EhUrl.getDownloadArchive(gid, token, or)
@@ -379,54 +383,51 @@ object EhEngine {
         }
     }.fetchUsingAsText(String::parseAs)
 
-    suspend fun fillGalleryListByApi(galleryInfoList: List<GalleryInfo>, referer: String? = null) =
-        galleryInfoList.chunked(MAX_REQUEST_SIZE).chunked(MAX_SEQUENTIAL_REQUESTS).forEachIndexed { index, chunk ->
-            if (index != 0) {
-                delay(REQUEST_INTERVAL)
-            }
-            chunk.parMap {
-                ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
-                    jsonBody {
-                        put("method", "gdata")
-                        array("gidlist") {
-                            it.forEach {
-                                addJsonArray {
-                                    add(it.gid)
-                                    add(it.token)
-                                }
+    suspend fun fillGalleryListByApi(galleryInfoList: List<GalleryInfo>, referer: String? = null) = galleryInfoList.chunked(MAX_REQUEST_SIZE).chunked(MAX_SEQUENTIAL_REQUESTS).forEachIndexed { index, chunk ->
+        if (index != 0) {
+            delay(REQUEST_INTERVAL)
+        }
+        chunk.parMap {
+            ehRequest(EhUrl.apiUrl, referer, EhUrl.origin) {
+                jsonBody {
+                    put("method", "gdata")
+                    array("gidlist") {
+                        it.forEach {
+                            addJsonArray {
+                                add(it.gid)
+                                add(it.token)
                             }
                         }
-                        put("namespace", 1)
                     }
-                }.fetchUsingAsText { GalleryApiParser.parse(this, it) }
-            }
+                    put("namespace", 1)
+                }
+            }.fetchUsingAsText { GalleryApiParser.parse(this, it) }
         }
+    }
 
-    suspend fun voteComment(apiUid: Long, apiKey: String?, gid: Long, token: String, commentId: Long, commentVote: Int): VoteCommentResult =
-        ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
-            jsonBody {
-                put("method", "votecomment")
-                put("apiuid", apiUid)
-                put("apikey", requireNotNull(apiKey))
-                put("gid", gid)
-                put("token", token)
-                put("comment_id", commentId)
-                put("comment_vote", commentVote)
-            }
-        }.fetchUsingAsText(String::parseAs)
+    suspend fun voteComment(apiUid: Long, apiKey: String?, gid: Long, token: String, commentId: Long, commentVote: Int): VoteCommentResult = ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
+        jsonBody {
+            put("method", "votecomment")
+            put("apiuid", apiUid)
+            put("apikey", requireNotNull(apiKey))
+            put("gid", gid)
+            put("token", token)
+            put("comment_id", commentId)
+            put("comment_vote", commentVote)
+        }
+    }.fetchUsingAsText(String::parseAs)
 
-    suspend fun voteTag(apiUid: Long, apiKey: String?, gid: Long, token: String, tags: String, vote: Int) =
-        ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
-            jsonBody {
-                put("method", "taggallery")
-                put("apiuid", apiUid)
-                put("apikey", requireNotNull(apiKey))
-                put("gid", gid)
-                put("token", token)
-                put("tags", tags)
-                put("vote", vote)
-            }
-        }.fetchUsingAsText(VoteTagParser::parse)
+    suspend fun voteTag(apiUid: Long, apiKey: String?, gid: Long, token: String, tags: String, vote: Int) = ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
+        jsonBody {
+            put("method", "taggallery")
+            put("apiuid", apiUid)
+            put("apikey", requireNotNull(apiKey))
+            put("gid", gid)
+            put("token", token)
+            put("tags", tags)
+            put("vote", vote)
+        }
+    }.fetchUsingAsText(VoteTagParser::parse)
 
     suspend fun getGalleryToken(gid: Long, gtoken: String, page: Int) = ehRequest(EhUrl.apiUrl, EhUrl.referer, EhUrl.origin) {
         jsonBody {

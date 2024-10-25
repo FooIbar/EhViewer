@@ -376,6 +376,7 @@ class MainActivity : EhActivity() {
             val drawerEnabled = drawerHandle.isNotEmpty()
             val density = LocalDensity.current
             val adaptiveInfo = currentWindowAdaptiveInfo()
+            val needSignIn by Settings.needSignIn.collectAsState()
             CompositionLocalProvider(
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
@@ -473,7 +474,7 @@ class MainActivity : EhActivity() {
                             // SharedTransitionLayout {
                             CompositionLocalProvider(LocalSharedTransitionScope provides NoopSharedTransitionScope) {
                                 val start = when {
-                                    Settings.needSignIn -> SignInScreenDestination
+                                    needSignIn -> SignInScreenDestination
                                     hasNetwork -> StartDestination
                                     else -> DownloadsScreenDestination
                                 }

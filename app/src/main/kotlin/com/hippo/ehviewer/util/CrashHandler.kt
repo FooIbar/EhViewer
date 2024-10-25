@@ -3,6 +3,7 @@ package com.hippo.ehviewer.util
 import android.os.Build
 import android.os.Debug
 import com.hippo.ehviewer.BuildConfig
+import com.hippo.ehviewer.Settings
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import java.io.PrintWriter
@@ -14,7 +15,17 @@ private fun collectClassStaticInfo(clazz: Class<*>): String = clazz.fields.joinT
     "${it.name}=${joinIfStringArray(it.get(null))}"
 }
 
-object Crash {
+object CrashHandler {
+    fun install() {
+        val handler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { t, e ->
+            if (Settings.saveCrashLog) {
+                runCatching { saveCrashLog(e) }
+            }
+            handler?.uncaughtException(t, e)
+        }
+    }
+
     fun collectInfo(writer: Writer) {
         writer.write("======== PackageInfo ========\n")
         writer.write("PackageName=${BuildConfig.APPLICATION_ID}\n")
@@ -54,7 +65,7 @@ object Crash {
         }
     }
 
-    fun saveCrashLog(t: Throwable) {
+    private fun saveCrashLog(t: Throwable) {
         val dir = AppConfig.externalCrashDir ?: return
         val nowString = ReadableTime.getFilenamableTime()
         val fileName = "crash-$nowString.log"

@@ -29,11 +29,9 @@ fun Path.moveTo(target: Path) = SystemFileSystem.atomicMove(this, target)
 
 fun Path.openFileDescriptor(mode: String) = SystemFileSystem.openFileDescriptor(this, mode)
 
-fun Path.openInputStream(): FileInputStream =
-    ParcelFileDescriptor.AutoCloseInputStream(SystemFileSystem.openFileDescriptor(this, "r"))
+fun Path.openInputStream(): FileInputStream = ParcelFileDescriptor.AutoCloseInputStream(SystemFileSystem.openFileDescriptor(this, "r"))
 
-fun Path.openOutputStream(): FileOutputStream =
-    ParcelFileDescriptor.AutoCloseOutputStream(SystemFileSystem.openFileDescriptor(this, "wt"))
+fun Path.openOutputStream(): FileOutputStream = ParcelFileDescriptor.AutoCloseOutputStream(SystemFileSystem.openFileDescriptor(this, "wt"))
 
 fun Path.toUri(): Uri {
     val str = toString()

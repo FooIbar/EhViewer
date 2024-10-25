@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
+import androidx.collection.SieveCache
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,7 +41,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import coil3.imageLoader
-import com.hippo.ehviewer.EhApplication.Companion.galleryDetailCache
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
@@ -66,6 +66,7 @@ import com.hippo.ehviewer.ui.main.ArchiveList
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
+import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.AppHelper
@@ -83,6 +84,7 @@ import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
+import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -90,6 +92,8 @@ import kotlinx.coroutines.async
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
 import splitties.systemservices.downloadManager
+
+val detailCache = SieveCache<Long, GalleryDetail>(25)
 
 sealed interface GalleryDetailScreenArgs : Parcelable
 
@@ -108,46 +112,30 @@ data class TokenArgs(
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
-    var galleryInfo by rememberInVM {
-        val casted = args as? GalleryInfoArgs
-        mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
-    }
-    val (gid, token) = remember {
+    val (gid, token) = remember(args) {
         when (args) {
             is GalleryInfoArgs -> with(args.galleryInfo) { gid to token }
             is TokenArgs -> args.gid to args.token
         }
     }
-    val galleryDetailUrl = remember { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
-    var showReadAction by rememberSaveable { mutableStateOf(true) }
-    LaunchedEffect(args, galleryInfo) {
-        if (showReadAction) {
-            val page = (args as? TokenArgs)?.page ?: 0
-            val gi = galleryInfo
-            if (page != 0 && gi != null) {
-                showReadAction = false
-                val result = showSnackbar(
-                    getString(R.string.read_from, page),
-                    getString(R.string.read),
-                    true,
-                )
-                if (result == SnackbarResult.ActionPerformed) {
-                    navToReader(gi.findBaseInfo(), page)
-                }
-            }
-        }
-    }
+    val galleryDetailUrl = remember(gid, token) { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
     ProvideAssistContent(galleryDetailUrl)
+
+    var galleryInfo by rememberInVM {
+        val casted = args as? GalleryInfoArgs
+        mutableStateOf<GalleryInfo?>(casted?.galleryInfo)
+    }
+
     var getDetailError by rememberSaveable { mutableStateOf("") }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     if (galleryInfo !is GalleryDetail && getDetailError.isBlank()) {
         LaunchedEffect(Unit) {
-            val galleryDetail = galleryDetailCache[gid]
+            val galleryDetail = detailCache[gid]
                 ?: runSuspendCatching {
                     withIOContext { EhEngine.getGalleryDetail(galleryDetailUrl) }
                 }.onSuccess { galleryDetail ->
-                    galleryDetailCache.put(galleryDetail.gid, galleryDetail)
+                    detailCache[galleryDetail.gid] = galleryDetail
                     if (Settings.preloadThumbAggressively) {
                         launchIO {
                             with(galleryDetail) {
@@ -195,7 +183,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                             ArchiveList(
                                 funds = funds,
                                 items = archiveList,
-                                onItemClick = { dismissWith(it) },
+                                onItemClick = { resume(it) },
                             )
                         }
                         EhEngine.downloadArchive(gid, token, paramOr, selected.res, selected.isHAtH)?.let {
@@ -316,7 +304,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                             onClick = {
                                 dropdown = false
                                 // Invalidate cache
-                                galleryDetailCache.remove(gid)
+                                detailCache.remove(gid)
 
                                 // Trigger recompose
                                 galleryInfo = galleryInfo?.findBaseInfo()
@@ -399,6 +387,16 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
     ) {
         val gi = galleryInfo
         if (gi != null) {
+            if (args is TokenArgs && args.page != 0) {
+                val from = stringResource(id = R.string.read_from, args.page)
+                val read = stringResource(id = R.string.read)
+                launchInVM {
+                    val result = showSnackbar(from, read, true)
+                    if (result == SnackbarResult.ActionPerformed) {
+                        navToReader(gi.findBaseInfo(), args.page)
+                    }
+                }
+            }
             GalleryDetailContent(
                 galleryInfo = gi,
                 contentPadding = it,
