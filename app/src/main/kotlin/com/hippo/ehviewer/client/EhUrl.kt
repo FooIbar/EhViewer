@@ -125,10 +125,10 @@ object EhUrl {
         addQueryParameter("act", "addfav")
     }.buildString()
 
-    fun getDownloadArchive(gid: Long, token: String, or: String) = ehUrl("archiver.php") {
+    fun getDownloadArchive(gid: Long, token: String, or: String?) = ehUrl("archiver.php") {
         addQueryParameter("gid", "$gid")
         addQueryParameter("token", token)
-        addQueryParameter("or", or)
+        addQueryParameterIfNotBlank("or", or)
     }.buildString()
 
     fun getTagDefinitionUrl(tag: String) = "https://ehwiki.org/wiki/" + tag.replace(' ', '_')
