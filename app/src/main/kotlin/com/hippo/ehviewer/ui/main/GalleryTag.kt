@@ -39,16 +39,16 @@ fun GalleryTags(
         tagGroups.forEach { tagGroup ->
             Row {
                 BaseRoundText(
-                    text = tagGroup.groupName.translate(),
+                    text = tagGroup.name.translate(),
                     isGroup = true,
                 )
-                val prefix = TagNamespace(tagGroup.groupName).toPrefix()
+                val prefix = TagNamespace(tagGroup.name).toPrefix()
                 FlowRow {
-                    tagGroup.forEach {
+                    tagGroup.tags.forEach {
                         val weak = it.startsWith('_')
                         val real = it.removePrefix("_")
                         val translated = real.translate(prefix)
-                        val tag = tagGroup.groupName + ":" + real
+                        val tag = tagGroup.name + ":" + real
                         val hapticFeedback = LocalHapticFeedback.current
                         BaseRoundText(
                             text = translated,
