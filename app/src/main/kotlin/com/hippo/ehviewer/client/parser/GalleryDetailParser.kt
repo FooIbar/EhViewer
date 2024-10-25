@@ -71,13 +71,13 @@ object GalleryDetailParser {
     private val PATTERN_PREVIEW_PAGES =
         Regex("<td[^>]+><a[^>]+>([\\d,]+)</a></td><td[^>]+>(?:<a[^>]+>)?&gt;(?:</a>)?</td>")
     private val PATTERN_NORMAL_PREVIEW =
-        Regex("<div class=\"gdtm\"[^<>]*><div[^<>]*width:(\\d+)[^<>]*height:(\\d+)[^<>]*\\((.+?)\\)[^<>]*-(\\d+)px[^<>]*><a[^<>]*href=\"(.+?)\"[^<>]*><img alt=\"([\\d,]+)\"")
+        Regex("<div class=\"gdtm\"[^>]*><div[^>]*width:(\\d+)[^>]*height:(\\d+)[^>]*\\(([^)]+)\\)[^>]*-(\\d+)px[^>]*><a[^>]*href=\"([^\"]+)\"[^>]*><img alt=\"([\\d,]+)\"")
     private val PATTERN_NORMAL_PREVIEW_NEW =
-        Regex("<a href=\"(.+?)\"><div[^<>]*title=\"Page (\\d+):[^<>]*width:(\\d+)[^<>]*height:(\\d+)[^<>]*\\((.+?)\\)[^<>]*-(\\d+)px[^<>]*>")
+        Regex("<a href=\"([^\"]+)\"><div[^>]*title=\"Page (\\d+):[^>]*width:(\\d+)[^>]*height:(\\d+)[^>]*\\(([^)]+)\\)[^>]*-(\\d+)px[^>]*>")
     private val PATTERN_LARGE_PREVIEW =
-        Regex("<div class=\"gdtl\".+?<a href=\"(.+?)\"><img alt=\"([\\d,]+)\".+?src=\"(.+?)\"")
+        Regex("<div class=\"gdtl\"[^>]*><a href=\"([^\"]+)\"><img alt=\"([\\d,]+)\"[^>]*src=\"([^\"]+)\"")
     private val PATTERN_LARGE_PREVIEW_NEW =
-        Regex("<a href=\"(.+?)\"><div[^<>]*title=\"Page (\\d+):[^<>]*\\((.+?)\\)[^<>]*0 0[^<>]*>")
+        Regex("<a href=\"([^\"]+)\"><div[^>]*title=\"Page (\\d+):[^>]*\\(([^)]+)\\)[^>]*0 0[^>]*>")
     private val PATTERN_NEWER_DATE = Regex(", added (.+?)<br />")
     private val PATTERN_FAVORITE_SLOT =
         Regex("/fav.png\\); background-position:0px -(\\d+)px")
