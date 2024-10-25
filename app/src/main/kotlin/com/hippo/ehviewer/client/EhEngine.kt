@@ -306,7 +306,7 @@ object EhEngine {
     suspend fun getFavoriteNote(gid: Long, token: String) = ehRequest(EhUrl.getAddFavorites(gid, token), EhUrl.getGalleryDetailUrl(gid, token))
         .fetchUsingAsText(FavoritesParser::parseNote)
 
-    suspend fun downloadArchive(gid: Long, token: String, or: String, res: String, isHAtH: Boolean): String? {
+    suspend fun downloadArchive(gid: Long, token: String, or: String?, res: String, isHAtH: Boolean): String? {
         val url = EhUrl.getDownloadArchive(gid, token, or)
         val referer = EhUrl.getGalleryDetailUrl(gid, token)
         val request = ehRequest(url, referer, EhUrl.origin) {
