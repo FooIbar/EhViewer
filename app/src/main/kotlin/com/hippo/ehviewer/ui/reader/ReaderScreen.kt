@@ -6,6 +6,7 @@ import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -194,10 +195,28 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
     val lazyListState = rememberLazyListState(pageLoader.startPage)
     val pagerState = rememberPagerState(pageLoader.startPage) { pageLoader.size }
     val syncState = rememberSliderPagerDoubleSyncState(lazyListState, pagerState, pageLoader)
-    Box {
-        var appbarVisible by remember { mutableStateOf(false) }
+    var appbarVisible by remember { mutableStateOf(false) }
+    val isWebtoon by rememberUpdatedState(ReadingModeType.isWebtoon(readingMode))
+    val focusRequester = remember { FocusRequester() }
+    Box(
+        Modifier.keyEventHandler(
+            enabled = { !appbarVisible },
+            movePrevious = {
+                launch {
+                    if (isWebtoon) lazyListState.scrollUp() else pagerState.moveToPrevious()
+                }
+            },
+            moveNext = {
+                launch {
+                    if (isWebtoon) lazyListState.scrollDown() else pagerState.moveToNext()
+                }
+            },
+        ).focusRequester(focusRequester).focusable(),
+    ) {
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
         val bgColor by collectBackgroundColorAsState()
-        val isWebtoon by rememberUpdatedState(ReadingModeType.isWebtoon(readingMode))
         syncState.Sync(isWebtoon) { appbarVisible = false }
         if (fullscreen) {
             LaunchedEffect(Unit) {
@@ -249,10 +268,6 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
             } else {
                 WindowInsets.systemBars
             }
-            val focusRequester = remember { FocusRequester() }
-            LaunchedEffect(Unit) {
-                focusRequester.requestFocus()
-            }
             GalleryPager(
                 type = readingMode,
                 pagerState = pagerState,
@@ -268,19 +283,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                         syncState.reset()
                         showNavigationOverlay = false
                     }
-                }.keyEventHandler(
-                    enabled = { !appbarVisible },
-                    movePrevious = {
-                        launch {
-                            if (isWebtoon) lazyListState.scrollUp() else pagerState.moveToPrevious()
-                        }
-                    },
-                    moveNext = {
-                        launch {
-                            if (isWebtoon) lazyListState.scrollDown() else pagerState.moveToNext()
-                        }
-                    },
-                ).focusRequester(focusRequester).fillMaxSize().windowInsetsPadding(insets),
+                }.fillMaxSize().windowInsetsPadding(insets),
             )
         }
         val brightness by Settings.customBrightness.collectAsState()
