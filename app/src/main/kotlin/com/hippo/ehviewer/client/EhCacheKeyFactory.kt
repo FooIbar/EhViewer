@@ -25,13 +25,13 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 const val URL_PREFIX_THUMB_E = "https://ehgt.org/"
 const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/t/"
 const val URL_SIGNATURE_THUMB_NORMAL = ".hath.network/cm/"
-private val NormalPreviewKeyRegex = Regex("(/\\d+-\\d+)\\.jpg$")
+private val NormalPreviewKeyRegex = Regex("(/\\d+-\\d+)\\.\\w+$")
 
 fun getImageKey(gid: Long, index: Int): String = "image:$gid:$index"
 
 fun getThumbKey(url: String): String = url.removePrefix(URL_PREFIX_THUMB_E).removePrefix(URL_PREFIX_THUMB_EX)
 
-fun getNormalPreviewKey(url: String) = NormalPreviewKeyRegex.find(url)!!.groupValues[1]
+fun getNormalPreviewKey(url: String) = NormalPreviewKeyRegex.find(url)?.groupValues[1] ?: url
 
 val String.isNormalPreviewKey
     get() = startsWith('/')
