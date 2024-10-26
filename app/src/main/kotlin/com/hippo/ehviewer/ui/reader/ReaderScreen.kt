@@ -205,13 +205,17 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
                 }
             }
         }
-        VolumeKeysHandler(
+        KeyEventHandler(
             enabled = { volumeKeysEnabled && !appbarVisible },
             movePrevious = {
-                if (isWebtoon) lazyListState.scrollUp() else pagerState.moveToPrevious()
+                launch {
+                    if (isWebtoon) lazyListState.scrollUp() else pagerState.moveToPrevious()
+                }
             },
             moveNext = {
-                if (isWebtoon) lazyListState.scrollDown() else pagerState.moveToNext()
+                launch {
+                    if (isWebtoon) lazyListState.scrollDown() else pagerState.moveToNext()
+                }
             },
         )
         var showNavigationOverlay by remember {
