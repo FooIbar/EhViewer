@@ -28,7 +28,6 @@ import com.hippo.ehviewer.client.data.GalleryCommentList
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.LOCAL_FAVORITED
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
-import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.LargeGalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
@@ -70,16 +69,12 @@ object GalleryDetailParser {
         Regex("<tr><td[^<>]*>Length:</td><td[^<>]*>([\\d,]+) pages</td></tr>")
     private val PATTERN_PREVIEW_PAGES =
         Regex("<td[^>]+><a[^>]+>([\\d,]+)</a></td><td[^>]+>(?:<a[^>]+>)?&gt;(?:</a>)?</td>")
-    private val PATTERN_NORMAL_PREVIEW =
-        Regex("<div class=\"gdtm\"[^>]*><div[^>]*width:(\\d+)[^>]*height:(\\d+)[^>]*\\(([^)]+)\\)[^>]*-(\\d+)px[^>]*><a[^>]*href=\"([^\"]+)\"[^>]*><img alt=\"([\\d,]+)\"")
-    private val PATTERN_NORMAL_PREVIEW_NEW =
-        Regex("<a href=\"([^\"]+)\">(?:<div>)?<div[^>]*title=\"Page (\\d+):[^>]*width:(\\d+)[^>]*height:(\\d+)[^>]*\\(([^)]+)\\)[^>]*-(\\d+)px[^>]*>")
-    private val PATTERN_LARGE_PREVIEW =
-        Regex("<a href=\"([^\"]+)\">(?:<div>)?<[^>]*title=\"Page (\\d+):[^>]*(?:url\\(|src=\")([^)\"]+)[)\"]")
     private val PATTERN_NEWER_DATE = Regex(", added (.+?)<br />")
     private val PATTERN_FAVORITE_SLOT =
         Regex("/fav.png\\); background-position:0px -(\\d+)px")
     private val EMPTY_GALLERY_COMMENT_LIST = GalleryCommentList(emptyList(), false)
+    private val PreviewRegex =
+        Regex("<a href=\"([^\"]+)\">(?:<div>)?<div title=\"Page (\\d+)(?:[^\"]+\"){2}\\D+(\\d+)\\D+(\\d+)[^(]+\\(([^)]+)\\)(?: -(\\d+))?")
 
     // dd MMMM yyyy, HH:mm
     private val WEB_COMMENT_DATE_FORMAT = LocalDateTime.Format {
@@ -428,47 +423,23 @@ object GalleryDetailParser {
     fun parsePages(body: String): Int = PATTERN_PAGES.find(body)?.groupValues?.get(1)?.toIntOrNull()
         ?: throw ParseException("Parse pages error")
 
-    fun parsePreviewList(body: String): Pair<List<GalleryPreview>, List<String>> = runCatching { parseNormalPreview(body) }.getOrElse { parseLargePreview(body) }
-
-    private fun parseLargePreview(body: String): Pair<List<GalleryPreview>, List<String>> {
-        check(PATTERN_LARGE_PREVIEW.containsMatchIn(body))
-        return PATTERN_LARGE_PREVIEW.findAll(body).unzip {
-            val position = it.groupValues[2].toInt() - 1
-            val imageKey = getThumbKey(it.groupValues[3].trim())
-            val pageUrl = it.groupValues[1].trim()
-            LargeGalleryPreview(imageKey, position) to pageUrl
-        }.run {
-            first.toList() to second.toList()
-        }
-    }
-
-    private fun parseNormalPreview(body: String): Pair<List<GalleryPreview>, List<String>> {
-        val isOld = PATTERN_NORMAL_PREVIEW.containsMatchIn(body)
-        check(isOld || PATTERN_NORMAL_PREVIEW_NEW.containsMatchIn(body))
-        return if (isOld) {
-            PATTERN_NORMAL_PREVIEW.findAll(body).unzip {
-                val position = it.groupValues[6].toInt() - 1
-                val url = it.groupValues[3].trim()
-                val imageKey = getNormalPreviewKey(url)
-                val xOffset = it.groupValues[4].toIntOrNull() ?: 0
-                val width = it.groupValues[1].toInt()
-                val height = it.groupValues[2].toInt()
-                val pageUrl = it.groupValues[5].trim()
-                NormalGalleryPreview(url, imageKey, position, xOffset, width, height) to pageUrl
-            }
+    fun parsePreviewList(body: String) = PreviewRegex.findAll(body).unzip {
+        val pageUrl = it.groupValues[1]
+        val position = it.groupValues[2].toInt() - 1
+        val url = it.groupValues[5]
+        val offset = it.groupValues[6]
+        if (offset.isEmpty()) {
+            val imageKey = getThumbKey(url)
+            LargeGalleryPreview(imageKey, position)
         } else {
-            PATTERN_NORMAL_PREVIEW_NEW.findAll(body).unzip {
-                val position = it.groupValues[2].toInt() - 1
-                val url = it.groupValues[5].trim()
-                val imageKey = getNormalPreviewKey(url)
-                val xOffset = it.groupValues[6].toIntOrNull() ?: 0
-                val width = it.groupValues[3].toInt()
-                val height = it.groupValues[4].toInt()
-                val pageUrl = it.groupValues[1].trim()
-                NormalGalleryPreview(url, imageKey, position, xOffset, width, height) to pageUrl
-            }
-        }.run {
-            first.toList() to second.toList()
-        }
+            val imageKey = getNormalPreviewKey(url)
+            val width = it.groupValues[3].toInt()
+            val height = it.groupValues[4].toInt()
+            NormalGalleryPreview(url, imageKey, position, offset.toInt(), width, height)
+        } to pageUrl
+    }.run {
+        first.toList().apply {
+            if (isEmpty()) throw ParseException("Parse preview list error")
+        } to second.toList()
     }
 }
