@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -64,23 +63,4 @@ fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberS
         title = stringResource(id = R.string.pref_page_transitions),
         field = Settings.pageTransitions.asMutableState(),
     )
-    val volume = Settings.readWithVolumeKeys.asMutableState()
-    SwitchChoice(
-        title = stringResource(id = R.string.settings_read_volume_page),
-        field = volume,
-    )
-    AnimatedVisibility(visible = volume.value) {
-        Column {
-            SliderChoice(
-                startSlot = { Text(text = stringResource(id = R.string.settings_read_volume_page_fast)) },
-                endSlot = { Text(text = stringResource(id = R.string.settings_read_volume_page_slow)) },
-                range = 0..9,
-                field = Settings.readWithVolumeKeysInterval.asMutableState(),
-            )
-            SwitchChoice(
-                title = stringResource(id = R.string.settings_read_reverse_volume),
-                field = Settings.readWithVolumeKeysInverted.asMutableState(),
-            )
-        }
-    }
 }
