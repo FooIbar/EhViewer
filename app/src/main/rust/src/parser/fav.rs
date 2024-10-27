@@ -1,5 +1,5 @@
-use crate::parse_marshal_inplace;
 use crate::parser::list::{parse_info_list, GalleryListResult};
+use crate::{parse_marshal_inplace, EhError};
 use anyhow::{bail, Result};
 use jni::objects::{JByteBuffer, JClass};
 use jni::sys::jint;
@@ -20,7 +20,7 @@ struct FavResult {
 
 fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult> {
     if html.contains("This page requires you to log on.</p>") {
-        bail!("Not logged in!")
+        bail!(EhError::NeedLogin)
     }
     let vec: Vec<(String, i32)> = dom
         .get_elements_by_class_name("fp")
