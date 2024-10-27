@@ -132,10 +132,10 @@ fun rethrowExactly(status: HttpStatusCode, body: Either<String, ByteBuffer>, e: 
     if (e is ParseException || e is SerializationException) {
         body.onLeft { if ("<" !in it) throw EhException(it) }
         when (val message = e.cause?.message) {
-            "No hits found!" -> throw NoHitsFoundException()
-            "No watched tags!" -> throw EhException(R.string.gallery_list_empty_hit_subscription)
-            "Not logged in!" -> throw NotLoggedInException()
-            is String -> if (message.startsWith("Your IP address")) throw EhException(message)
+            "0" -> throw NoHitsFoundException()
+            "1" -> throw EhException(R.string.gallery_list_empty_hit_subscription)
+            "2" -> throw NotLoggedInException()
+            is String if message.startsWith('3') -> throw EhException(message.drop(1))
         }
         if (Settings.saveParseErrorBody) body.saveParseError(e)
         throw EhException(appCtx.getString(R.string.error_parse_error), e)

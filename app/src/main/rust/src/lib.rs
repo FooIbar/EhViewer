@@ -11,6 +11,7 @@ use log::LevelFilter;
 use ndk::bitmap::Bitmap;
 use serde::Serialize;
 use std::ffi::c_void;
+use std::fmt::{Debug, Display, Formatter};
 use std::io::Cursor;
 use std::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
 use std::str::from_utf8_unchecked;
@@ -26,7 +27,7 @@ macro_rules! regex {
 }
 
 const EHGT_PREFIX: &str = "https://ehgt.org/";
-const EX_PREFIX: &str = "https://s.exhentai.org/";
+const EX_PREFIX: &str = "https://s.exhentai.org/t/";
 
 fn get_vdom_first_element_by_class_name<'a>(dom: &'a VDom, name: &str) -> Option<&'a Node<'a>> {
     let handle = dom.get_elements_by_class_name(name).next()?;
@@ -94,6 +95,26 @@ impl ThrowingHasDefault for () {
     fn default() -> Self {}
 }
 
+#[derive(Debug)]
+enum EhError {
+    NoHits,
+    NoWatched,
+    NeedLogin,
+    Error(String),
+}
+
+impl Display for EhError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let msg = match self {
+            EhError::NoHits => "0",
+            EhError::NoWatched => "1",
+            EhError::NeedLogin => "2",
+            EhError::Error(s) => &format!("3{s}"),
+        };
+        f.write_str(msg)
+    }
+}
+
 fn jni_throwing<F, R>(env: &mut JNIEnv, f: F) -> R
 where
     F: FnOnce(&mut JNIEnv) -> Result<R>,
@@ -121,7 +142,7 @@ where
             let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
 
             let dom = tl::parse(html, ParserOptions::default())?;
-            ensure!(dom.version().is_some(), "{html}");
+            ensure!(dom.version().is_some(), EhError::Error(html.to_string()));
             f(&dom, html)?
         };
         let mut cursor = Cursor::new(buffer);

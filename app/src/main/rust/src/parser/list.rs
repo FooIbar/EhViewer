@@ -1,7 +1,7 @@
-use crate::parse_marshal_inplace;
 use crate::{get_element_by_id, get_vdom_first_element_by_class_name};
 use crate::{get_first_element_by_class_name, query_childs_first_match_attr};
 use crate::{get_node_attr, get_node_handle_attr, regex};
+use crate::{parse_marshal_inplace, EhError};
 use crate::{EHGT_PREFIX, EX_PREFIX};
 use anyhow::{bail, Context, Result};
 use jni::objects::{JByteBuffer, JClass};
@@ -82,7 +82,6 @@ fn parse_rating(str: &str) -> f32 {
 fn get_thumb_key(url: &str) -> String {
     url.trim_start_matches(EHGT_PREFIX)
         .trim_start_matches(EX_PREFIX)
-        .trim_start_matches("t/")
         .to_string()
 }
 
@@ -199,10 +198,14 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
 
 pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Result<GalleryListResult> {
     if str.contains("<p>You do not have any watched tags") {
-        bail!("No watched tags!")
+        bail!(EhError::NoWatched)
     }
     if str.contains("No hits found</p>") || str.contains("No unfiltered results") {
-        bail!("No hits found!")
+        let e = get_vdom_first_element_by_class_name(dom, "searchwarn")
+            .map_or(EhError::NoHits, |n| {
+                EhError::Error(n.inner_text(parser).to_string())
+            });
+        bail!(e)
     }
     let f = || {
         let itg = get_vdom_first_element_by_class_name(dom, "itg")?;
