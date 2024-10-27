@@ -18,7 +18,7 @@ object MergeInterceptor : Interceptor {
         return if (key != null) {
             val (result, suspended) = mutex.withLockNeedSuspend(key) { chain.proceed() }
             when (result) {
-                is SuccessResult if (suspended) -> result.copy(dataSource = DataSource.DISK)
+                is SuccessResult if (suspended) -> result.copy(dataSource = DataSource.MEMORY)
                 else -> result
             }
         } else {
