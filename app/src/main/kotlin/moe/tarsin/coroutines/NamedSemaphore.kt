@@ -2,6 +2,8 @@ package moe.tarsin.coroutines
 
 import androidx.collection.mutableScatterMapOf
 import io.ktor.utils.io.pool.DefaultPool
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 
@@ -26,6 +28,9 @@ class NamedSemaphore<K>(val permits: Int) {
 }
 
 suspend inline fun <K, R> NamedSemaphore<K>.withPermit(key: K, action: () -> R): R {
+    contract {
+        callsInPlace(action, InvocationKind.EXACTLY_ONCE)
+    }
     val semaphore = synchronized(active) { active.getOrPut(key) { pool.borrow() }.inc() }
     return try {
         semaphore.withPermit(action)
