@@ -79,7 +79,7 @@ typealias WallPaperPalette = Triple<Color, Color?, Color?>
 @Composable
 @RequiresApi(Build.VERSION_CODES.O_MR1)
 fun extractWallPaperPalette(): WallPaperPalette? {
-    val colors = WallpaperManager.getInstance(LocalContext.current).getWallpaperColors(WallpaperManager.FLAG_SYSTEM) ?: return null
+    val colors = WallpaperManager.getInstance(LocalContext.current)?.getWallpaperColors(WallpaperManager.FLAG_SYSTEM) ?: return null
     val primary = colors.primaryColor.toArgb().let { Color(it) }
     val secondary = colors.secondaryColor?.toArgb()?.let { Color(it) }
     val tertiary = colors.tertiaryColor?.toArgb()?.let { Color(it) }
