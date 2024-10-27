@@ -23,7 +23,6 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
-import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -91,9 +90,6 @@ data class BaseGalleryInfo(
     override var favoriteNote: String? = null,
 ) : GalleryInfo,
     Parcelable {
-    @IgnoredOnParcel
-    override val hasAds by lazy { simpleTags?.any { "extraneous ads" in it } == true }
-
     constructor() : this(0, "")
 }
 

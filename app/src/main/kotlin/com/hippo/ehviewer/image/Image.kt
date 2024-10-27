@@ -37,7 +37,6 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.coil.BitmapImageWithExtraInfo
 import com.hippo.ehviewer.coil.detectQrCode
 import com.hippo.ehviewer.coil.hardwareThreshold
-import com.hippo.ehviewer.coil.hasQrCode
 import com.hippo.ehviewer.coil.maybeCropBorder
 import com.hippo.ehviewer.jni.isGif
 import com.hippo.ehviewer.jni.mmap
@@ -56,7 +55,10 @@ import splitties.init.appCtx
 class Image private constructor(image: CoilImage, private val src: ImageSource) {
     val intrinsicSize = with(image) { IntSize(width, height) }
     val allocationSize = image.size
-    val hasQrCode = image.hasQrCode
+    val hasQrCode = when (image) {
+        is BitmapImageWithExtraInfo -> image.hasQrCode
+        else -> false
+    }
 
     var innerImage: CoilImage? = when (image) {
         is BitmapImageWithExtraInfo -> image.image

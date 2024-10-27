@@ -9,16 +9,12 @@ import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
-import coil3.request.allowHardware
 import coil3.size.Size
-import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.CHROME_ACCEPT
 import com.hippo.ehviewer.client.CHROME_ACCEPT_LANGUAGE
-import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
-import com.hippo.ehviewer.client.data.LargeGalleryPreview
 import com.hippo.ehviewer.client.data.NormalGalleryPreview
 import com.hippo.ehviewer.spider.DownloadInfoMagics.encodeMagicRequestOrUrl
 import io.ktor.http.HttpHeaders
@@ -37,24 +33,11 @@ fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
     httpHeaders(header)
 }
 
-context(GalleryDetail)
-fun ImageRequest.Builder.ehPreview(
-    preview: GalleryPreview,
-) = with(preview) {
+fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = with(preview) {
     data(url)
     memoryCacheKey(imageKey)
     diskCacheKey(imageKey)
-    when (preview) {
-        is NormalGalleryPreview -> size(Size.ORIGINAL)
-        is LargeGalleryPreview -> {
-            if (hasAds && detectAds(position, pages, BuildConfig.DEBUG)) {
-                size(Size.ORIGINAL)
-                detectQrCode(true)
-                allowHardware(false)
-                hardwareThreshold(0)
-            }
-        }
-    }
+    if (preview is NormalGalleryPreview) size(Size.ORIGINAL)
     httpHeaders(header)
 }
 
