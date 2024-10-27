@@ -298,7 +298,7 @@ fun GalleryDetailContent(
                 }
             }
             if (galleryDetail != null) {
-                galleryPreview(galleryDetail, previews) { navToReader(galleryDetail.galleryInfo, it) }
+                galleryPreview(previews) { navToReader(galleryDetail.galleryInfo, it) }
             }
         }
 
@@ -366,7 +366,7 @@ fun GalleryDetailContent(
                 }
             }
             if (galleryDetail != null) {
-                galleryPreview(galleryDetail, previews) { navToReader(galleryDetail.galleryInfo, it) }
+                galleryPreview(previews) { navToReader(galleryDetail.galleryInfo, it) }
             }
         }
     }
@@ -775,19 +775,13 @@ private fun GalleryDetail?.collectPreviewItems(prefetchDistance: Int) = remember
     }.flow.cachedIn(viewModelScope)
 }.collectAsLazyPagingItems()
 
-private fun LazyGridScope.galleryPreview(
-    detail: GalleryDetail,
-    data: LazyPagingItems<GalleryPreview>,
-    onClick: (Int) -> Unit,
-) {
+private fun LazyGridScope.galleryPreview(data: LazyPagingItems<GalleryPreview>, onClick: (Int) -> Unit) {
     items(
         count = data.itemCount,
         key = data.itemKey(key = { item -> item.position }),
         contentType = { "preview" },
     ) { index ->
         val item = data[index]
-        with(detail) {
-            EhPreviewItem(item, index) { onClick(index) }
-        }
+        EhPreviewItem(item, index) { onClick(index) }
     }
 }
