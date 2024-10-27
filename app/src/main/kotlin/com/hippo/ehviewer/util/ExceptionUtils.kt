@@ -17,9 +17,18 @@ package com.hippo.ehviewer.util
 
 import com.hippo.ehviewer.R
 import eu.kanade.tachiyomi.util.system.logcat
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.network.sockets.SocketTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import splitties.init.appCtx
 
-fun Throwable.displayString(): String {
-    logcat(this)
-    return message ?: appCtx.getString(R.string.error_unknown)
+fun Throwable.displayString(): String = when (this) {
+    is HttpRequestTimeoutException,
+    is ConnectTimeoutException, is SocketTimeoutException,
+    -> appCtx.getString(R.string.error_timeout)
+
+    else -> {
+        logcat(this)
+        message ?: appCtx.getString(R.string.error_unknown)
+    }
 }
