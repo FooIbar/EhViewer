@@ -52,6 +52,7 @@ import com.hippo.files.openFileDescriptor
 import com.hippo.files.openOutputStream
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.plugins.onDownload
+import io.ktor.client.plugins.timeout
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.request
@@ -71,6 +72,7 @@ class SpiderDen(val info: GalleryInfo) {
     private var tempDownloadDir: Path? = null
     private val saveAsCbz = Settings.saveAsCbz
     private val archiveName = "$gid.cbz"
+    private val downloadTimeout = Settings.downloadTimeout * 1000L
 
     private val lock = ReentrantReadWriteLock()
 
@@ -173,6 +175,9 @@ class SpiderDen(val info: GalleryInfo) {
         onDownload { done, total ->
             notifyProgress(total!!, done, (done - prev).toInt())
             prev = done
+        }
+        timeout {
+            requestTimeoutMillis = downloadTimeout
         }
     }.executeSafely {
         if (it.status.isSuccess()) {

@@ -12,6 +12,7 @@ import android.os.Build
 import androidx.annotation.RequiresExtension
 import io.ktor.client.engine.HttpClientEngineBase
 import io.ktor.client.engine.callContext
+import io.ktor.client.plugins.HttpTimeoutCapability
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpHeaders
@@ -41,6 +42,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cronet") {
     // Limit thread to 1 since we are async & non-blocking
     override val dispatcher = Dispatchers.Default.limitedParallelism(1)
+
+    override val supportedCapabilities = setOf(HttpTimeoutCapability)
+
     private val executor = dispatcher.asExecutor()
     private val pool = DirectByteBufferPool(32)
     private val client by lazy {
