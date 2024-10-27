@@ -219,9 +219,11 @@ class SpiderDen(val info: GalleryInfo) {
             outFile.openOutputStream().use {
                 response.bodyAsChannel().copyTo(it.channel)
             }
-            val expected = FileHashRegex.findAll(url).last().groupValues[1]
-            val actual = outFile.sha1()
-            check(expected == actual) { "File hash mismatch: expected $expected, but got $actual\nURL: $url" }
+            FileHashRegex.find(url)?.let {
+                val expected = it.groupValues[1]
+                val actual = outFile.sha1()
+                check(expected == actual) { "File hash mismatch: expected $expected, but got $actual\nURL: $url" }
+            }
         }
     }
 
@@ -366,7 +368,7 @@ class SpiderDen(val info: GalleryInfo) {
 
 private const val TEMP_SUFFIX = ".tmp"
 private val FileNameRegex = Regex("^\\d{8}\\.\\w{3,4}")
-private val FileHashRegex = Regex("/([0-9a-f]{40})(?:-\\d+){3}-\\w+")
+private val FileHashRegex = Regex("/h/([0-9a-f]{40})")
 
 fun perFilename(index: Int, extension: String = ""): String = "%08d.%s".format(index + 1, extension)
 
