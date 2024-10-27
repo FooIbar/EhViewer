@@ -4,7 +4,6 @@ import androidx.collection.MutableScatterMap
 import androidx.collection.mutableScatterMapOf
 import io.ktor.utils.io.pool.DefaultPool
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 class MutexTracker(mutex: Mutex = Mutex(), private var count: Int = 0) : Mutex by mutex {
     operator fun inc() = apply { count++ }
@@ -21,20 +20,16 @@ object MutexPool : DefaultPool<MutexTracker>(capacity = 32) {
     }
 }
 
-@JvmInline
-value class NamedMutex<K>(val active: MutableScatterMap<K, MutexTracker> = mutableScatterMapOf())
-
-suspend inline fun <K, R> NamedMutex<K>.withLock(key: K, owner: Any? = null, action: () -> R): R {
-    val mutex = synchronized(active) { active.getOrPut(key) { MutexPool.borrow() }.inc() }
-    return try {
-        mutex.withLock(owner, action)
-    } finally {
-        synchronized(active) {
-            mutex.dec()
-            if (mutex.isFree) {
-                active.remove(key)
-                MutexPool.recycle(mutex)
-            }
+class NamedMutex<K>(val active: MutableScatterMap<K, MutexTracker> = mutableScatterMapOf()) : LockPool<MutexTracker, K> {
+    override fun acquire(key: K) = synchronized(active) { active.getOrPut(key) { MutexPool.borrow() }.inc() }
+    override fun release(key: K, lock: MutexTracker) = synchronized(active) {
+        lock.dec()
+        if (lock.isFree) {
+            active.remove(key)
+            MutexPool.recycle(lock)
         }
     }
+    override suspend fun MutexTracker.lock() = lock()
+    override fun MutexTracker.tryLock() = tryLock()
+    override fun MutexTracker.unlock() = unlock()
 }

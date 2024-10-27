@@ -10,7 +10,7 @@ import io.ktor.client.HttpClient
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import moe.tarsin.coroutines.NamedSemaphore
-import moe.tarsin.coroutines.withPermit
+import moe.tarsin.coroutines.withLock
 
 class LimitConcurrencyNetworkClient(val impl: NetworkClient) : NetworkClient {
     val semaphores = NamedSemaphore<String>(permits = 8)
@@ -18,9 +18,9 @@ class LimitConcurrencyNetworkClient(val impl: NetworkClient) : NetworkClient {
         val url = req.url
         return when {
             // Ex thumb server may not have h2 multiplexing support
-            URL_PREFIX_THUMB_EX in url -> semaphores.withPermit(URL_PREFIX_THUMB_EX) { withContext(NonCancellable) { impl.executeRequest(req, f) } }
+            URL_PREFIX_THUMB_EX in url -> semaphores.withLock(URL_PREFIX_THUMB_EX) { withContext(NonCancellable) { impl.executeRequest(req, f) } }
             // H@H server may not have h2 multiplexing support
-            URL_SIGNATURE_THUMB_NORMAL in url -> semaphores.withPermit(url.substringBefore(URL_SIGNATURE_THUMB_NORMAL)) { withContext(NonCancellable) { impl.executeRequest(req, f) } }
+            URL_SIGNATURE_THUMB_NORMAL in url -> semaphores.withLock(url.substringBefore(URL_SIGNATURE_THUMB_NORMAL)) { withContext(NonCancellable) { impl.executeRequest(req, f) } }
             // H2 multiplexing enabled
             else -> impl.executeRequest(req, f)
         }
