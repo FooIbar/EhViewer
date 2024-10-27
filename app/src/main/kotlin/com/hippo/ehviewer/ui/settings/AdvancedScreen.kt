@@ -43,6 +43,7 @@ import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
+import com.hippo.ehviewer.util.AdsPlaceholderFile
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.CrashHandler
 import com.hippo.ehviewer.util.ReadableTime
@@ -68,8 +69,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
-import okio.Path.Companion.toOkioPath
-import splitties.init.appCtx
 
 @Destination<RootGraph>
 @Composable
@@ -306,5 +305,3 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
         }
     }
 }
-
-val AdsPlaceholderFile = appCtx.filesDir.toOkioPath() / "AdsPlaceholder"

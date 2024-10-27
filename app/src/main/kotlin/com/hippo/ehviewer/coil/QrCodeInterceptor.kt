@@ -6,7 +6,6 @@ import coil3.intercept.Interceptor
 import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.hasQrCode
 
 private val detectQrCodeKey = Extras.Key(default = false)
@@ -32,5 +31,3 @@ object QrCodeInterceptor : Interceptor {
         return result
     }
 }
-
-fun detectAds(index: Int, size: Int) = index > size - 10 && Settings.stripExtraneousAds.value

@@ -57,7 +57,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
-import com.hippo.ehviewer.client.data.hasAds
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
@@ -76,6 +75,7 @@ import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.asyncInVM
 import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.util.displayString
+import com.hippo.ehviewer.util.hasAds
 import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -365,10 +365,10 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
 
 context(Context, DialogState, DestinationsNavigator)
 private suspend fun preparePageLoader(args: ReaderScreenArgs) = when (args) {
-    is ReaderScreenArgs.Gallery -> {
+    is ReaderScreenArgs.Gallery -> withIOContext {
         val info = args.info
         val page = args.page
-        val archive = withIOContext { DownloadManager.getDownloadInfo(info.gid)?.archiveFile }
+        val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         if (archive != null) {
             ArchivePageLoader(archive, info.gid, page, info.hasAds)
         } else {
