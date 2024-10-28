@@ -25,19 +25,28 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 const val URL_PREFIX_THUMB_E = "https://ehgt.org/"
 const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/t/"
 const val URL_SIGNATURE_THUMB_NORMAL = ".hath.network/cm/"
-private val NormalPreviewKeyRegex = Regex("(/\\d+-\\d+)\\.\\w+$")
 
 fun getImageKey(gid: Long, index: Int): String = "image:$gid:$index"
 
-fun getThumbKey(url: String): String = url.removePrefix(URL_PREFIX_THUMB_E).removePrefix(URL_PREFIX_THUMB_EX)
+fun getThumbKey(url: String): String = if (url.endsWith("webp")) {
+    url
+} else {
+    url.removePrefix(URL_PREFIX_THUMB_E).removePrefix(URL_PREFIX_THUMB_EX)
+}
 
-fun getNormalPreviewKey(url: String) = NormalPreviewKeyRegex.find(url)?.groupValues[1] ?: url
+fun getNormalPreviewKey(url: String) = "$$url"
 
 val String.isNormalPreviewKey
-    get() = startsWith('/')
+    get() = startsWith('$')
 
 val GalleryInfo.thumbUrl
-    get() = thumbPrefix + EhUtils.handleThumbUrlResolution(thumbKey!!)
+    get() = thumbKey!!.let {
+        if (it.startsWith("http")) {
+            it
+        } else {
+            thumbPrefix + EhUtils.handleThumbUrlResolution(it)
+        }
+    }
 
 val thumbPrefix
     get() = if (EhUtils.isExHentai && !Settings.forceEhThumb.value) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E

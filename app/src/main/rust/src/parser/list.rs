@@ -80,9 +80,12 @@ fn parse_rating(str: &str) -> f32 {
 }
 
 fn get_thumb_key(url: &str) -> String {
-    url.trim_start_matches(EHGT_PREFIX)
-        .trim_start_matches(EX_PREFIX)
-        .to_string()
+    if url.ends_with("webp") {
+        url
+    } else {
+        url.trim_start_matches(EHGT_PREFIX)
+            .trim_start_matches(EX_PREFIX)
+    }.to_string()
 }
 
 fn parse_token_and_gid(str: &str) -> Option<(i64, String)> {
