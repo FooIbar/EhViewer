@@ -175,20 +175,4 @@ object EhUtils {
         // TODO But not sure every '|' means that
         return title.substringBeforeLast('|').trim().ifEmpty { null }
     }
-
-    fun handleThumbUrlResolution(url: String): String {
-        val resolution = when (Settings.thumbResolution) {
-            0 -> return url
-            1 -> "250"
-            2 -> "300"
-            else -> return url
-        }
-        val index1 = url.lastIndexOf('_')
-        val index2 = url.lastIndexOf('.')
-        return if (index1 >= 0 && index2 >= 0 && index1 < index2) {
-            url.substring(0, index1 + 1) + resolution + url.substring(index2)
-        } else {
-            url
-        }
-    }
 }
