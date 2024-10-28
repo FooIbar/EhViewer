@@ -109,6 +109,12 @@ abstract class PageLoader {
 
     protected abstract fun onForceRequest(index: Int, orgImg: Boolean)
 
+    fun cancelRequest(index: Int) {
+        onCancelRequest(index)
+    }
+
+    protected abstract fun onCancelRequest(index: Int)
+
     fun notifyPageWait(index: Int) {
         pages[index].reset()
     }
