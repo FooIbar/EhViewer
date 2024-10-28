@@ -27,7 +27,7 @@ macro_rules! regex {
 }
 
 const EHGT_PREFIX: &str = "https://ehgt.org/";
-const EX_PREFIX: &str = "https://s.exhentai.org/t/";
+const EX_PREFIX: &str = "https://s.exhentai.org/";
 
 fn get_vdom_first_element_by_class_name<'a>(dom: &'a VDom, name: &str) -> Option<&'a Node<'a>> {
     let handle = dom.get_elements_by_class_name(name).next()?;

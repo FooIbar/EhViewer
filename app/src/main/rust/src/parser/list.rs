@@ -82,6 +82,7 @@ fn parse_rating(str: &str) -> f32 {
 fn get_thumb_key(url: &str) -> String {
     url.trim_start_matches(EHGT_PREFIX)
         .trim_start_matches(EX_PREFIX)
+        .trim_start_matches("t/")
         .to_string()
 }
 

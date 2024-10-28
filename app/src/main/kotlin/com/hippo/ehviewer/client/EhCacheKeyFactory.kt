@@ -18,26 +18,37 @@ package com.hippo.ehviewer.client
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.GalleryInfo
 
-// Normal Preview: https://*.hath.network/cm/[timed token]/[gid]-[index].jpg
-// ExHentai Large Preview: https://s.exhentai.org/t/***
-// E-Hentai Large Preview: https://ehgt.org/***
+// Normal Preview (v2): https://*.hath.network/c(m|1|2)/[timed token]/[gid]-[index].(jpg|webp)
+// ExHentai Large Preview (v1 Cover): https://s.exhentai.org/t/***
+// E-Hentai Large Preview (v1 Cover): https://ehgt.org/***
+// ExHentai v2 Cover: https://s.exhentai.org/**.webp
+// E-Hentai v2 Cover: https://ehgt.org/**.webp
 
 const val URL_PREFIX_THUMB_E = "https://ehgt.org/"
-const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/t/"
-const val URL_SIGNATURE_THUMB_NORMAL = ".hath.network/cm/"
-private val NormalPreviewKeyRegex = Regex("(/\\d+-\\d+)\\.\\w+$")
+const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/"
+const val URL_SIGNATURE_THUMB_NORMAL = ".hath.network/c"
+private const val URL_PREFIX_V1_THUMB_EX = URL_PREFIX_THUMB_EX + "t/"
 
 fun getImageKey(gid: Long, index: Int): String = "image:$gid:$index"
 
-fun getThumbKey(url: String): String = url.removePrefix(URL_PREFIX_THUMB_E).removePrefix(URL_PREFIX_THUMB_EX)
+fun getThumbKey(url: String): String = url.removePrefix(URL_PREFIX_THUMB_E).removePrefix(URL_PREFIX_V1_THUMB_EX).removePrefix(URL_PREFIX_THUMB_EX)
 
-fun getNormalPreviewKey(url: String) = NormalPreviewKeyRegex.find(url)?.groupValues[1] ?: url
+fun getNormalPreviewKey(url: String) = "$$url"
 
 val String.isNormalPreviewKey
-    get() = startsWith('/')
+    get() = startsWith('$')
 
 val GalleryInfo.thumbUrl
-    get() = thumbPrefix + EhUtils.handleThumbUrlResolution(thumbKey!!)
+    get() = thumbKey!!.let {
+        if (it.endsWith("webp")) {
+            if (useExThumb) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E
+        } else {
+            v1ThumbPrefix
+        } + it
+    }
 
-val thumbPrefix
-    get() = if (EhUtils.isExHentai && !Settings.forceEhThumb.value) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E
+val v1ThumbPrefix
+    get() = if (useExThumb) URL_PREFIX_V1_THUMB_EX else URL_PREFIX_THUMB_E
+
+private val useExThumb
+    get() = EhUtils.isExHentai && !Settings.forceEhThumb.value

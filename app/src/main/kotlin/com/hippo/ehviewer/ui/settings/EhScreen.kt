@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
@@ -227,15 +226,6 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 minValue = 1,
                 title = stringResource(id = R.string.settings_eh_thumb_columns),
                 value = Settings.thumbColumns::value,
-            )
-            val thumbResolution = Settings::thumbResolution.observed
-            val summary2 = stringResource(id = R.string.settings_eh_thumb_resolution_summary, stringArrayResource(id = R.array.thumb_resolution_entries)[thumbResolution.value])
-            SimpleMenuPreferenceInt(
-                title = stringResource(id = R.string.settings_eh_thumb_resolution),
-                summary = summary2,
-                entry = R.array.thumb_resolution_entries,
-                entryValueRes = R.array.thumb_resolution_entry_values,
-                value = thumbResolution,
             )
             var showGalleryPages by Settings.showGalleryPages.asMutableState()
             SwitchPref(
