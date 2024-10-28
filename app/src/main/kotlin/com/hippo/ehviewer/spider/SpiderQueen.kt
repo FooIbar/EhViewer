@@ -281,6 +281,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
+    fun cancelRequest(index: Int) {
+        mWorkerScope.cancelDecode(index)
+    }
+
     fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {
         mWorkerScope.updateRAList(pages, pair)
     }
@@ -502,6 +506,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         private var lastRequestTime = TimeSource.Monotonic.markNow()
         var isDownloadMode = false
             private set
+
+        fun cancelDecode(index: Int) {
+            decoder.cancel(index)
+        }
 
         @Synchronized
         fun enterDownloadMode() {

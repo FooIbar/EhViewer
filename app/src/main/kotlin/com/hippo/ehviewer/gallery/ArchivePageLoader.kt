@@ -143,6 +143,10 @@ class ArchivePageLoader(
     override val isReady: Boolean
         get() = size != 0
 
+    override fun onCancelRequest(index: Int) {
+        jobs[index]?.cancel()
+    }
+
     override val title by lazy {
         FileUtils.getNameFromFilename(file.name)!!
     }

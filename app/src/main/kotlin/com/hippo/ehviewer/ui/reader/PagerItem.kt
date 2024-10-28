@@ -61,6 +61,11 @@ fun PagerItem(
             }
         }
     }
+    DisposableEffect(Unit) {
+        onDispose {
+            pageLoader.cancelRequest(page.index)
+        }
+    }
     val defaultError = stringResource(id = R.string.decode_image_error)
     when (val state = page.statusObserved) {
         is PageStatus.Queued, is PageStatus.Loading -> {
