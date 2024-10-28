@@ -173,7 +173,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 showSnackbar(signInFirst)
             } else {
                 runSuspendCatching {
-                    val (paramOr, archiveList, funds) = bgWork { archiveResult.await() }
+                    val (archiveList, funds) = bgWork { archiveResult.await() }
                     if (archiveList.isEmpty()) {
                         showSnackbar(noArchive)
                     } else {
@@ -184,7 +184,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                 onItemClick = { resume(it) },
                             )
                         }
-                        EhEngine.downloadArchive(gid, token, paramOr, selected.res, selected.isHAtH)?.let {
+                        EhEngine.downloadArchive(gid, token, selected.res, selected.isHAtH)?.let {
                             val uri = Uri.parse(it)
                             val intent = Intent().apply {
                                 action = Intent.ACTION_VIEW
