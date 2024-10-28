@@ -25,8 +25,6 @@ object ArchiveParser {
         Regex("<strong>(.*)</strong>.*<a href=\"([^\"]*)\">Click Here To Start Downloading</a>")
     private val PATTERN_CURRENT_FUNDS =
         Regex("<p>([\\d,]+) GP \\[[^]]*] &nbsp; ([\\d,]+) Credits \\[[^]]*]</p>")
-    private val PATTERN_HATH_FORM =
-        Regex("<form id=\"hathdl_form\" action=\"[^\"]*?or=([^=\"]*?)\" method=\"post\">")
     private val PATTERN_HATH_ARCHIVE =
         Regex("<p><a href=\"[^\"]*\" onclick=\"return do_hathdl\\('([0-9]+|org)'\\)\">([^<]+)</a></p>\\s*<p>([\\w. ]+)</p>\\s*<p>([\\w. ]+)</p>")
     private const val ERROR_NEED_HATH_CLIENT =
@@ -35,7 +33,6 @@ object ArchiveParser {
         "You do not have enough funds to download this archive."
 
     fun parse(body: String, maybeFunds: Funds?): Result {
-        val paramOr = PATTERN_HATH_FORM.find(body)?.groupValues[1]
         val archiveList = ArrayList<Archive>()
         Jsoup.parse(body).select("#db>div>div").forEach { element ->
             if (element.childrenSize() > 0 && !element.attr("style").contains("color:#CCCCCC")) {
@@ -63,7 +60,7 @@ object ArchiveParser {
             val fundsC = ParserUtils.parseInt(get(2), 0)
             Funds(fundsGP, fundsC)
         }
-        return Result(paramOr, archiveList, funds)
+        return Result(archiveList, funds)
     }
 
     fun parseArchiveUrl(body: String): String? {
@@ -77,7 +74,7 @@ object ArchiveParser {
         // TODO: Check more errors
     }
 
-    data class Result(val paramOr: String?, val archiveList: List<Archive>, val funds: Funds)
+    data class Result(val archiveList: List<Archive>, val funds: Funds)
 }
 
 class Archive(
