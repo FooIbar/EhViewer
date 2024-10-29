@@ -34,7 +34,6 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
-import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.coil.CropBorderInterceptor
 import com.hippo.ehviewer.coil.DetectBorderInterceptor
@@ -73,7 +72,6 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.cookies.HttpCookies
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import logcat.AndroidLogcatLogger
@@ -212,10 +210,7 @@ class EhApplication :
 
         val noRedirectKtorClient by lazy {
             HttpClient(ktorClient.engine) {
-                followRedirects = false
-                install(HttpCookies) {
-                    storage = EhCookieStore
-                }
+                configureCommon(redirect = false)
             }
         }
 

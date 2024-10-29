@@ -271,18 +271,13 @@ object EhEngine {
                 append("edit_comment", id.toString())
             }
         }
-    }.executeSafely { response ->
-        // Ktor does not handle POST redirect, we need to do it manually
-        // https://youtrack.jetbrains.com/issue/KTOR-478
-        val location = response.headers["Location"] ?: url
-        ehRequest(location, url).fetchUsingAsText {
-            val document = Jsoup.parse(this)
-            val elements = document.select("#chd + p")
-            if (elements.isNotEmpty()) {
-                throw EhException(elements[0].text())
-            }
-            GalleryDetailParser.parseComments(document)
+    }.fetchUsingAsText {
+        val document = Jsoup.parse(this)
+        val elements = document.select("#chd + p")
+        if (elements.isNotEmpty()) {
+            throw EhException(elements[0].text())
         }
+        GalleryDetailParser.parseComments(document)
     }
 
     suspend fun modifyFavorites(gid: Long, token: String, dstCat: Int = -1, note: String = "") {
