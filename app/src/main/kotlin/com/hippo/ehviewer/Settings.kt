@@ -9,8 +9,6 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
-import com.hippo.ehviewer.client.CHROME_MOBILE_USER_AGENT
-import com.hippo.ehviewer.client.CHROME_USER_AGENT
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.download.DownloadsFilterMode
@@ -211,9 +209,6 @@ object Settings : DataStorePreferences(null) {
     val showNavigationOverlayNewUser = boolPref("reader_navigation_overlay_new_user", true)
     val showNavigationOverlayOnStart = boolPref("reader_navigation_overlay_on_start", false)
     val stripExtraneousAds = boolPref("strip_extraneous_ads", false)
-
-    val userAgent
-        get() = if (desktopSite) CHROME_USER_AGENT else CHROME_MOBILE_USER_AGENT
 
     init {
         if ("CN" == Locale.getDefault().country) {
