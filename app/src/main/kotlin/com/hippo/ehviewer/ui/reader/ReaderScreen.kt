@@ -60,11 +60,11 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
-import com.hippo.ehviewer.gallery.ArchivePageLoader
 import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.gallery.PageStatus
+import com.hippo.ehviewer.gallery.newArchivePageLoader
 import com.hippo.ehviewer.gallery.status
 import com.hippo.ehviewer.gallery.unblock
 import com.hippo.ehviewer.ui.composing
@@ -86,8 +86,9 @@ import eu.kanade.tachiyomi.ui.reader.ReaderContentOverlay
 import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlin.coroutines.resume
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
@@ -115,7 +116,21 @@ private fun Background(
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
-    val pageLoader by asyncInVM(args) { preparePageLoader(args) }
+    val bgColor by collectBackgroundColorAsState()
+    val uiController = rememberSystemUiController()
+    DisposableEffect(uiController) {
+        val lightStatusBar = uiController.statusBarDarkContentEnabled
+        onDispose {
+            uiController.statusBarDarkContentEnabled = lightStatusBar
+        }
+    }
+    LaunchedEffect(uiController) {
+        snapshotFlow { bgColor }.collect {
+            uiController.statusBarDarkContentEnabled = it == Color.White
+        }
+    }
+
+    val pageLoader by asyncInVM(args, Dispatchers.IO) { alive -> preparePageLoader(args, alive) }
     Await({ pageLoader.await() }) { loader ->
         launchInVM(loader) {
             loader.start()
@@ -125,20 +140,7 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
                 loader.stop()
             }
         }
-        val bgColor by collectBackgroundColorAsState()
         val readingFailed = stringResource(R.string.error_reading_failed)
-        val uiController = rememberSystemUiController()
-        DisposableEffect(uiController) {
-            val lightStatusBar = uiController.statusBarDarkContentEnabled
-            onDispose {
-                uiController.statusBarDarkContentEnabled = lightStatusBar
-            }
-        }
-        LaunchedEffect(uiController) {
-            snapshotFlow { bgColor }.collect {
-                uiController.statusBarDarkContentEnabled = it == Color.White
-            }
-        }
         Await(
             block = { catch { readingFailed.takeUnless { loader.awaitReady() } }.fold({ it.displayString() }, { it }) },
             placeholder = {
@@ -364,19 +366,19 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
 }
 
 context(Context, DialogState, DestinationsNavigator)
-private suspend fun preparePageLoader(args: ReaderScreenArgs) = when (args) {
-    is ReaderScreenArgs.Gallery -> withIOContext {
+private suspend fun preparePageLoader(args: ReaderScreenArgs, aliveScope: CoroutineScope) = when (args) {
+    is ReaderScreenArgs.Gallery -> {
         val info = args.info
         val page = args.page
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         if (archive != null) {
-            ArchivePageLoader(archive, info.gid, page, info.hasAds)
+            aliveScope.newArchivePageLoader(archive, info.gid, page, info.hasAds)
         } else {
             EhPageLoader(info, page)
         }
     }
     is ReaderScreenArgs.Archive -> {
-        ArchivePageLoader(args.uri.toOkioPath()) { invalidator ->
+        aliveScope.newArchivePageLoader(args.uri.toOkioPath()) { invalidator ->
             awaitInputText(
                 title = getString(R.string.archive_need_passwd),
                 hint = getString(R.string.archive_passwd),

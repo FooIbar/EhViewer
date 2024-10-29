@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.gallery
 
-import androidx.annotation.CallSuper
 import androidx.collection.SieveCache
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
@@ -15,7 +14,7 @@ import kotlinx.coroutines.flow.update
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
-abstract class PageLoader {
+abstract class PageLoader : AutoCloseable {
     private val cache = SieveCache<Int, Image>(
         maxSize = if (isAtLeastO) {
             (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
@@ -42,18 +41,7 @@ abstract class PageLoader {
 
     private val prefetchPageCount = Settings.preloadImage
 
-    @CallSuper
-    open suspend fun awaitReady() = true
-
-    abstract val isReady: Boolean
-
-    @CallSuper
-    abstract fun start()
-
-    @CallSuper
-    open fun stop() {
-        lock.write { cache.evictAll() }
-    }
+    override fun close() = lock.write { cache.evictAll() }
 
     fun restart() {
         lock.write { cache.evictAll() }
