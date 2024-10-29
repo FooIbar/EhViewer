@@ -49,8 +49,8 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowInsetsControllerCompat
+import arrow.core.Either
 import arrow.core.Either.Companion.catch
 import arrow.core.raise.ensure
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -130,37 +130,31 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
         }
     }
 
-    val pageLoader by asyncInVM(args, Dispatchers.IO) { alive -> preparePageLoader(args, alive) }
-    Await({ pageLoader.await() }) { loader ->
-        launchInVM(loader) {
-            loader.start()
-            try {
-                awaitCancellation()
-            } finally {
-                loader.stop()
+    val pageLoader by asyncInVM(args, Dispatchers.IO) { alive -> catch { preparePageLoader(args, alive) } }
+    Await(
+        block = { pageLoader.await() },
+        placeholder = {
+            Background(bgColor) {
+                CircularProgressIndicator()
             }
-        }
-        val readingFailed = stringResource(R.string.error_reading_failed)
-        Await(
-            block = { catch { readingFailed.takeUnless { loader.awaitReady() } }.fold({ it.displayString() }, { it }) },
-            placeholder = {
-                Background(bgColor) {
-                    CircularProgressIndicator()
+        },
+    ) { result ->
+        when (result) {
+            is Either.Left -> Background(bgColor) {
+                Text(
+                    text = result.value.displayString(),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            }
+            is Either.Right -> {
+                val loader = result.value
+                launchInVM(loader) {
+                    loader.use { awaitCancellation() }
                 }
-            },
-        ) { error ->
-            if (error == null) {
                 val info = (args as? ReaderScreenArgs.Gallery)?.info
                 key(loader) {
                     ReaderScreen(loader, info, navigator)
-                }
-            } else {
-                Background(bgColor) {
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.titleLarge,
-                    )
                 }
             }
         }
