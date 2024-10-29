@@ -24,7 +24,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter.State
 import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryPreview
-import com.hippo.ehviewer.client.data.NormalGalleryPreview
+import com.hippo.ehviewer.client.data.V2GalleryPreview
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.shouldCrop
@@ -47,7 +47,7 @@ fun EhAsyncPreview(
         contentDescription = null,
         modifier = modifier,
         transform = {
-            if (it is State.Success && model is NormalGalleryPreview) {
+            if (it is State.Success && model is V2GalleryPreview) {
                 with(model) {
                     it.copy(
                         painter = BitmapPainter(
@@ -63,7 +63,7 @@ fun EhAsyncPreview(
         },
         onState = {
             if (it is State.Success) {
-                if (model is NormalGalleryPreview) {
+                if (model is V2GalleryPreview) {
                     if (model.shouldCrop) {
                         contentScale = ContentScale.Crop
                     }

@@ -29,15 +29,15 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.LOCAL_FAVORITED
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
 import com.hippo.ehviewer.client.data.GalleryTagGroup
-import com.hippo.ehviewer.client.data.LargeGalleryPreview
-import com.hippo.ehviewer.client.data.NormalGalleryPreview
 import com.hippo.ehviewer.client.data.TagNamespace
+import com.hippo.ehviewer.client.data.V1GalleryPreview
+import com.hippo.ehviewer.client.data.V2GalleryPreview
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.OffensiveException
 import com.hippo.ehviewer.client.exception.ParseException
 import com.hippo.ehviewer.client.exception.PiningException
-import com.hippo.ehviewer.client.getNormalPreviewKey
 import com.hippo.ehviewer.client.getThumbKey
+import com.hippo.ehviewer.client.getV2PreviewKey
 import com.hippo.ehviewer.util.toEpochMillis
 import com.hippo.ehviewer.util.toFloatOrDefault
 import com.hippo.ehviewer.util.toIntOrDefault
@@ -430,12 +430,12 @@ object GalleryDetailParser {
         val offset = it.groupValues[6]
         if (offset.isEmpty()) {
             val imageKey = getThumbKey(url)
-            LargeGalleryPreview(imageKey, position)
+            V1GalleryPreview(imageKey, position)
         } else {
-            val imageKey = getNormalPreviewKey(url)
+            val imageKey = getV2PreviewKey(url)
             val width = it.groupValues[3].toInt()
             val height = it.groupValues[4].toInt()
-            NormalGalleryPreview(url, imageKey, position, offset.toInt(), width, height)
+            V2GalleryPreview(url, imageKey, position, offset.toInt(), width, height)
         } to pageUrl
     }.run {
         first.toList().apply {
