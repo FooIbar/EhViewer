@@ -129,20 +129,21 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
         }
     }
 
-    val pageLoader by asyncInVM(args) { alive ->
-        suspendCancellableCoroutine { cont ->
-            alive.launchIO {
-                catch {
-                    usePageLoader(args) { loader ->
-                        cont.resume(loader.right())
-                        awaitCancellation()
-                    }
-                }.let { left -> cont.resume(left) }
-            }
-        }
-    }
     Await(
-        block = { pageLoader.await() },
+        block = asyncInVM(args) { alive ->
+            suspendCancellableCoroutine { cont ->
+                alive.launchIO {
+                    catch {
+                        usePageLoader(args) { loader ->
+                            cont.resume(loader.right())
+                            awaitCancellation()
+                        }
+                    }.let { left -> cont.resume(left) }
+                }
+            }
+        }.value.run {
+            { await() }
+        },
         placeholder = {
             Background(bgColor) {
                 CircularProgressIndicator()
