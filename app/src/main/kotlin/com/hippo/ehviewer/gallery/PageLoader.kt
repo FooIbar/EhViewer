@@ -1,21 +1,27 @@
 package com.hippo.ehviewer.gallery
 
-import androidx.annotation.CallSuper
 import androidx.collection.SieveCache
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
+import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.isAtLeastO
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import okio.Path
 
+private val progressScope = CoroutineScope(Dispatchers.IO)
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
-abstract class PageLoader {
+abstract class PageLoader(val gid: Long, var startPage: Int) : AutoCloseable {
     private val cache = SieveCache<Int, Image>(
         maxSize = if (isAtLeastO) {
             (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
@@ -41,19 +47,6 @@ abstract class PageLoader {
     }
 
     private val prefetchPageCount = Settings.preloadImage
-
-    @CallSuper
-    open suspend fun awaitReady() = true
-
-    abstract val isReady: Boolean
-
-    @CallSuper
-    abstract fun start()
-
-    @CallSuper
-    open fun stop() {
-        lock.write { cache.evictAll() }
-    }
 
     fun restart() {
         lock.write { cache.evictAll() }
@@ -138,4 +131,29 @@ abstract class PageLoader {
     fun notifyPageFailed(index: Int, error: String?) {
         pages[index].statusFlow.update { PageStatus.Error(error) }
     }
+
+    val progressJob = progressScope.launch {
+        if (startPage == -1) {
+            startPage = EhDB.getReadProgress(gid)
+        }
+    }
+
+    override fun close() {
+        lock.write { cache.evictAll() }
+        if (gid != 0L) {
+            progressScope.launch {
+                EhDB.putReadProgress(gid, startPage)
+            }
+        }
+    }
+
+    protected abstract val title: String
+
+    protected abstract fun getImageExtension(index: Int): String?
+
+    fun getImageFilename(index: Int): String? = getImageExtension(index)?.let {
+        FileUtils.sanitizeFilename("$title - ${index + 1}.${it.lowercase()}")
+    }
+
+    abstract fun save(index: Int, file: Path): Boolean
 }

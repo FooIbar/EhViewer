@@ -49,10 +49,11 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowInsetsControllerCompat
+import arrow.core.Either
 import arrow.core.Either.Companion.catch
 import arrow.core.raise.ensure
+import arrow.core.right
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -60,20 +61,19 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
-import com.hippo.ehviewer.gallery.ArchivePageLoader
-import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.Page
-import com.hippo.ehviewer.gallery.PageLoader2
+import com.hippo.ehviewer.gallery.PageLoader
 import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.gallery.status
 import com.hippo.ehviewer.gallery.unblock
+import com.hippo.ehviewer.gallery.useArchivePageLoader
+import com.hippo.ehviewer.gallery.useEhPageLoader
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.asyncInVM
-import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.hasAds
 import com.hippo.files.toOkioPath
@@ -86,13 +86,13 @@ import eu.kanade.tachiyomi.ui.reader.ReaderContentOverlay
 import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlin.coroutines.resume
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.kt.unreachable
 
@@ -115,50 +115,54 @@ private fun Background(
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
-    val pageLoader by asyncInVM(args) { preparePageLoader(args) }
-    Await({ pageLoader.await() }) { loader ->
-        launchInVM(loader) {
-            loader.start()
-            try {
-                awaitCancellation()
-            } finally {
-                loader.stop()
-            }
+    val bgColor by collectBackgroundColorAsState()
+    val uiController = rememberSystemUiController()
+    DisposableEffect(uiController) {
+        val lightStatusBar = uiController.statusBarDarkContentEnabled
+        onDispose {
+            uiController.statusBarDarkContentEnabled = lightStatusBar
         }
-        val bgColor by collectBackgroundColorAsState()
-        val readingFailed = stringResource(R.string.error_reading_failed)
-        val uiController = rememberSystemUiController()
-        DisposableEffect(uiController) {
-            val lightStatusBar = uiController.statusBarDarkContentEnabled
-            onDispose {
-                uiController.statusBarDarkContentEnabled = lightStatusBar
-            }
+    }
+    LaunchedEffect(uiController) {
+        snapshotFlow { bgColor }.collect {
+            uiController.statusBarDarkContentEnabled = it == Color.White
         }
-        LaunchedEffect(uiController) {
-            snapshotFlow { bgColor }.collect {
-                uiController.statusBarDarkContentEnabled = it == Color.White
-            }
-        }
-        Await(
-            block = { catch { readingFailed.takeUnless { loader.awaitReady() } }.fold({ it.displayString() }, { it }) },
-            placeholder = {
-                Background(bgColor) {
-                    CircularProgressIndicator()
+    }
+
+    Await(
+        block = asyncInVM(args) { alive ->
+            suspendCancellableCoroutine { cont ->
+                alive.launchIO {
+                    catch {
+                        usePageLoader(args) { loader ->
+                            cont.resume(loader.right())
+                            awaitCancellation()
+                        }
+                    }.let { left -> cont.resume(left) }
                 }
-            },
-        ) { error ->
-            if (error == null) {
+            }
+        }.value.run {
+            { await() }
+        },
+        placeholder = {
+            Background(bgColor) {
+                CircularProgressIndicator()
+            }
+        },
+    ) { result ->
+        when (result) {
+            is Either.Left -> Background(bgColor) {
+                Text(
+                    text = result.value.displayString(),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            }
+            is Either.Right -> {
+                val loader = result.value
                 val info = (args as? ReaderScreenArgs.Gallery)?.info
                 key(loader) {
                     ReaderScreen(loader, info, navigator)
-                }
-            } else {
-                Background(bgColor) {
-                    Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.titleLarge,
-                    )
                 }
             }
         }
@@ -166,7 +170,7 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
 }
 
 @Composable
-fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGalleryInfo?, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?, navigator: DestinationsNavigator) = composing(navigator) {
     ConfigureKeepScreenOn()
     LaunchedEffect(Unit) {
         val orientation = requestedOrientation
@@ -364,19 +368,20 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGall
 }
 
 context(Context, DialogState, DestinationsNavigator)
-private suspend fun preparePageLoader(args: ReaderScreenArgs) = when (args) {
-    is ReaderScreenArgs.Gallery -> withIOContext {
+suspend fun <T> usePageLoader(args: ReaderScreenArgs, block: suspend (PageLoader) -> T) = when (args) {
+    is ReaderScreenArgs.Gallery -> {
         val info = args.info
         val page = args.page
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         if (archive != null) {
-            ArchivePageLoader(archive, info.gid, page, info.hasAds)
+            useArchivePageLoader(archive, info.gid, page, info.hasAds, block = block)
         } else {
-            EhPageLoader(info, page)
+            useEhPageLoader(info, page, block)
         }
     }
-    is ReaderScreenArgs.Archive -> {
-        ArchivePageLoader(args.uri.toOkioPath()) { invalidator ->
+    is ReaderScreenArgs.Archive -> useArchivePageLoader(
+        args.uri.toOkioPath(),
+        passwdProvider = { invalidator ->
             awaitInputText(
                 title = getString(R.string.archive_need_passwd),
                 hint = getString(R.string.archive_passwd),
@@ -385,8 +390,9 @@ private suspend fun preparePageLoader(args: ReaderScreenArgs) = when (args) {
                 ensure(text.isNotBlank()) { getString(R.string.passwd_cannot_be_empty) }
                 ensure(invalidator(text)) { getString(R.string.passwd_wrong) }
             }
-        }
-    }
+        },
+        block = block,
+    )
 }
 
 @Composable

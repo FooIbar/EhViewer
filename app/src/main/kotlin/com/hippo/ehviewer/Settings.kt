@@ -137,7 +137,7 @@ object Settings : DataStorePreferences(null) {
     var downloadPath by stringOrNullPref("image_path", null)
     var downloadQuery by stringOrNullPref("image_query", null)
     var downloadFragment by stringOrNullPref("image_fragment", null)
-    var archivePasswds by stringSetOrNullPref("archive_passwds")
+    var archivePasswds by stringSetPref("archive_passwds")
     var downloadDelay by intPref("download_delay_3", 1000)
     var multiThreadDownload by intPref("download_thread_2", 3)
     var preloadImage by intPref("preload_image_2", 5)

@@ -20,6 +20,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.mapLatest
@@ -111,14 +112,18 @@ fun <R> asyncInVM(
     key: Any?,
     context: CoroutineContext = EmptyCoroutineContext,
     start: CoroutineStart = CoroutineStart.DEFAULT,
-    block: suspend CoroutineScope.() -> R,
+    block: suspend CoroutineScope.(CoroutineScope) -> R,
 ) = rememberUpdatedStateInVM(key).let { key ->
     val f by rememberUpdatedStateInVM(block)
     rememberInVM {
         nonNullState {
             viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
                 snapshotFlow { key.value }.mapLatest {
-                    coroutineScope { value = async(context, start, f) }
+                    coroutineScope {
+                        val outerScope = this
+                        value = async(context, start) { f(outerScope) }
+                        awaitCancellation()
+                    }
                 }.collect()
             }
         }
