@@ -15,7 +15,7 @@ import com.hippo.ehviewer.client.CHROME_ACCEPT
 import com.hippo.ehviewer.client.CHROME_ACCEPT_LANGUAGE
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
-import com.hippo.ehviewer.client.data.NormalGalleryPreview
+import com.hippo.ehviewer.client.data.V2GalleryPreview
 import com.hippo.ehviewer.spider.DownloadInfoMagics.encodeMagicRequestOrUrl
 import io.ktor.http.HttpHeaders
 
@@ -37,7 +37,7 @@ fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = with(preview) {
     data(url)
     memoryCacheKey(imageKey)
     diskCacheKey(imageKey)
-    if (preview is NormalGalleryPreview) size(Size.ORIGINAL)
+    if (preview is V2GalleryPreview) size(Size.ORIGINAL)
     httpHeaders(header)
 }
 

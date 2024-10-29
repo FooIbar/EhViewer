@@ -26,7 +26,7 @@ sealed interface GalleryPreview : Parcelable {
 }
 
 @Parcelize
-data class LargeGalleryPreview(
+data class V1GalleryPreview(
     override val imageKey: String,
     override val position: Int,
 ) : GalleryPreview {
@@ -34,7 +34,7 @@ data class LargeGalleryPreview(
 }
 
 @Parcelize
-data class NormalGalleryPreview(
+data class V2GalleryPreview(
     override val url: String,
     override val imageKey: String,
     override val position: Int,

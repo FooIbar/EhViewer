@@ -28,14 +28,19 @@ const val URL_PREFIX_THUMB_E = "https://ehgt.org/"
 const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/"
 const val URL_SIGNATURE_THUMB_NORMAL = ".hath.network/c"
 private const val URL_PREFIX_V1_THUMB_EX = URL_PREFIX_THUMB_EX + "t/"
+private val V2PreviewKeyRegex = Regex("/c([m12]/)[^/]+/(\\d+-\\d+)")
 
 fun getImageKey(gid: Long, index: Int): String = "image:$gid:$index"
 
 fun getThumbKey(url: String): String = url.removePrefix(URL_PREFIX_THUMB_E).removePrefix(URL_PREFIX_V1_THUMB_EX).removePrefix(URL_PREFIX_THUMB_EX)
 
-fun getNormalPreviewKey(url: String) = "$$url"
+fun getV2PreviewKey(url: String) = "$".plus(
+    V2PreviewKeyRegex.find(url)?.let {
+        it.groupValues[1] + it.groupValues[2]
+    } ?: url,
+)
 
-val String.isNormalPreviewKey
+val String.isV2PreviewKey
     get() = startsWith('$')
 
 val GalleryInfo.thumbUrl
