@@ -60,11 +60,11 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
-import com.hippo.ehviewer.gallery.EhPageLoader
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader2
 import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.gallery.newArchivePageLoader
+import com.hippo.ehviewer.gallery.newEhPageLoader
 import com.hippo.ehviewer.gallery.status
 import com.hippo.ehviewer.gallery.unblock
 import com.hippo.ehviewer.ui.composing
@@ -368,7 +368,7 @@ private suspend fun preparePageLoader(args: ReaderScreenArgs, aliveScope: Corout
         if (archive != null) {
             aliveScope.newArchivePageLoader(archive, info.gid, page, info.hasAds)
         } else {
-            EhPageLoader(info, page)
+            newEhPageLoader(info, page)
         }
     }
     is ReaderScreenArgs.Archive -> {
