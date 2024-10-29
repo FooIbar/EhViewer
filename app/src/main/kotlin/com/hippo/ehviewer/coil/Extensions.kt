@@ -6,7 +6,6 @@ import coil3.network.httpHeaders
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.size.Size
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.CHROME_ACCEPT
 import com.hippo.ehviewer.client.CHROME_ACCEPT_LANGUAGE
 import com.hippo.ehviewer.client.data.GalleryInfo
@@ -16,7 +15,6 @@ import com.hippo.ehviewer.spider.DownloadInfoMagics.encodeMagicRequestOrUrl
 import io.ktor.http.HttpHeaders
 
 private val header = NetworkHeaders.Builder().apply {
-    add(HttpHeaders.UserAgent, Settings.userAgent)
     add(HttpHeaders.Accept, CHROME_ACCEPT)
     add(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
 }.build()
