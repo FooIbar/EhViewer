@@ -36,9 +36,7 @@ suspend fun newEhPageLoader(
             override fun onGetImageSuccess(index: Int, image: Image?) = notifyPageSucceed(index, image!!)
 
             override fun onGetImageFailure(index: Int, error: String?) = notifyPageFailed(index, error)
-        }.apply {
-            queen.addOnSpiderListener(this)
-        }
+        }.apply { queen.addOnSpiderListener(this) }
 
         override fun close() {
             super.close()
