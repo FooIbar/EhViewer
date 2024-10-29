@@ -54,7 +54,7 @@ suspend fun CoroutineScope.newArchivePageLoader(
     startPage: Int = 0,
     hasAds: Boolean = false,
     passwdProvider: PasswdProvider? = null,
-): PageLoader2 {
+): PageLoader {
     logcat(DEBUG_TAG) { "Open archive ${file.toUri().displayPath}" }
     val pfd = file.openFileDescriptor("r")
     val size = openArchive(pfd.fd, pfd.statSize, gid == 0L || file.name.endsWith(".zip"))
@@ -64,7 +64,7 @@ suspend fun CoroutineScope.newArchivePageLoader(
             archivePasswds += toAdd
         }
     }
-    return object : PageLoader2(gid, startPage) {
+    return object : PageLoader(gid, startPage) {
         private val jobs = mutableIntObjectMapOf<Job>()
         private val mutex = NamedMutex<Int>()
         private val semaphore = Semaphore(4)
@@ -137,7 +137,7 @@ suspend fun CoroutineScope.newArchivePageLoader(
         override fun onCancelRequest(index: Int) {
             jobs[index]?.cancel()
         }
-    }
+    }.apply { progressJob.join() }
 }
 
 private const val DEBUG_TAG = "ArchivePageLoader"

@@ -12,10 +12,10 @@ import okio.Path
 suspend fun newEhPageLoader(
     info: GalleryInfo,
     startPage: Int,
-): PageLoader2 {
-    val spiderQueen = obtainSpiderQueen(info, SpiderQueen.Companion.MODE_READ)
+): PageLoader {
+    val spiderQueen = obtainSpiderQueen(info, SpiderQueen.MODE_READ)
     check(spiderQueen.awaitReady())
-    return object : PageLoader2(info.gid, startPage) {
+    return object : PageLoader(info.gid, startPage) {
         val listener = object : OnSpiderListener {
             override fun onGetPages(pages: Int) = Unit
 
@@ -61,5 +61,5 @@ suspend fun newEhPageLoader(
         override fun onForceRequest(index: Int, orgImg: Boolean) = spiderQueen.forceRequest(index, orgImg)
 
         override fun onCancelRequest(index: Int) = spiderQueen.cancelRequest(index)
-    }
+    }.apply { progressJob.join() }
 }

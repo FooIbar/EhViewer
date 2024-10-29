@@ -11,7 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import com.hippo.ehviewer.gallery.PageLoader2
+import com.hippo.ehviewer.gallery.PageLoader
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
 
@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.filterNotNull
 class SliderPagerDoubleSync(
     private val lazyListState: LazyListState,
     private val pagerState: PagerState,
-    private val pageLoader: PageLoader2,
+    private val pageLoader: PageLoader,
 ) {
     private var sliderFollowPager by mutableStateOf(true)
     var sliderValue by mutableIntStateOf(pageLoader.startPage + 1)
@@ -80,7 +80,7 @@ class SliderPagerDoubleSync(
 fun rememberSliderPagerDoubleSyncState(
     lazyListState: LazyListState,
     pagerState: PagerState,
-    pageLoader: PageLoader2,
+    pageLoader: PageLoader,
 ): SliderPagerDoubleSync = remember {
     SliderPagerDoubleSync(lazyListState, pagerState, pageLoader)
 }

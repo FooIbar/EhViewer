@@ -61,7 +61,7 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.archiveFile
 import com.hippo.ehviewer.gallery.Page
-import com.hippo.ehviewer.gallery.PageLoader2
+import com.hippo.ehviewer.gallery.PageLoader
 import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.gallery.newArchivePageLoader
 import com.hippo.ehviewer.gallery.newEhPageLoader
@@ -162,7 +162,7 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
 }
 
 @Composable
-fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader2, info: BaseGalleryInfo?, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?, navigator: DestinationsNavigator) = composing(navigator) {
     ConfigureKeepScreenOn()
     LaunchedEffect(Unit) {
         val orientation = requestedOrientation

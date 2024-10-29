@@ -21,7 +21,7 @@ import androidx.compose.ui.util.fastFold
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.Page
-import com.hippo.ehviewer.gallery.PageLoader2
+import com.hippo.ehviewer.gallery.PageLoader
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.CONTINUOUS_VERTICAL
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType.RIGHT_TO_LEFT
@@ -37,7 +37,7 @@ fun GalleryPager(
     type: ReadingModeType,
     pagerState: PagerState,
     lazyListState: LazyListState,
-    pageLoader: PageLoader2,
+    pageLoader: PageLoader,
     showNavigationOverlay: Boolean,
     onNavigationModeChange: () -> Unit,
     onSelectPage: (Page) -> Unit,

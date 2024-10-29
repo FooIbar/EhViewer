@@ -17,7 +17,7 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.gallery.Page
-import com.hippo.ehviewer.gallery.PageLoader2
+import com.hippo.ehviewer.gallery.PageLoader
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.awaitActivityResult
@@ -33,7 +33,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 import okio.Path.Companion.toOkioPath
 import splitties.systemservices.clipboardManager
 
-context(PageLoader2)
+context(PageLoader)
 private fun Context.provideImage(index: Int): Uri? {
     val dir = AppConfig.externalTempDir ?: return null
     val name = getImageFilename(index) ?: return null
@@ -41,7 +41,7 @@ private fun Context.provideImage(index: Int): Uri? {
     return FileProvider.getUriForFile(this, "$APPLICATION_ID.fileprovider", file)
 }
 
-context(SnackbarHostState, Context, PageLoader2)
+context(SnackbarHostState, Context, PageLoader)
 suspend fun shareImage(page: Page, info: GalleryInfo? = null) {
     val error = getString(R.string.error_cant_save_image)
     val share = getString(R.string.share_image)
@@ -66,7 +66,7 @@ suspend fun shareImage(page: Page, info: GalleryInfo? = null) {
     }
 }
 
-context(SnackbarHostState, Context, PageLoader2)
+context(SnackbarHostState, Context, PageLoader)
 suspend fun copy(page: Page) {
     val error = getString(R.string.error_cant_save_image)
     val copied = getString(R.string.copied_to_clipboard)
@@ -82,7 +82,7 @@ suspend fun copy(page: Page) {
     }
 }
 
-context(SnackbarHostState, Context, PageLoader2)
+context(SnackbarHostState, Context, PageLoader)
 suspend fun save(page: Page) {
     val granted = isAtLeastQ || requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     val cannotSave = getString(R.string.error_cant_save_image)
@@ -136,7 +136,7 @@ suspend fun save(page: Page) {
     }
 }
 
-context(SnackbarHostState, Context, PageLoader2)
+context(SnackbarHostState, Context, PageLoader)
 suspend fun saveTo(page: Page) {
     val filename = getImageFilename(page.index)
     if (filename == null) {

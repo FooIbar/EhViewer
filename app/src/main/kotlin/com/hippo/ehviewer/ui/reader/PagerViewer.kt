@@ -31,7 +31,7 @@ import arrow.core.partially1
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.Page
-import com.hippo.ehviewer.gallery.PageLoader2
+import com.hippo.ehviewer.gallery.PageLoader
 import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.gallery.statusObserved
 import eu.kanade.tachiyomi.ui.reader.viewer.NavigationRegions
@@ -53,7 +53,7 @@ fun PagerViewer(
     pagerState: PagerState,
     isRtl: Boolean,
     isVertical: Boolean,
-    pageLoader: PageLoader2,
+    pageLoader: PageLoader,
     navigator: () -> NavigationRegions,
     onSelectPage: (Page) -> Unit,
     onMenuRegionClick: () -> Unit,
@@ -122,7 +122,7 @@ fun PagerViewer(
 @Composable
 private fun PageContainer(
     page: Page,
-    pageLoader: PageLoader2,
+    pageLoader: PageLoader,
     isRtl: Boolean,
     scaleType: Int,
     landscapeZoom: Boolean,
