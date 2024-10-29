@@ -18,7 +18,6 @@ package com.hippo.ehviewer.client
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.EhApplication.Companion.noRedirectKtorClient
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.util.bodyAsUtf8Text
 import com.hippo.ehviewer.util.ensureSuccess
 import eu.kanade.tachiyomi.util.system.logcat
@@ -34,7 +33,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.ParametersBuilder
 import io.ktor.http.content.TextContent
-import io.ktor.http.userAgent
 import kotlinx.coroutines.cancel
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArrayBuilder
@@ -65,7 +63,6 @@ fun HttpRequestBuilder.applyEhConfig(referer: String?, origin: String?) {
     method = HttpMethod.Get
     header("Referer", referer)
     header("Origin", origin)
-    userAgent(Settings.userAgent)
     header(HttpHeaders.Accept, CHROME_ACCEPT)
     header(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
 }
