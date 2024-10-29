@@ -1,10 +1,6 @@
 package com.hippo.ehviewer.coil
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import coil3.asImage
-import coil3.decode.DecodeResult
-import coil3.decode.Decoder
+import coil3.decode.BlackholeDecoder
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.CachePolicy
@@ -41,11 +37,7 @@ fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = with(preview) {
     httpHeaders(header)
 }
 
-private val stubImage = ColorDrawable(Color.BLACK).asImage(true)
-private val stubResult = DecodeResult(stubImage, false)
-private val stubFactory = Decoder { stubResult }
-
 fun ImageRequest.Builder.justDownload() = apply {
     memoryCachePolicy(CachePolicy.DISABLED)
-    decoderFactory { _, _, _ -> stubFactory }
+    decoderFactory(BlackholeDecoder.Factory())
 }
