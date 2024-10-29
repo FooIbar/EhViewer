@@ -18,9 +18,9 @@ fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
 
 fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = with(preview) {
     data(url)
+    if (preview is V2GalleryPreview) size(Size.ORIGINAL)
     memoryCacheKey(imageKey)
     diskCacheKey(imageKey)
-    if (preview is V2GalleryPreview) size(Size.ORIGINAL)
 }
 
 fun ImageRequest.Builder.justDownload() = apply {
