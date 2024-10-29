@@ -6,6 +6,7 @@ import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.plugins.HttpRedirect
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.SaveBodyPlugin
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.defaultRequest
@@ -29,7 +30,9 @@ fun <T : HttpClientEngineConfig> HttpClientConfig<T>.configureCommon(redirect: B
         header(HttpHeaders.Accept, CHROME_ACCEPT)
         header(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
     }
-
+    install(SaveBodyPlugin) {
+        disabled = true
+    }
     // We need redirect POST method, override it
     followRedirects = false
     if (redirect) {
