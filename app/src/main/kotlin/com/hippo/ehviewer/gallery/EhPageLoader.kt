@@ -11,10 +11,10 @@ import com.hippo.ehviewer.spider.SpiderQueen.Companion.releaseSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
 import okio.Path
 
-suspend inline fun <T> useEhPageLoader(
+suspend fun <T> useEhPageLoader(
     info: GalleryInfo,
     startPage: Int,
-    crossinline block: suspend (PageLoader) -> T,
+    block: suspend (PageLoader) -> T,
 ) = resourceScope {
     val queen = install(
         { obtainSpiderQueen(info, SpiderQueen.MODE_READ) },

@@ -367,7 +367,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
 }
 
 context(Context, DialogState, DestinationsNavigator)
-suspend inline fun <T> usePageLoader(args: ReaderScreenArgs, crossinline block: suspend (PageLoader) -> T) = when (args) {
+suspend fun <T> usePageLoader(args: ReaderScreenArgs, block: suspend (PageLoader) -> T) = when (args) {
     is ReaderScreenArgs.Gallery -> {
         val info = args.info
         val page = args.page
