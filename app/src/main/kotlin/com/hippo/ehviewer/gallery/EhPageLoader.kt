@@ -13,8 +13,8 @@ suspend fun newEhPageLoader(
     info: GalleryInfo,
     startPage: Int,
 ): PageLoader {
-    val spiderQueen = obtainSpiderQueen(info, SpiderQueen.MODE_READ)
-    check(spiderQueen.awaitReady())
+    val queen = obtainSpiderQueen(info, SpiderQueen.MODE_READ)
+    check(queen.awaitReady())
     return object : PageLoader(info.gid, startPage) {
         val listener = object : OnSpiderListener {
             override fun onGetPages(pages: Int) = Unit
@@ -37,29 +37,29 @@ suspend fun newEhPageLoader(
 
             override fun onGetImageFailure(index: Int, error: String?) = notifyPageFailed(index, error)
         }.apply {
-            spiderQueen.addOnSpiderListener(this)
+            queen.addOnSpiderListener(this)
         }
 
         override fun close() {
             super.close()
-            spiderQueen.removeOnSpiderListener(listener)
-            releaseSpiderQueen(spiderQueen, SpiderQueen.MODE_READ)
+            queen.removeOnSpiderListener(listener)
+            releaseSpiderQueen(queen, SpiderQueen.MODE_READ)
         }
 
         override val title by lazy { EhUtils.getSuitableTitle(info) }
 
-        override fun getImageExtension(index: Int) = spiderQueen.getExtension(index)
+        override fun getImageExtension(index: Int) = queen.getExtension(index)
 
-        override fun save(index: Int, file: Path) = spiderQueen.save(index, file)
+        override fun save(index: Int, file: Path) = queen.save(index, file)
 
-        override val size = spiderQueen.size
+        override val size = queen.size
 
-        override fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>) = spiderQueen.preloadPages(pages, bounds)
+        override fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>) = queen.preloadPages(pages, bounds)
 
-        override fun onRequest(index: Int) = spiderQueen.request(index)
+        override fun onRequest(index: Int) = queen.request(index)
 
-        override fun onForceRequest(index: Int, orgImg: Boolean) = spiderQueen.forceRequest(index, orgImg)
+        override fun onForceRequest(index: Int, orgImg: Boolean) = queen.forceRequest(index, orgImg)
 
-        override fun onCancelRequest(index: Int) = spiderQueen.cancelRequest(index)
+        override fun onCancelRequest(index: Int) = queen.cancelRequest(index)
     }.apply { progressJob.join() }
 }
