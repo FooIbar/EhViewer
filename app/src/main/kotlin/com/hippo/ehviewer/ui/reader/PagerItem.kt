@@ -34,8 +34,8 @@ import com.google.accompanist.drawablepainter.DrawablePainter
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.gallery.MetaPageLoader
 import com.hippo.ehviewer.gallery.Page
+import com.hippo.ehviewer.gallery.PageLoader
 import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.gallery.progressObserved
 import com.hippo.ehviewer.gallery.statusObserved
@@ -48,7 +48,7 @@ import moe.tarsin.kt.unreachable
 @Composable
 fun PagerItem(
     page: Page,
-    pageLoader: MetaPageLoader,
+    pageLoader: PageLoader,
     contentScale: ContentScale,
     modifier: Modifier = Modifier,
     contentModifier: Modifier = Modifier,
