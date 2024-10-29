@@ -53,6 +53,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import arrow.core.Either
 import arrow.core.Either.Companion.catch
 import arrow.core.raise.ensure
+import arrow.core.right
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -63,17 +64,16 @@ import com.hippo.ehviewer.download.archiveFile
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader
 import com.hippo.ehviewer.gallery.PageStatus
-import com.hippo.ehviewer.gallery.newArchivePageLoader
-import com.hippo.ehviewer.gallery.newEhPageLoader
 import com.hippo.ehviewer.gallery.status
 import com.hippo.ehviewer.gallery.unblock
+import com.hippo.ehviewer.gallery.useArchivePageLoader
+import com.hippo.ehviewer.gallery.useEhPageLoader
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.asyncInVM
-import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.hasAds
 import com.hippo.files.toOkioPath
@@ -87,13 +87,12 @@ import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlin.coroutines.resume
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.kt.unreachable
 
@@ -130,7 +129,18 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
         }
     }
 
-    val pageLoader by asyncInVM(args, Dispatchers.IO) { alive -> catch { preparePageLoader(args, alive) } }
+    val pageLoader by asyncInVM(args) { alive ->
+        suspendCancellableCoroutine { cont ->
+            alive.launchIO {
+                catch {
+                    usePageLoader(args) { loader ->
+                        cont.resume(loader.right())
+                        awaitCancellation()
+                    }
+                }.let { left -> cont.resume(left) }
+            }
+        }
+    }
     Await(
         block = { pageLoader.await() },
         placeholder = {
@@ -149,9 +159,6 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
             }
             is Either.Right -> {
                 val loader = result.value
-                launchInVM(loader) {
-                    loader.use { awaitCancellation() }
-                }
                 val info = (args as? ReaderScreenArgs.Gallery)?.info
                 key(loader) {
                     ReaderScreen(loader, info, navigator)
@@ -360,19 +367,20 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
 }
 
 context(Context, DialogState, DestinationsNavigator)
-private suspend fun preparePageLoader(args: ReaderScreenArgs, aliveScope: CoroutineScope) = when (args) {
+suspend inline fun <T> usePageLoader(args: ReaderScreenArgs, crossinline block: suspend (PageLoader) -> T) = when (args) {
     is ReaderScreenArgs.Gallery -> {
         val info = args.info
         val page = args.page
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         if (archive != null) {
-            aliveScope.newArchivePageLoader(archive, info.gid, page, info.hasAds)
+            useArchivePageLoader(archive, info.gid, page, info.hasAds, block = block)
         } else {
-            newEhPageLoader(info, page)
+            useEhPageLoader(info, page, block)
         }
     }
-    is ReaderScreenArgs.Archive -> {
-        aliveScope.newArchivePageLoader(args.uri.toOkioPath()) { invalidator ->
+    is ReaderScreenArgs.Archive -> useArchivePageLoader(
+        args.uri.toOkioPath(),
+        passwdProvider = { invalidator ->
             awaitInputText(
                 title = getString(R.string.archive_need_passwd),
                 hint = getString(R.string.archive_passwd),
@@ -381,8 +389,9 @@ private suspend fun preparePageLoader(args: ReaderScreenArgs, aliveScope: Corout
                 ensure(text.isNotBlank()) { getString(R.string.passwd_cannot_be_empty) }
                 ensure(invalidator(text)) { getString(R.string.passwd_wrong) }
             }
-        }
-    }
+        },
+        block = block,
+    )
 }
 
 @Composable
