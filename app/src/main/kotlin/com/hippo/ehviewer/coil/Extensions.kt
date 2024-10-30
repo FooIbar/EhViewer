@@ -14,8 +14,10 @@ import com.hippo.ehviewer.download.downloadLocation
 fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
     val key = info.thumbKey!!
     data(info.thumbUrl)
+    val format = info.thumbUrl.substringAfterLast('.', "")
+    check(format.isNotBlank())
     if (info is DownloadInfo && !info.dirname.isNullOrBlank()) {
-        downloadLocation(downloadLocation / info.dirname / "thumb.jpg")
+        downloadLocation(downloadLocation / info.dirname / "thumb.$format")
     }
     memoryCacheKey(key)
     diskCacheKey(key)
