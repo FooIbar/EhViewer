@@ -28,9 +28,8 @@ object GalleryListUrlParser {
         if (url.host != EhUrl.DOMAIN_E && url.host != EhUrl.DOMAIN_EX) {
             return null
         }
-        // https://youtrack.jetbrains.com/issue/KTOR-7625
-        val segments = url.rawSegments
-        if (segments.size < 2) {
+        val segments = url.segments
+        if (segments.isEmpty()) {
             ListUrlBuilder(url.parameters).apply {
                 url.parameters["f_shash"]?.let {
                     mode = ListUrlBuilder.MODE_IMAGE_SEARCH
@@ -38,10 +37,10 @@ object GalleryListUrlParser {
                 }
             }
         } else {
-            when (val head = segments[1]) {
+            when (val head = segments[0]) {
                 "uploader", "tag" -> ListUrlBuilder(url.parameters).apply {
                     mode = if (head == "uploader") ListUrlBuilder.MODE_UPLOADER else ListUrlBuilder.MODE_TAG
-                    keyword = segments[2].decodeURLQueryComponent(plusIsSpace = true)
+                    keyword = segments[1].decodeURLQueryComponent(plusIsSpace = true)
                 }
 
                 "toplist.php" -> {
