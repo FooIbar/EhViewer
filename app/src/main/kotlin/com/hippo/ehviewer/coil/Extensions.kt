@@ -7,11 +7,16 @@ import coil3.size.Size
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.V2GalleryPreview
-import com.hippo.ehviewer.spider.DownloadInfoMagics.encodeMagicRequestOrUrl
+import com.hippo.ehviewer.client.thumbUrl
+import com.hippo.ehviewer.dao.DownloadInfo
+import com.hippo.ehviewer.download.downloadLocation
 
 fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
     val key = info.thumbKey!!
-    data(encodeMagicRequestOrUrl(info))
+    data(info.thumbUrl)
+    if (info is DownloadInfo && !info.dirname.isNullOrBlank()) {
+        downloadLocation(downloadLocation / info.dirname / "thumb.jpg")
+    }
     memoryCacheKey(key)
     diskCacheKey(key)
 }
