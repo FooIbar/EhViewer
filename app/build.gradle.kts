@@ -310,7 +310,7 @@ spotless {
     kotlin {
         // https://github.com/diffplug/spotless/issues/111
         target("src/**/*.kt")
-        ktlint(ktlintVersion).editorConfigOverride(mapOf("ktlint_standard_class-signature" to "disabled"))
+        ktlint(ktlintVersion)
     }
     kotlinGradle {
         ktlint(ktlintVersion)
