@@ -20,9 +20,10 @@ suspend fun <T> useEhPageLoader(
         { obtainSpiderQueen(info, SpiderQueen.MODE_READ) },
         { queen, _ -> releaseSpiderQueen(queen, SpiderQueen.MODE_READ) },
     )
-    check(queen.awaitReady())
+    queen.awaitReady()
+    check(queen.size > 0)
     val loader = autoCloseable {
-        object : PageLoader(info.gid, startPage) {
+        object : PageLoader(info.gid, startPage, queen.size) {
             val listener = object : OnSpiderListener {
                 override fun onGetPages(pages: Int) = Unit
 
@@ -55,8 +56,6 @@ suspend fun <T> useEhPageLoader(
             override fun getImageExtension(index: Int) = queen.getExtension(index)
 
             override fun save(index: Int, file: Path) = queen.save(index, file)
-
-            override val size = queen.size
 
             override fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>) = queen.preloadPages(pages, bounds)
 

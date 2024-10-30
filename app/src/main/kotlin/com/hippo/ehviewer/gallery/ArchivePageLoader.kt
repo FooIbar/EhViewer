@@ -65,13 +65,13 @@ suspend fun <T> useArchivePageLoader(
             { openArchive(pfd.fd, pfd.statSize, gid == 0L || file.name.endsWith(".zip")) },
             { _, _ -> closeArchive() },
         )
-        check(size != 0) { "Archive have no content!" }
+        check(size >= 0) { "Archive have no content!" }
         if (needPassword() && archivePasswds.filterNotNull().none { providePassword(it) }) {
             val toAdd = passwdProvider { providePassword(it) }
             archivePasswds += toAdd
         }
         val loader = autoCloseable {
-            object : PageLoader(gid, startPage) {
+            object : PageLoader(gid, startPage, size) {
                 private val jobs = mutableIntObjectMapOf<Job>()
                 private val mutex = NamedMutex<Int>()
                 private val semaphore = Semaphore(4)
@@ -88,8 +88,6 @@ suspend fun <T> useArchivePageLoader(
                     logcat(it)
                     false
                 }
-
-                override val size = size
 
                 override fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>) = Unit
 

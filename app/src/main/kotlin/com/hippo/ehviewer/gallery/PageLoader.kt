@@ -21,7 +21,7 @@ private val progressScope = CoroutineScope(Dispatchers.IO)
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
-abstract class PageLoader(val gid: Long, var startPage: Int) : AutoCloseable {
+abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int) : AutoCloseable {
     private val cache = SieveCache<Int, Image>(
         maxSize = if (isAtLeastO) {
             (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
@@ -41,10 +41,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int) : AutoCloseable {
 
     private val lock = ReentrantReadWriteLock()
 
-    val pages by lazy {
-        check(size > 0)
-        (0 until size).map { Page(it) }
-    }
+    val pages = (0 until size).map { Page(it) }
 
     private val prefetchPageCount = Settings.preloadImage
 
@@ -52,8 +49,6 @@ abstract class PageLoader(val gid: Long, var startPage: Int) : AutoCloseable {
         lock.write { cache.evictAll() }
         pages.forEach(Page::reset)
     }
-
-    abstract val size: Int
 
     private var lastRequestIndex = -1
 
