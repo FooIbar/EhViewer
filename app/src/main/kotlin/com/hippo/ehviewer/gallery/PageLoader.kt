@@ -56,14 +56,14 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     fun decodePreloadRange(index: Int) = index - 4..index + 4
 
+    fun needDecode(index: Int) = index in decodePreloadRange(lastRequestIndex) && lock.read { index !in cache }
+
     private val readyFlow = MutableSharedFlow<Int>().apply {
-        filter {
-            it in decodePreloadRange(lastRequestIndex)
-        }.parMapUnordered(concurrency = Int.MAX_VALUE) { i ->
+        filter(::needDecode).parMapUnordered(concurrency = Int.MAX_VALUE) { i ->
             mutex.withLock(i) {
                 semaphore.withPermit {
                     // Double check
-                    if (i in decodePreloadRange(lastRequestIndex) && lock.read { i !in cache }) {
+                    if (needDecode(i)) {
                         atomicallyDecodeAndUpdate(i)
                     }
                 }
