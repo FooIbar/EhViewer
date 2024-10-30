@@ -91,7 +91,7 @@ jsoup = "org.jsoup:jsoup:1.18.1"
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
-ktlint = "com.pinterest:ktlint:1.4.0-kotlin-dev-SNAPSHOT"
+ktlint = "com.pinterest:ktlint:1.4.0"
 
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
 okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }
