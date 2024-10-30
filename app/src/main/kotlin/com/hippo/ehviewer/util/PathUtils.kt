@@ -4,7 +4,10 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.os.Environment
 import android.provider.DocumentsContract
+import androidx.core.provider.DocumentsContractCompat
+import arrow.core.Either
 import com.hippo.files.openFileDescriptor
+import com.hippo.files.toUri
 import okio.Path
 import splitties.init.appCtx
 
@@ -35,6 +38,21 @@ val Uri.displayPath: String?
         }
 
         return toString()
+    }
+
+val Path.displayName: String
+    get() {
+        val uri = toUri()
+        // The Path is constructed by us if the URI is a tree URI, so we don't need to query
+        if (uri.scheme != ContentResolver.SCHEME_FILE && !DocumentsContractCompat.isTreeUri(uri)) {
+            Either.catch {
+                val proj = arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+                appCtx.contentResolver.query(uri, proj, null, null, null)?.use { c ->
+                    if (c.moveToNext()) return c.getString(0)
+                }
+            }
+        }
+        return name
     }
 
 fun Path.sha1() = openFileDescriptor("r").use { com.hippo.ehviewer.jni.sha1(it.fd) }

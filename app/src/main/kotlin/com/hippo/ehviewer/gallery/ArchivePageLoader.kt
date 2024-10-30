@@ -32,6 +32,7 @@ import com.hippo.ehviewer.jni.providePassword
 import com.hippo.ehviewer.jni.releaseByteBuffer
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.detectAds
+import com.hippo.ehviewer.util.displayName
 import com.hippo.files.openFileDescriptor
 import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
@@ -75,7 +76,7 @@ suspend fun <T> useArchivePageLoader(
                 private val mutex = NamedMutex<Int>()
                 private val semaphore = Semaphore(4)
 
-                override val title by lazy { FileUtils.getNameFromFilename(file.name)!! }
+                override val title by lazy { FileUtils.getNameFromFilename(file.displayName)!! }
 
                 override fun getImageExtension(index: Int) = getExtension(index)
 
