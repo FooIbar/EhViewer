@@ -40,6 +40,7 @@ fun requestOf(model: GalleryPreview): ImageRequest {
 fun EhAsyncPreview(
     model: GalleryPreview,
     modifier: Modifier = Modifier,
+    autoCrop: Boolean = true,
 ) {
     var contentScale by remember(model) { mutableStateOf(ContentScale.Fit) }
     AsyncImage(
@@ -62,7 +63,7 @@ fun EhAsyncPreview(
             }
         },
         onState = {
-            if (it is State.Success) {
+            if (it is State.Success && autoCrop) {
                 if (model is V2GalleryPreview) {
                     if (model.shouldCrop) {
                         contentScale = ContentScale.Crop

@@ -332,6 +332,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
             }
         }
         ReaderAppBars(
+            info = info,
             visible = appbarVisible,
             isRtl = readingMode == ReadingModeType.RIGHT_TO_LEFT,
             showSeekBar = showSeekbar,

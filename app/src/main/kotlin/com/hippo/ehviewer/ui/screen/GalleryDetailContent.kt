@@ -733,7 +733,7 @@ private fun List<GalleryTagGroup>.getArtistTag(): String? {
 
 context(Context)
 @Composable
-private fun GalleryDetail?.collectPreviewItems(prefetchDistance: Int) = rememberInVM(this) {
+fun GalleryDetail?.collectPreviewItems(prefetchDistance: Int) = rememberInVM(this) {
     val detail = this@collectPreviewItems ?: return@rememberInVM emptyFlow()
     val pageSize = detail.previewList.size
     val pages = detail.pages
