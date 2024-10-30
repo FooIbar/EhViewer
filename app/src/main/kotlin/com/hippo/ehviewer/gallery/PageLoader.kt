@@ -97,6 +97,11 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
     private var lastRequestIndex = -1
 
     fun request(index: Int) {
+        val prefetchRange = if (index >= lastRequestIndex) {
+            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
+        } else {
+            index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
+        }
         lastRequestIndex = index
         val image = lock.read { cache[index] }
         if (image != null) {
@@ -107,11 +112,6 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         }
 
         // Prefetch to disk
-        val prefetchRange = if (index >= lastRequestIndex) {
-            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
-        } else {
-            index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
-        }
         val pagesAbsent = prefetchRange.filter {
             when (pages[it].status) {
                 PageStatus.Queued, is PageStatus.Error -> true
