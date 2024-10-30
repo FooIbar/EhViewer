@@ -1,27 +1,42 @@
 package com.hippo.ehviewer.gallery
 
 import androidx.collection.SieveCache
+import arrow.fx.coroutines.parMapUnordered
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
+import com.hippo.ehviewer.image.ImageSource
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.OSUtils
+import com.hippo.ehviewer.util.detectAds
+import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastO
+import eu.kanade.tachiyomi.util.system.logcat
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import moe.tarsin.coroutines.NamedMutex
+import moe.tarsin.coroutines.withLock
 import okio.Path
 
 private val progressScope = CoroutineScope(Dispatchers.IO)
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
-abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int) : AutoCloseable {
+abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val hasAds: Boolean = false, val scope: CoroutineScope) : AutoCloseable {
+    private val mutex = NamedMutex<Int>()
+    private val semaphore = Semaphore(4)
+
     private val cache = SieveCache<Int, Image>(
         maxSize = if (isAtLeastO) {
             (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
@@ -39,6 +54,35 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int) : Au
         },
     )
 
+    fun decodePreloadRange(index: Int) = (index - 3)..(index + 3)
+
+    private val readyFlow = MutableSharedFlow<Int>().apply {
+        filter {
+            it in decodePreloadRange(lastRequestIndex)
+        }.parMapUnordered(concurrency = Int.MAX_VALUE) { i ->
+            mutex.withLock(i) {
+                semaphore.withPermit {
+                    // Double check
+                    if (i in decodePreloadRange(lastRequestIndex) && lock.read { i !in cache }) {
+                        atomicallyDecodeAndUpdate(i)
+                    }
+                }
+            }
+        }.launchIn(scope)
+    }
+
+    suspend fun atomicallyDecodeAndUpdate(index: Int) {
+        val source = openSource(index)
+        try {
+            val image = Image.decode(source, hasAds && detectAds(index, size))
+            notifyPageSucceed(index, image)
+        } catch (e: Throwable) {
+            source.close()
+            logcat(e)
+            notifyPageFailed(index, e.displayString())
+        }
+    }
+
     private val lock = ReentrantReadWriteLock()
 
     val pages = (0 until size).map { Page(it) }
@@ -53,9 +97,10 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int) : Au
     private var lastRequestIndex = -1
 
     fun request(index: Int) {
+        lastRequestIndex = index
         val image = lock.read { cache[index] }
         if (image != null) {
-            notifyPageSucceed(index, image, false)
+            notifyPageSucceed(index, image)
         } else {
             notifyPageWait(index)
             onRequest(index)
@@ -82,8 +127,6 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int) : Au
         pagesAbsent.forEach {
             if (it in range) onRequest(it)
         }
-
-        lastRequestIndex = index
     }
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
@@ -96,12 +139,6 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int) : Au
     protected abstract fun onRequest(index: Int)
 
     protected abstract fun onForceRequest(index: Int, orgImg: Boolean)
-
-    fun cancelRequest(index: Int) {
-        onCancelRequest(index)
-    }
-
-    protected abstract fun onCancelRequest(index: Int)
 
     fun notifyPageWait(index: Int) {
         pages[index].reset()
@@ -116,10 +153,8 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int) : Au
         }
     }
 
-    fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
-        if (replaceCache) {
-            lock.write { cache[index] = image }
-        }
+    fun notifyPageSucceed(index: Int, image: Image) {
+        lock.write { cache[index] = image }
         pages[index].statusFlow.update { if (image.hasQrCode) PageStatus.Blocked(image) else PageStatus.Ready(image) }
     }
 
@@ -151,4 +186,12 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int) : Au
     }
 
     abstract fun save(index: Int, file: Path): Boolean
+
+    fun notifySourceReady(index: Int) {
+        scope.launch {
+            readyFlow.emit(index)
+        }
+    }
+
+    abstract fun openSource(index: Int): ImageSource
 }

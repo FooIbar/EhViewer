@@ -264,7 +264,7 @@ class SpiderDen(val info: GalleryInfo) {
             ?: findImageFile(index)?.name.let { FileUtils.getExtensionFromFilename(it) }
     }
 
-    fun getImageSource(index: Int): PathSource? {
+    fun getImageSource(index: Int): PathSource {
         if (mode == SpiderQueen.MODE_READ) {
             val key = getImageKey(gid, index)
             val snapshot = sCache.openSnapshot(key)
@@ -277,7 +277,7 @@ class SpiderDen(val info: GalleryInfo) {
                 }
             }
         }
-        val source = findImageFile(index) ?: return null
+        val source = requireNotNull(findImageFile(index)) { "Source $index not found!" }
         return object : PathSource {
             override val source = source
             override val type by lazy {
@@ -333,7 +333,7 @@ class SpiderDen(val info: GalleryInfo) {
         }
         val pages = info.pages
         val (fdBatch, names) = (0 until pages).parMap { idx ->
-            val f = autoCloseable { getImageSource(idx) ?: throw CancellationException("Image #$idx not found") }
+            val f = autoCloseable { getImageSource(idx) }
             closeable { f.source.openFileDescriptor("r") }.fd to perFilename(idx, f.type)
         }.run { plus(comicInfo.fd to COMIC_INFO_FILE) }.unzip()
         val arcFd = closeable { file.openFileDescriptor("rw") }
