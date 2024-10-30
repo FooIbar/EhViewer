@@ -19,6 +19,7 @@ import androidx.compose.material3.carousel.rememberCarouselState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.client.EhEngine
@@ -64,6 +65,8 @@ fun ReaderAppBars(
                             state = state,
                             preferredItemWidth = 96.dp,
                             modifier = Modifier.height(128.dp),
+                            minSmallItemWidth = Dp.Hairline,
+                            maxSmallItemWidth = Dp.Infinity,
                         ) { index ->
                             val item = data[index]
                             if (item != null) {
