@@ -7,7 +7,6 @@ import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
-import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.files.isDirectory
 import com.hippo.files.isFile
