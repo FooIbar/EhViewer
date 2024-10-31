@@ -105,7 +105,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         lastRequestIndex = index
         val image = lock.read { cache[index] }
         if (image != null) {
-            notifyPageSucceed(index, image)
+            notifyPageSucceed(index, image, false)
         } else {
             notifyPageWait(index)
             onRequest(index)
@@ -151,8 +151,8 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         }
     }
 
-    fun notifyPageSucceed(index: Int, image: Image) {
-        lock.write { cache[index] = image }
+    fun notifyPageSucceed(index: Int, image: Image, replaceCache: Boolean = true) {
+        if (replaceCache) lock.write { cache[index] = image }
         pages[index].statusFlow.update { if (image.hasQrCode) PageStatus.Blocked(image) else PageStatus.Ready(image) }
     }
 
