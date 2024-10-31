@@ -46,6 +46,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -202,7 +203,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     private val prepareScope = CoroutineScope(coroutineContext + SupervisorJob())
-    private val prepareJob = prepareScope.launch { doPrepare() }
+    private val prepareJob = prepareScope.async { doPrepare() }
     private val archiveJob = launch(start = CoroutineStart.LAZY) { spiderDen.archive() }
 
     private suspend fun doPrepare() {
@@ -213,7 +214,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         notifyGetPages(spiderInfo.pages)
     }
 
-    suspend fun awaitReady() = prepareJob.join()
+    suspend fun awaitReady() = prepareJob.await()
 
     private fun stop() {
         val queenScope = this
