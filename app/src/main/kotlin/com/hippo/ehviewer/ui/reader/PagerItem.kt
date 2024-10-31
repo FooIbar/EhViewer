@@ -54,6 +54,10 @@ fun PagerItem(
 ) {
     LaunchedEffect(Unit) {
         pageLoader.request(page.index)
+        // In case pageloader restart
+        if (page.statusFlow.value == PageStatus.Queued) {
+            pageLoader.request(page.index)
+        }
     }
     val defaultError = stringResource(id = R.string.decode_image_error)
     when (val state = page.statusObserved) {
