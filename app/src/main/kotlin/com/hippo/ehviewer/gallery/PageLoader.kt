@@ -2,6 +2,8 @@ package com.hippo.ehviewer.gallery
 
 import androidx.collection.SieveCache
 import arrow.atomic.value
+import arrow.fx.coroutines.ExitCase
+import arrow.fx.coroutines.bracketCase
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
@@ -60,14 +62,11 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     suspend fun atomicallyDecodeAndUpdate(index: Int) {
         try {
-            val source = openSource(index)
-            try {
-                val image = Image.decode(source, hasAds && detectAds(index, size))
-                notifyPageSucceed(index, image)
-            } catch (e: Throwable) {
-                source.close()
-                throw e
-            }
+            bracketCase(
+                { openSource(index) },
+                { src -> notifyPageSucceed(index, Image.decode(src, hasAds && detectAds(index, size))) },
+                { src, case -> if (case !is ExitCase.Completed) src.close() },
+            )
         } catch (e: Throwable) {
             notifyPageFailed(index, e.displayString())
         }
