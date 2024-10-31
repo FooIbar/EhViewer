@@ -34,23 +34,28 @@ class SliderPagerDoubleSync(
         sliderFollowPager = true
     }
 
+    fun currentPageFlow(webtoon: Boolean) = if (webtoon) {
+        snapshotFlow {
+            with(lazyListState.layoutInfo) {
+                visibleItemsInfo.lastOrNull {
+                    it.offset <= maxOf(viewportStartOffset, viewportEndOffset - it.size)
+                }?.index
+            }
+        }.filterNotNull()
+    } else {
+        snapshotFlow { pagerState.currentPage }
+    }
+
     @Composable
     fun Sync(webtoon: Boolean, onPageSelected: () -> Unit) {
         val currentIndexFlow = remember(webtoon) {
             val initialIndex = sliderValue - 1
-            if (webtoon) {
-                sliderFollowPager = lazyListState.firstVisibleItemIndex == initialIndex
-                snapshotFlow {
-                    with(lazyListState.layoutInfo) {
-                        visibleItemsInfo.lastOrNull {
-                            it.offset <= maxOf(viewportStartOffset, viewportEndOffset - it.size)
-                        }?.index
-                    }
-                }.filterNotNull()
+            sliderFollowPager = if (webtoon) {
+                lazyListState.firstVisibleItemIndex == initialIndex
             } else {
-                sliderFollowPager = pagerState.currentPage == initialIndex
-                snapshotFlow { pagerState.currentPage }
+                pagerState.currentPage == initialIndex
             }
+            currentPageFlow(webtoon)
         }
         if (sliderFollowPager) {
             LaunchedEffect(currentIndexFlow) {

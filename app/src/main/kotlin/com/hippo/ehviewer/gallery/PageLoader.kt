@@ -18,6 +18,7 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -52,9 +53,9 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         },
     )
 
-    fun decodePreloadRange(index: Int) = index - 4..index + 4
+    fun decodePreloadRange(index: Int) = index - 3..index + 3
 
-    fun needDecode(index: Int) = index in decodePreloadRange(lastRequestIndex) && lock.read { index !in cache }
+    fun needDecode(index: Int) = index in decodePreloadRange(prevIndex) && lock.read { index !in cache }
 
     suspend fun atomicallyDecodeAndUpdate(index: Int) {
         val source = openSource(index)
@@ -79,34 +80,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         pages.forEach(Page::reset)
     }
 
-    private var lastRequestIndex by AtomicInteger(-1)::value
-
-    fun request(index: Int) {
-        val prefetchRange = if (index >= lastRequestIndex) {
-            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
-        } else {
-            index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
-        }
-        lastRequestIndex = index
-        val image = lock.read { cache[index] }
-        if (image != null) {
-            notifyPageSucceed(index, image, false)
-        } else {
-            notifyPageWait(index)
-            onRequest(index)
-        }
-
-        // Prefetch to disk
-        val pagesAbsent = prefetchRange.filter {
-            when (pages[it].status) {
-                PageStatus.Queued, is PageStatus.Error -> true
-                else -> false
-            }
-        }
-        val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
-        val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
-        prefetchPages(pagesAbsent, start - 5 to end + 5)
-    }
+    private var prevIndex by AtomicInteger(-1)::value
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
         notifyPageWait(index)
@@ -160,6 +134,40 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     fun getImageFilename(index: Int): String? = getImageExtension(index)?.let {
         FileUtils.sanitizeFilename("$title - ${index + 1}.${it.lowercase()}")
+    }
+
+    suspend fun collect(flow: Flow<Int>) = flow.collect { index ->
+        val visible = (index - 2).coerceAtLeast(0)..(index + 2).coerceAtMost(size - 1)
+        visible.forEach { index ->
+            val image = lock.read { cache[index] }
+            if (image != null) {
+                notifyPageSucceed(index, image, false)
+            } else {
+                pages[index].statusFlow.update { status ->
+                    when (status) {
+                        is PageStatus.Error -> PageStatus.Queued
+                        else -> status
+                    }
+                }
+                onRequest(index)
+            }
+        }
+        val prefetchRange = if (index >= prevIndex) {
+            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
+        } else {
+            index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
+        }
+        // Prefetch to disk
+        val pagesAbsent = prefetchRange.filter {
+            when (pages[it].status) {
+                PageStatus.Queued, is PageStatus.Error -> true
+                else -> false
+            }
+        }
+        val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
+        val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
+        prefetchPages(pagesAbsent, start - 5 to end + 5)
+        prevIndex = index
     }
 
     abstract fun save(index: Int, file: Path): Boolean

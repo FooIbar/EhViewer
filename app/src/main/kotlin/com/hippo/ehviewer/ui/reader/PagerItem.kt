@@ -52,10 +52,8 @@ fun PagerItem(
     contentModifier: Modifier = Modifier,
 ) {
     val defaultError = stringResource(id = R.string.decode_image_error)
-    pageLoader.request(page.index)
     when (val state = page.statusObserved) {
         is PageStatus.Queued, is PageStatus.Loading -> {
-            pageLoader.request(page.index)
             Box(
                 modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
                 contentAlignment = Alignment.Center,

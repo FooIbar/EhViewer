@@ -223,8 +223,9 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
         }
         val bgColor by collectBackgroundColorAsState()
         syncState.Sync(isWebtoon) { appbarVisible = false }
-        LaunchedEffect(isWebtoon) {
+        LaunchedEffect(isWebtoon, syncState, pageLoader) {
             appbarVisible = false
+            pageLoader.collect(syncState.currentPageFlow(isWebtoon))
         }
         if (fullscreen) {
             LaunchedEffect(Unit) {
