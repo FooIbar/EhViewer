@@ -45,7 +45,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -62,7 +62,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     @Volatile
     lateinit var pageStates: IntArray
-    lateinit var mSpiderInfo: SpiderInfo
+    lateinit var spiderInfo: SpiderInfo
 
     val spiderDen: SpiderDen = SpiderDen(galleryInfo)
     private val mPageStateLock = Any()
@@ -147,12 +147,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     private var downloadMode = false
     val isReady
-        get() = this::mSpiderInfo.isInitialized && this::pageStates.isInitialized
+        get() = this::spiderInfo.isInitialized && this::pageStates.isInitialized
 
     private val updateLock = Mutex()
 
-    private suspend fun updateMode() {
-        if (!awaitReady()) return
+    private suspend fun updateMode() = runSuspendCatching {
+        awaitReady()
         updateLock.withLock {
             val mode: Int = if (mDownloadReference > 0) {
                 MODE_DOWNLOAD
@@ -201,20 +201,18 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         check(!(mReadReference < 0 || mDownloadReference < 0)) { "Mode reference < 0" }
     }
 
-    private val prepareJob = async { doPrepare() }
+    private val prepareJob = launch(SupervisorJob()) { doPrepare() }
     private val archiveJob = launch(start = CoroutineStart.LAZY) { spiderDen.archive() }
 
     private suspend fun doPrepare() {
         spiderDen.initDownloadDirIfExist()
-        mSpiderInfo = readSpiderInfoFromLocal() ?: readSpiderInfoFromInternet() ?: return
-        pageStates = IntArray(mSpiderInfo.pages)
-        notifyGetPages(mSpiderInfo.pages)
+        spiderInfo = readSpiderInfoFromLocal() ?: readSpiderInfoFromInternet()
+        pageStates = IntArray(spiderInfo.pages)
+        check(spiderInfo.pages > 0)
+        notifyGetPages(spiderInfo.pages)
     }
 
-    suspend fun awaitReady(): Boolean {
-        prepareJob.await()
-        return isReady
-    }
+    suspend fun awaitReady() = prepareJob.join()
 
     private fun stop() {
         val queenScope = this
@@ -313,22 +311,18 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    private suspend fun readSpiderInfoFromInternet(): SpiderInfo? = runSuspendCatching {
-        ehRequest(
-            getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
-            referer,
-        ).fetchUsingAsText {
-            val pages = parsePages(this)
-            val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, pages)
-            readPreviews(this, 0, spiderInfo)
-            spiderInfo
-        }
-    }.onFailure {
-        logcat(it)
-    }.getOrNull()
+    private suspend fun readSpiderInfoFromInternet() = ehRequest(
+        getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
+        referer,
+    ).fetchUsingAsText {
+        val pages = parsePages(this)
+        val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, pages)
+        readPreviews(this, 0, spiderInfo)
+        spiderInfo
+    }
 
     suspend fun getPTokenFromMultiPageViewer(index: Int): String? {
-        val spiderInfo = mSpiderInfo
+        val spiderInfo = spiderInfo
         val url = getGalleryMultiPageViewerUrl(
             galleryInfo.gid,
             galleryInfo.token,
@@ -347,7 +341,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     suspend fun getPTokenFromInternet(index: Int): String? {
-        val spiderInfo = mSpiderInfo
+        val spiderInfo = spiderInfo
 
         // Check previewIndex
         var previewIndex: Int
@@ -379,8 +373,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     @Synchronized
     private fun writeSpiderInfoToLocal() {
         if (!isReady) return
-        spiderDen.downloadDir?.run { mSpiderInfo.write(resolve(SPIDER_INFO_FILENAME)) }
-        mSpiderInfo.saveToCache()
+        spiderDen.downloadDir?.run { spiderInfo.write(resolve(SPIDER_INFO_FILENAME)) }
+        spiderInfo.saveToCache()
     }
 
     private fun isStateDone(state: Int): Boolean = state == STATE_FINISHED || state == STATE_FAILED
@@ -538,7 +532,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         private suspend fun doInJob(index: Int, force: Boolean, orgImg: Boolean, skipHath: Boolean) {
             suspend fun getPToken(index: Int): String? {
                 if (index !in 0 until size) return null
-                return mSpiderInfo.pTokenMap[index].takeIf { it != TOKEN_FAILED }
+                return spiderInfo.pTokenMap[index].takeIf { it != TOKEN_FAILED }
                     ?: getPTokenFromInternet(index)
                     ?: getPTokenFromInternet(index)
                     ?: getPTokenFromMultiPageViewer(index)
@@ -547,15 +541,15 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             val pToken: String
             pTokenLock.withLock {
                 if (force) {
-                    if (mSpiderInfo.pTokenMap[index] == TOKEN_FAILED) {
-                        mSpiderInfo.pTokenMap.remove(index)
+                    if (spiderInfo.pTokenMap[index] == TOKEN_FAILED) {
+                        spiderInfo.pTokenMap.remove(index)
                     }
                 } else if (index in spiderDen) {
                     return updatePageState(index, STATE_FINISHED)
                 }
                 pToken = getPToken(index)
                     ?: return updatePageState(index, STATE_FAILED, PTOKEN_FAILED_MESSAGE).also {
-                        mSpiderInfo.pTokenMap[index] = TOKEN_FAILED
+                        spiderInfo.pTokenMap[index] = TOKEN_FAILED
                     }
                 previousPToken = getPToken(index - 1)
 
@@ -595,7 +589,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     if (imageUrl == null) {
                         runSuspendCatching {
                             EhEngine.getGalleryPageApi(
-                                mSpiderInfo.gid,
+                                spiderInfo.gid,
                                 index,
                                 pToken,
                                 localShowKey,
@@ -624,7 +618,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         if (retries == 1 && skipHathKey != null) {
                             originImageUrl += "?nl=$skipHathKey"
                         }
-                        val pageUrl = EhUrl.getPageUrl(mSpiderInfo.gid, index, pToken)
+                        val pageUrl = EhUrl.getPageUrl(spiderInfo.gid, index, pToken)
                         targetImageUrl = EhEngine.getOriginalImageUrl(originImageUrl!!, pageUrl)
                         referer = EhUrl.referer
                     } else {

@@ -25,7 +25,6 @@ suspend fun <T> useEhPageLoader(
             { queen, _ -> releaseSpiderQueen(queen, SpiderQueen.MODE_READ) },
         )
         queen.awaitReady()
-        check(queen.size > 0)
         val loader = autoCloseable {
             object : PageLoader(info.gid, startPage, queen.size, info.hasAds, implicit<CoroutineScope>()) {
                 val listener = object : OnSpiderListener {
