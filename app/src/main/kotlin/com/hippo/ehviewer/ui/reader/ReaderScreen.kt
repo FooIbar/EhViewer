@@ -90,7 +90,6 @@ import kotlin.coroutines.resume
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -224,10 +223,8 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
         }
         val bgColor by collectBackgroundColorAsState()
         syncState.Sync(isWebtoon) { appbarVisible = false }
-        LaunchedEffect(isWebtoon, syncState, pageLoader) {
+        LaunchedEffect(isWebtoon) {
             appbarVisible = false
-            val flow = syncState.currentPageFlow(isWebtoon).onStart { emit(pageLoader.startPage) }
-            pageLoader.collect(flow)
         }
         if (fullscreen) {
             LaunchedEffect(Unit) {

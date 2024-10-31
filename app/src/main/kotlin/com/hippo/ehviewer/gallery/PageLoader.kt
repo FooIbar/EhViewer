@@ -17,7 +17,6 @@ import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -142,7 +141,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         FileUtils.sanitizeFilename("$title - ${index + 1}.${it.lowercase()}")
     }
 
-    suspend fun collect(flow: Flow<Int>) = flow.collect { index ->
+    fun request(index: Int) {
         val prefetchRange = if (index >= prevIndex) {
             index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
         } else {

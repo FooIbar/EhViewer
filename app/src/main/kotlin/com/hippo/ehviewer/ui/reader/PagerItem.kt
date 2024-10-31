@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -51,6 +52,9 @@ fun PagerItem(
     modifier: Modifier = Modifier,
     contentModifier: Modifier = Modifier,
 ) {
+    LaunchedEffect(Unit) {
+        pageLoader.request(page.index)
+    }
     val defaultError = stringResource(id = R.string.decode_image_error)
     when (val state = page.statusObserved) {
         is PageStatus.Queued, is PageStatus.Loading -> {
