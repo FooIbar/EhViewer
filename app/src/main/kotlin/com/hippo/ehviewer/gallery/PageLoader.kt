@@ -159,6 +159,12 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         if (image != null) {
             notifyPageSucceed(index, image, false)
         } else {
+            pages[index].statusFlow.update { status ->
+                when (status) {
+                    is PageStatus.Error -> PageStatus.Queued
+                    else -> status
+                }
+            }
             onRequest(index)
         }
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
