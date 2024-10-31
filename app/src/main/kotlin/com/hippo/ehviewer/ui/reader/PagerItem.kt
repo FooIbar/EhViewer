@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -42,7 +41,6 @@ import com.hippo.ehviewer.gallery.statusObserved
 import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.util.AdsPlaceholderFile
 import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
-import kotlinx.coroutines.flow.drop
 import moe.tarsin.kt.unreachable
 
 @Composable
@@ -54,16 +52,10 @@ fun PagerItem(
     contentModifier: Modifier = Modifier,
 ) {
     val defaultError = stringResource(id = R.string.decode_image_error)
-    LaunchedEffect(Unit) {
-        pageLoader.request(page.index)
-        page.statusFlow.drop(1).collect {
-            if (page.statusFlow.value == PageStatus.Queued) {
-                pageLoader.request(page.index)
-            }
-        }
-    }
+    pageLoader.request(page.index)
     when (val state = page.statusObserved) {
         is PageStatus.Queued, is PageStatus.Loading -> {
+            pageLoader.request(page.index)
             Box(
                 modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT),
                 contentAlignment = Alignment.Center,
