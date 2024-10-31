@@ -462,12 +462,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     private val mWorkerScope = object {
-        private val mFetcherJobMap = hashMapOf<Int, Job>()
-        private val mSemaphore = Semaphore(Settings.multiThreadDownload)
+        private val jobs = hashMapOf<Int, Job>()
+        private val semaphore = Semaphore(Settings.multiThreadDownload)
         private val pTokenLock = Mutex()
         private var showKey: String? = null
         private val showKeyLock = Mutex()
-        private val mDownloadDelay = Settings.downloadDelay.milliseconds
+        private val downloadDelay = Settings.downloadDelay.milliseconds
         private var lastRequestTime = TimeSource.Monotonic.markNow()
         var isDownloadMode = false
             private set
@@ -481,14 +481,14 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
         fun updateRAList(list: List<Int>, cancelBounds: Pair<Int, Int> = 0 to Int.MAX_VALUE) {
             if (isDownloadMode) return
-            synchronized(mFetcherJobMap) {
-                mFetcherJobMap.forEach { (i, job) ->
+            synchronized(jobs) {
+                jobs.forEach { (i, job) ->
                     if (i < cancelBounds.first || i > cancelBounds.second) {
                         job.cancel()
                     }
                 }
                 list.forEach {
-                    if (mFetcherJobMap[it]?.isActive != true) {
+                    if (jobs[it]?.isActive != true) {
                         doLaunchDownloadJob(it, false)
                     }
                 }
@@ -498,13 +498,13 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         private fun doLaunchDownloadJob(index: Int, force: Boolean, orgImg: Boolean = false) {
             val state = mPageStateArray[index]
             if (!force && state == STATE_FINISHED) return
-            val currentJob = mFetcherJobMap[index]
+            val currentJob = jobs[index]
             val skipHath = force && !orgImg && currentJob?.isActive == true
             if (force) currentJob?.cancel(CancellationException(FORCE_RETRY))
             if (currentJob?.isActive != true) {
-                mFetcherJobMap[index] = launch {
+                jobs[index] = launch {
                     runCatching {
-                        mSemaphore.withPermit {
+                        semaphore.withPermit {
                             doInJob(index, force, orgImg, skipHath)
                         }
                     }.onFailure {
@@ -526,7 +526,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         fun launch(index: Int, force: Boolean = false, orgImg: Boolean) {
             check(index in 0 until size)
             if (!isDownloadMode) {
-                synchronized(mFetcherJobMap) { doLaunchDownloadJob(index, force, orgImg) }
+                synchronized(jobs) { doLaunchDownloadJob(index, force, orgImg) }
             }
         }
 
@@ -555,7 +555,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 previousPToken = getPToken(index - 1)
 
                 // The lock for delay should be acquired before anything else to maintain FIFO order
-                delay(mDownloadDelay - lastRequestTime.elapsedNow())
+                delay(downloadDelay - lastRequestTime.elapsedNow())
                 lastRequestTime = TimeSource.Monotonic.markNow()
             }
             updatePageState(index, STATE_DOWNLOADING)

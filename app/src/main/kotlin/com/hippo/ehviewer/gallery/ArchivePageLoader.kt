@@ -84,9 +84,7 @@ suspend fun <T> useArchivePageLoader(
                     return object : ByteBufferSource {
                         override val source: ByteBuffer = buffer
 
-                        override fun close() {
-                            releaseByteBuffer(buffer)
-                        }
+                        override fun close() = releaseByteBuffer(buffer)
                     }
                 }
 
