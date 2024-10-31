@@ -19,8 +19,8 @@ import arrow.fx.coroutines.autoCloseable
 import arrow.fx.coroutines.closeable
 import arrow.fx.coroutines.resourceScope
 import com.hippo.ehviewer.Settings.archivePasswds
-import com.hippo.ehviewer.image.ByteBufferSource
 import com.hippo.ehviewer.image.ImageSource
+import com.hippo.ehviewer.image.byteBufferSource
 import com.hippo.ehviewer.jni.closeArchive
 import com.hippo.ehviewer.jni.extractToByteBuffer
 import com.hippo.ehviewer.jni.extractToFd
@@ -34,7 +34,6 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.displayName
 import com.hippo.files.openFileDescriptor
 import eu.kanade.tachiyomi.util.system.logcat
-import java.nio.ByteBuffer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import okio.Path
@@ -59,8 +58,7 @@ suspend fun <T> useArchivePageLoader(
         )
         check(size >= 0) { "Archive have no content!" }
         if (needPassword() && archivePasswds.filterNotNull().none { providePassword(it) }) {
-            val toAdd = passwdProvider { providePassword(it) }
-            archivePasswds += toAdd
+            archivePasswds += passwdProvider { providePassword(it) }
         }
         val loader = autoCloseable {
             object : PageLoader(gid, startPage, size, hasAds, implicit<CoroutineScope>()) {
@@ -81,11 +79,7 @@ suspend fun <T> useArchivePageLoader(
                     val buffer = extractToByteBuffer(index)
                     checkNotNull(buffer) { "Extract archive content $index failed!" }
                     check(buffer.isDirect)
-                    return object : ByteBufferSource {
-                        override val source: ByteBuffer = buffer
-
-                        override fun close() = releaseByteBuffer(buffer)
-                    }
+                    return byteBufferSource(buffer) { releaseByteBuffer(buffer) }
                 }
 
                 override fun prefetchPages(pages: List<Int>, bounds: IntRange) = pages.forEach(::notifySourceReady)

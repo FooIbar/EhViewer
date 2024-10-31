@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.IntSize
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import arrow.fx.coroutines.ExitCase
+import arrow.fx.coroutines.bracketCase
 import coil3.BitmapImage
 import coil3.DrawableImage
 import coil3.Image as CoilImage
@@ -103,20 +105,11 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                         src.source.openFileDescriptor("rw").use {
                             val fd = it.fd
                             if (isGif(fd)) {
-                                val buffer = mmap(fd)!!
-                                val source = object : ByteBufferSource {
-                                    override val source = buffer
-                                    override fun close() {
-                                        munmap(buffer)
-                                        src.close()
-                                    }
-                                }
-                                return try {
-                                    decode(source, checkExtraneousAds)
-                                } catch (e: Throwable) {
-                                    munmap(buffer)
-                                    throw e
-                                }
+                                return bracketCase(
+                                    { mmap(fd)!! },
+                                    { buffer -> decode(byteBufferSource(buffer) { munmap(buffer).also { src.close() } }, checkExtraneousAds) },
+                                    { buffer, case -> if (case !is ExitCase.Completed) munmap(buffer) },
+                                )
                             }
                         }
                     }
@@ -146,6 +139,11 @@ interface PathSource : ImageSource {
 
 interface ByteBufferSource : ImageSource {
     val source: ByteBuffer
+}
+
+inline fun byteBufferSource(buffer: ByteBuffer, crossinline release: () -> Unit) = object : ByteBufferSource {
+    override val source = buffer
+    override fun close() = release()
 }
 
 external fun detectBorder(bitmap: Bitmap): IntArray
