@@ -143,6 +143,19 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
     }
 
     suspend fun collect(flow: Flow<Int>) = flow.collect { index ->
+        val prefetchRange = if (index >= prevIndex) {
+            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
+        } else {
+            index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
+        }
+        // Prefetch to disk
+        val pagesAbsent = prefetchRange.filter {
+            when (pages[it].status) {
+                PageStatus.Queued, is PageStatus.Error -> true
+                else -> false
+            }
+        }
+        prevIndex = index
         val visible = (index - 2).coerceAtLeast(0)..(index + 2).coerceAtMost(size - 1)
         visible.forEach { index ->
             val image = lock.read { cache[index] }
@@ -158,22 +171,9 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
                 onRequest(index)
             }
         }
-        val prefetchRange = if (index >= prevIndex) {
-            index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
-        } else {
-            index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
-        }
-        // Prefetch to disk
-        val pagesAbsent = prefetchRange.filter {
-            when (pages[it].status) {
-                PageStatus.Queued, is PageStatus.Error -> true
-                else -> false
-            }
-        }
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
         val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
         prefetchPages(pagesAbsent, start - 5..end + 5)
-        prevIndex = index
     }
 
     abstract fun save(index: Int, file: Path): Boolean
