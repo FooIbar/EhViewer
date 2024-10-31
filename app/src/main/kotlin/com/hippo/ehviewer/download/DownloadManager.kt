@@ -33,7 +33,6 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.dao.DownloadArtist
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.DownloadLabel
-import com.hippo.ehviewer.image.Image
 import com.hippo.ehviewer.spider.COMIC_INFO_FILE
 import com.hippo.ehviewer.spider.SpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
@@ -681,14 +680,6 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                 ensureDownload()
             } ?: logcat(TAG, LogPriority.ERROR) { "Current task is null, but it should not be" }
         }
-    }
-
-    override fun onGetImageSuccess(index: Int, image: Image?) {
-        // Ignore
-    }
-
-    override fun onGetImageFailure(index: Int, error: String?) {
-        // Ignore
     }
 
     interface DownloadListener {

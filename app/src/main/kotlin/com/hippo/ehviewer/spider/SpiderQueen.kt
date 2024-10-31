@@ -34,10 +34,7 @@ import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewList
 import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewPages
 import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
-import com.hippo.ehviewer.image.Image
-import com.hippo.ehviewer.util.detectAds
 import com.hippo.ehviewer.util.displayString
-import com.hippo.ehviewer.util.hasAds
 import com.hippo.files.find
 import eu.kanade.tachiyomi.util.system.logcat
 import java.util.concurrent.atomic.AtomicInteger
@@ -48,11 +45,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
@@ -66,10 +62,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     override val coroutineContext = Dispatchers.IO + Job()
 
     @Volatile
-    lateinit var mPageStateArray: IntArray
-    lateinit var mSpiderInfo: SpiderInfo
+    lateinit var pageStates: IntArray
+    lateinit var spiderInfo: SpiderInfo
 
-    val mSpiderDen: SpiderDen = SpiderDen(galleryInfo)
+    val spiderDen: SpiderDen = SpiderDen(galleryInfo)
     private val mPageStateLock = Any()
     private val mDownloadedPages = AtomicInteger(0)
     private val mFinishedPages = AtomicInteger(0)
@@ -118,7 +114,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     index,
                     mFinishedPages.get(),
                     mDownloadedPages.get(),
-                    mPageStateArray.size,
+                    pageStates.size,
                 )
             }
         }
@@ -132,7 +128,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     error,
                     mFinishedPages.get(),
                     mDownloadedPages.get(),
-                    mPageStateArray.size,
+                    pageStates.size,
                 )
             }
         }
@@ -144,50 +140,34 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 it.onFinish(
                     mFinishedPages.get(),
                     mDownloadedPages.get(),
-                    mPageStateArray.size,
+                    pageStates.size,
                 )
-            }
-        }
-    }
-
-    fun notifyGetImageSuccess(index: Int, image: Image) {
-        synchronized(mSpiderListeners) {
-            mSpiderListeners.forEach {
-                it.onGetImageSuccess(index, image)
-            }
-        }
-    }
-
-    fun notifyGetImageFailure(index: Int, error: String) {
-        synchronized(mSpiderListeners) {
-            mSpiderListeners.forEach {
-                it.onGetImageFailure(index, error)
             }
         }
     }
 
     private var downloadMode = false
     val isReady
-        get() = this::mSpiderInfo.isInitialized && this::mPageStateArray.isInitialized
+        get() = this::spiderInfo.isInitialized && this::pageStates.isInitialized
 
     private val updateLock = Mutex()
 
-    private suspend fun updateMode() {
-        if (!awaitReady()) return
+    private suspend fun updateMode() = runSuspendCatching {
+        awaitReady()
         updateLock.withLock {
             val mode: Int = if (mDownloadReference > 0) {
                 MODE_DOWNLOAD
             } else {
                 MODE_READ
             }
-            mSpiderDen.setMode(mode)
+            spiderDen.setMode(mode)
 
             // Update download page
             val intoDownloadMode = mode == MODE_DOWNLOAD
             if (intoDownloadMode && !downloadMode) {
                 // Clear download state
                 synchronized(mPageStateLock) {
-                    val temp: IntArray = mPageStateArray
+                    val temp: IntArray = pageStates
                     var i = 0
                     val n = temp.size
                     while (i < n) {
@@ -222,20 +202,19 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         check(!(mReadReference < 0 || mDownloadReference < 0)) { "Mode reference < 0" }
     }
 
-    private val prepareJob = async { doPrepare() }
-    private val archiveJob = launch(start = CoroutineStart.LAZY) { mSpiderDen.archive() }
+    private val prepareScope = CoroutineScope(coroutineContext + SupervisorJob())
+    private val prepareJob = prepareScope.async { doPrepare() }
+    private val archiveJob = launch(start = CoroutineStart.LAZY) { spiderDen.archive() }
 
     private suspend fun doPrepare() {
-        mSpiderDen.initDownloadDirIfExist()
-        mSpiderInfo = readSpiderInfoFromLocal() ?: readSpiderInfoFromInternet() ?: return
-        mPageStateArray = IntArray(mSpiderInfo.pages)
-        notifyGetPages(mSpiderInfo.pages)
+        spiderDen.initDownloadDirIfExist()
+        spiderInfo = readSpiderInfoFromLocal() ?: readSpiderInfoFromInternet()
+        pageStates = IntArray(spiderInfo.pages)
+        check(spiderInfo.pages > 0)
+        notifyGetPages(spiderInfo.pages)
     }
 
-    suspend fun awaitReady(): Boolean {
-        prepareJob.await()
-        return isReady
-    }
+    suspend fun awaitReady() = prepareJob.await()
 
     private fun stop() {
         val queenScope = this
@@ -243,9 +222,9 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             if (archiveJob.isActive) {
                 archiveJob.join()
             }
-            if (!mSpiderDen.postArchive()) {
+            if (!spiderDen.postArchive()) {
                 if (mWorkerScope.isDownloadMode) {
-                    mSpiderDen.writeComicInfo()
+                    spiderDen.writeComicInfo()
                 }
                 runCatching {
                     writeSpiderInfoToLocal()
@@ -258,38 +237,26 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     val size
-        get() = mPageStateArray.size
+        get() = pageStates.size
 
     val error: String?
         get() = null
 
-    fun forceRequest(index: Int, orgImg: Boolean) {
-        request(index, true, orgImg)
-    }
-
-    fun request(index: Int) {
-        request(index, false)
-    }
-
     private fun getPageState(index: Int): Int {
         synchronized(mPageStateLock) {
-            return if (index >= 0 && index < mPageStateArray.size) {
-                mPageStateArray[index]
+            return if (index >= 0 && index < pageStates.size) {
+                pageStates[index]
             } else {
                 STATE_NONE
             }
         }
     }
 
-    fun cancelRequest(index: Int) {
-        mWorkerScope.cancelDecode(index)
-    }
-
-    fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {
+    fun preloadPages(pages: List<Int>, pair: IntRange) {
         mWorkerScope.updateRAList(pages, pair)
     }
 
-    private fun request(index: Int, force: Boolean, orgImg: Boolean = false) {
+    fun request(index: Int, force: Boolean, orgImg: Boolean = false) {
         // Get page state
         val state = getPageState(index)
 
@@ -306,7 +273,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         return if (STATE_FINISHED != state) {
             false
         } else {
-            mSpiderDen.saveToPath(index, file)
+            spiderDen.saveToPath(index, file)
         }
     }
 
@@ -315,11 +282,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         return if (STATE_FINISHED != state) {
             null
         } else {
-            mSpiderDen.getExtension(index)
+            spiderDen.getExtension(index)
         }
     }
 
-    private fun readSpiderInfoFromLocal(): SpiderInfo? = mSpiderDen.downloadDir?.run {
+    private fun readSpiderInfoFromLocal(): SpiderInfo? = spiderDen.downloadDir?.run {
         find(SPIDER_INFO_FILENAME)?.let { file ->
             readCompatFromPath(file)?.takeIf {
                 it.gid == galleryInfo.gid && it.token == galleryInfo.token
@@ -346,22 +313,18 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    private suspend fun readSpiderInfoFromInternet(): SpiderInfo? = runSuspendCatching {
-        ehRequest(
-            getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
-            referer,
-        ).fetchUsingAsText {
-            val pages = parsePages(this)
-            val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, pages)
-            readPreviews(this, 0, spiderInfo)
-            spiderInfo
-        }
-    }.onFailure {
-        logcat(it)
-    }.getOrNull()
+    private suspend fun readSpiderInfoFromInternet() = ehRequest(
+        getGalleryDetailUrl(galleryInfo.gid, galleryInfo.token, 0, false),
+        referer,
+    ).fetchUsingAsText {
+        val pages = parsePages(this)
+        val spiderInfo = SpiderInfo(galleryInfo.gid, galleryInfo.token, pages)
+        readPreviews(this, 0, spiderInfo)
+        spiderInfo
+    }
 
     suspend fun getPTokenFromMultiPageViewer(index: Int): String? {
-        val spiderInfo = mSpiderInfo
+        val spiderInfo = spiderInfo
         val url = getGalleryMultiPageViewerUrl(
             galleryInfo.gid,
             galleryInfo.token,
@@ -380,7 +343,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     suspend fun getPTokenFromInternet(index: Int): String? {
-        val spiderInfo = mSpiderInfo
+        val spiderInfo = spiderInfo
 
         // Check previewIndex
         var previewIndex: Int
@@ -412,8 +375,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     @Synchronized
     private fun writeSpiderInfoToLocal() {
         if (!isReady) return
-        mSpiderDen.downloadDir?.run { mSpiderInfo.write(resolve(SPIDER_INFO_FILENAME)) }
-        mSpiderInfo.saveToCache()
+        spiderDen.downloadDir?.run { spiderInfo.write(resolve(SPIDER_INFO_FILENAME)) }
+        spiderInfo.saveToCache()
     }
 
     private fun isStateDone(state: Int): Boolean = state == STATE_FINISHED || state == STATE_FAILED
@@ -421,8 +384,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     fun updatePageState(index: Int, @State state: Int, error: String? = null) {
         var oldState: Int
         synchronized<Unit>(mPageStateLock) {
-            oldState = mPageStateArray[index]
-            mPageStateArray[index] = state
+            oldState = pageStates[index]
+            pageStates[index] = state
             if (!isStateDone(oldState) && isStateDone(state)) {
                 mDownloadedPages.incrementAndGet()
             } else if (isStateDone(oldState) && !isStateDone(state)) {
@@ -455,14 +418,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     @Retention(AnnotationRetention.SOURCE)
     annotation class State
     interface OnSpiderListener {
-        fun onGetPages(pages: Int)
-        fun onGet509(index: Int)
-        fun onPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int)
-        fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int)
-        fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int)
-        fun onFinish(finished: Int, downloaded: Int, total: Int)
-        fun onGetImageSuccess(index: Int, image: Image?)
-        fun onGetImageFailure(index: Int, error: String?)
+        fun onGetPages(pages: Int) {}
+        fun onGet509(index: Int) {}
+        fun onPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {}
+        fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {}
+        fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) {}
+        fun onFinish(finished: Int, downloaded: Int, total: Int) {}
     }
 
     companion object {
@@ -497,19 +458,15 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     private val mWorkerScope = object {
-        private val mFetcherJobMap = hashMapOf<Int, Job>()
-        private val mSemaphore = Semaphore(Settings.multiThreadDownload)
+        private val jobs = hashMapOf<Int, Job>()
+        private val semaphore = Semaphore(Settings.multiThreadDownload)
         private val pTokenLock = Mutex()
         private var showKey: String? = null
         private val showKeyLock = Mutex()
-        private val mDownloadDelay = Settings.downloadDelay.milliseconds
+        private val downloadDelay = Settings.downloadDelay.milliseconds
         private var lastRequestTime = TimeSource.Monotonic.markNow()
         var isDownloadMode = false
             private set
-
-        fun cancelDecode(index: Int) {
-            decoder.cancel(index)
-        }
 
         @Synchronized
         fun enterDownloadMode() {
@@ -518,16 +475,21 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             isDownloadMode = true
         }
 
-        fun updateRAList(list: List<Int>, cancelBounds: Pair<Int, Int> = 0 to Int.MAX_VALUE) {
+        fun updateRAList(list: List<Int>, aliveBound: IntRange = 0..Int.MAX_VALUE) {
+            val absent = list.filterNot { index ->
+                (pageStates[index] == STATE_FINISHED).also { finished ->
+                    if (finished) notifyPageSuccess(index)
+                }
+            }
             if (isDownloadMode) return
-            synchronized(mFetcherJobMap) {
-                mFetcherJobMap.forEach { (i, job) ->
-                    if (i < cancelBounds.first || i > cancelBounds.second) {
+            synchronized(jobs) {
+                jobs.forEach { (i, job) ->
+                    if (i !in aliveBound) {
                         job.cancel()
                     }
                 }
-                list.forEach {
-                    if (mFetcherJobMap[it]?.isActive != true) {
+                absent.forEach {
+                    if (jobs[it]?.isActive != true) {
                         doLaunchDownloadJob(it, false)
                     }
                 }
@@ -535,15 +497,13 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
 
         private fun doLaunchDownloadJob(index: Int, force: Boolean, orgImg: Boolean = false) {
-            val state = mPageStateArray[index]
-            if (!force && state == STATE_FINISHED) return
-            val currentJob = mFetcherJobMap[index]
+            val currentJob = jobs[index]
             val skipHath = force && !orgImg && currentJob?.isActive == true
             if (force) currentJob?.cancel(CancellationException(FORCE_RETRY))
             if (currentJob?.isActive != true) {
-                mFetcherJobMap[index] = launch {
+                jobs[index] = launch {
                     runCatching {
-                        mSemaphore.withPermit {
+                        semaphore.withPermit {
                             doInJob(index, force, orgImg, skipHath)
                         }
                     }.onFailure {
@@ -564,17 +524,17 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
         fun launch(index: Int, force: Boolean = false, orgImg: Boolean) {
             check(index in 0 until size)
+            val state = pageStates[index]
+            if (!force && state == STATE_FINISHED) return notifyPageSuccess(index)
             if (!isDownloadMode) {
-                synchronized(mFetcherJobMap) { doLaunchDownloadJob(index, force, orgImg) }
+                synchronized(jobs) { doLaunchDownloadJob(index, force, orgImg) }
             }
-            if (force) decoder.cancel(index)
-            decoder.launch(index)
         }
 
         private suspend fun doInJob(index: Int, force: Boolean, orgImg: Boolean, skipHath: Boolean) {
             suspend fun getPToken(index: Int): String? {
                 if (index !in 0 until size) return null
-                return mSpiderInfo.pTokenMap[index].takeIf { it != TOKEN_FAILED }
+                return spiderInfo.pTokenMap[index].takeIf { it != TOKEN_FAILED }
                     ?: getPTokenFromInternet(index)
                     ?: getPTokenFromInternet(index)
                     ?: getPTokenFromMultiPageViewer(index)
@@ -583,20 +543,20 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             val pToken: String
             pTokenLock.withLock {
                 if (force) {
-                    if (mSpiderInfo.pTokenMap[index] == TOKEN_FAILED) {
-                        mSpiderInfo.pTokenMap.remove(index)
+                    if (spiderInfo.pTokenMap[index] == TOKEN_FAILED) {
+                        spiderInfo.pTokenMap.remove(index)
                     }
-                } else if (index in mSpiderDen) {
+                } else if (index in spiderDen) {
                     return updatePageState(index, STATE_FINISHED)
                 }
                 pToken = getPToken(index)
                     ?: return updatePageState(index, STATE_FAILED, PTOKEN_FAILED_MESSAGE).also {
-                        mSpiderInfo.pTokenMap[index] = TOKEN_FAILED
+                        spiderInfo.pTokenMap[index] = TOKEN_FAILED
                     }
                 previousPToken = getPToken(index - 1)
 
                 // The lock for delay should be acquired before anything else to maintain FIFO order
-                delay(mDownloadDelay - lastRequestTime.elapsedNow())
+                delay(downloadDelay - lastRequestTime.elapsedNow())
                 lastRequestTime = TimeSource.Monotonic.markNow()
             }
             updatePageState(index, STATE_DOWNLOADING)
@@ -631,7 +591,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     if (imageUrl == null) {
                         runSuspendCatching {
                             EhEngine.getGalleryPageApi(
-                                mSpiderInfo.gid,
+                                spiderInfo.gid,
                                 index,
                                 pToken,
                                 localShowKey,
@@ -653,28 +613,23 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         return@repeat
                     }
 
-                    val targetImageUrl: String?
-                    val referer: String?
-
-                    if (original && originImageUrl != null) {
+                    val (targetImageUrl, referer) = if (original && originImageUrl != null) {
                         if (retries == 1 && skipHathKey != null) {
                             originImageUrl += "?nl=$skipHathKey"
                         }
-                        val pageUrl = EhUrl.getPageUrl(mSpiderInfo.gid, index, pToken)
-                        targetImageUrl = EhEngine.getOriginalImageUrl(originImageUrl!!, pageUrl)
-                        referer = EhUrl.referer
+                        val pageUrl = EhUrl.getPageUrl(spiderInfo.gid, index, pToken)
+                        EhEngine.getOriginalImageUrl(originImageUrl!!, pageUrl) to EhUrl.referer
                     } else {
                         // Original image url won't change, so only set forceHtml in this case
                         forceHtml = true
-                        targetImageUrl = imageUrl
-                        referer = null
+                        imageUrl to null
                     }
                     checkNotNull(targetImageUrl)
 
                     repeat(2) { times ->
                         runCatching {
                             logcat(WORKER_DEBUG_TAG) { "Start download image $index attempt #$times" }
-                            val success = mSpiderDen.makeHttpCallAndSaveImage(
+                            val success = spiderDen.makeHttpCallAndSaveImage(
                                 index,
                                 targetImageUrl,
                                 referer,
@@ -686,7 +641,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                             updatePageState(index, STATE_FINISHED)
                             return
                         }.onFailure {
-                            mSpiderDen.removeIntermediateFiles(index)
+                            spiderDen.removeIntermediateFiles(index)
                             logcat(WORKER_DEBUG_TAG) { "Download image $index attempt #$times failed" }
                             if (it is CancellationException) throw it
                             error = it.displayString()
@@ -702,62 +657,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             }
             updatePageState(index, STATE_FAILED, error)
         }
-
-        private val decoder = object {
-            private val mSemaphore = Semaphore(4)
-            private val mDecodeJobMap = hashMapOf<Int, Job>()
-
-            fun cancel(index: Int) {
-                synchronized(mDecodeJobMap) {
-                    mDecodeJobMap.remove(index)?.cancel()
-                }
-            }
-
-            fun launch(index: Int) {
-                synchronized(mDecodeJobMap) {
-                    val currentJob = mDecodeJobMap[index]
-                    if (currentJob?.isActive != true) {
-                        mDecodeJobMap[index] = launch {
-                            runCatching {
-                                mSemaphore.withPermit {
-                                    mFetcherJobMap[index]?.join()
-                                    if (mPageStateArray[index] == STATE_FINISHED) {
-                                        doInJob(index)
-                                    }
-                                }
-                            }.onFailure {
-                                if (mPageStateArray[index] == STATE_FINISHED) {
-                                    notifyGetImageFailure(index, DECODE_ERROR)
-                                }
-                                if (it is CancellationException) {
-                                    throw it
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            private val hasAds = galleryInfo.hasAds
-
-            private suspend fun doInJob(index: Int) {
-                val src = mSpiderDen.getImageSource(index) ?: return
-                val image = Image.decode(src, hasAds && detectAds(index, size))
-                checkNotNull(image)
-                runCatching {
-                    currentCoroutineContext().ensureActive()
-                }.onFailure {
-                    image.recycle()
-                    throw it
-                }
-                notifyGetImageSuccess(index, image)
-            }
-        }
     }
 }
 
 private val PTOKEN_FAILED_MESSAGE = appCtx.getString(R.string.error_get_ptoken_error)
-private val DECODE_ERROR = appCtx.getString(R.string.error_decoding_failed)
 private val URL_509_PATTERN = Regex("\\.org/.+/509s?\\.gif")
 private const val FORCE_RETRY = "Force retry"
 private const val WORKER_DEBUG_TAG = "SpiderQueenWorker"

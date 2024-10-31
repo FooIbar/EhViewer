@@ -36,8 +36,12 @@ val PageStatus.progressObserved
 
 sealed interface PageStatus {
     data object Queued : PageStatus
-    data class Blocked(val ad: Image) : PageStatus
-    data class Ready(val image: Image) : PageStatus
-    data class Error(val message: String?) : PageStatus
-    data class Loading(val progress: MutableStateFlow<Float>) : PageStatus
+
+    @JvmInline value class Blocked(val ad: Image) : PageStatus
+
+    @JvmInline value class Ready(val image: Image) : PageStatus
+
+    @JvmInline value class Error(val message: String?) : PageStatus
+
+    @JvmInline value class Loading(val progress: MutableStateFlow<Float>) : PageStatus
 }

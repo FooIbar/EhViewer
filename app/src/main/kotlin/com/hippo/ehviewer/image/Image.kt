@@ -47,7 +47,6 @@ import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.files.openFileDescriptor
 import com.hippo.files.toUri
-import eu.kanade.tachiyomi.util.system.logcat
 import java.nio.ByteBuffer
 import okio.Path
 import splitties.init.appCtx
@@ -97,43 +96,43 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
             }
         }
 
-        suspend fun decode(src: ImageSource, checkExtraneousAds: Boolean = false): Image? {
-            return runCatching {
-                val image = when (src) {
-                    is PathSource -> {
-                        if (isAtLeastP && !isAtLeastU) {
-                            src.source.openFileDescriptor("rw").use {
-                                val fd = it.fd
-                                if (isGif(fd)) {
-                                    val buffer = mmap(fd)!!
-                                    val source = object : ByteBufferSource {
-                                        override val source = buffer
-                                        override fun close() {
-                                            munmap(buffer)
-                                            src.close()
-                                        }
+        suspend fun decode(src: ImageSource, checkExtraneousAds: Boolean = false): Image {
+            val image = when (src) {
+                is PathSource -> {
+                    if (isAtLeastP && !isAtLeastU) {
+                        src.source.openFileDescriptor("rw").use {
+                            val fd = it.fd
+                            if (isGif(fd)) {
+                                val buffer = mmap(fd)!!
+                                val source = object : ByteBufferSource {
+                                    override val source = buffer
+                                    override fun close() {
+                                        munmap(buffer)
+                                        src.close()
                                     }
-                                    return decode(source, checkExtraneousAds)
+                                }
+                                return try {
+                                    decode(source, checkExtraneousAds)
+                                } catch (e: Throwable) {
+                                    munmap(buffer)
+                                    throw e
                                 }
                             }
                         }
-                        src.right().decodeCoil(checkExtraneousAds)
                     }
+                    src.right().decodeCoil(checkExtraneousAds)
+                }
 
-                    is ByteBufferSource -> {
-                        if (isAtLeastP && !isAtLeastU) {
-                            rewriteGifSource(src.source)
-                        }
-                        src.left().decodeCoil(checkExtraneousAds)
+                is ByteBufferSource -> {
+                    if (isAtLeastP && !isAtLeastU) {
+                        rewriteGifSource(src.source)
                     }
+                    src.left().decodeCoil(checkExtraneousAds)
                 }
-                Image(image, src).apply {
-                    if (innerImage is BitmapImage) src.close()
-                }
-            }.onFailure {
-                src.close()
-                logcat(it)
-            }.getOrNull()
+            }
+            return Image(image, src).apply {
+                if (innerImage is BitmapImage) src.close()
+            }
         }
     }
 }

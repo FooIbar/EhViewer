@@ -55,15 +55,11 @@ fun PagerItem(
 ) {
     LaunchedEffect(Unit) {
         pageLoader.request(page.index)
+        // In case pageloader restart
         page.statusFlow.drop(1).collect {
             if (page.statusFlow.value == PageStatus.Queued) {
                 pageLoader.request(page.index)
             }
-        }
-    }
-    DisposableEffect(Unit) {
-        onDispose {
-            pageLoader.cancelRequest(page.index)
         }
     }
     val defaultError = stringResource(id = R.string.decode_image_error)
