@@ -155,20 +155,11 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
             }
         }
         prevIndex = index
-        val visible = (index - 2).coerceAtLeast(0)..(index + 2).coerceAtMost(size - 1)
-        visible.forEach { index ->
-            val image = lock.read { cache[index] }
-            if (image != null) {
-                notifyPageSucceed(index, image, false)
-            } else {
-                pages[index].statusFlow.update { status ->
-                    when (status) {
-                        is PageStatus.Error -> PageStatus.Queued
-                        else -> status
-                    }
-                }
-                onRequest(index)
-            }
+        val image = lock.read { cache[index] }
+        if (image != null) {
+            notifyPageSucceed(index, image, false)
+        } else {
+            onRequest(index)
         }
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
         val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
