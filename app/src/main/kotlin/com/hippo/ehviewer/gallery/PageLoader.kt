@@ -89,6 +89,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
         notifyPageWait(index)
+        lock.write { cache.remove(index) }
         onRequest(index, true, orgImg)
     }
 
