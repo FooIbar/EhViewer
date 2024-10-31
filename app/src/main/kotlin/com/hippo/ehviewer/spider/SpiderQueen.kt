@@ -418,12 +418,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     @Retention(AnnotationRetention.SOURCE)
     annotation class State
     interface OnSpiderListener {
-        fun onGetPages(pages: Int)
-        fun onGet509(index: Int)
-        fun onPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int)
-        fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int)
-        fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int)
-        fun onFinish(finished: Int, downloaded: Int, total: Int)
+        fun onGetPages(pages: Int) {}
+        fun onGet509(index: Int) {}
+        fun onPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {}
+        fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {}
+        fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) {}
+        fun onFinish(finished: Int, downloaded: Int, total: Int) {}
     }
 
     companion object {

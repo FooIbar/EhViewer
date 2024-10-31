@@ -41,10 +41,6 @@ suspend fun <T> useEhPageLoader(
             }
         }.apply {
             val listener = object : OnSpiderListener {
-                override fun onGetPages(pages: Int) = Unit
-
-                override fun onGet509(index: Int) = Unit
-
                 override fun onPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {
                     if (contentLength > 0) {
                         notifyPagePercent(index, receivedSize.toFloat() / contentLength)
@@ -54,8 +50,6 @@ suspend fun <T> useEhPageLoader(
                 override fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) = notifySourceReady(index)
 
                 override fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) = notifyPageFailed(index, error)
-
-                override fun onFinish(finished: Int, downloaded: Int, total: Int) = Unit
             }
             install(
                 { queen.addOnSpiderListener(listener) },
