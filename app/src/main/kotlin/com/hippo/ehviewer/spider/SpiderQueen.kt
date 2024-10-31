@@ -480,6 +480,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
 
         fun updateRAList(list: List<Int>, cancelBounds: Pair<Int, Int> = 0 to Int.MAX_VALUE) {
+            list.forEach { index ->
+                val state = mPageStateArray[index]
+                if (state == STATE_FINISHED) notifyPageSuccess(index)
+            }
             if (isDownloadMode) return
             synchronized(jobs) {
                 jobs.forEach { (i, job) ->
@@ -525,6 +529,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
         fun launch(index: Int, force: Boolean = false, orgImg: Boolean) {
             check(index in 0 until size)
+            val state = mPageStateArray[index]
+            if (!force && state == STATE_FINISHED) return notifyPageSuccess(index)
             if (!isDownloadMode) {
                 synchronized(jobs) { doLaunchDownloadJob(index, force, orgImg) }
             }
