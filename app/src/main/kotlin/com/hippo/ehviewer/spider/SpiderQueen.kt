@@ -252,7 +252,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
-    fun preloadPages(pages: List<Int>, pair: Pair<Int, Int>) {
+    fun preloadPages(pages: List<Int>, pair: IntRange) {
         mWorkerScope.updateRAList(pages, pair)
     }
 
@@ -479,7 +479,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             isDownloadMode = true
         }
 
-        fun updateRAList(list: List<Int>, cancelBounds: Pair<Int, Int> = 0 to Int.MAX_VALUE) {
+        fun updateRAList(list: List<Int>, aliveBound: IntRange = 0..Int.MAX_VALUE) {
             val absent = list.filterNot { index ->
                 (pageStates[index] == STATE_FINISHED).also { finished ->
                     if (finished) notifyPageSuccess(index)
@@ -488,7 +488,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             if (isDownloadMode) return
             synchronized(jobs) {
                 jobs.forEach { (i, job) ->
-                    if (i < cancelBounds.first || i > cancelBounds.second) {
+                    if (i !in aliveBound) {
                         job.cancel()
                     }
                 }

@@ -88,7 +88,7 @@ suspend fun <T> useArchivePageLoader(
                     }
                 }
 
-                override fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>) = pages.forEach(::notifySourceReady)
+                override fun prefetchPages(pages: List<Int>, bounds: IntRange) = pages.forEach(::notifySourceReady)
 
                 override fun onRequest(index: Int, force: Boolean, orgImg: Boolean) = notifySourceReady(index)
             }

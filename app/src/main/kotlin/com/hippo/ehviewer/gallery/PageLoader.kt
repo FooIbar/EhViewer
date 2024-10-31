@@ -93,7 +93,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         onRequest(index, true, orgImg)
     }
 
-    protected abstract fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>)
+    protected abstract fun prefetchPages(pages: List<Int>, bounds: IntRange)
 
     protected abstract fun onRequest(index: Int, force: Boolean = false, orgImg: Boolean = false)
 
@@ -172,7 +172,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         }
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
         val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
-        prefetchPages(pagesAbsent, start - 5 to end + 5)
+        prefetchPages(pagesAbsent, start - 5..end + 5)
         prevIndex = index
     }
 
