@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.LocalContentColor
@@ -26,11 +25,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import kotlin.math.PI
 import kotlin.math.abs
@@ -54,26 +51,10 @@ fun rememberTextStyleNumberMaxSize(textStyle: TextStyle): DpSize {
 }
 
 @Composable
-fun extractSpacingFromTextStyle(style: TextStyle): Pair<TextStyle, Dp> {
-    val density = LocalDensity.current
-    return remember(density, style) {
-        if (style.letterSpacing != TextUnit.Unspecified) {
-            val spacing = with(density) { style.letterSpacing.toDp() }
-            style.copy(letterSpacing = TextUnit.Unspecified) to spacing
-        } else {
-            style to 0.dp
-        }
-    }
-}
-
-@Composable
 fun RollingNumberPlaceholder(number: Int, style: TextStyle = LocalTextStyle.current) {
-    val (styleNoSpacing, spacing) = extractSpacingFromTextStyle(style)
-    val size = rememberTextStyleNumberMaxSize(styleNoSpacing)
-    Row(
-        modifier = Modifier.padding(horizontal = spacing),
-        horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
-    ) {
+    val styleNoSpacing = style.copy(letterSpacing = TextUnit.Unspecified)
+    val size = rememberTextStyleNumberMaxSize(style)
+    Row(horizontalArrangement = Arrangement.Center) {
         "$number".forEach { char ->
             Text(
                 text = "$char",
@@ -154,17 +135,17 @@ fun RollingNumber(
     val textColor = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
     val string = remember(number) { "${abs(number)}" }
     val transition = updateTransition(string)
-    val (styleNoSpacing, spacing) = extractSpacingFromTextStyle(style.merge(color = textColor))
-    val size = rememberTextStyleNumberMaxSize(styleNoSpacing)
+    val styleNoSpacing = style.merge(color = textColor).copy(letterSpacing = TextUnit.Unspecified)
+    val size = rememberTextStyleNumberMaxSize(style)
     LazyRow(
-        modifier = modifier.clipToBounds().padding(horizontal = spacing).layout { measurable, constraints ->
+        modifier = modifier.clipToBounds().layout { measurable, constraints ->
             val placeable = measurable.measure(constraints.copy(maxHeight = Int.MAX_VALUE))
             layout(width = placeable.width, height = size.height.roundToPx()) {
                 placeable.place(0, 0)
             }
         },
         reverseLayout = true,
-        horizontalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.Center,
     ) {
         val max = length ?: with(transition) { max(currentState.length, targetState.length) }
         items(max, key = { it }) { reversed ->
