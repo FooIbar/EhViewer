@@ -613,21 +613,16 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         return@repeat
                     }
 
-                    val targetImageUrl: String?
-                    val referer: String?
-
-                    if (original && originImageUrl != null) {
+                    val (targetImageUrl, referer) = if (original && originImageUrl != null) {
                         if (retries == 1 && skipHathKey != null) {
                             originImageUrl += "?nl=$skipHathKey"
                         }
                         val pageUrl = EhUrl.getPageUrl(spiderInfo.gid, index, pToken)
-                        targetImageUrl = EhEngine.getOriginalImageUrl(originImageUrl!!, pageUrl)
-                        referer = EhUrl.referer
+                        EhEngine.getOriginalImageUrl(originImageUrl!!, pageUrl) to EhUrl.referer
                     } else {
                         // Original image url won't change, so only set forceHtml in this case
                         forceHtml = true
-                        targetImageUrl = imageUrl
-                        referer = null
+                        imageUrl to null
                     }
                     checkNotNull(targetImageUrl)
 
