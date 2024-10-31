@@ -11,7 +11,6 @@ import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.detectAds
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastO
-import eu.kanade.tachiyomi.util.system.logcat
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
@@ -68,7 +67,6 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
                 throw e
             }
         } catch (e: Throwable) {
-            logcat(e)
             notifyPageFailed(index, e.displayString())
         }
     }
