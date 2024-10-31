@@ -27,29 +27,6 @@ suspend fun <T> useEhPageLoader(
         queen.awaitReady()
         val loader = autoCloseable {
             object : PageLoader(info.gid, startPage, queen.size, info.hasAds, implicit<CoroutineScope>()) {
-                val listener = object : OnSpiderListener {
-                    override fun onGetPages(pages: Int) = Unit
-
-                    override fun onGet509(index: Int) = Unit
-
-                    override fun onPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {
-                        if (contentLength > 0) {
-                            notifyPagePercent(index, receivedSize.toFloat() / contentLength)
-                        }
-                    }
-
-                    override fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) = notifySourceReady(index)
-
-                    override fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) = notifyPageFailed(index, error)
-
-                    override fun onFinish(finished: Int, downloaded: Int, total: Int) = Unit
-                }.apply { queen.addOnSpiderListener(this) }
-
-                override fun close() {
-                    super.close()
-                    queen.removeOnSpiderListener(listener)
-                }
-
                 override val title by lazy { EhUtils.getSuitableTitle(info) }
 
                 override fun getImageExtension(index: Int) = queen.getExtension(index)
@@ -62,6 +39,28 @@ suspend fun <T> useEhPageLoader(
 
                 override fun onRequest(index: Int, force: Boolean, orgImg: Boolean) = queen.request(index, force, orgImg)
             }
+        }.apply {
+            val listener = object : OnSpiderListener {
+                override fun onGetPages(pages: Int) = Unit
+
+                override fun onGet509(index: Int) = Unit
+
+                override fun onPageDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {
+                    if (contentLength > 0) {
+                        notifyPagePercent(index, receivedSize.toFloat() / contentLength)
+                    }
+                }
+
+                override fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) = notifySourceReady(index)
+
+                override fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) = notifyPageFailed(index, error)
+
+                override fun onFinish(finished: Int, downloaded: Int, total: Int) = Unit
+            }
+            install(
+                { queen.addOnSpiderListener(listener) },
+                { _, _ -> queen.removeOnSpiderListener(listener) },
+            )
         }
         loader.progressJob.join()
         block(loader)
