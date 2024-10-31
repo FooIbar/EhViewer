@@ -92,9 +92,7 @@ suspend fun <T> useArchivePageLoader(
 
                 override fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>) = Unit
 
-                override fun onRequest(index: Int) = notifySourceReady(index)
-
-                override fun onForceRequest(index: Int, orgImg: Boolean) = onRequest(index)
+                override fun onRequest(index: Int, force: Boolean, orgImg: Boolean) = notifySourceReady(index)
             }
         }
         loader.progressJob.join()

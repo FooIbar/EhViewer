@@ -131,14 +131,12 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
         notifyPageWait(index)
-        onForceRequest(index, orgImg)
+        onRequest(index, true, orgImg)
     }
 
     protected abstract fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>)
 
-    protected abstract fun onRequest(index: Int)
-
-    protected abstract fun onForceRequest(index: Int, orgImg: Boolean)
+    protected abstract fun onRequest(index: Int, force: Boolean = false, orgImg: Boolean = false)
 
     fun notifyPageWait(index: Int) {
         pages[index].reset()

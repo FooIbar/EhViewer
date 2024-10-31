@@ -242,14 +242,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     val error: String?
         get() = null
 
-    fun forceRequest(index: Int, orgImg: Boolean) {
-        request(index, true, orgImg)
-    }
-
-    fun request(index: Int) {
-        request(index, false)
-    }
-
     private fun getPageState(index: Int): Int {
         synchronized(mPageStateLock) {
             return if (index >= 0 && index < mPageStateArray.size) {
@@ -264,7 +256,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         mWorkerScope.updateRAList(pages, pair)
     }
 
-    private fun request(index: Int, force: Boolean, orgImg: Boolean = false) {
+    fun request(index: Int, force: Boolean, orgImg: Boolean = false) {
         // Get page state
         val state = getPageState(index)
 

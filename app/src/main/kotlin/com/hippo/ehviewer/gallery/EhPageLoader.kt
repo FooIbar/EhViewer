@@ -61,9 +61,7 @@ suspend fun <T> useEhPageLoader(
 
                 override fun prefetchPages(pages: List<Int>, bounds: Pair<Int, Int>) = queen.preloadPages(pages, bounds)
 
-                override fun onRequest(index: Int) = queen.request(index)
-
-                override fun onForceRequest(index: Int, orgImg: Boolean) = queen.forceRequest(index, orgImg)
+                override fun onRequest(index: Int, force: Boolean, orgImg: Boolean) = queen.request(index, force, orgImg)
             }
         }
         loader.progressJob.join()
