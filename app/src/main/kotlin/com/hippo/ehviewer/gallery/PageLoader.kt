@@ -54,7 +54,8 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     fun decodePreloadRange(index: Int) = index - 3..index + 3
 
-    fun needDecode(index: Int) = index in decodePreloadRange(prevIndex) && lock.read { index !in cache } && pages[index].status !is PageStatus.Ready
+    fun needDecode(index: Int) = index in decodePreloadRange(prevIndex) && lock.read { index !in cache } &&
+        pages[index].status !is PageStatus.Ready && pages[index].status !is PageStatus.Blocked
 
     suspend fun atomicallyDecodeAndUpdate(index: Int) {
         try {
