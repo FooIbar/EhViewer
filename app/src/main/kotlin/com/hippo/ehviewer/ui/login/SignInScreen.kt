@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +30,7 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -149,18 +151,13 @@ fun SignInScreen(navigator: DestinationsNavigator) {
             lineLimits = TextFieldLineLimits.SingleLine,
             isError = showUsernameError,
         )
-        OutlinedTextField(
+        OutlinedSecureTextField(
             state = password,
             modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width)).autofill(
                 autofillTypes = listOf(AutofillType.Password),
                 onFill = { password.setTextAndPlaceCursorAtEnd(it) },
             ),
             label = { Text(stringResource(R.string.password)) },
-            outputTransformation = {
-                if (passwordHidden) {
-                    replace(0, length, "\u2022".repeat(length))
-                }
-            },
             supportingText = { if (showPasswordError) Text(stringResource(R.string.error_password_cannot_empty)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             onKeyboardAction = { signIn() },
@@ -174,8 +171,8 @@ fun SignInScreen(navigator: DestinationsNavigator) {
                     }
                 }
             },
-            lineLimits = TextFieldLineLimits.SingleLine,
             isError = showPasswordError,
+            textObfuscationMode = if (passwordHidden) TextObfuscationMode.RevealLastTyped else TextObfuscationMode.Visible,
         )
     }
 
