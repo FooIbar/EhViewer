@@ -61,7 +61,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     override val coroutineContext = Dispatchers.IO + Job()
 
     @Volatile
-    lateinit var mPageStateArray: IntArray
+    lateinit var pageStates: IntArray
     lateinit var mSpiderInfo: SpiderInfo
 
     val spiderDen: SpiderDen = SpiderDen(galleryInfo)
@@ -113,7 +113,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     index,
                     mFinishedPages.get(),
                     mDownloadedPages.get(),
-                    mPageStateArray.size,
+                    pageStates.size,
                 )
             }
         }
@@ -127,7 +127,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     error,
                     mFinishedPages.get(),
                     mDownloadedPages.get(),
-                    mPageStateArray.size,
+                    pageStates.size,
                 )
             }
         }
@@ -139,7 +139,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 it.onFinish(
                     mFinishedPages.get(),
                     mDownloadedPages.get(),
-                    mPageStateArray.size,
+                    pageStates.size,
                 )
             }
         }
@@ -147,7 +147,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     private var downloadMode = false
     val isReady
-        get() = this::mSpiderInfo.isInitialized && this::mPageStateArray.isInitialized
+        get() = this::mSpiderInfo.isInitialized && this::pageStates.isInitialized
 
     private val updateLock = Mutex()
 
@@ -166,7 +166,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             if (intoDownloadMode && !downloadMode) {
                 // Clear download state
                 synchronized(mPageStateLock) {
-                    val temp: IntArray = mPageStateArray
+                    val temp: IntArray = pageStates
                     var i = 0
                     val n = temp.size
                     while (i < n) {
@@ -207,7 +207,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     private suspend fun doPrepare() {
         spiderDen.initDownloadDirIfExist()
         mSpiderInfo = readSpiderInfoFromLocal() ?: readSpiderInfoFromInternet() ?: return
-        mPageStateArray = IntArray(mSpiderInfo.pages)
+        pageStates = IntArray(mSpiderInfo.pages)
         notifyGetPages(mSpiderInfo.pages)
     }
 
@@ -237,15 +237,15 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     val size
-        get() = mPageStateArray.size
+        get() = pageStates.size
 
     val error: String?
         get() = null
 
     private fun getPageState(index: Int): Int {
         synchronized(mPageStateLock) {
-            return if (index >= 0 && index < mPageStateArray.size) {
-                mPageStateArray[index]
+            return if (index >= 0 && index < pageStates.size) {
+                pageStates[index]
             } else {
                 STATE_NONE
             }
@@ -388,8 +388,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     fun updatePageState(index: Int, @State state: Int, error: String? = null) {
         var oldState: Int
         synchronized<Unit>(mPageStateLock) {
-            oldState = mPageStateArray[index]
-            mPageStateArray[index] = state
+            oldState = pageStates[index]
+            pageStates[index] = state
             if (!isStateDone(oldState) && isStateDone(state)) {
                 mDownloadedPages.incrementAndGet()
             } else if (isStateDone(oldState) && !isStateDone(state)) {
@@ -480,9 +480,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
 
         fun updateRAList(list: List<Int>, cancelBounds: Pair<Int, Int> = 0 to Int.MAX_VALUE) {
-            list.forEach { index ->
-                val state = mPageStateArray[index]
-                if (state == STATE_FINISHED) notifyPageSuccess(index)
+            val absent = list.filterNot { index ->
+                (pageStates[index] == STATE_FINISHED).also { finished ->
+                    if (finished) notifyPageSuccess(index)
+                }
             }
             if (isDownloadMode) return
             synchronized(jobs) {
@@ -491,7 +492,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         job.cancel()
                     }
                 }
-                list.forEach {
+                absent.forEach {
                     if (jobs[it]?.isActive != true) {
                         doLaunchDownloadJob(it, false)
                     }
@@ -500,8 +501,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
 
         private fun doLaunchDownloadJob(index: Int, force: Boolean, orgImg: Boolean = false) {
-            val state = mPageStateArray[index]
-            if (!force && state == STATE_FINISHED) return
             val currentJob = jobs[index]
             val skipHath = force && !orgImg && currentJob?.isActive == true
             if (force) currentJob?.cancel(CancellationException(FORCE_RETRY))
@@ -529,7 +528,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
         fun launch(index: Int, force: Boolean = false, orgImg: Boolean) {
             check(index in 0 until size)
-            val state = mPageStateArray[index]
+            val state = pageStates[index]
             if (!force && state == STATE_FINISHED) return notifyPageSuccess(index)
             if (!isDownloadMode) {
                 synchronized(jobs) { doLaunchDownloadJob(index, force, orgImg) }
