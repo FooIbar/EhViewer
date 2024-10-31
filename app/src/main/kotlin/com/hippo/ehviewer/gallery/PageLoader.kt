@@ -121,12 +121,6 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         val start = if (prefetchRange.step > 0) prefetchRange.first else prefetchRange.last
         val end = if (prefetchRange.step > 0) prefetchRange.last else prefetchRange.first
         prefetchPages(pagesAbsent, start - 5 to end + 5)
-
-        // Prefetch to memory
-        val range = index - 3..index + 3
-        pagesAbsent.forEach {
-            if (it in range) onRequest(it)
-        }
     }
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
