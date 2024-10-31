@@ -58,12 +58,16 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
     fun needDecode(index: Int) = index in decodePreloadRange(prevIndex) && lock.read { index !in cache }
 
     suspend fun atomicallyDecodeAndUpdate(index: Int) {
-        val source = openSource(index)
         try {
-            val image = Image.decode(source, hasAds && detectAds(index, size))
-            notifyPageSucceed(index, image)
+            val source = openSource(index)
+            try {
+                val image = Image.decode(source, hasAds && detectAds(index, size))
+                notifyPageSucceed(index, image)
+            } catch (e: Throwable) {
+                source.close()
+                throw e
+            }
         } catch (e: Throwable) {
-            source.close()
             logcat(e)
             notifyPageFailed(index, e.displayString())
         }
