@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.gallery
 
 import androidx.collection.SieveCache
-import arrow.fx.coroutines.parMapUnordered
+import arrow.atomic.value
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.image.Image
@@ -12,15 +12,13 @@ import com.hippo.ehviewer.util.detectAds
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastO
 import eu.kanade.tachiyomi.util.system.logcat
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -58,19 +56,6 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     fun needDecode(index: Int) = index in decodePreloadRange(lastRequestIndex) && lock.read { index !in cache }
 
-    private val readyFlow = MutableSharedFlow<Int>().apply {
-        filter(::needDecode).parMapUnordered(concurrency = Int.MAX_VALUE) { i ->
-            mutex.withLock(i) {
-                semaphore.withPermit {
-                    // Double check
-                    if (needDecode(i)) {
-                        atomicallyDecodeAndUpdate(i)
-                    }
-                }
-            }
-        }.launchIn(scope)
-    }
-
     suspend fun atomicallyDecodeAndUpdate(index: Int) {
         val source = openSource(index)
         try {
@@ -94,7 +79,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         pages.forEach(Page::reset)
     }
 
-    private var lastRequestIndex = -1
+    private var lastRequestIndex by AtomicInteger(-1)::value
 
     fun request(index: Int) {
         val prefetchRange = if (index >= lastRequestIndex) {
@@ -180,8 +165,15 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
     abstract fun save(index: Int, file: Path): Boolean
 
     fun notifySourceReady(index: Int) {
-        scope.launch {
-            readyFlow.emit(index)
+        if (needDecode(index)) {
+            scope.launch {
+                mutex.withLock(index) {
+                    semaphore.withPermit {
+                        // Double check
+                        if (needDecode(index)) atomicallyDecodeAndUpdate(index)
+                    }
+                }
+            }
         }
     }
 
