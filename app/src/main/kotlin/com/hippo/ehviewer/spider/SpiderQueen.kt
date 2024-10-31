@@ -201,7 +201,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         check(!(mReadReference < 0 || mDownloadReference < 0)) { "Mode reference < 0" }
     }
 
-    private val prepareJob = launch(SupervisorJob()) { doPrepare() }
+    private val prepareScope = CoroutineScope(coroutineContext + SupervisorJob())
+    private val prepareJob = prepareScope.launch { doPrepare() }
     private val archiveJob = launch(start = CoroutineStart.LAZY) { spiderDen.archive() }
 
     private suspend fun doPrepare() {
