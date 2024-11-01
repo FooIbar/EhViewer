@@ -40,23 +40,23 @@
 
 <div align="center">
   <h3>
-    <a href="#description">
+    <a href="#説明">
     説明
     </a>
     <span> | </span>
-    <a href="#download">
+    <a href="#ダウンロード">
     ダウンロード
     </a>
     <span> | </span>
-    <a href="#screenshot">
+    <a href="#スクリーンショット">
     スクリーンショット
     </a>
     <span> | </span>
-    <a href="#thanks">
+    <a href="#感謝">
     感謝
     </a>
     <span> | </span>
-    <a href="#license">
+    <a href="#ライセンス">
     ライセンス
     </a>
   </h3>
