@@ -24,6 +24,7 @@ FetchContent_Declare(
         liblzma
         GIT_REPOSITORY https://github.com/tukaani-project/xz.git
         GIT_TAG v5.6.3
+        GIT_SHALLOW 1
         PATCH_COMMAND git apply --check -R ${XZ_PATCH} || git apply ${XZ_PATCH}
 )
 
@@ -46,6 +47,7 @@ ExternalProject_Add(
         PREFIX nettle
         GIT_REPOSITORY https://gitlab.com/gnutls/nettle.git
         GIT_TAG nettle_3.10_release_20240616
+        GIT_SHALLOW 1
         GIT_CONFIG core.autocrlf=input
         CONFIGURE_COMMAND bash ${CURRENT_DIR}/configure_nettle.sh ${NDK_VERSION} ${CMAKE_C_COMPILER_TARGET}
         BUILD_COMMAND bash -c "make libnettle.a CFLAGS='${CMAKE_C_FLAGS} -Qunused-arguments'"
@@ -91,6 +93,7 @@ FetchContent_Declare(
         libarchive
         GIT_REPOSITORY https://github.com/libarchive/libarchive.git
         GIT_TAG v3.7.7
+        GIT_SHALLOW 1
         PATCH_COMMAND git apply --check -R ${LIBARCHIVE_PATCH} || git apply ${LIBARCHIVE_PATCH}
 )
 
@@ -101,6 +104,7 @@ FetchContent_Declare(
         Corrosion
         GIT_REPOSITORY https://github.com/corrosion-rs/corrosion.git
         GIT_TAG v0.5
+        GIT_SHALLOW 1
 )
 
 FetchContent_MakeAvailable(Corrosion)
