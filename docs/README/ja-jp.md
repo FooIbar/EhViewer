@@ -1,5 +1,7 @@
 <p align="right">
+  <a href="/README.md">
   English
+  </a>
   <span> | </span>
   <a href="/docs/README/zh-cn.md">
   简体中文
