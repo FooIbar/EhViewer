@@ -66,7 +66,7 @@
 
 軽量で高性能な EhViewer のフォークです。
 
-[Material Design 3](https://m3.material.io/) と[ダイナミックカラー](https://m3.material.io/styles/color/dynamic-color/overview)のサポートを搭載
+[Material Design 3](https://m3.material.io/) と[ダイナミックカラー](https://m3.material.io/styles/color/dynamic-color/overview)のサポートを搭載しています。
 
 # ダウンロード
 
