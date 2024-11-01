@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastRoundToInt
 import androidx.compose.ui.util.lerp
 import com.hippo.ehviewer.ui.tools.animateFloatMergeOneWayPredictiveBackAsState
 import kotlin.math.roundToInt
@@ -336,7 +337,12 @@ fun ModalSideDrawer(
         }
         Box(
             modifier = Modifier.offset {
-                IntOffset(drawerState.requireOffset().roundToInt(), 0)
+                val offset = drawerState.currentOffset
+                if (offset.isNaN()) {
+                    IntOffset.Zero
+                } else {
+                    IntOffset(offset.fastRoundToInt(), 0)
+                }
             }.align(Alignment.CenterEnd) then predictiveModifier,
             contentAlignment = Alignment.CenterStart,
         ) {
