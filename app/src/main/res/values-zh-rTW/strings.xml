@@ -118,7 +118,7 @@
     <string name="no_more_previews">已經顯示所有預覽了</string>
     <string name="more_previews">更多預覽</string>
     <string name="refresh">重新整理</string>
-    <string name="refresh_original">重新整理 (原圖)</string>
+    <string name="view_original">查看原圖</string>
     <string name="open_in_other_app">在其他應用程式中開啟</string>
     <string name="clear_image_cache">清除圖片快取</string>
     <string name="clear_image_cache_confirm">為該圖庫清除所有快取圖片？</string>

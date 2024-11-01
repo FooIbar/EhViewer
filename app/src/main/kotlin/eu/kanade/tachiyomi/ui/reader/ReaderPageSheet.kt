@@ -52,7 +52,7 @@ fun ReaderPageSheetMeta(
     Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
         showAds?.let { Item(icon = Icons.Default.Visibility, text = R.string.show_blocked_image, onClick = it) }
         Item(icon = Icons.Default.Refresh, text = R.string.refresh, onClick = retry)
-        Item(icon = Icons.Default.Refresh, text = R.string.refresh_original, onClick = retryOrigin)
+        Item(icon = Icons.Default.Visibility, text = R.string.view_original, onClick = retryOrigin)
         Item(icon = Icons.Default.Share, text = R.string.action_share, onClick = share)
         Item(icon = Icons.Default.FileCopy, text = R.string.action_copy, onClick = copy)
         Item(icon = Icons.Default.Save, text = R.string.action_save, onClick = save)
