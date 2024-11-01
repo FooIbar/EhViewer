@@ -1,5 +1,32 @@
 # 变更日志
 
+## [1.13.0] - 2024-11-01
+
+### 重大变更
+
+* 不再捆绑 Cronet 库，在不支持 HttpEngine 的设备上回退到 OkHttp
+* 适配 E 站缩略图和 WebP 等相关变更
+
+### 改进
+
+* 使用磁力链接代替种子下载
+* 在搜索栏右侧显示论坛头像
+* 支持重置下载路径
+* 为 Android 10 以下且没有 DocumentsUI 的设备创建默认下载目录 [#1735](https://github.com/FooIbar/EhViewer/issues/1735)
+* 重新添加了强制使用 e-hentai 缩略图服务器的选项
+* 阅读器支持 PageUp/PageDown 和方向键上/下翻页 [#1801](https://github.com/FooIbar/EhViewer/issues/1801)
+* 未找到搜索结果时显示可能存在的警告 [#1787](https://github.com/FooIbar/EhViewer/issues/1787)
+* 更新了日本语翻译
+* 杂项优化
+
+### Bug 修复
+
+* 阅读器屏幕方向与手机屏幕方向不同时闪退 [#1779](https://github.com/FooIbar/EhViewer/issues/1779)
+* 下载文件哈希不匹配导致下载失败 [#1811](https://github.com/FooIbar/EhViewer/issues/1811)
+* 无法同时下载和查看 [#1822](https://github.com/FooIbar/EhViewer/issues/1822)
+* 杂项修复
+
+
 ## [1.12.1] - 2024-09-28
 
 ### 新功能

@@ -9,6 +9,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        run: rm -rf $AGENT_TOOLSDIRECTORY
+
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -18,19 +27,8 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Free disk space
-        run: |
-          shopt -s extglob
-          rm -rf ${ANDROID_SDK_ROOT}/ndk/!(27*)
-
-      - name: Enable KVM group perms
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
       - name: Install Rust Toolchain
-        run: rustup update && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android
+        run: rustup default 1.81.0 && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
