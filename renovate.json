@@ -48,16 +48,10 @@
       "groupName": "AGP",
       "matchDepNames": [
         "com.android.application",
+        "com.android.settings",
         "com.android.test"
       ],
-      "allowedVersions": "/^.*-alpha\\d*$/",
-      "ignoreUnstable": false
-    },
-    {
-      "matchDepPrefixes": [
-        "androidx."
-      ],
-      "ignoreUnstable": false
+      "allowedVersions": "/^[\\d.]+(-alpha\\d+)?$/"
     },
     {
       "groupName": "Kotlin & KSP",
