@@ -11,7 +11,6 @@
   正體中文
   </a>
   <span> | </span>
-  <a href="/docs/README/ja-jp.md">
   <strong>日本語</strong>
   </a>
 </p>
