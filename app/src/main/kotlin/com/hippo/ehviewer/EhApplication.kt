@@ -28,6 +28,7 @@ import coil3.SingletonImageLoader
 import coil3.asImage
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
+import coil3.network.ConnectivityChecker
 import coil3.network.NetworkFetcher
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
@@ -160,7 +161,7 @@ class EhApplication :
         interceptorCoroutineContext(Dispatchers.Default)
         components {
             serviceLoaderEnabled(false)
-            add(NetworkFetcher.Factory({ ktorClient.limitConcurrency() }))
+            add(NetworkFetcher.Factory({ ktorClient.limitConcurrency() }) { ConnectivityChecker.ONLINE })
             add(MergeInterceptor)
             add(DownloadThumbInterceptor)
             if (isAtLeastO) {
