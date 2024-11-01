@@ -8,6 +8,10 @@
   </a>
   <span> | </span>
   <strong>正體中文</strong>
+  <span> | </span>
+  <a href="/docs/README/ja-jp.md">
+  日本語
+  </a>
 </p>
 
 <h1 align="center">

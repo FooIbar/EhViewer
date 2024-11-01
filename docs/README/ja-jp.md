@@ -1,16 +1,16 @@
 <p align="right">
-  <a href="/README.md">
   English
-  </a>
   <span> | </span>
-  <strong>简体中文</strong>
+  <a href="/docs/README/zh-cn.md">
+  简体中文
+  </a>
   <span> | </span>
   <a href="/docs/README/zh-tw.md">
   正體中文
   </a>
   <span> | </span>
   <a href="/docs/README/ja-jp.md">
-  日本語
+  <strong>日本語</strong>
   </a>
 </p>
 
@@ -39,53 +39,53 @@
 
 <div align="center">
   <h3>
-    <a href="#描述">
-    描述
+    <a href="#description">
+    説明
     </a>
     <span> | </span>
-    <a href="#下载">
-    下载
+    <a href="#download">
+    ダウンロード
     </a>
     <span> | </span>
-    <a href="#截图">
-    截图
+    <a href="#screenshot">
+    スクリーンショット
     </a>
     <span> | </span>
-    <a href="#感谢">
-    感谢
+    <a href="#thanks">
+    感謝
     </a>
     <span> | </span>
-    <a href="#许可证">
-    许可证
+    <a href="#license">
+    ライセンス
     </a>
   </h3>
 </div>
 
-# 描述
+# 説明
 
-致力于轻量化与良好性能表现的 EhViewer 分支
+軽量で高性能な EhViewer のフォークです。
 
-已针对性适配 Material Design 3 及其动态取色系统
+[Material Design 3](https://m3.material.io/) と[ダイナミックカラー](https://m3.material.io/styles/color/dynamic-color/overview)のサポートを搭載
 
-# 下载
+# ダウンロード
 
-| 变种          | 功能                    |
-|-------------|-----------------------|
-| Default     | Android 8.0+, 完全支持    |
-| Marshmallow | Android 6.0-7.1, 有限支持 |
+| フレーバー    | Feature                          |
+|-------------|----------------------------------|
+| デフォルト    | Android 8.0 以降、完全対応          |
+| Marshmallow | Android 6.0-7.1 一部対応           |
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
 </a>
 
-# 截图
+# スクリーンショット
 
 ![screenshot-01](https://github.com/Ehviewer-Overhauled/Art/blob/master/screenshot-01.png)
 ![screenshot-02](https://github.com/Ehviewer-Overhauled/Art/blob/master/screenshot-02.png)
 
-# 感谢
+# 感謝
 
-本项目受到了诸多开源项目的帮助
+使用しているライブラリ
 
 - [Arrow](https://arrow-kt.io/)
 - [AOSP & AndroidX](https://source.android.com/)
@@ -97,7 +97,7 @@
 - [libarchive](https://www.libarchive.org/)
 - [jsoup](https://jsoup.org/)
 
-# 许可证
+# ライセンス
 
     Copyright 2014-2019 Hippo Seven
     Copyright 2020-2022 NekoInverter
