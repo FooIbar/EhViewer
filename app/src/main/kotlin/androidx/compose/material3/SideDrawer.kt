@@ -288,7 +288,12 @@ fun ModalSideDrawer(
                 }
             },
             fraction = {
-                calculateFraction(maxValue, minValue, drawerState.requireOffset())
+                val offset = drawerState.currentOffset
+                if (offset.isNaN()) {
+                    0f
+                } else {
+                    calculateFraction(maxValue, minValue, drawerState.requireOffset())
+                }
             },
             color = scrimColor,
         )
