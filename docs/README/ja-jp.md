@@ -72,7 +72,7 @@
 | フレーバー    | 機能                          |
 |-------------|----------------------------------|
 | デフォルト    | Android 8.0 以降、完全対応          |
-| Marshmallow | Android 6.0-7.1 一部対応           |
+| Marshmallow | Android 6.0-7.1、一部対応           |
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
