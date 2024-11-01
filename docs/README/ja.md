@@ -1,5 +1,7 @@
 <p align="right">
-  <strong>English</strong>
+  <a href="/README.md">
+  English
+  </a>
   <span> | </span>
   <a href="/docs/README/zh-cn.md">
   简体中文
@@ -9,8 +11,7 @@
   正體中文
   </a>
   <span> | </span>
-  <a href="/docs/README/ja.md">
-  日本語
+  <strong>日本語</strong>
   </a>
 </p>
 
@@ -39,54 +40,53 @@
 
 <div align="center">
   <h3>
-    <a href="#description">
-    Description
+    <a href="#説明">
+    説明
     </a>
     <span> | </span>
-    <a href="#download">
-    Download
+    <a href="#ダウンロード">
+    ダウンロード
     </a>
     <span> | </span>
-    <a href="#screenshot">
-    Screenshot
+    <a href="#スクリーンショット">
+    スクリーンショット
     </a>
     <span> | </span>
-    <a href="#thanks">
-    Thanks
+    <a href="#感謝">
+    感謝
     </a>
     <span> | </span>
-    <a href="#license">
-    License
+    <a href="#ライセンス">
+    ライセンス
     </a>
   </h3>
 </div>
 
-# Description
+# 説明
 
-EhViewer fork dedicated to lightweight and high-performance
+軽量で高性能な EhViewer のフォークです。
 
-with [Material Design 3](https://m3.material.io/)
-and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) Support
+[Material Design 3](https://m3.material.io/) と[ダイナミックカラー](https://m3.material.io/styles/color/dynamic-color/overview)のサポートを搭載しています。
 
-# Download
+# ダウンロード
 
-| Flavor      | Minimum Android Version | Notes                                     |
+| フレーバー      | 最小の Android バージョン | 注意事項                                     |
 |-------------|-------------------------|-------------------------------------------|
-| Default     | 8.0                     | Animated WebP support requires Android 9+ |
-| Marshmallow | 6.0                     | Limited support, no guarantees            |
+| Default     | 8.0                     | アニメーション WebP のサポートは Android 9 以降が必要です |
+| Marshmallow | 6.0                     | サポートは限定的、保証はできません            |
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
 </a>
 
-# Screenshot
+# スクリーンショット
 
 ![screenshot-01](https://github.com/Ehviewer-Overhauled/Art/blob/master/screenshot-01.png)
 ![screenshot-02](https://github.com/Ehviewer-Overhauled/Art/blob/master/screenshot-02.png)
 
-# Thanks
+# 感謝
 
-Here is the libraries
+使用しているライブラリ
 
 - [Arrow](https://arrow-kt.io/)
 - [AOSP & AndroidX](https://source.android.com/)
@@ -98,7 +98,7 @@ Here is the libraries
 - [libarchive](https://www.libarchive.org/)
 - [jsoup](https://jsoup.org/)
 
-# License
+# ライセンス
 
     Copyright 2014-2019 Hippo Seven
     Copyright 2020-2022 NekoInverter

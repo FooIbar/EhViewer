@@ -57,7 +57,7 @@
     <string name="error_password_cannot_empty">パスワードは空欄にできません</string>
     <string name="guest_mode">ゲストモード</string>
     <string name="sign_in_failed">ログインに失敗しました</string>
-    <string name="sign_in_failed_tip">この問題が続く場合は、「%s」をお試しください。</string>
+    <string name="sign_in_failed_tip">この問題が続く場合は「%s」をお試しください。</string>
     <string name="get_it">了解</string>
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">ExHentai を検索</string>
@@ -93,11 +93,11 @@
     <string name="add_quick_search_tip">ギャラリー検索結果の設定などはクイック検索として保存されます。検索の設定などを保存するには、まず検索を実行してください。</string>
     <string name="readme">README</string>
     <string name="image_search_not_quick_search">画像検索をクイック検索として追加できませんでした</string>
-    <string name="duplicate_quick_search">「%s」というクイック検索は既に存在しています。</string>
+    <string name="duplicate_quick_search">「%s」のクイック検索は既に存在しています。</string>
     <string name="duplicate_name">この名前は既に使用されています。</string>
     <string name="save_progress">進捗を保存</string>
     <string name="delete_quick_search">クイック検索の「%s」を削除しますか？</string>
-    <string name="go_to_hint">ページ %1$d、合計 %2$d ページ</string>
+    <string name="go_to_hint">ページ: %1$d - 合計: %2$d ページ</string>
     <!-- search_min_rating -->
     <string name="any">すべて</string>
     <string name="star_2">2 つ星</string>
@@ -108,7 +108,7 @@
     <string name="download">ダウンロード</string>
     <string name="read">読む</string>
     <string name="favored_times">\u2665 %d</string>
-    <string name="rating_text">%1$s (%2$.2f, %3$d)</string>
+    <string name="rating_text">%1$s (%2$.2f - %3$d)</string>
     <string name="torrent_count">Torrent (%d)</string>
     <string name="share">共有</string>
     <string name="rate">評価</string>
@@ -221,11 +221,11 @@
     <string name="stat_509_alert_title">509 アラート</string>
     <string name="stat_509_alert_text">ダウンロード制限に達しました。しばらくしてからもう一度やり直してください。</string>
     <string name="stat_download_done_title">ダウンロード完了</string>
-    <string name="stat_download_done_text_succeeded">%d 件のダウンロードが完了済み</string>
-    <string name="stat_download_done_text_failed">%d 件のダウンロードに失敗しました</string>
-    <string name="stat_download_done_text_mix">%1$d 件のダウンロードが完了済み、%2$d 件が失敗</string>
-    <string name="stat_download_done_line_succeeded">ダウンロード完了: %s</string>
-    <string name="stat_download_done_line_failed">ダウンロード失敗: %s</string>
+    <string name="stat_download_done_text_succeeded">%d 件が成功</string>
+    <string name="stat_download_done_text_failed">%d 件が失敗</string>
+    <string name="stat_download_done_text_mix">%1$d 件のダウンロードが成功、%2$d 件が失敗</string>
+    <string name="stat_download_done_line_succeeded">成功: %s</string>
+    <string name="stat_download_done_line_failed">失敗: %s</string>
     <string name="download_remove_dialog_title">ダウンロードを削除</string>
     <string name="download_remove_dialog_message">ダウンロードリストから「%s」を削除しますか？</string>
     <string name="download_remove_dialog_message_2">ダウンロードリストから %d 件のタスクを削除しますか？</string>
@@ -240,7 +240,7 @@
     <string name="reset_reading_progress_message">すべてのダウンロード済みのギャラリーの閲覧進捗をリセットしますか？</string>
     <string name="download_service_label">EhViewer ダウンロードサービス</string>
     <string name="download_speed_text">%s</string>
-    <string name="download_speed_text_2">%1$s - 残り %2$s</string>
+    <string name="download_speed_text_2">%1$s - 残り: %2$s</string>
     <string name="remember_download_label">ダウンロードラベルを記憶</string>
     <string name="default_download_label">デフォルトのダウンロードラベル</string>
     <string name="added_to_download_list">ダウンロードリストに追加しました</string>
@@ -285,9 +285,9 @@
     <string name="image_saved">画像は「%s」に保存されました</string>
     <string name="settings_eh">EH</string>
     <string name="settings_eh_sign_out">ログアウト</string>
-    <string name="settings_eh_identity_cookies_signed">下記の情報は誰でもこのアカウントにログインできますので&lt;br&gt;&lt;b&gt;絶対に他人に渡さないように！&lt;/b&gt;</string>
+    <string name="settings_eh_identity_cookies_signed">このアカウントは Identity Cookie を使用してログインできます。&lt;br&gt;&lt;b&gt;これは安全に保管してください&lt;/b&gt;</string>
     <string name="settings_eh_identity_cookies_guest">ゲストモード</string>
-    <string name="settings_eh_clear_igneous">アイジニアスを消去</string>
+    <string name="settings_eh_clear_igneous">Igneous を消去</string>
     <string name="settings_u_config">E-Hentai の設定</string>
     <string name="settings_u_config_summary">E-Hentai ウェブサイト内の設定をします</string>
     <string name="settings_my_tags">マイタグ</string>
@@ -304,7 +304,7 @@
     <string name="settings_eh_thumb_resolution">サムネイル解像度</string>
     <string name="settings_eh_thumb_resolution_summary">現在の解像度は「%s」です。解像度によってはサムネイルの取得に失敗する場合があります。</string>
     <string name="settings_eh_thumb_resolution_auto">自動</string>
-    <string name="settings_eh_force_eh_thumb">E-hentai サムネイルサーバーを使用する</string>
+    <string name="settings_eh_force_eh_thumb">E-Hentai サムネイルサーバーを使用する</string>
     <string name="settings_eh_force_eh_thumb_summary">サムネイルの読み込みに問題がある場合は無効化してください</string>
     <string name="settings_eh_show_jpn_title">日本語のタイトルを表示</string>
     <string name="settings_eh_show_jpn_title_summary">E-Hentai ウェブサイトの設定で日本語のタイトルを有効化する必要があります</string>
@@ -319,7 +319,7 @@
     <string name="settings_eh_tag_translations_source">プレースホルダー</string>
     <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
     <string name="settings_eh_filter">ギャラリーをブロック</string>
-    <string name="settings_eh_filter_summary">タイトル、アップローダー、またはタグで望ましくないギャラリーを除外します</string>
+    <string name="settings_eh_filter_summary">タイトル、アップローダー、タグ、コメントの投稿者またはギャラリーをブロックします</string>
     <string name="settings_read_volume_page">音量ボタンでページをめくる</string>
     <string name="settings_read_volume_page_fast">高速</string>
     <string name="settings_read_volume_page_slow">低速</string>
@@ -327,11 +327,11 @@
     <string name="settings_block_extraneous_ads">[試験的] 関係のない広告をブロック</string>
     <string name="settings_ads_placeholder">[任意] 広告を置換するプレースホルダーを選択</string>
     <string name="settings_download">ダウンロード</string>
-    <string name="settings_download_download_location">ダウンロードパス</string>
-    <string name="settings_download_cant_get_download_location">ダウンロードパスを取得できない</string>
+    <string name="settings_download_download_location">ダウンロード先</string>
+    <string name="settings_download_cant_get_download_location">ダウンロード先を取得できません</string>
     <string name="settings_download_media_scan">メディアスキャンを許可する</string>
     <string name="settings_download_media_scan_summary_on">ギャラリーアプリで他の人に見せないようにします</string>
-    <string name="settings_download_media_scan_summary_off">ほとんどのギャラリーアプリでダウンロードパスを無視します</string>
+    <string name="settings_download_media_scan_summary_off">ほとんどのギャラリーアプリでダウンロード先のパスを無視します</string>
     <string name="settings_download_concurrency">ダウンロードのスレッド数</string>
     <string name="settings_download_concurrency_summary">同時に最大 %s 枚の画像をダウンロードします</string>
     <string name="settings_download_download_delay">ダウンロードの遅延</string>
@@ -366,7 +366,7 @@
     <string name="settings_advanced_dump_logcat_summary">Logcat のログを内部ストレージに保存します</string>
     <string name="settings_advanced_dump_logcat_failed">Logcat のダンプに失敗しました</string>
     <string name="settings_advanced_dump_logcat_to">Logcat のログが「%s」にダンプされました</string>
-    <string name="settings_advanced_read_cache_size">閲覧キャッシュのサイズ</string>
+    <string name="settings_advanced_read_cache_size">読書用キャッシュのサイズ</string>
     <string name="settings_advanced_app_language_title">アプリの言語</string>
     <string name="settings_advanced_hardware_bitmap_threshold">ハードウェアビットマップ (パフォーマンス向上) のしきい値</string>
     <string name="settings_advanced_hardware_bitmap_threshold_summary">長い画像の読み込みに失敗する場合はこれを減らしてみてください</string>
@@ -437,7 +437,7 @@
     <string name="reset">リセット</string>
     <string name="settings_privacy">プライバシー</string>
     <string name="settings_privacy_secure">スクリーンショットを抑制する</string>
-    <string name="settings_privacy_secure_summary">アプリのコンテンツがスクリーンショットで撮影されたり「最近使用したアプリ」のリストに表示されないようにします。</string>
+    <string name="settings_privacy_secure_summary">アプリのコンテンツがスクリーンショットで撮影されたり「最近使用したアプリ」のリストに表示されないようにします</string>
     <string name="clear_search_history">デバイスの検索履歴を消去</string>
     <string name="clear_search_history_summary">このデバイスから検索履歴を消去します</string>
     <string name="clear_search_history_confirm">検索履歴を消去しますか？</string>
