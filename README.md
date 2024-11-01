@@ -66,10 +66,10 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 
 # Download
 
-| Flavor      | Feature                          |
-|-------------|----------------------------------|
-| Default     | Android 8.0+, full support       |
-| Marshmallow | Android 6.0-7.1, limited support |
+| Flavor      | Minimum Android Version | Notes                                     |
+|-------------|-------------------------|-------------------------------------------|
+| Default     | 8.0                     | Animated WebP support requires Android 9+ |
+| Marshmallow | 6.0                     | Limited support, no guarantees            |
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>

@@ -65,10 +65,10 @@
 
 # 下载
 
-| 变种          | 功能                    |
-|-------------|-----------------------|
-| Default     | Android 8.0+, 完全支持    |
-| Marshmallow | Android 6.0-7.1, 有限支持 |
+| 变种          | 最低 Android 版本 | 备注                      |
+|-------------|---------------|-------------------------|
+| Default     | 8.0           | 动画 WebP 支持需要 Android 9+ |
+| Marshmallow | 6.0           | 有限支持，无保证                |
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
