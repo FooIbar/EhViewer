@@ -9,7 +9,7 @@
   <span> | </span>
   <strong>正體中文</strong>
   <span> | </span>
-  <a href="/docs/README/ja-jp.md">
+  <a href="/docs/README/ja.md">
   日本語
   </a>
 </p>
