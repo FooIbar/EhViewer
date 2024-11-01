@@ -9,7 +9,6 @@
   正體中文
   </a>
   <span> | </span>
-  <a href="/docs/README/ja-jp.md">
   <strong>日本語</strong>
   </a>
 </p>
@@ -39,23 +38,23 @@
 
 <div align="center">
   <h3>
-    <a href="#description">
+    <a href="#説明">
     説明
     </a>
     <span> | </span>
-    <a href="#download">
+    <a href="#ダウンロード">
     ダウンロード
     </a>
     <span> | </span>
-    <a href="#screenshot">
+    <a href="#スクリーンショット">
     スクリーンショット
     </a>
     <span> | </span>
-    <a href="#thanks">
+    <a href="#感謝">
     感謝
     </a>
     <span> | </span>
-    <a href="#license">
+    <a href="#ライセンス">
     ライセンス
     </a>
   </h3>
@@ -69,10 +68,10 @@
 
 # ダウンロード
 
-| フレーバー    | Feature                          |
+| フレーバー    | 機能                          |
 |-------------|----------------------------------|
-| Default    | Android 8.0 以降、完全対応          |
-| Marshmallow | Android 6.0-7.1 一部対応           |
+| Default    | アニメーション WebP のサポートは Android 9 以降が必要です          |
+| Marshmallow | サポートは限定的、保証はできません           |
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
