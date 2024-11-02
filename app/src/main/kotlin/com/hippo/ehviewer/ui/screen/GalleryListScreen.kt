@@ -267,6 +267,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                     headlineContent = {
                         Text(text = name)
                     },
+                    colors = listItemOnDrawerColor(),
                 )
             }
         }
@@ -437,6 +438,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                             Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
                                         }
                                     },
+                                    colors = listItemOnDrawerColor(),
                                 )
                             }
                         }

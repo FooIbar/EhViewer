@@ -314,6 +314,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     headlineContent = {
                         Text("$allName [$totalCount]")
                     },
+                    colors = listItemOnDrawerColor(),
                 )
             }
             item {
@@ -327,6 +328,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     headlineContent = {
                         Text("$emptyLabelName [${downloadsCount.getOrDefault(null, 0)}]")
                     },
+                    colors = listItemOnDrawerColor(),
                 )
             }
 
@@ -431,6 +433,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                     }
                                 }
                             },
+                            colors = listItemOnDrawerColor(),
                         )
                     }
                 }
