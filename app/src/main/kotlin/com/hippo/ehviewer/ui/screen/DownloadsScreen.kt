@@ -218,6 +218,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         TopAppBar(
             title = { Text(text = labelsStr) },
             windowInsets = EmptyWindowInsets,
+            colors = topBarOnDrawerColor(),
             actions = {
                 if (DownloadsFilterMode.CUSTOM == filterMode) {
                     IconButton(
@@ -314,6 +315,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     headlineContent = {
                         Text("$allName [$totalCount]")
                     },
+                    colors = listItemOnDrawerColor(),
                 )
             }
             item {
@@ -327,6 +329,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     headlineContent = {
                         Text("$emptyLabelName [${downloadsCount.getOrDefault(null, 0)}]")
                     },
+                    colors = listItemOnDrawerColor(),
                 )
             }
 
@@ -431,6 +434,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                     }
                                 }
                             },
+                            colors = listItemOnDrawerColor(),
                         )
                     }
                 }

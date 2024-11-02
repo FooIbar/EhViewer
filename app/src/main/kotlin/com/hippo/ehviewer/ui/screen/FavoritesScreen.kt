@@ -188,6 +188,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         TopAppBar(
             title = { Text(text = stringResource(id = R.string.collections)) },
             windowInsets = EmptyWindowInsets,
+            colors = topBarOnDrawerColor(),
         )
         val scope = currentRecomposeScope
         LaunchedEffect(Unit) {
@@ -219,6 +220,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                         Settings.recentFavCat = newCat
                         launch { sheetState.close() }
                     },
+                    colors = listItemOnDrawerColor(),
                 )
             }
         }
