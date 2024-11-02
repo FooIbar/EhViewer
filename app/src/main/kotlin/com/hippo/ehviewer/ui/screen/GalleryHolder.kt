@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -85,17 +82,6 @@ private fun controlledInteractionSource(enabled: Boolean): MutableInteractionSou
         }
     }
 }
-
-@Composable
-fun listItemOnDrawerColor() = ListItemDefaults.colors(
-    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-)
-
-@Composable
-fun topBarOnDrawerColor() = TopAppBarDefaults.topAppBarColors(
-    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-)
 
 private val enter = HoverInteraction.Enter()
 private val exit = HoverInteraction.Exit(enter)
