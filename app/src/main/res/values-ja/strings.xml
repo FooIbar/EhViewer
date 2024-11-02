@@ -33,15 +33,15 @@
     <string name="text_is_empty">テキストを入力してください</string>
     <string name="waring">警告</string>
     <string name="invalid_download_location">ダウンロードパスは現在利用できません。ダウンロードパスを設定してください。</string>
-    <string name="clipboard_gallery_url_snack_message">クリップボードにはギャラリーURLが検出されました。</string>
-    <string name="clipboard_gallery_url_snack_action">移動</string>
+    <string name="clipboard_gallery_url_snack_message">クリップボードからギャラリーの URL が検出されました。</string>
+    <string name="clipboard_gallery_url_snack_action">表示</string>
     <string name="error_timeout">タイムアウト</string>
     <string name="error_unknown_host">不明なホスト</string>
     <string name="error_redirection">リダイレクトが多すぎます</string>
     <string name="error_socket">ネットワークエラー</string>
     <string name="error_unknown">不明なエラー</string>
     <string name="error_cant_find_activity">アクティビティが見つかりません。</string>
-    <string name="error_cannot_parse_the_url">リンクを解析できません。</string>
+    <string name="error_cannot_parse_the_url">リンクを解析できません</string>
     <string name="error_decoding_failed">デコードに失敗しました</string>
     <string name="error_reading_failed">読み込めませんでした</string>
     <string name="error_out_of_range">範囲外</string>
@@ -93,8 +93,8 @@
     <string name="add_quick_search_tip">ギャラリー検索結果の設定などはクイック検索として保存されます。検索の設定などを保存するには、まず検索を実行してください。</string>
     <string name="readme">README</string>
     <string name="image_search_not_quick_search">画像検索をクイック検索として追加できませんでした</string>
-    <string name="duplicate_quick_search">「%s」のクイック検索は既に存在しています。</string>
-    <string name="duplicate_name">この名前は既に使用されています。</string>
+    <string name="duplicate_quick_search">「%s」のクイック検索はすでに存在しています。</string>
+    <string name="duplicate_name">この名前はすでに使用されています。</string>
     <string name="save_progress">進捗を保存</string>
     <string name="delete_quick_search">クイック検索の「%s」を削除しますか？</string>
     <string name="go_to_hint">ページ: %1$d - 合計: %2$d ページ</string>
@@ -253,7 +253,7 @@
     <string name="new_label_title">ラベルを作成</string>
     <string name="label_text_is_empty">ラベルテキストを入力してください</string>
     <string name="label_text_is_invalid">「デフォルト」は無効なラベルです</string>
-    <string name="label_text_exist">ラベルは既に存在しています</string>
+    <string name="label_text_exist">ラベルはすでに存在しています</string>
     <string name="rename_label_title">ラベルの名前を変更</string>
     <string name="delete_label">「%s」のラベルを削除しますか？</string>
     <!-- History -->
