@@ -255,6 +255,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.toplist)) },
                 windowInsets = EmptyWindowInsets,
+                colors = topBarOnDrawerColor(),
             )
             toplists.forEach { (name, keyword) ->
                 ListItem(
@@ -275,6 +276,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         ProvideSideSheetContent { sheetState ->
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.quick_search)) },
+                colors = topBarOnDrawerColor(),
                 actions = {
                     IconButton(onClick = {
                         launch {

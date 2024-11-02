@@ -218,6 +218,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         TopAppBar(
             title = { Text(text = labelsStr) },
             windowInsets = EmptyWindowInsets,
+            colors = topBarOnDrawerColor(),
             actions = {
                 if (DownloadsFilterMode.CUSTOM == filterMode) {
                     IconButton(
