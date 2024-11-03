@@ -40,6 +40,7 @@ import arrow.core.Option
 import arrow.core.none
 import arrow.core.some
 import coil3.compose.AsyncImage
+import coil3.network.HttpException
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -180,7 +181,7 @@ fun AvatarIcon() {
                     AsyncImage(
                         model = avatar,
                         contentDescription = null,
-                        onError = { launchIO { refreshAccountInfo() } },
+                        onError = { (_, e) -> if ((e.throwable as? HttpException)?.response?.code == 404) launchIO { refreshAccountInfo() } },
                         modifier = Modifier.clip(CircleShape),
                         contentScale = ContentScale.Crop,
                     )
