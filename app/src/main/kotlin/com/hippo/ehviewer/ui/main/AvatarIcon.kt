@@ -46,6 +46,7 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
+import com.hippo.ehviewer.ui.login.refreshAccountInfo
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -179,6 +180,7 @@ fun AvatarIcon() {
                     AsyncImage(
                         model = avatar,
                         contentDescription = null,
+                        onError = { launchIO { refreshAccountInfo() } },
                         modifier = Modifier.clip(CircleShape),
                         contentScale = ContentScale.Crop,
                     )
