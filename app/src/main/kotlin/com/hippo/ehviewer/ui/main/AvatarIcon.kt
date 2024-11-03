@@ -181,7 +181,12 @@ fun AvatarIcon() {
                     AsyncImage(
                         model = avatar,
                         contentDescription = null,
-                        onError = { (_, e) -> if ((e.throwable as? HttpException)?.response?.code == 404) launchIO { refreshAccountInfo() } },
+                        onError = { (_, r) ->
+                            val e = r.throwable
+                            if (e is HttpException && e.response.code == 404) {
+                                launchIO { refreshAccountInfo() }
+                            }
+                        },
                         modifier = Modifier.clip(CircleShape),
                         contentScale = ContentScale.Crop,
                     )
