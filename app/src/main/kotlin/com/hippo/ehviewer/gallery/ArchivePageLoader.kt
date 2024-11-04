@@ -56,7 +56,7 @@ suspend fun <T> useArchivePageLoader(
             { openArchive(pfd.fd, pfd.statSize, gid == 0L || file.name.endsWith(".zip")) },
             { _, _ -> closeArchive() },
         )
-        check(size >= 0) { "Archive have no content!" }
+        check(size > 0) { "Archive have no content!" }
         if (needPassword() && archivePasswds.filterNotNull().none { providePassword(it) }) {
             archivePasswds += passwdProvider { providePassword(it) }
         }
