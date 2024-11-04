@@ -175,10 +175,12 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 useSelectedAsSummary = true,
                 entries = languages,
             )
-            if (BuildConfig.DEBUG) {
-                SwitchPreference(
+            var enableCronet by Settings.enableCronet.asMutableState()
+            if (BuildConfig.DEBUG || !enableCronet) {
+                SwitchPref(
+                    checked = enableCronet,
+                    onMutate = { enableCronet = !enableCronet },
                     title = "Enable Cronet",
-                    value = Settings::enableCronet,
                 )
             }
             if (isAtLeastO) {

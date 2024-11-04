@@ -45,7 +45,8 @@ typedef struct {
 typedef struct {
     const char *filename;
     int index;
-    size_t size;
+    ssize_t size;
+    void *addr;
 } entry;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -117,14 +118,29 @@ static inline int compare_entries(const void *a, const void *b) {
     return strnatcmp(fa, fb);
 }
 
+#define ADDR_IN_FILE_MAPPING(addr) (addr >= archiveAddr && addr < archiveAddr + archiveSize)
+
+static bool fill_entry_zero_copy(struct archive *arc, entry *entry) {
+    void *buffer = NULL;
+    size_t buffer_size = 0;
+    la_int64_t output_ofs = 0;
+    archive_read_data_block(arc, (const void **) &buffer, &buffer_size, &output_ofs);
+    bool zero_copy = ADDR_IN_FILE_MAPPING(buffer) && !output_ofs && buffer_size == entry->size;
+    entry->addr = zero_copy ? buffer : NULL;
+    return zero_copy;
+}
+
 static int archive_map_entries_index(archive_ctx *ctx, bool sort) {
     int count = 0;
+    bool zero_copy = true;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK) {
         const char *name = archive_entry_pathname2(ctx->entry);
         if (archive_entry_is_file(ctx->entry) && filename_is_playable_file(name)) {
             entries[count].filename = strdup(name);
             entries[count].index = count;
             entries[count].size = archive_entry_size(ctx->entry);
+            // We don't expect zero copy if first content can't do zero copy
+            if (zero_copy) zero_copy = fill_entry_zero_copy(ctx->arc, &entries[count]);
             count++;
         }
     }
@@ -148,8 +164,6 @@ static bool archive_prealloc_mempool() {
     }
     return true;
 }
-
-#define ADDR_IN_FILE_MAPPING(addr) (addr >= archiveAddr && addr < archiveAddr + archiveSize)
 
 static void mempool_release_pages(void *addr, size_t size) {
     size = PAGE_ALIGN(size);
@@ -359,39 +373,29 @@ JNIEXPORT jobject JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass thiz, jint index) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
-    void *addr = MEMPOOL_ADDR_BY_SORTED_IDX(index);
-    size_t size = entries[index].size;
-    index = entries[index].index;
-    archive_ctx *ctx = NULL;
-    int ret = archive_get_ctx(&ctx, index);
-    if (ret) return 0;
-    void *buffer = NULL;
-    size_t buffer_size = 0;
-    la_int64_t output_ofs = 0;
-    archive_read_data_block(ctx->arc, (const void **) &buffer, &buffer_size, &output_ofs);
-    bool zero_copy = ADDR_IN_FILE_MAPPING(buffer) && !output_ofs && buffer_size == size;
-    if (zero_copy) {
-        ctx->using = 0;
-        return (*env)->NewDirectByteBuffer(env, buffer, buffer_size);
+    entry *entry = &entries[index];
+    ssize_t size = entry->size;
+    if (entry->addr) {
+        return (*env)->NewDirectByteBuffer(env, entry->addr, size);
     } else {
-        size_t bytes = 0;
-        mempool_prefault_pages(addr, size);
-        do {
-            memcpy(addr + output_ofs, buffer, buffer_size);
-            bytes += buffer_size;
-            ret = archive_read_data_block(ctx->arc, (const void **) &buffer, &buffer_size, &output_ofs);
-        } while (bytes != size && !ret);
-        ctx->using = 0;
-        if (bytes == size) {
-            return (*env)->NewDirectByteBuffer(env, addr, size);
-        } else {
-            if (ret < 0) {
-                LOGE("%s%s", "Archive read failed:", archive_error_string(ctx->arc));
+        void *addr = MEMPOOL_ADDR_BY_SORTED_IDX(index);
+        index = entry->index;
+        archive_ctx *ctx = NULL;
+        if (!archive_get_ctx(&ctx, index)) {
+            mempool_prefault_pages(addr, size);
+            ssize_t bytes = archive_read_data(ctx->arc, addr, size);
+            ctx->using = 0;
+            if (bytes == size) {
+                return (*env)->NewDirectByteBuffer(env, addr, size);
             } else {
-                LOGE("%s", "No enough data read, WTF?");
+                if (bytes < 0) {
+                    LOGE("%s%s", "Archive read failed:", archive_error_string(ctx->arc));
+                } else {
+                    LOGE("%s", "No enough data read, WTF?");
+                }
             }
+            mempool_release_pages(addr, size);
         }
-        mempool_release_pages(addr, size);
     }
     return 0;
 }
@@ -515,7 +519,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_archiveFdBatch(JNIEnv *env, jclass clazz, 
         archive_entry_copy_stat(entry, &st);
         archive_entry_set_perm(entry, 0644);
         archive_write_header(arc, entry);
-        int len;
+        size_t len;
         do {
             len = read(fd, buff, sizeof(buff));
             archive_write_data(arc, buff, len);
