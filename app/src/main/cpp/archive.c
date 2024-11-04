@@ -379,7 +379,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
         return (*env)->NewDirectByteBuffer(env, entry->addr, size);
     } else {
         void *addr = MEMPOOL_ADDR_BY_SORTED_IDX(index);
-        index = entries[index].index;
+        index = entry->index;
         archive_ctx *ctx = NULL;
         if (!archive_get_ctx(&ctx, index)) {
             mempool_prefault_pages(addr, size);
