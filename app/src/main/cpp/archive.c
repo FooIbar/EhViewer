@@ -152,7 +152,7 @@ static int archive_map_entries_index(archive_ctx *ctx, bool sort) {
 static void archive_prealloc_mempool() {
     mempoolofs = calloc(entryCount, sizeof(size_t));
     for (int i = 0; i < entryCount; ++i) {
-        mempoolofs[i] = PAGE_ALIGN(entries[i].size) + i ? mempoolofs[i - 1] : 0;
+        mempoolofs[i] = PAGE_ALIGN(entries[i].size) + (i ? mempoolofs[i - 1] : 0);
     }
     mempool = mmap(0, MEMPOOL_SIZE, PROT_RW, MAP_ANON_POOL, -1, 0);
     if (mempool == MAP_FAILED) {
