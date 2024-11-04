@@ -4,6 +4,7 @@ package com.hippo.ehviewer.ktor
 
 import android.net.http.HttpEngine
 import android.net.http.HttpException
+import android.net.http.NetworkException
 import android.net.http.UploadDataProvider
 import android.net.http.UploadDataSink
 import android.net.http.UrlRequest
@@ -11,6 +12,7 @@ import android.net.http.UrlResponseInfo
 import android.os.Build
 import androidx.annotation.RequiresExtension
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.util.restartApplication
 import io.ktor.client.engine.HttpClientEngineBase
 import io.ktor.client.engine.callContext
 import io.ktor.client.plugins.HttpTimeoutCapability
@@ -39,6 +41,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.job
 import kotlinx.coroutines.suspendCancellableCoroutine
+import splitties.preferences.edit
 
 class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cronet") {
     // Limit thread to 1 since we are async & non-blocking
@@ -103,8 +106,11 @@ class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cr
             override fun onFailed(request: UrlRequest, info: UrlResponseInfo?, error: HttpException) {
                 // Cronet may crash on some devices, fuck xiaomi
                 // https://github.com/FooIbar/EhViewer/issues/1826
-                if (error.message?.contains("ERR_FILE_NOT_FOUND") == true) {
-                    Settings.enableCronet = false
+                if (error is NetworkException && error.errorCode == NetworkException.ERROR_OTHER) {
+                    Settings.edit(true) {
+                        enableCronet.value = false
+                    }
+                    config.context.restartApplication()
                 }
                 if (continuation.isActive) {
                     continuation.resumeWithException(error)
