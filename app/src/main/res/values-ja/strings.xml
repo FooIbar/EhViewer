@@ -427,8 +427,8 @@
     <string name="archive_original">オリジナル</string>
     <string name="archive_resample">リサンプル</string>
     <string name="download_archive_failure_no_hath">アーカイブのダウンロードは H@H クライアントが必要です</string>
-    <string name="current_funds">現在の Fund:</string>
-    <string name="insufficient_funds">Fund が不足しています</string>
+    <string name="current_funds">現在の資金:</string>
+    <string name="insufficient_funds">資金が不足しています</string>
     <string name="image_limits">画像の制限</string>
     <string name="image_limits_summary">使用中: </string>
     <string name="image_limits_normal">制限なし</string>
