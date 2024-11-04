@@ -204,7 +204,13 @@ static archive_ctx *archive_alloc_ctx() {
     archive_read_set_option(ctx->arc, "zip", "ignorecrc32", "1");
     if (passwd)
         archive_read_add_passphrase(ctx->arc, passwd);
-    archive_read_open_memory(ctx->arc, archiveAddr, archiveSize);
+    int err = archive_read_open_memory(ctx->arc, archiveAddr, archiveSize);
+    if (err < ARCHIVE_OK) {
+        LOGE("%s%s", "Open archive failed: ", archive_error_string(ctx->arc));
+        archive_read_free(ctx->arc);
+        free(ctx);
+        return NULL;
+    }
     return ctx;
 }
 
@@ -287,10 +293,11 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
     archiveSize = size;
     ctx_pool = calloc(CTX_POOL_SIZE, sizeof(archive_ctx **));
     ctx = archive_alloc_ctx();
+    if (!ctx) return 0;
+
     entryCount = archive_list_all_entries(ctx);
-    LOGI("%s%zu%s", "Found ", entryCount, " image entries in archive");
+    LOGI("%s%zu%s", "Found ", entryCount, " images in archive");
     if (!entryCount) {
-        LOGE("%s%s", "Archive open failed:", archive_error_string(ctx->arc));
         archive_release_ctx(ctx);
         return 0;
     }
@@ -317,7 +324,6 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
             break;
         default:;
     }
-
     archive_release_ctx(ctx);
 
     ctx = archive_alloc_ctx();
