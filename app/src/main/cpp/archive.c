@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Tarsin Norbin
+ * Copyright 2022-2024 Tarsin Norbin
  *
  * This file is part of EhViewer
  *
@@ -149,20 +149,16 @@ static int archive_map_entries_index(archive_ctx *ctx, bool sort) {
     return count;
 }
 
-static bool archive_prealloc_mempool() {
+static void archive_prealloc_mempool() {
     mempoolofs = calloc(entryCount, sizeof(size_t));
     for (int i = 0; i < entryCount; ++i) {
-        if (!i)
-            mempoolofs[i] = PAGE_ALIGN(entries[i].size);
-        else
-            mempoolofs[i] = PAGE_ALIGN(entries[i].size) + mempoolofs[i - 1];
+        mempoolofs[i] = PAGE_ALIGN(entries[i].size) + i ? mempoolofs[i - 1] : 0;
     }
     mempool = mmap(0, MEMPOOL_SIZE, PROT_RW, MAP_ANON_POOL, -1, 0);
     if (mempool == MAP_FAILED) {
         LOGE("%s%s", "mmap failed with error ", strerror(errno));
-        return false;
+        abort();
     }
-    return true;
 }
 
 static void mempool_release_pages(void *addr, size_t size) {
@@ -195,18 +191,10 @@ static void archive_release_ctx(archive_ctx *ctx) {
     }
 }
 
-static int archive_alloc_ctx(archive_ctx **ctxptr) {
-    archive_ctx *ctx;
-    int err;
-    ctx = calloc(1, sizeof(archive_ctx));
-    if (!ctx)
-        return -ENOMEM;
+static archive_ctx *archive_alloc_ctx() {
+    archive_ctx *ctx = calloc(1, sizeof(archive_ctx));
     ctx->arc = archive_read_new();
     ctx->using = 1;
-    if (!ctx->arc) {
-        free(ctx);
-        return -ENOMEM;
-    }
     archive_read_support_format_tar(ctx->arc);
     archive_read_support_format_7zip(ctx->arc);
     archive_read_support_format_rar5(ctx->arc);
@@ -216,14 +204,14 @@ static int archive_alloc_ctx(archive_ctx **ctxptr) {
     archive_read_set_option(ctx->arc, "zip", "ignorecrc32", "1");
     if (passwd)
         archive_read_add_passphrase(ctx->arc, passwd);
-    err = archive_read_open_memory(ctx->arc, archiveAddr, archiveSize);
-    if (err) {
+    int err = archive_read_open_memory(ctx->arc, archiveAddr, archiveSize);
+    if (err < ARCHIVE_OK) {
+        LOGE("%s%s", "Open archive failed: ", archive_error_string(ctx->arc));
         archive_read_free(ctx->arc);
         free(ctx);
-        return err;
+        return NULL;
     }
-    *ctxptr = ctx;
-    return 0;
+    return ctx;
 }
 
 static int archive_skip_to_index(archive_ctx *ctx, int index) {
@@ -261,9 +249,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
         archive_ctx *victimCtx = NULL;
         int victimIdx = 0;
         int replace = 1;
-        ret = archive_alloc_ctx(&ctx);
-        if (ret)
-            return ret;
+        ctx = archive_alloc_ctx();
         pthread_mutex_lock(&mutex);
         for (int i = 0; i < CTX_POOL_SIZE; i++) {
             if (!ctx_pool[i]) {
@@ -306,67 +292,46 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
     }
     archiveSize = size;
     ctx_pool = calloc(CTX_POOL_SIZE, sizeof(archive_ctx **));
-    if (!ctx_pool) {
-        LOGE("Allocate archive ctx pool failed:ENOMEM");
+    ctx = archive_alloc_ctx();
+    if (!ctx) return 0;
+
+    entryCount = archive_list_all_entries(ctx);
+    LOGI("%s%zu%s", "Found ", entryCount, " images in archive");
+    if (!entryCount) {
+        archive_release_ctx(ctx);
         return 0;
     }
-    int r = archive_alloc_ctx(&ctx);
-    if (r) {
-        if (r == -ENOMEM)
-            LOGE("%s", "Mem alloc failed");
-        LOGE("%s%s", "Archive open failed:", archive_error_string(ctx->arc));
-        return 0;
-    } else {
-        entryCount = archive_list_all_entries(ctx);
-        LOGI("%s%zu%s", "Found ", entryCount, " image entries in archive");
-        if (!entryCount) {
-            LOGE("%s%s", "Archive open failed:", archive_error_string(ctx->arc));
-            archive_release_ctx(ctx);
-            return 0;
-        }
 
-        // We must read through the file|vm then we can know whether it is encrypted
-        int encryptRet = archive_read_has_encrypted_entries(ctx->arc);
-        switch (encryptRet) {
-            case 1: // At lease 1 encrypted entry
-                need_encrypt = true;
-                break;
-            case 0: // format supports but no encrypted entry found
-            default:
-                need_encrypt = false;
-        }
-
-        int format = archive_format(ctx->arc);
-        switch (format) {
-            case ARCHIVE_FORMAT_ZIP:
-            case ARCHIVE_FORMAT_RAR_V5:
-                madvise_log_if_error(archiveAddr, archiveSize, MADV_SEQUENTIAL);
-                break;
-            case ARCHIVE_FORMAT_7ZIP: // Seek is bad
-                madvise_log_if_error(archiveAddr, archiveSize, MADV_RANDOM);
-                break;
-            default:;
-        }
+    // We must read through the file|vm then we can know whether it is encrypted
+    int encryptRet = archive_read_has_encrypted_entries(ctx->arc);
+    switch (encryptRet) {
+        case 1: // At lease 1 encrypted entry
+            need_encrypt = true;
+            break;
+        case 0: // format supports but no encrypted entry found
+        default:
+            need_encrypt = false;
     }
 
-    archive_release_ctx(ctx);
-
-    r = archive_alloc_ctx(&ctx);
-    if (r) {
-        if (r == -ENOMEM)
-            LOGE("%s", "Mem alloc failed");
-        r = 0;
-        LOGE("%s%s", "Archive open failed:", archive_error_string(ctx->arc));
-    } else {
-        entries = calloc(entryCount, sizeof(entry));
-        r = archive_map_entries_index(ctx, sort_entries);
-        if (!archive_prealloc_mempool()) {
-            r = 0;
-        }
+    int format = archive_format(ctx->arc);
+    switch (format) {
+        case ARCHIVE_FORMAT_ZIP:
+        case ARCHIVE_FORMAT_RAR_V5:
+            madvise_log_if_error(archiveAddr, archiveSize, MADV_SEQUENTIAL);
+            break;
+        case ARCHIVE_FORMAT_7ZIP: // Seek is bad
+            madvise_log_if_error(archiveAddr, archiveSize, MADV_RANDOM);
+            break;
+        default:;
     }
-
     archive_release_ctx(ctx);
-    return r;
+
+    ctx = archive_alloc_ctx();
+    entries = calloc(entryCount, sizeof(entry));
+    int count = archive_map_entries_index(ctx, sort_entries);
+    archive_prealloc_mempool();
+    archive_release_ctx(ctx);
+    return count;
 }
 
 JNIEXPORT jobject JNICALL
@@ -449,8 +414,8 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz, 
     passwd = realloc(passwd, len + 1);
     (*env)->GetStringUTFRegion(env, str, 0, len, passwd);
     passwd[len] = 0;
-    archive_alloc_ctx(&ctx);
-    void *tmpBuf = alloca(4096);
+    ctx = archive_alloc_ctx();
+    char tmpBuf[4096];
     while (archive_read_next_header(ctx->arc, &entry) == ARCHIVE_OK) {
         if (!archive_entry_is_playable(entry))
             continue;
