@@ -40,12 +40,14 @@ import arrow.core.Option
 import arrow.core.none
 import arrow.core.some
 import coil3.compose.AsyncImage
+import coil3.network.HttpException
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
+import com.hippo.ehviewer.ui.login.refreshAccountInfo
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -179,6 +181,12 @@ fun AvatarIcon() {
                     AsyncImage(
                         model = avatar,
                         contentDescription = null,
+                        onError = { (_, r) ->
+                            val e = r.throwable
+                            if (e is HttpException && e.response.code == 404) {
+                                launchIO { refreshAccountInfo() }
+                            }
+                        },
                         modifier = Modifier.clip(CircleShape),
                         contentScale = ContentScale.Crop,
                     )
