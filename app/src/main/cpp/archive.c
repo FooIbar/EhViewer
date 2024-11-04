@@ -130,7 +130,7 @@ static bool fill_entry_zero_copy(struct archive *arc, entry *entry) {
     return zero_copy;
 }
 
-static int archive_map_entries_index(archive_ctx *ctx, bool sort) {
+static bool archive_map_entries_index(archive_ctx *ctx, bool sort) {
     int count = 0;
     bool zero_copy = true;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK) {
@@ -144,9 +144,8 @@ static int archive_map_entries_index(archive_ctx *ctx, bool sort) {
             count++;
         }
     }
-    if (sort)
-        qsort(entries, entryCount, sizeof(entry), compare_entries);
-    return count;
+    if (sort) qsort(entries, entryCount, sizeof(entry), compare_entries);
+    return zero_copy;
 }
 
 static void archive_prealloc_mempool() {
@@ -328,10 +327,11 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
 
     ctx = archive_alloc_ctx();
     entries = calloc(entryCount, sizeof(entry));
-    int count = archive_map_entries_index(ctx, sort_entries);
-    archive_prealloc_mempool();
+    bool fully_zero_copy = archive_map_entries_index(ctx, sort_entries);
     archive_release_ctx(ctx);
-    return count;
+
+    if (!fully_zero_copy) archive_prealloc_mempool();
+    return (int) entryCount;
 }
 
 JNIEXPORT jobject JNICALL
