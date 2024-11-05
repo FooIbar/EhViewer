@@ -1,21 +1,8 @@
+mod ffi;
 mod img;
 mod parser;
 
-use android_logger::Config;
-use anyhow::{ensure, Context, Result};
-use image::{ImageBuffer, Rgba};
-use jni::objects::JByteBuffer;
-use jni::sys::{jboolean, jint, jobject, JavaVM, JNI_VERSION_1_6};
-use jni::JNIEnv;
-use log::LevelFilter;
-use ndk::bitmap::Bitmap;
-use serde::Serialize;
-use std::ffi::c_void;
 use std::fmt::{Debug, Display, Formatter};
-use std::io::Cursor;
-use std::ptr::{slice_from_raw_parts, slice_from_raw_parts_mut};
-use std::str::from_utf8_unchecked;
-use tl::ParserOptions;
 use tl::{Bytes, Node, NodeHandle, Parser, VDom};
 
 #[macro_export]
@@ -58,43 +45,6 @@ where
     handle.get(parser)
 }
 
-fn deref_mut_direct_bytebuffer<'local>(
-    env: &JNIEnv,
-    buffer: JByteBuffer<'local>,
-) -> Result<&'local mut [u8]> {
-    let ptr = env.get_direct_buffer_address(&buffer)?;
-    let cap = env.get_direct_buffer_capacity(&buffer)?;
-
-    // SAFETY: jni contract, buffer must alive through native call.
-    Ok(unsafe { &mut *slice_from_raw_parts_mut(ptr, cap) })
-}
-
-trait ThrowingHasDefault {
-    fn default() -> Self;
-}
-
-impl ThrowingHasDefault for jboolean {
-    fn default() -> Self {
-        0 as jboolean
-    }
-}
-
-impl ThrowingHasDefault for jobject {
-    fn default() -> Self {
-        0 as jobject
-    }
-}
-
-impl ThrowingHasDefault for i32 {
-    fn default() -> Self {
-        0
-    }
-}
-
-impl ThrowingHasDefault for () {
-    fn default() -> Self {}
-}
-
 #[derive(Debug)]
 enum EhError {
     NoHits,
@@ -113,42 +63,6 @@ impl Display for EhError {
         };
         f.write_str(msg)
     }
-}
-
-fn jni_throwing<F, R>(env: &mut JNIEnv, f: F) -> R
-where
-    F: FnOnce(&mut JNIEnv) -> Result<R>,
-    R: ThrowingHasDefault,
-{
-    match f(env) {
-        Ok(value) => value,
-        Err(err) => {
-            let msg = format!("{err}");
-            env.throw_new("java/lang/RuntimeException", msg).ok();
-            R::default()
-        }
-    }
-}
-
-fn parse_marshal_inplace<F, R>(env: &mut JNIEnv, str: JByteBuffer, limit: jint, f: F) -> i32
-where
-    F: Fn(&VDom, &str) -> Result<R>,
-    R: Serialize,
-{
-    jni_throwing(env, |env| {
-        let buffer = deref_mut_direct_bytebuffer(env, str)?;
-        let value = {
-            // SAFETY: ktor client ensure html content is valid utf-8.
-            let html = unsafe { from_utf8_unchecked(&buffer[..limit as usize]) };
-
-            let dom = tl::parse(html, ParserOptions::default())?;
-            ensure!(dom.version().is_some(), EhError::Error(html.to_string()));
-            f(&dom, html)?
-        };
-        let mut cursor = Cursor::new(buffer);
-        serde_cbor::to_writer(&mut cursor, &value)?;
-        Ok(cursor.position() as i32)
-    })
 }
 
 fn get_node_handle_attr<'a>(
@@ -172,30 +86,4 @@ fn query_childs_first_match_attr<'a>(
     let selector = format!("[{}]", attr);
     let mut iter = node.as_tag()?.query_selector(parser, &selector)?;
     get_node_handle_attr(&iter.next()?, parser, attr)
-}
-
-fn with_bitmap_content<F, R>(env: &mut JNIEnv, bitmap: jobject, f: F) -> Result<R>
-where
-    F: FnOnce(ImageBuffer<Rgba<u8>, &[u8]>) -> Result<R>,
-{
-    // SAFETY: kotlin caller must ensure bitmap is valid.
-    let handle = unsafe { Bitmap::from_jni(env.get_raw(), bitmap) };
-
-    let info = handle.info()?;
-    let (width, height) = (info.width(), info.height());
-    let ptr = handle.lock_pixels()? as *const u8;
-
-    // SAFETY: maybe unsafe if bitmap buffer not RGBA8888 format.
-    let buffer = unsafe { &*slice_from_raw_parts(ptr, (width * height * 4) as usize) };
-
-    let image = ImageBuffer::from_raw(width, height, buffer);
-    let result = image.context("Image buffer not RGBA8888!!!").and_then(f);
-    handle.unlock_pixels()?;
-    result
-}
-
-#[no_mangle]
-pub extern "system" fn JNI_OnLoad(_: JavaVM, _: *mut c_void) -> jint {
-    android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
-    JNI_VERSION_1_6
 }

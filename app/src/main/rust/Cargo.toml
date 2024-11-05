@@ -7,12 +7,14 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [features]
-api-level-26 = ["ndk/api-level-26"]
+jvm = ["dep:jni", "dep:jni_fn"]
+android = ["dep:ndk", "jvm", "ndk/bitmap"]
+android-26 = ["android", "ndk/api-level-26"]
 
 [dependencies]
 regex-lite = "0.1"
-jni = "0.21"
-jni_fn = "0.1"
+jni = { version = "0.21", optional = true }
+jni_fn = { version = "0.1", optional = true }
 quick-xml = { default-features = false, version = "0.37" }
 tl = "0.7"
 log = "0.4"
@@ -22,7 +24,7 @@ serde = { version = "1.0", features = ["derive"] }
 anyhow = "1.0"
 image = { default-features = false, version = "0.25" }
 rxing = { default-features = false, version = "0.6" }
-ndk = { version = "0.9", features = ["bitmap"] }
+ndk = { version = "0.9", optional = true }
 
 [profile.release]
 panic = "abort"

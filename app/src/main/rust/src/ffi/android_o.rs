@@ -1,4 +1,4 @@
-#![cfg(feature = "api-level-26")]
+#![cfg(feature = "android-26")]
 
 use crate::{jni_throwing, with_bitmap_content};
 use anyhow::Context;
