@@ -144,7 +144,6 @@ static void archive_map_entries_index(archive_ctx *ctx, bool sort) {
 
 static void *acquire_decode_buffer() {
     void *addr = NULL;
-    LOGI("Acquire decode buffer addr: %p size: %zd", addr, max_file_size);
     pthread_mutex_lock(&buffer_mutex);
     for (int i = 0; i < MAX_PARALLEL_DECOMP; ++i) {
         addr = decode_buffer[i];
@@ -154,15 +153,11 @@ static void *acquire_decode_buffer() {
         }
     }
     pthread_mutex_unlock(&buffer_mutex);
-    if (!addr) {
-        addr = malloc(max_file_size);
-        LOGI("Allocate decode buffer addr: %p size: %zd", addr, max_file_size);
-    }
+    if (!addr) addr = malloc(max_file_size);
     return addr;
 }
 
 static void release_decode_buffer(void *buffer) {
-    LOGI("Release decode buffer addr: %p size: %zd", buffer, max_file_size);
     pthread_mutex_lock(&buffer_mutex);
     for (int i = 0; i < MAX_PARALLEL_DECOMP; ++i) {
         void *addr = decode_buffer[i];
@@ -174,7 +169,6 @@ static void release_decode_buffer(void *buffer) {
     }
     pthread_mutex_unlock(&buffer_mutex);
     free(buffer);
-    LOGI("Free decode buffer addr: %p size: %zd", buffer, max_file_size);
 }
 
 static int archive_list_all_entries(archive_ctx *ctx) {
