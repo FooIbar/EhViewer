@@ -6,13 +6,15 @@ use crate::parser::home::parse_limit;
 use crate::parser::list::parse_info_list;
 use crate::parser::torrent::parse_torrent_list;
 use crate::EhError;
+use android_logger::Config;
 use anyhow::{ensure, Context, Result};
 use jni::objects::{JByteBuffer, JClass};
-use jni::sys::jint;
-use jni::sys::{jboolean, jobject};
-use jni::JNIEnv;
+use jni::sys::{jboolean, jint, jobject, JNI_VERSION_1_6};
+use jni::{JNIEnv, JavaVM};
 use jni_fn::jni_fn;
+use log::LevelFilter;
 use serde::Serialize;
+use std::ffi::c_void;
 use std::io::Cursor;
 use std::ptr::slice_from_raw_parts_mut;
 use std::str::from_utf8_unchecked;
@@ -132,4 +134,10 @@ where
         serde_cbor::to_writer(&mut cursor, &value)?;
         Ok(cursor.position() as i32)
     })
+}
+
+#[no_mangle]
+pub extern "system" fn JNI_OnLoad(_: JavaVM, _: *mut c_void) -> jint {
+    android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
+    JNI_VERSION_1_6
 }

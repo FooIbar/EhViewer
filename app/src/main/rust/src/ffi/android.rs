@@ -3,17 +3,14 @@
 use super::jvm::jni_throwing;
 use crate::img::border::detect_border;
 use crate::img::qr_code::detect_image_ad;
-use android_logger::Config;
 use anyhow::{Context, Result};
 use image::{ImageBuffer, Rgba};
 use jni::objects::JClass;
-use jni::sys::{jboolean, jint, JNI_VERSION_1_6};
+use jni::sys::jboolean;
 use jni::sys::{jintArray, jobject};
-use jni::{JNIEnv, JavaVM};
+use jni::JNIEnv;
 use jni_fn::jni_fn;
-use log::LevelFilter;
 use ndk::bitmap::Bitmap;
-use std::ffi::c_void;
 use std::ptr::slice_from_raw_parts;
 
 #[no_mangle]
@@ -35,12 +32,6 @@ pub fn hasQrCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
     jni_throwing(&mut env, |env| {
         with_bitmap_content(env, object, |image| Ok(detect_image_ad(image) as jboolean))
     })
-}
-
-#[no_mangle]
-pub extern "system" fn JNI_OnLoad(_: JavaVM, _: *mut c_void) -> jint {
-    android_logger::init_once(Config::default().with_max_level(LevelFilter::Debug));
-    JNI_VERSION_1_6
 }
 
 pub fn with_bitmap_content<F, R>(env: &mut JNIEnv, bitmap: jobject, f: F) -> Result<R>
