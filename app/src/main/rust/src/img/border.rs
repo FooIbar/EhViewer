@@ -66,6 +66,7 @@ fn detect_border_lines<'pixel>(
     }
 }
 
+#[allow(dead_code)]
 pub fn detect_border(image: &ImageBuffer<Rgba<u8>, &[u8]>) -> Option<[i32; 4]> {
     let (w, h) = image.dimensions();
     let top = detect_border_lines(image.rows(), w);

@@ -11,6 +11,7 @@ pub struct Limits {
     resetCost: i32,
 }
 
+#[allow(dead_code)]
 pub fn parse_limit(dom: &VDom, parser: &Parser) -> Option<Limits> {
     let limit_box = get_vdom_first_element_by_class_name(dom, "homebox")?.as_tag()?;
     let vec = limit_box

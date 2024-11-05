@@ -14,6 +14,7 @@ pub struct FavResult {
     galleryListResult: GalleryListResult,
 }
 
+#[allow(dead_code)]
 pub fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult> {
     if html.contains("This page requires you to log on.</p>") {
         bail!(EhError::NeedLogin)
