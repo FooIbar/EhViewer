@@ -43,7 +43,7 @@ pub extern "system" fn JNI_OnLoad(_: JavaVM, _: *mut c_void) -> jint {
     JNI_VERSION_1_6
 }
 
-fn with_bitmap_content<F, R>(env: &mut JNIEnv, bitmap: jobject, f: F) -> Result<R>
+pub fn with_bitmap_content<F, R>(env: &mut JNIEnv, bitmap: jobject, f: F) -> Result<R>
 where
     F: FnOnce(ImageBuffer<Rgba<u8>, &[u8]>) -> Result<R>,
 {
