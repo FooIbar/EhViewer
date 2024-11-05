@@ -49,28 +49,21 @@ typedef struct {
     void *addr;
 } entry;
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-static archive_ctx **ctx_pool = NULL;
 #define CTX_POOL_SIZE 20
+#define MAX_PARALLEL_DECOMP 4
+#define max(a, b) ((a) > (b) ? (a) : (b))
 
-static void *mempool = MAP_FAILED;
-static size_t *mempoolofs = NULL;
-static int page_size = 0;
-
-#define PAGE_ALIGN(x) ((x + page_size - 1) & ~(page_size - 1))
-
-#define MEMPOOL_ADDR_BY_SORTED_IDX(x) (mempool + (index ? mempoolofs[index - 1] : 0))
-#define MEMPOOL_SIZE (mempoolofs[entryCount - 1])
-
-#define PROT_RW (PROT_WRITE | PROT_READ)
-#define MAP_ANON_POOL (MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE)
-
+static pthread_mutex_t ctx_pool_mutex = PTHREAD_MUTEX_INITIALIZER;
+static archive_ctx **ctx_pool = NULL;
+static pthread_mutex_t buffer_mutex = PTHREAD_MUTEX_INITIALIZER;
+static void *decode_buffer[MAX_PARALLEL_DECOMP];
 static bool need_encrypt = false;
 static char *passwd = NULL;
 static void *archiveAddr = MAP_FAILED;
 static size_t archiveSize = 0;
 static entry *entries = NULL;
 static size_t entryCount = 0;
+static ssize_t max_file_size = 0;
 
 const char supportExt[10][6] = {
         "jpeg",
@@ -130,7 +123,7 @@ static bool fill_entry_zero_copy(struct archive *arc, entry *entry) {
     return zero_copy;
 }
 
-static bool archive_map_entries_index(archive_ctx *ctx, bool sort) {
+static void archive_map_entries_index(archive_ctx *ctx, bool sort) {
     int count = 0;
     bool zero_copy = true;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK) {
@@ -138,40 +131,50 @@ static bool archive_map_entries_index(archive_ctx *ctx, bool sort) {
         if (archive_entry_is_file(ctx->entry) && filename_is_playable_file(name)) {
             entries[count].filename = strdup(name);
             entries[count].index = count;
-            entries[count].size = archive_entry_size(ctx->entry);
+            ssize_t size = archive_entry_size(ctx->entry);
+            max_file_size = max(size, max_file_size);
+            entries[count].size = size;
             // We don't expect zero copy if first content can't do zero copy
             if (zero_copy) zero_copy = fill_entry_zero_copy(ctx->arc, &entries[count]);
             count++;
         }
     }
     if (sort) qsort(entries, entryCount, sizeof(entry), compare_entries);
-    return zero_copy;
 }
 
-static void archive_prealloc_mempool() {
-    mempoolofs = calloc(entryCount, sizeof(size_t));
-    for (int i = 0; i < entryCount; ++i) {
-        mempoolofs[i] = PAGE_ALIGN(entries[i].size) + (i ? mempoolofs[i - 1] : 0);
+static void *acquire_decode_buffer() {
+    void *addr = NULL;
+    LOGI("Acquire decode buffer addr: %p size: %zd", addr, max_file_size);
+    pthread_mutex_lock(&buffer_mutex);
+    for (int i = 0; i < MAX_PARALLEL_DECOMP; ++i) {
+        addr = decode_buffer[i];
+        if (addr) {
+            decode_buffer[i] = NULL;
+            break;
+        }
     }
-    mempool = mmap(0, MEMPOOL_SIZE, PROT_RW, MAP_ANON_POOL, -1, 0);
-    if (mempool == MAP_FAILED) {
-        LOGE("%s%s", "mmap failed with error ", strerror(errno));
-        abort();
+    pthread_mutex_unlock(&buffer_mutex);
+    if (!addr) {
+        addr = malloc(max_file_size);
+        LOGI("Allocate decode buffer addr: %p size: %zd", addr, max_file_size);
     }
+    return addr;
 }
 
-static void mempool_release_pages(void *addr, size_t size) {
-    size = PAGE_ALIGN(size);
-    madvise_log_if_error(addr, size, MADV_DONTNEED);
-}
-
-static bool kernel_can_prefault = true;
-
-static void mempool_prefault_pages(void *addr, size_t size) {
-    size = PAGE_ALIGN(size);
-    if (kernel_can_prefault) {
-        if (madvise(addr, size, MADV_POPULATE_WRITE)) kernel_can_prefault = false;
+static void release_decode_buffer(void *buffer) {
+    LOGI("Release decode buffer addr: %p size: %zd", buffer, max_file_size);
+    pthread_mutex_lock(&buffer_mutex);
+    for (int i = 0; i < MAX_PARALLEL_DECOMP; ++i) {
+        void *addr = decode_buffer[i];
+        if (!addr) {
+            decode_buffer[i] = buffer;
+            pthread_mutex_unlock(&buffer_mutex);
+            return;
+        }
     }
+    pthread_mutex_unlock(&buffer_mutex);
+    free(buffer);
+    LOGI("Free decode buffer addr: %p size: %zd", buffer, max_file_size);
 }
 
 static int archive_list_all_entries(archive_ctx *ctx) {
@@ -227,7 +230,7 @@ static int archive_skip_to_index(archive_ctx *ctx, int index) {
 static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
     int ret;
     archive_ctx *ctx = NULL;
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&ctx_pool_mutex);
     for (int i = 0; i < CTX_POOL_SIZE; i++) {
         if (!ctx_pool[i])
             continue;
@@ -242,14 +245,14 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
     }
     if (ctx)
         ctx->using = 1;
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&ctx_pool_mutex);
 
     if (!ctx) {
         archive_ctx *victimCtx = NULL;
         int victimIdx = 0;
         int replace = 1;
         ctx = archive_alloc_ctx();
-        pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&ctx_pool_mutex);
         for (int i = 0; i < CTX_POOL_SIZE; i++) {
             if (!ctx_pool[i]) {
                 ctx_pool[i] = ctx;
@@ -264,7 +267,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
             }
         }
         if (replace) ctx_pool[victimIdx] = ctx;
-        pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(&ctx_pool_mutex);
         if (replace) archive_release_ctx(victimCtx);
     }
     ret = archive_skip_to_index(ctx, idx);
@@ -282,7 +285,6 @@ JNIEXPORT jint JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint fd, jlong size, jboolean sort_entries) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
-    page_size = getpagesize();
     archive_ctx *ctx = NULL;
     archiveAddr = mmap(0, size, PROT_READ, MAP_PRIVATE, fd, 0);
     if (archiveAddr == MAP_FAILED) {
@@ -327,10 +329,8 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
 
     ctx = archive_alloc_ctx();
     entries = calloc(entryCount, sizeof(entry));
-    bool fully_zero_copy = archive_map_entries_index(ctx, sort_entries);
+    archive_map_entries_index(ctx, sort_entries);
     archive_release_ctx(ctx);
-
-    if (!fully_zero_copy) archive_prealloc_mempool();
     return (int) entryCount;
 }
 
@@ -343,11 +343,9 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
     if (entry->addr) {
         return (*env)->NewDirectByteBuffer(env, entry->addr, size);
     } else {
-        void *addr = MEMPOOL_ADDR_BY_SORTED_IDX(index);
-        index = entry->index;
+        void *addr = acquire_decode_buffer();
         archive_ctx *ctx = NULL;
-        if (!archive_get_ctx(&ctx, index)) {
-            mempool_prefault_pages(addr, size);
+        if (!archive_get_ctx(&ctx, entry->index)) {
             ssize_t bytes = archive_read_data(ctx->arc, addr, size);
             ctx->using = 0;
             if (bytes == size) {
@@ -359,8 +357,8 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
                     LOGE("%s", "No enough data read, WTF?");
                 }
             }
-            mempool_release_pages(addr, size);
         }
+        release_decode_buffer(addr);
     }
     return 0;
 }
@@ -369,6 +367,7 @@ JNIEXPORT void JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_closeArchive(JNIEnv *env, jclass thiz) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
+    LOGI("Close archive addr: %p", archiveAddr);
     if (ctx_pool) {
         for (int i = 0; i < CTX_POOL_SIZE; i++)
             archive_release_ctx(ctx_pool[i]);
@@ -382,12 +381,11 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_closeArchive(JNIEnv *env, jclass thiz) {
         munmap(archiveAddr, archiveSize);
         archiveAddr = MAP_FAILED;
     }
-    if (mempool != MAP_FAILED) {
-        munmap(mempool, MEMPOOL_SIZE);
-        mempool = MAP_FAILED;
+    for (int i = 0; i < MAX_PARALLEL_DECOMP; ++i) {
+        free(decode_buffer[i]);
+        decode_buffer[i] = NULL;
     }
-    free(mempoolofs);
-    mempoolofs = NULL;
+    max_file_size = 0;
     if (entries) {
         for (int i = 0; i < entryCount; ++i) {
             free((void *) entries[i].filename);
@@ -458,8 +456,9 @@ JNIEXPORT void JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_releaseByteBuffer(JNIEnv *env, jclass thiz, jobject buffer) {
     EH_UNUSED(thiz);
     void *addr = (*env)->GetDirectBufferAddress(env, buffer);
-    size_t size = (*env)->GetDirectBufferCapacity(env, buffer);
-    if (!ADDR_IN_FILE_MAPPING(addr)) mempool_release_pages(addr, size);
+    if (!ADDR_IN_FILE_MAPPING(addr)) {
+        release_decode_buffer(addr);
+    }
 }
 
 JNIEXPORT void JNICALL
