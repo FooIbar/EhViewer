@@ -337,9 +337,9 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
     if (entry->addr) {
         return (*env)->NewDirectByteBuffer(env, entry->addr, size);
     } else {
-        void *addr = acquire_decode_buffer();
         archive_ctx *ctx = NULL;
         if (!archive_get_ctx(&ctx, entry->index)) {
+            void *addr = acquire_decode_buffer();
             ssize_t bytes = archive_read_data(ctx->arc, addr, size);
             ctx->using = 0;
             if (bytes == size) {
@@ -351,8 +351,8 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
                     LOGE("%s", "No enough data read, WTF?");
                 }
             }
+            release_decode_buffer(addr);
         }
-        release_decode_buffer(addr);
     }
     return 0;
 }
