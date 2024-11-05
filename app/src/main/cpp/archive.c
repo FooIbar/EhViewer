@@ -361,7 +361,6 @@ JNIEXPORT void JNICALL
 Java_com_hippo_ehviewer_jni_ArchiveKt_closeArchive(JNIEnv *env, jclass thiz) {
     EH_UNUSED(env);
     EH_UNUSED(thiz);
-    LOGI("Close archive addr: %p", archiveAddr);
     if (ctx_pool) {
         for (int i = 0; i < CTX_POOL_SIZE; i++)
             archive_release_ctx(ctx_pool[i]);
