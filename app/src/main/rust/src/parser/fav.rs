@@ -1,10 +1,6 @@
 use crate::parser::list::{parse_info_list, GalleryListResult};
-use crate::{parse_marshal_inplace, EhError};
+use crate::EhError;
 use anyhow::{bail, Result};
-use jni::objects::{JByteBuffer, JClass};
-use jni::sys::jint;
-use jni::JNIEnv;
-use jni_fn::jni_fn;
 use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::Parser;
@@ -12,13 +8,14 @@ use tl::VDom;
 
 #[derive(Serialize)]
 #[allow(non_snake_case)]
-struct FavResult {
+pub struct FavResult {
     catArray: Vec<String>,
     countArray: Vec<i32>,
     galleryListResult: GalleryListResult,
 }
 
-fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult> {
+#[allow(dead_code)]
+pub fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult> {
     if html.contains("This page requires you to log on.</p>") {
         bail!(EhError::NeedLogin)
     }
@@ -52,13 +49,4 @@ fn parse_fav(dom: &VDom, parser: &Parser, html: &str) -> Result<FavResult> {
     } else {
         bail!("Illegal fav cat count!")
     }
-}
-
-#[no_mangle]
-#[allow(non_snake_case)]
-#[jni_fn("com.hippo.ehviewer.client.parser.FavoritesParserKt")]
-pub fn parseFav(mut env: JNIEnv, _class: JClass, input: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&mut env, input, limit, |dom, html| {
-        parse_fav(dom, dom.parser(), html)
-    })
 }

@@ -1,15 +1,11 @@
-use crate::{parse_marshal_inplace, regex};
+use crate::regex;
 use anyhow::{Context, Result};
-use jni::objects::{JByteBuffer, JClass};
-use jni::sys::jint;
-use jni::JNIEnv;
-use jni_fn::jni_fn;
 use quick_xml::escape::unescape;
 use serde::Serialize;
 use tl::{Parser, VDom};
 
 #[derive(Serialize)]
-struct Torrent {
+pub struct Torrent {
     outdated: bool,
     posted: String,
     size: String,
@@ -21,7 +17,8 @@ struct Torrent {
     name: String,
 }
 
-fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>> {
+#[allow(dead_code)]
+pub fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>> {
     let list = dom.query_selector("table").context("No Table")?.filter_map(|e| {
         let html = e.get(parser)?.inner_html(parser);
         if html.contains("Expunged") {
@@ -43,13 +40,4 @@ fn parse_torrent_list(dom: &VDom, parser: &Parser) -> Result<Vec<Torrent>> {
         }
     }).collect::<Vec<Torrent>>();
     Ok(list)
-}
-
-#[no_mangle]
-#[allow(non_snake_case)]
-#[jni_fn("com.hippo.ehviewer.client.parser.TorrentParserKt")]
-pub fn parseTorrent(mut env: JNIEnv, _class: JClass, buffer: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&mut env, buffer, limit, |dom, _| {
-        parse_torrent_list(dom, dom.parser())
-    })
 }

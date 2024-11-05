@@ -1,13 +1,9 @@
+use crate::EhError;
 use crate::{get_element_by_id, get_vdom_first_element_by_class_name};
 use crate::{get_first_element_by_class_name, query_childs_first_match_attr};
 use crate::{get_node_attr, get_node_handle_attr, regex};
-use crate::{parse_marshal_inplace, EhError};
 use crate::{EHGT_PREFIX, EX_PREFIX};
 use anyhow::{bail, Context, Result};
-use jni::objects::{JByteBuffer, JClass};
-use jni::sys::jint;
-use jni::JNIEnv;
-use jni_fn::jni_fn;
 use quick_xml::escape::unescape;
 use serde::Serialize;
 use std::borrow::Cow;
@@ -197,6 +193,7 @@ fn parse_gallery_info(node: &Node, parser: &Parser) -> Option<BaseGalleryInfo> {
     })
 }
 
+#[allow(dead_code)]
 pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Result<GalleryListResult> {
     if str.contains("<p>You do not have any watched tags") {
         bail!(EhError::NoWatched)
@@ -240,13 +237,4 @@ pub fn parse_info_list(dom: &VDom, parser: &Parser, str: &str) -> Result<Gallery
         })
     };
     f().context("No content")
-}
-
-#[no_mangle]
-#[allow(non_snake_case)]
-#[jni_fn("com.hippo.ehviewer.client.parser.GalleryListParserKt")]
-pub fn parseGalleryInfoList(mut env: JNIEnv, _: JClass, buffer: JByteBuffer, limit: jint) -> jint {
-    parse_marshal_inplace(&mut env, buffer, limit, |dom, str| {
-        parse_info_list(dom, dom.parser(), str)
-    })
 }

@@ -1,3 +1,2 @@
-mod border;
-mod copy_ahb;
-mod qr_code;
+pub mod border;
+pub mod qr_code;

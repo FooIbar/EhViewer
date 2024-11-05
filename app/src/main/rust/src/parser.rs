@@ -1,5 +1,5 @@
-mod config;
-mod fav;
-mod home;
-mod list;
-mod torrent;
+pub mod config;
+pub mod fav;
+pub mod home;
+pub mod list;
+pub mod torrent;

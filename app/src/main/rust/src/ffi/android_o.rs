@@ -1,6 +1,7 @@
-#![cfg(feature = "api-level-26")]
+#![cfg(feature = "android-26")]
 
-use crate::{jni_throwing, with_bitmap_content};
+use super::android::with_bitmap_content;
+use super::jvm::jni_throwing;
 use anyhow::Context;
 use image::{GenericImage, GenericImageView, ImageBuffer};
 use jni::objects::JClass;

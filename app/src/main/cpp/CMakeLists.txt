@@ -111,7 +111,9 @@ FetchContent_MakeAvailable(Corrosion)
 corrosion_import_crate(MANIFEST_PATH ../rust/Cargo.toml LOCKED)
 corrosion_add_target_local_rustflags(ehviewer_rust "-Clink-args=-Wl,-z,max-page-size=16384")
 if (ANDROID_NATIVE_API_LEVEL GREATER_EQUAL 26)
-    corrosion_set_features(ehviewer_rust FEATURES api-level-26)
+    corrosion_set_features(ehviewer_rust FEATURES android-26)
+else ()
+    corrosion_set_features(ehviewer_rust FEATURES android)
 endif ()
 
 # Build and link our app's native lib

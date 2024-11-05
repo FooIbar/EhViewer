@@ -1,10 +1,4 @@
-use crate::{jni_throwing, with_bitmap_content};
-use anyhow::Context;
 use image::{ImageBuffer, Luma, Pixel, Rgba};
-use jni::objects::JClass;
-use jni::sys::{jintArray, jobject};
-use jni::JNIEnv;
-use jni_fn::jni_fn;
 
 /** A line will be considered as having content if 0.25% of it is filled. */
 static FILLED_RATIO_LIMIT: f32 = 0.0025;
@@ -72,7 +66,8 @@ fn detect_border_lines<'pixel>(
     }
 }
 
-fn detect_border(image: &ImageBuffer<Rgba<u8>, &[u8]>) -> Option<[i32; 4]> {
+#[allow(dead_code)]
+pub fn detect_border(image: &ImageBuffer<Rgba<u8>, &[u8]>) -> Option<[i32; 4]> {
     let (w, h) = image.dimensions();
     let top = detect_border_lines(image.rows(), w);
     let bottom = detect_border_lines(image.rows().rev(), w);
@@ -80,16 +75,4 @@ fn detect_border(image: &ImageBuffer<Rgba<u8>, &[u8]>) -> Option<[i32; 4]> {
     let left = detect_border_lines(iter.clone(), h);
     let right = detect_border_lines(iter.rev(), h);
     Some([left, top, w as i32 - right, h as i32 - bottom])
-}
-
-#[no_mangle]
-#[allow(non_snake_case)]
-#[jni_fn("com.hippo.ehviewer.image.ImageKt")]
-pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArray {
-    jni_throwing(&mut env, |env| {
-        let slice = with_bitmap_content(env, object, |img| Ok(detect_border(&img)))?;
-        let array = env.new_int_array(4)?;
-        env.set_int_array_region(&array, 0, &slice.context("Image too small!")?)?;
-        Ok(array.into_raw())
-    })
 }
