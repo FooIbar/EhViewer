@@ -28,6 +28,7 @@ import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -78,6 +79,7 @@ val LocalScrollbarStyle = staticCompositionLocalOf { defaultScrollbarStyle() }
 data class ScrollbarStyle(
     val minimalHeight: Dp,
     val thickness: Dp,
+    val padding: Dp,
     val shape: Shape,
     val hoverDurationMillis: Int,
     val unhoverColor: Color,
@@ -90,6 +92,7 @@ data class ScrollbarStyle(
 fun defaultScrollbarStyle() = ScrollbarStyle(
     minimalHeight = 16.dp,
     thickness = 8.dp,
+    padding = 0.dp,
     shape = RoundedCornerShape(4.dp),
     hoverDurationMillis = 300,
     unhoverColor = Color.Black.copy(alpha = 0.12f),
@@ -239,7 +242,7 @@ private fun Scrollbar(
         )
     }
 
-    val scrollThickness = style.thickness.roundToPx()
+    val scrollThickness = (style.thickness + style.padding * 2).roundToPx()
     val measurePolicy = if (isVertical) {
         remember(sliderAdapter, scrollThickness) {
             verticalMeasurePolicy(sliderAdapter, { containerSize = it }, scrollThickness)
@@ -261,7 +264,11 @@ private fun Scrollbar(
     Layout(
         {
             Box(
-                Modifier
+                if (isVertical) {
+                    Modifier.padding(horizontal = style.padding)
+                } else {
+                    Modifier.padding(vertical = style.padding)
+                }
                     .background(if (isVisible) color else Color.Transparent, style.shape)
                     .scrollbarDrag(
                         interactionSource = interactionSource,
