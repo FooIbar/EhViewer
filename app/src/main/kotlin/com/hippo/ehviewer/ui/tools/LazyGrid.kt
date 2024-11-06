@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 fun FastScrollLazyVerticalGrid(
     columns: GridCells,
     modifier: Modifier = Modifier,
+    containerModifier: Modifier = Modifier,
     state: LazyGridState = rememberLazyGridState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseLayout: Boolean = false,
@@ -32,7 +33,7 @@ fun FastScrollLazyVerticalGrid(
     userScrollEnabled: Boolean = true,
     content: LazyGridScope.() -> Unit,
 ) {
-    Box {
+    Box(containerModifier) {
         LazyVerticalGrid(
             columns = columns,
             modifier = modifier,

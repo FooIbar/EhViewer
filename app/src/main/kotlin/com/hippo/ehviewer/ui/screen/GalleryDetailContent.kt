@@ -17,12 +17,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -49,23 +48,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.LocalPinnableContainer
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingSource
-import androidx.paging.PagingState
-import androidx.paging.cachedIn
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemKey
 import androidx.window.core.layout.WindowWidthSizeClass
 import arrow.core.partially1
-import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
@@ -78,29 +69,23 @@ import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
-import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.client.data.asGalleryDetail
 import com.hippo.ehviewer.client.data.findBaseInfo
-import com.hippo.ehviewer.coil.justDownload
-import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.Magnet
-import com.hippo.ehviewer.ktbuilder.imageRequest
-import com.hippo.ehviewer.ktbuilder.launchIn
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.destinations.GalleryCommentsScreenDestination
 import com.hippo.ehviewer.ui.getFavoriteIcon
 import com.hippo.ehviewer.ui.jumpToReaderByPage
-import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
 import com.hippo.ehviewer.ui.main.GalleryDetailHeaderCard
@@ -113,26 +98,19 @@ import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
-import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconButton
 import com.hippo.ehviewer.ui.tools.FilledTertiaryIconToggleButton
 import com.hippo.ehviewer.ui.tools.GalleryDetailRating
 import com.hippo.ehviewer.ui.tools.GalleryRatingBar
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
-import com.hippo.ehviewer.ui.tools.foldToLoadResult
-import com.hippo.ehviewer.ui.tools.getClippedRefreshKey
-import com.hippo.ehviewer.ui.tools.getLimit
-import com.hippo.ehviewer.ui.tools.getOffset
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.bgWork
-import com.hippo.ehviewer.util.flattenForEach
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
-import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.http.encodeURLParameter
@@ -143,7 +121,6 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.runSwallowingWithUI
@@ -160,7 +137,6 @@ fun GalleryDetailContent(
     val keylineMargin = dimensionResource(R.dimen.keyline_margin)
     val galleryDetail = galleryInfo.asGalleryDetail()
     val windowSizeClass = LocalWindowSizeClass.current
-    val thumbColumns by Settings.thumbColumns.collectAsState()
     val readText = stringResource(R.string.read)
     val startPage by rememberInVM {
         EhDB.getReadProgressFlow(galleryInfo.gid)
@@ -239,36 +215,29 @@ fun GalleryDetailContent(
         }
     }
 
-    val previews = galleryDetail.collectPreviewItems(thumbColumns)
+    val windowHeight = with(LocalDensity.current) {
+        LocalWindowInfo.current.containerSize.height.toDp()
+    }
+    val viewportHeight = windowHeight - contentPadding.calculateTopPadding() - contentPadding.calculateBottomPadding()
     when (windowSizeClass.windowWidthSizeClass) {
-        WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.COMPACT -> FastScrollLazyVerticalGrid(
-            columns = GridCells.Fixed(thumbColumns),
+        WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.COMPACT -> LazyColumn(
             contentPadding = contentPadding,
-            modifier = modifier.padding(horizontal = keylineMargin),
-            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
+            modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
         ) {
-            item(
-                key = "header",
-                span = { GridItemSpan(maxCurrentLineSpan) },
-                contentType = "header",
-            ) {
+            item(key = "header", contentType = "header") {
                 GalleryDetailHeaderCard(
                     info = galleryInfo,
                     onInfoCardClick = ::onGalleryInfoCardClick,
                     onUploaderChipClick = ::onUploaderChipClick.partially1(galleryInfo),
                     onBlockUploaderIconClick = ::showFilterUploaderDialog.partially1(galleryInfo),
                     onCategoryChipClick = ::onCategoryChipClick,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = keylineMargin),
+                    modifier = Modifier.fillMaxWidth().padding(keylineMargin),
                 )
             }
-            item(
-                key = "body",
-                span = { GridItemSpan(maxCurrentLineSpan) },
-                contentType = "body",
-            ) {
+            item(key = "body", contentType = "body") {
                 LocalPinnableContainer.current!!.run { remember { pin() } }
-                Column {
+                Column(Modifier.padding(horizontal = keylineMargin)) {
                     Row {
                         FilledTonalButton(
                             onClick = ::onDownloadButtonClick,
@@ -298,23 +267,24 @@ fun GalleryDetailContent(
                 }
             }
             if (galleryDetail != null) {
-                galleryPreview(previews) { navToReader(galleryDetail.galleryInfo, it) }
+                item(key = "previews", contentType = "previews") {
+                    GalleryPreview(
+                        detail = galleryDetail,
+                        onItemClick = { navToReader(galleryDetail.galleryInfo, it) },
+                        modifier = Modifier.heightIn(max = viewportHeight),
+                        contentPadding = PaddingValues(horizontal = keylineMargin),
+                    )
+                }
             }
         }
 
-        WindowWidthSizeClass.EXPANDED -> FastScrollLazyVerticalGrid(
-            columns = GridCells.Fixed(thumbColumns),
+        WindowWidthSizeClass.EXPANDED -> LazyColumn(
             contentPadding = contentPadding,
-            modifier = modifier.padding(horizontal = keylineMargin),
-            horizontalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding)),
+            modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.strip_item_padding_v)),
         ) {
-            item(
-                key = "header",
-                span = { GridItemSpan(maxCurrentLineSpan) },
-                contentType = "header",
-            ) {
-                Row(modifier = Modifier.fillMaxWidth()) {
+            item(key = "header", contentType = "header") {
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = keylineMargin)) {
                     GalleryDetailHeaderCard(
                         info = galleryInfo,
                         onInfoCardClick = ::onGalleryInfoCardClick,
@@ -344,13 +314,9 @@ fun GalleryDetailContent(
                     }
                 }
             }
-            item(
-                key = "body",
-                span = { GridItemSpan(maxCurrentLineSpan) },
-                contentType = "body",
-            ) {
+            item(key = "body", contentType = "body") {
                 LocalPinnableContainer.current!!.run { remember { pin() } }
-                Column {
+                Column(Modifier.padding(horizontal = keylineMargin)) {
                     if (getDetailError.isNotBlank()) {
                         GalleryDetailErrorTip(error = getDetailError, onClick = onRetry)
                     } else if (galleryDetail != null) {
@@ -366,7 +332,14 @@ fun GalleryDetailContent(
                 }
             }
             if (galleryDetail != null) {
-                galleryPreview(previews) { navToReader(galleryDetail.galleryInfo, it) }
+                item(key = "previews", contentType = "previews") {
+                    GalleryPreview(
+                        detail = galleryDetail,
+                        onItemClick = { navToReader(galleryDetail.galleryInfo, it) },
+                        modifier = Modifier.heightIn(max = viewportHeight),
+                        contentPadding = PaddingValues(horizontal = keylineMargin),
+                    )
+                }
             }
         }
     }
@@ -729,59 +702,4 @@ private fun List<GalleryTagGroup>.getArtistTag(): String? {
         }
     }
     return null
-}
-
-context(Context)
-@Composable
-private fun GalleryDetail?.collectPreviewItems(prefetchDistance: Int) = rememberInVM(this) {
-    val detail = this@collectPreviewItems ?: return@rememberInVM emptyFlow()
-    val pageSize = detail.previewList.size
-    val pages = detail.pages
-    val previewPagesMap = detail.previewList.associateBy { it.position } as MutableMap
-    Pager(
-        PagingConfig(
-            pageSize = pageSize,
-            prefetchDistance = prefetchDistance,
-            initialLoadSize = pageSize,
-            jumpThreshold = 2 * pageSize,
-        ),
-    ) {
-        object : PagingSource<Int, GalleryPreview>() {
-            override fun getRefreshKey(state: PagingState<Int, GalleryPreview>) = state.getClippedRefreshKey()
-            override suspend fun load(params: LoadParams<Int>): LoadResult<Int, GalleryPreview> = withIOContext {
-                val key = params.key ?: 0
-                val up = getOffset(params, key, pages)
-                val end = (up + getLimit(params, key) - 1).coerceAtMost(pages - 1)
-                detail.runSuspendCatching {
-                    (up..end).filterNot { it in previewPagesMap }.map { it / pageSize }.toSet()
-                        .parMap(concurrency = Settings.multiThreadDownload) { page ->
-                            val url = EhUrl.getGalleryDetailUrl(gid, token, page, false)
-                            EhEngine.getPreviewList(url).first
-                        }.flattenForEach {
-                            previewPagesMap[it.position] = it
-                            if (Settings.preloadThumbAggressively) {
-                                imageRequest(it) { justDownload() }.launchIn(viewModelScope)
-                            }
-                        }
-                }.foldToLoadResult {
-                    val r = (up..end).map { requireNotNull(previewPagesMap[it]) }
-                    val prevK = if (up <= 0 || r.isEmpty()) null else up
-                    val nextK = if (end == pages - 1) null else end + 1
-                    LoadResult.Page(r, prevK, nextK, up, pages - end - 1)
-                }
-            }
-            override val jumpingSupported = true
-        }
-    }.flow.cachedIn(viewModelScope)
-}.collectAsLazyPagingItems()
-
-private fun LazyGridScope.galleryPreview(data: LazyPagingItems<GalleryPreview>, onClick: (Int) -> Unit) {
-    items(
-        count = data.itemCount,
-        key = data.itemKey(key = { item -> item.position }),
-        contentType = { "preview" },
-    ) { index ->
-        val item = data[index]
-        EhPreviewItem(item, index) { onClick(index) }
-    }
 }
