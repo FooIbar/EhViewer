@@ -56,9 +56,7 @@ fun VerticalScrollbar(
         adapter = adapter,
         modifier = scrollbarModifier
             .padding(
-                start = HorizontalPadding,
                 top = contentPadding.calculateTopPadding(),
-                end = HorizontalPadding,
                 bottom = contentPadding.calculateBottomPadding(),
             )
             .graphicsLayer { alpha = scrollbarAlpha.value },
@@ -70,13 +68,14 @@ fun VerticalScrollbar(
 fun scrollbarStyle(color: Color) = ScrollbarStyle(
     minimalHeight = ThumbLength,
     thickness = ThumbThickness,
-    hoverDurationMillis = 300,
+    padding = ThumbPadding,
     shape = ThumbShape,
+    hoverDurationMillis = 300,
     unhoverColor = color,
     hoverColor = color,
 )
 
-private val HorizontalPadding = 8.dp
+private val ThumbPadding = 8.dp
 private val ThumbLength = 48.dp
 private val ThumbThickness = 8.dp
 private val ThumbShape = RoundedCornerShape(ThumbThickness / 2)
