@@ -224,7 +224,11 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             }
             if (!spiderDen.postArchive()) {
                 if (mWorkerScope.isDownloadMode) {
-                    spiderDen.writeComicInfo()
+                    runCatching {
+                        spiderDen.writeComicInfo()
+                    }.onFailure {
+                        logcat(it)
+                    }
                 }
                 runCatching {
                     writeSpiderInfoToLocal()
