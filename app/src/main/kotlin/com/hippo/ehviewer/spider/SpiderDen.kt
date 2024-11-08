@@ -352,19 +352,15 @@ class SpiderDen(val info: GalleryInfo) {
     suspend fun writeComicInfo(fetchMetadata: Boolean = true) {
         downloadDir?.run {
             resolve(COMIC_INFO_FILE).also {
-                runCatching {
-                    if (info !is GalleryDetail && fetchMetadata) {
-                        EhEngine.fillGalleryListByApi(listOf(info))
+                if (info !is GalleryDetail && fetchMetadata) {
+                    EhEngine.fillGalleryListByApi(listOf(info))
+                }
+                info.getComicInfo().apply {
+                    write(it)
+                    DownloadManager.getDownloadInfo(gid)?.let { downloadInfo ->
+                        downloadInfo.artistInfoList = DownloadArtist.from(gid, penciller.orEmpty())
+                        EhDB.putDownloadArtist(gid, downloadInfo.artistInfoList)
                     }
-                    info.getComicInfo().apply {
-                        write(it)
-                        DownloadManager.getDownloadInfo(gid)?.let { downloadInfo ->
-                            downloadInfo.artistInfoList = DownloadArtist.from(gid, penciller.orEmpty())
-                            EhDB.putDownloadArtist(gid, downloadInfo.artistInfoList)
-                        }
-                    }
-                }.onFailure {
-                    logcat(it)
                 }
             }
         }
