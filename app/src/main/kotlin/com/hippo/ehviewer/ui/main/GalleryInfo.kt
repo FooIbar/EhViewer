@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
@@ -108,13 +107,11 @@ fun GalleryInfoListItem(
     interactionSource = interactionSource,
 ) {
     Row {
-        Card {
-            with(listThumbGenerator) {
-                EhAsyncCropThumb(
-                    key = info,
-                    modifier = Modifier.aspectRatio(DEFAULT_RATIO).fillMaxSize(),
-                )
-            }
+        with(listThumbGenerator) {
+            EhThumbCard(
+                key = info,
+                modifier = Modifier.aspectRatio(DEFAULT_RATIO),
+            )
         }
         ConstraintLayout(
             modifier = Modifier.padding(start = 8.dp, top = 2.dp, end = 4.dp, bottom = 4.dp).fillMaxSize(),
