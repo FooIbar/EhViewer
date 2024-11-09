@@ -369,6 +369,7 @@
     <string name="just_now">เดี๋ยวนี้</string>
     <string name="yesterday">เมื่อวาน</string>
     <string name="some_days_ago">%d วันที่ผ่านมา</string>
+    <string name="archive">การบีบอัด</string>
     <string name="no_archives">ยังไม่มีไฟล์บีบอัด</string>
     <string name="download_archive_started">เริ่มการดาวน์โหลดบีบอัด</string>
     <string name="download_archive_failure">การดาวน์โหลดไฟล์บีบอัดล้มเหลว</string>

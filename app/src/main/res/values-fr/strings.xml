@@ -381,6 +381,7 @@
     <string name="just_now">En ce moment</string>
     <string name="yesterday">Hier</string>
     <string name="some_days_ago">Il y a %d jours</string>
+    <string name="archive">Fiches archives</string>
     <string name="no_archives">Aucun fiche archives</string>
     <string name="download_archive_started">Téléchargement du fiche archives a commencé</string>
     <string name="download_archive_failure">Téléchargement du fiche archives a échoué</string>

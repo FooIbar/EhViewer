@@ -420,6 +420,7 @@
     <string name="just_now">たった今</string>
     <string name="yesterday">昨日</string>
     <string name="some_days_ago">%d 日前</string>
+    <string name="archive">圧縮パッケージ</string>
     <string name="no_archives">アーカイブなし</string>
     <string name="download_archive_started">アーカイブのダウンロードを開始しました</string>
     <string name="download_archive_failure">アーカイブをダウンロードできませんでした</string>

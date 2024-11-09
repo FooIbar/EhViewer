@@ -1,11 +1,6 @@
 package com.hippo.ehviewer.ui.screen
 
-import android.app.DownloadManager
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.os.Environment
 import android.os.Parcelable
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.collection.SieveCache
@@ -14,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.FolderZip
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
@@ -52,26 +46,20 @@ import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.data.findBaseInfo
-import com.hippo.ehviewer.client.exception.EhException
-import com.hippo.ehviewer.client.exception.NoHAtHClientException
 import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.dao.DownloadInfo
-import com.hippo.ehviewer.download.DownloadManager as EhDownloadManager
+import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.composing
-import com.hippo.ehviewer.ui.main.ArchiveList
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.AppHelper
-import com.hippo.ehviewer.util.FileUtils
-import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.awaitActivityResult
 import com.hippo.ehviewer.util.bgWork
 import com.hippo.ehviewer.util.displayString
@@ -82,16 +70,9 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
-import kotlin.coroutines.resume
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
-import splitties.systemservices.downloadManager
 
 val detailCache = SieveCache<Long, GalleryDetail>(25)
 
@@ -154,78 +135,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
         }
     }
 
-    val archiveResult = remember(galleryInfo) {
-        async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
-            val detail = galleryInfo as GalleryDetail
-            EhEngine.getArchiveList(detail.archiveUrl!!, gid, token)
-        }
-    }
-
-    val failureNoHath = stringResource(R.string.download_archive_failure_no_hath)
-    val noArchive = stringResource(R.string.no_archives)
-    val downloadStarted = stringResource(R.string.download_archive_started)
-    val downloadFailed = stringResource(R.string.download_archive_failure)
     val signInFirst = stringResource(R.string.sign_in_first)
-    fun showArchiveDialog() {
-        val galleryDetail = galleryInfo as? GalleryDetail ?: return
-        launchIO {
-            if (galleryDetail.apiUid < 0) {
-                showSnackbar(signInFirst)
-            } else {
-                runSuspendCatching {
-                    val (archiveList, funds) = bgWork { archiveResult.await() }
-                    if (archiveList.isEmpty()) {
-                        showSnackbar(noArchive)
-                    } else {
-                        val selected = showNoButton {
-                            ArchiveList(
-                                funds = funds,
-                                items = archiveList,
-                                onItemClick = { resume(it) },
-                            )
-                        }
-                        EhEngine.downloadArchive(gid, token, selected.res, selected.isHAtH)?.let {
-                            val uri = Uri.parse(it)
-                            val intent = Intent().apply {
-                                action = Intent.ACTION_VIEW
-                                setDataAndType(uri, "application/zip")
-                            }
-                            val name = "$gid-${EhUtils.getSuitableTitle(galleryDetail)}.zip"
-                            try {
-                                startActivity(intent)
-                                withUIContext { addTextToClipboard(name, true) }
-                            } catch (_: ActivityNotFoundException) {
-                                val r = DownloadManager.Request(uri)
-                                r.setDestinationInExternalPublicDir(
-                                    Environment.DIRECTORY_DOWNLOADS,
-                                    AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
-                                )
-                                r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                                downloadManager.enqueue(r)
-                            }
-                            if (Settings.archiveMetadata) {
-                                SpiderDen(galleryDetail).apply {
-                                    initDownloadDir()
-                                    writeComicInfo()
-                                }
-                            }
-                        }
-                        showSnackbar(downloadStarted)
-                    }
-                }.onFailure {
-                    when (it) {
-                        is NoHAtHClientException -> showSnackbar(failureNoHath)
-                        is EhException -> showSnackbar(it.displayString())
-                        else -> {
-                            logcat(it)
-                            showSnackbar(downloadFailed)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     Scaffold(
         topBar = {
             LargeTopAppBar(
@@ -248,12 +158,6 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 },
                 scrollBehavior = scrollBehavior,
                 actions = {
-                    IconButton(onClick = ::showArchiveDialog) {
-                        Icon(
-                            imageVector = Icons.Default.FolderZip,
-                            contentDescription = null,
-                        )
-                    }
                     IconButton(
                         onClick = {
                             AppHelper.share(implicit<MainActivity>(), galleryDetailUrl)
@@ -344,7 +248,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                             onClick = {
                                 dropdown = false
                                 launchIO {
-                                    val downloadInfo = EhDownloadManager.getDownloadInfo(gid)
+                                    val downloadInfo = DownloadManager.getDownloadInfo(gid)
                                     val canExport = downloadInfo?.state == DownloadInfo.STATE_FINISH
                                     if (!canExport) {
                                         awaitConfirmationOrCancel(

@@ -435,12 +435,13 @@
     <string name="just_now">Just now</string>
     <string name="yesterday">Yesterday</string>
     <string name="some_days_ago">%d days ago</string>
-    <string name="no_archives">No Archives</string>
-    <string name="download_archive_started">Archive download started</string>
-    <string name="download_archive_failure">Failed to download archive</string>
+    <string name="archive">Archive</string>
     <string name="archive_free">Free</string>
     <string name="archive_original">Original</string>
     <string name="archive_resample">Resample</string>
+    <string name="no_archives">No Archives</string>
+    <string name="download_archive_started">Archive download started</string>
+    <string name="download_archive_failure">Failed to download archive</string>
     <string name="download_archive_failure_no_hath">Need H@H client for archive download</string>
     <string name="current_funds">Current Funds:</string>
     <string name="insufficient_funds">Insufficient Funds</string>

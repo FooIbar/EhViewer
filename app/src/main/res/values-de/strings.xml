@@ -286,6 +286,7 @@
     <string name="just_now">Gerade</string>
     <string name="yesterday">Gestern</string>
     <string name="some_days_ago">Vor %d Tagen</string>
+    <string name="archive">Archivdateien</string>
     <string name="no_archives">Keine Archivdatei</string>
     <string name="download_archive_started">Archivdatei wird heruntergeladen</string>
     <string name="download_archive_failure">Fehler beim Herunterladen der Archivdatei</string>

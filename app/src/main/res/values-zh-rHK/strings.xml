@@ -405,6 +405,7 @@
     <string name="just_now">剛剛</string>
     <string name="yesterday">昨天</string>
     <string name="some_days_ago">%d 天前</string>
+    <string name="archive">壓縮包</string>
     <string name="no_archives">沒有壓縮包</string>
     <string name="download_archive_started">開始下載壓縮包</string>
     <string name="download_archive_failure">無法下載壓縮包</string>

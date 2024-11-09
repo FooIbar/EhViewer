@@ -15,18 +15,32 @@
  */
 package com.hippo.ehviewer.client
 
+import android.app.DownloadManager
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.os.Environment
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.Color
+import androidx.core.net.toUri
 import arrow.core.memoize
 import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.parser.Archive
+import com.hippo.ehviewer.spider.SpiderDen
+import com.hippo.ehviewer.util.AppConfig
+import com.hippo.ehviewer.util.FileUtils
+import com.hippo.ehviewer.util.addTextToClipboard
 import com.materialkolor.hct.Hct
 import com.materialkolor.ktx.from
 import com.materialkolor.ktx.toColor
+import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.abs
+import splitties.systemservices.downloadManager
 
 object EhUtils {
     const val NONE = -1 // Use it for homepage
@@ -84,15 +98,11 @@ object EhUtils {
     )
     private val CATEGORY_STRINGS = CATEGORY_VALUES.entries.map { (k, v) -> v to k }
 
-    private val ImageHashRegex = Regex("[0-9a-f]{40}")
-
     val isExHentai: Boolean
         get() = Settings.gallerySite.value == EhUrl.SITE_EX
 
     val isMpvAvailable
         get() = EhCookieStore.getHathPerks()?.contains('q') == true
-
-    fun getImageHash(thumbUrl: String) = ImageHashRegex.find(thumbUrl)?.groupValues[0]
 
     fun getCategory(type: String?): Int {
         for (entry in CATEGORY_STRINGS) {
@@ -181,5 +191,36 @@ object EhUtils {
         // Only need romaji.
         // TODO But not sure every '|' means that
         return title.substringBeforeLast('|').trim().ifEmpty { null }
+    }
+
+    context(Context)
+    suspend fun downloadArchive(galleryDetail: GalleryDetail, archive: Archive) {
+        val gid = galleryDetail.gid
+        EhEngine.downloadArchive(gid, galleryDetail.token, archive.res, archive.isHAtH)?.let {
+            val uri = it.toUri()
+            val intent = Intent().apply {
+                action = Intent.ACTION_VIEW
+                setDataAndType(uri, "application/zip")
+            }
+            val name = "$gid-${getSuitableTitle(galleryDetail)}.zip"
+            try {
+                startActivity(intent)
+                withUIContext { addTextToClipboard(name, true) }
+            } catch (_: ActivityNotFoundException) {
+                val r = DownloadManager.Request(uri)
+                r.setDestinationInExternalPublicDir(
+                    Environment.DIRECTORY_DOWNLOADS,
+                    AppConfig.APP_DIRNAME + "/" + FileUtils.sanitizeFilename(name),
+                )
+                r.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                downloadManager.enqueue(r)
+            }
+            if (Settings.archiveMetadata) {
+                SpiderDen(galleryDetail).apply {
+                    initDownloadDir()
+                    writeComicInfo()
+                }
+            }
+        }
     }
 }

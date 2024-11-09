@@ -341,6 +341,7 @@
     <string name="just_now">Ahora</string>
     <string name="yesterday">Ayer</string>
     <string name="some_days_ago">Hace %d días atrás</string>
+    <string name="archive">Archivo</string>
     <string name="no_archives">Sin archivos</string>
     <string name="download_archive_started">Descarga de archivos iniciada</string>
     <string name="download_archive_failure">Error al descargar archivo</string>
