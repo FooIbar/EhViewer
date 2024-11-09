@@ -354,6 +354,7 @@
     <string name="just_now">방금</string>
     <string name="yesterday">어제</string>
     <string name="some_days_ago">%d일 전</string>
+    <string name="archive">아카이브</string>
     <string name="no_archives">아카이브 없음</string>
     <string name="download_archive_started">아카이브 다운로드가 시작되었습니다.</string>
     <string name="download_archive_failure">아카이브 다운로드에 실패했습니다.</string>

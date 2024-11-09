@@ -26,7 +26,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ImageSearch
+import androidx.compose.material.icons.filled.FolderZip
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -84,6 +84,8 @@ import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.client.data.asGalleryDetail
 import com.hippo.ehviewer.client.data.findBaseInfo
+import com.hippo.ehviewer.client.exception.EhException
+import com.hippo.ehviewer.client.exception.NoHAtHClientException
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
@@ -100,6 +102,7 @@ import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.destinations.GalleryCommentsScreenDestination
 import com.hippo.ehviewer.ui.getFavoriteIcon
 import com.hippo.ehviewer.ui.jumpToReaderByPage
+import com.hippo.ehviewer.ui.main.ArchiveList
 import com.hippo.ehviewer.ui.main.EhPreviewItem
 import com.hippo.ehviewer.ui.main.GalleryCommentCard
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
@@ -128,6 +131,7 @@ import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.hippo.ehviewer.util.bgWork
+import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.flattenForEach
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -524,18 +528,55 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
                 }
             },
         )
-        val invalidUrl = stringResource(R.string.error_invalid_url)
-        EhIconButton(
-            icon = Icons.Default.ImageSearch,
-            text = stringResource(id = R.string.search_cover),
-            onClick = {
-                val hash = EhUtils.getImageHash(galleryDetail.thumbKey!!)
-                if (hash != null) {
-                    navigate(ListUrlBuilder(mode = ListUrlBuilder.MODE_IMAGE_SEARCH, hash = hash).asDst())
-                } else {
-                    launch { showSnackbar(invalidUrl) }
+        val signInFirst = stringResource(R.string.sign_in_first)
+        val noArchive = stringResource(R.string.no_archives)
+        val downloadStarted = stringResource(R.string.download_archive_started)
+        val downloadFailed = stringResource(R.string.download_archive_failure)
+        val failureNoHath = stringResource(R.string.download_archive_failure_no_hath)
+        val archiveResult = remember(galleryDetail) {
+            async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
+                with(galleryDetail) {
+                    EhEngine.getArchiveList(archiveUrl!!, gid, token)
                 }
-            },
+            }
+        }
+        fun showArchiveDialog() {
+            launchIO {
+                if (galleryDetail.apiUid < 0) {
+                    showSnackbar(signInFirst)
+                } else {
+                    runSuspendCatching {
+                        val (archiveList, funds) = bgWork { archiveResult.await() }
+                        if (archiveList.isEmpty()) {
+                            showSnackbar(noArchive)
+                        } else {
+                            val selected = showNoButton {
+                                ArchiveList(
+                                    funds = funds,
+                                    items = archiveList,
+                                    onItemClick = { resume(it) },
+                                )
+                            }
+                            EhUtils.downloadArchive(galleryDetail, selected)
+                            showSnackbar(downloadStarted)
+                        }
+                    }.onFailure {
+                        when (it) {
+                            is NoHAtHClientException -> showSnackbar(failureNoHath)
+                            is EhException -> showSnackbar(it.displayString())
+                            else -> {
+                                logcat(it)
+                                showSnackbar(downloadFailed)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        EhIconButton(
+            icon = Icons.Default.FolderZip,
+            text = stringResource(id = R.string.archive),
+            onClick = ::showArchiveDialog,
         )
         val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
         val noTorrents = stringResource(R.string.no_torrents)
