@@ -44,16 +44,15 @@ val String.isV2PreviewKey
     get() = startsWith('$')
 
 val GalleryInfo.thumbUrl
-    get() = thumbKey!!.let {
-        if (it.endsWith("webp")) {
-            if (useExThumb) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E
-        } else {
-            v1ThumbPrefix
-        } + it
-    }
+    get() = keyToUrl(thumbKey!!)
 
-val v1ThumbPrefix
-    get() = if (useExThumb) URL_PREFIX_V1_THUMB_EX else URL_PREFIX_THUMB_E
+fun keyToUrl(key: String, exSite: Boolean = useExThumb) = if (key.endsWith("webp")) {
+    if (exSite) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E
+} else {
+    if (exSite) URL_PREFIX_V1_THUMB_EX else URL_PREFIX_THUMB_E
+} + key
+
+fun flipThumbSite(url: String) = keyToUrl(getThumbKey(url), !useExThumb)
 
 private val useExThumb
     get() = EhUtils.isExHentai && !Settings.forceEhThumb.value

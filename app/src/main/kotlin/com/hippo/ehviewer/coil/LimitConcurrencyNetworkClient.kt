@@ -3,10 +3,8 @@ package com.hippo.ehviewer.coil
 import coil3.network.NetworkClient
 import coil3.network.NetworkRequest
 import coil3.network.NetworkResponse
-import coil3.network.ktor3.asNetworkClient
 import com.hippo.ehviewer.client.URL_PREFIX_THUMB_EX
 import com.hippo.ehviewer.client.URL_SIGNATURE_THUMB_NORMAL
-import io.ktor.client.HttpClient
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
 import moe.tarsin.coroutines.NamedSemaphore
@@ -27,4 +25,4 @@ class LimitConcurrencyNetworkClient(val impl: NetworkClient) : NetworkClient {
     }
 }
 
-fun HttpClient.limitConcurrency() = LimitConcurrencyNetworkClient(asNetworkClient())
+fun NetworkClient.limitConcurrency() = LimitConcurrencyNetworkClient(this)
