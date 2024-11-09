@@ -7,6 +7,8 @@ import com.hippo.ehviewer.client.executeAndParseAs
 import com.hippo.ehviewer.client.executeSafely
 import com.hippo.ehviewer.util.copyTo
 import com.hippo.ehviewer.util.ensureSuccess
+import io.ktor.client.plugins.timeout
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
@@ -66,7 +68,11 @@ object AppUpdater {
         return null
     }
 
-    suspend fun downloadUpdate(url: String, file: File) = ghStatement(url).executeSafely { response ->
+    suspend fun downloadUpdate(url: String, file: File) = ghStatement(url) {
+        timeout {
+            requestTimeoutMillis = 60_000
+        }
+    }.executeSafely { response ->
         response.status.ensureSuccess()
         if (url.endsWith("zip")) {
             response.bodyAsChannel().toInputStream().use { stream ->
@@ -83,8 +89,12 @@ object AppUpdater {
     }
 }
 
-private suspend inline fun ghStatement(url: String) = ktorClient.prepareGet(url) {
+private suspend inline fun ghStatement(
+    url: String,
+    builder: HttpRequestBuilder.() -> Unit = {},
+) = ktorClient.prepareGet(url) {
     header("Authorization", GithubTokenParts.joinToString("_", prefix = "Bearer "))
+    apply(builder)
 }
 
 private val GithubTokenParts = arrayOf(
