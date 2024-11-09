@@ -87,6 +87,9 @@ object EhUtils {
     val isExHentai: Boolean
         get() = Settings.gallerySite.value == EhUrl.SITE_EX
 
+    val isMpvAvailable
+        get() = EhCookieStore.getHathPerks()?.contains('q') == true
+
     fun getCategory(type: String?): Int {
         for (entry in CATEGORY_STRINGS) {
             for (str in entry.first) {

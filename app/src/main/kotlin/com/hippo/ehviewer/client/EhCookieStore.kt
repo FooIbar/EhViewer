@@ -18,6 +18,7 @@ object EhCookieStore : CookiesStorage {
     const val KEY_IPB_MEMBER_ID = "ipb_member_id"
     const val KEY_IPB_PASS_HASH = "ipb_pass_hash"
     const val KEY_IGNEOUS = "igneous"
+    private const val KEY_HATH_PERKS = "hath_perks"
     private const val KEY_CONTENT_WARNING = "nw"
     private const val CONTENT_WARNING_NOT_SHOW = "1"
     private const val KEY_UTMP_NAME = "__utmp"
@@ -34,6 +35,8 @@ object EhCookieStore : CookiesStorage {
     }
 
     fun getUserId() = getCookies(EhUrl.HOST_E)?.get(KEY_IPB_MEMBER_ID)
+
+    fun getHathPerks() = getCookies(EhUrl.HOST_E)?.get(KEY_HATH_PERKS)?.substringBefore('-')
 
     fun getIdentityCookies(): List<Pair<String, String?>> {
         val eCookies = getCookies(EhUrl.HOST_E)
