@@ -25,6 +25,7 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUrl.getGalleryDetailUrl
 import com.hippo.ehviewer.client.EhUrl.getGalleryMultiPageViewerUrl
 import com.hippo.ehviewer.client.EhUrl.referer
+import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.ehRequest
 import com.hippo.ehviewer.client.exception.QuotaExceededException
@@ -327,8 +328,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         spiderInfo
     }
 
+    private val isMpvAvailable = EhUtils.isMpvAvailable
+
     suspend fun getPTokenFromMultiPageViewer(index: Int): String? {
-        val spiderInfo = spiderInfo
+        if (!isMpvAvailable) return null
         val url = getGalleryMultiPageViewerUrl(
             galleryInfo.gid,
             galleryInfo.token,
@@ -347,8 +350,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     suspend fun getPTokenFromInternet(index: Int): String? {
-        val spiderInfo = spiderInfo
-
         // Check previewIndex
         var previewIndex: Int
         previewIndex = if (spiderInfo.previewPerPage >= 0) {
@@ -538,25 +539,19 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         private suspend fun doInJob(index: Int, force: Boolean, orgImg: Boolean, skipHath: Boolean) {
             suspend fun getPToken(index: Int): String? {
                 if (index !in 0 until size) return null
-                return spiderInfo.pTokenMap[index].takeIf { it != TOKEN_FAILED }
-                    ?: getPTokenFromInternet(index)
-                    ?: getPTokenFromInternet(index)
+                return spiderInfo.pTokenMap[index]
                     ?: getPTokenFromMultiPageViewer(index)
+                    ?: getPTokenFromInternet(index)
+                    // Preview size may changed, so try to get pToken twice
+                    ?: getPTokenFromInternet(index)
             }
             val previousPToken: String?
             val pToken: String
             pTokenLock.withLock {
-                if (force) {
-                    if (spiderInfo.pTokenMap[index] == TOKEN_FAILED) {
-                        spiderInfo.pTokenMap.remove(index)
-                    }
-                } else if (index in spiderDen) {
+                if (!force && index in spiderDen) {
                     return updatePageState(index, STATE_FINISHED)
                 }
-                pToken = getPToken(index)
-                    ?: return updatePageState(index, STATE_FAILED, PTOKEN_FAILED_MESSAGE).also {
-                        spiderInfo.pTokenMap[index] = TOKEN_FAILED
-                    }
+                pToken = getPToken(index) ?: return updatePageState(index, STATE_FAILED, PTOKEN_FAILED_MESSAGE)
                 previousPToken = getPToken(index - 1)
 
                 // The lock for delay should be acquired before anything else to maintain FIFO order
