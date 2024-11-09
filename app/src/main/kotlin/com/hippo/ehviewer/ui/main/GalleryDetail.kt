@@ -109,16 +109,14 @@ fun GalleryDetailHeaderCard(
     modifier: Modifier = Modifier,
 ) = ElevatedCard(modifier = modifier) {
     Row {
-        Card {
-            with(detailThumbGenerator) {
-                EhAsyncCropThumb(
-                    key = remember(info.gid) { info },
-                    modifier = Modifier.size(
-                        dimensionResource(id = R.dimen.gallery_detail_thumb_width),
-                        dimensionResource(id = R.dimen.gallery_detail_thumb_height),
-                    ),
-                )
-            }
+        with(detailThumbGenerator) {
+            EhThumbCard(
+                key = remember(info.gid) { info },
+                modifier = Modifier.size(
+                    dimensionResource(id = R.dimen.gallery_detail_thumb_width),
+                    dimensionResource(id = R.dimen.gallery_detail_thumb_height),
+                ),
+            )
         }
         Spacer(modifier = Modifier.weight(0.5F))
         Column(

@@ -1,6 +1,9 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Card
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
@@ -12,8 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import coil3.Image
+import coil3.Image as CoilImage
 import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.compose.ConstraintsSizeResolver
+import coil3.compose.rememberAsyncImagePainter
+import coil3.compose.rememberConstraintsSizeResolver
 import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
@@ -25,7 +32,25 @@ import com.hippo.ehviewer.ui.tools.shouldCrop
 @NonRestartableComposable
 fun requestOf(model: GalleryInfo): ImageRequest {
     val context = LocalContext.current
-    return remember(model) { context.imageRequest(model) }
+    return remember(model) { context.imageRequest(model) }.withSizeResolver()
+}
+
+@Composable
+@NonRestartableComposable
+fun ImageRequest.withSizeResolver() = if (defined.sizeResolver != null) {
+    this
+} else {
+    val sizeResolver = rememberConstraintsSizeResolver()
+    remember(this, sizeResolver) { newBuilder().size(sizeResolver).build() }
+}
+
+fun Modifier.imageRequest(request: ImageRequest): Modifier {
+    val sizeResolver = request.sizeResolver
+    return if (sizeResolver is ConstraintsSizeResolver) {
+        then(sizeResolver)
+    } else {
+        this
+    }
 }
 
 context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
@@ -34,7 +59,7 @@ context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
 fun EhAsyncThumb(
     model: GalleryInfo,
     modifier: Modifier = Modifier,
-    onSuccess: ((Image) -> Unit)? = null,
+    onSuccess: ((CoilImage) -> Unit)? = null,
     contentScale: ContentScale = ContentScale.Fit,
 ) = AsyncImage(
     model = requestOf(model),
@@ -68,4 +93,36 @@ fun EhAsyncCropThumb(
         },
         contentScale = contentScale,
     )
+}
+
+@Composable
+fun EhThumbCard(
+    key: GalleryInfo,
+    modifier: Modifier = Modifier,
+) {
+    var contentScale by remember(key) { mutableStateOf(ContentScale.Fit) }
+    val request = requestOf(key)
+    val painter = rememberAsyncImagePainter(
+        model = request,
+        onSuccess = {
+            if (it.result.image.shouldCrop) {
+                contentScale = ContentScale.Crop
+            }
+        },
+    )
+    Card(
+        onClick = {
+            if (painter.state.value is AsyncImagePainter.State.Error) {
+                painter.restart()
+            }
+        },
+        modifier = modifier,
+    ) {
+        Image(
+            painter = painter,
+            contentDescription = null,
+            modifier = Modifier.imageRequest(request).fillMaxSize().clip(ShapeDefaults.Medium),
+            contentScale = contentScale,
+        )
+    }
 }
