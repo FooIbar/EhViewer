@@ -84,11 +84,15 @@ object EhUtils {
     )
     private val CATEGORY_STRINGS = CATEGORY_VALUES.entries.map { (k, v) -> v to k }
 
+    private val ImageHashRegex = Regex("[0-9a-f]{40}")
+
     val isExHentai: Boolean
         get() = Settings.gallerySite.value == EhUrl.SITE_EX
 
     val isMpvAvailable
         get() = EhCookieStore.getHathPerks()?.contains('q') == true
+
+    fun getImageHash(thumbUrl: String) = ImageHashRegex.find(thumbUrl)?.groupValues[0]
 
     fun getCategory(type: String?): Int {
         for (entry in CATEGORY_STRINGS) {

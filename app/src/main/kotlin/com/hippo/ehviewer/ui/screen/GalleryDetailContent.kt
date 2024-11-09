@@ -524,17 +524,17 @@ fun BelowHeader(galleryDetail: GalleryDetail) {
                 }
             },
         )
+        val invalidUrl = stringResource(R.string.error_invalid_url)
         EhIconButton(
             icon = Icons.Default.ImageSearch,
             text = stringResource(id = R.string.search_cover),
             onClick = {
-                val key = galleryDetail.thumbKey!!
-                navigate(
-                    ListUrlBuilder(
-                        mode = ListUrlBuilder.MODE_IMAGE_SEARCH,
-                        hash = key.substringAfterLast('/').substringBefore('-'),
-                    ).asDst(),
-                )
+                val hash = EhUtils.getImageHash(galleryDetail.thumbKey!!)
+                if (hash != null) {
+                    navigate(ListUrlBuilder(mode = ListUrlBuilder.MODE_IMAGE_SEARCH, hash = hash).asDst())
+                } else {
+                    launch { showSnackbar(invalidUrl) }
+                }
             },
         )
         val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
