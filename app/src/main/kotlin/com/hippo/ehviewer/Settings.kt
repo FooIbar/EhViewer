@@ -210,9 +210,6 @@ object Settings : DataStorePreferences(null) {
     val showNavigationOverlayOnStart = boolPref("reader_navigation_overlay_on_start", false)
     val stripExtraneousAds = boolPref("strip_extraneous_ads", false)
 
-    val userAgent
-        get() = if (desktopSite) CHROME_USER_AGENT else CHROME_MOBILE_USER_AGENT
-
     init {
         if ("CN" == Locale.getDefault().country) {
             edit {
@@ -254,6 +251,3 @@ object Settings : DataStorePreferences(null) {
         }
     }
 }
-
-private const val CHROME_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${BuildConfig.CHROME_VERSION}.0.0.0 Safari/537.36"
-private const val CHROME_MOBILE_USER_AGENT = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${BuildConfig.CHROME_VERSION}.0.0.0 Mobile Safari/537.36"

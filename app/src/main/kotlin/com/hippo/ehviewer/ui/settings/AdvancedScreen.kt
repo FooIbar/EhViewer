@@ -203,11 +203,6 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.animate_items),
                 summary = stringResource(id = R.string.animate_items_summary),
             )
-            SwitchPreference(
-                title = stringResource(id = R.string.desktop_site),
-                summary = stringResource(id = R.string.desktop_site_summary),
-                value = Settings::desktopSite,
-            )
             val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)
             LauncherPreference(
                 title = stringResource(id = R.string.settings_advanced_export_data),
