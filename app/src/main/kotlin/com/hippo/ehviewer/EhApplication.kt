@@ -165,7 +165,7 @@ class EhApplication :
             serviceLoaderEnabled(false)
             add(
                 NetworkFetcher.Factory(
-                    networkClient = { ktorClient.asNetworkClient().exchangeSite().limitConcurrency() },
+                    networkClient = { ktorClient.asNetworkClient().limitConcurrency().exchangeSite() },
                     connectivityChecker = { ConnectivityChecker.ONLINE },
                 ),
             )
