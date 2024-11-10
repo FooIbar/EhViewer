@@ -2,6 +2,7 @@ package com.hippo.files
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.provider.DocumentsContract
 import android.provider.DocumentsContract.Document
@@ -32,7 +33,13 @@ class AndroidFileSystem(context: Context) : FileSystem() {
 
         source.runCatching {
             DocumentsContract.renameDocument(contentResolver, toUri(), target.name)
-        }.getOrNull() ?: throw IOException("Failed to move $source to $target")
+        }.onFailure {
+            // ExternalStorageProvider always throw exception when renameDocument on API 28
+            // https://android.googlesource.com/platform/frameworks/base/+/7bf90408e36613a84dc2a665905fde2c83cfa797
+            if (Build.VERSION.SDK_INT != Build.VERSION_CODES.P) {
+                throw IOException("Failed to move $source to $target")
+            }
+        }
     }
 
     override fun canonicalize(path: Path): Path {
