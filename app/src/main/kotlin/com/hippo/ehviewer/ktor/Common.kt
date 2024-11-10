@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ktor
 
+import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.client.EhCookieStore
 import io.ktor.client.HttpClientConfig
@@ -21,7 +22,7 @@ fun <T : HttpClientEngineConfig> HttpClientConfig<T>.configureCommon(redirect: B
         storage = EhCookieStore
     }
     install(HttpTimeout) {
-        requestTimeoutMillis = 10_000
+        requestTimeoutMillis = Settings.downloadTimeout * 1000L
     }
     install(UserAgent) {
         agent = CHROME_USER_AGENT
