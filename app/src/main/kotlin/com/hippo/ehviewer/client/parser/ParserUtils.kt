@@ -41,7 +41,7 @@ object ParserUtils {
 
     fun parseDate(str: String): Long = formatter.parse(str).toEpochMillis()
 
-    fun trim(str: String?): String = str?.unescapeXml()?.trim() ?: ""
+    fun trim(str: String?): String = str?.unescapeXml()?.trim().orEmpty()
 
     fun parseInt(str: String?, defValue: Int): Int = trim(str).replace(",", "").toIntOrDefault(defValue)
 

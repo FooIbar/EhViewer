@@ -74,18 +74,6 @@
         <item>1</item>
     </integer-array>
 
-    <string-array name="thumb_resolution_entries" translatable="false">
-        <item>@string/settings_eh_thumb_resolution_auto</item>
-        <item>250x</item>
-        <item>300x</item>
-    </string-array>
-
-    <integer-array name="thumb_resolution_entry_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </integer-array>
-
     <string-array name="search_min_rating" translatable="false">
         <item>@string/any</item>
         <item>@string/star_2</item>

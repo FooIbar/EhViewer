@@ -116,9 +116,6 @@
     <string name="no_comments">코멘트 없음</string>
     <string name="no_more_comments">코멘트가 더 없음</string>
     <string name="more_comment">코멘트 더 보기</string>
-    <string name="no_previews">미리 보기 없음</string>
-    <string name="no_more_previews">미리 보기가 더 없음</string>
-    <string name="more_previews">더 불러오기</string>
     <string name="refresh">새로고침</string>
     <string name="open_in_other_app">다른 앱에서 열기</string>
     <string name="rate_successfully">평가를 남겼습니다.</string>
@@ -173,7 +170,6 @@
     <string name="check_vote_status">추천/비추천 상태 보기</string>
 
     <!-- Gallery Previews -->
-    <string name="gallery_previews">갤러리 미리 보기</string>
     <string name="go_to">이동</string>
 
     <!-- Download -->
@@ -258,9 +254,6 @@
     <string name="settings_eh_detail_size">상세 정보 크기</string>
     <string name="settings_eh_detail_size_long">길게</string>
     <string name="settings_eh_detail_size_short">짧게</string>
-    <string name="settings_eh_thumb_resolution">섬네일 해상도</string>
-    <string name="settings_eh_thumb_resolution_summary">특정 해상도로 설정하면 섬네일을 불러오지 못할 수 있습니다. 현재 설정\u003a \u005b%s\u005d</string>
-    <string name="settings_eh_thumb_resolution_auto">자동</string>
     <string name="settings_eh_show_jpn_title">일본어 제목 표시</string>
     <string name="settings_eh_show_gallery_pages">갤러리 페이지 수 표시</string>
     <string name="settings_eh_show_gallery_pages_summary">갤러리 목록에 해당 갤러리의 페이지 수를 표시합니다</string>
@@ -268,8 +261,6 @@
     <string name="settings_eh_show_tag_translations_summary">영어 태그 대신 번역된 태그를 표시합니다. 데이터 파일을 다운로드하는데 시간이 걸립 수 있습니다.</string>
     <string name="settings_eh_tag_translations_source">Placeholder</string>
     <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
-
-    <string name="settings_read_volume_page">볼륨 키로 페이지 넘기기</string>
 
     <string name="settings_download">다운로드</string>
     <string name="settings_download_download_location">다운로드 위치</string>

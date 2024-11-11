@@ -123,9 +123,6 @@
     <string name="no_comments">Aucun commentaire</string>
     <string name="no_more_comments">Pas d\'autres commentaires</string>
     <string name="more_comment">Voir plus de commentaires</string>
-    <string name="no_previews">Aucun aperçu</string>
-    <string name="no_more_previews">Pas d\'autres aperçus</string>
-    <string name="more_previews">Voir plus d\'aperçus</string>
     <string name="refresh">Rafraîchir</string>
     <string name="open_in_other_app">Ouvrir avec une autre appli</string>
     <string name="rate_successfully">Noté avec succès</string>
@@ -196,7 +193,6 @@
     <string name="check_vote_status">Voir les détails des votes</string>
 
     <!-- Gallery Previews -->
-    <string name="gallery_previews">Aperçus de la galerie</string>
     <string name="go_to">Aller à</string>
 
     <!-- Download -->
@@ -286,14 +282,9 @@
     <string name="settings_eh_detail_size">Taille des détails</string>
     <string name="settings_eh_detail_size_long">Long</string>
     <string name="settings_eh_detail_size_short">Court</string>
-    <string name="settings_eh_thumb_resolution">Résolution des miniatures</string>
-    <string name="settings_eh_thumb_resolution_summary">Auctuellement %s. Certaines résolutions spéciales êmpechent de les charger correctement.</string>
-    <string name="settings_eh_thumb_resolution_auto">Auto</string>
     <string name="settings_eh_show_jpn_title">Montrer les titres japonais</string>
     <string name="settings_eh_filter">Bloqueur des galeries</string>
     <string name="settings_eh_filter_summary">Filtrer les galerie par les titres, les uploaders ou les tags</string>
-
-    <string name="settings_read_volume_page">Tourner la page avec les Volumes</string>
 
     <!-- My Tags Activity -->
     <string name="my_tags">Tags suivis</string>

@@ -28,7 +28,7 @@ object FileUtils {
     // ext4 through a FUSE layer, so use that limit.
     private const val MAX_FILENAME_BYTES = 255
 
-    fun ensureDirectory(file: File?) = file?.let { if (it.exists()) it.isDirectory else it.mkdirs() } ?: false
+    fun ensureDirectory(file: File?) = file?.let { if (it.exists()) it.isDirectory else it.mkdirs() } == true
 
     /**
      * Convert byte to human readable string.<br></br>

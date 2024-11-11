@@ -19,5 +19,5 @@ fun DownloadsFilterState.take(info: DownloadInfo) = mode.take(info, label) &&
     with(info) {
         title.containsIgnoreCase(keyword) ||
             titleJpn.containsIgnoreCase(keyword) ||
-            simpleTags?.any { it.containsIgnoreCase(keyword) } ?: false
+            simpleTags?.any { it.containsIgnoreCase(keyword) } == true
     }

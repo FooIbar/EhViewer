@@ -18,7 +18,7 @@ import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.R
 import kotlinx.coroutines.launch
 
-private val tabs = arrayOf(
+private val tabs = intArrayOf(
     R.string.pref_category_reading_mode,
     R.string.pref_category_general,
     R.string.custom_filter,

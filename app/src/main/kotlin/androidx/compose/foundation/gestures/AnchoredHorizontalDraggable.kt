@@ -185,7 +185,7 @@ private class AnchoredHorizontalDraggableNode<T>(
         }
     }
 
-    override fun onDragStarted(startedPosition: Offset) { }
+    override fun onDragStarted(startedPosition: Offset) = Unit
 
     override fun onDragStopped(velocity: Velocity) {
         if (!isAttached) return

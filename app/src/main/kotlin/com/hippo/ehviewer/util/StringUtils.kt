@@ -12,4 +12,4 @@ fun String.toLongOrDefault(defaultValue: Long): Long = toLongOrNull() ?: default
 
 fun String.toFloatOrDefault(defaultValue: Float): Float = toFloatOrNull() ?: defaultValue
 
-fun String?.containsIgnoreCase(other: String) = this?.contains(other, true) ?: false
+fun String?.containsIgnoreCase(other: String) = this?.contains(other, true) == true

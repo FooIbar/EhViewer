@@ -400,8 +400,6 @@ object GalleryDetailParser {
                         hasMore = true
                     }
                 }
-
-                override fun tail(node: Node, depth: Int) {}
             },
             chd!!,
         )

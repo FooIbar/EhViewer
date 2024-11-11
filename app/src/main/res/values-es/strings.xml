@@ -114,9 +114,6 @@
     <string name="no_comments">Sin comentarios</string>
     <string name="no_more_comments">No hay más comentarios</string>
     <string name="more_comment">Más comentarios</string>
-    <string name="no_previews">Sin vistas previas</string>
-    <string name="no_more_previews">No hay más vistas previas</string>
-    <string name="more_previews">Más vistas previas</string>
     <string name="refresh">Actualizar</string>
     <string name="open_in_other_app">Abrir en otra aplicación</string>
     <string name="rate_successfully">Valoración completada</string>
@@ -181,7 +178,6 @@
     <string name="check_vote_status">Verificar estado del voto</string>
 
     <!-- Gallery Previews -->
-    <string name="gallery_previews">Vista previa de la galería</string>
     <string name="go_to">Ir a</string>
 
     <!-- Download -->
@@ -251,17 +247,12 @@
     <string name="settings_eh_detail_size">Tamaño del detalle</string>
     <string name="settings_eh_detail_size_long">Largo</string>
     <string name="settings_eh_detail_size_short">Corto</string>
-    <string name="settings_eh_thumb_resolution">Resolución de vista previa</string>
-    <string name="settings_eh_thumb_resolution_summary">%s, las resoluciones especiales podrían causar errores en la vista previa</string>
-    <string name="settings_eh_thumb_resolution_auto">Automático</string>
     <string name="settings_eh_show_jpn_title">Mostrar títulos en japonés</string>
     <string name="settings_eh_show_jpn_title_summary">Es necesario habilitar los títulos en japonés en la propia página de EHentai</string>
     <string name="settings_eh_show_gallery_pages">Mostrar número de páginas de la galería</string>
     <string name="settings_eh_show_gallery_pages_summary">Se verá cuántas páginas tiene una galería</string>
     <string name="settings_eh_filter">Filtrado de galerías</string>
     <string name="settings_eh_filter_summary">Filtrado de galerías por título, uploader y etiquetas. Para más detalles presiona el ícono (i) en la parte superior del menú</string>
-
-    <string name="settings_read_volume_page">Pasar páginas con botón del volumen</string>
 
     <string name="settings_download">Descargas</string>
     <string name="settings_download_download_location">Ruta de descargas</string>

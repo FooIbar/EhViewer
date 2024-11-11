@@ -64,7 +64,7 @@ open class TextActionModeCallback(
         return true
     }
 
-    override fun onDestroyActionMode(mode: ActionMode) {}
+    override fun onDestroyActionMode(mode: ActionMode) = Unit
 
     override fun onGetContentRect(mode: ActionMode, view: View, outRect: PlatformRect) {
         outRect.set(rect.left.toInt(), rect.top.toInt(), rect.right.toInt(), rect.bottom.toInt())

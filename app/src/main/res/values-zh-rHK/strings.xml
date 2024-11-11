@@ -129,9 +129,6 @@
     <string name="no_comments">暫無評論</string>
     <string name="no_more_comments">已顯示所有評論</string>
     <string name="more_comment">查看更多評論</string>
-    <string name="no_previews">沒有預覽</string>
-    <string name="no_more_previews">已顯示所有預覽</string>
-    <string name="more_previews">查看更多預覽</string>
     <string name="refresh">刷新</string>
     <string name="open_in_other_app">在其他應用中打開</string>
     <string name="rate_successfully">評分成功</string>
@@ -207,7 +204,6 @@
     <string name="last_edited">上次修改時間：%s</string>
 
     <!-- Gallery Previews -->
-    <string name="gallery_previews">畫廊預覽</string>
     <string name="go_to">跳頁</string>
 
     <!-- Download -->
@@ -305,9 +301,6 @@
     <string name="settings_eh_detail_size_long">長</string>
     <string name="settings_eh_detail_size_short">短</string>
     <string name="settings_eh_thumb_columns">縮略圖列數</string>
-    <string name="settings_eh_thumb_resolution">縮略圖分辨率</string>
-    <string name="settings_eh_thumb_resolution_summary">%s，指定分辨率可能使獲取縮略圖失敗</string>
-    <string name="settings_eh_thumb_resolution_auto">自動</string>
     <string name="settings_eh_show_jpn_title">顯示日文標題</string>
     <string name="settings_eh_show_jpn_title_summary">需同時在 EHentai 網站設置中啟用 Japanese Title</string>
     <string name="settings_eh_show_gallery_pages">顯示畫廊頁數</string>
@@ -318,8 +311,6 @@
     <string name="settings_eh_tag_translations_source_url">https://github.com/EhTagTranslation/Editor/wiki</string>
     <string name="settings_eh_filter">屏蔽畫廊</string>
     <string name="settings_eh_filter_summary">根據標題、上傳者、標籤屏蔽畫廊</string>
-
-    <string name="settings_read_volume_page">使用音量鍵翻頁</string>
 
     <string name="settings_download">下載</string>
     <string name="settings_download_download_location">下載路徑</string>
