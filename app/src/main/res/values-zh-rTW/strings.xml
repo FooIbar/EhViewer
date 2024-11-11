@@ -114,9 +114,6 @@
     <string name="no_comments">沒有留言</string>
     <string name="no_more_comments">已顯示所有的留言了</string>
     <string name="more_comment">更多留言</string>
-    <string name="no_previews">沒有預覽</string>
-    <string name="no_more_previews">已經顯示所有預覽了</string>
-    <string name="more_previews">更多預覽</string>
     <string name="refresh">重新整理</string>
     <string name="view_original">查看原圖</string>
     <string name="open_in_other_app">在其他應用程式中開啟</string>
@@ -202,7 +199,6 @@
     <string name="format_url">連結</string>
     <string name="format_plain">純文字</string>
     <!-- Gallery Previews -->
-    <string name="gallery_previews">圖庫預覽</string>
     <string name="go_to">跳到</string>
     <!-- Download -->
     <string name="scene_download_title">正在下載 - %s</string>
@@ -298,9 +294,6 @@
     <string name="settings_eh_detail_size_long">長</string>
     <string name="settings_eh_detail_size_short">短</string>
     <string name="settings_eh_thumb_columns">縮圖列數</string>
-    <string name="settings_eh_thumb_resolution">縮圖解析度</string>
-    <string name="settings_eh_thumb_resolution_summary">%s，指定解析度可能會使縮圖取得失敗</string>
-    <string name="settings_eh_thumb_resolution_auto">自動</string>
     <string name="settings_eh_force_eh_thumb">使用 e-hentai 縮圖伺服器</string>
     <string name="settings_eh_force_eh_thumb_summary">若縮圖載入遇到問題可嘗試停用此項</string>
     <string name="settings_eh_show_jpn_title">顯示日文標題</string>
@@ -317,10 +310,6 @@
     <string name="settings_eh_tag_translations_source_url">https://github.com/EhTagTranslation/Editor/wiki</string>
     <string name="settings_eh_filter">隱藏圖庫</string>
     <string name="settings_eh_filter_summary">根據標題、上傳者、標籤、評論者隱藏圖庫或評論</string>
-    <string name="settings_read_volume_page">使用音量鍵翻頁</string>
-    <string name="settings_read_volume_page_fast">快</string>
-    <string name="settings_read_volume_page_slow">慢</string>
-    <string name="settings_read_reverse_volume">翻轉音量鍵</string>
     <string name="settings_download">下載</string>
     <string name="settings_download_download_location">下載路徑</string>
     <string name="settings_download_cant_get_download_location">無法取得下載路徑</string>

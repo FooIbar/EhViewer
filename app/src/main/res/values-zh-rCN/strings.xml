@@ -114,9 +114,6 @@
     <string name="no_comments">暂无评论</string>
     <string name="no_more_comments">已显示所有评论</string>
     <string name="more_comment">查看更多评论</string>
-    <string name="no_previews">没有预览</string>
-    <string name="no_more_previews">已显示所有预览</string>
-    <string name="more_previews">查看更多预览</string>
     <string name="refresh">刷新</string>
     <string name="view_original">查看原图</string>
     <string name="open_in_other_app">在其他应用中打开</string>
@@ -202,7 +199,6 @@
     <string name="format_url">链接</string>
     <string name="format_plain">纯文本</string>
     <!-- Gallery Previews -->
-    <string name="gallery_previews">画廊预览</string>
     <string name="go_to">跳页</string>
     <!-- Download -->
     <string name="scene_download_title">下载 - %s</string>
@@ -298,9 +294,6 @@
     <string name="settings_eh_detail_size_long">长</string>
     <string name="settings_eh_detail_size_short">短</string>
     <string name="settings_eh_thumb_columns">缩略图列数</string>
-    <string name="settings_eh_thumb_resolution">缩略图分辨率</string>
-    <string name="settings_eh_thumb_resolution_summary">%s，指定分辨率可能使获取缩略图失败</string>
-    <string name="settings_eh_thumb_resolution_auto">自动</string>
     <string name="settings_eh_force_eh_thumb">使用 e-hentai 缩略图服务器</string>
     <string name="settings_eh_force_eh_thumb_summary">若缩略图加载失败可尝试关闭此项</string>
     <string name="settings_eh_show_jpn_title">显示日文标题</string>
@@ -317,10 +310,6 @@
     <string name="settings_eh_tag_translations_source_url">https://github.com/EhTagTranslation/Editor/wiki</string>
     <string name="settings_eh_filter">屏蔽列表</string>
     <string name="settings_eh_filter_summary">根据标题、上传者、标签、评论者屏蔽画廊或评论</string>
-    <string name="settings_read_volume_page">使用音量键翻页</string>
-    <string name="settings_read_volume_page_fast">快</string>
-    <string name="settings_read_volume_page_slow">慢</string>
-    <string name="settings_read_reverse_volume">翻转音量键</string>
     <string name="settings_block_extraneous_ads">[实验性] 屏蔽外部广告</string>
     <string name="settings_ads_placeholder">[可选] 选择替换外部广告的图片</string>
     <string name="settings_download">下载</string>
@@ -501,8 +490,6 @@
     <string name="preload_thumb_aggressively">激进地预载缩略图</string>
     <string name="animate_items">列表项目动画</string>
     <string name="animate_items_summary">如遇崩溃/掉帧请尝试禁用此项</string>
-    <string name="desktop_site">桌面版网站</string>
-    <string name="desktop_site_summary">更高的默认图片分辨率</string>
     <string name="auto_updates">自动检查更新</string>
     <string name="update_frequency_never">从不</string>
     <string name="update_frequency_daily">每天</string>

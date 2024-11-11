@@ -45,12 +45,9 @@
     <string name="duplicate_name">Dette navnet er allerede i bruk.</string>
     <string name="star_5">5 stjerner</string>
     <string name="no_tags">Ingen etiketter</string>
-    <string name="no_previews">Ingen forhåndsvisninger</string>
-    <string name="no_more_previews">Ingen flere forhåndsvisninger</string>
     <string name="no_more_comments">Ingen flere kommentarer</string>
     <string name="open_in_other_app">Åpne med et annet program</string>
     <string name="torrents">Torrenter</string>
-    <string name="more_previews">Flere forhåndsvisninger</string>
     <string name="refresh">Gjenoppfrisk</string>
     <string name="get_it">Skjønner</string>
     <string name="keyword_search">Nøkkelordssøk</string>
@@ -121,7 +118,6 @@
     <string name="edit_comment">Rediger kommentar</string>
     <string name="stat_509_alert_title">509-advarsel</string>
     <string name="stat_download_done_title">Nedlasting fullført</string>
-    <string name="gallery_previews">Galleriforhåndsvisninger</string>
     <string name="download_state_none">Pauset</string>
     <string name="download_state_downloading">Laster ned</string>
     <string name="download_state_downloaded">Nedlastet</string>
@@ -175,7 +171,6 @@
     <string name="edge_nav">Kant</string>
     <string name="scale_type_stretch">Strekk</string>
     <string name="right_and_left_nav">Høyre og venstre</string>
-    <string name="settings_eh_thumb_resolution_auto">Automatisk</string>
     <string name="app_language_system">Systemspråk (forvalg)</string>
     <string name="error_something_wrong_happened">Noe gikk galt</string>
     <string name="just_now">Akkurat nå</string>

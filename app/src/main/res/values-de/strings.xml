@@ -92,9 +92,6 @@
     <string name="no_comments">Kein Kommentar</string>
     <string name="no_more_comments">Keine weiteren Kommentare</string>
     <string name="more_comment">Weitere Kommentare</string>
-    <string name="no_previews">Keine Vorschau</string>
-    <string name="no_more_previews">Keine weiteren Vorschauen</string>
-    <string name="more_previews">Weitere Vorschauen</string>
     <string name="refresh">Neu laden</string>
     <string name="open_in_other_app">Öffnen mit …</string>
     <string name="rate_successfully">Bewertung erfolgreich</string>
@@ -159,7 +156,6 @@
     <string name="cancel_vote_down_successfully">Die negative Stimmung wurde abgebrochen</string>
     <string name="vote_failed">Stimmung gescheitert</string>
     <string name="check_vote_status">Details der Stimmungen anzeigen</string>
-    <string name="gallery_previews">Vorschauen der Galerie</string>
     <string name="go_to">Gehe zu</string>
     <string name="scene_download_title">Download - %s</string>
     <string name="no_download_info">Downloads werden hier angezeigt</string>
@@ -231,15 +227,11 @@
     <string name="settings_eh_detail_size">Größe der Details</string>
     <string name="settings_eh_detail_size_long">Lange</string>
     <string name="settings_eh_detail_size_short">Kurz</string>
-    <string name="settings_eh_thumb_resolution">Auflösung der Miniaturbilder</string>
-    <string name="settings_eh_thumb_resolution_summary">Nun %s. Mit abnormale Auflösung kann die Miniaturbilder nicht normalerweise geladen werden.</string>
-    <string name="settings_eh_thumb_resolution_auto">Automatisch</string>
     <string name="settings_advanced_app_language_title">Sprache der App (Language)</string>
     <string name="torrent_count">Torrent (%d)</string>
     <string name="settings_eh_show_jpn_title">Japanische Titel anzeigen</string>
     <string name="settings_eh_filter">Galerie-Blocker</string>
     <string name="settings_eh_filter_summary">Nach Titel, Uploader order Etiketten die unerwünschten Galerien verstecken</string>
-    <string name="settings_read_volume_page">Seiten mit Lautstärketaste umblättern</string>
     <string name="settings_download">Download</string>
     <string name="settings_download_download_location">Downloadziel</string>
     <string name="settings_download_cant_get_download_location">Downloadziel konnte nicht geladen werden</string>

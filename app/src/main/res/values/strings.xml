@@ -130,9 +130,6 @@
     <string name="no_comments">No comments</string>
     <string name="no_more_comments">No more comments</string>
     <string name="more_comment">More comments</string>
-    <string name="no_previews">No previews</string>
-    <string name="no_more_previews">No more previews</string>
-    <string name="more_previews">More previews</string>
     <string name="refresh">Refresh</string>
     <string name="view_original">View original image</string>
     <string name="open_in_other_app">Open with other app</string>
@@ -219,7 +216,6 @@
     <string name="format_url">URL</string>
     <string name="format_plain">Plain text</string>
     <!-- Gallery Previews -->
-    <string name="gallery_previews">Gallery Previews</string>
     <string name="go_to">Go to</string>
     <!-- Download -->
     <string name="scene_download_title">Download - %s</string>
@@ -314,9 +310,6 @@
     <string name="settings_eh_detail_size_long">Long</string>
     <string name="settings_eh_detail_size_short">Short</string>
     <string name="settings_eh_thumb_columns">Thumb columns</string>
-    <string name="settings_eh_thumb_resolution">Thumb resolution</string>
-    <string name="settings_eh_thumb_resolution_summary">Currently %s. Certain resolutions might cause getting thumb failed</string>
-    <string name="settings_eh_thumb_resolution_auto">Auto</string>
     <string name="settings_eh_force_eh_thumb">Use e-hentai thumbnail server</string>
     <string name="settings_eh_force_eh_thumb_summary">Try disabling this if you have trouble loading thumbnails</string>
     <string name="settings_eh_show_jpn_title">Show Japanese title</string>
@@ -333,10 +326,6 @@
     <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
     <string name="settings_eh_filter">Blockers</string>
     <string name="settings_eh_filter_summary">Block gallery or comment by title, uploader, tags and commenter</string>
-    <string name="settings_read_volume_page">Use volume key to turn pages</string>
-    <string name="settings_read_volume_page_fast">Fast</string>
-    <string name="settings_read_volume_page_slow">Slow</string>
-    <string name="settings_read_reverse_volume">Reverse volume key</string>
     <string name="settings_block_extraneous_ads">[Experimental] Block extraneous ads</string>
     <string name="settings_ads_placeholder">[Optional] Pick placeholder to replace ads</string>
     <string name="settings_download">Download</string>
@@ -520,8 +509,6 @@
     <string name="preload_thumb_aggressively">Preload thumbs aggressively</string>
     <string name="animate_items">List item animations</string>
     <string name="animate_items_summary">Try disabling this if you are facing crashes / frame drops</string>
-    <string name="desktop_site">Desktop site</string>
-    <string name="desktop_site_summary">Higher default image resolution</string>
     <string name="auto_updates">Automatically check for updates</string>
     <string name="update_frequency_never">Never</string>
     <string name="update_frequency_daily">Daily</string>

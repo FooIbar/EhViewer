@@ -118,9 +118,6 @@
     <string name="no_comments">ไม่มีความคิดเห็น</string>
     <string name="no_more_comments">ไม่มีความเห็นเพิ่มเติมแล้ว</string>
     <string name="more_comment">ความคิดเห็นเพิ่มเติม</string>
-    <string name="no_previews">ไม่มีรูปตัวอย่าง</string>
-    <string name="no_more_previews">ไม่มีรูปตัวอย่างเพิ่มเติมอีกแล้ว</string>
-    <string name="more_previews">มีรูปตัวอย่าง</string>
     <string name="refresh">รีเฟรช</string>
     <string name="open_in_other_app">เปิดด้วยแอปอื่น</string>
     <string name="rate_successfully">ให้คะแนนเรียบร้อยแล้ว</string>
@@ -188,7 +185,6 @@
     <string name="check_vote_status">ดูรายละเอียดการโหวต</string>
 
     <!-- Gallery Previews -->
-    <string name="gallery_previews">ตัวอย่างแกลเลอรี่</string>
     <string name="go_to">ไปที่</string>
 
     <!-- Download -->
@@ -273,9 +269,6 @@
     <string name="settings_eh_detail_size">ขนาดของรายละเอียด</string>
     <string name="settings_eh_detail_size_long">อย่างยาว</string>
     <string name="settings_eh_detail_size_short">อย่างสั้น</string>
-    <string name="settings_eh_thumb_resolution">ความละเอียดภาพตัวอย่าง</string>
-    <string name="settings_eh_thumb_resolution_summary">ค่าตอนนี้เป็น %s. การตั้งความละเอียดที่แน่นอนอาจจะส่งผลต่อการโหลดตัวอย่างที่อาจจะไม่สำเร็จด้วย</string>
-    <string name="settings_eh_thumb_resolution_auto">อัตโนมัติ</string>
     <string name="settings_eh_show_jpn_title">แสดงชื่อเรื่องญี่ปุ่น</string>
     <string name="settings_eh_show_gallery_pages">แสดงจำนวนหน้าของแกลเลอรี่</string>
     <string name="settings_eh_show_gallery_pages_summary">แสดงจำนวนหน้าที่มีอยู่ในแต่ละแกลเลอรี่</string>
@@ -283,8 +276,6 @@
     <string name="settings_eh_show_tag_translations_summary">แสดงแท็กการแปลภาษาแทนที่ข้อความต้นฉบับ (อาจใช้เวลามากขึ้นเพื่อดาวน์โหลดไฟล์ข้อมูล)</string>
     <string name="settings_eh_tag_translations_source">Placeholder</string>
     <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
-
-    <string name="settings_read_volume_page">ใช้ปุ่มปรับเสียงเพื่อเปลี่ยนหน้า</string>
 
     <string name="settings_download">การดาวน์โหลด</string>
     <string name="settings_download_download_location">ตำแหน่งแหล่งดาวน์โหลด</string>

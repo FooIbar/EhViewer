@@ -118,9 +118,6 @@
     <string name="no_comments">コメントなし</string>
     <string name="no_more_comments">コメントはこれ以上ありません</string>
     <string name="more_comment">他のコメントを見る</string>
-    <string name="no_previews">プレビューなし</string>
-    <string name="no_more_previews">プレビューはこれ以上ありません</string>
-    <string name="more_previews">他のプレビューを見る</string>
     <string name="refresh">更新</string>
     <string name="view_original">オリジナルの画像を表示</string>
     <string name="open_in_other_app">他のアプリで開く</string>
@@ -206,7 +203,6 @@
     <string name="format_url">URL</string>
     <string name="format_plain">プレーンテキスト</string>
     <!-- Gallery Previews -->
-    <string name="gallery_previews">ギャラリーのプレビュー</string>
     <string name="go_to">ページに移動</string>
     <!-- Download -->
     <string name="scene_download_title">ダウンロード - %s</string>
@@ -301,9 +297,6 @@
     <string name="settings_eh_detail_size_long">長い</string>
     <string name="settings_eh_detail_size_short">短い</string>
     <string name="settings_eh_thumb_columns">サムネイルのカラム数</string>
-    <string name="settings_eh_thumb_resolution">サムネイル解像度</string>
-    <string name="settings_eh_thumb_resolution_summary">現在の解像度は「%s」です。解像度によってはサムネイルの取得に失敗する場合があります。</string>
-    <string name="settings_eh_thumb_resolution_auto">自動</string>
     <string name="settings_eh_force_eh_thumb">E-Hentai サムネイルサーバーを使用する</string>
     <string name="settings_eh_force_eh_thumb_summary">サムネイルの読み込みに問題がある場合は無効化してください</string>
     <string name="settings_eh_show_jpn_title">日本語のタイトルを表示</string>
@@ -320,10 +313,6 @@
     <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
     <string name="settings_eh_filter">ギャラリーをブロック</string>
     <string name="settings_eh_filter_summary">タイトル、アップローダー、タグ、コメントの投稿者またはギャラリーをブロックします</string>
-    <string name="settings_read_volume_page">音量ボタンでページをめくる</string>
-    <string name="settings_read_volume_page_fast">高速</string>
-    <string name="settings_read_volume_page_slow">低速</string>
-    <string name="settings_read_reverse_volume">音量ボタンを入れ替える</string>
     <string name="settings_block_extraneous_ads">[試験的] 関係のない広告をブロック</string>
     <string name="settings_ads_placeholder">[任意] 広告を置換するプレースホルダーを選択</string>
     <string name="settings_download">ダウンロード</string>
@@ -505,8 +494,6 @@
     <string name="preload_thumb_aggressively">サムネイルを積極的にプリロードする</string>
     <string name="animate_items">リスト項目のアニメーション</string>
     <string name="animate_items_summary">クラッシュやフレームドロップが発生する場合はこれを無効化してください</string>
-    <string name="desktop_site">デスクトップのサイト</string>
-    <string name="desktop_site_summary">デフォルトの画像解像度を高くします</string>
     <string name="auto_updates">自動で更新を確認する</string>
     <string name="update_frequency_never">しない</string>
     <string name="update_frequency_daily">毎日</string>
