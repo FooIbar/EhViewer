@@ -133,7 +133,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
                     dir / displayName
                 }
             }
-        }.getOrElse { if (throwOnFailure) throw it else null }
+        }.getOrElse { if (throwOnFailure) throw IOException("Failed to list $dir") else null }
     }
 
     override fun metadataOrNull(path: Path): FileMetadata? {
@@ -187,16 +187,16 @@ class AndroidFileSystem(context: Context) : FileSystem() {
             return ParcelFileDescriptor.open(path.toFile(), ParcelFileDescriptor.parseMode(mode))
         }
 
-        if ('w' in mode && !exists(path)) {
-            path.parent?.runCatching {
+        return runCatching {
+            if ('w' in mode && !exists(path)) {
+                val parent = path.parent ?: return@runCatching null
                 val displayName = path.name
                 val extension = displayName.substringAfterLast('.', "").ifEmpty { null }?.lowercase()
                 val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "application/octet-stream"
-                DocumentsContract.createDocument(contentResolver, toUri(), mimeType, displayName)
-            }?.getOrNull() ?: throw IOException("Failed to open file: $path")
-        }
-
-        return contentResolver.openFileDescriptor(path.toUri(), mode) ?: throw IOException("Failed to open file: $path")
+                DocumentsContract.createDocument(contentResolver, parent.toUri(), mimeType, displayName)
+            }
+            contentResolver.openFileDescriptor(path.toUri(), mode)
+        }.getOrNull() ?: throw IOException("Failed to open file: $path")
     }
 }
 
