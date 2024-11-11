@@ -617,7 +617,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                             originImageUrl += "?nl=$skipHathKey"
                         }
                         val pageUrl = EhUrl.getPageUrl(spiderInfo.gid, index, pToken)
-                        EhEngine.getOriginalImageUrl(originImageUrl!!, pageUrl) to EhUrl.referer
+                        EhEngine.getOriginalImageUrl(originImageUrl!!, pageUrl) to referer
                     } else {
                         // Original image url won't change, so only set forceHtml in this case
                         forceHtml = true

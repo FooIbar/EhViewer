@@ -13,7 +13,7 @@ object EhCookieStore : CookiesStorage {
 
     fun hasSignedIn(): Boolean = getCookies(EhUrl.HOST_E)?.run {
         containsKey(KEY_IPB_MEMBER_ID) && containsKey(KEY_IPB_PASS_HASH)
-    } ?: false
+    } == true
 
     const val KEY_IPB_MEMBER_ID = "ipb_member_id"
     const val KEY_IPB_PASS_HASH = "ipb_pass_hash"

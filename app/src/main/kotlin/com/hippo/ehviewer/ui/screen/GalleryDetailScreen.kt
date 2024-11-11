@@ -261,7 +261,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                             CreateDocument("application/vnd.comicbook+zip"),
                                             EhUtils.getSuitableTitle(info) + ".cbz",
                                         )
-                                        val dirname = downloadInfo?.dirname
+                                        val dirname = downloadInfo.dirname
                                         if (uri != null && dirname != null) {
                                             val file = uri.toOkioPath()
                                             val msg = runCatching {

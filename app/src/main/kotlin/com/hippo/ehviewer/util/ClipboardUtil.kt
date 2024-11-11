@@ -29,15 +29,13 @@ import com.hippo.ehviewer.ui.MainActivity
 import splitties.systemservices.clipboardManager
 
 fun copyTextToClipboard(text: CharSequence?, isSensitive: Boolean) {
-    clipboardManager.apply {
-        setPrimaryClip(
-            ClipData.newPlainText(null, text).apply {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isSensitive) {
-                    description.extras = persistableBundleOf(ClipDescription.EXTRA_IS_SENSITIVE to true)
-                }
-            },
-        )
-    }
+    clipboardManager.setPrimaryClip(
+        ClipData.newPlainText(null, text).apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && isSensitive) {
+                description.extras = persistableBundleOf(ClipDescription.EXTRA_IS_SENSITIVE to true)
+            }
+        },
+    )
 }
 
 fun Context.addTextToClipboard(text: CharSequence?, useToast: Boolean = false) {

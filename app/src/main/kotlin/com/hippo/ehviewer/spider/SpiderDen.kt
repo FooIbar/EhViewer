@@ -284,7 +284,7 @@ class SpiderDen(val info: GalleryInfo) {
                 FileUtils.getExtensionFromFilename(source.name)!!
             }
 
-            override fun close() {}
+            override fun close() = Unit
         }
     }
 
