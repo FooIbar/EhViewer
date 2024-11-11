@@ -63,7 +63,7 @@
 
 # 描述
 
-致力于轻量化与良好性能表现的 EhViewer 分支
+致力于高性能的现代 EhViewer 分支
 
 已针对性适配 Material Design 3 及其动态取色系统
 
@@ -72,7 +72,9 @@
 | 变种          | 最低 Android 版本 | 备注                      |
 |-------------|---------------|-------------------------|
 | Default     | 8.0           | 动画 WebP 支持需要 Android 9+ |
-| Marshmallow | 6.0           | 有限支持，无保证                |
+| Marshmallow | 6.0*          | 有限支持，无保证                |
+
+*运行 Android 6 的设备需安装 [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) 证书
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
