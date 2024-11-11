@@ -63,7 +63,7 @@
 
 # Description
 
-EhViewer fork dedicated to lightweight and high-performance
+A modern EhViewer fork dedicated to high-performance
 
 with [Material Design 3](https://m3.material.io/)
 and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) Support
@@ -73,7 +73,9 @@ and [Dynamic Color](https://m3.material.io/styles/color/dynamic-color/overview) 
 | Flavor      | Minimum Android Version | Notes                                     |
 |-------------|-------------------------|-------------------------------------------|
 | Default     | 8.0                     | Animated WebP support requires Android 9+ |
-| Marshmallow | 6.0                     | Limited support, no guarantees            |
+| Marshmallow | 6.0*                    | Limited support, no guarantees            |
+
+*Devices running Android 6 need to have the [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) certificate installed
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
