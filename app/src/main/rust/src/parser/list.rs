@@ -10,7 +10,7 @@ use std::borrow::Cow;
 use std::ops::Index;
 use tl::{Node, Parser, VDom};
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 #[allow(non_snake_case)]
 struct BaseGalleryInfo {
     gid: i64,
@@ -34,7 +34,7 @@ struct BaseGalleryInfo {
     favoriteNote: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 #[allow(non_snake_case)]
 pub struct GalleryListResult {
     prev: Option<String>,
