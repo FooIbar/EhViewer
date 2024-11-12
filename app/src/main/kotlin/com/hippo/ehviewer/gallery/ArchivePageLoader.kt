@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Tarsin Norbin
+ * Copyright 2023-2024 Tarsin Norbin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package com.hippo.ehviewer.gallery
 
-import arrow.fx.coroutines.autoCloseable
-import arrow.fx.coroutines.closeable
-import arrow.fx.coroutines.resourceScope
+import arrow.autoCloseScope
 import com.hippo.ehviewer.Settings.archivePasswds
 import com.hippo.ehviewer.image.ImageSource
 import com.hippo.ehviewer.image.byteBufferSource
@@ -29,12 +27,10 @@ import com.hippo.ehviewer.jni.needPassword
 import com.hippo.ehviewer.jni.openArchive
 import com.hippo.ehviewer.jni.providePassword
 import com.hippo.ehviewer.jni.releaseByteBuffer
-import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.displayName
 import com.hippo.files.openFileDescriptor
 import eu.kanade.tachiyomi.util.system.logcat
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import okio.Path
 
@@ -49,19 +45,19 @@ suspend fun <T> useArchivePageLoader(
     hasAds: Boolean = false,
     passwdProvider: PasswdProvider = emptyPasswdProvider,
     block: suspend (PageLoader) -> T,
-) = coroutineScope {
-    resourceScope {
-        val pfd = closeable { file.openFileDescriptor("r") }
-        val size = install(
+) = autoCloseScope {
+    coroutineScope {
+        val pfd = install(file.openFileDescriptor("r"))
+        val size = autoClose(
             { openArchive(pfd.fd, pfd.statSize, gid == 0L || file.name.endsWith(".zip")) },
             { _, _ -> closeArchive() },
         )
         check(size > 0) { "Archive have no content!" }
-        if (needPassword() && archivePasswds.filterNotNull().none { providePassword(it) }) {
-            archivePasswds += passwdProvider { providePassword(it) }
+        if (needPassword() && archivePasswds.filterNotNull().none(::providePassword)) {
+            archivePasswds += passwdProvider(::providePassword)
         }
-        val loader = autoCloseable {
-            object : PageLoader(gid, startPage, size, hasAds, implicit<CoroutineScope>()) {
+        val loader = install(
+            object : PageLoader(gid, startPage, size, hasAds) {
                 override val title by lazy { FileUtils.getNameFromFilename(file.displayName)!! }
 
                 override fun getImageExtension(index: Int) = getExtension(index)
@@ -85,8 +81,8 @@ suspend fun <T> useArchivePageLoader(
                 override fun prefetchPages(pages: List<Int>, bounds: IntRange) = pages.forEach(::notifySourceReady)
 
                 override fun onRequest(index: Int, force: Boolean, orgImg: Boolean) = notifySourceReady(index)
-            }
-        }
+            },
+        )
         loader.progressJob.join()
         block(loader)
     }

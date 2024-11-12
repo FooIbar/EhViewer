@@ -32,7 +32,8 @@ private val progressScope = CoroutineScope(Dispatchers.IO)
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
-abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val hasAds: Boolean = false, val scope: CoroutineScope) : AutoCloseable {
+context(CoroutineScope)
+abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
     private val mutex = NamedMutex<Int>()
     private val semaphore = Semaphore(4)
 
@@ -61,6 +62,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         pages[index].status !is PageStatus.Blocked
 
     suspend fun atomicallyDecodeAndUpdate(index: Int) {
+        if (!needDecode(index)) return
         try {
             bracketCase(
                 { openSource(index) },
@@ -171,11 +173,10 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     fun notifySourceReady(index: Int) {
         if (needDecode(index)) {
-            scope.launch {
+            launch {
                 mutex.withLock(index) {
                     semaphore.withPermit {
-                        // Double check
-                        if (needDecode(index)) atomicallyDecodeAndUpdate(index)
+                        atomicallyDecodeAndUpdate(index)
                     }
                 }
             }
