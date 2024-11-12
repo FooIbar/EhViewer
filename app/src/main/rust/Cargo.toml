@@ -26,6 +26,10 @@ image = { default-features = false, version = "0.25" }
 rxing = { default-features = false, version = "0.6" }
 ndk = { version = "0.9", optional = true }
 
+[dev-dependencies]
+reqwest = "0.12"
+tokio = { version = "1", features = ["macros"] }
+
 [profile.release]
 panic = "abort"
 strip = true
