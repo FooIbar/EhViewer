@@ -62,6 +62,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         pages[index].status !is PageStatus.Blocked
 
     suspend fun atomicallyDecodeAndUpdate(index: Int) {
+        if (!needDecode(index)) return
         try {
             bracketCase(
                 { openSource(index) },
@@ -175,7 +176,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
             launch {
                 mutex.withLock(index) {
                     semaphore.withPermit {
-                        if (needDecode(index)) atomicallyDecodeAndUpdate(index)
+                        atomicallyDecodeAndUpdate(index)
                     }
                 }
             }
