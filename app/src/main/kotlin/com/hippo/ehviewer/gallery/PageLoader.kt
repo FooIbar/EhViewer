@@ -14,11 +14,11 @@ import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.detectAds
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastO
+import eu.kanade.tachiyomi.util.system.warnIf
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
-import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -183,10 +183,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
                             try {
                                 atomicallyDecodeAndUpdate(index)
                             } finally {
-                                if (closed) {
-                                    exitProcess(0)
-                                    println("PageLoader must not closed until all decoder completed!")
-                                }
+                                warnIf(closed, LOG_TAG) { "PageLoader must not closed until all decoder completed!" }
                             }
                         }
                     }
@@ -197,3 +194,5 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     abstract fun openSource(index: Int): ImageSource
 }
+
+private const val LOG_TAG = "PageLoader"
