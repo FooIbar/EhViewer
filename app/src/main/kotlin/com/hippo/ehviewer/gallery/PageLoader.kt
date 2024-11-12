@@ -185,5 +185,3 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     abstract fun openSource(index: Int): ImageSource
 }
-
-private const val LOG_TAG = "PageLoader"
