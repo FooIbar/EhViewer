@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.gallery
 
 import androidx.collection.SieveCache
+import arrow.atomic.AtomicBoolean
 import arrow.atomic.value
 import arrow.fx.coroutines.ExitCase
 import arrow.fx.coroutines.bracketCase
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
+import kotlin.system.exitProcess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,9 +34,11 @@ private val progressScope = CoroutineScope(Dispatchers.IO)
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
 
-abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val hasAds: Boolean = false, val scope: CoroutineScope) : AutoCloseable {
+context(CoroutineScope)
+abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
     private val mutex = NamedMutex<Int>()
     private val semaphore = Semaphore(4)
+    private var closed by AtomicBoolean(false)::value
 
     private val cache = SieveCache<Int, Image>(
         maxSize = if (isAtLeastO) {
@@ -124,6 +128,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
     }
 
     override fun close() {
+        closed = true
         lock.write { cache.evictAll() }
         if (gid != 0L) {
             progressScope.launch {
@@ -171,11 +176,19 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     fun notifySourceReady(index: Int) {
         if (needDecode(index)) {
-            scope.launch {
+            launch {
                 mutex.withLock(index) {
                     semaphore.withPermit {
-                        // Double check
-                        if (needDecode(index)) atomicallyDecodeAndUpdate(index)
+                        if (needDecode(index)) {
+                            try {
+                                atomicallyDecodeAndUpdate(index)
+                            } finally {
+                                if (closed) {
+                                    exitProcess(0)
+                                    println("PageLoader must not closed until all decoder completed!")
+                                }
+                            }
+                        }
                     }
                 }
             }
