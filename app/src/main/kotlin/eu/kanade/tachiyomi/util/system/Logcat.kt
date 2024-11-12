@@ -19,7 +19,3 @@ fun logcat(tag: String, throwable: Throwable) {
 fun Any.logcat(throwable: Throwable) {
     logcatImpl(LogPriority.ERROR) { throwable.asLog() }
 }
-
-fun warnIf(predicate: Boolean, tag: String, message: () -> String) {
-    if (predicate) logcatImpl(tag, LogPriority.WARN, message)
-}

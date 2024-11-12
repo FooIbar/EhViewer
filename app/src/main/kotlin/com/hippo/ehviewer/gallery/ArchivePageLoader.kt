@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.gallery
 
-import arrow.atomic.AtomicBoolean
 import arrow.autoCloseScope
 import com.hippo.ehviewer.Settings.archivePasswds
 import com.hippo.ehviewer.image.ImageSource
@@ -32,15 +31,12 @@ import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.displayName
 import com.hippo.files.openFileDescriptor
 import eu.kanade.tachiyomi.util.system.logcat
-import eu.kanade.tachiyomi.util.system.warnIf
 import kotlinx.coroutines.coroutineScope
 import okio.Path
 
 typealias PasswdInvalidator = (String) -> Boolean
 typealias PasswdProvider = suspend (PasswdInvalidator) -> String
 val emptyPasswdProvider: PasswdProvider = { error("Managed Archive have password???") }
-
-private var open = AtomicBoolean(false)
 
 suspend fun <T> useArchivePageLoader(
     file: Path,
@@ -52,10 +48,9 @@ suspend fun <T> useArchivePageLoader(
 ) = autoCloseScope {
     coroutineScope {
         val pfd = install(file.openFileDescriptor("r"))
-        warnIf(open.getAndSet(true), LOG_TAG) { "Try to open archive when existing archive not closed!" }
         val size = autoClose(
             { openArchive(pfd.fd, pfd.statSize, gid == 0L || file.name.endsWith(".zip")) },
-            { _, _ -> closeArchive().also { open.set(false) } },
+            { _, _ -> closeArchive() },
         )
         check(size > 0) { "Archive have no content!" }
         if (needPassword() && archivePasswds.filterNotNull().none(::providePassword)) {
@@ -92,5 +87,3 @@ suspend fun <T> useArchivePageLoader(
         block(loader)
     }
 }
-
-private const val LOG_TAG = "ArchivePageLoader"
