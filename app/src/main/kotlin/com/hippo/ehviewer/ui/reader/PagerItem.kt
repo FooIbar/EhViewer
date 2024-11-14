@@ -85,7 +85,7 @@ fun PagerItem(
                         }
                     }
                 }
-            }?.painter?.let { painter ->
+            }?.apply {
                 val grayScale by Settings.grayScale.collectAsState()
                 val invert by Settings.invertedColors.collectAsState()
                 Image(
