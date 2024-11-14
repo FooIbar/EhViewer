@@ -88,7 +88,7 @@ option(ENABLE_TEST OFF)
 # Configure libarchive link's static lib
 SET(LIBARCHIVE_CUSTOM_LIBS "libnettle" "liblzma")
 
-set(LIBARCHIVE_PATCH ${CMAKE_CURRENT_LIST_DIR}/0001-Insert-link-libs.patch)
+set(LIBARCHIVE_PATCH ${CMAKE_CURRENT_LIST_DIR}/0001-Insert-link-libs.patch ${CMAKE_CURRENT_LIST_DIR}/0001-Fix-zip_time-performance.patch)
 FetchContent_Declare(
         libarchive
         GIT_REPOSITORY https://github.com/libarchive/libarchive.git
