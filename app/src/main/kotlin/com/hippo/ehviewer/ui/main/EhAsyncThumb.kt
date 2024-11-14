@@ -92,6 +92,7 @@ fun EhAsyncCropThumb(
     )
 }
 
+context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
 @Composable
 fun EhThumbCard(
     key: GalleryInfo,
@@ -113,7 +114,7 @@ fun EhThumbCard(
                 painter.restart()
             }
         },
-        modifier = modifier,
+        modifier = modifier.sharedBounds(key = "${key.gid}").clip(ShapeDefaults.Medium),
     ) {
         Image(
             painter = painter,
