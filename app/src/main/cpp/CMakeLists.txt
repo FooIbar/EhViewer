@@ -94,7 +94,7 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/libarchive/libarchive.git
         GIT_TAG v3.7.7
         GIT_SHALLOW 1
-        PATCH_COMMAND git apply ${LIBARCHIVE_PATCH}
+        PATCH_COMMAND git apply --check -R ${LIBARCHIVE_PATCH} || git apply ${LIBARCHIVE_PATCH}
 )
 
 FetchContent_MakeAvailable(libarchive)
