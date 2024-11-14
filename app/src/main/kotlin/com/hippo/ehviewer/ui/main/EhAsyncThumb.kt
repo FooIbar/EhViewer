@@ -114,12 +114,12 @@ fun EhThumbCard(
                 painter.restart()
             }
         },
-        modifier = modifier.sharedBounds(key = "${key.gid}").clip(ShapeDefaults.Medium),
+        modifier = modifier,
     ) {
         Image(
             painter = painter,
             contentDescription = null,
-            modifier = Modifier.imageRequest(request).fillMaxSize().clip(ShapeDefaults.Medium),
+            modifier = Modifier.imageRequest(request).fillMaxSize().sharedBounds(key = "${key.gid}").clip(ShapeDefaults.Medium),
             contentScale = contentScale,
         )
     }
