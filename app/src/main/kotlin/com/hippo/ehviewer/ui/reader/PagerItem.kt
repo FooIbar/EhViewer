@@ -15,14 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -43,9 +40,9 @@ import com.hippo.ehviewer.gallery.PageStatus
 import com.hippo.ehviewer.gallery.progressObserved
 import com.hippo.ehviewer.gallery.statusObserved
 import com.hippo.ehviewer.image.Image
+import com.hippo.ehviewer.ui.tools.Finalizer
 import com.hippo.ehviewer.util.AdsPlaceholderFile
 import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.drop
 import moe.tarsin.kt.unreachable
 
@@ -78,20 +75,17 @@ fun PagerItem(
         }
         is PageStatus.Ready -> {
             val image = state.image
-            var painter by remember { mutableStateOf<Painter?>(null) }
-            LaunchedEffect(image) {
-                if (image.pin()) {
-                    painter = image.toPainter()
-                    try {
-                        awaitCancellation()
-                    } finally {
+            remember(image) {
+                if (!image.pin()) return@remember null
+                object : Finalizer {
+                    val painter = image.toPainter()
+                    override fun finalize() {
                         if (image.unpin()) {
                             pageLoader.notifyPageWait(page.index)
                         }
                     }
                 }
-            }
-            painter?.let { painter ->
+            }?.painter?.let { painter ->
                 val grayScale by Settings.grayScale.collectAsState()
                 val invert by Settings.invertedColors.collectAsState()
                 Image(
