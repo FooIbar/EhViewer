@@ -91,18 +91,13 @@ static inline int filename_is_playable_file(const char *name) {
     return false;
 }
 
-static inline const char *archive_entry_pathname2(struct archive_entry *entry) {
-    const char *name = archive_entry_pathname_utf8(entry);
-    return name ? name : archive_entry_pathname(entry);
-}
-
 static inline bool archive_entry_is_file(struct archive_entry *entry) {
     return archive_entry_filetype(entry) == AE_IFREG;
 }
 
 static inline bool archive_entry_is_playable(struct archive_entry *entry) {
     return archive_entry_is_file(entry) &&
-           filename_is_playable_file(archive_entry_pathname2(entry));
+           filename_is_playable_file(archive_entry_pathname(entry));
 }
 
 static inline int compare_entries(const void *a, const void *b) {
@@ -127,7 +122,7 @@ static void archive_map_entries_index(archive_ctx *ctx, bool sort) {
     int count = 0;
     bool zero_copy = true;
     while (archive_read_next_header(ctx->arc, &ctx->entry) == ARCHIVE_OK) {
-        const char *name = archive_entry_pathname2(ctx->entry);
+        const char *name = archive_entry_pathname(ctx->entry);
         if (archive_entry_is_file(ctx->entry) && filename_is_playable_file(name)) {
             entries[count].filename = strdup(name);
             entries[count].index = count;
@@ -267,7 +262,7 @@ static int archive_get_ctx(archive_ctx **ctxptr, int idx) {
     ret = archive_skip_to_index(ctx, idx);
     if (ret != idx) {
         ret = archive_errno(ctx->arc);
-        LOGE("Skip to index failed:%s", archive_error_string(ctx->arc));
+        LOGE("Skip to index failed: %s", archive_error_string(ctx->arc));
         archive_release_ctx(ctx);
         return ret;
     }
@@ -293,6 +288,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
     entryCount = archive_list_all_entries(ctx);
     LOGI("%s%zu%s", "Found ", entryCount, " images in archive");
     if (!entryCount) {
+        LOGE("%s%s", "Archive read failed: ", archive_error_string(ctx->arc));
         archive_release_ctx(ctx);
         return 0;
     }
@@ -322,6 +318,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_openArchive(JNIEnv *env, jclass thiz, jint
     archive_release_ctx(ctx);
 
     ctx = archive_alloc_ctx();
+    if (!ctx) return 0;
     entries = calloc(entryCount, sizeof(entry));
     archive_map_entries_index(ctx, sort_entries);
     archive_release_ctx(ctx);
@@ -346,7 +343,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_extractToByteBuffer(JNIEnv *env, jclass th
                 return (*env)->NewDirectByteBuffer(env, addr, size);
             } else {
                 if (bytes < 0) {
-                    LOGE("%s%s", "Archive read failed:", archive_error_string(ctx->arc));
+                    LOGE("%s%s", "Archive read failed: ", archive_error_string(ctx->arc));
                 } else {
                     LOGE("%s", "No enough data read, WTF?");
                 }
@@ -413,7 +410,7 @@ Java_com_hippo_ehviewer_jni_ArchiveKt_providePassword(JNIEnv *env, jclass thiz, 
         if (!archive_entry_is_encrypted(entry))
             continue;
         if (archive_read_data(ctx->arc, tmpBuf, 4096) < ARCHIVE_OK) {
-            LOGE("%s%s", "Archive read failed:", archive_error_string(ctx->arc));
+            LOGE("%s%s", "Archive read failed: ", archive_error_string(ctx->arc));
             ret = false;
         }
         break;
