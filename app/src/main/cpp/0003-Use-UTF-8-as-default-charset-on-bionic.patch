@@ -1,0 +1,27 @@
+From 86d199429b3fabc83f7dcc9afd72e7b4c7750b1a Mon Sep 17 00:00:00 2001
+From: FooIbar <118464521+FooIbar@users.noreply.github.com>
+Date: Thu, 14 Nov 2024 20:22:52 +0800
+Subject: [PATCH] Use UTF-8 as default charset on bionic
+
+---
+ libarchive/archive_string.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/libarchive/archive_string.c b/libarchive/archive_string.c
+index abf7ad66..63a73c58 100644
+--- a/libarchive/archive_string.c
++++ b/libarchive/archive_string.c
+@@ -423,7 +423,9 @@ static const char *
+ default_iconv_charset(const char *charset) {
+ 	if (charset != NULL && charset[0] != '\0')
+ 		return charset;
+-#if HAVE_LOCALE_CHARSET && !defined(__APPLE__)
++#ifdef __BIONIC__
++	return "UTF-8";
++#elif HAVE_LOCALE_CHARSET && !defined(__APPLE__)
+ 	/* locale_charset() is broken on Mac OS */
+ 	return locale_charset();
+ #elif HAVE_NL_LANGINFO
+-- 
+2.43.0
+
