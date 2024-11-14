@@ -3,6 +3,7 @@ package com.hippo.ehviewer.ui.reader
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -105,7 +106,7 @@ fun PagerItem(
                         else -> null
                     },
                 )
-            }
+            } ?: Spacer(modifier = modifier.fillMaxWidth().aspectRatio(DEFAULT_ASPECT))
         }
         is PageStatus.Blocked -> {
             AdsPlaceholder(
