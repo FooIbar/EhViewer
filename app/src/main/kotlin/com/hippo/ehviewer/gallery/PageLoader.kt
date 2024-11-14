@@ -44,14 +44,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
             (OSUtils.appMaxMemory / 3 * 2).toInt()
         },
         sizeOf = { _, v -> v.allocationSize.toInt() },
-        onEntryRemoved = { k, o, n, _ ->
-            if (o.isRecyclable) {
-                n ?: notifyPageWait(k)
-                o.recycle()
-            } else {
-                o.isRecyclable = true
-            }
-        },
+        onEntryRemoved = { k, o, n, _ -> if (o.unpin()) n ?: notifyPageWait(k) },
     )
 
     fun decodePreloadRange(index: Int) = index - 3..index + 3

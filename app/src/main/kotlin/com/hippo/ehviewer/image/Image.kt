@@ -50,10 +50,17 @@ import com.hippo.ehviewer.util.isAtLeastU
 import com.hippo.files.openFileDescriptor
 import com.hippo.files.toUri
 import java.nio.ByteBuffer
+import java.util.concurrent.atomic.AtomicInteger
 import okio.Path
 import splitties.init.appCtx
 
 class Image private constructor(image: CoilImage, private val src: ImageSource) {
+    val refcnt = AtomicInteger(1)
+
+    fun pin() = refcnt.updateAndGet { if (it != 0) it + 1 else 0 } != 0
+
+    fun unpin() = (refcnt.decrementAndGet() == 0).also { if (it) recycle() }
+
     val intrinsicSize = with(image) { IntSize(width, height) }
     val allocationSize = image.size
     val hasQrCode = when (image) {
@@ -66,11 +73,8 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
         else -> image
     }
 
-    var isRecyclable = true
-
-    @Synchronized
-    fun recycle() {
-        when (val image = innerImage ?: return) {
+    private fun recycle() {
+        when (val image = innerImage!!) {
             is DrawableImage -> src.close()
             is BitmapImage -> image.bitmap.recycle()
         }
