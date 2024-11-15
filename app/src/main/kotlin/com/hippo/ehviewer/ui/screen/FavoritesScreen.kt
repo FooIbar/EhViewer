@@ -384,7 +384,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             onClick(Icons.Default.Download) {
                 val info = checkedInfoMap.takeAndClear()
                 runSwallowingWithUI {
-                    startDownload(implicit<Context>(), false, *info.toTypedArray())
+                    startDownload(false, *info.toTypedArray())
                 }
             }
             onClick(Icons.Default.Delete) {

@@ -38,12 +38,11 @@ fun copyTextToClipboard(text: CharSequence?, isSensitive: Boolean) {
     )
 }
 
-fun Context.addTextToClipboard(text: CharSequence?, useToast: Boolean = false) {
+fun MainActivity.addTextToClipboard(text: CharSequence?, useToast: Boolean = false) {
     copyTextToClipboard(text, false)
     // Avoid double notify user since system have done that on Tiramisu above
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-        val activity = findActivity<MainActivity>()
-        activity.showTip(R.string.copied_to_clipboard, useToast)
+        showTip(R.string.copied_to_clipboard, useToast)
     }
 }
 

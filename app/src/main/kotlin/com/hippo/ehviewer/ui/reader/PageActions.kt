@@ -18,6 +18,7 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader
+import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.awaitActivityResult
@@ -82,7 +83,7 @@ suspend fun copy(page: Page) {
     }
 }
 
-context(SnackbarHostState, Context, PageLoader)
+context(SnackbarHostState, MainActivity, PageLoader)
 suspend fun save(page: Page) {
     val granted = isAtLeastQ || requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     val cannotSave = getString(R.string.error_cant_save_image)
@@ -136,7 +137,7 @@ suspend fun save(page: Page) {
     }
 }
 
-context(SnackbarHostState, Context, PageLoader)
+context(SnackbarHostState, MainActivity, PageLoader)
 suspend fun saveTo(page: Page) {
     val filename = getImageFilename(page.index)
     if (filename == null) {

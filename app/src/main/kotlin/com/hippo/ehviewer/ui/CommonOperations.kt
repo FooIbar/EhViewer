@@ -56,11 +56,11 @@ import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.ui.destinations.ReaderScreenDestination
 import com.hippo.ehviewer.ui.reader.ReaderScreenArgs
+import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.bgWork
-import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastT
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.requestPermission
@@ -108,11 +108,9 @@ suspend fun keepNoMediaFileStatus(downloadDir: Path = downloadLocation) {
 
 fun getFavoriteIcon(favorited: Boolean) = if (favorited) Icons.Default.Favorite else Icons.Default.FavoriteBorder
 
-suspend fun DialogState.startDownload(
-    context: Context,
-    forceDefault: Boolean,
-    vararg galleryInfos: BaseGalleryInfo,
-) = with(context) {
+context(MainActivity)
+suspend fun DialogState.startDownload(forceDefault: Boolean, vararg galleryInfos: BaseGalleryInfo) {
+    val context = implicit<Context>()
     if (isAtLeastT) {
         requestPermission(Manifest.permission.POST_NOTIFICATIONS)
     }
@@ -125,9 +123,7 @@ suspend fun DialogState.startDownload(
         ContextCompat.startForegroundService(context, intent)
     }
     if (toAdd.isEmpty()) {
-        return with(findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list)
-        }
+        return showTip(R.string.added_to_download_list)
     }
     var justStart = forceDefault
     var label: String? = null
@@ -151,9 +147,7 @@ suspend fun DialogState.startDownload(
             ContextCompat.startForegroundService(context, intent)
         }
         // Notify
-        with(findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list)
-        }
+        showTip(R.string.added_to_download_list)
     } else {
         // Let use chose label
         val list = DownloadManager.labelList
@@ -184,9 +178,7 @@ suspend fun DialogState.startDownload(
         } else {
             Settings.hasDefaultDownloadLabel = false
         }
-        with(context.findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list)
-        }
+        showTip(R.string.added_to_download_list)
     }
 }
 
@@ -286,7 +278,7 @@ fun DestinationsNavigator.navToReader(uri: Uri) = navToReader(ReaderScreenArgs.A
 
 private fun DestinationsNavigator.navToReader(args: ReaderScreenArgs) = navigate(ReaderScreenDestination(args)) { launchSingleTop = true }
 
-context(DialogState, Context, DestinationsNavigator)
+context(DialogState, MainActivity, DestinationsNavigator)
 suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
     val downloaded = DownloadManager.getDownloadState(info.gid) != DownloadInfo.STATE_INVALID
     val favorited = info.favoriteSlot != NOT_FAVORITED
@@ -308,41 +300,37 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
             add(Icons.AutoMirrored.Default.DriveFileMove to R.string.download_move_dialog_title)
         }
     }
-    val selected = awaitSelectItemWithIcon(items, EhUtils.getSuitableTitle(info))
-    with(findActivity<MainActivity>()) {
-        when (selected) {
-            0 -> {
-                EhDB.putHistoryInfo(info)
-                navToReader(info)
-            }
-
-            1 -> withUIContext {
-                if (downloaded) {
-                    confirmRemoveDownload(info)
-                } else {
-                    startDownload(this@with, false, info)
-                }
-            }
-
-            2 -> if (favorited) {
-                runSuspendCatching {
-                    removeFromFavorites(info)
-                    showTip(R.string.remove_from_favorite_success)
-                }.onFailure {
-                    showTip(R.string.remove_from_favorite_failure)
-                }
-            } else {
-                runSuspendCatching {
-                    modifyFavorites(info)
-                    showTip(R.string.add_to_favorite_success)
-                }.onFailure {
-                    showTip(R.string.add_to_favorite_failure)
-                }
-            }
-
-            3 -> showMoveDownloadLabel(info)
+    when (awaitSelectItemWithIcon(items, EhUtils.getSuitableTitle(info))) {
+        0 -> {
+            EhDB.putHistoryInfo(info)
+            navToReader(info)
         }
-        true
+
+        1 -> withUIContext {
+            if (downloaded) {
+                confirmRemoveDownload(info)
+            } else {
+                startDownload(false, info)
+            }
+        }
+
+        2 -> if (favorited) {
+            runSuspendCatching {
+                removeFromFavorites(info)
+                showTip(R.string.remove_from_favorite_success)
+            }.onFailure {
+                showTip(R.string.remove_from_favorite_failure)
+            }
+        } else {
+            runSuspendCatching {
+                modifyFavorites(info)
+                showTip(R.string.add_to_favorite_success)
+            }.onFailure {
+                showTip(R.string.add_to_favorite_failure)
+            }
+        }
+
+        3 -> showMoveDownloadLabel(info)
     }
 }
 

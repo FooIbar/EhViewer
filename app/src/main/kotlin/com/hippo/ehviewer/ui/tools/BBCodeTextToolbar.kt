@@ -3,15 +3,12 @@ package com.hippo.ehviewer.ui.tools
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.TextToolbar
 import androidx.compose.ui.platform.TextToolbarStatus
@@ -28,13 +25,14 @@ import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.util.findActivity
+import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.util.toRangeSet
 import io.github.petertrr.diffutils.diffInline
 import io.github.petertrr.diffutils.patch.ChangeDelta
 import io.github.petertrr.diffutils.patch.DeleteDelta
 import io.github.petertrr.diffutils.patch.EqualDelta
 import io.github.petertrr.diffutils.patch.InsertDelta
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.kt.unreachable
@@ -142,20 +140,18 @@ fun AnnotatedString.toBBCode() = buildString {
     }
 }
 
+context(MainActivity, CoroutineScope)
 @Composable
 fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): TextToolbar {
     var tfv by textFieldValue
     val view = LocalView.current
-    val context = LocalContext.current
-    val activity = remember { context.findActivity<ComponentActivity>() }
-    val coroutineScope = rememberCoroutineScope()
-    val toolbar = remember {
+    return remember {
         object : TextToolbar {
             private var actionMode: ActionMode? = null
             private val callback = object : TextActionModeCallback() {
                 override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
                     super.onCreateActionMode(mode, menu)
-                    activity.menuInflater.inflate(R.menu.context_comment, menu)
+                    menuInflater.inflate(R.menu.context_comment, menu)
                     return true
                 }
 
@@ -213,7 +209,7 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
                         },
                         selection = TextRange(end),
                     )
-                    coroutineScope.launch {
+                    launch {
                         // Hacky: Let TextField recompose first
                         delay(100)
                         tfv = tfv.copy(annotatedString = annotatedString)
@@ -257,5 +253,4 @@ fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): Tex
             }
         }
     }
-    return toolbar
 }

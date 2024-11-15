@@ -273,23 +273,25 @@ object EhDB {
         db.filterDao().update(filter)
     }
 
-    fun exportDB(context: Context, file: Path) {
+    context(Context)
+    fun exportDB(file: Path) {
         db.query("PRAGMA wal_checkpoint(FULL)", null).use { it.moveToNext() }
-        val dbFile = context.getDatabasePath(DB_NAME)
+        val dbFile = getDatabasePath(DB_NAME)
         dbFile.toOkioPath() sendTo file
     }
 
-    suspend fun importDB(context: Context, uri: Uri) {
+    context(Context)
+    suspend fun importDB(uri: Uri) {
         val tempDBName = "tmp.db"
         resource {
-            context.deleteDatabase(tempDBName)
+            deleteDatabase(tempDBName)
             roomDb<EhDatabase>(tempDBName) {
-                createFromInputStream { context.contentResolver.openInputStream(uri) }
+                createFromInputStream { contentResolver.openInputStream(uri) }
                 addMigrations(Schema17to18())
             }
         } release {
             it.close()
-            context.deleteDatabase(tempDBName)
+            deleteDatabase(tempDBName)
         } use { oldDB ->
             db.galleryDao().insertOrIgnore(oldDB.galleryDao().list())
 

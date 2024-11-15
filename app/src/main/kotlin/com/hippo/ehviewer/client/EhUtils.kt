@@ -17,7 +17,6 @@ package com.hippo.ehviewer.client
 
 import android.app.DownloadManager
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.os.Environment
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +31,7 @@ import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.client.parser.Archive
 import com.hippo.ehviewer.spider.SpiderDen
+import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.addTextToClipboard
@@ -193,7 +193,7 @@ object EhUtils {
         return title.substringBeforeLast('|').trim().ifEmpty { null }
     }
 
-    context(Context)
+    context(MainActivity)
     suspend fun downloadArchive(galleryDetail: GalleryDetail, archive: Archive) {
         val gid = galleryDetail.gid
         EhEngine.downloadArchive(gid, galleryDetail.token, archive.res, archive.isHAtH)?.let {

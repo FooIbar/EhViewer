@@ -1,14 +1,11 @@
 package com.hippo.ehviewer.util
 
 import android.Manifest
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContract
@@ -19,32 +16,21 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import arrow.atomic.AtomicInt
+import arrow.atomic.value
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.ui.MainActivity
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 // Fuck off the silly Android launcher and callback :)
 
-private val atomicInteger = AtomicInt()
+private var id by AtomicInteger()::value
 
-private val Context.lifecycle: Lifecycle
-    get() {
-        var context: Context? = this
-        while (true) {
-            when (context) {
-                is LifecycleOwner -> return context.lifecycle
-                !is ContextWrapper -> error("This should never happen!")
-                else -> context = context.baseContext
-            }
-        }
-    }
-
-suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<I, O>, input: I): O {
-    val key = "activity_rq#${atomicInteger.getAndIncrement()}"
+suspend fun <I, O> MainActivity.awaitActivityResult(contract: ActivityResultContract<I, O>, input: I): O {
+    val key = "activity_rq#${++id}"
     var launcher: ActivityResultLauncher<I>? = null
     var observer: LifecycleEventObserver? = null
     observer = LifecycleEventObserver { _, event ->
@@ -59,8 +45,7 @@ suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<
         lifecycle.addObserver(observer)
         suspendCoroutine { cont ->
             // No cancellation support here since we cannot cancel a launched Intent
-            val activity = findActivity<ComponentActivity>()
-            launcher = activity.activityResultRegistry.register(key, contract) {
+            launcher = activityResultRegistry.register(key, contract) {
                 launcher?.unregister()
                 lifecycle.removeObserver(observer)
                 cont.resume(it)
@@ -69,15 +54,15 @@ suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<
     }
 }
 
-suspend fun Context.requestPermission(key: String): Boolean {
+suspend fun MainActivity.requestPermission(key: String): Boolean {
     if (ContextCompat.checkSelfPermission(this, key) == PackageManager.PERMISSION_GRANTED) return true
     return awaitActivityResult(ActivityResultContracts.RequestPermission(), key)
 }
 
-suspend fun Context.pickVisualMedia(type: VisualMediaType): Uri? = awaitActivityResult(ActivityResultContracts.PickVisualMedia(), PickVisualMediaRequest(mediaType = type))
+suspend fun MainActivity.pickVisualMedia(type: VisualMediaType): Uri? = awaitActivityResult(ActivityResultContracts.PickVisualMedia(), PickVisualMediaRequest(mediaType = type))
 
 @RequiresApi(Build.VERSION_CODES.O)
-suspend fun Context.requestInstallPermission(): Boolean {
+suspend fun MainActivity.requestInstallPermission(): Boolean {
     if (packageManager.canRequestPackageInstalls()) return true
     val granted = requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
     if (!granted) {
@@ -93,7 +78,7 @@ suspend fun Context.requestInstallPermission(): Boolean {
     return packageManager.canRequestPackageInstalls()
 }
 
-suspend fun Context.installPackage(file: File) {
+suspend fun MainActivity.installPackage(file: File) {
     val canInstall = !isAtLeastO || requestInstallPermission()
     check(canInstall) { getString(R.string.permission_denied) }
     val contentUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)

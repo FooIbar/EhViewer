@@ -237,7 +237,7 @@ fun GalleryDetailContent(
     fun onDownloadButtonClick() {
         galleryDetail ?: return
         if (DownloadManager.getDownloadState(galleryDetail.gid) == DownloadInfo.STATE_INVALID) {
-            launchUI { startDownload(implicit<MainActivity>(), false, galleryDetail.galleryInfo) }
+            launchUI { startDownload(false, galleryDetail.galleryInfo) }
         } else {
             launch { confirmRemoveDownload(galleryDetail) }
         }
@@ -376,7 +376,7 @@ fun GalleryDetailContent(
     }
 }
 
-context(Context, CoroutineScope, DestinationsNavigator, DialogState, SnackbarHostState)
+context(MainActivity, CoroutineScope, DestinationsNavigator, DialogState, SnackbarHostState)
 @Composable
 fun BelowHeader(galleryDetail: GalleryDetail) {
     @Composable
