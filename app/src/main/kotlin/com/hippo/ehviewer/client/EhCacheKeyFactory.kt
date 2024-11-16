@@ -46,11 +46,15 @@ val String.isV2PreviewKey
 val GalleryInfo.thumbUrl
     get() = keyToUrl(thumbKey!!)
 
-fun keyToUrl(key: String, exSite: Boolean = useExThumb) = if (key.endsWith("webp")) {
-    if (exSite) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E
+fun keyToUrl(key: String, exSite: Boolean = useExThumb) = if (key.startsWith("https:")) {
+    key
 } else {
-    if (exSite) URL_PREFIX_V1_THUMB_EX else URL_PREFIX_THUMB_E
-} + key
+    if (key.endsWith("webp")) {
+        if (exSite) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E
+    } else {
+        if (exSite) URL_PREFIX_V1_THUMB_EX else URL_PREFIX_THUMB_E
+    } + key
+}
 
 fun flipThumbSite(url: String) = keyToUrl(getThumbKey(url), !useExThumb)
 
