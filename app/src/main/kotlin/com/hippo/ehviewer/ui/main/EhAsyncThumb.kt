@@ -2,11 +2,13 @@ package com.hippo.ehviewer.ui.main
 
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Card
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +30,7 @@ import com.hippo.ehviewer.ui.tools.SETNodeGenerator
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.ui.tools.sharedBounds
 import com.hippo.ehviewer.ui.tools.shouldCrop
+import com.hippo.ehviewer.ui.tools.thenIf
 
 @Composable
 @NonRestartableComposable
@@ -108,18 +111,17 @@ fun EhThumbCard(
             }
         },
     )
-    Card(
-        onClick = {
-            if (painter.state.value is AsyncImagePainter.State.Error) {
-                painter.restart()
-            }
-        },
-        modifier = modifier,
-    ) {
+    val state by painter.state.collectAsState()
+    Card(modifier = modifier) {
         Image(
             painter = painter,
             contentDescription = null,
-            modifier = Modifier.imageRequest(request).fillMaxSize().sharedBounds(key = "${key.gid}").clip(ShapeDefaults.Medium),
+            modifier = Modifier.thenIf(state !is AsyncImagePainter.State.Success) {
+                // Keep applying this when state is `Loading` to avoid cutting off the ripple
+                clickable {
+                    if (state is AsyncImagePainter.State.Error) painter.restart()
+                }
+            }.imageRequest(request).fillMaxSize().sharedBounds(key = "${key.gid}").clip(ShapeDefaults.Medium),
             contentScale = contentScale,
         )
     }
