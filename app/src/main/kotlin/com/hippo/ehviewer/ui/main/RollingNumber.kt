@@ -5,6 +5,7 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -147,7 +148,7 @@ fun RollingNumber(
         reverseLayout = true,
         horizontalArrangement = Arrangement.Center,
     ) {
-        val max = length ?: with(transition) { max(currentState.length, targetState.length) }
+        val max = with(transition) { max(currentState.length, targetState.length) }
         items(max, key = { it }) { reversed ->
             val rotate by transition.animateOffset { str ->
                 val len = str.length
@@ -195,6 +196,11 @@ fun RollingNumber(
                     style = styleNoSpacing,
                     textAlign = TextAlign.Center,
                 )
+            }
+        }
+        if (length != null) {
+            items(length - max - if (isNegative) 1 else 0) {
+                Spacer(Modifier.size(size))
             }
         }
     }
