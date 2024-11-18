@@ -6,11 +6,16 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import java.util.concurrent.atomic.AtomicInteger
 
 val NoopTransitionsVisibilityScope = TransitionsVisibilityScope(emptySet())
@@ -43,6 +48,13 @@ fun Modifier.sharedBounds(
             exit,
         )
     }
+}
+
+context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
+@Composable
+inline fun SharedElementBox(key: String, shape: Shape, crossinline content: @Composable BoxScope.() -> Unit) {
+    val modifier = Modifier.sharedBounds(key = key).clip(shape)
+    CompositionLocalProvider { Box(modifier = modifier, content = content) }
 }
 
 data class SETNode(
