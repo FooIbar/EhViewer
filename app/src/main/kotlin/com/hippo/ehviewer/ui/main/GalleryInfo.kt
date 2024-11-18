@@ -43,6 +43,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import arrow.core.Tuple7
+import coil3.compose.AsyncImage
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo
@@ -51,6 +52,7 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.ElevatedCard
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
+import com.hippo.ehviewer.ui.tools.SharedElementBox
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.ui.tools.listThumbGenerator
 import com.hippo.ehviewer.util.FavouriteStatusRouter
@@ -219,22 +221,25 @@ fun GalleryInfoGridItem(
     interactionSource = interactionSource,
 ) {
     Box {
-        var ratio by remember(info) {
-            val ratio = if (info.thumbHeight != 0) {
-                (info.thumbWidth.toFloat() / info.thumbHeight).coerceIn(MIN_RATIO, MAX_RATIO)
-            } else {
-                DEFAULT_RATIO
-            }
-            mutableFloatStateOf(ratio)
-        }
         with(listThumbGenerator) {
-            EhAsyncThumb(
-                model = info,
-                modifier = Modifier.aspectRatio(ratio),
-                onSuccess = {
-                    ratio = (it.width.toFloat() / it.height).coerceIn(MIN_RATIO, MAX_RATIO)
-                },
-            )
+            SharedElementBox(key = "${info.gid}", shape = ShapeDefaults.Medium) {
+                var ratio by remember(info) {
+                    val ratio = if (info.thumbHeight != 0) {
+                        (info.thumbWidth.toFloat() / info.thumbHeight).coerceIn(MIN_RATIO, MAX_RATIO)
+                    } else {
+                        DEFAULT_RATIO
+                    }
+                    mutableFloatStateOf(ratio)
+                }
+                AsyncImage(
+                    model = requestOf(info),
+                    contentDescription = null,
+                    modifier = Modifier.aspectRatio(ratio),
+                    onSuccess = {
+                        ratio = (it.result.image.width.toFloat() / it.result.image.height).coerceIn(MIN_RATIO, MAX_RATIO)
+                    },
+                )
+            }
         }
         val categoryColor = EhUtils.getCategoryColor(info.category)
         Badge(
