@@ -40,7 +40,6 @@ fun Modifier.sharedBounds(
             dispose(node)
         }
     }
-    CheckRecompose()
     scopes.fold(this) { modifier, scope ->
         modifier.sharedBounds(
             rememberSharedContentState("${node.syntheticKey} + ${scope.transition.label}"),
@@ -57,10 +56,6 @@ inline fun SharedElementBox(key: String, shape: Shape, crossinline content: @Com
     val modifier = Modifier.sharedBounds(key = key).clip(shape)
     CompositionLocalProvider { Box(modifier = modifier, content = content) }
 }
-
-@Suppress("NOTHING_TO_INLINE")
-@Composable
-inline fun CheckRecompose() = Any().let { check(remember { it } === it) }
 
 data class SETNode(
     val contentKey: String,
