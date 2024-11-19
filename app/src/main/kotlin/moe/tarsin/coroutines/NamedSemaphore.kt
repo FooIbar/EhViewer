@@ -4,12 +4,7 @@ import androidx.collection.mutableScatterMapOf
 import io.ktor.utils.io.pool.DefaultPool
 import kotlinx.coroutines.sync.Semaphore
 
-class SemaphoreTracker(semaphore: Semaphore, private var count: Int = 0) : Semaphore by semaphore {
-    operator fun inc() = apply { count++ }
-    operator fun dec() = apply { count-- }
-    val isFree
-        get() = count == 0
-}
+class SemaphoreTracker(semaphore: Semaphore) : Semaphore by semaphore, Counter by counter()
 
 class SemaphorePool(val permits: Int) : DefaultPool<SemaphoreTracker>(capacity = 32) {
     override fun produceInstance() = SemaphoreTracker(semaphore = Semaphore(permits = permits))

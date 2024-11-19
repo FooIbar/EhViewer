@@ -20,7 +20,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import moe.tarsin.coroutines.Counter
 import moe.tarsin.coroutines.Pool
+import moe.tarsin.coroutines.counter
+import moe.tarsin.coroutines.use
 
 typealias F = suspend () -> Unit
 
@@ -32,26 +35,14 @@ object SequentialFunction : Pool<ContinuationFlow, String> {
 
     override fun release(key: String, lock: ContinuationFlow) = synchronized(active) {
         lock.dec()
-        if (lock.refcnt == 0) {
+        if (lock.isFree) {
             lock.cancel()
             active.remove(key)
         }
     }
 }
 
-inline fun <T, K, R> Pool<T, K>.use(key: K, block: T.() -> R): R {
-    val inst = acquire(key)
-    try {
-        return block(inst)
-    } finally {
-        release(key, inst)
-    }
-}
-
-class ContinuationFlow : CoroutineScope {
-    var refcnt = 0
-    fun inc() = apply { refcnt++ }
-    fun dec() = apply { refcnt-- }
+class ContinuationFlow : CoroutineScope, Counter by counter() {
     override val coroutineContext = Dispatchers.IO + Job()
     val actions = MutableSharedFlow<F>()
     val flow = actions.map(F::invoke).shareIn(this, SharingStarted.WhileSubscribed())

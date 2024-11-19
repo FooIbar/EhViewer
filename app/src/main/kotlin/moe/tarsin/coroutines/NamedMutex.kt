@@ -5,12 +5,7 @@ import androidx.collection.mutableScatterMapOf
 import io.ktor.utils.io.pool.DefaultPool
 import kotlinx.coroutines.sync.Mutex
 
-class MutexTracker(mutex: Mutex = Mutex(), private var count: Int = 0) : Mutex by mutex {
-    operator fun inc() = apply { count++ }
-    operator fun dec() = apply { count-- }
-    val isFree
-        get() = count == 0
-}
+class MutexTracker() : Mutex by Mutex(), Counter by counter()
 
 object MutexPool : DefaultPool<MutexTracker>(capacity = 32) {
     override fun produceInstance() = MutexTracker()
