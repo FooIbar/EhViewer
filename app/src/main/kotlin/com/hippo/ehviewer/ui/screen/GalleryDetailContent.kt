@@ -243,7 +243,7 @@ fun GalleryDetailContent(
         }
     }
 
-    val previews = galleryDetail.collectPreviewItems(thumbColumns)
+    val previews = galleryDetail.collectPreviewItems()
     when (windowSizeClass.windowWidthSizeClass) {
         WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.COMPACT -> FastScrollLazyVerticalGrid(
             columns = GridCells.Fixed(thumbColumns),
@@ -774,7 +774,7 @@ private fun List<GalleryTagGroup>.getArtistTag(): String? {
 
 context(Context)
 @Composable
-private fun GalleryDetail?.collectPreviewItems(prefetchDistance: Int) = rememberInVM(this) {
+private fun GalleryDetail?.collectPreviewItems() = rememberInVM(this) {
     val detail = this@collectPreviewItems ?: return@rememberInVM emptyFlow()
     val pageSize = detail.previewList.size
     val pages = detail.pages
@@ -782,7 +782,6 @@ private fun GalleryDetail?.collectPreviewItems(prefetchDistance: Int) = remember
     Pager(
         PagingConfig(
             pageSize = pageSize,
-            prefetchDistance = prefetchDistance,
             initialLoadSize = pageSize,
             jumpThreshold = 2 * pageSize,
         ),
