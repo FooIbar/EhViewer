@@ -491,6 +491,7 @@
     <string name="passwd_cannot_be_empty">パスワードは空欄にできません</string>
     <string name="list_tile_thumb_size">詳細モードのサムネイルの大きさ</string>
     <string name="account_name">アカウント</string>
+    <string name="preload_thumb_aggressively">サムネイルを積極的にプリロードする</string>
     <string name="animate_items">リスト項目のアニメーション</string>
     <string name="animate_items_summary">クラッシュやフレームドロップが発生する場合はこれを無効化してください</string>
     <string name="auto_updates">自動で更新を確認する</string>

@@ -3,6 +3,8 @@ package com.hippo.ehviewer.coil
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.paging.compose.LazyPagingItems
+import coil3.decode.BlackholeDecoder
+import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.size.Size
 import com.hippo.ehviewer.client.data.GalleryInfo
@@ -32,6 +34,11 @@ fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = apply {
         memoryCacheKey(imageKey)
         diskCacheKey(imageKey)
     }
+}
+
+fun ImageRequest.Builder.justDownload() = apply {
+    memoryCachePolicy(CachePolicy.DISABLED)
+    decoderFactory(BlackholeDecoder.Factory())
 }
 
 @Composable
