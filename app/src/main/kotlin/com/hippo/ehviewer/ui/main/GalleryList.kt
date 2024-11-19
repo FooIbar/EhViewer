@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,9 +55,11 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.exception.NoHitsFoundException
+import com.hippo.ehviewer.coil.PrefetchAround
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
+import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.screen.collectDetailSizeAsState
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
@@ -75,7 +78,7 @@ operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
     override fun calculateTopPadding() = l.calculateTopPadding() + r.calculateTopPadding()
 }
 
-context(CoroutineScope)
+context(CoroutineScope, Context)
 @Composable
 fun GalleryList(
     modifier: Modifier = Modifier,
@@ -140,6 +143,7 @@ fun GalleryList(
                     val info = data[index]
                     if (info != null) {
                         detailItemContent(info)
+                        PrefetchAround(data, index, 5, ::imageRequest)
                     }
                 }
                 if (showLoadStateIndicator) {
@@ -169,6 +173,7 @@ fun GalleryList(
                     val info = data[index]
                     if (info != null) {
                         thumbItemContent(info)
+                        PrefetchAround(data, index, 10, ::imageRequest)
                     }
                 }
                 if (showLoadStateIndicator) {

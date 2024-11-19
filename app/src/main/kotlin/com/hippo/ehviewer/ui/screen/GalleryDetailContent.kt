@@ -37,7 +37,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -88,6 +87,7 @@ import com.hippo.ehviewer.client.data.asGalleryDetail
 import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.NoHAtHClientException
+import com.hippo.ehviewer.coil.PrefetchAround
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
@@ -96,7 +96,6 @@ import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.Magnet
-import com.hippo.ehviewer.ktbuilder.execute
 import com.hippo.ehviewer.ktbuilder.executeIn
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
@@ -829,17 +828,6 @@ private fun LazyGridScope.galleryPreview(detail: GalleryDetail, data: LazyPaging
     ) { index ->
         val item = data[index]
         EhPreviewItem(item, index) { onClick(index) }
-        if (isV2Thumb) {
-            data.peek((index - 20).coerceAtLeast(0))?.let { fetchBefore ->
-                LaunchedEffect(fetchBefore) {
-                    imageRequest(fetchBefore).execute()
-                }
-            }
-            data.peek((index + 20).coerceAtMost(detail.pages - 1))?.let { fetchAhead ->
-                LaunchedEffect(fetchAhead) {
-                    imageRequest(fetchAhead).execute()
-                }
-            }
-        }
+        PrefetchAround(data, index, if (isV2Thumb) 20 else 6, ::imageRequest)
     }
 }
