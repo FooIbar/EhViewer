@@ -45,15 +45,12 @@ suspend inline fun <Lock : Counter, K, R> LockTracker<Lock, K>.withLock(key: K, 
     contract {
         callsInPlace(action, InvocationKind.EXACTLY_ONCE)
     }
-    val lock = acquire(key)
-    return try {
-        lock.lock()
-        return try {
-            action()
+    use(key) {
+        lock()
+        try {
+            return action()
         } finally {
-            lock.unlock()
+            unlock()
         }
-    } finally {
-        release(key, lock)
     }
 }
