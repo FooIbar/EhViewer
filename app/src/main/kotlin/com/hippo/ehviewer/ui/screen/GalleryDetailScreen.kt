@@ -112,7 +112,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     (galleryInfo as? GalleryDetail)?.apply {
-        rememberInVM {
+        rememberInVM(this) {
             if (Settings.preloadThumbAggressively) {
                 previewList.forEach {
                     imageRequest(it) { justDownload() }.executeIn(viewModelScope)
