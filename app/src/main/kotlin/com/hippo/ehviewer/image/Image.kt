@@ -28,7 +28,6 @@ import arrow.fx.coroutines.bracketCase
 import coil3.BitmapImage
 import coil3.DrawableImage
 import coil3.Image as CoilImage
-import coil3.imageLoader
 import coil3.request.CachePolicy
 import coil3.request.ErrorResult
 import coil3.request.SuccessResult
@@ -44,6 +43,7 @@ import com.hippo.ehviewer.jni.isGif
 import com.hippo.ehviewer.jni.mmap
 import com.hippo.ehviewer.jni.munmap
 import com.hippo.ehviewer.jni.rewriteGifSource
+import com.hippo.ehviewer.ktbuilder.execute
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastU
@@ -85,7 +85,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
         private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 3
 
         private suspend fun Either<ByteBufferSource, PathSource>.decodeCoil(checkExtraneousAds: Boolean): CoilImage {
-            val req = appCtx.imageRequest {
+            val request = appCtx.imageRequest {
                 onLeft { data(it.source) }
                 onRight { data(it.source.toUri()) }
                 size(Dimension(targetWidth), Dimension.Undefined)
@@ -96,7 +96,7 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
                 detectQrCode(checkExtraneousAds)
                 memoryCachePolicy(CachePolicy.DISABLED)
             }
-            return when (val result = appCtx.imageLoader.execute(req)) {
+            return when (val result = request.execute()) {
                 is SuccessResult -> result.image
                 is ErrorResult -> throw result.throwable
             }
