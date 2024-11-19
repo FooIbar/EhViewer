@@ -29,20 +29,19 @@ typealias F = suspend () -> Unit
 
 suspend inline fun <T> CancellableContinuation<T>.evalAndResume(f: suspend () -> T) = runSuspendCatching { f() }.takeIf { isActive }?.let(::resumeWith)
 
-object SequentialFunction : Tracker<ContinuationFlow, String>() {
-    override fun new() = ContinuationFlow()
-    override fun free(e: ContinuationFlow) = e.cancel()
-}
-
-class ContinuationFlow : CoroutineScope, Counter by counter() {
+class TightRope : CoroutineScope, Counter by counter() {
     override val coroutineContext = Dispatchers.IO + Job()
     val actions = MutableSharedFlow<F>()
     val flow = actions.map(F::invoke).shareIn(this, SharingStarted.WhileSubscribed())
-
     suspend inline fun <R> sendAndAwait(crossinline block: suspend () -> R) = raceN(
         { suspendCancellableCoroutine { cont -> launch { actions.emit { cont.evalAndResume(block) } } } },
         { flow.collect {} },
     ).merge()
+}
+
+object TightRopeTracker : Tracker<TightRope, String>() {
+    override fun new() = TightRope()
+    override fun free(e: TightRope) = e.cancel()
 }
 
 object MergeInterceptor : Interceptor {
@@ -52,7 +51,7 @@ object MergeInterceptor : Interceptor {
         return if (key != null) {
             val cacheKey = MemoryCache.Key(key, req.memoryCacheKeyExtras)
             val cached = req.context.imageLoader.memoryCache!![cacheKey] != null
-            val result = SequentialFunction.use(key) { sendAndAwait { chain.proceed() } }
+            val result = TightRopeTracker.use(key) { sendAndAwait { chain.proceed() } }
             when (result) {
                 is SuccessResult if cached -> result.copy(dataSource = DataSource.MEMORY)
                 else -> result
