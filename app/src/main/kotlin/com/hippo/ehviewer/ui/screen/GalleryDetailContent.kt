@@ -785,6 +785,7 @@ private fun GalleryDetail?.collectPreviewItems() = rememberInVM(this) {
     Pager(
         PagingConfig(
             pageSize = pageSize,
+            prefetchDistance = pageSize.coerceAtMost(100),
             initialLoadSize = pageSize,
             jumpThreshold = 2 * pageSize,
         ),
