@@ -13,9 +13,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -31,11 +33,11 @@ suspend inline fun <T> CancellableContinuation<T>.evalAndResume(f: suspend () ->
 
 class TightRope : CoroutineScope, Counter by counter() {
     override val coroutineContext = Dispatchers.IO + Job()
-    val actions = MutableSharedFlow<F>()
-    val flow = actions.map(F::invoke).shareIn(this, SharingStarted.WhileSubscribed())
+    val actions = Channel<F>()
+    val flow = actions.receiveAsFlow().map(F::invoke).buffer(0).shareIn(this, SharingStarted.WhileSubscribed())
     suspend inline fun <R> sendAndAwait(crossinline block: suspend () -> R) = raceN(
-        { suspendCancellableCoroutine { cont -> launch { actions.emit { cont.evalAndResume(block) } } } },
         { flow.collect {} },
+        { suspendCancellableCoroutine { cont -> launch { actions.send { cont.evalAndResume(block) } } } },
     ).merge()
 }
 
