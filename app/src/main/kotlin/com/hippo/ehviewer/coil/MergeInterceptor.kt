@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.coil
 
-import androidx.collection.mutableScatterMapOf
 import arrow.core.merge
 import arrow.fx.coroutines.raceN
 import coil3.decode.DataSource
@@ -21,25 +20,18 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import moe.tarsin.coroutines.Counter
-import moe.tarsin.coroutines.Pool
+import moe.tarsin.coroutines.Tracker
 import moe.tarsin.coroutines.counter
+import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.use
 
 typealias F = suspend () -> Unit
 
-suspend inline fun <T> CancellableContinuation<T>.evalAndResume(f: suspend () -> T) = runCatching { f() }.takeIf { isActive }?.let(::resumeWith)
+suspend inline fun <T> CancellableContinuation<T>.evalAndResume(f: suspend () -> T) = runSuspendCatching { f() }.takeIf { isActive }?.let(::resumeWith)
 
-object SequentialFunction : Pool<ContinuationFlow, String> {
-    val active = mutableScatterMapOf<String, ContinuationFlow>()
-    override fun acquire(key: String) = synchronized(active) { active.getOrPut(key) { ContinuationFlow() }.inc() }
-
-    override fun release(key: String, lock: ContinuationFlow) = synchronized(active) {
-        lock.dec()
-        if (lock.isFree) {
-            lock.cancel()
-            active.remove(key)
-        }
-    }
+object SequentialFunction : Tracker<ContinuationFlow, String>() {
+    override fun new() = ContinuationFlow()
+    override fun free(e: ContinuationFlow) = e.cancel()
 }
 
 class ContinuationFlow : CoroutineScope, Counter by counter() {
