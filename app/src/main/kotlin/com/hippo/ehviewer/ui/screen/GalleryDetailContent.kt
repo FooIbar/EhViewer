@@ -37,6 +37,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -82,6 +83,7 @@ import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.TagNamespace
+import com.hippo.ehviewer.client.data.V2GalleryPreview
 import com.hippo.ehviewer.client.data.asGalleryDetail
 import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
@@ -302,7 +304,7 @@ fun GalleryDetailContent(
                 }
             }
             if (galleryDetail != null) {
-                galleryPreview(previews) { navToReader(galleryDetail.galleryInfo, it) }
+                galleryPreview(galleryDetail, previews) { navToReader(galleryDetail.galleryInfo, it) }
             }
         }
 
@@ -370,7 +372,7 @@ fun GalleryDetailContent(
                 }
             }
             if (galleryDetail != null) {
-                galleryPreview(previews) { navToReader(galleryDetail.galleryInfo, it) }
+                galleryPreview(galleryDetail, previews) { navToReader(galleryDetail.galleryInfo, it) }
             }
         }
     }
@@ -815,7 +817,9 @@ private fun GalleryDetail?.collectPreviewItems() = rememberInVM(this) {
     }.flow.cachedIn(viewModelScope)
 }.collectAsLazyPagingItems()
 
-private fun LazyGridScope.galleryPreview(data: LazyPagingItems<GalleryPreview>, onClick: (Int) -> Unit) {
+context(Context)
+private fun LazyGridScope.galleryPreview(detail: GalleryDetail, data: LazyPagingItems<GalleryPreview>, onClick: (Int) -> Unit) {
+    val isV2Thumb = detail.previewList.first() is V2GalleryPreview
     items(
         count = data.itemCount,
         key = data.itemKey(key = { item -> item.position }),
@@ -823,5 +827,17 @@ private fun LazyGridScope.galleryPreview(data: LazyPagingItems<GalleryPreview>, 
     ) { index ->
         val item = data[index]
         EhPreviewItem(item, index) { onClick(index) }
+        if (isV2Thumb) {
+            data.peek((index - 20).coerceAtLeast(0))?.let { fetchBefore ->
+                LaunchedEffect(fetchBefore) {
+                    imageRequest(fetchBefore) { justDownload() }.launchIn(this)
+                }
+            }
+            data.peek((index + 20).coerceAtMost(detail.pages - 1))?.let { fetchAhead ->
+                LaunchedEffect(fetchAhead) {
+                    imageRequest(fetchAhead) { justDownload() }.launchIn(this)
+                }
+            }
+        }
     }
 }
