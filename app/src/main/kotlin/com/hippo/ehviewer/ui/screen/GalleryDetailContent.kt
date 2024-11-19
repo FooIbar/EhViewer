@@ -828,8 +828,6 @@ private fun LazyGridScope.galleryPreview(detail: GalleryDetail, data: LazyPaging
     ) { index ->
         val item = data[index]
         EhPreviewItem(item, index) { onClick(index) }
-        if (isV2Thumb) {
-            PrefetchAround(data, index, 20, ::imageRequest)
-        }
+        PrefetchAround(data, index, if (isV2Thumb) 20 else 6, ::imageRequest)
     }
 }
