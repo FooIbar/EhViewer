@@ -35,7 +35,7 @@ fun ImageRequest.Builder.ehPreview(preview: GalleryPreview) = apply {
 }
 
 @Composable
-inline fun <T : Any> PrefetchAround(data: LazyPagingItems<T>, index: Int, distance: Int, crossinline f: suspend (T) -> ImageRequest) {
+inline fun <T : Any> PrefetchAround(data: LazyPagingItems<T>, index: Int, distance: Int, crossinline f: (T) -> ImageRequest) {
     data.peek((index - distance).coerceAtLeast(0))?.let { fetchBefore ->
         LaunchedEffect(fetchBefore) {
             f(fetchBefore).execute()
