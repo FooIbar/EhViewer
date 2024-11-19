@@ -88,7 +88,6 @@ import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.NoHAtHClientException
 import com.hippo.ehviewer.coil.PrefetchAround
-import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.dao.Filter
@@ -96,7 +95,6 @@ import com.hippo.ehviewer.dao.FilterMode
 import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.Magnet
-import com.hippo.ehviewer.ktbuilder.executeIn
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
 import com.hippo.ehviewer.ui.MainActivity
@@ -802,9 +800,6 @@ private fun GalleryDetail?.collectPreviewItems() = rememberInVM(this) {
                             EhEngine.getPreviewList(url).first
                         }.flattenForEach {
                             previewPagesMap[it.position] = it
-                            if (Settings.preloadThumbAggressively) {
-                                imageRequest(it) { justDownload() }.executeIn(viewModelScope)
-                            }
                         }
                 }.foldToLoadResult {
                     val r = (up..end).map { requireNotNull(previewPagesMap[it]) }
@@ -828,8 +823,6 @@ private fun LazyGridScope.galleryPreview(detail: GalleryDetail, data: LazyPaging
     ) { index ->
         val item = data[index]
         EhPreviewItem(item, index) { onClick(index) }
-        if (isV2Thumb) {
-            PrefetchAround(data, index, 20, ::imageRequest)
-        }
+        PrefetchAround(data, index, if (isV2Thumb) 20 else 6, ::imageRequest)
     }
 }

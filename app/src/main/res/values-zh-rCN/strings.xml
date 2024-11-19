@@ -487,7 +487,6 @@
     <string name="passwd_cannot_be_empty">密码不能为空</string>
     <string name="list_tile_thumb_size">详情模式下缩略图大小</string>
     <string name="account_name">账户</string>
-    <string name="preload_thumb_aggressively">激进地预载缩略图</string>
     <string name="animate_items">列表项目动画</string>
     <string name="animate_items_summary">如遇崩溃/掉帧请尝试禁用此项</string>
     <string name="auto_updates">自动检查更新</string>

@@ -192,10 +192,6 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     value = Settings::hardwareBitmapThreshold,
                 )
             }
-            SwitchPreference(
-                title = stringResource(id = R.string.preload_thumb_aggressively),
-                value = Settings::preloadThumbAggressively,
-            )
             var animateItems by Settings.animateItems.asMutableState()
             SwitchPref(
                 checked = animateItems,
