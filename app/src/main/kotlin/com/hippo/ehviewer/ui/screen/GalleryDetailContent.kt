@@ -831,12 +831,12 @@ private fun LazyGridScope.galleryPreview(detail: GalleryDetail, data: LazyPaging
         if (isV2Thumb) {
             data.peek((index - 20).coerceAtLeast(0))?.let { fetchBefore ->
                 LaunchedEffect(fetchBefore) {
-                    imageRequest(fetchBefore) { justDownload() }.execute()
+                    imageRequest(fetchBefore).execute()
                 }
             }
             data.peek((index + 20).coerceAtMost(detail.pages - 1))?.let { fetchAhead ->
                 LaunchedEffect(fetchAhead) {
-                    imageRequest(fetchAhead) { justDownload() }.execute()
+                    imageRequest(fetchAhead).execute()
                 }
             }
         }
