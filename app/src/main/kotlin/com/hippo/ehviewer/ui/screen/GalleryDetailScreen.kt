@@ -34,7 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import coil3.imageLoader
+import androidx.lifecycle.viewModelScope
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
@@ -50,6 +50,7 @@ import com.hippo.ehviewer.client.getImageKey
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.download.DownloadManager
+import com.hippo.ehviewer.ktbuilder.executeIn
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.ui.MainActivity
@@ -110,6 +111,16 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
     var getDetailError by rememberSaveable { mutableStateOf("") }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
+    (galleryInfo as? GalleryDetail)?.apply {
+        rememberInVM {
+            if (Settings.preloadThumbAggressively) {
+                previewList.forEach {
+                    imageRequest(it) { justDownload() }.executeIn(viewModelScope)
+                }
+            }
+        }
+    }
+
     if (galleryInfo !is GalleryDetail && getDetailError.isBlank()) {
         LaunchedEffect(Unit) {
             val galleryDetail = detailCache[gid]
@@ -117,13 +128,6 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                     withIOContext { EhEngine.getGalleryDetail(galleryDetailUrl) }
                 }.onSuccess { galleryDetail ->
                     detailCache[galleryDetail.gid] = galleryDetail
-                    if (Settings.preloadThumbAggressively) {
-                        launchIO {
-                            galleryDetail.previewList.forEach {
-                                imageLoader.enqueue(imageRequest(it) { justDownload() })
-                            }
-                        }
-                    }
                 }.onFailure {
                     galleryInfo?.let { info -> EhDB.putHistoryInfo(info.findBaseInfo()) }
                     getDetailError = it.displayString()

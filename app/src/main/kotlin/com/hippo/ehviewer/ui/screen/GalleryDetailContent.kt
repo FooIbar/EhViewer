@@ -97,8 +97,8 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.Magnet
 import com.hippo.ehviewer.ktbuilder.execute
+import com.hippo.ehviewer.ktbuilder.executeIn
 import com.hippo.ehviewer.ktbuilder.imageRequest
-import com.hippo.ehviewer.ktbuilder.launchIn
 import com.hippo.ehviewer.ui.GalleryInfoBottomSheet
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownload
@@ -803,7 +803,7 @@ private fun GalleryDetail?.collectPreviewItems() = rememberInVM(this) {
                         }.flattenForEach {
                             previewPagesMap[it.position] = it
                             if (Settings.preloadThumbAggressively) {
-                                imageRequest(it) { justDownload() }.launchIn(viewModelScope)
+                                imageRequest(it) { justDownload() }.executeIn(viewModelScope)
                             }
                         }
                 }.foldToLoadResult {
