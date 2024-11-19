@@ -30,6 +30,5 @@ class NamedMutex<K>(val active: MutableScatterMap<K, MutexTracker> = mutableScat
         }
     }
     override suspend fun MutexTracker.lock() = lock()
-    override fun MutexTracker.tryLock() = tryLock()
     override fun MutexTracker.unlock() = unlock()
 }

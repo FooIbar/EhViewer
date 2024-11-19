@@ -31,6 +31,5 @@ class NamedSemaphore<K>(val permits: Int) : LockPool<SemaphoreTracker, K> {
         }
     }
     override suspend fun SemaphoreTracker.lock() = acquire()
-    override fun SemaphoreTracker.tryLock() = tryAcquire()
     override fun SemaphoreTracker.unlock() = release()
 }
