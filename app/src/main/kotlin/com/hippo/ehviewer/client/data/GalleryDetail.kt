@@ -54,7 +54,6 @@ data class GalleryDetail(
     var ratingCount: Int = 0,
     val tagGroups: List<GalleryTagGroup>,
     var comments: GalleryCommentList,
-    val previewPages: Int,
     val previewList: List<GalleryPreview>,
 ) : GalleryInfo by galleryInfo, Parcelable {
     fun fillInfo() {
