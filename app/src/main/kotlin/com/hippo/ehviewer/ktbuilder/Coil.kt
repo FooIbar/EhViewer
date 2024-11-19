@@ -17,4 +17,5 @@ inline fun Context.imageRequest(info: GalleryInfo, builder: ImageRequest.Builder
 inline fun Context.imageRequest(builder: ImageRequest.Builder.() -> Unit = {}) = ImageRequest.Builder(this).apply(builder).build()
 inline fun diskCache(builder: DiskCache.Builder.() -> Unit) = DiskCache.Builder().apply(builder).build()
 inline fun Context.imageLoader(builder: ImageLoader.Builder.() -> Unit) = ImageLoader.Builder(this).apply(builder).build()
-fun ImageRequest.launchIn(scope: CoroutineScope) = scope.launch { context.imageLoader.execute(this@launchIn) }
+suspend fun ImageRequest.execute() = context.imageLoader.execute(this)
+fun ImageRequest.executeIn(scope: CoroutineScope) = scope.launch { execute() }

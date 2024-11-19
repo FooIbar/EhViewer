@@ -106,7 +106,6 @@ object GalleryDetailParser {
         val galleryDetail = GalleryDetail(
             tagGroups = parseTagGroups(document),
             comments = parseComments(document),
-            previewPages = parsePreviewPages(body),
             previewList = parsePreviewList(body).first,
         )
         parseDetail(galleryDetail, document, body)
