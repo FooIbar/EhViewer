@@ -28,6 +28,9 @@ abstract class Tracker<T : Counter, K> {
 }
 
 inline fun <T : Counter, K, R> Tracker<T, K>.use(key: K, block: T.() -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
     val inst = acquire(key)
     try {
         return block(inst)
