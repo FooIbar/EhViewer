@@ -34,7 +34,7 @@ suspend inline fun <T> CancellableContinuation<T>.evalAndResume(f: suspend () ->
 class TightRope : CoroutineScope, Counter by counter() {
     override val coroutineContext = Dispatchers.IO + Job()
     val actions = Channel<F>()
-    val flow = actions.receiveAsFlow().map(F::invoke).buffer(0).shareIn(this, SharingStarted.WhileSubscribed())
+    val flow = actions.receiveAsFlow().map(F::invoke).buffer(0).shareIn(this, SharingStarted.WhileSubscribed(stopTimeoutMillis = 200))
     suspend inline fun <R> sendAndAwait(crossinline block: suspend () -> R) = raceN(
         { flow.collect {} },
         { suspendCancellableCoroutine { cont -> launch { actions.send { cont.evalAndResume(block) } } } },
