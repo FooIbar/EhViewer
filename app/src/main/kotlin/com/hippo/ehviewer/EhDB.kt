@@ -17,8 +17,8 @@ package com.hippo.ehviewer
 
 import android.content.Context
 import android.net.Uri
-import arrow.fx.coroutines.release
 import arrow.fx.coroutines.resource
+import arrow.fx.coroutines.resourceScope
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.dao.DownloadArtist
 import com.hippo.ehviewer.dao.DownloadDirname
@@ -279,52 +279,51 @@ object EhDB {
         dbFile.toOkioPath() sendTo file
     }
 
-    suspend fun importDB(context: Context, uri: Uri) {
+    suspend fun importDB(context: Context, uri: Uri) = resourceScope {
         val tempDBName = "tmp.db"
-        resource {
+        val oldDB = resource {
             context.deleteDatabase(tempDBName)
             roomDb<EhDatabase>(tempDBName) {
                 createFromInputStream { context.contentResolver.openInputStream(uri) }
                 addMigrations(Schema17to18())
             }
-        } release {
-            it.close()
+        } release { db ->
+            db.close()
             context.deleteDatabase(tempDBName)
-        } use { oldDB ->
-            db.galleryDao().insertOrIgnore(oldDB.galleryDao().list())
+        }
 
-            db.progressDao().insertOrIgnore(oldDB.progressDao().list())
+        db.galleryDao().insertOrIgnore(oldDB.galleryDao().list())
+        db.progressDao().insertOrIgnore(oldDB.progressDao().list())
 
-            val downloadLabelList = oldDB.downloadLabelDao().list()
-            DownloadManager.addDownloadLabel(downloadLabelList)
+        val downloadLabelList = oldDB.downloadLabelDao().list()
+        DownloadManager.addDownloadLabel(downloadLabelList)
 
-            oldDB.downloadDirnameDao().list().let {
-                importDownloadDirname(it)
-            }
+        oldDB.downloadDirnameDao().list().let {
+            importDownloadDirname(it)
+        }
 
-            val downloadInfoList = oldDB.downloadsDao().joinList().asReversed()
-            DownloadManager.addDownload(downloadInfoList)
+        val downloadInfoList = oldDB.downloadsDao().joinList().asReversed()
+        DownloadManager.addDownload(downloadInfoList)
 
-            val historyInfoList = oldDB.historyDao().list()
-            importHistoryInfo(historyInfoList)
+        val historyInfoList = oldDB.historyDao().list()
+        importHistoryInfo(historyInfoList)
 
-            val quickSearchList = oldDB.quickSearchDao().list()
-            val currentQuickSearchList = db.quickSearchDao().list()
-            val offset = currentQuickSearchList.size
-            val importList = quickSearchList.filter { newQS ->
-                currentQuickSearchList.none { it.name == newQS.name }
-            }.onEachIndexed { index, q -> q.position = index + offset }
-            importQuickSearch(importList)
+        val quickSearchList = oldDB.quickSearchDao().list()
+        val currentQuickSearchList = db.quickSearchDao().list()
+        val offset = currentQuickSearchList.size
+        val importList = quickSearchList.filter { newQS ->
+            currentQuickSearchList.none { it.name == newQS.name }
+        }.onEachIndexed { index, q -> q.position = index + offset }
+        importQuickSearch(importList)
 
-            oldDB.localFavoritesDao().list().let {
-                importLocalFavorites(it)
-            }
+        oldDB.localFavoritesDao().list().let {
+            importLocalFavorites(it)
+        }
 
-            val filterList = oldDB.filterDao().list()
-            val currentFilterList = db.filterDao().list()
-            filterList.forEach {
-                if (it !in currentFilterList) addFilter(it)
-            }
+        val filterList = oldDB.filterDao().list()
+        val currentFilterList = db.filterDao().list()
+        filterList.forEach {
+            if (it !in currentFilterList) addFilter(it)
         }
     }
 }

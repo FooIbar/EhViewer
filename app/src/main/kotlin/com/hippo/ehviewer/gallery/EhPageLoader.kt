@@ -9,6 +9,7 @@ import com.hippo.ehviewer.spider.SpiderQueen.Companion.releaseSpiderQueen
 import com.hippo.ehviewer.spider.SpiderQueen.OnSpiderListener
 import com.hippo.ehviewer.util.hasAds
 import kotlinx.coroutines.coroutineScope
+import moe.tarsin.kt.install
 import okio.Path
 
 suspend fun <T> useEhPageLoader(
@@ -17,7 +18,7 @@ suspend fun <T> useEhPageLoader(
     block: suspend (PageLoader) -> T,
 ) = autoCloseScope {
     coroutineScope {
-        val queen = autoClose(
+        val queen = install(
             { obtainSpiderQueen(info, SpiderQueen.MODE_READ) },
             { queen, _ -> releaseSpiderQueen(queen, SpiderQueen.MODE_READ) },
         )
@@ -48,7 +49,7 @@ suspend fun <T> useEhPageLoader(
 
                 override fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) = notifyPageFailed(index, error)
             }
-            autoClose(
+            install(
                 { queen.addOnSpiderListener(listener) },
                 { _, _ -> queen.removeOnSpiderListener(listener) },
             )

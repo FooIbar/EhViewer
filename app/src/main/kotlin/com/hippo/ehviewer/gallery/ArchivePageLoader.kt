@@ -32,6 +32,7 @@ import com.hippo.ehviewer.util.displayName
 import com.hippo.files.openFileDescriptor
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.coroutineScope
+import moe.tarsin.kt.install
 import okio.Path
 
 typealias PasswdInvalidator = (String) -> Boolean
@@ -48,7 +49,7 @@ suspend fun <T> useArchivePageLoader(
 ) = autoCloseScope {
     coroutineScope {
         val pfd = install(file.openFileDescriptor("r"))
-        val size = autoClose(
+        val size = install(
             { openArchive(pfd.fd, pfd.statSize, gid == 0L || file.name.endsWith(".zip")) },
             { _, _ -> closeArchive() },
         )

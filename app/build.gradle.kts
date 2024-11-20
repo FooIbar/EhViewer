@@ -237,8 +237,7 @@ dependencies {
     implementation(libs.reorderable)
 
     implementation(platform(libs.arrow.stack))
-    implementation(libs.arrow.fx.coroutines)
-    implementation(libs.arrow.resilience)
+    implementation(libs.bundles.arrow)
 
     // https://coil-kt.github.io/coil/changelog/
     implementation(platform(libs.coil.bom))
