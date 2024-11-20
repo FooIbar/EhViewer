@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.ui.settings
 
-import android.content.Context
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -21,10 +21,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
@@ -34,9 +32,10 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.download.downloadLocation
+import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.destinations.LicenseScreenDestination
 import com.hippo.ehviewer.ui.tools.DialogState
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.updater.Release
@@ -49,7 +48,6 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
@@ -66,13 +64,10 @@ private fun author() = AnnotatedString.fromHtml(stringResource(R.string.settings
 
 @Destination<RootGraph>
 @Composable
-fun AboutScreen(navigator: DestinationsNavigator) {
-    val context = LocalContext.current
+fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    val dialogState = LocalDialogState.current
-    fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
+    fun launchSnackBar(content: String) = launch { snackbarHostState.showSnackbar(content) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -125,20 +120,20 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 entryValueRes = R.array.update_frequency_values,
                 value = Settings::updateIntervalDays.observed,
             )
+            val latestVersion = stringResource(id = R.string.already_latest_version)
             WorkPreference(title = stringResource(id = R.string.settings_about_check_for_updates)) {
                 runSuspendCatching {
-                    AppUpdater.checkForUpdate(true)?.let {
-                        dialogState.showNewVersion(context, it)
-                    } ?: launchSnackBar(context.getString(R.string.already_latest_version))
+                    AppUpdater.checkForUpdate(true)?.let { showNewVersion(it) } ?: launchSnackBar(latestVersion)
                 }.onFailure {
-                    launchSnackBar(context.getString(R.string.update_failed, it.displayString()))
+                    launchSnackBar(getString(R.string.update_failed, it.displayString()))
                 }
             }
         }
     }
 }
 
-suspend fun DialogState.showNewVersion(context: Context, release: Release) {
+context(MainActivity)
+suspend fun DialogState.showNewVersion(release: Release) {
     awaitConfirmationOrCancel(
         confirmText = R.string.download,
         title = R.string.new_version_available,
@@ -154,10 +149,10 @@ suspend fun DialogState.showNewVersion(context: Context, release: Release) {
     }
     if (Settings.backupBeforeUpdate) {
         val time = ReadableTime.getFilenamableTime()
-        EhDB.exportDB(context, (downloadLocation / "$time.db"))
+        EhDB.exportDB(downloadLocation / "$time.db")
     }
     // TODO: Download in the background and show progress in notification
     val file = File(AppConfig.tempDir, "update.apk").apply { delete() }
     AppUpdater.downloadUpdate(release.downloadLink, file)
-    withUIContext { context.installPackage(file) }
+    withUIContext { installPackage(file) }
 }

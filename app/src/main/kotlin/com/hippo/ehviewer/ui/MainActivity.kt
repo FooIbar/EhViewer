@@ -258,7 +258,7 @@ class MainActivity : EhActivity() {
                         runSuspendCatching {
                             withIOContext {
                                 AppUpdater.checkForUpdate()?.let {
-                                    dialogState.showNewVersion(this@MainActivity, it)
+                                    dialogState.showNewVersion(it)
                                 }
                             }
                         }.onFailure {

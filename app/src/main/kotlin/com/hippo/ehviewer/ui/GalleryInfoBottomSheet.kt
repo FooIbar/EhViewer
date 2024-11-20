@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui
 
-import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -62,7 +61,7 @@ private fun GalleryDetail.generateContent() = arrayOf(
     R.string.favorite_name to favoriteName,
 )
 
-context(Context, DestinationsNavigator)
+context(MainActivity, DestinationsNavigator)
 @Composable
 fun GalleryInfoBottomSheet(detail: GalleryDetail) {
     Column(modifier = Modifier.fillMaxWidth()) {

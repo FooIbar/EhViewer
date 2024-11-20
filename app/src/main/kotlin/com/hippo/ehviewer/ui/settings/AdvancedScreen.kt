@@ -213,7 +213,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 uri?.let {
                     context.runCatching {
                         grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                        EhDB.exportDB(context, uri.toOkioPath())
+                        EhDB.exportDB(uri.toOkioPath())
                         launchSnackBar(getString(R.string.settings_advanced_export_data_to, uri.displayPath))
                     }.onFailure {
                         logcat(it)
@@ -232,7 +232,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 uri?.let {
                     context.runCatching {
                         grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        EhDB.importDB(context, uri)
+                        EhDB.importDB(uri)
                         launchSnackBar(importSucceed)
                     }.onFailure {
                         logcat(it)
