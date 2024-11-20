@@ -37,7 +37,7 @@ static void doRewrite(byte *addr, size_t size) {
             byte *end = addr + i + 4;
             if (end[4] != 0) continue;
             int frameDelay = end[2] << 8 | end[1];
-            if (frameDelay > MINIMUM_FRAME_DELAY)
+            if (frameDelay >= MINIMUM_FRAME_DELAY)
                 break; // Quit if the first block looks normal, for performance
             end[1] = DEFAULT_FRAME_DELAY;
             end[2] = 0;
