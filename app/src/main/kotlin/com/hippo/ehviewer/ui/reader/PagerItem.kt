@@ -95,7 +95,8 @@ fun PagerItem(
                 val grayScale by Settings.grayScale.collectAsState()
                 val invert by Settings.invertedColors.collectAsState()
                 Image(
-                    painter = painter,
+                    // DrawablePainter <: RememberObserver
+                    painter = remember(painter) { painter },
                     contentDescription = null,
                     modifier = contentModifier.fillMaxSize(),
                     contentScale = contentScale,
