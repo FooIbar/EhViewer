@@ -13,6 +13,7 @@ import android.os.Build
 import androidx.annotation.RequiresExtension
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.util.restartApplication
+import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.engine.HttpClientEngineBase
 import io.ktor.client.engine.callContext
 import io.ktor.client.plugins.HttpTimeoutCapability
@@ -107,6 +108,7 @@ class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cr
                 // Cronet may crash on some devices, fuck xiaomi
                 // https://github.com/FooIbar/EhViewer/issues/1826
                 if (error is NetworkException && error.errorCode == NetworkException.ERROR_OTHER) {
+                    logcat(error)
                     Settings.edit(true) {
                         enableCronet.value = false
                     }
