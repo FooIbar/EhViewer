@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.screen
 
-import android.content.Context
 import android.os.Parcelable
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
 import androidx.collection.SieveCache
@@ -18,7 +17,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -74,6 +72,8 @@ import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
+
+typealias VoteTag = suspend GalleryDetail.(String, Int) -> Unit
 
 val detailCache = SieveCache<Long, GalleryDetail>(25)
 
@@ -136,6 +136,19 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 EhDB.putHistoryInfo(it.galleryInfo)
                 galleryInfo = it
             }
+        }
+    }
+
+    val voteTag: VoteTag = { tag, vote ->
+        runSuspendCatching {
+            EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
+        }.onSuccess { result ->
+            showSnackbar(getString(R.string.tag_vote_successfully))
+            val new = copy(tagGroups = result).apply { fillInfo() }
+            detailCache[gid] = new
+            galleryInfo = new
+        }.onFailure { e ->
+            showSnackbar(e.displayString())
         }
     }
 
@@ -308,6 +321,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 contentPadding = it,
                 getDetailError = getDetailError,
                 onRetry = { getDetailError = "" },
+                voteTag = voteTag,
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             )
         } else if (getDetailError.isNotBlank()) {
@@ -320,20 +334,5 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 CircularProgressIndicator()
             }
         }
-    }
-}
-
-context(Context, SnackbarHostState)
-suspend fun GalleryDetail.voteTag(tag: String, vote: Int) {
-    runSuspendCatching {
-        EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
-    }.onSuccess { result ->
-        if (result != null) {
-            showSnackbar(result)
-        } else {
-            showSnackbar(getString(R.string.tag_vote_successfully))
-        }
-    }.onFailure {
-        showSnackbar(getString(R.string.vote_failed))
     }
 }

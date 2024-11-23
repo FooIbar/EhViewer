@@ -303,7 +303,7 @@ object GalleryDetailParser {
     /**
      * Parse tag groups with html parser
      */
-    private fun parseTagGroups(document: Document): List<GalleryTagGroup> = Either.catch {
+    fun parseTagGroups(document: Document): List<GalleryTagGroup> = Either.catch {
         val taglist = document.getElementById("taglist")!!
         taglist.child(0).child(0).children().mapNotNull(::parseSingleTagGroup)
     }.getOrElse {

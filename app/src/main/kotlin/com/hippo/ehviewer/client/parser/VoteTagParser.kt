@@ -17,9 +17,15 @@
  */
 package com.hippo.ehviewer.client.parser
 
+import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.parseAs
+import org.jsoup.Jsoup
 
 object VoteTagParser {
     // {"error":"The tag \"neko\" is not allowed. Use character:neko or artist:neko"}
-    fun parse(body: String): String? = runCatching { body.parseAs<Error>().error }.getOrNull()
+    fun parse(body: String): List<GalleryTagGroup> = body.parseAs<VoteTagResult>().let { (error, tagpane) ->
+        error?.let { error(error) }
+        checkNotNull(tagpane)
+        GalleryDetailParser.parseTagGroups(Jsoup.parse("<div id=\"taglist\">$tagpane</div>"))
+    }
 }

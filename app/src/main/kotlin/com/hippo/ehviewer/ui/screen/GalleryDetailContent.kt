@@ -161,6 +161,7 @@ fun GalleryDetailContent(
     contentPadding: PaddingValues,
     getDetailError: String,
     onRetry: () -> Unit,
+    voteTag: VoteTag,
     modifier: Modifier,
 ) {
     val keylineMargin = dimensionResource(R.dimen.keyline_margin)
@@ -292,7 +293,7 @@ fun GalleryDetailContent(
                     if (getDetailError.isNotBlank()) {
                         GalleryDetailErrorTip(error = getDetailError, onClick = onRetry)
                     } else if (galleryDetail != null) {
-                        BelowHeader(galleryDetail)
+                        BelowHeader(galleryDetail, voteTag)
                     } else {
                         Box(
                             modifier = Modifier.fillMaxSize().padding(keylineMargin),
@@ -360,7 +361,7 @@ fun GalleryDetailContent(
                     if (getDetailError.isNotBlank()) {
                         GalleryDetailErrorTip(error = getDetailError, onClick = onRetry)
                     } else if (galleryDetail != null) {
-                        BelowHeader(galleryDetail)
+                        BelowHeader(galleryDetail, voteTag)
                     } else {
                         Box(
                             modifier = Modifier.fillMaxSize().padding(keylineMargin),
@@ -380,7 +381,7 @@ fun GalleryDetailContent(
 
 context(Context, CoroutineScope, DestinationsNavigator, DialogState, SnackbarHostState)
 @Composable
-fun BelowHeader(galleryDetail: GalleryDetail) {
+fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     @Composable
     fun EhIconButton(
         icon: ImageVector,
