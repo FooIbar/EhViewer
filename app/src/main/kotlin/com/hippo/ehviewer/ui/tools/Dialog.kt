@@ -222,10 +222,9 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                             )
                         }
                     }
-                    var expanded by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { expanded = !expanded },
+                        expanded = true,
+                        onExpandedChange = { },
                     ) {
                         OutlinedTextField(
                             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
@@ -256,9 +255,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                                 EhTagDatabase.takeIf { it.initialized }?.run {
                                     if (query.isNotEmpty()) {
                                         val translate = suggestionTranslate && isTranslatable(implicit<Context>())
-                                        suggestions(query, translate).take(4).toList().also {
-                                            if (it.isNotEmpty()) expanded = true
-                                        }
+                                        suggestions(query, translate).take(4).toList()
                                     } else {
                                         null
                                     }
@@ -267,8 +264,8 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                         ) { items ->
                             if (!items.isNullOrEmpty()) {
                                 ExposedDropdownMenu(
-                                    expanded = expanded,
-                                    onDismissRequest = { expanded = false },
+                                    expanded = true,
+                                    onDismissRequest = { },
                                 ) {
                                     items.forEach { (tag, hint) ->
                                         DropdownMenuItem(
@@ -287,7 +284,6 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                                                 }
                                             },
                                             onClick = {
-                                                expanded = false
                                                 selected += tag
                                                 state.clearText()
                                             },
