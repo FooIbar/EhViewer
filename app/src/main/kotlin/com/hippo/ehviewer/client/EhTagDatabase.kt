@@ -88,9 +88,10 @@ object EhTagDatabase : CoroutineScope {
 
     context(Context)
     fun suggestions(keyword: String, translate: Boolean) = flow {
+        val doTranslate = translate && isTranslatable(implicit<Context>())
         if (initialized) {
-            emitAll(suggestFlow(keyword, translate && isTranslatable(implicit<Context>()), true))
-            emitAll(suggestFlow(keyword, translate, false))
+            emitAll(suggestFlow(keyword, doTranslate, true))
+            emitAll(suggestFlow(keyword, doTranslate, false))
         }
     }
 
