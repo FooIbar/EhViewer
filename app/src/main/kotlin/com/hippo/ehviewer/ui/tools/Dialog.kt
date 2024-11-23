@@ -48,6 +48,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.ShapeDefaults
@@ -257,7 +258,20 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                                 ) {
                                     items.forEach { (tag, hint) ->
                                         DropdownMenuItem(
-                                            text = { Text(text = hint ?: tag) },
+                                            text = {
+                                                Column {
+                                                    Text(text = tag, maxLines = 1)
+                                                    ProvideTextStyle(MaterialTheme.typography.bodySmall) {
+                                                        if (hint != null) {
+                                                            Text(
+                                                                text = hint,
+                                                                maxLines = 1,
+                                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            },
                                             onClick = {
                                                 expanded = false
                                                 selected += tag
