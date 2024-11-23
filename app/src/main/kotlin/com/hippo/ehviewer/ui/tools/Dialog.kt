@@ -253,7 +253,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                             },
                         )
                         val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
-                        Await({ query?.let { suggestions(query, suggestionTranslate).take(4).toList() } }) { items ->
+                        Await(suggestionTranslate, { query?.let { suggestions(query, suggestionTranslate).take(4).toList() } }) { items ->
                             if (!items.isNullOrEmpty()) {
                                 ExposedDropdownMenu(
                                     expanded = true,
