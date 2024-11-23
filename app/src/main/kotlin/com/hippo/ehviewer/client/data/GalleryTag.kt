@@ -5,8 +5,8 @@ import kotlinx.parcelize.Parcelize
 
 enum class VoteStatus(val emoji: String) {
     NONE(""),
-    UP("\uD83D\uDC4D"),
-    DOWN("\uD83D\uDC4E"),
+    UP("↑"),
+    DOWN("↓"),
 }
 
 @Parcelize
