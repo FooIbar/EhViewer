@@ -456,6 +456,7 @@
     <string name="toplist">排行</string>
     <string name="tag_vote_down">不，这不是</string>
     <string name="tag_vote_up">是的，这很正确</string>
+    <string name="tag_vote_withdraw">撤回投票</string>
     <string name="tag_vote_successfully">投票成功</string>
     <string name="delete_search_history">从搜索记录中删除“%s”？</string>
     <string name="action_add_tag">添加标签</string>

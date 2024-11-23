@@ -21,13 +21,14 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.TagNamespace
+import com.hippo.ehviewer.client.data.VoteStatus
 import com.hippo.ehviewer.ui.tools.includeFontPadding
 
 @Composable
 fun GalleryTags(
     tagGroups: List<GalleryTagGroup>,
     onTagClick: (String) -> Unit,
-    onTagLongClick: (String, String) -> Unit,
+    onTagLongClick: (String, String, VoteStatus) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -54,7 +55,7 @@ fun GalleryTags(
                                 onClick = { onTagClick(tag) },
                                 onLongClick = {
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    onTagLongClick(tag, translation)
+                                    onTagLongClick(tag, translation, vote)
                                 },
                             ),
                         )

@@ -83,6 +83,7 @@ import com.hippo.ehviewer.client.data.GalleryTagGroup
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.client.data.V2GalleryPreview
+import com.hippo.ehviewer.client.data.VoteStatus
 import com.hippo.ehviewer.client.data.asGalleryDetail
 import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
@@ -703,12 +704,13 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         val filterAdded = stringResource(R.string.filter_added)
         val upTag = stringResource(R.string.tag_vote_up)
         val downTag = stringResource(R.string.tag_vote_down)
+        val withDraw = stringResource(R.string.tag_vote_withdraw)
         GalleryTags(
             tagGroups = tags,
             onTagClick = {
                 navigate(ListUrlBuilder(mode = ListUrlBuilder.MODE_TAG, mKeyword = it).asDst())
             },
-            onTagLongClick = { tag, translation ->
+            onTagLongClick = { tag, translation, vote ->
                 val rawValue = tag.substringAfter(':')
                 launchIO {
                     awaitSelectAction {
@@ -729,8 +731,14 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                             showSnackbar(filterAdded)
                         }
                         if (galleryDetail.apiUid >= 0) {
-                            onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
-                            onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
+                            when (vote) {
+                                VoteStatus.NONE -> {
+                                    onSelect(upTag) { galleryDetail.voteTag(tag, 1) }
+                                    onSelect(downTag) { galleryDetail.voteTag(tag, -1) }
+                                }
+                                VoteStatus.UP -> onSelect(withDraw) { galleryDetail.voteTag(tag, -1) }
+                                VoteStatus.DOWN -> onSelect(withDraw) { galleryDetail.voteTag(tag, 1) }
+                            }
                         }
                     }()
                 }
