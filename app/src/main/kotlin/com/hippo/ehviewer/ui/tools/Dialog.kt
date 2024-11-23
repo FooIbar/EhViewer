@@ -256,7 +256,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                         val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
                         val items = remember { mutableStateOf<List<Pair<String, String?>>?>(null) }
                         LaunchedEffect(suggestionTranslate, query) {
-                            items.value = withContext(Dispatchers.Default) { query?.let { suggestions(query, suggestionTranslate).toList() } }
+                            items.value = query?.let { withContext(Dispatchers.Default) { suggestions(query, suggestionTranslate).toList() } }
                         }
                         val itemsNow = items.value
                         ExposedDropdownMenu(
