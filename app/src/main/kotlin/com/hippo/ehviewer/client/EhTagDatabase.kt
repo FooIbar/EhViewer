@@ -36,8 +36,6 @@ import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -64,22 +62,22 @@ object EhTagDatabase : CoroutineScope {
 
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
 
-    private fun internalSuggestFlow(tags: Map<String, String>, keyword: String, translate: Boolean, exactly: Boolean) = flow {
+    private fun rawSuggestSequence(tags: Map<String, String>, keyword: String, translate: Boolean, exactly: Boolean) = sequence {
         if (exactly) {
             tags[keyword]?.let {
-                emit(keyword to it.takeIf { translate })
+                yield(keyword to it.takeIf { translate })
             }
         } else {
             if (translate) {
                 tags.forEach { (tag, hint) ->
                     if (tag != keyword && (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))) {
-                        emit(tag to hint)
+                        yield(tag to hint)
                     }
                 }
             } else {
                 tags.keys.forEach { tag ->
                     if (tag != keyword && tag.containsIgnoreSpace(keyword)) {
-                        emit(tag to null)
+                        yield(tag to null)
                     }
                 }
             }
@@ -87,15 +85,15 @@ object EhTagDatabase : CoroutineScope {
     }
 
     context(Context)
-    fun suggestions(keyword: String, translate: Boolean) = flow {
+    fun suggestions(keyword: String, translate: Boolean) = sequence {
         val doTranslate = translate && isTranslatable(implicit<Context>())
         if (initialized) {
-            emitAll(suggestFlow(keyword, doTranslate, true))
-            emitAll(suggestFlow(keyword, doTranslate, false))
+            yieldAll(suggestSequence(keyword, doTranslate, true))
+            yieldAll(suggestSequence(keyword, doTranslate, false))
         }
     }
 
-    private fun suggestFlow(keyword: String, translate: Boolean, exactly: Boolean) = flow {
+    private fun suggestSequence(keyword: String, translate: Boolean, exactly: Boolean) = sequence {
         val kwd = PREFIXES.fold(keyword) { kwd, pfx -> kwd.removePrefix(pfx) }
         val prefix = keyword.dropLast(kwd.length)
         val ns = kwd.substringBefore(':')
@@ -103,18 +101,12 @@ object EhTagDatabase : CoroutineScope {
         val namespacePrefix = TagNamespace.from(ns)?.prefix ?: ns
         val tags = tagGroups[namespacePrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
         tags?.let {
-            internalSuggestFlow(it, tag, translate, exactly).collect { (tag, hint) ->
-                emit("$prefix$namespacePrefix:$tag" to hint)
-            }
+            yieldAll(rawSuggestSequence(it, tag, translate, exactly).map { (tag, hint) -> "$prefix$namespacePrefix:$tag" to hint })
         } ?: tagGroups.forEach { (namespacePrefix, tags) ->
             if (namespacePrefix != NAMESPACE_PREFIX) {
-                internalSuggestFlow(tags, kwd, translate, exactly).collect { (tag, hint) ->
-                    emit("$prefix$namespacePrefix:$tag" to hint)
-                }
+                yieldAll(rawSuggestSequence(tags, kwd, translate, exactly).map { (tag, hint) -> "$prefix$namespacePrefix:$tag" to hint })
             } else {
-                internalSuggestFlow(tags, kwd, translate, exactly).collect { (ns, hint) ->
-                    emit("$prefix$ns:" to hint)
-                }
+                yieldAll(rawSuggestSequence(tags, kwd, translate, exactly).map { (ns, hint) -> "$prefix$ns:" to hint })
             }
         }
     }

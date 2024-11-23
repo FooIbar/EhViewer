@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -99,8 +101,6 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -253,35 +253,43 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                             },
                         )
                         val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
-                        Await(suggestionTranslate, { query?.let { suggestions(query, suggestionTranslate).take(4).toList() } }) { items ->
-                            if (!items.isNullOrEmpty()) {
-                                ExposedDropdownMenu(
-                                    expanded = true,
-                                    onDismissRequest = { },
-                                ) {
-                                    items.forEach { (tag, hint) ->
-                                        DropdownMenuItem(
-                                            text = {
-                                                Column {
-                                                    Text(text = tag, maxLines = 1)
-                                                    ProvideTextStyle(MaterialTheme.typography.bodySmall) {
-                                                        if (hint != null) {
-                                                            Text(
-                                                                text = hint,
-                                                                maxLines = 1,
-                                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                            )
-                                                        }
+                        val items = remember { mutableStateOf<List<Pair<String, String?>>?>(null) }
+                        LaunchedEffect(suggestionTranslate, query) {
+                            items.value = query?.let { suggestions(query, suggestionTranslate).take(15).toList() }
+                        }
+                        val itemsNow = items.value
+                        ExposedDropdownMenu(
+                            expanded = !itemsNow.isNullOrEmpty(),
+                            onDismissRequest = { },
+                            modifier = Modifier.heightIn(max = 192.dp),
+                        ) {
+                            if (!itemsNow.isNullOrEmpty()) {
+                                itemsNow.forEach { (tag, hint) ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Column {
+                                                Text(text = tag, maxLines = 1)
+                                                ProvideTextStyle(MaterialTheme.typography.bodySmall) {
+                                                    if (hint != null) {
+                                                        Text(
+                                                            text = hint,
+                                                            maxLines = 1,
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        )
                                                     }
                                                 }
-                                            },
-                                            onClick = {
+                                            }
+                                        },
+                                        onClick = {
+                                            if (tag.endsWith(':')) {
+                                                state.setTextAndPlaceCursorAtEnd(tag)
+                                            } else {
                                                 selected += tag
                                                 state.clearText()
-                                            },
-                                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                                        )
-                                    }
+                                            }
+                                        },
+                                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                    )
                                 }
                             }
                         }

@@ -152,7 +152,7 @@ fun SearchBarScreen(
                 EhTagDatabase.suggestions(
                     query.substringAfterLast(' '),
                     Settings.showTagTranslations,
-                ).collect { (tag, hint) ->
+                ).forEach { (tag, hint) ->
                     emit(TagSuggestion(hint, tag))
                 }
             }
