@@ -44,17 +44,17 @@ fun GalleryTags(
                 )
                 FlowRow {
                     tags.forEach { (text, weak, vote) ->
-                        val translated = text.translate(ns)
+                        val translation = text.translate(ns)
                         val tag = ns.value + ":" + text
                         val hapticFeedback = LocalHapticFeedback.current
                         BaseRoundText(
-                            text = vote.emoji + translated,
+                            text = vote.emoji + translation,
                             weak = weak,
                             modifier = Modifier.combinedClickable(
                                 onClick = { onTagClick(tag) },
                                 onLongClick = {
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    onTagLongClick(translated, tag)
+                                    onTagLongClick(tag, translation)
                                 },
                             ),
                         )

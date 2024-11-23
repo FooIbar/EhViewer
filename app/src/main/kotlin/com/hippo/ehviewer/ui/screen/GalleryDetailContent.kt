@@ -708,25 +708,20 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             onTagClick = {
                 navigate(ListUrlBuilder(mode = ListUrlBuilder.MODE_TAG, mKeyword = it).asDst())
             },
-            onTagLongClick = { translated, tag ->
-                val index = tag.indexOf(':')
-                val temp = if (index >= 0) {
-                    tag.substring(index + 1)
-                } else {
-                    tag
-                }
+            onTagLongClick = { tag, translation ->
+                val rawValue = tag.substringAfter(':')
                 launchIO {
                     awaitSelectAction {
                         onSelect(copy) {
                             addTextToClipboard(tag)
                         }
-                        if (temp != translated) {
+                        if (rawValue != translation) {
                             onSelect(copyTrans) {
-                                addTextToClipboard(translated)
+                                addTextToClipboard(translation)
                             }
                         }
                         onSelect(showDefine) {
-                            openBrowser(EhUrl.getTagDefinitionUrl(temp))
+                            openBrowser(EhUrl.getTagDefinitionUrl(rawValue))
                         }
                         onSelect(addFilter) {
                             awaitConfirmationOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
