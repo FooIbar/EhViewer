@@ -461,6 +461,7 @@
     <string name="tag_vote_successfully">評価が成功しました</string>
     <string name="delete_search_history">検索履歴から「%s」を削除しますか？</string>
     <string name="action_add_tag">タグを追加</string>
+    <string name="action_add_tag_tip">新しいタグを入力してください</string>
     <string name="comment_user_uploader">%s (アップローダー)</string>
     <string name="no_network">ネットワークがありません</string>
     <string name="settings_eh_metered_network_warning">従量制ネットワークの警告</string>
