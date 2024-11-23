@@ -90,8 +90,7 @@ import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.right
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.client.EhTagDatabase
-import com.hippo.ehviewer.ui.screen.implicit
+import com.hippo.ehviewer.client.EhTagDatabase.suggestions
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import kotlin.coroutines.Continuation
@@ -248,20 +247,8 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                                 )
                             },
                         )
-                        Await(
-                            state.text,
-                            {
-                                val query = state.text.toString().trim()
-                                EhTagDatabase.takeIf { it.initialized }?.run {
-                                    if (query.isNotEmpty()) {
-                                        val translate = suggestionTranslate && isTranslatable(implicit<Context>())
-                                        suggestions(query, translate).take(4).toList()
-                                    } else {
-                                        null
-                                    }
-                                }
-                            },
-                        ) { items ->
+                        val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
+                        Await({ query?.let { suggestions(query, suggestionTranslate).take(4).toList() } }) { items ->
                             if (!items.isNullOrEmpty()) {
                                 ExposedDropdownMenu(
                                     expanded = true,

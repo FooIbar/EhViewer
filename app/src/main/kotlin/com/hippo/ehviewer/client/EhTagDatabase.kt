@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.TagNamespace
+import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.copyTo
@@ -85,9 +86,12 @@ object EhTagDatabase : CoroutineScope {
         }
     }
 
+    context(Context)
     fun suggestions(keyword: String, translate: Boolean) = flow {
-        emitAll(suggestFlow(keyword, translate, true))
-        emitAll(suggestFlow(keyword, translate, false))
+        if (initialized && isTranslatable(implicit<Context>())) {
+            emitAll(suggestFlow(keyword, translate, true))
+            emitAll(suggestFlow(keyword, translate, false))
+        }
     }
 
     private fun suggestFlow(keyword: String, translate: Boolean, exactly: Boolean) = flow {
