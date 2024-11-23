@@ -18,6 +18,6 @@ enum class PowerStatus {
 @Parcelize
 data class GalleryTag(
     val text: String,
-    val weak: PowerStatus,
+    val power: PowerStatus,
     val vote: VoteStatus,
 ) : Parcelable

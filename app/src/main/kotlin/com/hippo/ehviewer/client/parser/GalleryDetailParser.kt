@@ -286,7 +286,7 @@ object GalleryDetailParser {
             GalleryTag(
                 // Sometimes parody tag is followed with '|' and english translate, just remove them
                 text = e.text().substringBefore('|').trim(),
-                weak = when {
+                power = when {
                     e.hasClass("gtw") -> PowerStatus.WEAK
                     e.hasClass("gtl") -> PowerStatus.ACTIVE
                     else -> PowerStatus.SOLID
