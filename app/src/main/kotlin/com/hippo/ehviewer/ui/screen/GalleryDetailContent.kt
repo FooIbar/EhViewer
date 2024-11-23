@@ -150,7 +150,6 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.runSwallowingWithUI
@@ -247,7 +246,7 @@ fun GalleryDetailContent(
         }
     }
 
-    val previews = galleryDetail.collectPreviewItems()
+    val previews = galleryDetail?.collectPreviewItems()
     when (windowSizeClass.windowWidthSizeClass) {
         WindowWidthSizeClass.MEDIUM, WindowWidthSizeClass.COMPACT -> FastScrollLazyVerticalGrid(
             columns = GridCells.Fixed(thumbColumns),
@@ -305,7 +304,7 @@ fun GalleryDetailContent(
                     }
                 }
             }
-            if (galleryDetail != null) {
+            if (galleryDetail != null && previews != null) {
                 galleryPreview(galleryDetail, previews) { navToReader(galleryDetail.galleryInfo, it) }
             }
         }
@@ -373,7 +372,7 @@ fun GalleryDetailContent(
                     }
                 }
             }
-            if (galleryDetail != null) {
+            if (galleryDetail != null && previews != null) {
                 galleryPreview(galleryDetail, previews) { navToReader(galleryDetail.galleryInfo, it) }
             }
         }
@@ -772,11 +771,10 @@ private fun List<GalleryTagGroup>.artistTag() = find { (ns, _) -> ns == TagNames
 
 context(Context)
 @Composable
-private fun GalleryDetail?.collectPreviewItems() = rememberInVM(this) {
-    val detail = this@collectPreviewItems ?: return@rememberInVM emptyFlow()
-    val pageSize = detail.previewList.size
-    val pages = detail.pages
-    val previewPagesMap = detail.previewList.associateBy { it.position } as MutableMap
+private fun GalleryDetail.collectPreviewItems() = rememberInVM {
+    val pageSize = previewList.size
+    val pages = pages
+    val previewPagesMap = previewList.associateBy { it.position } as MutableMap
     Pager(
         PagingConfig(
             pageSize = pageSize,
@@ -791,7 +789,7 @@ private fun GalleryDetail?.collectPreviewItems() = rememberInVM(this) {
                 val key = params.key ?: 0
                 val up = getOffset(params, key, pages)
                 val end = (up + getLimit(params, key) - 1).coerceAtMost(pages - 1)
-                detail.runSuspendCatching {
+                runSuspendCatching {
                     (up..end).filterNot { it in previewPagesMap }.map { it / pageSize }.toSet()
                         .parMap(concurrency = Settings.multiThreadDownload) { page ->
                             val url = EhUrl.getGalleryDetailUrl(gid, token, page, false)
