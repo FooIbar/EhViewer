@@ -771,7 +771,7 @@ private fun List<GalleryTagGroup>.artistTag() = find { (ns, _) -> ns == TagNames
 
 context(Context)
 @Composable
-private fun GalleryDetail.collectPreviewItems() = rememberInVM {
+private fun GalleryDetail.collectPreviewItems() = rememberInVM(previewList) {
     val pageSize = previewList.size
     val pages = pages
     val previewPagesMap = previewList.associateBy { it.position } as MutableMap
