@@ -50,7 +50,7 @@ fun GalleryTags(
                         val tag = ns.value + ":" + text
                         val hapticFeedback = LocalHapticFeedback.current
                         BaseRoundText(
-                            text = vote.emoji + translation,
+                            text = translation + vote.append,
                             weak = weak == WeakStatus.WEAK,
                             modifier = Modifier.combinedClickable(
                                 onClick = { onTagClick(tag) },
