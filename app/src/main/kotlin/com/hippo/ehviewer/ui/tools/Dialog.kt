@@ -77,6 +77,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -90,6 +91,7 @@ import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.right
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhTagDatabase.suggestions
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
@@ -192,15 +194,18 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = stringResource(id = R.string.action_add_tag))
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = stringResource(id = R.string.translate_tag_for_tagger),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    Checkbox(
-                        checked = suggestionTranslate,
-                        onCheckedChange = { suggestionTranslate = !suggestionTranslate },
-                    )
+                    val context = LocalContext.current
+                    if (EhTagDatabase.isTranslatable(context)) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = stringResource(id = R.string.translate_tag_for_tagger),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Checkbox(
+                            checked = suggestionTranslate,
+                            onCheckedChange = { suggestionTranslate = !suggestionTranslate },
+                        )
+                    }
                 }
             },
             text = {
