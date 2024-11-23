@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.tools
 
+import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +37,10 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
@@ -83,12 +88,17 @@ import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.right
 import com.hippo.ehviewer.R
+import com.hippo.ehviewer.Settings
+import com.hippo.ehviewer.client.EhTagDatabase
+import com.hippo.ehviewer.ui.screen.implicit
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -160,7 +170,8 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
         )
     }
 
-    suspend fun awaitSelectTags() = dialog { cont ->
+    context(Context)
+    suspend fun awaitSelectTags(): List<String> = dialog { cont ->
         val selected = remember { mutableStateListOf<String>() }
         val state = rememberTextFieldState()
         AlertDialog(
@@ -196,27 +207,69 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                             )
                         }
                     }
-                    OutlinedTextField(
-                        state = state,
-                        label = { Text(text = stringResource(id = R.string.action_add_tag_tip)) },
-                        trailingIcon = {
-                            IconButton(
-                                onClick = {
-                                    val text = state.text.toString().trim()
-                                    if (text.isNotEmpty()) {
-                                        selected += text
-                                        state.clearText()
+                    var expanded by remember { mutableStateOf(false) }
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded },
+                    ) {
+                        OutlinedTextField(
+                            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                            state = state,
+                            label = { Text(text = stringResource(id = R.string.action_add_tag_tip)) },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        val text = state.text.toString().trim()
+                                        if (text.isNotEmpty()) {
+                                            selected += text
+                                            state.clearText()
+                                        }
+                                    },
+                                    content = {
+                                        Icon(
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = null,
+                                        )
+                                    },
+                                )
+                            },
+                        )
+                        Await(
+                            state.text,
+                            {
+                                val query = state.text.toString().trim()
+                                EhTagDatabase.takeIf { it.initialized }?.run {
+                                    if (query.isNotEmpty()) {
+                                        val translate = Settings.showTagTranslations && isTranslatable(implicit<Context>())
+                                        suggestions(query, translate).take(3).toList().also {
+                                            if (it.isNotEmpty()) expanded = true
+                                        }
+                                    } else {
+                                        null
                                     }
-                                },
-                                content = {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = null,
-                                    )
-                                },
-                            )
-                        },
-                    )
+                                }
+                            },
+                        ) { items ->
+                            if (!items.isNullOrEmpty()) {
+                                ExposedDropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false },
+                                ) {
+                                    items.forEach { (hint, tag) ->
+                                        DropdownMenuItem(
+                                            text = { Text(text = hint ?: tag) },
+                                            onClick = {
+                                                expanded = false
+                                                selected += tag
+                                                state.clearText()
+                                            },
+                                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             },
         )

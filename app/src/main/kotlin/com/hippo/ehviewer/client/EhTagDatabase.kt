@@ -36,6 +36,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -92,11 +93,15 @@ object EhTagDatabase : CoroutineScope {
         }
     }
 
-    // Construct a cold flow for tag database suggestions
-    fun suggestFlow(
+    fun suggestions(keyword: String, translate: Boolean) = flow {
+        emitAll(suggestFlow(keyword, translate, true))
+        emitAll(suggestFlow(keyword, translate, false))
+    }
+
+    private fun suggestFlow(
         keyword: String,
         translate: Boolean,
-        exactly: Boolean = false,
+        exactly: Boolean,
     ): Flow<Pair<String?, String>> = flow {
         var mKeyword = keyword
         PREFIXES.forEach { mKeyword = mKeyword.removePrefix(it) }

@@ -151,10 +151,7 @@ fun SearchBarScreen(
             if (query.isNotEmpty() && !query.endsWith(' ')) {
                 val keyword = query.substringAfterLast(' ')
                 val translate = Settings.showTagTranslations && isTranslatable(context)
-                suggestFlow(keyword, translate, true).collect {
-                    emit(TagSuggestion(it.first, it.second))
-                }
-                suggestFlow(keyword, translate).collect {
+                suggestions(keyword, translate).collect {
                     emit(TagSuggestion(it.first, it.second))
                 }
             }
