@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
@@ -36,6 +38,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +59,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -78,6 +82,7 @@ import arrow.core.Either
 import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.right
+import com.hippo.ehviewer.R
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import kotlin.coroutines.Continuation
@@ -152,6 +157,68 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
             },
             title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
             text = { block(impl, errorMsg) },
+        )
+    }
+
+    suspend fun awaitSelectTags() = dialog { cont ->
+        val selected = remember { mutableStateListOf<String>() }
+        val state = rememberTextFieldState()
+        AlertDialog(
+            onDismissRequest = { cont.cancel() },
+            confirmButton = {
+                TextButton(
+                    onClick = { cont.resume(selected.toList()) },
+                    content = { Text(text = stringResource(id = android.R.string.ok)) },
+                )
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { cont.cancel() },
+                    content = { Text(text = stringResource(id = android.R.string.cancel)) },
+                )
+            },
+            title = { Text(text = stringResource(id = R.string.action_add_tag)) },
+            text = {
+                Column {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        selected.forEach { text ->
+                            InputChip(
+                                selected = true,
+                                onClick = { },
+                                label = { Text(text = text) },
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = null,
+                                        modifier = Modifier.clickable { selected -= text },
+                                    )
+                                },
+                            )
+                        }
+                    }
+                    OutlinedTextField(
+                        state = state,
+                        label = { Text(text = stringResource(id = R.string.action_add_tag_tip)) },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    val text = state.text.toString().trim()
+                                    if (text.isNotEmpty()) {
+                                        selected += text
+                                        state.clearText()
+                                    }
+                                },
+                                content = {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                    )
+                                },
+                            )
+                        },
+                    )
+                }
+            },
         )
     }
 

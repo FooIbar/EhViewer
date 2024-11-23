@@ -453,7 +453,7 @@
     <string name="tag_vote_successfully">投票成功</string>
     <string name="delete_search_history">從搜尋記錄中刪除“%s”？</string>
     <string name="action_add_tag">增加標籤</string>
-    <string name="action_add_tag_tip">增加新標籤，用逗號「，」分割</string>
+    <string name="action_add_tag_tip">增加新標籤</string>
     <string name="comment_user_uploader">%s （上傳者）</string>
     <string name="settings_eh_metered_network_warning">流量計費網路警告</string>
     <string name="metered_network_warning">正在使用流量計費網路</string>

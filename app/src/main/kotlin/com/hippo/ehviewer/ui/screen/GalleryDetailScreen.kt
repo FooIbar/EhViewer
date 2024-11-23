@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.util.fastJoinToString
 import androidx.lifecycle.viewModelScope
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
 import com.hippo.ehviewer.EhDB
@@ -198,8 +199,6 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                         expanded = dropdown,
                         onDismissRequest = { dropdown = false },
                     ) {
-                        val addTag = stringResource(R.string.action_add_tag)
-                        val addTagTip = stringResource(R.string.action_add_tag_tip)
                         DropdownMenuItem(
                             text = { Text(text = stringResource(id = R.string.action_add_tag)) },
                             onClick = {
@@ -209,11 +208,11 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                     if (detail.apiUid < 0) {
                                         showSnackbar(signInFirst)
                                     } else {
-                                        val text = awaitInputText(
-                                            title = addTag,
-                                            hint = addTagTip,
-                                        )
-                                        detail.voteTag(text.trim(), 1)
+                                        val tags = awaitSelectTags()
+                                        if (tags.isNotEmpty()) {
+                                            val text = tags.fastJoinToString(",")
+                                            detail.voteTag(text, 1)
+                                        }
                                     }
                                 }
                             },
