@@ -52,15 +52,15 @@ inline fun <reified T : Any> rememberInVM(
 }
 
 @Composable
-inline fun <reified T : Any> rememberInVM(
-    key: Any,
+inline fun <T : Any, K : Any> rememberInVM(
+    key: K,
     crossinline init: @DisallowComposableCalls ViewModel.() -> T,
 ) = with(viewModel<StateMapViewModel>()) {
     val compositeKey = currentCompositeKeyHash
     remember(key) {
         val states = statesMap.getOrPut(compositeKey, ::ArrayDeque)
         @Suppress("UNCHECKED_CAST")
-        (states.removeLastOrNull() as Pair<Any, T>?)?.let { (k, v) -> v.takeIf { k == key } } ?: init()
+        (states.removeLastOrNull() as Pair<K, T>?)?.let { (k, v) -> v.takeIf { k == key } } ?: init()
     }.also { value ->
         val keyState by rememberUpdatedState(key)
         val valueState by rememberUpdatedState(value)
