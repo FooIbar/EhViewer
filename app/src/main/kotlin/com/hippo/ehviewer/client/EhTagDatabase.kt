@@ -103,24 +103,22 @@ object EhTagDatabase : CoroutineScope {
         translate: Boolean,
         exactly: Boolean,
     ): Flow<Pair<String?, String>> = flow {
-        var mKeyword = keyword
-        PREFIXES.forEach { mKeyword = mKeyword.removePrefix(it) }
-        val prefix = keyword.dropLast(mKeyword.length)
-        val namespace = mKeyword.substringBefore(':')
-        val tagKeyword = mKeyword.drop(namespace.length + 1)
-        val namespacePrefix = TagNamespace.from(namespace)?.prefix ?: namespace
-        val tags = tagGroups[namespacePrefix.takeIf { tagKeyword.isNotEmpty() && it != NAMESPACE_PREFIX }]
+        val kwd = PREFIXES.fold(keyword) { kwd, pfx -> kwd.removePrefix(pfx) }
+        val prefix = keyword.dropLast(kwd.length)
+        val (ns, tag) = kwd.split(';')
+        val namespacePrefix = TagNamespace.from(ns)?.prefix ?: ns
+        val tags = tagGroups[namespacePrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
         tags?.let {
-            internalSuggestFlow(it, tagKeyword, translate, exactly).collect { (hint, tag) ->
+            internalSuggestFlow(it, tag, translate, exactly).collect { (hint, tag) ->
                 emit(Pair(hint, "$prefix$namespacePrefix:$tag"))
             }
         } ?: tagGroups.forEach { (namespacePrefix, tags) ->
             if (namespacePrefix != NAMESPACE_PREFIX) {
-                internalSuggestFlow(tags, mKeyword, translate, exactly).collect { (hint, tag) ->
+                internalSuggestFlow(tags, kwd, translate, exactly).collect { (hint, tag) ->
                     emit(Pair(hint, "$prefix$namespacePrefix:$tag"))
                 }
             } else {
-                internalSuggestFlow(tags, mKeyword, translate, exactly).collect { (hint, namespacePrefix) ->
+                internalSuggestFlow(tags, kwd, translate, exactly).collect { (hint, namespacePrefix) ->
                     emit(Pair(hint, "$prefix$namespacePrefix:"))
                 }
             }
