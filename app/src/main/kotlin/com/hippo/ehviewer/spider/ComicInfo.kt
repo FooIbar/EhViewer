@@ -54,7 +54,7 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
     with(TagNamespace) {
         when (this@getComicInfo) {
             is GalleryDetail -> tagGroups.forEach { group ->
-                val list = group.tags.filterNot { (text, weak, _) -> text == TAG_ORIGINAL || weak == PowerStatus.WEAK }.map(GalleryTag::text)
+                val list = group.tags.filterNot { (text, power, _) -> text == TAG_ORIGINAL || power == PowerStatus.WEAK }.map(GalleryTag::text)
                 when (val ns = group.nameSpace) {
                     Artist, Cosplayer -> artists.addAll(list)
                     Group -> groups.addAll(list)
