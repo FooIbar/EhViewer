@@ -62,7 +62,7 @@ object EhTagDatabase : CoroutineScope {
 
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
 
-    private fun internalSuggestFlow(tags: Map<String, String>, keyword: String, translate: Boolean, exactly: Boolean) = sequence {
+    private fun rawSuggestSequence(tags: Map<String, String>, keyword: String, translate: Boolean, exactly: Boolean) = sequence {
         if (exactly) {
             tags[keyword]?.let {
                 yield(keyword to it.takeIf { translate })
@@ -88,12 +88,12 @@ object EhTagDatabase : CoroutineScope {
     fun suggestions(keyword: String, translate: Boolean) = sequence {
         val doTranslate = translate && isTranslatable(implicit<Context>())
         if (initialized) {
-            yieldAll(suggestFlow(keyword, doTranslate, true))
-            yieldAll(suggestFlow(keyword, doTranslate, false))
+            yieldAll(suggestSequence(keyword, doTranslate, true))
+            yieldAll(suggestSequence(keyword, doTranslate, false))
         }
     }
 
-    private fun suggestFlow(keyword: String, translate: Boolean, exactly: Boolean) = sequence {
+    private fun suggestSequence(keyword: String, translate: Boolean, exactly: Boolean) = sequence {
         val kwd = PREFIXES.fold(keyword) { kwd, pfx -> kwd.removePrefix(pfx) }
         val prefix = keyword.dropLast(kwd.length)
         val ns = kwd.substringBefore(':')
@@ -101,12 +101,12 @@ object EhTagDatabase : CoroutineScope {
         val namespacePrefix = TagNamespace.from(ns)?.prefix ?: ns
         val tags = tagGroups[namespacePrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
         tags?.let {
-            yieldAll(internalSuggestFlow(it, tag, translate, exactly).map { (tag, hint) -> "$prefix$namespacePrefix:$tag" to hint })
+            yieldAll(rawSuggestSequence(it, tag, translate, exactly).map { (tag, hint) -> "$prefix$namespacePrefix:$tag" to hint })
         } ?: tagGroups.forEach { (namespacePrefix, tags) ->
             if (namespacePrefix != NAMESPACE_PREFIX) {
-                yieldAll(internalSuggestFlow(tags, kwd, translate, exactly).map { (tag, hint) -> "$prefix$namespacePrefix:$tag" to hint })
+                yieldAll(rawSuggestSequence(tags, kwd, translate, exactly).map { (tag, hint) -> "$prefix$namespacePrefix:$tag" to hint })
             } else {
-                yieldAll(internalSuggestFlow(tags, kwd, translate, exactly).map { (ns, hint) -> "$prefix$ns:" to hint })
+                yieldAll(rawSuggestSequence(tags, kwd, translate, exactly).map { (ns, hint) -> "$prefix$ns:" to hint })
             }
         }
     }
