@@ -228,7 +228,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                         onExpandedChange = { expanded = !expanded },
                     ) {
                         OutlinedTextField(
-                            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
                             state = state,
                             label = { Text(text = stringResource(id = R.string.action_add_tag_tip)) },
                             trailingIcon = {
