@@ -93,7 +93,8 @@ object EhTagDatabase : CoroutineScope {
     private fun suggestFlow(keyword: String, translate: Boolean, exactly: Boolean) = flow {
         val kwd = PREFIXES.fold(keyword) { kwd, pfx -> kwd.removePrefix(pfx) }
         val prefix = keyword.dropLast(kwd.length)
-        val (ns, tag) = kwd.split(';')
+        val ns = kwd.substringBefore(':')
+        val tag = kwd.drop(ns.length + 1)
         val namespacePrefix = TagNamespace.from(ns)?.prefix ?: ns
         val tags = tagGroups[namespacePrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
         tags?.let {
