@@ -9,9 +9,15 @@ enum class VoteStatus(val emoji: String) {
     DOWN("↓"),
 }
 
+enum class WeakStatus {
+    NORMAL,
+    ACTIVE,
+    WEAK,
+}
+
 @Parcelize
 data class GalleryTag(
     val text: String,
-    val weak: Boolean,
+    val weak: WeakStatus,
     val vote: VoteStatus,
 ) : Parcelable

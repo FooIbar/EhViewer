@@ -15,6 +15,7 @@ import com.hippo.ehviewer.client.data.TagNamespace.Male
 import com.hippo.ehviewer.client.data.TagNamespace.Mixed
 import com.hippo.ehviewer.client.data.TagNamespace.Other
 import com.hippo.ehviewer.client.data.TagNamespace.Parody
+import com.hippo.ehviewer.client.data.WeakStatus
 import com.hippo.files.openInputStream
 import com.hippo.files.openOutputStream
 import kotlinx.serialization.KSerializer
@@ -53,7 +54,7 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
     with(TagNamespace) {
         when (this@getComicInfo) {
             is GalleryDetail -> tagGroups.forEach { group ->
-                val list = group.tags.filterNot { (text, weak, _) -> text == TAG_ORIGINAL || weak }.map(GalleryTag::text)
+                val list = group.tags.filterNot { (text, weak, _) -> text == TAG_ORIGINAL || weak == WeakStatus.WEAK }.map(GalleryTag::text)
                 when (val ns = group.nameSpace) {
                     Artist, Cosplayer -> artists.addAll(list)
                     Group -> groups.addAll(list)

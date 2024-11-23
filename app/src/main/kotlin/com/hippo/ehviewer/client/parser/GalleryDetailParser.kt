@@ -34,6 +34,7 @@ import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.client.data.V1GalleryPreview
 import com.hippo.ehviewer.client.data.V2GalleryPreview
 import com.hippo.ehviewer.client.data.VoteStatus
+import com.hippo.ehviewer.client.data.WeakStatus
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.OffensiveException
 import com.hippo.ehviewer.client.exception.ParseException
@@ -285,7 +286,11 @@ object GalleryDetailParser {
             GalleryTag(
                 // Sometimes parody tag is followed with '|' and english translate, just remove them
                 text = e.text().substringBefore('|').trim(),
-                weak = e.className() == "gtw",
+                weak = when {
+                    e.hasClass("gtw") -> WeakStatus.WEAK
+                    e.hasClass("gtl") -> WeakStatus.ACTIVE
+                    else -> WeakStatus.NORMAL
+                },
                 vote = when {
                     e.child(0).hasClass("tup") -> VoteStatus.UP
                     e.child(0).hasClass("tdn") -> VoteStatus.DOWN
