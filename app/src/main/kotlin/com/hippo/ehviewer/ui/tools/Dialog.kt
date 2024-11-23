@@ -282,8 +282,12 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                                             }
                                         },
                                         onClick = {
-                                            selected += tag
-                                            state.clearText()
+                                            if (tag.endsWith(':')) {
+                                                state.setTextAndPlaceCursorAtEnd(tag)
+                                            } else {
+                                                selected += tag
+                                                state.clearText()
+                                            }
                                         },
                                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                                     )
