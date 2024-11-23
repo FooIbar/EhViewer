@@ -548,12 +548,13 @@ class MainActivity : EhActivity() {
         }
     }
 
-    fun showTip(@StringRes id: Int, useToast: Boolean = false) {
-        val message = getString(id)
+    fun showTip(message: String, useToast: Boolean = false) {
         if (useToast || !tipFlow.tryEmit(message)) {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
     }
+
+    fun showTip(@StringRes id: Int, useToast: Boolean = false) = showTip(getString(id), useToast)
 
     override fun onProvideAssistContent(outContent: AssistContent?) {
         super.onProvideAssistContent(outContent)

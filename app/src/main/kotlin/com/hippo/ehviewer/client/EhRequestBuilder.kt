@@ -50,7 +50,10 @@ suspend inline fun <reified T> HttpStatement.executeAndParseAs() = executeSafely
 inline fun <reified T> BufferedSource.parseAs(): T = json.decodeFromBufferedSource(this)
 inline fun <reified T> String.parseAs(): T = json.decodeFromString(this)
 
-val json = Json { ignoreUnknownKeys = true }
+val json = Json {
+    ignoreUnknownKeys = true
+    explicitNulls = false
+}
 
 fun HttpRequestBuilder.applyEhConfig(referer: String?, origin: String?) {
     header("Referer", referer)

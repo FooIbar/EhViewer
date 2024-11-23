@@ -36,7 +36,7 @@ object GalleryTokenApiParser {
     fun parse(body: String): String = Either.catch {
         body.parseAs<Result>().tokenList[0].token
     }.getOrElse {
-        throw EhException(body.parseAs<Error>().error)
+        throw EhException(body.parseAs<VoteTagResult>().error)
     }
 
     @Serializable

@@ -3,6 +3,8 @@ package com.hippo.ehviewer.spider
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.data.GalleryTag
+import com.hippo.ehviewer.client.data.PowerStatus
 import com.hippo.ehviewer.client.data.SimpleTagsConverter
 import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.client.data.TagNamespace.Artist
@@ -52,7 +54,7 @@ fun GalleryInfo.getComicInfo(): ComicInfo {
     with(TagNamespace) {
         when (this@getComicInfo) {
             is GalleryDetail -> tagGroups.forEach { group ->
-                val list = group.tags.filterNot { it == TAG_ORIGINAL || it.startsWith('_') }
+                val list = group.tags.filterNot { (text, power, _) -> text == TAG_ORIGINAL || power == PowerStatus.WEAK }.map(GalleryTag::text)
                 when (val ns = group.nameSpace) {
                     Artist, Cosplayer -> artists.addAll(list)
                     Group -> groups.addAll(list)

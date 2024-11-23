@@ -28,10 +28,13 @@ import com.hippo.ehviewer.client.data.GalleryCommentList
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.LOCAL_FAVORITED
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.NOT_FAVORITED
+import com.hippo.ehviewer.client.data.GalleryTag
 import com.hippo.ehviewer.client.data.GalleryTagGroup
+import com.hippo.ehviewer.client.data.PowerStatus
 import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.client.data.V1GalleryPreview
 import com.hippo.ehviewer.client.data.V2GalleryPreview
+import com.hippo.ehviewer.client.data.VoteStatus
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.OffensiveException
 import com.hippo.ehviewer.client.exception.ParseException
@@ -280,12 +283,20 @@ object GalleryDetailParser {
         }
         checkNotNull(nameSpace) { "$nameSpace is not a valid tag namespace!" }
         val tags = element.child(1).children().map { e ->
-            val text = e.text()
-            // Sometimes parody tag is followed with '|' and english translate, just remove them
-            val index = text.indexOf('|')
-            val tag = if (index >= 0) text.substring(0, index).trim() else text
-            // weak tag
-            if (e.className() == "gtw") "_$tag" else tag
+            GalleryTag(
+                // Sometimes parody tag is followed with '|' and english translate, just remove them
+                text = e.text().substringBefore('|').trim(),
+                power = when {
+                    e.hasClass("gtw") -> PowerStatus.WEAK
+                    e.hasClass("gtl") -> PowerStatus.ACTIVE
+                    else -> PowerStatus.SOLID
+                },
+                vote = when {
+                    e.child(0).hasClass("tup") -> VoteStatus.UP
+                    e.child(0).hasClass("tdn") -> VoteStatus.DOWN
+                    else -> VoteStatus.NONE
+                },
+            )
         }
         check(tags.isNotEmpty()) { "TagGroup is empty!" }
         GalleryTagGroup(nameSpace, tags)
@@ -297,7 +308,7 @@ object GalleryDetailParser {
     /**
      * Parse tag groups with html parser
      */
-    private fun parseTagGroups(document: Document): List<GalleryTagGroup> = Either.catch {
+    fun parseTagGroups(document: Document): List<GalleryTagGroup> = Either.catch {
         val taglist = document.getElementById("taglist")!!
         taglist.child(0).child(0).children().mapNotNull(::parseSingleTagGroup)
     }.getOrElse {

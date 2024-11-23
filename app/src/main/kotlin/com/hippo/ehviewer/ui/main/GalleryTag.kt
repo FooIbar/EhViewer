@@ -20,14 +20,16 @@ import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.GalleryTagGroup
+import com.hippo.ehviewer.client.data.PowerStatus
 import com.hippo.ehviewer.client.data.TagNamespace
+import com.hippo.ehviewer.client.data.VoteStatus
 import com.hippo.ehviewer.ui.tools.includeFontPadding
 
 @Composable
 fun GalleryTags(
     tagGroups: List<GalleryTagGroup>,
     onTagClick: (String) -> Unit,
-    onTagLongClick: (String, String) -> Unit,
+    onTagLongClick: (String, String, VoteStatus) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -36,28 +38,25 @@ fun GalleryTags(
     fun TagNamespace.translate() = ehTags?.getTranslation(tag = value) ?: value
     fun String.translate(ns: TagNamespace) = ehTags?.getTranslation(prefix = ns.prefix, tag = this) ?: this
     Column(modifier) {
-        tagGroups.forEach { tagGroup ->
+        tagGroups.forEach { (ns, tags) ->
             Row {
-                val ns = tagGroup.nameSpace
                 BaseRoundText(
                     text = ns.translate(),
                     isGroup = true,
                 )
                 FlowRow {
-                    tagGroup.tags.forEach {
-                        val weak = it.startsWith('_')
-                        val real = it.removePrefix("_")
-                        val translated = real.translate(ns)
-                        val tag = tagGroup.nameSpace.value + ":" + real
+                    tags.forEach { (text, power, vote) ->
+                        val translation = text.translate(ns)
+                        val tag = ns.value + ":" + text
                         val hapticFeedback = LocalHapticFeedback.current
                         BaseRoundText(
-                            text = translated,
-                            weak = weak,
+                            text = if (Settings.showVoteStatus) translation + vote.append else translation,
+                            weak = power == PowerStatus.WEAK,
                             modifier = Modifier.combinedClickable(
                                 onClick = { onTagClick(tag) },
                                 onLongClick = {
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    onTagLongClick(translated, tag)
+                                    onTagLongClick(tag, translation, vote)
                                 },
                             ),
                         )
