@@ -461,7 +461,7 @@
     <string name="tag_vote_successfully">投票成功</string>
     <string name="delete_search_history">从搜索记录中删除“%s”？</string>
     <string name="action_add_tag">添加标签</string>
-    <string name="action_add_tag_tip">添加新标签，用逗号「，」分割</string>
+    <string name="action_add_tag_tip">添加新标签</string>
     <string name="comment_user_uploader">%s （上传者）</string>
     <string name="no_network">无网络</string>
     <string name="settings_eh_metered_network_warning">流量计费网络警告</string>
