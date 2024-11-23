@@ -3,10 +3,10 @@ package com.hippo.ehviewer.client.data
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
-enum class VoteStatus {
-    NONE,
-    UP,
-    DOWN,
+enum class VoteStatus(val emoji: String) {
+    NONE(""),
+    UP("\uD83D\uDC4D"),
+    DOWN("\uD83D\uDC4E"),
 }
 
 @Parcelize

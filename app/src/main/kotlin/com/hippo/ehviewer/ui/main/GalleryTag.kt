@@ -36,20 +36,19 @@ fun GalleryTags(
     fun TagNamespace.translate() = ehTags?.getTranslation(tag = value) ?: value
     fun String.translate(ns: TagNamespace) = ehTags?.getTranslation(prefix = ns.prefix, tag = this) ?: this
     Column(modifier) {
-        tagGroups.forEach { tagGroup ->
+        tagGroups.forEach { (ns, tags) ->
             Row {
-                val ns = tagGroup.nameSpace
                 BaseRoundText(
                     text = ns.translate(),
                     isGroup = true,
                 )
                 FlowRow {
-                    tagGroup.tags.forEach { (text, weak, vote) ->
+                    tags.forEach { (text, weak, vote) ->
                         val translated = text.translate(ns)
-                        val tag = tagGroup.nameSpace.value + ":" + text
+                        val tag = ns.value + ":" + text
                         val hapticFeedback = LocalHapticFeedback.current
                         BaseRoundText(
-                            text = translated,
+                            text = vote.emoji + translated,
                             weak = weak,
                             modifier = Modifier.combinedClickable(
                                 onClick = { onTagClick(tag) },
