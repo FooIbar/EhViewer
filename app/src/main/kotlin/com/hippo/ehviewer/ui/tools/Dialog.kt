@@ -25,6 +25,7 @@ import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
@@ -170,6 +171,12 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                     content = { Text(text = stringResource(id = android.R.string.ok)) },
                 )
             },
+            dismissButton = {
+                TextButton(
+                    onClick = { cont.cancel() },
+                    content = { Text(text = stringResource(id = android.R.string.cancel)) },
+                )
+            },
             title = { Text(text = stringResource(id = R.string.action_add_tag)) },
             text = {
                 Column {
@@ -195,12 +202,15 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                         trailingIcon = {
                             IconButton(
                                 onClick = {
-                                    selected += state.text.toString().trim()
-                                    state.clearText()
+                                    val text = state.text.toString().trim()
+                                    if (text.isNotEmpty()) {
+                                        selected += text
+                                        state.clearText()
+                                    }
                                 },
                                 content = {
                                     Icon(
-                                        imageVector = Icons.Default.Check,
+                                        imageVector = Icons.Default.Add,
                                         contentDescription = null,
                                     )
                                 },

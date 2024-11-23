@@ -209,8 +209,10 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                         showSnackbar(signInFirst)
                                     } else {
                                         val tags = awaitSelectTags()
-                                        val text = tags.fastJoinToString()
-                                        detail.voteTag(text, 1)
+                                        if (tags.isNotEmpty()) {
+                                            val text = tags.fastJoinToString(",")
+                                            detail.voteTag(text, 1)
+                                        }
                                     }
                                 }
                             },
