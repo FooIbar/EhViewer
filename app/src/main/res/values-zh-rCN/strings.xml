@@ -85,6 +85,7 @@
     <string name="quick_search_tip">点击“+”来添加快速搜索</string>
     <string name="add_quick_search_dialog_title">添加快速搜索</string>
     <string name="name_is_empty">名称为空</string>
+    <string name="translate_tag_for_tagger">使用翻译标签</string>
     <string name="delete">删除</string>
     <string name="add_quick_search_tip">画廊列表的状态将被保存为快速搜索。如果你想保存搜索面板的状态，请先执行搜索。</string>
     <string name="readme">读我</string>

@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -89,7 +90,6 @@ import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.right
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.ui.screen.implicit
 import com.jamal.composeprefs3.ui.ifNotNullThen
@@ -175,6 +175,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
     suspend fun awaitSelectTags(): List<String> = dialog { cont ->
         val selected = remember { mutableStateListOf<String>() }
         val state = rememberTextFieldState()
+        var suggestionTranslate by rememberMutableStateInDataStore("SuggestionTranslate") { false }
         AlertDialog(
             onDismissRequest = { cont.cancel() },
             confirmButton = {
@@ -189,7 +190,20 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                     content = { Text(text = stringResource(id = android.R.string.cancel)) },
                 )
             },
-            title = { Text(text = stringResource(id = R.string.action_add_tag)) },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = stringResource(id = R.string.action_add_tag))
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(id = R.string.translate_tag_for_tagger),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Checkbox(
+                        checked = suggestionTranslate,
+                        onCheckedChange = { suggestionTranslate = !suggestionTranslate },
+                    )
+                }
+            },
             text = {
                 Column {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -241,8 +255,8 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                                 val query = state.text.toString().trim()
                                 EhTagDatabase.takeIf { it.initialized }?.run {
                                     if (query.isNotEmpty()) {
-                                        val translate = Settings.showTagTranslations && isTranslatable(implicit<Context>())
-                                        suggestions(query, translate).take(3).toList().also {
+                                        val translate = suggestionTranslate && isTranslatable(implicit<Context>())
+                                        suggestions(query, translate).take(4).toList().also {
                                             if (it.isNotEmpty()) expanded = true
                                         }
                                     } else {

@@ -100,6 +100,7 @@
     <string name="quick_search">Quick search</string>
     <string name="quick_search_tip">Tap \"+\" to add Quick Search</string>
     <string name="add_quick_search_dialog_title">Add Quick Search</string>
+    <string name="translate_tag_for_tagger">Use tag translation</string>
     <string name="name_is_empty">Name is empty</string>
     <string name="delete">Delete</string>
     <string name="add_quick_search_tip">The state of gallery list will be saved as quick search. Perform a search first to save the state of search panel.</string>
