@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.TagNamespace
+import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.copyTo
@@ -35,7 +36,7 @@ import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -63,60 +64,56 @@ object EhTagDatabase : CoroutineScope {
 
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
 
-    private fun internalSuggestFlow(
-        tags: Map<String, String>,
-        keyword: String,
-        translate: Boolean,
-        exactly: Boolean,
-    ): Flow<Pair<String?, String>> = flow {
+    private fun internalSuggestFlow(tags: Map<String, String>, keyword: String, translate: Boolean, exactly: Boolean) = flow {
         if (exactly) {
             tags[keyword]?.let {
-                emit(Pair(it.takeIf { translate }, keyword))
+                emit(keyword to it.takeIf { translate })
             }
         } else {
             if (translate) {
                 tags.forEach { (tag, hint) ->
-                    if (tag != keyword &&
-                        (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))
-                    ) {
-                        emit(Pair(hint, tag))
+                    if (tag != keyword && (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))) {
+                        emit(tag to hint)
                     }
                 }
             } else {
                 tags.keys.forEach { tag ->
                     if (tag != keyword && tag.containsIgnoreSpace(keyword)) {
-                        emit(Pair(null, tag))
+                        emit(tag to null)
                     }
                 }
             }
         }
     }
 
-    // Construct a cold flow for tag database suggestions
-    fun suggestFlow(
-        keyword: String,
-        translate: Boolean,
-        exactly: Boolean = false,
-    ): Flow<Pair<String?, String>> = flow {
-        var mKeyword = keyword
-        PREFIXES.forEach { mKeyword = mKeyword.removePrefix(it) }
-        val prefix = keyword.dropLast(mKeyword.length)
-        val namespace = mKeyword.substringBefore(':')
-        val tagKeyword = mKeyword.drop(namespace.length + 1)
-        val namespacePrefix = TagNamespace.from(namespace)?.prefix ?: namespace
-        val tags = tagGroups[namespacePrefix.takeIf { tagKeyword.isNotEmpty() && it != NAMESPACE_PREFIX }]
+    context(Context)
+    fun suggestions(keyword: String, translate: Boolean) = flow {
+        val doTranslate = translate && isTranslatable(implicit<Context>())
+        if (initialized) {
+            emitAll(suggestFlow(keyword, doTranslate, true))
+            emitAll(suggestFlow(keyword, doTranslate, false))
+        }
+    }
+
+    private fun suggestFlow(keyword: String, translate: Boolean, exactly: Boolean) = flow {
+        val kwd = PREFIXES.fold(keyword) { kwd, pfx -> kwd.removePrefix(pfx) }
+        val prefix = keyword.dropLast(kwd.length)
+        val ns = kwd.substringBefore(':')
+        val tag = kwd.drop(ns.length + 1)
+        val namespacePrefix = TagNamespace.from(ns)?.prefix ?: ns
+        val tags = tagGroups[namespacePrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
         tags?.let {
-            internalSuggestFlow(it, tagKeyword, translate, exactly).collect { (hint, tag) ->
-                emit(Pair(hint, "$prefix$namespacePrefix:$tag"))
+            internalSuggestFlow(it, tag, translate, exactly).collect { (tag, hint) ->
+                emit("$prefix$namespacePrefix:$tag" to hint)
             }
         } ?: tagGroups.forEach { (namespacePrefix, tags) ->
             if (namespacePrefix != NAMESPACE_PREFIX) {
-                internalSuggestFlow(tags, mKeyword, translate, exactly).collect { (hint, tag) ->
-                    emit(Pair(hint, "$prefix$namespacePrefix:$tag"))
+                internalSuggestFlow(tags, kwd, translate, exactly).collect { (tag, hint) ->
+                    emit("$prefix$namespacePrefix:$tag" to hint)
                 }
             } else {
-                internalSuggestFlow(tags, mKeyword, translate, exactly).collect { (hint, namespacePrefix) ->
-                    emit(Pair(hint, "$prefix$namespacePrefix:"))
+                internalSuggestFlow(tags, kwd, translate, exactly).collect { (ns, hint) ->
+                    emit("$prefix$ns:" to hint)
                 }
             }
         }

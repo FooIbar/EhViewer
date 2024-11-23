@@ -143,19 +143,17 @@ fun SearchBarScreen(
         }
     }
 
-    fun mergedSuggestionFlow(): Flow<Suggestion> = flow {
-        val query = searchFieldState.text.toString()
-        suggestionProvider?.run { providerSuggestions(query)?.let { emit(it) } }
-        mSearchDatabase.suggestions(query, 128).forEach { emit(KeywordSuggestion(it)) }
-        EhTagDatabase.takeIf { it.initialized }?.run {
+    fun mergedSuggestionFlow(): Flow<Suggestion> = with(context) {
+        flow {
+            val query = searchFieldState.text.toString()
+            suggestionProvider?.run { providerSuggestions(query)?.let { emit(it) } }
+            mSearchDatabase.suggestions(query, 128).forEach { emit(KeywordSuggestion(it)) }
             if (query.isNotEmpty() && !query.endsWith(' ')) {
-                val keyword = query.substringAfterLast(' ')
-                val translate = Settings.showTagTranslations && isTranslatable(context)
-                suggestFlow(keyword, translate, true).collect {
-                    emit(TagSuggestion(it.first, it.second))
-                }
-                suggestFlow(keyword, translate).collect {
-                    emit(TagSuggestion(it.first, it.second))
+                EhTagDatabase.suggestions(
+                    query.substringAfterLast(' '),
+                    Settings.showTagTranslations,
+                ).collect { (tag, hint) ->
+                    emit(TagSuggestion(hint, tag))
                 }
             }
         }
