@@ -19,12 +19,14 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -99,11 +101,9 @@ import com.jamal.composeprefs3.ui.ifTrueThen
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
 
 fun interface ActionScope {
     fun onSelect(action: String, that: suspend () -> Unit)
@@ -256,7 +256,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                         val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
                         val items = remember { mutableStateOf<List<Pair<String, String?>>?>(null) }
                         LaunchedEffect(suggestionTranslate, query) {
-                            items.value = query?.let { withContext(Dispatchers.Default) { suggestions(query, suggestionTranslate).toList() } }
+                            items.value = query?.let { suggestions(query, suggestionTranslate).take(15).toList() }
                         }
                         val itemsNow = items.value
                         ExposedDropdownMenu(
