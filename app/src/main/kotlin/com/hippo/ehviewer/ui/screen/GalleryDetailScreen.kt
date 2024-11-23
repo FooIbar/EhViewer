@@ -143,10 +143,10 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
         runSuspendCatching {
             EhEngine.voteTag(apiUid, apiKey, gid, token, tag, vote)
         }.onSuccess { result ->
-            showSnackbar(getString(R.string.tag_vote_successfully))
             val new = copy(tagGroups = result).apply { fillInfo() }
             detailCache[gid] = new
             galleryInfo = new
+            showSnackbar(getString(R.string.tag_vote_successfully))
         }.onFailure { e ->
             showSnackbar(e.displayString())
         }
