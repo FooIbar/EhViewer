@@ -255,7 +255,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                                     expanded = expanded,
                                     onDismissRequest = { expanded = false },
                                 ) {
-                                    items.forEach { (hint, tag) ->
+                                    items.forEach { (tag, hint) ->
                                         DropdownMenuItem(
                                             text = { Text(text = hint ?: tag) },
                                             onClick = {
