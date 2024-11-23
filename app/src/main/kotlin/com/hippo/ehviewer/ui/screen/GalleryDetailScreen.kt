@@ -146,9 +146,9 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
             val new = copy(tagGroups = result).apply { fillInfo() }
             detailCache[gid] = new
             galleryInfo = new
-            showSnackbar(getString(R.string.tag_vote_successfully))
+            showTip(R.string.tag_vote_successfully)
         }.onFailure { e ->
-            showSnackbar(e.displayString())
+            showTip(e.displayString())
         }
     }
 
