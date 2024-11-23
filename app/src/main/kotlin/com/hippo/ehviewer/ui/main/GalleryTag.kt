@@ -44,11 +44,9 @@ fun GalleryTags(
                     isGroup = true,
                 )
                 FlowRow {
-                    tagGroup.tags.forEach {
-                        val weak = it.startsWith('_')
-                        val real = it.removePrefix("_")
-                        val translated = real.translate(ns)
-                        val tag = tagGroup.nameSpace.value + ":" + real
+                    tagGroup.tags.forEach { (text, weak, vote) ->
+                        val translated = text.translate(ns)
+                        val tag = tagGroup.nameSpace.value + ":" + text
                         val hapticFeedback = LocalHapticFeedback.current
                         BaseRoundText(
                             text = translated,
