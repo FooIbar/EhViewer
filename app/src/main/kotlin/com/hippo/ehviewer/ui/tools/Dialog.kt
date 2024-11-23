@@ -100,7 +100,6 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -256,7 +255,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                         val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
                         val items = remember { mutableStateOf<List<Pair<String, String?>>?>(null) }
                         LaunchedEffect(suggestionTranslate, query) {
-                            items.value = query?.let { suggestions(query, suggestionTranslate).take(4).toList() }
+                            items.value = query?.let { suggestions(query, suggestionTranslate).toList() }
                         }
                         val itemsNow = items.value
                         ExposedDropdownMenu(
