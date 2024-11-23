@@ -9,8 +9,8 @@ enum class VoteStatus(val append: String) {
     DOWN("↓"),
 }
 
-enum class WeakStatus {
-    NORMAL,
+enum class PowerStatus {
+    SOLID,
     ACTIVE,
     WEAK,
 }
@@ -18,6 +18,6 @@ enum class WeakStatus {
 @Parcelize
 data class GalleryTag(
     val text: String,
-    val weak: WeakStatus,
+    val weak: PowerStatus,
     val vote: VoteStatus,
 ) : Parcelable

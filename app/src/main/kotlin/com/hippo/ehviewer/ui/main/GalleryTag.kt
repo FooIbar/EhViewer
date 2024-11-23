@@ -20,9 +20,9 @@ import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.GalleryTagGroup
+import com.hippo.ehviewer.client.data.PowerStatus
 import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.client.data.VoteStatus
-import com.hippo.ehviewer.client.data.WeakStatus
 import com.hippo.ehviewer.ui.tools.includeFontPadding
 
 @Composable
@@ -51,7 +51,7 @@ fun GalleryTags(
                         val hapticFeedback = LocalHapticFeedback.current
                         BaseRoundText(
                             text = if (Settings.showVoteStatus) translation + vote.append else translation,
-                            weak = weak == WeakStatus.WEAK,
+                            weak = weak == PowerStatus.WEAK,
                             modifier = Modifier.combinedClickable(
                                 onClick = { onTagClick(tag) },
                                 onLongClick = {
