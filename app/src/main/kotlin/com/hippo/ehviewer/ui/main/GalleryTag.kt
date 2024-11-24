@@ -70,7 +70,7 @@ fun GalleryTags(
                             if (vote != VoteStatus.NONE && showVote) {
                                 Text(
                                     text = vote.display,
-                                    modifier = Modifier.align(Alignment.TopEnd).padding(horizontal = 4.dp),
+                                    modifier = Modifier.align(Alignment.TopEnd).padding(horizontal = 2.dp),
                                     color = MaterialTheme.colorScheme.error,
                                     style = MaterialTheme.typography.labelSmallEmphasized.copy(fontSize = 10.sp),
                                 )
