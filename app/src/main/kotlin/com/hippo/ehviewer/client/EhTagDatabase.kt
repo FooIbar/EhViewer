@@ -81,21 +81,17 @@ object EhTagDatabase : CoroutineScope {
         }
     }
 
-    private fun suggestSequence(keyword: String, translate: Boolean, exactly: Boolean) = sequence {
+    private fun suggestSequence(keyword: String, translate: Boolean, exactly: Boolean) = with(tagGroups) {
         val kwd = PREFIXES.fold(keyword) { kwd, pfx -> kwd.removePrefix(pfx) }
         val prefix = keyword.dropLast(kwd.length)
         val ns = kwd.substringBefore(':')
         val tag = kwd.drop(ns.length + 1)
-        val namespacePrefix = TagNamespace.from(ns)?.prefix ?: ns
-        val tags = tagGroups[namespacePrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
-        tags?.let {
-            yieldAll(rawSuggestSequence(it, tag, translate, exactly).map { (tag, hint) -> "$prefix$namespacePrefix:$tag" to hint })
-        } ?: tagGroups.forEach { (namespacePrefix, tags) ->
-            if (namespacePrefix != NAMESPACE_PREFIX) {
-                yieldAll(rawSuggestSequence(tags, kwd, translate, exactly).map { (tag, hint) -> "$prefix$namespacePrefix:$tag" to hint })
-            } else {
-                yieldAll(rawSuggestSequence(tags, kwd, translate, exactly).map { (ns, hint) -> "$prefix$ns:" to hint })
-            }
+        val nsPrefix = TagNamespace.from(ns)?.prefix ?: ns
+        val tags = this[nsPrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
+        when {
+            tags != null -> rawSuggestSequence(tags, tag, translate, exactly).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
+            nsPrefix != NAMESPACE_PREFIX -> asSequence().flatMap { (nsPrefix, tags) -> rawSuggestSequence(tags, kwd, translate, exactly).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint } }
+            else -> asSequence().flatMap { (_, tags) -> rawSuggestSequence(tags, kwd, translate, exactly).map { (ns, hint) -> "$prefix$ns:" to hint } }
         }
     }
 
