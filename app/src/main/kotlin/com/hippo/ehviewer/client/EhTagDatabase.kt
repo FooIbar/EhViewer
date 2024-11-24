@@ -84,11 +84,11 @@ object EhTagDatabase : CoroutineScope {
             }
             when {
                 tags != null -> lookup(tags, tag).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
-                nsPrefix != NAMESPACE_PREFIX -> tagGroups.asSequence().flatMap { (nsPrefix, tags) ->
-                    lookup(tags, keyword).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
-                }
-                else -> tagGroups.asSequence().flatMap { (_, tags) ->
-                    lookup(tags, keyword).map { (ns, hint) -> "$prefix$ns:" to hint }
+                else -> tagGroups.asSequence().flatMap { (nsPrefix, tags) ->
+                    val notPrefix = nsPrefix != NAMESPACE_PREFIX
+                    lookup(tags, keyword).map { (head, hint) ->
+                        (if (notPrefix) "$prefix$nsPrefix:$head" else "$prefix$head:") to hint
+                    }
                 }
             }
         }
