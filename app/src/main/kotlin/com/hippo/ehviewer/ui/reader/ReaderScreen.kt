@@ -55,6 +55,7 @@ import arrow.core.Either.Companion.catch
 import arrow.core.raise.ensure
 import arrow.core.right
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -371,7 +372,8 @@ context(Context, DialogState, DestinationsNavigator)
 suspend fun <T> usePageLoader(args: ReaderScreenArgs, block: suspend (PageLoader) -> T) = when (args) {
     is ReaderScreenArgs.Gallery -> {
         val info = args.info
-        val page = args.page
+        val page = args.page.takeUnless { it == -1 } ?: EhDB.getReadProgress(info.gid)
+        check(page in 0..<info.pages)
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         if (archive != null) {
             useArchivePageLoader(archive, info.gid, page, info.hasAds, block = block)

@@ -53,7 +53,6 @@ suspend fun <T> useEhPageLoader(
                 { queen.addOnSpiderListener(listener) },
                 { _, _ -> queen.removeOnSpiderListener(listener) },
             )
-            progressJob.join()
         }
         block(loader)
     }

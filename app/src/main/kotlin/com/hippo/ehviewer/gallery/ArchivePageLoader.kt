@@ -84,7 +84,6 @@ suspend fun <T> useArchivePageLoader(
                 override fun onRequest(index: Int, force: Boolean, orgImg: Boolean) = notifySourceReady(index)
             },
         )
-        loader.progressJob.join()
         block(loader)
     }
 }
