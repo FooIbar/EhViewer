@@ -63,35 +63,36 @@ object EhTagDatabase : CoroutineScope {
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
 
     context(Context)
-    fun suggestion(keyword: String, translate: Boolean) = let {
-        val doTranslate = translate && isTranslatable(implicit<Context>())
+    fun suggestion(rawKeyword: String, expectTranslate: Boolean): Sequence<Pair<String, String?>> {
+        if (!initialized) return emptySequence()
+        val translate = expectTranslate && isTranslatable(implicit<Context>())
+        val keyword = PREFIXES.fold(rawKeyword) { kwd, pfx -> kwd.removePrefix(pfx) }
+        val prefix = rawKeyword.dropLast(keyword.length)
+        val ns = keyword.substringBefore(':')
+        val tag = keyword.drop(ns.length + 1)
+        val nsPrefix = TagNamespace.from(ns)?.prefix ?: ns
+        val tags = tagGroups[nsPrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
         fun suggestOnce(exactly: Boolean) = let {
             fun lookup(tags: Map<String, String>, keyword: String) = when {
-                exactly -> tags[keyword]?.let { t -> sequenceOf(keyword to t.takeIf { doTranslate }) } ?: emptySequence()
-                doTranslate -> tags.asSequence().filter { (tag, hint) ->
+                exactly -> tags[keyword]?.let { t -> sequenceOf(keyword to t.takeIf { translate }) } ?: emptySequence()
+                translate -> tags.asSequence().filter { (tag, hint) ->
                     tag != keyword && (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))
                 }.map { (tag, hint) -> tag to hint }
                 else -> tags.keys.asSequence().filter { tag ->
                     tag != keyword && tag.containsIgnoreSpace(keyword)
                 }.map { tag -> tag to null }
             }
-            val kwd = PREFIXES.fold(keyword) { kwd, pfx -> kwd.removePrefix(pfx) }
-            val prefix = keyword.dropLast(kwd.length)
-            val ns = kwd.substringBefore(':')
-            val tag = kwd.drop(ns.length + 1)
-            val nsPrefix = TagNamespace.from(ns)?.prefix ?: ns
-            val tags = tagGroups[nsPrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
             when {
                 tags != null -> lookup(tags, tag).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
                 nsPrefix != NAMESPACE_PREFIX -> tagGroups.asSequence().flatMap { (nsPrefix, tags) ->
-                    lookup(tags, kwd).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
+                    lookup(tags, keyword).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
                 }
                 else -> tagGroups.asSequence().flatMap { (_, tags) ->
-                    lookup(tags, kwd).map { (ns, hint) -> "$prefix$ns:" to hint }
+                    lookup(tags, keyword).map { (ns, hint) -> "$prefix$ns:" to hint }
                 }
             }
         }
-        if (initialized) suggestOnce(true) + suggestOnce(false) else emptySequence()
+        return suggestOnce(true) + suggestOnce(false)
     }
 
     private fun String.removeSpace(): String = replace(" ", "")
