@@ -131,7 +131,6 @@ object Settings : DataStorePreferences(null) {
     val avatar = stringOrNullPref("avatar", null)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)
 
-    var showVoteStatus by boolPref("show_vote_status", false)
     var downloadScheme by stringOrNullPref("image_scheme", null)
     var downloadAuthority by stringOrNullPref("image_authority", null)
     var downloadPath by stringOrNullPref("image_path", null)
