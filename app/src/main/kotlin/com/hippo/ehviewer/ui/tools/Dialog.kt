@@ -226,9 +226,10 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                             )
                         }
                     }
+                    var expanded by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(
-                        expanded = true,
-                        onExpandedChange = { },
+                        expanded = expanded,
+                        onExpandedChange = { if (!it) expanded = false },
                     ) {
                         OutlinedTextField(
                             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
@@ -253,44 +254,42 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                             },
                         )
                         val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
-                        val items = remember { mutableStateOf<List<Pair<String, String?>>?>(null) }
+                        var items by remember { mutableStateOf(emptyList<Pair<String, String?>>()) }
                         LaunchedEffect(suggestionTranslate, query) {
-                            items.value = query?.let { suggestion(query, suggestionTranslate).take(15).toList() }
+                            items = query?.let { suggestion(query, suggestionTranslate).take(15).toList() }.orEmpty()
+                            expanded = items.isNotEmpty()
                         }
-                        val itemsNow = items.value
                         ExposedDropdownMenu(
-                            expanded = !itemsNow.isNullOrEmpty(),
-                            onDismissRequest = { },
+                            expanded = expanded,
+                            onDismissRequest = {},
                             modifier = Modifier.heightIn(max = 192.dp),
                         ) {
-                            if (!itemsNow.isNullOrEmpty()) {
-                                itemsNow.forEach { (tag, hint) ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Column {
-                                                Text(text = tag, maxLines = 1)
-                                                ProvideTextStyle(MaterialTheme.typography.bodySmall) {
-                                                    if (hint != null) {
-                                                        Text(
-                                                            text = hint,
-                                                            maxLines = 1,
-                                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                        )
-                                                    }
+                            items.forEach { (tag, hint) ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Column {
+                                            Text(text = tag, maxLines = 1)
+                                            ProvideTextStyle(MaterialTheme.typography.bodySmall) {
+                                                if (hint != null) {
+                                                    Text(
+                                                        text = hint,
+                                                        maxLines = 1,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    )
                                                 }
                                             }
-                                        },
-                                        onClick = {
-                                            if (tag.endsWith(':')) {
-                                                state.setTextAndPlaceCursorAtEnd(tag)
-                                            } else {
-                                                selected += tag
-                                                state.clearText()
-                                            }
-                                        },
-                                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                                    )
-                                }
+                                        }
+                                    },
+                                    onClick = {
+                                        if (tag.endsWith(':')) {
+                                            state.setTextAndPlaceCursorAtEnd(tag)
+                                        } else {
+                                            selected += tag
+                                            state.clearText()
+                                        }
+                                    },
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                                )
                             }
                         }
                     }
