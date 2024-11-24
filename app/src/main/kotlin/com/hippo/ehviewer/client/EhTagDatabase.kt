@@ -62,14 +62,27 @@ object EhTagDatabase : CoroutineScope {
 
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
 
-    private fun rawSuggestSequence(tags: Map<String, String>, keyword: String, translate: Boolean, exactly: Boolean) = when {
-        exactly -> tags[keyword]?.let { t -> sequenceOf(keyword to t.takeIf { translate }) } ?: emptySequence()
-        translate -> tags.asSequence().filter { (tag, hint) ->
-            tag != keyword && (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))
-        }.map { (tag, hint) -> tag to hint }
-        else -> tags.keys.asSequence().filter { tag ->
-            tag != keyword && tag.containsIgnoreSpace(keyword)
-        }.map { tag -> tag to null }
+    private fun suggestSequence(keyword: String, translate: Boolean, exactly: Boolean) = with(tagGroups) {
+        fun lookupTags(tags: Map<String, String>, keyword: String) = when {
+            exactly -> tags[keyword]?.let { t -> sequenceOf(keyword to t.takeIf { translate }) } ?: emptySequence()
+            translate -> tags.asSequence().filter { (tag, hint) ->
+                tag != keyword && (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))
+            }.map { (tag, hint) -> tag to hint }
+            else -> tags.keys.asSequence().filter { tag ->
+                tag != keyword && tag.containsIgnoreSpace(keyword)
+            }.map { tag -> tag to null }
+        }
+        val kwd = PREFIXES.fold(keyword) { kwd, pfx -> kwd.removePrefix(pfx) }
+        val prefix = keyword.dropLast(kwd.length)
+        val ns = kwd.substringBefore(':')
+        val tag = kwd.drop(ns.length + 1)
+        val nsPrefix = TagNamespace.from(ns)?.prefix ?: ns
+        val tags = this[nsPrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
+        when {
+            tags != null -> lookupTags(tags, tag).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
+            nsPrefix != NAMESPACE_PREFIX -> asSequence().flatMap { (nsPrefix, tags) -> lookupTags(tags, kwd).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint } }
+            else -> asSequence().flatMap { (_, tags) -> lookupTags(tags, kwd).map { (ns, hint) -> "$prefix$ns:" to hint } }
+        }
     }
 
     context(Context)
@@ -78,20 +91,6 @@ object EhTagDatabase : CoroutineScope {
         if (initialized) {
             yieldAll(suggestSequence(keyword, doTranslate, true))
             yieldAll(suggestSequence(keyword, doTranslate, false))
-        }
-    }
-
-    private fun suggestSequence(keyword: String, translate: Boolean, exactly: Boolean) = with(tagGroups) {
-        val kwd = PREFIXES.fold(keyword) { kwd, pfx -> kwd.removePrefix(pfx) }
-        val prefix = keyword.dropLast(kwd.length)
-        val ns = kwd.substringBefore(':')
-        val tag = kwd.drop(ns.length + 1)
-        val nsPrefix = TagNamespace.from(ns)?.prefix ?: ns
-        val tags = this[nsPrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
-        when {
-            tags != null -> rawSuggestSequence(tags, tag, translate, exactly).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
-            nsPrefix != NAMESPACE_PREFIX -> asSequence().flatMap { (nsPrefix, tags) -> rawSuggestSequence(tags, kwd, translate, exactly).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint } }
-            else -> asSequence().flatMap { (_, tags) -> rawSuggestSequence(tags, kwd, translate, exactly).map { (ns, hint) -> "$prefix$ns:" to hint } }
         }
     }
 
