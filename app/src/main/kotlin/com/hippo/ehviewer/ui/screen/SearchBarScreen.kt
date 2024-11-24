@@ -149,7 +149,7 @@ fun SearchBarScreen(
             suggestionProvider?.run { providerSuggestions(query)?.let { emit(it) } }
             mSearchDatabase.suggestions(query, 128).forEach { emit(KeywordSuggestion(it)) }
             if (query.isNotEmpty() && !query.endsWith(' ')) {
-                EhTagDatabase.suggestions(
+                EhTagDatabase.suggestion(
                     query.substringAfterLast(' '),
                     Settings.showTagTranslations,
                 ).forEach { (tag, hint) ->

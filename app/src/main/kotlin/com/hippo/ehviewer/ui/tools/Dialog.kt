@@ -94,7 +94,7 @@ import arrow.core.raise.either
 import arrow.core.right
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhTagDatabase
-import com.hippo.ehviewer.client.EhTagDatabase.suggestions
+import com.hippo.ehviewer.client.EhTagDatabase.suggestion
 import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import kotlin.coroutines.Continuation
@@ -255,7 +255,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                         val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
                         val items = remember { mutableStateOf<List<Pair<String, String?>>?>(null) }
                         LaunchedEffect(suggestionTranslate, query) {
-                            items.value = query?.let { suggestions(query, suggestionTranslate).take(15).toList() }
+                            items.value = query?.let { suggestion(query, suggestionTranslate).take(15).toList() }
                         }
                         val itemsNow = items.value
                         ExposedDropdownMenu(

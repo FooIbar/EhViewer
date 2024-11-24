@@ -62,53 +62,39 @@ object EhTagDatabase : CoroutineScope {
 
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
 
-    private fun rawSuggestSequence(tags: Map<String, String>, keyword: String, translate: Boolean, exactly: Boolean) = sequence {
-        if (exactly) {
-            tags[keyword]?.let {
-                yield(keyword to it.takeIf { translate })
-            }
-        } else {
-            if (translate) {
-                tags.forEach { (tag, hint) ->
-                    if (tag != keyword && (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))) {
-                        yield(tag to hint)
-                    }
-                }
-            } else {
-                tags.keys.forEach { tag ->
-                    if (tag != keyword && tag.containsIgnoreSpace(keyword)) {
-                        yield(tag to null)
-                    }
-                }
-            }
-        }
-    }
-
     context(Context)
-    fun suggestions(keyword: String, translate: Boolean) = sequence {
-        val doTranslate = translate && isTranslatable(implicit<Context>())
-        if (initialized) {
-            yieldAll(suggestSequence(keyword, doTranslate, true))
-            yieldAll(suggestSequence(keyword, doTranslate, false))
-        }
-    }
-
-    private fun suggestSequence(keyword: String, translate: Boolean, exactly: Boolean) = sequence {
-        val kwd = PREFIXES.fold(keyword) { kwd, pfx -> kwd.removePrefix(pfx) }
-        val prefix = keyword.dropLast(kwd.length)
-        val ns = kwd.substringBefore(':')
-        val tag = kwd.drop(ns.length + 1)
-        val namespacePrefix = TagNamespace.from(ns)?.prefix ?: ns
-        val tags = tagGroups[namespacePrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
-        tags?.let {
-            yieldAll(rawSuggestSequence(it, tag, translate, exactly).map { (tag, hint) -> "$prefix$namespacePrefix:$tag" to hint })
-        } ?: tagGroups.forEach { (namespacePrefix, tags) ->
-            if (namespacePrefix != NAMESPACE_PREFIX) {
-                yieldAll(rawSuggestSequence(tags, kwd, translate, exactly).map { (tag, hint) -> "$prefix$namespacePrefix:$tag" to hint })
+    fun suggestion(rawKeyword: String, expectTranslate: Boolean): Sequence<Pair<String, String?>> {
+        if (!initialized) return emptySequence()
+        val translate = expectTranslate && isTranslatable(implicit<Context>())
+        val keyword = PREFIXES.fold(rawKeyword) { kwd, pfx -> kwd.removePrefix(pfx) }
+        val prefix = rawKeyword.dropLast(keyword.length)
+        val ns = keyword.substringBefore(':')
+        val tag = keyword.drop(ns.length + 1)
+        val nsPrefix = TagNamespace.from(ns)?.prefix ?: ns
+        val tags = tagGroups[nsPrefix.takeIf { tag.isNotEmpty() && it != NAMESPACE_PREFIX }]
+        fun suggestOnce(exactly: Boolean) = let {
+            fun lookup(tags: Map<String, String>, keyword: String) = when {
+                exactly -> tags[keyword]?.let { t -> sequenceOf(keyword to t.takeIf { translate }) } ?: emptySequence()
+                translate -> tags.asSequence().filter { (tag, hint) ->
+                    tag != keyword && (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))
+                }.map { (tag, hint) -> tag to hint }
+                else -> tags.keys.asSequence().filter { tag ->
+                    tag != keyword && tag.containsIgnoreSpace(keyword)
+                }.map { tag -> tag to null }
+            }
+            if (tags != null) {
+                lookup(tags, tag).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
             } else {
-                yieldAll(rawSuggestSequence(tags, kwd, translate, exactly).map { (ns, hint) -> "$prefix$ns:" to hint })
+                tagGroups.asSequence().flatMap { (nsPrefix, tags) ->
+                    if (nsPrefix != NAMESPACE_PREFIX) {
+                        lookup(tags, keyword).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
+                    } else {
+                        lookup(tags, keyword).map { (ns, hint) -> "$prefix$ns:" to hint }
+                    }
+                }
             }
         }
+        return suggestOnce(true) + suggestOnce(false)
     }
 
     private fun String.removeSpace(): String = replace(" ", "")
