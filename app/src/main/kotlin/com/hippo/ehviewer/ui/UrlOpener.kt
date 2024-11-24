@@ -23,6 +23,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
+import com.hippo.ehviewer.util.toIntOrDefault
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 private val intent = CustomTabsIntent.Builder().apply { setShowTitle(true) }.build()
@@ -44,8 +45,9 @@ fun DestinationsNavigator.jumpToReaderByPage(url: String, detail: GalleryDetail)
         }
     }
     if (url.startsWith("#c")) {
-        runCatching {
-            navToReader(detail.galleryInfo, url.replace("#c", "").toInt() - 1)
+        val page = url.substring(2).toIntOrDefault(0) - 1
+        if (page in 0..<detail.pages) {
+            navToReader(detail.galleryInfo, page)
             return true
         }
     }

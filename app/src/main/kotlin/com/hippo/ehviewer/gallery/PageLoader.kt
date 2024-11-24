@@ -112,12 +112,6 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
         pages[index].statusFlow.update { PageStatus.Error(error) }
     }
 
-    val progressJob = progressScope.launch {
-        if (startPage == -1) {
-            startPage = EhDB.getReadProgress(gid)
-        }
-    }
-
     override fun close() {
         lock.write { cache.evictAll() }
         if (gid != 0L) {
