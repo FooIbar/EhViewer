@@ -1,7 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -13,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -51,26 +49,17 @@ fun GalleryTags(
                         val translation = text.translate(ns)
                         val tag = ns.value + ":" + text
                         val hapticFeedback = LocalHapticFeedback.current
-                        Box {
-                            BaseRoundText(
-                                text = translation,
-                                weak = power == PowerStatus.WEAK,
-                                modifier = Modifier.combinedClickable(
-                                    onClick = { onTagClick(tag) },
-                                    onLongClick = {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        onTagLongClick(tag, translation, vote)
-                                    },
-                                ),
-                            )
-                            if (vote != VoteStatus.NONE) {
-                                Text(
-                                    text = vote.display,
-                                    modifier = Modifier.align(Alignment.TopEnd).padding(horizontal = 6.dp),
-                                    style = MaterialTheme.typography.labelSmallEmphasized,
-                                )
-                            }
-                        }
+                        BaseRoundText(
+                            text = if (Settings.showVoteStatus) translation + vote.append else translation,
+                            weak = power == PowerStatus.WEAK,
+                            modifier = Modifier.combinedClickable(
+                                onClick = { onTagClick(tag) },
+                                onLongClick = {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onTagLongClick(tag, translation, vote)
+                                },
+                            ),
+                        )
                     }
                 }
             }

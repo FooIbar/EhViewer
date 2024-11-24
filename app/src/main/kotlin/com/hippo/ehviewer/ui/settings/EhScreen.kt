@@ -234,6 +234,10 @@ fun EhScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.settings_eh_show_gallery_pages),
                 summary = stringResource(id = R.string.settings_eh_show_gallery_pages_summary),
             )
+            SwitchPreference(
+                title = stringResource(id = R.string.settings_eh_show_vote_status),
+                value = Settings::showVoteStatus,
+            )
             val showComments = Settings::showComments.observed
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_show_gallery_comments),
