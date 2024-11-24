@@ -86,8 +86,8 @@ object EhTagDatabase : CoroutineScope {
                 tags != null -> lookup(tags, tag).map { (tag, hint) -> "$prefix$nsPrefix:$tag" to hint }
                 else -> tagGroups.asSequence().flatMap { (key, value) ->
                     val notNsPrefix = key != NAMESPACE_PREFIX
-                    lookup(value, keyword).map { (head, hint) ->
-                        (if (notNsPrefix) "$prefix$key:$head" else "$prefix$head:") to hint
+                    lookup(value, keyword).map { (found, hint) ->
+                        (if (notNsPrefix) "$prefix$key:$found" else "$prefix$found:") to hint
                     }
                 }
             }
