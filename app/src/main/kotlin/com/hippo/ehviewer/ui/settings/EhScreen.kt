@@ -236,7 +236,7 @@ fun EhScreen(navigator: DestinationsNavigator) {
             )
             SwitchPreference(
                 title = stringResource(id = R.string.settings_eh_show_vote_status),
-                value = Settings::showVoteStatus,
+                value = Settings.showVoteStatus::value,
             )
             val showComments = Settings::showComments.observed
             SwitchPreference(
