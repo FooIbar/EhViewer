@@ -62,16 +62,14 @@ object EhTagDatabase : CoroutineScope {
 
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
 
-    private fun rawSuggestSequence(tags: Map<String, String>, keyword: String, translate: Boolean, exactly: Boolean) = sequence {
-        when {
-            exactly -> tags[keyword]?.let { t -> yield(keyword to t.takeIf { translate }) }
-            translate -> tags.asSequence().filter { (tag, hint) ->
-                tag != keyword && (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))
-            }.map { (tag, hint) -> tag to hint }.let { s -> yieldAll(s) }
-            else -> tags.keys.asSequence().filter { tag ->
-                tag != keyword && tag.containsIgnoreSpace(keyword)
-            }.map { tag -> tag to null }.let { s -> yieldAll(s) }
-        }
+    private fun rawSuggestSequence(tags: Map<String, String>, keyword: String, translate: Boolean, exactly: Boolean) = when {
+        exactly -> tags[keyword]?.let { t -> sequenceOf(keyword to t.takeIf { translate }) } ?: emptySequence()
+        translate -> tags.asSequence().filter { (tag, hint) ->
+            tag != keyword && (tag.containsIgnoreSpace(keyword) || hint.containsIgnoreSpace(keyword))
+        }.map { (tag, hint) -> tag to hint }
+        else -> tags.keys.asSequence().filter { tag ->
+            tag != keyword && tag.containsIgnoreSpace(keyword)
+        }.map { tag -> tag to null }
     }
 
     context(Context)
