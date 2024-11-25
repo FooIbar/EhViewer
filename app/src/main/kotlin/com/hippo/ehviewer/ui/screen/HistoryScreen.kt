@@ -42,6 +42,7 @@ import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import androidx.paging.map
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -63,6 +64,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @Destination<RootGraph>
@@ -86,7 +88,12 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
             } else {
                 EhDB.historyLazyList
             }
-        }.flow.cachedIn(viewModelScope)
+        }.flow.map { data ->
+            val favCat = Settings.favCat
+            data.map {
+                it.apply { favoriteName = favCat.getOrNull(favoriteSlot) }
+            }
+        }.cachedIn(viewModelScope)
     }.collectAsLazyPagingItems()
     FavouriteStatusRouter.Observe(historyData)
     SearchBarScreen(
