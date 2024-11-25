@@ -143,7 +143,7 @@ fun GalleryDetailHeaderCard(
                     )
                 },
             )
-            val uploaderText = info.uploader.orEmpty().uppercase()
+            val uploaderText = info.uploader.orEmpty()
             AssistChip(
                 onClick = onUploaderChipClick,
                 label = { Text(text = uploaderText, maxLines = 1) },
