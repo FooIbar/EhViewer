@@ -16,9 +16,9 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromByteArray
-import kotlinx.serialization.encodeToByteArray
+import kotlinx.serialization.serializer
 import splitties.init.appCtx
 
 val dataStoreScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -29,11 +29,12 @@ val dataStateFlow = dataStore.data.stateIn(dataStoreScope, SharingStarted.Eagerl
 @Composable
 inline fun <reified T> rememberMutableStateInDataStore(
     key: String,
+    serializer: KSerializer<T> = serializer<T>(),
     crossinline defaultValue: @DisallowComposableCalls () -> T,
 ) = with(dataStateFlow) {
     remember {
         val keyObj = byteArrayPreferencesKey(key)
-        val r = value[keyObj]?.let { bytes -> Cbor.decodeFromByteArray(bytes) } ?: defaultValue()
+        val r = value[keyObj]?.let { bytes -> Cbor.decodeFromByteArray(serializer, bytes) } ?: defaultValue()
         mutableStateOf(r)
     }.also { mutableState ->
         LifecycleResumeEffect(key) {
@@ -41,7 +42,7 @@ inline fun <reified T> rememberMutableStateInDataStore(
                 dataStoreScope.launch {
                     val keyObj = byteArrayPreferencesKey(key)
                     dataStore.edit { p ->
-                        p[keyObj] = Cbor.encodeToByteArray(mutableState.value)
+                        p[keyObj] = Cbor.encodeToByteArray(serializer, mutableState.value)
                     }
                 }
             }
