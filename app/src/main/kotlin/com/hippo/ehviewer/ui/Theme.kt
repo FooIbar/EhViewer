@@ -35,7 +35,7 @@ inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -
                     contentAlignment = Alignment.Center,
                 ) {
                     content()
-                    dialogState.Intercept()
+                    dialogState.value?.invoke(this)
                 }
             }
         }

@@ -7,7 +7,7 @@ import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -88,6 +87,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -122,19 +122,16 @@ interface DialogScope<R> {
     var expectedValue: R
 }
 
-typealias MutableComposable = MutableState<(@Composable () -> Unit)?>
+typealias MutableComposable = MutableState<(@Composable BoxScope.() -> Unit)?>
 
 class DialogState : MutableComposable by mutableStateOf(null) {
     val mutex = MutatorMutex()
-
-    @Composable
-    fun Intercept() = value?.invoke()
 
     fun dismiss() {
         value = null
     }
 
-    suspend inline fun <R> dialog(crossinline block: @Composable (CancellableContinuation<R>) -> Unit) = mutex.mutate {
+    suspend inline fun <R> dialog(crossinline block: @Composable BoxScope.(CancellableContinuation<R>) -> Unit) = mutex.mutate {
         try {
             suspendCancellableCoroutine { cont -> value = { block(cont) } }
         } finally {
@@ -742,7 +739,7 @@ class DialogState : MutableComposable by mutableStateOf(null) {
 }
 
 @Composable
-fun PausableAlertDialog(
+fun BoxScope.PausableAlertDialog(
     confirmButton: @Composable () -> Unit,
     dismissButton: @Composable () -> Unit,
     title: @Composable () -> Unit,
@@ -760,17 +757,12 @@ fun PausableAlertDialog(
         )
     }
     val fraction by animateFloatAsState(if (showDialog) 0f else 1f)
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-        FilledTonalIconButton(
-            onClick = { showDialog = true },
-            modifier = Modifier.offset {
-                IntOffset(x = lerp(300, 0, fraction), y = 0)
-            }.graphicsLayer {
-                alpha = fraction
-            },
-        ) {
-            Icon(imageVector = idleIcon, contentDescription = null)
-        }
+    val width = LocalWindowInfo.current.containerSize.width
+    FilledTonalIconButton(
+        onClick = { showDialog = true },
+        modifier = Modifier.offset { IntOffset(x = lerp(width / 2, 0, fraction), y = 0) }.graphicsLayer { alpha = fraction }.align(Alignment.CenterStart),
+    ) {
+        Icon(imageVector = idleIcon, contentDescription = null)
     }
 }
 
