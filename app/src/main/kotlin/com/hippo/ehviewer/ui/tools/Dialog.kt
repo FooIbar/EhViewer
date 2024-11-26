@@ -2,7 +2,6 @@ package com.hippo.ehviewer.ui.tools
 
 import android.content.Context
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -49,7 +47,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
@@ -84,17 +81,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.lerp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.SecureFlagPolicy
@@ -735,34 +728,6 @@ class DialogState : MutableComposable by mutableStateOf(null) {
                 }
             }
         }
-    }
-}
-
-@Composable
-fun BoxScope.PausableAlertDialog(
-    confirmButton: @Composable () -> Unit,
-    dismissButton: @Composable () -> Unit,
-    title: @Composable () -> Unit,
-    text: @Composable () -> Unit,
-    idleIcon: ImageVector,
-) {
-    var showDialog by remember { mutableStateOf(true) }
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            confirmButton = confirmButton,
-            dismissButton = dismissButton,
-            title = title,
-            text = text,
-        )
-    }
-    val fraction by animateFloatAsState(if (showDialog) 0f else 1f)
-    val width = LocalWindowInfo.current.containerSize.width
-    FilledTonalIconButton(
-        onClick = { showDialog = true },
-        modifier = Modifier.offset { IntOffset(x = lerp(width / 2, 0, fraction), y = 0) }.graphicsLayer { alpha = fraction }.align(Alignment.CenterStart),
-    ) {
-        Icon(imageVector = idleIcon, contentDescription = null)
     }
 }
 
