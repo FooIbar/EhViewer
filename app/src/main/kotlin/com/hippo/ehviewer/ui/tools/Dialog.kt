@@ -50,7 +50,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
@@ -761,7 +761,7 @@ fun PausableAlertDialog(
     }
     val fraction by animateFloatAsState(if (showDialog) 0f else 1f)
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
-        FilledIconButton(
+        FilledTonalIconButton(
             onClick = { showDialog = true },
             modifier = Modifier.offset {
                 IntOffset(x = lerp(300, 0, fraction), y = 0)
