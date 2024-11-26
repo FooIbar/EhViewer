@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -16,7 +17,10 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imeNestedScroll
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -49,6 +53,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
@@ -64,6 +70,7 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
@@ -177,8 +184,7 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
         val selected = remember { mutableStateListOf<String>() }
         val state = rememberTextFieldState()
         var suggestionTranslate by rememberMutableStateInDataStore("SuggestionTranslate") { false }
-        AlertDialog(
-            onDismissRequest = { cont.cancel() },
+        DialogContent(
             confirmButton = {
                 TextButton(
                     onClick = { cont.resume(selected.toList()) },
@@ -721,6 +727,58 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
                             maxLines = 2,
                             style = MaterialTheme.typography.bodySmall,
                         )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DialogContent(
+    confirmButton: @Composable () -> Unit,
+    dismissButton: @Composable () -> Unit,
+    title: @Composable () -> Unit,
+    text: @Composable () -> Unit,
+) {
+    Box(
+        modifier = Modifier.sizeIn(minWidth = 280.dp, maxWidth = 560.dp).width(IntrinsicSize.Min).imePadding().imeNestedScroll(),
+        propagateMinConstraints = true,
+    ) {
+        Surface(
+            shape = AlertDialogDefaults.shape,
+            color = AlertDialogDefaults.containerColor,
+            tonalElevation = AlertDialogDefaults.TonalElevation,
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                val titleTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.headlineSmall)
+                CompositionLocalProvider(
+                    LocalContentColor provides AlertDialogDefaults.titleContentColor,
+                    LocalTextStyle provides titleTextStyle,
+                ) {
+                    Box(modifier = Modifier.padding(bottom = 16.dp).align(Alignment.Start)) {
+                        title()
+                    }
+                }
+                val textStyle = LocalTextStyle.current.merge(MaterialTheme.typography.bodyMedium)
+                CompositionLocalProvider(
+                    LocalContentColor provides AlertDialogDefaults.textContentColor,
+                    LocalTextStyle provides textStyle,
+                ) {
+                    Box(Modifier.weight(weight = 1f, fill = false).padding(bottom = 24.dp).align(Alignment.Start)) {
+                        text()
+                    }
+                }
+                Box(modifier = Modifier.align(Alignment.End)) {
+                    val buttonTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.labelLarge)
+                    CompositionLocalProvider(
+                        LocalContentColor provides AlertDialogDefaults.iconContentColor,
+                        LocalTextStyle provides buttonTextStyle,
+                    ) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            dismissButton()
+                            confirmButton()
+                        }
                     }
                 }
             }
