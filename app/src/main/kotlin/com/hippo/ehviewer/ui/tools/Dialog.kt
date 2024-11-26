@@ -2,19 +2,10 @@ package com.hippo.ehviewer.ui.tools
 
 import android.content.Context
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,11 +20,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -57,7 +46,6 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
-import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -68,8 +56,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
-import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProvideTextStyle
@@ -85,7 +71,6 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
@@ -100,14 +85,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.SecureFlagPolicy
@@ -754,20 +741,6 @@ class DialogState : MutableComposable by mutableStateOf(null) {
 }
 
 @Composable
-fun Scrim(show: Boolean, onClose: () -> Unit) {
-    val fraction by animateFloatAsState(if (show) 1f else 0f)
-    val dismissDrawer = if (show) {
-        Modifier.pointerInput(onClose) { detectTapGestures { onClose() } }
-    } else {
-        Modifier
-    }
-    val color = DrawerDefaults.scrimColor
-    Canvas(Modifier.fillMaxSize().then(dismissDrawer)) {
-        drawRect(color, alpha = fraction)
-    }
-}
-
-@Composable
 fun DialogContent(
     confirmButton: @Composable () -> Unit,
     dismissButton: @Composable () -> Unit,
@@ -775,62 +748,26 @@ fun DialogContent(
     text: @Composable () -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(true) }
-    Scrim(
-        show = showDialog,
-        onClose = { showDialog = false },
-    )
-    Box(modifier = Modifier.fillMaxSize().imePadding(), contentAlignment = Alignment.Center) {
-        AnimatedContent(
-            targetState = showDialog,
-            modifier = Modifier.fillMaxSize(),
-            transitionSpec = { (fadeIn(tween(220, 90)) + scaleIn(tween(220, 90), 0.2f)) togetherWith (fadeOut(tween(90)) + scaleOut(tween(90), 0.2f)) },
-        ) { show ->
-            if (show) {
-                Box(
-                    modifier = Modifier.wrapContentSize().sizeIn(minWidth = 280.dp, maxWidth = 560.dp).width(IntrinsicSize.Min),
-                    propagateMinConstraints = true,
-                ) {
-                    Surface(
-                        shape = AlertDialogDefaults.shape,
-                        color = AlertDialogDefaults.containerColor,
-                        tonalElevation = AlertDialogDefaults.TonalElevation,
-                    ) {
-                        Column(modifier = Modifier.padding(24.dp)) {
-                            CompositionLocalProvider(
-                                LocalContentColor provides AlertDialogDefaults.titleContentColor,
-                                LocalTextStyle provides MaterialTheme.typography.headlineSmall,
-                            ) {
-                                Box(modifier = Modifier.padding(bottom = 16.dp).align(Alignment.Start)) {
-                                    title()
-                                }
-                            }
-                            CompositionLocalProvider(
-                                LocalContentColor provides AlertDialogDefaults.textContentColor,
-                                LocalTextStyle provides MaterialTheme.typography.bodyMedium,
-                            ) {
-                                Box(Modifier.weight(weight = 1f, fill = false).padding(bottom = 24.dp).align(Alignment.Start)) {
-                                    text()
-                                }
-                            }
-                            Box(modifier = Modifier.align(Alignment.End)) {
-                                CompositionLocalProvider(
-                                    LocalContentColor provides AlertDialogDefaults.iconContentColor,
-                                    LocalTextStyle provides MaterialTheme.typography.labelLarge,
-                                ) {
-                                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        dismissButton()
-                                        confirmButton()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                FilledIconButton(onClick = { showDialog = true }, modifier = Modifier.wrapContentSize(align = Alignment.CenterStart)) {
-                    Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
-                }
-            }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = confirmButton,
+            dismissButton = dismissButton,
+            title = title,
+            text = text,
+        )
+    }
+    val fraction by animateFloatAsState(if (showDialog) 0f else 1f)
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
+        FilledIconButton(
+            onClick = { showDialog = true },
+            modifier = Modifier.offset {
+                IntOffset(x = lerp(300, 0, fraction), y = 0)
+            }.graphicsLayer {
+                alpha = fraction
+            },
+        ) {
+            Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
         }
     }
 }
