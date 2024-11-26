@@ -781,29 +781,26 @@ fun DialogContent(
                     tonalElevation = AlertDialogDefaults.TonalElevation,
                 ) {
                     Column(modifier = Modifier.padding(24.dp)) {
-                        val titleTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.headlineSmall)
                         CompositionLocalProvider(
                             LocalContentColor provides AlertDialogDefaults.titleContentColor,
-                            LocalTextStyle provides titleTextStyle,
+                            LocalTextStyle provides MaterialTheme.typography.headlineSmall,
                         ) {
                             Box(modifier = Modifier.padding(bottom = 16.dp).align(Alignment.Start)) {
                                 title()
                             }
                         }
-                        val textStyle = LocalTextStyle.current.merge(MaterialTheme.typography.bodyMedium)
                         CompositionLocalProvider(
                             LocalContentColor provides AlertDialogDefaults.textContentColor,
-                            LocalTextStyle provides textStyle,
+                            LocalTextStyle provides MaterialTheme.typography.bodyMedium,
                         ) {
                             Box(Modifier.weight(weight = 1f, fill = false).padding(bottom = 24.dp).align(Alignment.Start)) {
                                 text()
                             }
                         }
                         Box(modifier = Modifier.align(Alignment.End)) {
-                            val buttonTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.labelLarge)
                             CompositionLocalProvider(
                                 LocalContentColor provides AlertDialogDefaults.iconContentColor,
-                                LocalTextStyle provides buttonTextStyle,
+                                LocalTextStyle provides MaterialTheme.typography.labelLarge,
                             ) {
                                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     dismissButton()
