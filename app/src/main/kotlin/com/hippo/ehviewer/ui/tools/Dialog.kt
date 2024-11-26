@@ -190,7 +190,7 @@ class DialogState : MutableComposable by mutableStateOf(null) {
         val selected = remember { mutableStateListOf<String>() }
         val state = rememberTextFieldState()
         var suggestionTranslate by rememberMutableStateInDataStore("SuggestionTranslate") { false }
-        DialogContent(
+        PausableAlertDialog(
             confirmButton = {
                 TextButton(
                     onClick = { cont.resume(selected.toList()) },
@@ -741,7 +741,7 @@ class DialogState : MutableComposable by mutableStateOf(null) {
 }
 
 @Composable
-fun DialogContent(
+fun PausableAlertDialog(
     confirmButton: @Composable () -> Unit,
     dismissButton: @Composable () -> Unit,
     title: @Composable () -> Unit,
