@@ -4,6 +4,12 @@ import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.background
@@ -23,11 +29,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imeNestedScroll
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -773,51 +779,55 @@ fun DialogContent(
         show = showDialog,
         onClose = { showDialog = false },
     )
-    AnimatedContent(showDialog) { show ->
-        if (show) {
-            Box(
-                modifier = Modifier.sizeIn(minWidth = 280.dp, maxWidth = 560.dp).width(IntrinsicSize.Min).imePadding().imeNestedScroll(),
-                propagateMinConstraints = true,
-            ) {
-                Surface(
-                    shape = AlertDialogDefaults.shape,
-                    color = AlertDialogDefaults.containerColor,
-                    tonalElevation = AlertDialogDefaults.TonalElevation,
+    Box(modifier = Modifier.fillMaxSize().imePadding(), contentAlignment = Alignment.Center) {
+        AnimatedContent(
+            targetState = showDialog,
+            modifier = Modifier.fillMaxSize(),
+            transitionSpec = { (fadeIn(tween(220, 90)) + scaleIn(tween(220, 90), 0.2f)) togetherWith (fadeOut(tween(90)) + scaleOut(tween(90), 0.2f)) },
+        ) { show ->
+            if (show) {
+                Box(
+                    modifier = Modifier.wrapContentSize().sizeIn(minWidth = 280.dp, maxWidth = 560.dp).width(IntrinsicSize.Min),
+                    propagateMinConstraints = true,
                 ) {
-                    Column(modifier = Modifier.padding(24.dp)) {
-                        CompositionLocalProvider(
-                            LocalContentColor provides AlertDialogDefaults.titleContentColor,
-                            LocalTextStyle provides MaterialTheme.typography.headlineSmall,
-                        ) {
-                            Box(modifier = Modifier.padding(bottom = 16.dp).align(Alignment.Start)) {
-                                title()
-                            }
-                        }
-                        CompositionLocalProvider(
-                            LocalContentColor provides AlertDialogDefaults.textContentColor,
-                            LocalTextStyle provides MaterialTheme.typography.bodyMedium,
-                        ) {
-                            Box(Modifier.weight(weight = 1f, fill = false).padding(bottom = 24.dp).align(Alignment.Start)) {
-                                text()
-                            }
-                        }
-                        Box(modifier = Modifier.align(Alignment.End)) {
+                    Surface(
+                        shape = AlertDialogDefaults.shape,
+                        color = AlertDialogDefaults.containerColor,
+                        tonalElevation = AlertDialogDefaults.TonalElevation,
+                    ) {
+                        Column(modifier = Modifier.padding(24.dp)) {
                             CompositionLocalProvider(
-                                LocalContentColor provides AlertDialogDefaults.iconContentColor,
-                                LocalTextStyle provides MaterialTheme.typography.labelLarge,
+                                LocalContentColor provides AlertDialogDefaults.titleContentColor,
+                                LocalTextStyle provides MaterialTheme.typography.headlineSmall,
                             ) {
-                                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    dismissButton()
-                                    confirmButton()
+                                Box(modifier = Modifier.padding(bottom = 16.dp).align(Alignment.Start)) {
+                                    title()
+                                }
+                            }
+                            CompositionLocalProvider(
+                                LocalContentColor provides AlertDialogDefaults.textContentColor,
+                                LocalTextStyle provides MaterialTheme.typography.bodyMedium,
+                            ) {
+                                Box(Modifier.weight(weight = 1f, fill = false).padding(bottom = 24.dp).align(Alignment.Start)) {
+                                    text()
+                                }
+                            }
+                            Box(modifier = Modifier.align(Alignment.End)) {
+                                CompositionLocalProvider(
+                                    LocalContentColor provides AlertDialogDefaults.iconContentColor,
+                                    LocalTextStyle provides MaterialTheme.typography.labelLarge,
+                                ) {
+                                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        dismissButton()
+                                        confirmButton()
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-        } else {
-            Box(modifier = Modifier.fillMaxSize().imePadding()) {
-                FilledIconButton(onClick = { showDialog = true }, modifier = Modifier.align(Alignment.CenterStart)) {
+            } else {
+                FilledIconButton(onClick = { showDialog = true }, modifier = Modifier.wrapContentSize(align = Alignment.CenterStart)) {
                     Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
                 }
             }
