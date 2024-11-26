@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -130,8 +131,9 @@ interface DialogScope<R> {
 
 typealias MutableComposable = MutableState<(@Composable () -> Unit)?>
 
-@JvmInline
-value class DialogState(val field: MutableComposable = mutableStateOf(null)) : MutableComposable by field {
+class DialogState : MutableComposable by mutableStateOf(null) {
+    val mutex = MutatorMutex()
+
     @Composable
     fun Intercept() = value?.invoke()
 
@@ -139,10 +141,12 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
         value = null
     }
 
-    suspend inline fun <R> dialog(crossinline block: @Composable (CancellableContinuation<R>) -> Unit) = try {
-        suspendCancellableCoroutine { cont -> value = { block(cont) } }
-    } finally {
-        dismiss()
+    suspend inline fun <R> dialog(crossinline block: @Composable (CancellableContinuation<R>) -> Unit) = mutex.mutate {
+        try {
+            suspendCancellableCoroutine { cont -> value = { block(cont) } }
+        } finally {
+            dismiss()
+        }
     }
 
     suspend fun <R> awaitResult(
