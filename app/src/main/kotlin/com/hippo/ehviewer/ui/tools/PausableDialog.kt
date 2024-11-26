@@ -62,8 +62,6 @@ fun BoxScope.PausableAlertDialog(
 
     // Disappear at screen center
     val disappear = IntOffset(info.width / 2, 0)
-
-    // Type annotation for Serializer
     var idle by rememberMutableStateInDataStore("DialogBubble", OffsetSerializer) { Offset.Zero }
     val state = rememberDraggable2DState { delta -> idle += delta }
     FilledTonalIconButton(
