@@ -7,12 +7,15 @@ import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.draggable2D
 import androidx.compose.foundation.gestures.rememberDraggable2DState
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,9 +28,9 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.lerp
@@ -74,13 +77,21 @@ fun BoxScope.PausableAlertDialog(
     val (viewportW, viewportH) = LocalWindowInfo.current.containerSize.toSize()
     val density = LocalDensity.current
     val (buttonW, buttonH) = with(density) { IconButtonDefaults.smallContainerSize().toSize() }
-    val padding = with(density) { 4.dp.toPx() }
-    val safe = Rect(left = 0f, top = (buttonH - viewportH) / 2, right = viewportW - buttonW, bottom = (viewportH - buttonH) / 2)
-    val safeWithPadding = safe.deflate(padding)
+    val safeContent = WindowInsets.safeContent
+    val layoutDirection = LocalLayoutDirection.current
+    val safe = Rect(
+        left = (buttonW - viewportW) / 2 + safeContent.getLeft(density, layoutDirection),
+        top = (buttonH - viewportH) / 2 + safeContent.getTop(density),
+        right = (viewportW - buttonW) / 2 - safeContent.getRight(density, layoutDirection),
+        bottom = (viewportH - buttonH) / 2 - safeContent.getBottom(density),
+    )
 
     // Disappear at screen center
-    val disappear = safeWithPadding.center.round()
+    val disappear = safe.center.round()
     var idle by rememberMutableStateInDataStore("DialogBubble", OffsetSerializer) { Offset.Zero }
+    LaunchedEffect(Unit) {
+        idle = idle.safeOffset(safe)
+    }
     val state = rememberDraggable2DState { delta -> idle += delta }
     FilledTonalIconButton(
         onClick = { showDialog = true },
@@ -88,23 +99,10 @@ fun BoxScope.PausableAlertDialog(
             lerp(disappear, idle.round(), fraction)
         }.graphicsLayer {
             alpha = fraction
-        }.align(Alignment.CenterStart).draggable2D(
+        }.align(Alignment.Center).draggable2D(
             state = state,
             onDragStopped = { v ->
-                val idleNow = idle
-                val (x, y) = idleNow
-                val (l, t, r, b) = safeWithPadding
-                val dl = x - l
-                val dr = r - x
-                val dt = y - t
-                val db = b - y
-                val target = when (minOf(dl, dr, dt, db)) {
-                    dl -> Offset(l, y)
-                    dr -> Offset(r, y)
-                    dt -> Offset(x, t)
-                    db -> Offset(x, b)
-                    else -> unreachable()
-                }
+                val target = idle.safeOffset(safe)
                 scope.launch {
                     mutex.mutate {
                         Animatable(idle, Offset.VectorConverter).animateTo(target, initialVelocity = Offset(v.x, v.y)) {
@@ -116,5 +114,21 @@ fun BoxScope.PausableAlertDialog(
         ),
     ) {
         Icon(imageVector = idleIcon, contentDescription = null)
+    }
+}
+
+fun Offset.safeOffset(edge: Rect): Offset {
+    val (x, y) = this
+    val (l, t, r, b) = edge
+    val dl = x - l
+    val dr = r - x
+    val dt = y - t
+    val db = b - y
+    return when (minOf(dl, dr, dt, db)) {
+        dl -> Offset(l, y)
+        dr -> Offset(r, y)
+        dt -> Offset(x, t)
+        db -> Offset(x, b)
+        else -> unreachable()
     }
 }
