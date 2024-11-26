@@ -307,6 +307,7 @@ class DialogState : MutableComposable by mutableStateOf(null) {
                     }
                 }
             },
+            idleIcon = Icons.Default.NewLabel,
         )
     }
 
@@ -746,6 +747,7 @@ fun PausableAlertDialog(
     dismissButton: @Composable () -> Unit,
     title: @Composable () -> Unit,
     text: @Composable () -> Unit,
+    idleIcon: ImageVector,
 ) {
     var showDialog by remember { mutableStateOf(true) }
     if (showDialog) {
@@ -767,7 +769,7 @@ fun PausableAlertDialog(
                 alpha = fraction
             },
         ) {
-            Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
+            Icon(imageVector = idleIcon, contentDescription = null)
         }
     }
 }
