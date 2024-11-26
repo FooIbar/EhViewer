@@ -2,8 +2,12 @@ package com.hippo.ehviewer.ui.tools
 
 import android.content.Context
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -36,6 +41,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.NewLabel
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
@@ -44,10 +50,12 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
+import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
@@ -86,6 +94,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -735,51 +744,80 @@ value class DialogState(val field: MutableComposable = mutableStateOf(null)) : M
 }
 
 @Composable
+fun Scrim(show: Boolean, onClose: () -> Unit) {
+    val fraction by animateFloatAsState(if (show) 1f else 0f)
+    val dismissDrawer = if (show) {
+        Modifier.pointerInput(onClose) { detectTapGestures { onClose() } }
+    } else {
+        Modifier
+    }
+    val color = DrawerDefaults.scrimColor
+    Canvas(Modifier.fillMaxSize().then(dismissDrawer)) {
+        drawRect(color, alpha = fraction)
+    }
+}
+
+@Composable
 fun DialogContent(
     confirmButton: @Composable () -> Unit,
     dismissButton: @Composable () -> Unit,
     title: @Composable () -> Unit,
     text: @Composable () -> Unit,
 ) {
-    Box(
-        modifier = Modifier.sizeIn(minWidth = 280.dp, maxWidth = 560.dp).width(IntrinsicSize.Min).imePadding().imeNestedScroll(),
-        propagateMinConstraints = true,
-    ) {
-        Surface(
-            shape = AlertDialogDefaults.shape,
-            color = AlertDialogDefaults.containerColor,
-            tonalElevation = AlertDialogDefaults.TonalElevation,
-        ) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                val titleTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.headlineSmall)
-                CompositionLocalProvider(
-                    LocalContentColor provides AlertDialogDefaults.titleContentColor,
-                    LocalTextStyle provides titleTextStyle,
+    var showDialog by remember { mutableStateOf(true) }
+    Scrim(
+        show = showDialog,
+        onClose = { showDialog = false },
+    )
+    AnimatedContent(showDialog) { show ->
+        if (show) {
+            Box(
+                modifier = Modifier.sizeIn(minWidth = 280.dp, maxWidth = 560.dp).width(IntrinsicSize.Min).imePadding().imeNestedScroll(),
+                propagateMinConstraints = true,
+            ) {
+                Surface(
+                    shape = AlertDialogDefaults.shape,
+                    color = AlertDialogDefaults.containerColor,
+                    tonalElevation = AlertDialogDefaults.TonalElevation,
                 ) {
-                    Box(modifier = Modifier.padding(bottom = 16.dp).align(Alignment.Start)) {
-                        title()
-                    }
-                }
-                val textStyle = LocalTextStyle.current.merge(MaterialTheme.typography.bodyMedium)
-                CompositionLocalProvider(
-                    LocalContentColor provides AlertDialogDefaults.textContentColor,
-                    LocalTextStyle provides textStyle,
-                ) {
-                    Box(Modifier.weight(weight = 1f, fill = false).padding(bottom = 24.dp).align(Alignment.Start)) {
-                        text()
-                    }
-                }
-                Box(modifier = Modifier.align(Alignment.End)) {
-                    val buttonTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.labelLarge)
-                    CompositionLocalProvider(
-                        LocalContentColor provides AlertDialogDefaults.iconContentColor,
-                        LocalTextStyle provides buttonTextStyle,
-                    ) {
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            dismissButton()
-                            confirmButton()
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        val titleTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.headlineSmall)
+                        CompositionLocalProvider(
+                            LocalContentColor provides AlertDialogDefaults.titleContentColor,
+                            LocalTextStyle provides titleTextStyle,
+                        ) {
+                            Box(modifier = Modifier.padding(bottom = 16.dp).align(Alignment.Start)) {
+                                title()
+                            }
+                        }
+                        val textStyle = LocalTextStyle.current.merge(MaterialTheme.typography.bodyMedium)
+                        CompositionLocalProvider(
+                            LocalContentColor provides AlertDialogDefaults.textContentColor,
+                            LocalTextStyle provides textStyle,
+                        ) {
+                            Box(Modifier.weight(weight = 1f, fill = false).padding(bottom = 24.dp).align(Alignment.Start)) {
+                                text()
+                            }
+                        }
+                        Box(modifier = Modifier.align(Alignment.End)) {
+                            val buttonTextStyle = LocalTextStyle.current.merge(MaterialTheme.typography.labelLarge)
+                            CompositionLocalProvider(
+                                LocalContentColor provides AlertDialogDefaults.iconContentColor,
+                                LocalTextStyle provides buttonTextStyle,
+                            ) {
+                                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    dismissButton()
+                                    confirmButton()
+                                }
+                            }
                         }
                     }
+                }
+            }
+        } else {
+            Box(modifier = Modifier.fillMaxSize().imePadding()) {
+                FilledIconButton(onClick = { showDialog = true }, modifier = Modifier.align(Alignment.CenterStart)) {
+                    Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
                 }
             }
         }
