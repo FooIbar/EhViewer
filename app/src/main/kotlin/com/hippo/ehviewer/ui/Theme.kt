@@ -6,9 +6,12 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.DialogState
@@ -22,10 +25,14 @@ import soup.compose.material.motion.animation.rememberSlideDistance
 inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -> Unit) = setContent {
     EhTheme(useDarkTheme = isSystemInDarkTheme()) {
         ProvideVectorPainterCache {
+            val dialogState = remember { DialogState() }
             CompositionLocalProvider(
-                LocalDialogState provides remember { DialogState() }.apply { Intercept() },
+                LocalDialogState provides dialogState,
             ) {
-                content()
+                Box(modifier = Modifier.fillMaxSize()) {
+                    content()
+                    dialogState.value?.invoke(this)
+                }
             }
         }
     }
