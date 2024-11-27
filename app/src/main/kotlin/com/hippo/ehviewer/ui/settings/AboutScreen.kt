@@ -44,6 +44,8 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.installPackage
+import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownTypography
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -149,7 +151,13 @@ suspend fun DialogState.showNewVersion(context: Context, release: Release) {
                 style = MaterialTheme.typography.headlineSmall,
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Text(text = release.changelog)
+            Markdown(
+                content = release.changelog.trimIndent(),
+                typography = markdownTypography(
+                    h2 = MaterialTheme.typography.headlineSmall,
+                    h3 = MaterialTheme.typography.titleLarge,
+                ),
+            )
         }
     }
     if (Settings.backupBeforeUpdate) {
