@@ -1,16 +1,27 @@
-use image::{ImageBuffer, Rgba};
+use image::{ImageBuffer, Luma, Pixel, Primitive};
 use rxing::common::HybridBinarizer;
 use rxing::qrcode::detector::FinderPatternFinder;
-use rxing::{BinaryBitmap, DecodingHintDictionary, Point, RGBLuminanceSource};
+use rxing::{BinaryBitmap, DecodingHintDictionary, Luma8LuminanceSource, Point};
 use std::f32::consts::FRAC_1_SQRT_2;
-use std::ptr::slice_from_raw_parts;
+
+fn to_luma8<S: Primitive, P: Pixel<Subpixel = S>>(p: &P) -> Luma<u8> {
+    Luma([p.to_luma().0[0].to_u8().unwrap()])
+}
+
+fn image_buffer_to_luma8<S: Primitive, P: Pixel<Subpixel = S>>(
+    src: ImageBuffer<P, &[S]>,
+) -> Luma8LuminanceSource {
+    let (w, h) = src.dimensions();
+    let mut dst: ImageBuffer<Luma<u8>, Vec<_>> = ImageBuffer::new(w, h);
+    for (x, y, p) in src.enumerate_pixels() {
+        dst.put_pixel(x, y, to_luma8(p));
+    }
+    Luma8LuminanceSource::new(dst.into_raw(), w, h)
+}
 
 #[allow(dead_code)]
-pub fn detect_image_ad(image: ImageBuffer<Rgba<u8>, &[u8]>) -> bool {
-    let (width, height) = (image.width() as usize, image.height() as usize);
-    let buffer = image.into_raw();
-    let pixels = unsafe { &*slice_from_raw_parts(buffer.as_ptr() as *const u32, buffer.len()) };
-    let source = RGBLuminanceSource::new_with_width_height_pixels(width, height, pixels);
+pub fn detect_image_ad<S: Primitive, P: Pixel<Subpixel = S>>(image: ImageBuffer<P, &[S]>) -> bool {
+    let source = image_buffer_to_luma8(image);
     let image = BinaryBitmap::new(HybridBinarizer::new(source));
     match FinderPatternFinder::new(image.get_black_matrix()).find(&DecodingHintDictionary::new()) {
         Ok(info) => {
