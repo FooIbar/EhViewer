@@ -1,12 +1,9 @@
+use super::utils::to_luma8;
 use image::{ImageBuffer, Luma, Pixel, Primitive};
 use rxing::common::HybridBinarizer;
 use rxing::qrcode::detector::FinderPatternFinder;
 use rxing::{BinaryBitmap, DecodingHintDictionary, Luma8LuminanceSource, Point};
 use std::f32::consts::FRAC_1_SQRT_2;
-
-fn to_luma8<S: Primitive, P: Pixel<Subpixel = S>>(p: &P) -> Luma<u8> {
-    Luma([p.to_luma().0[0].to_u8().unwrap()])
-}
 
 fn image_buffer_to_luma8<S: Primitive, P: Pixel<Subpixel = S>>(
     src: ImageBuffer<P, &[S]>,
