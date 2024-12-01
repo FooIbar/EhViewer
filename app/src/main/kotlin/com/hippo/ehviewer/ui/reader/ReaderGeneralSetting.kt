@@ -63,4 +63,8 @@ fun ReaderGeneralSetting() = Column(modifier = Modifier.verticalScroll(rememberS
         title = stringResource(id = R.string.pref_page_transitions),
         field = Settings.pageTransitions.asMutableState(),
     )
+    SwitchChoice(
+        title = stringResource(id = R.string.settings_read_reverse_controls),
+        field = Settings.readerReverseControls.asMutableState(),
+    )
 }

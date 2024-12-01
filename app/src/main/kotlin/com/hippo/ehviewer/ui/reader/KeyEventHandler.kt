@@ -9,13 +9,14 @@ import androidx.compose.ui.input.key.type
 
 fun Modifier.keyEventHandler(
     enabled: () -> Boolean,
+    reverse: () -> Boolean,
     movePrevious: () -> Unit,
     moveNext: () -> Unit,
 ) = onPreviewKeyEvent {
     if (enabled() && it.type == KeyEventType.KeyDown) {
         when (it.key) {
-            Key.DirectionUp, Key.PageUp, Key.VolumeUp -> movePrevious()
-            Key.DirectionDown, Key.PageDown, Key.VolumeDown -> moveNext()
+            Key.DirectionUp, Key.PageUp, Key.VolumeUp -> if (reverse()) moveNext() else movePrevious()
+            Key.DirectionDown, Key.PageDown, Key.VolumeDown -> if (reverse()) movePrevious() else moveNext()
             else -> return@onPreviewKeyEvent false
         }
         true

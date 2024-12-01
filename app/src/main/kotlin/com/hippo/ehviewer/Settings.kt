@@ -195,6 +195,7 @@ object Settings : DataStorePreferences(null) {
     val keepScreenOn = boolPref("pref_keep_screen_on_key", true)
     val readerLongTapAction = boolPref("reader_long_tap", true)
     val pageTransitions = boolPref("pref_enable_transitions_key", true)
+    val readerReverseControls = boolPref("reader_volume_keys_inverted", false)
     val grayScale = boolPref("pref_grayscale", false)
     val invertedColors = boolPref("pref_inverted_colors", false)
     val readerWebtoonNav = intPref("reader_navigation_mode_webtoon", 0)
