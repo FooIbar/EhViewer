@@ -188,6 +188,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
     }
     val showSeekbar by Settings.showReaderSeekbar.collectAsState()
     val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
+    val reverseControls by Settings.readerReverseControls.collectAsState()
     val fullscreen by Settings.fullscreen.collectAsState()
     val cutoutShort by Settings.cutoutShort.collectAsState()
     val uiController = rememberSystemUiController()
@@ -207,6 +208,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
     Box(
         Modifier.keyEventHandler(
             enabled = { !appbarVisible },
+            reverse = { reverseControls },
             movePrevious = {
                 launch {
                     if (isWebtoon) lazyListState.scrollUp() else pagerState.moveToPrevious()
