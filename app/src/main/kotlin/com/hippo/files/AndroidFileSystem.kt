@@ -11,6 +11,7 @@ import android.webkit.MimeTypeMap
 import androidx.core.database.getLongOrNull
 import okio.FileHandle
 import okio.FileMetadata
+import okio.FileNotFoundException
 import okio.FileSystem
 import okio.IOException
 import okio.Path
@@ -37,7 +38,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
             // ExternalStorageProvider always throw exception when renameDocument on API 28
             // https://android.googlesource.com/platform/frameworks/base/+/7bf90408e36613a84dc2a665905fde2c83cfa797
             if (Build.VERSION.SDK_INT != Build.VERSION_CODES.P) {
-                throw IOException("Failed to move $source to $target")
+                throw FileNotFoundException("Failed to move $source to $target")
             }
         }
     }
@@ -89,7 +90,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
                 throw IOException("Failed to delete $path")
             }
         } else if (mustExist) {
-            throw IOException("$path does not exist")
+            throw FileNotFoundException("$path does not exist")
         }
     }
 
@@ -133,7 +134,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
                     dir / displayName
                 }
             }
-        }.getOrElse { if (throwOnFailure) throw IOException("Failed to list $dir") else null }
+        }.getOrElse { if (throwOnFailure) throw FileNotFoundException("Failed to list $dir") else null }
     }
 
     override fun metadataOrNull(path: Path): FileMetadata? {
@@ -196,7 +197,7 @@ class AndroidFileSystem(context: Context) : FileSystem() {
                 DocumentsContract.createDocument(contentResolver, parent.toUri(), mimeType, displayName)
             }
             contentResolver.openFileDescriptor(path.toUri(), mode)
-        }.getOrNull() ?: throw IOException("Failed to open file: $path")
+        }.getOrNull() ?: throw FileNotFoundException("Failed to open file: $path")
     }
 }
 
