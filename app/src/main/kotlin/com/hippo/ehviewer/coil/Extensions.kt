@@ -12,16 +12,16 @@ import com.hippo.ehviewer.client.data.GalleryPreview
 import com.hippo.ehviewer.client.data.V2GalleryPreview
 import com.hippo.ehviewer.client.thumbUrl
 import com.hippo.ehviewer.dao.DownloadInfo
+import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.ktbuilder.execute
 
 fun ImageRequest.Builder.ehUrl(info: GalleryInfo) = apply {
     val key = info.thumbKey!!
     data(info.thumbUrl)
-    val format = info.thumbUrl.substringAfterLast('.', "")
-    check(format.isNotBlank())
-    if (info is DownloadInfo && !info.dirname.isNullOrBlank()) {
-        downloadLocation(downloadLocation / info.dirname / "thumb.$format")
+    val downloadInfo = (info as? DownloadInfo) ?: DownloadManager.getDownloadInfo(info.gid)
+    if (downloadInfo != null && !downloadInfo.dirname.isNullOrBlank()) {
+        downloadLocation(downloadLocation / downloadInfo.dirname)
     }
     memoryCacheKey(key)
     diskCacheKey(key)
