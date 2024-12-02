@@ -56,6 +56,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import moe.tarsin.coroutines.runSuspendCatching
+import okio.FileNotFoundException
 import okio.Path
 import splitties.init.appCtx
 
@@ -642,7 +643,9 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         }.onFailure {
                             spiderDen.removeIntermediateFiles(index)
                             logcat(WORKER_DEBUG_TAG) { "Download image $index attempt #$times failed" }
-                            if (it is CancellationException) throw it
+                            when (it) {
+                                is CancellationException, is FileNotFoundException -> throw it
+                            }
                             error = it.displayString()
                         }
                     }

@@ -328,6 +328,7 @@
     <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
     <string name="settings_eh_filter">Blockers</string>
     <string name="settings_eh_filter_summary">Block gallery or comment by title, uploader, tags and commenter</string>
+    <string name="settings_read_reverse_controls">Reverse physical key controls</string>
     <string name="settings_block_extraneous_ads">[Experimental] Block extraneous ads</string>
     <string name="settings_ads_placeholder">[Optional] Pick placeholder to replace ads</string>
     <string name="settings_download">Download</string>

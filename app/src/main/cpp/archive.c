@@ -65,7 +65,9 @@ static entry *entries = NULL;
 static size_t entryCount = 0;
 static ssize_t max_file_size = 0;
 
-const char supportExt[10][6] = {
+#define SUPPORT_EXT_COUNT 11
+
+const char supportExt[SUPPORT_EXT_COUNT][5] = {
         "jpeg",
         "jpg",
         "png",
@@ -74,6 +76,7 @@ const char supportExt[10][6] = {
         "bmp",
         "ico",
         "wbmp",
+        "heic",
         "heif",
         "avif"
 };
@@ -85,7 +88,7 @@ static inline int filename_is_playable_file(const char *name) {
     if (!dotptr++)
         return false;
     int i;
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < SUPPORT_EXT_COUNT; i++)
         if (strcmp(dotptr, supportExt[i]) == 0)
             return true;
     return false;
