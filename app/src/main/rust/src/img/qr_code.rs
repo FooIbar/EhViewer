@@ -1,5 +1,5 @@
-use super::utils::to_luma8;
-use image::{ImageBuffer, Luma, Pixel, Primitive};
+use crate::img::utils::Pixel;
+use image::{GrayImage, ImageBuffer, Primitive};
 use rxing::common::HybridBinarizer;
 use rxing::qrcode::detector::FinderPatternFinder;
 use rxing::{BinaryBitmap, DecodingHintDictionary, Luma8LuminanceSource, Point};
@@ -9,9 +9,9 @@ fn image_buffer_to_luma8<S: Primitive, P: Pixel<Subpixel = S>>(
     src: ImageBuffer<P, &[S]>,
 ) -> Luma8LuminanceSource {
     let (w, h) = src.dimensions();
-    let mut dst: ImageBuffer<Luma<u8>, Vec<_>> = ImageBuffer::new(w, h);
-    for (x, y, p) in src.enumerate_pixels() {
-        dst.put_pixel(x, y, to_luma8(p));
+    let mut dst = GrayImage::new(w, h);
+    for (to, from) in dst.pixels_mut().zip(src.pixels()) {
+        *to = from.to_luma8();
     }
     Luma8LuminanceSource::new(dst.into_raw(), w, h)
 }

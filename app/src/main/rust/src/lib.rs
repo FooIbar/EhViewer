@@ -1,3 +1,5 @@
+#![feature(f16)]
+
 mod ffi;
 mod img;
 mod parser;
