@@ -2,10 +2,10 @@
 
 use super::jvm::jni_throwing;
 use crate::img::border::DetectBorder;
-use crate::img::core::{CustomPixel, ImageConsumer};
+use crate::img::core::{CustomPixel, ImageConsumer, Rgb565, Rgba8888, RgbaF16};
 use crate::img::qr_code::QrCode;
 use anyhow::{anyhow, Context, Ok, Result};
-use image::{ImageBuffer, Luma, Rgba};
+use image::ImageBuffer;
 use jni::objects::JClass;
 use jni::sys::jboolean;
 use jni::sys::{jintArray, jobject};
@@ -57,9 +57,9 @@ pub fn use_bitmap_content<R, F: ImageConsumer<R>>(
     let (w, h, format) = (info.width(), info.height(), info.format());
     let p = handle.lock_pixels()? as *const !;
     let result = match format {
-        BitmapFormat::RGBA_8888 => ptr_as_image::<Rgba<u8>>(p, w, h).and_then(|p| f.apply(&p)),
-        BitmapFormat::RGB_565 => ptr_as_image::<Luma<u16>>(p, w, h).and_then(|p| f.apply(&p)),
-        BitmapFormat::RGBA_F16 => ptr_as_image::<Luma<u64>>(p, w, h).and_then(|p| f.apply(&p)),
+        BitmapFormat::RGBA_8888 => ptr_as_image::<Rgba8888>(p, w, h).and_then(|p| f.apply(&p)),
+        BitmapFormat::RGB_565 => ptr_as_image::<Rgb565>(p, w, h).and_then(|p| f.apply(&p)),
+        BitmapFormat::RGBA_F16 => ptr_as_image::<RgbaF16>(p, w, h).and_then(|p| f.apply(&p)),
         _ => Err(anyhow!("Unsupported bitmap format")),
     };
     handle.unlock_pixels()?;

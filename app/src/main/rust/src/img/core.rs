@@ -1,6 +1,10 @@
 use anyhow::Result;
 use image::{ImageBuffer, Luma, Pixel, Rgb, Rgba};
 
+pub type Rgba8888 = Rgba<u8>;
+pub type Rgb565 = Luma<u16>;
+pub type RgbaF16 = Luma<u64>;
+
 #[allow(dead_code)]
 pub trait ImageConsumer<R> {
     fn apply<T: CustomPixel>(self, buffer: &ImageBuffer<T, &[T::Subpixel]>) -> Result<R>;
@@ -11,7 +15,7 @@ pub trait CustomPixel: Pixel {
     fn to_luma8(&self) -> Luma<u8>;
 }
 
-impl CustomPixel for Rgba<u8> {
+impl CustomPixel for Rgba8888 {
     fn to_luma8(&self) -> Luma<u8> {
         self.to_luma()
     }
@@ -19,7 +23,7 @@ impl CustomPixel for Rgba<u8> {
 }
 
 // RGB_565
-impl CustomPixel for Luma<u16> {
+impl CustomPixel for Rgb565 {
     fn to_luma8(&self) -> Luma<u8> {
         let packed = self.channels()[0];
         let rgb = Rgb([
@@ -43,7 +47,7 @@ fn l6_to_l8(v: u16) -> u8 {
 }
 
 // RGBA_F16
-impl CustomPixel for Luma<u64> {
+impl CustomPixel for RgbaF16 {
     fn to_luma8(&self) -> Luma<u8> {
         let packed = self.channels()[0];
         let rgba = Rgba([
