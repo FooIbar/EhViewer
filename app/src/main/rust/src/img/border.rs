@@ -69,7 +69,6 @@ fn detect_border_lines<'pixel, P: CustomPixel + 'pixel>(
     }
 }
 
-#[allow(dead_code)]
 pub struct DetectBorder;
 
 impl ImageConsumer<[i32; 4]> for DetectBorder {

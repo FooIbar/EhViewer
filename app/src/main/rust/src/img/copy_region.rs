@@ -13,7 +13,6 @@ fn ptr_as_image_mut<'a, P: CustomPixel>(
     ImageBuffer::from_raw(w, h, buffer).context("Unreachable!!!")
 }
 
-#[allow(dead_code)]
 pub struct CopyRegion {
     pub ptr: *mut !,
     pub target_dim: (u32, u32),

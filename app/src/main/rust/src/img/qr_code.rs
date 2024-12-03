@@ -18,7 +18,6 @@ fn image_buffer_to_luma8<P: CustomPixel>(
     Luma8LuminanceSource::new(dst.into_raw(), w, h)
 }
 
-#[allow(dead_code)]
 pub struct QrCode;
 
 impl ImageConsumer<bool> for QrCode {
