@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.coil
 
-import android.graphics.Bitmap
 import androidx.compose.ui.unit.IntRect
 import coil3.Extras
 import coil3.getExtra
@@ -35,7 +34,7 @@ object DetectBorderInterceptor : Interceptor {
                 } else {
                     image.width / image.height
                 }
-                if (ratio < RATIO_THRESHOLD && bitmap.config == Bitmap.Config.ARGB_8888) {
+                if (ratio < RATIO_THRESHOLD) {
                     val array = detectBorder(bitmap)
                     val minWidth = image.width * CROP_THRESHOLD
                     val minHeight = image.height * CROP_THRESHOLD
