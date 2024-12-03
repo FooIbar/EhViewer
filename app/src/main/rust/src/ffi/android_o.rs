@@ -19,7 +19,7 @@ pub fn copyBitmapToAHB(mut env: JNIEnv, _: JClass, bm: jobject, ahb: jobject, x:
         let (w, h, stride) = (desc.width, desc.height, desc.stride);
         let ptr = ahb.lock(HardwareBufferUsage::CPU_WRITE_RARELY, None, None)?;
         let s = CopyRegion {
-            ptr: ptr as *mut u8,
+            ptr: ptr as *mut !,
             target_dim: (stride, h),
             src_rect: (x as u32, y as u32, w, h),
         };
