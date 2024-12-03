@@ -4,7 +4,7 @@ use super::jvm::jni_throwing;
 use crate::img::border::DetectBorder;
 use crate::img::core::{CustomPixel, ImageConsumer, Rgb565, Rgba8888, RgbaF16};
 use crate::img::qr_code::QrCode;
-use anyhow::{anyhow, Context, Ok, Result};
+use anyhow::{Ok, Result};
 use image::ImageBuffer;
 use jni::objects::JClass;
 use jni::sys::jboolean;
