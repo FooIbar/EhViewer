@@ -41,10 +41,10 @@ fn ptr_as_image<'local, P: Pixel>(
     w: u32,
     h: u32,
     channel: u32,
-) -> Option<ImageBuffer<P, &'local [P::Subpixel]>> {
+) -> Result<ImageBuffer<P, &'local [P::Subpixel]>> {
     let size = (w * h * channel) as usize;
     let buffer = unsafe { &*slice_from_raw_parts(ptr as *const P::Subpixel, size) };
-    ImageBuffer::from_raw(w, h, buffer)
+    ImageBuffer::from_raw(w, h, buffer).context("Unreachable!!!")
 }
 
 pub fn with_bitmap_content<R, F: ImageConsumer<R>>(
@@ -59,15 +59,15 @@ pub fn with_bitmap_content<R, F: ImageConsumer<R>>(
     let (width, height, format) = (info.width(), info.height(), info.format());
     let ptr = handle.lock_pixels()?;
     let result = match format {
-        BitmapFormat::RGBA_8888 => ptr_as_image::<Rgba<u8>>(ptr, width, height, 4)
-            .context("Unsupported bitmap format")
-            .and_then(|p| f.apply(&p)),
-        BitmapFormat::RGB_565 => ptr_as_image::<Luma<u16>>(ptr, width, height, 1)
-            .context("Unsupported bitmap format")
-            .and_then(|p| f.apply(&p)),
-        BitmapFormat::RGBA_F16 => ptr_as_image::<Luma<u64>>(ptr, width, height, 1)
-            .context("Unsupported bitmap format")
-            .and_then(|p| f.apply(&p)),
+        BitmapFormat::RGBA_8888 => {
+            ptr_as_image::<Rgba<u8>>(ptr, width, height, 4).and_then(|p| f.apply(&p))
+        }
+        BitmapFormat::RGB_565 => {
+            ptr_as_image::<Luma<u16>>(ptr, width, height, 1).and_then(|p| f.apply(&p))
+        }
+        BitmapFormat::RGBA_F16 => {
+            ptr_as_image::<Luma<u64>>(ptr, width, height, 1).and_then(|p| f.apply(&p))
+        }
         _ => Err(anyhow!("Unsupported bitmap format")),
     };
     handle.unlock_pixels()?;

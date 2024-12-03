@@ -1,8 +1,7 @@
+use super::core::{CustomPixel, ImageConsumer};
 use anyhow::{Context, Result};
 use image::{GenericImage, GenericImageView, ImageBuffer, Pixel};
 use std::{ops::Deref, ptr::slice_from_raw_parts_mut};
-
-use super::core::{CustomPixel, ImageConsumer};
 
 fn ptr_as_image_mut<'local, P: Pixel>(
     ptr: *mut u8,
@@ -26,7 +25,8 @@ impl ImageConsumer<()> for CopyRegion {
     fn apply<P: CustomPixel>(self, src: &ImageBuffer<P, &[P::Subpixel]>) -> Result<()> {
         let (x, y, w, h) = self.src_rect;
         let (dst_w, dst_h) = self.target_dim;
-        let mut dst = ptr_as_image_mut(self.ptr, dst_w, dst_h, P::FAKE_CHANNEL).context("")?;
+        let mut dst =
+            ptr_as_image_mut(self.ptr, dst_w, dst_h, P::FAKE_CHANNEL).context("Unreachable!!!")?;
         let view = src.view(x, y, w, h);
         Ok(dst.copy_from(view.deref(), 0, 0)?)
     }
