@@ -5,13 +5,14 @@ use crate::img::border::detect_border;
 use crate::img::core::Image;
 use crate::img::qr_code::detect_image_ad;
 use anyhow::{Context, Result};
-use image::ImageBuffer;
+use image::{ImageBuffer, Pixel};
 use jni::objects::JClass;
 use jni::sys::jboolean;
 use jni::sys::{jintArray, jobject};
 use jni::JNIEnv;
 use jni_fn::jni_fn;
 use ndk::bitmap::{Bitmap, BitmapFormat};
+use std::ffi::c_void;
 use std::ptr::slice_from_raw_parts;
 
 #[no_mangle]
@@ -49,6 +50,17 @@ pub fn hasQrCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
     })
 }
 
+fn ptr_as_image<'local, P: Pixel>(
+    ptr: *const c_void,
+    w: u32,
+    h: u32,
+    channel: u32,
+) -> Option<ImageBuffer<P, &'local [P::Subpixel]>> {
+    let buffer =
+        unsafe { &*slice_from_raw_parts(ptr as *const P::Subpixel, (w * h * channel) as usize) };
+    ImageBuffer::from_raw(w, h, buffer)
+}
+
 pub fn with_bitmap_content<F, R>(env: &mut JNIEnv, bitmap: jobject, f: F) -> Result<R>
 where
     F: FnOnce(Image) -> Result<R>,
@@ -60,21 +72,9 @@ where
     let (width, height, format) = (info.width(), info.height(), info.format());
     let ptr = handle.lock_pixels()?;
     let image = match format {
-        BitmapFormat::RGBA_8888 => {
-            let buffer =
-                unsafe { &*slice_from_raw_parts(ptr as *const u8, (width * height * 4) as usize) };
-            ImageBuffer::from_raw(width, height, buffer).map(Image::Rgba8)
-        }
-        BitmapFormat::RGB_565 => {
-            let buffer =
-                unsafe { &*slice_from_raw_parts(ptr as *const u16, (width * height) as usize) };
-            ImageBuffer::from_raw(width, height, buffer).map(Image::Rgb565)
-        }
-        BitmapFormat::RGBA_F16 => {
-            let buffer =
-                unsafe { &*slice_from_raw_parts(ptr as *const u64, (width * height) as usize) };
-            ImageBuffer::from_raw(width, height, buffer).map(Image::Rgba16F)
-        }
+        BitmapFormat::RGBA_8888 => ptr_as_image(ptr, width, height, 4).map(Image::Rgba8),
+        BitmapFormat::RGB_565 => ptr_as_image(ptr, width, height, 1).map(Image::Rgb565),
+        BitmapFormat::RGBA_F16 => ptr_as_image(ptr, width, height, 1).map(Image::Rgba16F),
         _ => None,
     };
     let result = image.context("Unsupported bitmap format").and_then(f);
