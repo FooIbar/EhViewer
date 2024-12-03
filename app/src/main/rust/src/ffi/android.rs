@@ -56,8 +56,8 @@ fn ptr_as_image<'local, P: Pixel>(
     h: u32,
     channel: u32,
 ) -> Option<ImageBuffer<P, &'local [P::Subpixel]>> {
-    let buffer =
-        unsafe { &*slice_from_raw_parts(ptr as *const P::Subpixel, (w * h * channel) as usize) };
+    let size = (w * h * channel) as usize;
+    let buffer = unsafe { &*slice_from_raw_parts(ptr as *const P::Subpixel, size) };
     ImageBuffer::from_raw(w, h, buffer)
 }
 
