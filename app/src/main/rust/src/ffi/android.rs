@@ -19,7 +19,7 @@ use std::ptr::slice_from_raw_parts;
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArray {
     jni_throwing(&mut env, |env| {
-        let slice: [i32; 4] = with_bitmap_content(env, object, DetectBorder)?;
+        let slice = with_bitmap_content(env, object, DetectBorder)?;
         let array = env.new_int_array(4)?;
         env.set_int_array_region(&array, 0, &slice)?;
         Ok(array.into_raw())
