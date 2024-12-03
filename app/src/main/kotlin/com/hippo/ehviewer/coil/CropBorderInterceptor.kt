@@ -18,9 +18,6 @@ import eu.kanade.tachiyomi.util.system.logcat
 import moe.tarsin.coroutines.runSuspendCatching
 
 @RequiresApi(Build.VERSION_CODES.O)
-private const val FORMAT = HardwareBuffer.RGBA_8888
-
-@RequiresApi(Build.VERSION_CODES.O)
 private const val USAGE = HardwareBuffer.USAGE_CPU_WRITE_RARELY or HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE
 
 object CropBorderInterceptor : Interceptor {
@@ -42,8 +39,14 @@ object CropBorderInterceptor : Interceptor {
                     val meetHardwareThreshold = maxOf(w, h) <= chain.request.hardwareThreshold
                     val bitmap = when {
                         isAtLeastQ && meetHardwareThreshold -> runSuspendCatching {
+                            val format = when (val config = src.config) {
+                                Bitmap.Config.ARGB_8888 -> HardwareBuffer.RGBA_8888
+                                Bitmap.Config.RGB_565 -> HardwareBuffer.RGB_565
+                                Bitmap.Config.RGBA_F16 -> HardwareBuffer.RGBA_FP16
+                                else -> error("Unsupported bitmap config: $config")
+                            }
                             resourceScope {
-                                val buffer = autoCloseable { HardwareBuffer.create(w, h, FORMAT, 1, USAGE) }
+                                val buffer = autoCloseable { HardwareBuffer.create(w, h, format, 1, USAGE) }
                                 copyBitmapToAHB(src, buffer, x, y)
                                 Bitmap.wrapHardwareBuffer(buffer, src.colorSpace)
                             }

@@ -1,4 +1,4 @@
-use crate::img::utils::Pixel;
+use crate::img::core::Pixel;
 use image::{GrayImage, ImageBuffer, Primitive};
 use rxing::common::HybridBinarizer;
 use rxing::qrcode::detector::FinderPatternFinder;

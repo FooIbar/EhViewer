@@ -1,4 +1,4 @@
-use crate::img::utils::Pixel;
+use crate::img::core::Pixel;
 use image::{ImageBuffer, Luma, Primitive};
 
 /** A line will be considered as having content if 0.25% of it is filled. */

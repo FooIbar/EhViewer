@@ -1,4 +1,10 @@
-use image::{Luma, Pixel as P, Rgb, Rgba};
+use image::{ImageBuffer, Luma, Pixel as P, Rgb, Rgba};
+
+pub enum Image<'a> {
+    Rgba8(ImageBuffer<Rgba<u8>, &'a [u8]>),
+    Rgb565(ImageBuffer<Luma<u16>, &'a [u16]>),
+    Rgba16F(ImageBuffer<Luma<u64>, &'a [u64]>),
+}
 
 pub trait Pixel: P {
     fn to_luma8(&self) -> Luma<u8>;
