@@ -1,23 +1,25 @@
-use image::{ImageBuffer, Luma, Pixel as P, Rgb, Rgba};
+use anyhow::Result;
+use image::{ImageBuffer, Luma, Pixel, Rgb, Rgba};
 
-pub enum Image<'a> {
-    Rgba8(ImageBuffer<Rgba<u8>, &'a [u8]>),
-    Rgb565(ImageBuffer<Luma<u16>, &'a [u16]>),
-    Rgba16F(ImageBuffer<Luma<u64>, &'a [u64]>),
+#[allow(dead_code)]
+pub trait ImageConsumer<R> {
+    fn apply<T: CustomPixel>(self, buffer: &ImageBuffer<T, &[T::Subpixel]>) -> Result<R>;
 }
 
-pub trait Pixel: P {
+pub trait CustomPixel: Pixel {
+    const FAKE_CHANNEL: u32;
     fn to_luma8(&self) -> Luma<u8>;
 }
 
-impl Pixel for Rgba<u8> {
+impl CustomPixel for Rgba<u8> {
     fn to_luma8(&self) -> Luma<u8> {
         self.to_luma()
     }
+    const FAKE_CHANNEL: u32 = 4;
 }
 
 // RGB_565
-impl Pixel for Luma<u16> {
+impl CustomPixel for Luma<u16> {
     fn to_luma8(&self) -> Luma<u8> {
         let packed = self.channels()[0];
         let rgb = Rgb([
@@ -27,6 +29,7 @@ impl Pixel for Luma<u16> {
         ]);
         rgb.to_luma()
     }
+    const FAKE_CHANNEL: u32 = 1;
 }
 
 #[inline]
@@ -40,7 +43,7 @@ fn l6_to_l8(v: u16) -> u8 {
 }
 
 // RGBA_F16
-impl Pixel for Luma<u64> {
+impl CustomPixel for Luma<u64> {
     fn to_luma8(&self) -> Luma<u8> {
         let packed = self.channels()[0];
         let rgba = Rgba([
@@ -52,6 +55,7 @@ impl Pixel for Luma<u64> {
         let l = rgba.to_luma().channels()[0];
         Luma([(l.clamp(0.0, 1.0) * u8::MAX as f32).round() as u8])
     }
+    const FAKE_CHANNEL: u32 = 1;
 }
 
 #[inline]

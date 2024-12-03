@@ -1,11 +1,11 @@
 #![cfg(feature = "android")]
 
 use super::jvm::jni_throwing;
-use crate::img::border::detect_border;
-use crate::img::core::Image;
-use crate::img::qr_code::detect_image_ad;
-use anyhow::{Context, Result};
-use image::{ImageBuffer, Pixel};
+use crate::img::border::DetectBorder;
+use crate::img::core::ImageConsumer;
+use crate::img::qr_code::QrCode;
+use anyhow::{anyhow, Context, Ok, Result};
+use image::{ImageBuffer, Luma, Pixel, Rgba};
 use jni::objects::JClass;
 use jni::sys::jboolean;
 use jni::sys::{jintArray, jobject};
@@ -20,16 +20,9 @@ use std::ptr::slice_from_raw_parts;
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArray {
     jni_throwing(&mut env, |env| {
-        let slice = with_bitmap_content(env, object, |img| {
-            let result = match img {
-                Image::Rgba8(src) => detect_border(&src),
-                Image::Rgb565(src) => detect_border(&src),
-                Image::Rgba16F(src) => detect_border(&src),
-            };
-            Ok(result)
-        })?;
+        let slice: [i32; 4] = with_bitmap_content(env, object, DetectBorder)?;
         let array = env.new_int_array(4)?;
-        env.set_int_array_region(&array, 0, &slice.context("Image too small!")?)?;
+        env.set_int_array_region(&array, 0, &slice)?;
         Ok(array.into_raw())
     })
 }
@@ -39,14 +32,7 @@ pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArr
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn hasQrCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
     jni_throwing(&mut env, |env| {
-        with_bitmap_content(env, object, |img| {
-            let result = match img {
-                Image::Rgba8(src) => detect_image_ad(src),
-                Image::Rgb565(src) => detect_image_ad(src),
-                Image::Rgba16F(src) => detect_image_ad(src),
-            };
-            Ok(result as jboolean)
-        })
+        Ok(with_bitmap_content(env, object, QrCode)? as jboolean)
     })
 }
 
@@ -61,23 +47,29 @@ fn ptr_as_image<'local, P: Pixel>(
     ImageBuffer::from_raw(w, h, buffer)
 }
 
-pub fn with_bitmap_content<F, R>(env: &mut JNIEnv, bitmap: jobject, f: F) -> Result<R>
-where
-    F: FnOnce(Image) -> Result<R>,
-{
+pub fn with_bitmap_content<R, F: ImageConsumer<R>>(
+    env: &mut JNIEnv,
+    bitmap: jobject,
+    f: F,
+) -> Result<R> {
     // SAFETY: kotlin caller must ensure bitmap is valid.
     let handle = unsafe { Bitmap::from_jni(env.get_raw(), bitmap) };
 
     let info = handle.info()?;
     let (width, height, format) = (info.width(), info.height(), info.format());
     let ptr = handle.lock_pixels()?;
-    let image = match format {
-        BitmapFormat::RGBA_8888 => ptr_as_image(ptr, width, height, 4).map(Image::Rgba8),
-        BitmapFormat::RGB_565 => ptr_as_image(ptr, width, height, 1).map(Image::Rgb565),
-        BitmapFormat::RGBA_F16 => ptr_as_image(ptr, width, height, 1).map(Image::Rgba16F),
-        _ => None,
+    let result = match format {
+        BitmapFormat::RGBA_8888 => ptr_as_image::<Rgba<u8>>(ptr, width, height, 4)
+            .context("Unsupported bitmap format")
+            .and_then(|p| f.apply(&p)),
+        BitmapFormat::RGB_565 => ptr_as_image::<Luma<u16>>(ptr, width, height, 1)
+            .context("Unsupported bitmap format")
+            .and_then(|p| f.apply(&p)),
+        BitmapFormat::RGBA_F16 => ptr_as_image::<Luma<u64>>(ptr, width, height, 1)
+            .context("Unsupported bitmap format")
+            .and_then(|p| f.apply(&p)),
+        _ => Err(anyhow!("Unsupported bitmap format")),
     };
-    let result = image.context("Unsupported bitmap format").and_then(f);
     handle.unlock_pixels()?;
     result
 }
