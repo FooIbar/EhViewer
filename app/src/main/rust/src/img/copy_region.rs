@@ -1,7 +1,7 @@
 use super::core::{CustomPixel, ImageConsumer};
 use anyhow::{Context, Result};
 use image::{GenericImage, GenericImageView, ImageBuffer};
-use std::{ops::Deref, ptr::slice_from_raw_parts_mut};
+use std::ptr::slice_from_raw_parts_mut;
 
 fn ptr_as_image_mut<'a, P: CustomPixel>(
     ptr: *mut !,
@@ -25,6 +25,6 @@ impl ImageConsumer<()> for CopyRegion {
         let (dst_w, dst_h) = self.target_dim;
         let mut dst = ptr_as_image_mut(self.ptr, dst_w, dst_h)?;
         let view = src.view(x, y, w, h);
-        Ok(dst.copy_from(view.deref(), 0, 0)?)
+        Ok(dst.copy_from(&*view, 0, 0)?)
     }
 }
