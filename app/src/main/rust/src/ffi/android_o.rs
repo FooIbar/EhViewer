@@ -1,6 +1,6 @@
 #![cfg(feature = "android-26")]
 
-use super::android::with_bitmap_content;
+use super::android::use_bitmap_content;
 use super::jvm::jni_throwing;
 use crate::img::copy_region::CopyRegion;
 use jni::objects::JClass;
@@ -23,7 +23,7 @@ pub fn copyBitmapToAHB(mut env: JNIEnv, _: JClass, bm: jobject, ahb: jobject, x:
             target_dim: (stride, h),
             src_rect: (x as u32, y as u32, w, h),
         };
-        let result = with_bitmap_content(env, bm, s);
+        let result = use_bitmap_content(env, bm, s);
         ahb.unlock()?;
         result
     })

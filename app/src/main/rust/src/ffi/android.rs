@@ -19,7 +19,7 @@ use std::ptr::slice_from_raw_parts;
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArray {
     jni_throwing(&mut env, |env| {
-        let slice = with_bitmap_content(env, object, DetectBorder)?;
+        let slice = use_bitmap_content(env, object, DetectBorder)?;
         let array = env.new_int_array(4)?;
         env.set_int_array_region(&array, 0, &slice)?;
         Ok(array.into_raw())
@@ -31,7 +31,7 @@ pub fn detectBorder(mut env: JNIEnv, _class: JClass, object: jobject) -> jintArr
 #[jni_fn("com.hippo.ehviewer.image.ImageKt")]
 pub fn hasQrCode(mut env: JNIEnv, _class: JClass, object: jobject) -> jboolean {
     jni_throwing(&mut env, |env| {
-        Ok(with_bitmap_content(env, object, QrCode)? as jboolean)
+        Ok(use_bitmap_content(env, object, QrCode)? as jboolean)
     })
 }
 
@@ -45,7 +45,7 @@ fn ptr_as_image<'local, P: CustomPixel>(
     ImageBuffer::from_raw(w, h, buffer).context("Unreachable!!!")
 }
 
-pub fn with_bitmap_content<R, F: ImageConsumer<R>>(
+pub fn use_bitmap_content<R, F: ImageConsumer<R>>(
     env: &mut JNIEnv,
     bitmap: jobject,
     f: F,
