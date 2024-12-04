@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.coil
 
-import android.graphics.Bitmap
 import coil3.Extras
 import coil3.getExtra
 import coil3.intercept.Interceptor
@@ -24,12 +23,9 @@ object QrCodeInterceptor : Interceptor {
         if (chain.request.detectQrCode && result is SuccessResult) {
             val image = result.image
             if (image is BitmapImageWithExtraInfo) {
-                val bitmap = image.image.bitmap
-                if (bitmap.config == Bitmap.Config.ARGB_8888) {
-                    val hasQrCode = hasQrCode(bitmap)
-                    val new = image.copy(hasQrCode = hasQrCode)
-                    return result.copy(image = new)
-                }
+                val hasQrCode = hasQrCode(image.image.bitmap)
+                val new = image.copy(hasQrCode = hasQrCode)
+                return result.copy(image = new)
             }
         }
         return result

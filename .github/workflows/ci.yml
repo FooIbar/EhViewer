@@ -21,7 +21,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup default 1.81.0 && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+        run: rustup default nightly-2024-08-30 && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -61,7 +61,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup default 1.81.0 && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+        run: rustup default nightly-2024-08-30 && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -129,7 +129,7 @@ jobs:
           java-version: 21
 
       - name: Install Rust Toolchain
-        run: rustup default 1.81.0 && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
+        run: rustup default nightly-2024-08-30 && rustup target add armv7-linux-androideabi aarch64-linux-android x86_64-linux-android && rustup component add rustfmt clippy
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
