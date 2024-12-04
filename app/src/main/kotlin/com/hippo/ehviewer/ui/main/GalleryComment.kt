@@ -22,14 +22,35 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
 import coil3.compose.AsyncImage
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.GalleryComment
-import com.hippo.ehviewer.ui.screen.breakToTextAndUrl
+import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.ReadableTime
 
-typealias TextOrUrl = Either<String, AnnotatedString>
-typealias TextOrUrlList = List<TextOrUrl>
+typealias TextOrUrls = Either<Pair<String, String>, AnnotatedString>
+
+private const val IMAGE_OBJ = '￼'
+private val IMAGE_PATTERN = Regex("(?:<a href=\"([^\"]+)\">)?<img src=\"([^\"]+)\"")
+
+fun breakToTextAndUrls(origin: String, text: AnnotatedString): List<TextOrUrls> {
+    val urls = IMAGE_PATTERN.findAll(origin).toList()
+    if (urls.isEmpty()) return listOf(text.right())
+    val iter = urls.iterator()
+    var currentOfs = 0
+    return buildList<TextOrUrls> {
+        while (true) {
+            val index = text.text.indexOf(IMAGE_OBJ, currentOfs)
+            if (index == -1) break
+            add(text.subSequence(currentOfs, index).right())
+            add(iter.next().groupValues.let { it[1] to it[2] }.left())
+            currentOfs = index + 1
+        }
+        add(text.subSequence(currentOfs, text.length).right())
+    }
+}
 
 @Composable
 fun GalleryCommentCard(
@@ -80,13 +101,19 @@ fun GalleryCommentCard(
                         onUrlClick(link.url)
                     }
                     if (showImage) {
-                        val list = breakToTextAndUrl(comment.comment, processed)
+                        val list = breakToTextAndUrls(comment.comment, processed)
                         list.forEach {
                             when (it) {
-                                is Either.Left -> AsyncImage(
-                                    model = it.value,
-                                    contentDescription = null,
-                                )
+                                is Either.Left -> {
+                                    val (url, imageUrl) = it.value
+                                    AsyncImage(
+                                        model = imageUrl,
+                                        contentDescription = null,
+                                        modifier = Modifier.thenIf(url.isNotEmpty()) {
+                                            clickable { onUrlClick(url) }
+                                        },
+                                    )
+                                }
                                 is Either.Right -> Text(text = it.value)
                             }
                         }
