@@ -11,7 +11,6 @@ pub trait ImageConsumer<R> {
 }
 
 pub trait CustomPixel: Pixel {
-    const FAKE_CHANNEL: u32;
     fn to_luma8(&self) -> Luma<u8>;
 }
 
@@ -19,10 +18,8 @@ impl CustomPixel for Rgba8888 {
     fn to_luma8(&self) -> Luma<u8> {
         self.to_luma()
     }
-    const FAKE_CHANNEL: u32 = 4;
 }
 
-// RGB_565
 impl CustomPixel for Rgb565 {
     fn to_luma8(&self) -> Luma<u8> {
         let packed = self.channels()[0];
@@ -33,7 +30,6 @@ impl CustomPixel for Rgb565 {
         ]);
         rgb.to_luma()
     }
-    const FAKE_CHANNEL: u32 = 1;
 }
 
 #[inline]
@@ -46,7 +42,6 @@ fn l6_to_l8(v: u16) -> u8 {
     (((v & 0x3f) * 259 + 33) >> 6) as u8
 }
 
-// RGBA_F16
 impl CustomPixel for RgbaF16 {
     fn to_luma8(&self) -> Luma<u8> {
         let packed = self.channels()[0];
@@ -59,7 +54,6 @@ impl CustomPixel for RgbaF16 {
         let l = rgba.to_luma().channels()[0];
         Luma([(l.clamp(0.0, 1.0) * u8::MAX as f32).round() as u8])
     }
-    const FAKE_CHANNEL: u32 = 1;
 }
 
 #[inline]

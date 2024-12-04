@@ -8,7 +8,7 @@ fn ptr_as_image_mut<'a, P: CustomPixel>(
     w: u32,
     h: u32,
 ) -> ImageBuffer<P, &'a mut [P::Subpixel]> {
-    let size = (w * h * P::FAKE_CHANNEL) as usize;
+    let size = (w * h * P::CHANNEL_COUNT as u32) as usize;
     let buffer = unsafe { &mut *slice_from_raw_parts_mut(ptr as *mut P::Subpixel, size) };
     ImageBuffer::from_raw(w, h, buffer).unwrap()
 }
