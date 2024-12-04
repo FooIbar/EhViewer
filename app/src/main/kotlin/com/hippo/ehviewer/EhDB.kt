@@ -44,7 +44,7 @@ object EhDB {
         addMigrations(Schema17to18())
     }
 
-    private suspend fun putGalleryInfo(galleryInfo: BaseGalleryInfo) {
+    suspend fun putGalleryInfo(galleryInfo: BaseGalleryInfo) {
         db.galleryDao().upsert(galleryInfo)
     }
 
