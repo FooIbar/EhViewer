@@ -7,29 +7,36 @@ import coil3.request.ImageRequest
 import coil3.request.ImageResult
 import coil3.request.SuccessResult
 import com.hippo.ehviewer.EhApplication.Companion.imageCache
+import com.hippo.ehviewer.EhDB
+import com.hippo.ehviewer.client.getThumbKey
+import com.hippo.ehviewer.dao.DownloadInfo
+import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.files.delete
 import com.hippo.files.isDirectory
 import com.hippo.files.isFile
 import com.hippo.files.toUri
-import okio.Path
-import okio.Path.Companion.toPath
 
-private val emptyPath = "".toPath()
-private val downloadLocationKey = Extras.Key(default = emptyPath)
+private val downloadInfoKey = Extras.Key<DownloadInfo?>(default = null)
 
-fun ImageRequest.Builder.downloadLocation(path: Path) = apply {
-    extras[downloadLocationKey] = path
+fun ImageRequest.Builder.downloadInfo(info: DownloadInfo) = apply {
+    extras[downloadInfoKey] = info
 }
 
-val ImageRequest.downloadLocation: Path
-    get() = getExtra(downloadLocationKey)
+val ImageRequest.downloadInfo: DownloadInfo?
+    get() = getExtra(downloadInfoKey)
 
 object DownloadThumbInterceptor : Interceptor {
     override suspend fun intercept(chain: Interceptor.Chain): ImageResult {
-        val dir = chain.request.downloadLocation
-        if (dir != emptyPath) {
-            val format = (chain.request.data as String).substringAfterLast('.', "")
+        val info = chain.request.downloadInfo
+        if (info != null && !info.dirname.isNullOrBlank()) {
+            val thumbKey = getThumbKey(chain.request.data as String)
+            if (info.thumbKey != thumbKey) {
+                info.thumbKey = thumbKey
+                EhDB.putGalleryInfo(info.galleryInfo)
+            }
+            val dir = downloadLocation / info.dirname
+            val format = thumbKey.substringAfterLast('.', "")
             check(format.isNotBlank())
             val thumb = dir / "thumb.$format"
             val v1Thumb = dir / "thumb.jpg"
