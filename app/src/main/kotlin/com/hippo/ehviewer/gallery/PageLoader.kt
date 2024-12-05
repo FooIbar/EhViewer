@@ -30,7 +30,7 @@ import okio.Path
 
 private val progressScope = CoroutineScope(Dispatchers.IO)
 private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
-private const val MIN_CACHE_SIZE = 128 * 1024 * 1024
+private const val MIN_CACHE_SIZE = 256 * 1024 * 1024
 
 context(CoroutineScope)
 abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
@@ -39,7 +39,7 @@ abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val 
 
     private val cache = SieveCache<Int, Image>(
         maxSize = if (isAtLeastO) {
-            (OSUtils.totalMemory / 16).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
+            (OSUtils.totalMemory / 8).toInt().coerceIn(MIN_CACHE_SIZE, MAX_CACHE_SIZE)
         } else {
             (OSUtils.appMaxMemory / 3 * 2).toInt()
         },
