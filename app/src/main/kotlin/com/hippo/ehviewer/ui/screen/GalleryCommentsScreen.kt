@@ -1,5 +1,12 @@
 package com.hippo.ehviewer.ui.screen
 
+import android.graphics.Typeface
+import android.text.Html
+import android.text.Spannable
+import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
+import android.text.style.StyleSpan
+import android.text.style.URLSpan
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -60,20 +68,15 @@ import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.LinkInteractionListener
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.util.lerp
+import androidx.core.text.buildSpannedString
+import androidx.core.text.getSpans
+import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -105,8 +108,8 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
+import kotlin.collections.forEach
 import kotlin.math.roundToInt
-import kotlin.sequences.forEach
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
@@ -115,31 +118,34 @@ private val URL_PATTERN = Regex("(http|https)://[a-z0-9A-Z%-]+(\\.[a-z0-9A-Z%-]+
 @Composable
 fun processComment(
     comment: GalleryComment,
-    linkStyle: TextLinkStyles,
-    onLinkClick: LinkInteractionListener,
-) = AnnotatedString.fromHtml(comment.comment, linkStyle, onLinkClick).let { text ->
-    buildAnnotatedString {
-        val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+    imageGetter: Html.ImageGetter,
+) = comment.comment.parseAsHtml(imageGetter = imageGetter).let { text ->
+    buildSpannedString {
         append(text)
         URL_PATTERN.findAll(text).forEach { result ->
             val start = result.range.first
             val end = result.range.last + 1
-            if (!text.hasLinkAnnotations(start, end)) {
-                addLink(LinkAnnotation.Url(result.groupValues[0], linkStyle, onLinkClick), start, end)
+            if (getSpans<URLSpan>(start, end).isEmpty()) {
+                setSpan(URLSpan(result.groupValues[0]), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
-        val style = SpanStyle(fontSize = 0.8f.em, fontWeight = FontWeight.Bold, color = onSurfaceVariant)
+        val color = MaterialTheme.colorScheme.onSurfaceVariant.toArgb()
+        val spans = arrayOf(
+            RelativeSizeSpan(0.8f),
+            StyleSpan(Typeface.BOLD),
+            ForegroundColorSpan(color),
+        )
         if (comment.id != 0L && comment.score != 0) {
             val score = comment.score
             val scoreString = if (score > 0) "+$score" else score.toString()
             append("  ")
-            withStyle(style) {
+            inSpans(*spans) {
                 append(scoreString)
             }
         }
         if (comment.lastEdited != 0L) {
             append("\n\n")
-            withStyle(style) {
+            inSpans(*spans) {
                 append(
                     stringResource(
                         R.string.last_edited,
@@ -386,8 +392,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                         },
                         onCardClick = { launch { doCommentAction(item) } },
                         onUrlClick = { if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it) },
-                        processComment = { c, s, l -> processComment(c, s, l) },
-                        showImage = true,
+                        processComment = { c, ig -> processComment(c, ig) },
                     )
                 }
                 if (comments.hasMore) {
