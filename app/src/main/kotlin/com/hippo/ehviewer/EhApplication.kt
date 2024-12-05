@@ -33,6 +33,7 @@ import coil3.network.NetworkFetcher
 import coil3.network.ktor3.asNetworkClient
 import coil3.request.ErrorResult
 import coil3.request.ImageRequest
+import coil3.request.allowRgb565
 import coil3.request.crossfade
 import coil3.serviceLoaderEnabled
 import coil3.util.DebugLogger
@@ -173,6 +174,8 @@ class EhApplication :
             add(DownloadThumbInterceptor)
             if (isAtLeastO) {
                 add(HardwareBitmapInterceptor)
+            } else {
+                allowRgb565(true)
             }
             add(CropBorderInterceptor)
             add(DetectBorderInterceptor)
