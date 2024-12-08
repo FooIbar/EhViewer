@@ -16,8 +16,8 @@ import com.hippo.ehviewer.client.data.TagNamespace.Male
 import com.hippo.ehviewer.client.data.TagNamespace.Mixed
 import com.hippo.ehviewer.client.data.TagNamespace.Other
 import com.hippo.ehviewer.client.data.TagNamespace.Parody
-import com.hippo.files.openInputStream
-import com.hippo.files.openOutputStream
+import com.hippo.files.inputStream
+import com.hippo.files.outputStream
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -107,7 +107,7 @@ fun ComicInfo.toSimpleTags() = listOfNotNull(
 ).flatten().ifEmpty { null }
 
 fun ComicInfo.write(file: Path) {
-    file.openOutputStream().bufferedWriter().use {
+    file.outputStream().bufferedWriter().use {
         xmlStreaming.newWriter(it).use { writer ->
             xml.encodeToWriter(writer, ComicInfo.serializer(), this)
         }
@@ -115,7 +115,7 @@ fun ComicInfo.write(file: Path) {
 }
 
 fun readComicInfo(file: Path): ComicInfo? = runCatching {
-    file.openInputStream().bufferedReader().use {
+    file.inputStream().bufferedReader().use {
         xmlStreaming.newReader(it).use { reader ->
             xml.decodeFromReader(ComicInfo.serializer(), reader)
         }

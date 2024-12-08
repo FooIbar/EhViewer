@@ -4,9 +4,9 @@ import android.os.Build
 import android.system.Int64Ref
 import android.system.Os
 import androidx.annotation.RequiresApi
+import com.hippo.files.inputStream
 import com.hippo.files.openFileDescriptor
-import com.hippo.files.openInputStream
-import com.hippo.files.openOutputStream
+import com.hippo.files.outputStream
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.FileDescriptor
 import okio.Path
@@ -27,8 +27,8 @@ infix fun Path.sendTo(file: Path): Long {
             logcat("sendfile", e)
         }
     }
-    return openInputStream().use { src ->
-        file.openOutputStream().use { dst ->
+    return inputStream().use { src ->
+        file.outputStream().use { dst ->
             src.channel.transferTo(0, Long.MAX_VALUE, dst.channel)
         }
     }

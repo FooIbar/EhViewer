@@ -19,10 +19,17 @@ import android.os.Build
 import android.os.Environment
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.client.parser.ParserUtils
+import com.hippo.files.exists
+import com.hippo.files.isDirectory
+import com.hippo.files.mkdirs
 import java.io.File
+import okio.Path
+import okio.Path.Companion.toOkioPath
 import splitties.init.appCtx
 
 fun File.ensureDirectory() = if (exists()) isDirectory else mkdirs()
+
+fun Path.ensureDirectory() = if (exists()) isDirectory else mkdirs().let { true }
 
 object AppConfig {
     const val APP_DIRNAME = "EhViewer"
@@ -30,6 +37,7 @@ object AppConfig {
     private const val TEMP = "temp"
     private const val PARSE_ERROR = "parse_error"
     private const val CRASH = "crash"
+    private const val TAG_DIR = "tag-translations"
 
     private val abi = Build.SUPPORTED_ABIS[0].takeIf {
         it in setOf("arm64-v8a", "x86_64", "armeabi-v7a")
@@ -58,17 +66,14 @@ object AppConfig {
 
     fun getTempDir(filename: String): File? = getDirInExternalAppDir(TEMP)?.run { File(this, filename) }
 
-    val externalTempDir: File?
-        get() = appCtx.externalCacheDir?.run { File(this, TEMP).takeIf { it.ensureDirectory() } }
-
+    val externalTempDir
+        get() = appCtx.externalCacheDir?.toOkioPath()?.let { it / TEMP }?.apply { check(ensureDirectory()) }
     val externalParseErrorDir: File?
         get() = getDirInExternalAppDir(PARSE_ERROR)
     val externalCrashDir: File?
         get() = getDirInExternalAppDir(CRASH)
-    val tempDir: File?
-        get() = appCtx.cacheDir.run { File(this, TEMP).takeIf { it.ensureDirectory() } }
-
-    fun createTempFile(): File? = FileUtils.createTempFile(tempDir, null)
-
-    fun getFilesDir(name: String) = File(appCtx.filesDir, name).takeIf { it.ensureDirectory() }
+    val tempDir
+        get() = (appCtx.cacheDir.toOkioPath() / TEMP).apply { check(ensureDirectory()) }
+    val tagDir
+        get() = (appCtx.filesDir.toOkioPath() / TAG_DIR).apply { check(ensureDirectory()) }
 }

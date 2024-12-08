@@ -37,8 +37,8 @@ context(PageLoader)
 private fun Context.provideImage(index: Int): Uri? {
     val dir = AppConfig.externalTempDir ?: return null
     val name = getImageFilename(index) ?: return null
-    val file = File(dir, name).takeIf { save(index, it.toOkioPath()) } ?: return null
-    return FileProvider.getUriForFile(this, "$APPLICATION_ID.fileprovider", file)
+    val file = (dir / name).takeIf { save(index, it) } ?: return null
+    return FileProvider.getUriForFile(this, "$APPLICATION_ID.fileprovider", file.toFile())
 }
 
 context(SnackbarHostState, Context, PageLoader)

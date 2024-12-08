@@ -4,8 +4,8 @@ import com.hippo.ehviewer.coil.edit
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.legacy.readLegacySpiderInfo
-import com.hippo.files.openInputStream
-import com.hippo.files.openOutputStream
+import com.hippo.files.inputStream
+import com.hippo.files.outputStream
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
@@ -36,7 +36,7 @@ private val cbor = Cbor {
 }
 
 fun SpiderInfo.write(file: Path) {
-    file.openOutputStream().use {
+    file.outputStream().use {
         it.write(cbor.encodeToByteArray(this))
     }
 }
@@ -67,11 +67,11 @@ fun readFromCache(gid: Long): SpiderInfo? = spiderInfoCache.read(gid.toString())
 }
 
 fun readCompatFromPath(file: Path): SpiderInfo? = runCatching {
-    file.openInputStream().use {
+    file.inputStream().use {
         cbor.decodeFromByteArray<SpiderInfo>(it.readBytes())
     }
 }.getOrNull() ?: runCatching {
-    file.openInputStream().use { readLegacySpiderInfo(it) }
+    file.inputStream().use { readLegacySpiderInfo(it) }
 }.getOrNull()
 
 const val TOKEN_FAILED = "failed"
