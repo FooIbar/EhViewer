@@ -404,7 +404,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             commentsList.size <= maxShowCount -> stringResource(R.string.no_more_comments)
             else -> stringResource(R.string.more_comment)
         }
-        fun onNavigateToCommentScene() {
+        fun navigateToCommentScreen() {
             navigate(GalleryCommentsScreenDestination(galleryDetail.gid))
         }
         CrystalCard {
@@ -412,9 +412,15 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                 GalleryCommentCard(
                     modifier = Modifier.padding(vertical = 4.dp),
                     comment = item,
-                    onCardClick = ::onNavigateToCommentScene,
-                    onUserClick = ::onNavigateToCommentScene,
-                    onUrlClick = { if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it) },
+                    onCardClick = ::navigateToCommentScreen,
+                    onUserClick = ::navigateToCommentScreen,
+                    onUrlClick = {
+                        if (it.startsWith("#c")) {
+                            navigateToCommentScreen()
+                        } else {
+                            if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it)
+                        }
+                    },
                     maxLines = 5,
                     ellipsis = true,
                 )
@@ -424,7 +430,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                     .fillMaxWidth()
                     .padding(bottom = dimensionResource(id = R.dimen.strip_item_padding_v))
                     .clip(RoundedCornerShape(16.dp))
-                    .clickable(onClick = ::onNavigateToCommentScene),
+                    .clickable(onClick = ::navigateToCommentScreen),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(commentText)

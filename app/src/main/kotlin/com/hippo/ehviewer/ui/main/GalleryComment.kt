@@ -40,7 +40,16 @@ fun GalleryCommentCard(
     ellipsis: Boolean = false,
     processComment: @Composable (GalleryComment, Html.ImageGetter) -> CharSequence = { c, ig -> c.comment.parseAsHtml(imageGetter = ig) },
 ) = with(comment) {
-    Card(onClick = onCardClick, modifier = modifier) {
+    val targetUrl = remember { mutableStateOf<String?>(null) }
+    Card(
+        onClick = {
+            targetUrl.value?.also {
+                onUrlClick(it)
+                targetUrl.value = null
+            } ?: onCardClick()
+        },
+        modifier = modifier,
+    ) {
         val margin = dimensionResource(id = R.dimen.keyline_margin)
         Row(
             modifier = Modifier.padding(horizontal = margin, vertical = 8.dp).fillMaxWidth(),
@@ -63,7 +72,7 @@ fun GalleryCommentCard(
         val commentText = processComment(comment, CoilImageGetter { redrawSignal.value = Unit })
         AndroidView(
             factory = { context ->
-                LinkifyTextView(context, onUrlClick).apply {
+                LinkifyTextView(context) { targetUrl.value = it }.apply {
                     setTextColor(textColor)
                     setLinkTextColor(linkTextColor)
                     this.maxLines = maxLines

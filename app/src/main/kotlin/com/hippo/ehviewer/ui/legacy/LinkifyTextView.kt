@@ -15,6 +15,7 @@
  */
 package com.hippo.ehviewer.ui.legacy
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Spanned
 import android.text.style.URLSpan
@@ -22,10 +23,12 @@ import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.text.getSpans
 
+@SuppressLint("ViewConstructor")
 class LinkifyTextView(
     context: Context,
     private val onUrlClick: (String) -> Unit,
 ) : AppCompatTextView(context) {
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         // Let the parent or grandparent of TextView to handles click aciton.
         // Otherwise click effect like ripple will not work, and if touch area
