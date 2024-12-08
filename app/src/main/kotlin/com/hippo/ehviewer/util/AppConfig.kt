@@ -63,17 +63,18 @@ object AppConfig {
 
     val defaultDownloadDir: File?
         get() = getDirInExternalAppDir(DOWNLOAD, false)
-
-    fun getTempDir(filename: String): File? = getDirInExternalAppDir(TEMP)?.run { File(this, filename) }
-
-    val externalTempDir
-        get() = appCtx.externalCacheDir?.toOkioPath()?.let { it / TEMP }?.apply { check(ensureDirectory()) }
+    val externalTempPersistDir
+        get() = getDirInExternalAppDir(TEMP)?.toOkioPath()
     val externalParseErrorDir: File?
         get() = getDirInExternalAppDir(PARSE_ERROR)
     val externalCrashDir: File?
         get() = getDirInExternalAppDir(CRASH)
-    val tempDir
-        get() = (appCtx.cacheDir.toOkioPath() / TEMP).apply { check(ensureDirectory()) }
     val tagTranslationsDir
         get() = (appCtx.filesDir.toOkioPath() / TAG_TRANSLATIONS).apply { check(ensureDirectory()) }
+
+    // Following locations will be clear on app startup
+    val tempDir
+        get() = (appCtx.cacheDir.toOkioPath() / TEMP).apply { check(ensureDirectory()) }
+    val externalTempDir
+        get() = appCtx.externalCacheDir?.toOkioPath()?.let { it / TEMP }?.apply { check(ensureDirectory()) }
 }

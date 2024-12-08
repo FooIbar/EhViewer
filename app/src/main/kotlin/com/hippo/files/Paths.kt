@@ -24,9 +24,7 @@ fun Path.exists() = SystemFileSystem.exists(this)
 
 fun Path.delete() = SystemFileSystem.deleteRecursively(this)
 
-fun Path.deleteContent() {
-    if (exists()) SystemFileSystem.listOrNull(this)?.forEach(Path::delete)
-}
+fun Path.deleteContent() = SystemFileSystem.listOrNull(this)?.forEach(Path::delete)
 
 fun Path.list() = SystemFileSystem.listOrNull(this).orEmpty()
 
