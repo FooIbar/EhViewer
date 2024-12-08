@@ -138,7 +138,7 @@ object EhTagDatabase : CoroutineScope {
         }
 
         // Check current sha1 and current data
-        val current = runSuspendCatching {
+        val currentSha1 = runSuspendCatching {
             dataFile.sha1().also {
                 check(sha1File.utf8() == it)
                 updateInMemoryData()
@@ -154,7 +154,7 @@ object EhTagDatabase : CoroutineScope {
         val tempSha1 = tempSha1File.utf8()
 
         // Check new sha1 and current sha1
-        if (tempSha1 == current) {
+        if (tempSha1 == currentSha1) {
             // The data is the same
             tempSha1File.delete()
             return
