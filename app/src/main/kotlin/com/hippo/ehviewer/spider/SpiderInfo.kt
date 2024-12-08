@@ -71,7 +71,7 @@ fun readCompatFromPath(file: Path): SpiderInfo? = runCatching {
         cbor.decodeFromByteArray<SpiderInfo>(it.readBytes())
     }
 }.getOrNull() ?: runCatching {
-    file.inputStream().use { readLegacySpiderInfo(it) }
+    file.readLegacySpiderInfo()
 }.getOrNull()
 
 const val TOKEN_FAILED = "failed"
