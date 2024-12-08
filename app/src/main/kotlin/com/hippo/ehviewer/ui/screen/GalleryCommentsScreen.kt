@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -317,8 +318,10 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
             val cancelVoteDownSucceed = stringResource(R.string.cancel_vote_down_successfully)
             val voteFailed = stringResource(R.string.vote_failed)
             val layoutDirection = LocalLayoutDirection.current
+            val lazyListState = rememberLazyListState()
             LazyColumn(
                 modifier = Modifier.padding(horizontal = keylineMargin),
+                state = lazyListState,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(
                     start = paddingValues.calculateStartPadding(layoutDirection),
@@ -391,7 +394,18 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                             )
                         },
                         onCardClick = { launch { doCommentAction(item) } },
-                        onUrlClick = { if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it) },
+                        onUrlClick = {
+                            if (it.startsWith("#c")) {
+                                it.substring(2).toLongOrNull()?.let { id ->
+                                    val index = comments.comments.indexOfFirst { it.id == id }
+                                    if (index != -1) {
+                                        launch { lazyListState.animateScrollToItem(index) }
+                                    }
+                                }
+                            } else {
+                                if (!jumpToReaderByPage(it, galleryDetail)) if (!navWithUrl(it)) openBrowser(it)
+                            }
+                        },
                         processComment = { c, ig -> processComment(c, ig) },
                     )
                 }
