@@ -44,11 +44,11 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.installPackage
+import com.hippo.files.delete
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
@@ -157,7 +157,7 @@ suspend fun DialogState.showNewVersion(context: Context, release: Release) {
         EhDB.exportDB(context, (downloadLocation / "$time.db"))
     }
     // TODO: Download in the background and show progress in notification
-    val file = File(AppConfig.tempDir, "update.apk").apply { delete() }
-    AppUpdater.downloadUpdate(release.downloadLink, file)
-    withUIContext { context.installPackage(file) }
+    val path = AppConfig.tempDir / "update.apk"
+    AppUpdater.downloadUpdate(release.downloadLink, path.apply { delete() })
+    withUIContext { context.installPackage(path.toFile()) }
 }

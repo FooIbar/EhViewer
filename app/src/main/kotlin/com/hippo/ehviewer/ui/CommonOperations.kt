@@ -68,7 +68,7 @@ import com.hippo.ehviewer.util.toEpochMillis
 import com.hippo.ehviewer.util.toLocalDateTime
 import com.hippo.files.delete
 import com.hippo.files.isDirectory
-import com.hippo.files.openOutputStream
+import com.hippo.files.outputStream
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -89,7 +89,7 @@ private fun removeNoMediaFile(downloadDir: Path) {
 }
 
 private fun ensureNoMediaFile(downloadDir: Path) {
-    (downloadDir / ".nomedia").openOutputStream().close()
+    (downloadDir / ".nomedia").outputStream().close()
 }
 
 private val lck = Mutex()

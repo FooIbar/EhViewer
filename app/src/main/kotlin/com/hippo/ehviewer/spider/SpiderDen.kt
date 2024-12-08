@@ -49,7 +49,7 @@ import com.hippo.files.list
 import com.hippo.files.mkdirs
 import com.hippo.files.moveTo
 import com.hippo.files.openFileDescriptor
-import com.hippo.files.openOutputStream
+import com.hippo.files.outputStream
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.plugins.timeout
@@ -198,7 +198,7 @@ class SpiderDen(val info: GalleryInfo) {
             val file = resolve(tempFile.name.removeSuffix(TEMP_SUFFIX))
             file.delete()
             lock.write { fileCache.remove(file.name) }
-            tempFile.moveTo(file)
+            tempFile moveTo file
             lock.write {
                 fileCache.remove(tempFile.name)
                 fileCache[file.name] = file
@@ -221,7 +221,7 @@ class SpiderDen(val info: GalleryInfo) {
         val url = response.request.url.toString()
         val extension = MimeTypeMap.getFileExtensionFromUrl(url).ifEmpty { "jpg" }
         return saveResponseMeta(index, extension) { outFile ->
-            outFile.openOutputStream().use {
+            outFile.outputStream().use {
                 response.bodyAsChannel().copyTo(it.channel)
             }
             FileHashRegex.find(url)?.let {

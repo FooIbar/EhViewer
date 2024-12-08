@@ -32,13 +32,13 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.ParametersBuilder
 import io.ktor.http.content.TextContent
 import kotlinx.coroutines.cancel
+import kotlinx.io.Source
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.okio.decodeFromBufferedSource
-import okio.BufferedSource
+import kotlinx.serialization.json.io.decodeFromSource
 
 inline fun JsonObjectBuilder.array(name: String, builder: JsonArrayBuilder.() -> Unit) = put(name, buildJsonArray(builder))
 
@@ -47,7 +47,7 @@ suspend inline fun <reified T> HttpStatement.executeAndParseAs() = executeSafely
     it.bodyAsUtf8Text().parseAs<T>()
 }
 
-inline fun <reified T> BufferedSource.parseAs(): T = json.decodeFromBufferedSource(this)
+inline fun <reified T> Source.parseAs(): T = json.decodeFromSource(this)
 inline fun <reified T> String.parseAs(): T = json.decodeFromString(this)
 
 val json = Json {

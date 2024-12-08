@@ -830,4 +830,4 @@ var downloadLocation: Path
 
 val DownloadInfo.downloadDir get() = dirname?.let { downloadLocation / it }
 val DownloadInfo.archiveFile get() = downloadDir?.run { find("$gid.cbz") ?: find("$gid.zip") }
-val GalleryInfo.tempDownloadDir get() = AppConfig.getTempDir("$gid")?.toOkioPath()
+val GalleryInfo.tempDownloadDir get() = AppConfig.externalTempPersistDir?.let { it / "$gid" }

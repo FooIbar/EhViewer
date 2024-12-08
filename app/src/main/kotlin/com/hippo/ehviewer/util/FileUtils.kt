@@ -15,13 +15,14 @@
  */
 package com.hippo.ehviewer.util
 
+import com.hippo.files.outputStream
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.copyTo
 import java.io.File
-import java.io.RandomAccessFile
 import java.util.Locale
 import kotlin.math.ln
 import kotlin.math.pow
+import okio.Path
 
 object FileUtils {
     // Even though vfat allows 255 UCS-2 chars, we might eventually write to
@@ -49,26 +50,6 @@ object FileUtils {
             bytes / unit.toDouble().pow(exp.toDouble()),
             pre,
         )
-    }
-
-    /**
-     * Try to delete file, dir and it's children
-     *
-     * @param file the file to delete
-     * The dir to deleted
-     */
-    fun delete(file: File?): Boolean {
-        file ?: return false
-        return deleteContent(file) and file.delete()
-    }
-
-    fun deleteContent(file: File?): Boolean {
-        file ?: return false
-        var success = true
-        file.listFiles()?.forEach {
-            success = success and delete(it)
-        }
-        return success
     }
 
     fun cleanupDirectory(dir: File?, maxFiles: Int = 10) {
@@ -142,36 +123,10 @@ object FileUtils {
      * @return null for start with . dot
      */
     fun getNameFromFilename(filename: String?) = filename?.substringBeforeLast('.')?.ifEmpty { null }
-
-    /**
-     * Create a temp file, you need to delete it by you self.
-     *
-     * @param parent    The temp file's parent
-     * @param extension The extension of temp file
-     * @return The temp file or null
-     */
-    fun createTempFile(parent: File?, extension: String?): File? {
-        parent ?: return null
-        val now = System.currentTimeMillis()
-        for (i in 0..99) {
-            var filename = (now + i).toString()
-            extension?.let {
-                filename = "$filename.$it"
-            }
-            val tempFile = File(parent, filename)
-            if (!tempFile.exists()) {
-                return tempFile
-            }
-        }
-
-        // Unbelievable
-        return null
-    }
 }
 
-@Suppress("BlockingMethodInNonBlockingContext")
-suspend fun ByteReadChannel.copyTo(file: File) {
-    RandomAccessFile(file, "rw").use {
+suspend fun ByteReadChannel.copyTo(file: Path) {
+    file.outputStream().use {
         copyTo(it.channel)
     }
 }

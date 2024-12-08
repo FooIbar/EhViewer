@@ -16,7 +16,8 @@ import okio.FileSystem
 import okio.IOException
 import okio.Path
 import okio.Sink
-import okio.Source
+import okio.sink
+import okio.source
 import splitties.init.appCtx
 
 class AndroidFileSystem(context: Context) : FileSystem() {
@@ -176,12 +177,11 @@ class AndroidFileSystem(context: Context) : FileSystem() {
     }
 
     override fun sink(file: Path, mustCreate: Boolean): Sink {
-        TODO("Not yet implemented")
+        if (mustCreate && exists(file)) throw IOException("$file already exists.")
+        return file.outputStream().sink()
     }
 
-    override fun source(file: Path): Source {
-        TODO("Not yet implemented")
-    }
+    override fun source(file: Path) = file.inputStream().source()
 
     fun openFileDescriptor(path: Path, mode: String): ParcelFileDescriptor {
         if (path.isPhysicalFile()) {

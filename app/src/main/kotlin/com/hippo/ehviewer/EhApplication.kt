@@ -70,6 +70,7 @@ import com.hippo.ehviewer.util.isAtLeastO
 import com.hippo.ehviewer.util.isAtLeastP
 import com.hippo.ehviewer.util.isAtLeastS
 import com.hippo.ehviewer.util.isAtLeastSExtension7
+import com.hippo.files.deleteContent
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withUIContext
@@ -112,7 +113,7 @@ class EhApplication :
         System.loadLibrary("ehviewer")
         lifecycleScope.launchIO {
             launchUI { FavouriteStatusRouter.collect { (gid, slot) -> detailCache[gid]?.favoriteSlot = slot } }
-            launch { EhTagDatabase }
+            EhTagDatabase.launchUpdate()
             launch { EhDB }
             launchIO { dataStateFlow.value }
             launchIO { OSUtils.totalMemory }
@@ -150,14 +151,8 @@ class EhApplication :
     }
 
     private fun clearTempDir() {
-        var dir = AppConfig.tempDir
-        if (null != dir) {
-            FileUtils.deleteContent(dir)
-        }
-        dir = AppConfig.externalTempDir
-        if (null != dir) {
-            FileUtils.deleteContent(dir)
-        }
+        AppConfig.tempDir.deleteContent()
+        AppConfig.externalTempDir?.deleteContent()
     }
 
     override fun newImageLoader(context: Context) = context.imageLoader {

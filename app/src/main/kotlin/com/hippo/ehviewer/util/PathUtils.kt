@@ -6,8 +6,11 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import androidx.core.provider.DocumentsContractCompat
 import arrow.core.Either
+import com.hippo.ehviewer.jni.sha1 as nativeSha1
 import com.hippo.files.openFileDescriptor
+import com.hippo.files.read
 import com.hippo.files.toUri
+import kotlinx.io.readString
 import okio.Path
 import splitties.init.appCtx
 
@@ -55,4 +58,5 @@ val Path.displayName: String
         return name
     }
 
-fun Path.sha1() = openFileDescriptor("r").use { com.hippo.ehviewer.jni.sha1(it.fd) }
+fun Path.sha1() = openFileDescriptor("r").use { nativeSha1(it.fd) }
+fun Path.utf8() = read { readString() }

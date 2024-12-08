@@ -6,6 +6,9 @@ import android.os.ParcelFileDescriptor
 import androidx.core.net.toUri
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import kotlinx.io.Source
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import okio.Path
 import okio.Path.Companion.toPath
 
@@ -21,17 +24,21 @@ fun Path.exists() = SystemFileSystem.exists(this)
 
 fun Path.delete() = SystemFileSystem.deleteRecursively(this)
 
+fun Path.deleteContent() = SystemFileSystem.listOrNull(this)?.forEach(Path::delete)
+
 fun Path.list() = SystemFileSystem.listOrNull(this).orEmpty()
 
 fun Path.mkdirs() = SystemFileSystem.createDirectories(this)
 
-fun Path.moveTo(target: Path) = SystemFileSystem.atomicMove(this, target)
+infix fun Path.moveTo(target: Path) = SystemFileSystem.atomicMove(this, target)
 
 fun Path.openFileDescriptor(mode: String) = SystemFileSystem.openFileDescriptor(this, mode)
 
-fun Path.openInputStream(): FileInputStream = ParcelFileDescriptor.AutoCloseInputStream(SystemFileSystem.openFileDescriptor(this, "r"))
+fun Path.inputStream(): FileInputStream = ParcelFileDescriptor.AutoCloseInputStream(SystemFileSystem.openFileDescriptor(this, "r"))
 
-fun Path.openOutputStream(): FileOutputStream = ParcelFileDescriptor.AutoCloseOutputStream(SystemFileSystem.openFileDescriptor(this, "wt"))
+fun Path.outputStream(): FileOutputStream = ParcelFileDescriptor.AutoCloseOutputStream(SystemFileSystem.openFileDescriptor(this, "wt"))
+
+inline fun <T> Path.read(f: Source.() -> T) = inputStream().asSource().buffered().use(f)
 
 fun Path.toUri(): Uri {
     val str = toString()
