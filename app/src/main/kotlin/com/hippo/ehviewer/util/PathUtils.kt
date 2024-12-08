@@ -11,6 +11,7 @@ import com.hippo.files.isFile
 import com.hippo.files.openFileDescriptor
 import com.hippo.files.read
 import com.hippo.files.toUri
+import kotlinx.io.readString
 import okio.Path
 import splitties.init.appCtx
 
@@ -59,4 +60,4 @@ val Path.displayName: String
     }
 
 fun Path.sha1() = check(isFile) { "$this is not a File" }.let { openFileDescriptor("r").use { nativeSha1(it.fd) } }
-fun Path.utf8() = check(isFile) { "$this is not a File" }.let { read { readUtf8() } }
+fun Path.utf8() = check(isFile) { "$this is not a File" }.let { read { readString() } }

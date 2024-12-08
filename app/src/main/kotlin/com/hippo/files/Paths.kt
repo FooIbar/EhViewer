@@ -6,7 +6,9 @@ import android.os.ParcelFileDescriptor
 import androidx.core.net.toUri
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import okio.BufferedSource
+import kotlinx.io.Source
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import okio.Path
 import okio.Path.Companion.toPath
 
@@ -38,7 +40,7 @@ fun Path.inputStream(): FileInputStream = ParcelFileDescriptor.AutoCloseInputStr
 
 fun Path.outputStream(): FileOutputStream = ParcelFileDescriptor.AutoCloseOutputStream(SystemFileSystem.openFileDescriptor(this, "wt"))
 
-inline fun <T> Path.read(f: BufferedSource.() -> T) = SystemFileSystem.read(this, f)
+inline fun <T> Path.read(f: Source.() -> T) = inputStream().asSource().buffered().use(f)
 
 fun Path.toUri(): Uri {
     val str = toString()

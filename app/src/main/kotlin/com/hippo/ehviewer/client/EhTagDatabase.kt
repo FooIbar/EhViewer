@@ -41,8 +41,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.io.Source
 import moe.tarsin.coroutines.runSuspendCatching
-import okio.BufferedSource
 import okio.Path
 import splitties.init.appCtx
 
@@ -133,7 +133,7 @@ object EhTagDatabase : CoroutineScope {
         val dataFile = workdir / dataName
 
         fun updateInMemoryData() {
-            tagGroups = dataFile.read(BufferedSource::parseAs)
+            tagGroups = dataFile.read(Source::parseAs)
             initialized = true
         }
 

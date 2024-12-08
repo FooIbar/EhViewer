@@ -106,7 +106,7 @@ reorderable = "sh.calvin.reorderable:reorderable:2.4.0"
 
 serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
-serialization-json-okio = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-okio", version.ref = "kotlinx-serialization" }
+serialization-json-io = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-io", version.ref = "kotlinx-serialization" }
 
 serialization-xml = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
 
@@ -126,7 +126,7 @@ androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstall
 arrow = ["arrow-fx-coroutines", "arrow-functions", "arrow-resilience"]
 coil = ["coil-compose", "coil-gif", "coil-network"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-adaptive", "compose-ui-util"]
-kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-okio", "serialization-xml"]
+kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-io", "serialization-xml"]
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
 
 [plugins]
