@@ -141,7 +141,7 @@ object EhTagDatabase : CoroutineScope {
         val currentSha1 = runSuspendCatching {
             dataFile.sha1().also {
                 check(sha1File.utf8() == it)
-                updateInMemoryData()
+                if (!initialized) updateInMemoryData()
             }
         }.onFailure {
             sha1File.delete()
