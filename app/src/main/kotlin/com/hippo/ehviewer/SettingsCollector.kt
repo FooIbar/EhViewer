@@ -65,11 +65,5 @@ fun updateWhenGallerySiteChanges() {
 }
 
 fun updateWhenTagTranslationChanges() {
-    collectScope.launchIO {
-        runCatching {
-            EhTagDatabase.update()
-        }.onFailure {
-            logcat(it)
-        }
-    }
+    EhTagDatabase.launchUpdate()
 }

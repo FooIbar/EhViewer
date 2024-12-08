@@ -113,7 +113,7 @@ class EhApplication :
         System.loadLibrary("ehviewer")
         lifecycleScope.launchIO {
             launchUI { FavouriteStatusRouter.collect { (gid, slot) -> detailCache[gid]?.favoriteSlot = slot } }
-            launch { EhTagDatabase }
+            EhTagDatabase.launchUpdate()
             launch { EhDB }
             launchIO { dataStateFlow.value }
             launchIO { OSUtils.totalMemory }

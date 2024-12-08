@@ -29,7 +29,6 @@ import com.hippo.ehviewer.util.ensureSuccess
 import com.hippo.ehviewer.util.sha1
 import com.hippo.ehviewer.util.utf8
 import com.hippo.files.delete
-import com.hippo.files.exists
 import com.hippo.files.moveTo
 import com.hippo.files.read
 import eu.kanade.tachiyomi.util.system.logcat
@@ -48,6 +47,7 @@ import okio.Path
 import splitties.init.appCtx
 
 object EhTagDatabase : CoroutineScope {
+    override val coroutineContext = Dispatchers.IO + Job()
     private const val NAMESPACE_PREFIX = "n"
     private val PREFIXES = arrayOf(
         "-",
@@ -57,8 +57,6 @@ object EhTagDatabase : CoroutineScope {
     )
     private lateinit var tagGroups: Map<String, Map<String, String>>
     private val updateLock = Mutex()
-    override val coroutineContext = Dispatchers.IO + Job()
-
     var initialized by mutableStateOf(false)
 
     fun getTranslation(prefix: String? = NAMESPACE_PREFIX, tag: String?): String? = tagGroups[prefix]?.get(tag)?.trim()?.ifEmpty { null }
@@ -118,7 +116,7 @@ object EhTagDatabase : CoroutineScope {
         }.getOrThrow()
     }
 
-    suspend fun update() {
+    fun launchUpdate() = launch {
         updateLock.withLock {
             runSuspendCatching {
                 atomicallyUpdate()
@@ -128,31 +126,22 @@ object EhTagDatabase : CoroutineScope {
         }
     }
 
-    private fun issueUpdateInMemoryData(file: Path? = null) {
-        val dataFile = file ?: metadata(appCtx)?.let { metadata ->
-            val dataName = metadata[2]
-            val dir = AppConfig.tagDir
-            (dir / dataName).takeIf { it.exists() }
-        } ?: return
-        tagGroups = dataFile.read(BufferedSource::parseAs)
-        initialized = true
-    }
-
-    init {
-        launch { update() }
-    }
-
     private suspend fun atomicallyUpdate() {
         val (sha1Name, sha1Url, dataName, dataUrl) = metadata(appCtx) ?: return
         val workdir = AppConfig.tagDir
         val sha1File = workdir / sha1Name
         val dataFile = workdir / dataName
 
+        fun updateInMemoryData() {
+            tagGroups = dataFile.read(BufferedSource::parseAs)
+            initialized = true
+        }
+
         // Check current sha1 and current data
         val current = runSuspendCatching {
             dataFile.sha1().also {
                 check(sha1File.utf8() == it)
-                issueUpdateInMemoryData(dataFile)
+                updateInMemoryData()
             }
         }.onFailure {
             sha1File.delete()
@@ -190,7 +179,7 @@ object EhTagDatabase : CoroutineScope {
             tempDataFile moveTo dataFile
 
             // Read new EhTagDatabase
-            issueUpdateInMemoryData(dataFile)
+            updateInMemoryData()
         }
     }
 }
