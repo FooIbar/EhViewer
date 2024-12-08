@@ -37,7 +37,7 @@ object AppConfig {
     private const val TEMP = "temp"
     private const val PARSE_ERROR = "parse_error"
     private const val CRASH = "crash"
-    private const val TAG_DIR = "tag-translations"
+    private const val TAG_TRANSLATIONS = "tag-translations"
 
     private val abi = Build.SUPPORTED_ABIS[0].takeIf {
         it in setOf("arm64-v8a", "x86_64", "armeabi-v7a")
@@ -74,6 +74,6 @@ object AppConfig {
         get() = getDirInExternalAppDir(CRASH)
     val tempDir
         get() = (appCtx.cacheDir.toOkioPath() / TEMP).apply { check(ensureDirectory()) }
-    val tagDir
-        get() = (appCtx.filesDir.toOkioPath() / TAG_DIR).apply { check(ensureDirectory()) }
+    val tagTranslationsDir
+        get() = (appCtx.filesDir.toOkioPath() / TAG_TRANSLATIONS).apply { check(ensureDirectory()) }
 }

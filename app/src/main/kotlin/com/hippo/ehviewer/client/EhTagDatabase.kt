@@ -128,7 +128,7 @@ object EhTagDatabase : CoroutineScope {
 
     private suspend fun atomicallyUpdate() {
         val (sha1Name, sha1Url, dataName, dataUrl) = metadata(appCtx) ?: return
-        val workdir = AppConfig.tagDir
+        val workdir = AppConfig.tagTranslationsDir
         val sha1File = workdir / sha1Name
         val dataFile = workdir / dataName
 
