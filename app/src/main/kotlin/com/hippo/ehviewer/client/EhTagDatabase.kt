@@ -27,6 +27,7 @@ import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.copyTo
 import com.hippo.ehviewer.util.ensureSuccess
 import com.hippo.ehviewer.util.sha1
+import com.hippo.ehviewer.util.utf8
 import com.hippo.files.delete
 import com.hippo.files.exists
 import com.hippo.files.moveTo
@@ -101,16 +102,12 @@ object EhTagDatabase : CoroutineScope {
 
     private fun String.containsIgnoreSpace(other: String, ignoreCase: Boolean = true): Boolean = removeSpace().contains(other.removeSpace(), ignoreCase)
 
-    private fun getMetadata(context: Context): Array<String>? = context.resources.getStringArray(R.array.tag_translation_metadata)
+    private fun metadata(context: Context): Array<String>? = context.resources.getStringArray(R.array.tag_translation_metadata)
         .takeIf { it.size == 4 }
 
     fun isTranslatable(context: Context): Boolean = context.resources.getBoolean(R.bool.tag_translatable)
 
-    private fun getFileContent(file: Path) = runCatching { file.read { readUtf8() } }.getOrNull()
-
-    private fun checkData(sha1: String?, data: Path): Boolean = sha1 != null && sha1 == data.sha1()
-
-    private suspend fun save(client: HttpClient, url: String, file: Path) {
+    private suspend fun fetch(client: HttpClient, url: String, file: Path) {
         runCatching {
             client.prepareGet(url).executeSafely {
                 it.status.ensureSuccess()
@@ -123,12 +120,16 @@ object EhTagDatabase : CoroutineScope {
 
     suspend fun update() {
         updateLock.withLock {
-            updateInternal()
+            runSuspendCatching {
+                atomicallyUpdate()
+            }.onFailure {
+                logcat(it)
+            }
         }
     }
 
     private fun issueUpdateInMemoryData(file: Path? = null) {
-        val dataFile = file ?: getMetadata(appCtx)?.let { metadata ->
+        val dataFile = file ?: metadata(appCtx)?.let { metadata ->
             val dataName = metadata[2]
             val dir = AppConfig.tagDir
             (dir / dataName).takeIf { it.exists() }
@@ -138,67 +139,58 @@ object EhTagDatabase : CoroutineScope {
     }
 
     init {
-        launch {
-            updateLock.withLock {
-                runSuspendCatching {
-                    issueUpdateInMemoryData()
-                }.onFailure {
-                    logcat(it)
-                }
-                updateInternal()
-            }
-        }
+        launch { update() }
     }
 
-    private suspend fun updateInternal() {
-        getMetadata(appCtx)?.let { metadata ->
-            val (sha1Name, sha1Url, dataName, dataUrl) = metadata
-            val dir = AppConfig.tagDir
-            val sha1File = dir / sha1Name
-            val dataFile = dir / dataName
+    private suspend fun atomicallyUpdate() {
+        val (sha1Name, sha1Url, dataName, dataUrl) = metadata(appCtx) ?: return
+        val workdir = AppConfig.tagDir
+        val sha1File = workdir / sha1Name
+        val dataFile = workdir / dataName
 
-            runSuspendCatching {
-                // Check current sha1 and current data
-                val sha1 = getFileContent(sha1File)
-                if (!checkData(sha1, dataFile)) {
-                    sha1File.delete()
-                    dataFile.delete()
-                }
-
-                // Save new sha1
-                val tempSha1File = dir / "$sha1Name.tmp"
-                save(ktorClient, sha1Url, tempSha1File)
-                val tempSha1 = getFileContent(tempSha1File)
-
-                // Check new sha1 and current sha1
-                if (tempSha1 == sha1) {
-                    // The data is the same
-                    tempSha1File.delete()
-                    return
-                }
-
-                // Save new data
-                val tempDataFile = dir / "$dataName.tmp"
-                save(ktorClient, dataUrl, tempDataFile)
-
-                // Check new sha1 and new data
-                if (!checkData(tempSha1, tempDataFile)) {
-                    tempSha1File.delete()
-                    tempDataFile.delete()
-                    return
-                }
-
-                // Replace current sha1 and current data with new sha1 and new data
-                sha1File.delete()
-                dataFile.delete()
-                tempSha1File moveTo sha1File
-                tempDataFile moveTo dataFile
-
-                // Read new EhTagDatabase
+        // Check current sha1 and current data
+        val current = runSuspendCatching {
+            dataFile.sha1().also {
+                check(sha1File.utf8() == it)
                 issueUpdateInMemoryData(dataFile)
-            }.onFailure {
-                logcat(it)
             }
+        }.onFailure {
+            sha1File.delete()
+            dataFile.delete()
+        }.getOrNull()
+
+        // Save new sha1
+        val tempSha1File = workdir / "$sha1Name.tmp"
+        fetch(ktorClient, sha1Url, tempSha1File)
+        val tempSha1 = tempSha1File.utf8()
+
+        // Check new sha1 and current sha1
+        if (tempSha1 == current) {
+            // The data is the same
+            tempSha1File.delete()
+            return
+        }
+
+        // Save new data
+        val tempDataFile = workdir / "$dataName.tmp"
+        fetch(ktorClient, dataUrl, tempDataFile)
+
+        // Check new sha1 and new data
+        runSuspendCatching {
+            check(tempDataFile.sha1() == tempSha1)
+        }.onFailure {
+            tempSha1File.delete()
+            tempDataFile.delete()
+            throw it
+        }.onSuccess {
+            // Replace current sha1 and current data with new sha1 and new data
+            sha1File.delete()
+            dataFile.delete()
+            tempSha1File moveTo sha1File
+            tempDataFile moveTo dataFile
+
+            // Read new EhTagDatabase
+            issueUpdateInMemoryData(dataFile)
         }
     }
 }
