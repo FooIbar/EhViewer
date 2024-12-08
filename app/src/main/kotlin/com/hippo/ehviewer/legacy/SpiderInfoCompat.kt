@@ -1,16 +1,14 @@
 package com.hippo.ehviewer.legacy
 
 import com.hippo.ehviewer.spider.SpiderInfo
-import com.hippo.files.inputStream
-import kotlinx.io.asSource
-import kotlinx.io.buffered
+import com.hippo.files.read
 import kotlinx.io.readLineStrict
 import okio.Path
 
-fun Path.readLegacySpiderInfo() = inputStream().asSource().buffered().use { source ->
-    fun read(): String = source.readLineStrict()
-    fun readInt(): Int = read().toInt()
-    fun readLong(): Long = read().toLong()
+fun Path.readLegacySpiderInfo() = read {
+    fun read() = readLineStrict()
+    fun readInt() = read().toInt()
+    fun readLong() = read().toLong()
 
     repeat(2) { read() } // We assert that only info v2
     val gid = readLong()

@@ -4,9 +4,10 @@ import com.hippo.ehviewer.coil.edit
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.legacy.readLegacySpiderInfo
-import com.hippo.files.inputStream
 import com.hippo.files.outputStream
+import com.hippo.files.read
 import eu.kanade.tachiyomi.util.system.logcat
+import kotlinx.io.readByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
@@ -60,18 +61,14 @@ private val spiderInfoCache by lazy {
 
 fun readFromCache(gid: Long): SpiderInfo? = spiderInfoCache.read(gid.toString()) {
     runCatching {
-        cbor.decodeFromByteArray<SpiderInfo>(data.toFile().readBytes())
+        data.read { cbor.decodeFromByteArray<SpiderInfo>(readByteArray()) }
     }.onFailure {
         logcat(it)
     }.getOrNull()
 }
 
 fun readCompatFromPath(file: Path): SpiderInfo? = runCatching {
-    file.inputStream().use {
-        cbor.decodeFromByteArray<SpiderInfo>(it.readBytes())
-    }
+    file.read { cbor.decodeFromByteArray<SpiderInfo>(readByteArray()) }
 }.getOrNull() ?: runCatching {
     file.readLegacySpiderInfo()
 }.getOrNull()
-
-const val TOKEN_FAILED = "failed"
