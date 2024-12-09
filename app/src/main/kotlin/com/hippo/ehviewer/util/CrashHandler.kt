@@ -9,12 +9,6 @@ import java.io.File
 import java.io.PrintWriter
 import java.io.Writer
 
-private fun joinIfStringArray(any: Any?): String = if (any is Array<*>) any.joinToString() else any.toString()
-
-private fun collectClassStaticInfo(clazz: Class<*>): String = clazz.fields.joinToString("\n") {
-    "${it.name}=${joinIfStringArray(it.get(null))}"
-}
-
 object CrashHandler {
     fun install() {
         val handler = Thread.getDefaultUncaughtExceptionHandler()
@@ -27,32 +21,36 @@ object CrashHandler {
     }
 
     fun collectInfo(writer: Writer) {
-        writer.write("======== PackageInfo ========\n")
-        writer.write("PackageName=${BuildConfig.APPLICATION_ID}\n")
-        writer.write("VersionName=${BuildConfig.VERSION_NAME}\n")
-        writer.write("VersionCode=${BuildConfig.VERSION_CODE}\n")
-        writer.write("CommitSha=${BuildConfig.COMMIT_SHA}\n")
-        writer.write("CommitTime=${AppConfig.commitTime}\n")
-        writer.write("\n")
-
-        // Device info
-        writer.write("======== DeviceInfo ========\n")
-        writer.write("${collectClassStaticInfo(Build::class.java)}\n")
-        writer.write("${collectClassStaticInfo(Build.VERSION::class.java)}\n")
-        writer.write("MEMORY=")
-        writer.write(FileUtils.humanReadableByteCount(OSUtils.appAllocatedMemory, false))
-        writer.write("\n")
-        writer.write("MEMORY_NATIVE=")
-        writer.write(FileUtils.humanReadableByteCount(Debug.getNativeHeapAllocatedSize(), false))
-        writer.write("\n")
-        writer.write("MEMORY_MAX=")
-        writer.write(FileUtils.humanReadableByteCount(OSUtils.appMaxMemory, false))
-        writer.write("\n")
-        writer.write("MEMORY_TOTAL=")
-        writer.write(FileUtils.humanReadableByteCount(OSUtils.totalMemory, false))
-        writer.write("\n")
-        writer.write("\n")
-
+        val staticInfo = listOf(
+            Build::class.java,
+            Build.VERSION::class.java,
+        ).flatMap { clazz ->
+            clazz.fields.map {
+                it.name to it[null].let { x -> if (x is Array<*>) x.joinToString() else x.toString() }
+            }
+        } + listOf(
+            "MEMORY" to FileUtils.humanReadableByteCount(OSUtils.appAllocatedMemory, false),
+            "MEMORY_NATIVE" to FileUtils.humanReadableByteCount(Debug.getNativeHeapAllocatedSize(), false),
+            "MEMORY_MAX" to FileUtils.humanReadableByteCount(OSUtils.appMaxMemory, false),
+            "MEMORY_TOTAL" to FileUtils.humanReadableByteCount(OSUtils.totalMemory, false),
+        )
+        val deviceInfo = staticInfo.unzip().let { (a, b) ->
+            a.maxBy(String::length).length.let { len -> a.map { it.padEnd(len) } } zip b
+        }.joinToString(separator = "\n") { (a, b) -> "$a = $b" }
+        writer.write(
+            """
+                ======== PackageInfo ========
+                PackageName = ${BuildConfig.APPLICATION_ID}
+                VersionName = ${BuildConfig.VERSION_NAME}
+                VersionCode = ${BuildConfig.VERSION_CODE}
+                CommitSha   = ${BuildConfig.COMMIT_SHA}
+                CommitTime  = ${AppConfig.commitTime}
+                
+                ======== DeviceInfo ========
+                $deviceInfo
+                
+            """.trimIndent(),
+        )
         writer.flush()
     }
 
