@@ -13,8 +13,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
-import com.hippo.ehviewer.ui.i10n.ProvideTranslations
-import com.hippo.ehviewer.ui.i10n.rememberTranslations
+import com.hippo.ehviewer.ui.i18n.ProvideTranslations
+import com.hippo.ehviewer.ui.i18n.rememberTranslations
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalDialogState

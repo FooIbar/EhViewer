@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.ui.i10n
+package com.hippo.ehviewer.ui.i18n
 
 object KoTranslations : Translations by EnTranslations {
     override val homepage = "홈"

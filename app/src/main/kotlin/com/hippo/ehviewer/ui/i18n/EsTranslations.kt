@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.ui.i10n
+package com.hippo.ehviewer.ui.i18n
 
 object EsTranslations : Translations by EnTranslations {
     override val homepage = "Página de inicio"

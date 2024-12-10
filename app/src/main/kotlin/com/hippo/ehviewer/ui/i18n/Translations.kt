@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:property-naming")
 
-package com.hippo.ehviewer.ui.i10n
+package com.hippo.ehviewer.ui.i18n
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal

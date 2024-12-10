@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.ui.i10n
+package com.hippo.ehviewer.ui.i18n
 
 object NbNoTranslations : Translations by EnTranslations {
     override val textIsEmpty = "Tekst tom"
