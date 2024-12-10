@@ -46,7 +46,7 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.ui.i18n.Translations
+import com.hippo.ehviewer.ui.i18n.Strings
 import com.hippo.ehviewer.ui.login.refreshAccountInfo
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
@@ -81,7 +81,7 @@ private val limitFlow: StateFlow<Result> = refreshEvent.conflate()
     .let { src -> merge(src, invalidateEvent.map { none() }) }
     .stateIn(limitScope, SharingStarted.Eagerly, none())
 
-context(CoroutineScope, DialogState, SnackbarHostState, DestinationsNavigator, Translations)
+context(CoroutineScope, DialogState, SnackbarHostState, DestinationsNavigator, Strings)
 @Composable
 fun AvatarIcon() {
     val hasSignedIn by Settings.hasSignedIn.collectAsState()

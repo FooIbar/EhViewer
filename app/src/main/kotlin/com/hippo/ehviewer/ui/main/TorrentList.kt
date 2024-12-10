@@ -23,9 +23,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.client.parser.Torrent
 import com.hippo.ehviewer.client.parser.format
-import com.hippo.ehviewer.ui.i18n.Translations
+import com.hippo.ehviewer.ui.i18n.Strings
 
-context(Translations)
+context(Strings)
 @Composable
 fun TorrentList(
     items: List<Torrent>,

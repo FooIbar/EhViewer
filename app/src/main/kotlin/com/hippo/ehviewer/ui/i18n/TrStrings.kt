@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.ui.i18n
 
-object TrTranslations : Translations by EnTranslations {
+object TrStrings : Strings by EnStrings {
     override val galleryListSearchBarHintExhentai = "ExHentai'de Arayın"
     override val homepage = "Ana sayfa"
     override val subscription = "Abonelikler"

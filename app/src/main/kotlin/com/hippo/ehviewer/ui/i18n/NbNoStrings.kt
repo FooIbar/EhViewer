@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.ui.i18n
 
-object NbNoTranslations : Translations by EnTranslations {
+object NbNoStrings : Strings by EnStrings {
     override val textIsEmpty = "Tekst tom"
     override val waring = "Advarsel"
     override val clipboardGalleryUrlSnackAction = "Vis"

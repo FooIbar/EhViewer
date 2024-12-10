@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.ui.i18n
 
-object EsTranslations : Translations by EnTranslations {
+object EsStrings : Strings by EnStrings {
     override val homepage = "Página de inicio"
     override val subscription = "Suscripción"
     override val whatsHot = "Destacado"

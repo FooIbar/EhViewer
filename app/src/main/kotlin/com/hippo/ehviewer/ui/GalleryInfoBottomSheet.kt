@@ -30,7 +30,7 @@ import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.LOCAL_FAVORITED
 import com.hippo.ehviewer.client.thumbUrl
-import com.hippo.ehviewer.ui.i18n.Translations
+import com.hippo.ehviewer.ui.i18n.Strings
 import com.hippo.ehviewer.ui.screen.navWithUrl
 import com.hippo.ehviewer.util.addTextToClipboard
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -38,7 +38,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 private const val INDEX_URL = 2
 private const val INDEX_PARENT = 9
 
-context(Translations)
+context(Strings)
 fun GalleryDetail.content() = arrayOf(
     keyGid to "$gid",
     keyToken to token,
@@ -63,7 +63,7 @@ fun GalleryDetail.content() = arrayOf(
     keyFavoriteName to favoriteName,
 )
 
-context(Context, DestinationsNavigator, Translations)
+context(Context, DestinationsNavigator, Strings)
 @Composable
 fun GalleryInfoBottomSheet(detail: GalleryDetail) {
     Column(modifier = Modifier.fillMaxWidth()) {

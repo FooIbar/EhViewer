@@ -21,9 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.client.parser.Archive
 import com.hippo.ehviewer.client.parser.Funds
-import com.hippo.ehviewer.ui.i18n.Translations
+import com.hippo.ehviewer.ui.i18n.Strings
 
-context(Translations)
+context(Strings)
 @Composable
 fun ArchiveList(
     funds: Funds,

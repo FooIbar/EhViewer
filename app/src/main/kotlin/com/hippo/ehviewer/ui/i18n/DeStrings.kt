@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.ui.i18n
 
-object DeTranslations : Translations by EnTranslations {
+object DeStrings : Strings by EnStrings {
     override val homepage = "Startseite"
     override val subscription = "Gefolgte Etiketten"
     override val whatsHot = "Beliebt"
