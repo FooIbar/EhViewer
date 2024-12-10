@@ -21,7 +21,7 @@ object EnTranslations : Translations {
     override val misc = "MISC"
     override val homepage = "Homepage"
     override val subscription = "Subscription"
-    override val whatsHot = "What\'s hot"
+    override val whatsHot = "What's hot"
     override val favourite = "Favourite"
     override val history = "History"
     override val downloads = "Downloads"
@@ -34,8 +34,7 @@ object EnTranslations : Translations {
     override val signInFirst = "Please sign in first"
     override val textIsEmpty = "Text is empty"
     override val waring = "Warning"
-    override val invalidDownloadLocation =
-        "It seems download location is not available. Please set it in Settings."
+    override val invalidDownloadLocation = "It seems download location is not available. Please set it in Settings."
     override val clipboardGalleryUrlSnackMessage = "There is a gallery URL in the clipboard"
     override val clipboardGalleryUrlSnackAction = "View"
     override val errorTimeout = "Timeout"
@@ -43,8 +42,8 @@ object EnTranslations : Translations {
     override val errorRedirection = "Too many redirections"
     override val errorSocket = "Network error"
     override val errorUnknown = "Weird"
-    override val errorCantFindActivity = "Can\'t find the application"
-    override val errorCannotParseTheUrl = "Can\'t parse the URL"
+    override val errorCantFindActivity = "Can't find the application"
+    override val errorCannotParseTheUrl = "Can't parse the URL"
     override val errorDecodingFailed = "Decoding failed"
     override val errorReadingFailed = "Reading Failed"
     override val errorOutOfRange = "Out of range"
@@ -52,19 +51,15 @@ object EnTranslations : Translations {
     override val error509 = "509"
     override val errorInvalidUrl = "Invalid URL"
     override val errorGetPtokenError = "Get pToken error"
-    override val errorCantSaveImage = "Can\'t save image"
+    override val errorCantSaveImage = "Can't save image"
     override val errorInvalidNumber = "Invalid number"
-    override val appWaring =
-        "The content of this application is from the Internet. Some of it may do physical or mental harm to you. You have learnt the risks above and would like to undertake them. By continuing to use it, you agree to the above terms."
+    override val appWaring = "The content of this application is from the Internet. Some of it may do physical or mental harm to you. You have learnt the risks above and would like to undertake them. By continuing to use it, you agree to the above terms."
     override val appWaring2 = "By continuing to use it, you agree to the above terms."
     override val errorUsernameCannotEmpty = "Username cannot be empty"
     override val errorPasswordCannotEmpty = "Password cannot be empty"
     override val guestMode = "Guest mode"
     override val signInFailed = "Sign in failed"
-    override val signInFailedTip = { p0: String ->
-        "If this issue continues, try \"%s\"."
-            .format(p0)
-    }
+    override val signInFailedTip = { a: String -> "If this issue continues, try \"$a\"." }
     override val getIt = "Got it"
     override val galleryListSearchBarHintExhentai = "Search ExHentai"
     override val galleryListSearchBarHintEHentai = "Search E-Hentai"
@@ -96,24 +91,14 @@ object EnTranslations : Translations {
     override val translateTagForTagger = "Use tag translation"
     override val nameIsEmpty = "Name is empty"
     override val delete = "Delete"
-    override val addQuickSearchTip =
-        "The state of gallery list will be saved as quick search. Perform a search first to save the state of search panel."
+    override val addQuickSearchTip = "The state of gallery list will be saved as quick search. Perform a search first to save the state of search panel."
     override val readme = "README"
-    override val imageSearchNotQuickSearch = "Can\'t add image search as quick search"
-    override val duplicateQuickSearch = { p0: String ->
-        "A duplicate quick search exists. The name is \"%s\"."
-            .format(p0)
-    }
+    override val imageSearchNotQuickSearch = "Can't add image search as quick search"
+    override val duplicateQuickSearch = { a: String -> "A duplicate quick search exists. The name is \"$a\"." }
     override val duplicateName = "This name is already in use."
     override val saveProgress = "Save progress"
-    override val deleteQuickSearch = { p0: String ->
-        "Delete quick search \"%s\"?"
-            .format(p0)
-    }
-    override val goToHint = { p0: Int, p1: Int ->
-        "Page %d, total %d pages"
-            .format(p0, p1)
-    }
+    override val deleteQuickSearch = { a: String -> "Delete quick search \"$a\"?" }
+    override val goToHint = { a: Int, b: Int -> "Page $a, total $b pages" }
     override val any = "Any"
     override val star2 = "2 stars"
     override val star3 = "3 stars"
@@ -121,18 +106,9 @@ object EnTranslations : Translations {
     override val star5 = "5 stars"
     override val download = "Download"
     override val read = "Read"
-    override val favoredTimes = { p0: Int ->
-        "\u2665 %d"
-            .format(p0)
-    }
-    override val ratingText = { p0: String, p1: Int ->
-        "%s (%.2f, %d)"
-            .format(p0, p1)
-    }
-    override val torrentCount = { p0: Int ->
-        "Torrent (%d)"
-            .format(p0)
-    }
+    override val favoredTimes = { a: Int -> "\u2665 $a" }
+    override val ratingText = { a: String, b: Int -> "%s (%.2f, %d)".format(a, b) }
+    override val torrentCount = { a: Int -> "Torrent ($a)" }
     override val share = "Share"
     override val rate = "Rate"
     override val similarGallery = "Similar"
@@ -157,20 +133,11 @@ object EnTranslations : Translations {
     override val removeFromFavoriteSuccess = "Removed from favorites"
     override val addToFavoriteFailure = "Failed to add to favorites"
     override val removeFromFavoriteFailure = "Failed to remove from favorites"
-    override val filterTheUploader = { p0: String ->
-        "Block the uploader \"%s\"?"
-            .format(p0)
-    }
-    override val filterTheTag = { p0: String ->
-        "Block the tag \"%s\"?"
-            .format(p0)
-    }
+    override val filterTheUploader = { a: String -> "Block the uploader \"$a\"?" }
+    override val filterTheTag = { a: String -> "Block the tag \"$a\"?" }
     override val filterAdded = "Blocker added"
     override val newerVersionAvailable = "There are newer versions of this gallery available."
-    override val newerVersionTitle = { p0: String, p1: String ->
-        "%s, added %s"
-            .format(p0, p1)
-    }
+    override val newerVersionTitle = { a: String, b: String -> "$a, added $b" }
     override val rating10 = "MASTERPIECE"
     override val rating9 = "AMAZING"
     override val rating8 = "GREAT"
@@ -210,10 +177,7 @@ object EnTranslations : Translations {
     override val commentFailed = "Failed to post the comment"
     override val copyCommentText = "Copy comment text"
     override val blockCommenter = "Block the commenter"
-    override val filterTheCommenter = { p0: String ->
-        "Block the commenter \"%s\"?"
-            .format(p0)
-    }
+    override val filterTheCommenter = { a: String -> "Block the commenter \"$a\"?" }
     override val editComment = "Edit comment"
     override val editCommentSuccessfully = "The comment has been edited"
     override val editCommentFailed = "Failed to edit the comment"
@@ -228,10 +192,7 @@ object EnTranslations : Translations {
     override val voteFailed = "Vote failed"
     override val checkVoteStatus = "View vote details"
     override val clickMoreComments = "Click to load more comments"
-    override val lastEdited = { p0: String ->
-        "Last edited: %s"
-            .format(p0)
-    }
+    override val lastEdited = { a: String -> "Last edited: $a" }
     override val formatBold = "Bold"
     override val formatItalic = "Italic"
     override val formatUnderline = "Underline"
@@ -239,37 +200,21 @@ object EnTranslations : Translations {
     override val formatUrl = "URL"
     override val formatPlain = "Plain text"
     override val goTo = "Go to"
-    override val sceneDownloadTitle = { p0: String ->
-        "Download - %s"
-            .format(p0)
-    }
+    override val sceneDownloadTitle = { a: String -> "Download - $a" }
     override val noDownloadInfo = "Download items will be shown here"
     override val downloadStateNone = "Idle"
     override val downloadStateWait = "Waiting"
     override val downloadStateDownloading = "Downloading"
     override val downloadStateDownloaded = "Downloaded"
     override val downloadStateFailed = "Failed"
-    override val downloadStateFailed2 = { p0: Int ->
-        "%d incomplete"
-            .format(p0)
-    }
+    override val downloadStateFailed2 = { a: Int -> "$a incomplete" }
     override val downloadStateFinish = "Done"
     override val stat509AlertTitle = "509 Alert"
-    override val stat509AlertText =
-        "Image limit has been reached. Please stop download and have a relax."
+    override val stat509AlertText = "Image limit has been reached. Please stop download and have a relax."
     override val statDownloadDoneTitle = "Download Finished"
-    override val statDownloadDoneTextSucceeded = { p0: Int ->
-        "%d succeeded"
-            .format(p0)
-    }
-    override val statDownloadDoneTextFailed = { p0: Int ->
-        "%d failed"
-            .format(p0)
-    }
-    override val statDownloadDoneTextMix = { p0: Int, p1: Int ->
-        "%d succeeded, %d failed"
-            .format(p0, p1)
-    }
+    override val statDownloadDoneTextSucceeded = { a: Int -> "$a succeeded" }
+    override val statDownloadDoneTextFailed = { a: Int -> "$a failed" }
+    override val statDownloadDoneTextMix = { a: Int, b: Int -> "$a succeeded, $b failed" }
     override val statDownloadDoneLineSucceeded = { p0: String ->
         "Succeeded: %s"
             .format(p0)
