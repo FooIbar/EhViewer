@@ -89,12 +89,12 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = comp
             HtmlPreference(
                 title = settingsAboutAuthor,
                 summary = buildAnnotatedString {
-                    withStyle(SpanStyle(textDecoration = TextDecoration.Underline)) {
+                    withStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) {
                         appendLine("Hippo")
                         appendLine("NekoInverter")
                         appendLine("飛鳥澪")
                     }
-                    appendLine("Foolbar")
+                    append("Foolbar")
                 },
             )
             UrlPreference(
