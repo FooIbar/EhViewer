@@ -61,7 +61,7 @@ object KoTranslations : Translations by EnTranslations {
     override val addQuickSearchTip = "갤러리 목록의 상태가 빠른 검색으로 저장됩니다. 검색 패널의 상태를 저장하려면 먼저 검색을 해야 합니다."
     override val readme = "README"
     override val imageSearchNotQuickSearch = "이미지 검색은 빠른 검색에 추가할 수 없습니다."
-    override val duplicateQuickSearch = { a: String -> "이미 같은 내용의 빠른 검색 항목이 있습니다. 이름은 \"${a}\"입니다." }
+    override val duplicateQuickSearch = { a: String -> "이미 같은 내용의 빠른 검색 항목이 있습니다. 이름은 \"$a\"입니다." }
     override val duplicateName = "같은 이름의 항목이 이미 있습니다."
     override val goToHint = { a: Int, b: Int -> "페이지 $a, 총 $b 페이지" }
     override val star2 = "2개"
