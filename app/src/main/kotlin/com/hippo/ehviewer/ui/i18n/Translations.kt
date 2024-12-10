@@ -464,7 +464,7 @@ interface Translations {
     val useCiUpdateChannel: String
     val settingsPrivacyRequireUnlock: String
     val settingsPrivacyRequireUnlockDelay: String
-    val settingsPrivacyRequireUnlockDelaySummary: (String) -> String
+    val settingsPrivacyRequireUnlockDelaySummary: (Int) -> String
     val settingsPrivacyRequireUnlockDelaySummaryImmediately: String
     val filterLabel: String
     val archivePasswd: String

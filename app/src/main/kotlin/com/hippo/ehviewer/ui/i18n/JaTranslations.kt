@@ -436,7 +436,7 @@ object JaTranslations : Translations by EnTranslations {
     override val useCiUpdateChannel = "CI 更新チャンネルを使用する"
     override val settingsPrivacyRequireUnlock = "ロックの解除を要求する"
     override val settingsPrivacyRequireUnlockDelay = "ロックの遅延"
-    override val settingsPrivacyRequireUnlockDelaySummary = { a: String -> "$a 分以内にアプリに戻る場合はロックの解除を要求しません" }
+    override val settingsPrivacyRequireUnlockDelaySummary = { a: Int -> "$a 分以内にアプリに戻る場合はロックの解除を要求しません" }
     override val settingsPrivacyRequireUnlockDelaySummaryImmediately = "このアプリに戻るたびにロックの解除を要求します"
     override val filterLabel = "ブロッカーのタイプ"
     override val archivePasswd = "パスワード"

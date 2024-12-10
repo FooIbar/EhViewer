@@ -64,7 +64,7 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = co
                 val summary = if (securityDelay.value == 0) {
                     settingsPrivacyRequireUnlockDelaySummaryImmediately
                 } else {
-                    settingsPrivacyRequireUnlockDelaySummary("${securityDelay.value}")
+                    settingsPrivacyRequireUnlockDelaySummary(securityDelay.value)
                 }
                 IntSliderPreference(
                     maxValue = 30,

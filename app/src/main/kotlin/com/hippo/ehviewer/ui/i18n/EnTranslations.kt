@@ -455,7 +455,7 @@ object EnTranslations : Translations {
     override val useCiUpdateChannel = "Use CI update channel"
     override val settingsPrivacyRequireUnlock = "Require Unlock"
     override val settingsPrivacyRequireUnlockDelay = "Lock Delay"
-    override val settingsPrivacyRequireUnlockDelaySummary = { a: String -> "No unlock is required when leaving App and returning within $a minute(s)" }
+    override val settingsPrivacyRequireUnlockDelaySummary = { a: Int -> "No unlock is required when leaving App and returning within $a minute(s)" }
     override val settingsPrivacyRequireUnlockDelaySummaryImmediately = "Unlock is required whenever you return to this App"
     override val filterLabel = "Blocker Type"
     override val archivePasswd = "password"

@@ -438,7 +438,7 @@ object ZhCnTranslations : Translations by EnTranslations {
     override val openByDefault = "默认打开"
     override val settingsPrivacyRequireUnlock = "需要解锁"
     override val settingsPrivacyRequireUnlockDelay = "锁定延迟"
-    override val settingsPrivacyRequireUnlockDelaySummary = { a: String -> "离开应用并在 $a 分钟内返回时不需要解锁" }
+    override val settingsPrivacyRequireUnlockDelaySummary = { a: Int -> "离开应用并在 $a 分钟内返回时不需要解锁" }
     override val settingsPrivacyRequireUnlockDelaySummaryImmediately = "无论何时回到应用均要求解锁"
     override val filterLabel = "屏蔽项类型"
     override val archivePasswd = "归档文件密码"
