@@ -1,7 +1,7 @@
 package com.hippo.ehviewer.ui.i18n
 
 object TrTranslations : Translations by EnTranslations {
-    override val galleryListSearchBarHintExhentai = "ExHentai\'de Arayın"
+    override val galleryListSearchBarHintExhentai = "ExHentai'de Arayın"
     override val homepage = "Ana sayfa"
     override val subscription = "Abonelikler"
     override val whatsHot = "Popüler"
@@ -16,8 +16,7 @@ object TrTranslations : Translations by EnTranslations {
     override val signInViaWebview = "WebView aracılığıyla giriş yap"
     override val signInFirst = "Lütfen önce giriş yap"
     override val waring = "Uyarı"
-    override val invalidDownloadLocation =
-        "İndirme konumu kullanılamıyor. Lütfen Ayarlardan ayarlayın."
+    override val invalidDownloadLocation = "İndirme konumu kullanılamıyor. Lütfen Ayarlardan ayarlayın."
     override val clipboardGalleryUrlSnackMessage = "Panoda galeri bağlantısı var"
     override val clipboardGalleryUrlSnackAction = "Görüntüle"
     override val errorTimeout = "Zaman aşımı oluştu"
@@ -45,7 +44,7 @@ object TrTranslations : Translations by EnTranslations {
     override val imageSearch = "Görsel Arama"
     override val searchImage = "Görsel Arama"
     override val searchSh = "Yalnızca Silinen Galerileri Gösteri"
-    override val searchSto = "Yalnızca Torrent\'li Galerileri Göster"
+    override val searchSto = "Yalnızca Torrent'li Galerileri Göster"
     override val searchSr = "En Az Derecelendirme"
     override val searchSpTo = "/"
     override val searchSpErr2 = "Sayfa oranı en az 20 olmalı"
@@ -67,20 +66,12 @@ object TrTranslations : Translations by EnTranslations {
     override val duplicateName = "Ad zaten kullanımda."
     override val textIsEmpty = "Yazı boş"
     override val errorUnknownHost = "Bilinmeyen host"
-    override val appWaring =
-        "Bu uygulamadaki içerikler internetten alınmaktadır. Bazı içerikler fiziksel veya zihinsel olarak size zararlı gelebilir.Yukarıda, riskleri öğrendiniz ve üstleneceksiniz. \nKullanmaya devam ederek, yukarıdaki koşulları kabul edersiniz."
-    override val signInFailedTip = { p0: String ->
-        "Bu sorun devam ederse, \"%s\" seçeneğini deneyin."
-            .format(p0)
-    }
+    override val appWaring = "Bu uygulamadaki içerikler internetten alınmaktadır. Bazı içerikler fiziksel veya zihinsel olarak size zararlı gelebilir.Yukarıda, riskleri öğrendiniz ve üstleneceksiniz. \nKullanmaya devam ederek, yukarıdaki koşulları kabul edersiniz."
+    override val signInFailedTip = { a: String -> "Bu sorun devam ederse, \"$a\" seçeneğini deneyin." }
     override val galleryListSearchBarOpenGallery = "Galeriyi aç"
-    override val galleryListSearchBarHintEHentai = "E-Hentai\'de Arayın"
-    override val galleryListEmptyHitSubscription =
-        "Etiketlere Ayarlar->EH->Etiketlerim yerinden abone olun"
-    override val duplicateQuickSearch = { p0: String ->
-        "Aynı bir hızlı arama zaten var. Adı \"%s\"."
-            .format(p0)
-    }
+    override val galleryListSearchBarHintEHentai = "E-Hentai'de Arayın"
+    override val galleryListEmptyHitSubscription = "Etiketlere Ayarlar->EH->Etiketlerim yerinden abone olun"
+    override val duplicateQuickSearch = { a: String -> "Aynı bir hızlı arama zaten var. Adı \"$a\"." }
     override val searchSpErr1 = "Sayfa oranı en fazla 10un altında olamaz"
     override val readme = "BENIOKU"
 }

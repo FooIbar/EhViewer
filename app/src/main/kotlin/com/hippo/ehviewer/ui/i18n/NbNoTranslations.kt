@@ -29,14 +29,8 @@ object NbNoTranslations : Translations by EnTranslations {
     override val noTorrents = "Ingen torrenter"
     override val searchSfl = "Språk"
     override val guestMode = "Fortsett uten å logge inn"
-    override val favoredTimes = { p0: Int ->
-        "♥ %d"
-            .format(p0)
-    }
-    override val torrentCount = { p0: Int ->
-        "Torrent (%d)"
-            .format(p0)
-    }
+    override val favoredTimes = { a: Int -> "♥ $a" }
+    override val torrentCount = { a: Int -> "Torrent ($a)" }
     override val share = "Del"
     override val galleryListSearchBarOpenGallery = "Åpne galleriet"
     override val searchSpTo = "til"
@@ -64,7 +58,7 @@ object NbNoTranslations : Translations by EnTranslations {
     override val tagVoteUp = "Stem opp"
     override val prefGrayscale = "Gråskala"
     override val actionShare = "Del"
-    override val filterTheTag = { p0: String -> "Blokker etiketten «$p0»?" }
+    override val filterTheTag = { a: String -> "Blokker etiketten «$a»?" }
     override val rating9 = "Underbar"
     override val errorInvalidUrl = "Ugyldig nettadresse"
     override val errorCannotParseTheUrl = "Kan ikke tolke nettadressen"
@@ -77,9 +71,7 @@ object NbNoTranslations : Translations by EnTranslations {
     override val errorDecodingFailed = "Dekoding mislyktes"
     override val errorReadingFailed = "Lesing mislyktes"
     override val errorParseError = "Tolkningsfeil"
-    override val filterTheUploader = { p0: String ->
-        "Blokker opplasteren «$p0»?"
-    }
+    override val filterTheUploader = { a: String -> "Blokker opplasteren «$a»?" }
     override val rating10 = "Mesterverk"
     override val rating8 = "Storslått"
     override val rating6 = "OK"
@@ -95,10 +87,7 @@ object NbNoTranslations : Translations by EnTranslations {
     override val settingsAdvanced = "Avansert"
     override val settingsAbout = "Om"
     override val settingsAdvancedExportData = "Eksporter data"
-    override val settingsAdvancedExportDataTo = { p0: String ->
-        "Data eksportert til %s"
-            .format(p0)
-    }
+    override val settingsAdvancedExportDataTo = { a: String -> "Data eksportert til $a" }
     override val settingsAdvancedImportData = "Importer data"
     override val settingsAboutSource = "Kildekode"
     override val rating1 = "Utolererbar"
@@ -124,10 +113,7 @@ object NbNoTranslations : Translations by EnTranslations {
     override val galleryComments = "Gallerikommentarer"
     override val downloadStateWait = "Venter"
     override val downloadStateFailed = "Mislykket"
-    override val downloadStateFailed2 = { p0: Int ->
-        "%d ufullstendig"
-            .format(p0)
-    }
+    override val downloadStateFailed2 = { a: Int -> "$a ufullstendig" }
     override val downloadLabels = "Last ned etiketter"
     override val downloadStartAll = "Start alle"
     override val editComment = "Rediger kommentar"
@@ -140,10 +126,7 @@ object NbNoTranslations : Translations by EnTranslations {
     override val downloadRemoveDialogCheckText = "Slett bildefiler"
     override val settingsEhGallerySite = "Galleriside"
     override val downloadStopAll = "Stopp alle"
-    override val imageSaved = { p0: String ->
-        "Bilde lagret i %s"
-            .format(p0)
-    }
+    override val imageSaved = { a: String -> "Bilde lagret i $a" }
     override val settingsDownloadDownloadOriginImage = "Last ned opprinnelig bilde"
     override val settingsPrivacySecure = "Forhindre skjermavbildninger"
     override val downloadService = "Nedlastingstjeneste"
@@ -154,10 +137,7 @@ object NbNoTranslations : Translations by EnTranslations {
     override val actionAddTag = "Legg til etikett"
     override val resetDownloadLocation = "Tilbakestill til forvalg"
     override val dontShowAgain = "Ikke vis igjen"
-    override val commentUserUploader = { p0: String ->
-        "%s (opplaster)"
-            .format(p0)
-    }
+    override val commentUserUploader = { a: String -> "$a (opplaster)" }
     override val copyTrans = "Kopier oversettelse"
     override val prefRotationType = "Forvalgt rotasjonstype"
     override val viewer = "Lesemodus"
@@ -198,16 +178,11 @@ object NbNoTranslations : Translations by EnTranslations {
     override val moveFavoritesDialogTitle = "Flytt favoritter"
     override val letMeSelect = "La meg velge"
     override val toplistPastmonth = "Forrige måned"
-    override val deleteSearchHistory = { p0: String ->
-        "Slett «$p0» fra søkehistorikk?"
-    }
+    override val deleteSearchHistory = { a: String -> "Slett «$a» fra søkehistorikk?" }
     override val collections = "Samlinger"
     override val tagVoteDown = "Stem ned"
     override val yesterday = "I går"
-    override val someDaysAgo = { p0: Int ->
-        "%d dager siden"
-            .format(p0)
-    }
+    override val someDaysAgo = { a: Int -> "$a dager siden" }
     override val downloadAll = "Alle"
     override val actionSave = "Lagre"
     override val settingsPrivacy = "Personvern"
@@ -215,50 +190,35 @@ object NbNoTranslations : Translations by EnTranslations {
     override val actionSaveTo = "Lagre i …"
     override val pageCount = { quantity: Int ->
         when (quantity) {
-            1 -> "%d side"
-            else -> "%d sider"
-        }.format(quantity)
+            1 -> "$quantity side"
+            else -> "$quantity sider"
+        }
     }
     override val someMinutesAgo = { quantity: Int ->
         when (quantity) {
             1 -> "Et minutt siden"
-            else -> "%d minutter siden"
-        }.format(quantity)
+            else -> "$quantity minutter siden"
+        }
     }
-    override val minute = { quantity: Int ->
-        when (quantity) {
-            1 -> "min"
-            else -> "min"
-        }.format(quantity)
-    }
+    override val minute = { _: Int -> "min" }
     override val someHoursAgo = { quantity: Int ->
         when (quantity) {
             1 -> "Én time siden"
-            else -> "%d timer siden"
-        }.format(quantity)
+            else -> "$quantity timer siden"
+        }
     }
     override val hour = { quantity: Int ->
         when (quantity) {
             1 -> "time"
             else -> "timer"
-        }.format(quantity)
+        }
     }
-    override val second = { quantity: Int ->
-        when (quantity) {
-            1 -> "sek"
-            else -> "sek"
-        }.format(quantity)
-    }
+    override val second = { _: Int -> "sek" }
     override val day = { quantity: Int ->
         when (quantity) {
             1 -> "dag"
             else -> "dager"
-        }.format(quantity)
+        }
     }
-    override val year = { quantity: Int ->
-        when (quantity) {
-            1 -> "år"
-            else -> "år"
-        }.format(quantity)
-    }
+    override val year = { _: Int -> "år" }
 }
