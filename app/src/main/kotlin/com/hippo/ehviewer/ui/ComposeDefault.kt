@@ -22,18 +22,18 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 inline fun <R> AnimatedVisibilityScope.composing(
     navigator: DestinationsNavigator,
-    block: @Composable context(MainActivity, SnackbarHostState, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, Translations, CoroutineScope)
+    block: @Composable context(Translations, MainActivity, SnackbarHostState, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, CoroutineScope)
     () -> R,
 ) = with(NoopTransitionsVisibilityScope) {
     togetherWith(implicit<AnimatedVisibilityScope>()) {
         block(
+            LocalTranslations.current,
             with(LocalContext.current) { remember { findActivity() } },
             LocalSnackBarHostState.current,
             LocalDialogState.current,
             LocalSharedTransitionScope.current,
             this,
             navigator,
-            LocalTranslations.current,
             rememberCoroutineScope(),
         )
     }
