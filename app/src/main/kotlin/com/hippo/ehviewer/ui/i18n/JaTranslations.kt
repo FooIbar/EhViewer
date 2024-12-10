@@ -283,12 +283,12 @@ object JaTranslations : Translations by EnTranslations {
     override val settingsDownloadMediaScanSummaryOn = "ギャラリーアプリで他の人に見せないようにします"
     override val settingsDownloadMediaScanSummaryOff = "ほとんどのギャラリーアプリでダウンロード先のパスを無視します"
     override val settingsDownloadConcurrency = "ダウンロードのスレッド数"
-    override val settingsDownloadConcurrencySummary = { a: String -> "同時に最大 $a 枚の画像をダウンロードします" }
+    override val settingsDownloadConcurrencySummary = { a: Int -> "同時に最大 $a 枚の画像をダウンロードします" }
     override val settingsDownloadDownloadDelay = "ダウンロードの遅延"
-    override val settingsDownloadDownloadDelaySummary = { a: String -> "ダウンロードで $a ミリ秒の遅延をさせます" }
+    override val settingsDownloadDownloadDelaySummary = { a: Int -> "ダウンロードで $a ミリ秒の遅延をさせます" }
     override val settingsDownloadDownloadTimeout = "ダウンロードのタイムアウト (秒単位)"
     override val settingsDownloadPreloadImage = "画像をプリロード"
-    override val settingsDownloadPreloadImageSummary = { a: String -> "$a 枚の画像をプリロードします" }
+    override val settingsDownloadPreloadImageSummary = { a: Int -> "$a 枚の画像をプリロードします" }
     override val settingsDownloadDownloadOriginImage = "オリジナルの画像をダウンロードする"
     override val settingsDownloadDownloadOriginImageSummary = "注意！GP が必要になる可能性があります"
     override val settingsDownloadSaveAsCbz = "CBZ アーカイブで保存"

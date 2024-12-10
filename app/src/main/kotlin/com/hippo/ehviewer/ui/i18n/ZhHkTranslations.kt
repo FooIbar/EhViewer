@@ -249,9 +249,9 @@ object ZhHkTranslations : Translations by EnTranslations {
     override val settingsDownloadDownloadLocation = "下載路徑"
     override val settingsDownloadCantGetDownloadLocation = "無法獲取下載路徑"
     override val settingsDownloadConcurrency = "下載線程數"
-    override val settingsDownloadConcurrencySummary = { a: String -> "最多同時下載 $a 張圖片" }
+    override val settingsDownloadConcurrencySummary = { a: Int -> "最多同時下載 $a 張圖片" }
     override val settingsDownloadPreloadImage = "預載圖片"
-    override val settingsDownloadPreloadImageSummary = { a: String -> "向後預載 $a 張圖片" }
+    override val settingsDownloadPreloadImageSummary = { a: Int -> "向後預載 $a 張圖片" }
     override val settingsDownloadDownloadOriginImage = "下載原圖"
     override val settingsDownloadDownloadOriginImageSummary = "這很危險！勾選此項會導致下載配額迅速流失"
     override val settingsDownloadMediaScan = "允許媒體掃描"

@@ -277,9 +277,9 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val settingsDownloadDownloadLocation = "下載路徑"
     override val settingsDownloadCantGetDownloadLocation = "無法取得下載路徑"
     override val settingsDownloadConcurrency = "並行下載數"
-    override val settingsDownloadConcurrencySummary = { a: String -> "最多同時下載 $a 張圖片" }
+    override val settingsDownloadConcurrencySummary = { a: Int -> "最多同時下載 $a 張圖片" }
     override val settingsDownloadPreloadImage = "預載圖片"
-    override val settingsDownloadPreloadImageSummary = { a: String -> "向後預載 $a 張圖片" }
+    override val settingsDownloadPreloadImageSummary = { a: Int -> "向後預載 $a 張圖片" }
     override val settingsDownloadDownloadOriginImage = "下載原圖"
     override val settingsDownloadDownloadOriginImageSummary = "這很危險！勾選這個選項會導致圖片流量配額快速耗用"
     override val settingsDownloadSaveAsCbz = "儲存為 CBZ 壓縮檔"
@@ -396,7 +396,7 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val downloadAll = "全部"
     override val downloadStartAllReversed = "全部開始（倒序）"
     override val settingsDownloadDownloadDelay = "下載延時"
-    override val settingsDownloadDownloadDelaySummary = { a: String -> "每次下載延時 $a 毫秒" }
+    override val settingsDownloadDownloadDelaySummary = { a: Int -> "每次下載延時 $a 毫秒" }
     override val settingsDownloadDownloadTimeout = "下載超時（秒）"
     override val noBrowserInstalled = "請安裝一個瀏覽器。"
     override val toplistAlltime = "從始至終"

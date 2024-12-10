@@ -282,9 +282,9 @@ object ZhCnTranslations : Translations by EnTranslations {
     override val settingsDownloadDownloadLocation = "下载路径"
     override val settingsDownloadCantGetDownloadLocation = "无法获取下载路径"
     override val settingsDownloadConcurrency = "并发下载数"
-    override val settingsDownloadConcurrencySummary = { a: String -> "最多同时下载 $a 张图片" }
+    override val settingsDownloadConcurrencySummary = { a: Int -> "最多同时下载 $a 张图片" }
     override val settingsDownloadPreloadImage = "预载图片"
-    override val settingsDownloadPreloadImageSummary = { a: String -> "向后预载 $a 张图片" }
+    override val settingsDownloadPreloadImageSummary = { a: Int -> "向后预载 $a 张图片" }
     override val settingsDownloadDownloadOriginImage = "下载原图"
     override val settingsDownloadDownloadOriginImageSummary = "警告！可能需要 GP"
     override val settingsDownloadSaveAsCbz = "保存为 CBZ 压缩包"
@@ -405,7 +405,7 @@ object ZhCnTranslations : Translations by EnTranslations {
     override val downloadAll = "全部"
     override val downloadStartAllReversed = "全部开始（倒序）"
     override val settingsDownloadDownloadDelay = "下载延时"
-    override val settingsDownloadDownloadDelaySummary = { a: String -> "每次下载延时 $a 毫秒" }
+    override val settingsDownloadDownloadDelaySummary = { a: Int -> "每次下载延时 $a 毫秒" }
     override val settingsDownloadDownloadTimeout = "下载超时（秒）"
     override val noBrowserInstalled = "请安装一个浏览器。"
     override val toplistAlltime = "从始至终"

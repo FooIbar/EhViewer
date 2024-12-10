@@ -221,9 +221,9 @@ object ThTranslations : Translations by EnTranslations {
     override val settingsDownloadMediaScanSummaryOn = "โปรดซ่อนแอปแกลเลอรี่หรือแอปดูรูปในเครื่องของคุณจากคนอื่นด้วย"
     override val settingsDownloadMediaScanSummaryOff = "แอปแกลเลอรี่ส่วนใหญ่จะข้ามการสแกนรูปภาพในแหล่งดาวน์โหลด"
     override val settingsDownloadConcurrency = "ดาวน์โหลดแบบหลายเธด"
-    override val settingsDownloadConcurrencySummary = { a: String -> "โหลดถึง $a ภาพ" }
+    override val settingsDownloadConcurrencySummary = { a: Int -> "โหลดถึง $a ภาพ" }
     override val settingsDownloadPreloadImage = "โหลดภาพล่วงหน้า"
-    override val settingsDownloadPreloadImageSummary = { a: String -> "โหลดภาพล่วงหน้าไป $a ภาพ" }
+    override val settingsDownloadPreloadImageSummary = { a: Int -> "โหลดภาพล่วงหน้าไป $a ภาพ" }
     override val settingsDownloadDownloadOriginImage = "ดาวน์โหลดรูปภาพต้นฉบับ"
     override val settingsDownloadDownloadOriginImageSummary = "อันตรายนะ! คุณอาจจะเจอรหัสข้อผิดพลาด 509 ได้"
     override val settingsDownloadRestoreDownloadItems = "คืนรายการดาวน์โหลด"

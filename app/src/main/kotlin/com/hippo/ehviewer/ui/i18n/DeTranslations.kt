@@ -224,9 +224,9 @@ object DeTranslations : Translations by EnTranslations {
     override val settingsDownloadMediaScanSummaryOn = "Du solltest deine Galerie-Apps verstecken"
     override val settingsDownloadMediaScanSummaryOff = "Meisten Galerie-Apps ignorieren die Bilder im Downloadpfad"
     override val settingsDownloadConcurrency = "Multi-Thread-Download"
-    override val settingsDownloadConcurrencySummary = { a: String -> "Bis zu $a Bild(er)" }
+    override val settingsDownloadConcurrencySummary = { a: Int -> "Bis zu $a Bild(er)" }
     override val settingsDownloadPreloadImage = "Bilder vorabladen"
-    override val settingsDownloadPreloadImageSummary = { a: String -> "Die nächste $a Bilder vorabladen" }
+    override val settingsDownloadPreloadImageSummary = { a: Int -> "Die nächste $a Bilder vorabladen" }
     override val settingsDownloadDownloadOriginImage = "Originale Bilder herunterladen"
     override val settingsDownloadDownloadOriginImageSummary = "Wenn es aktiviert wird, wird der 509-Fehler dir schneller widerfahren"
     override val settingsDownloadRestoreDownloadItems = "Download-Elemente wiederherstellen"

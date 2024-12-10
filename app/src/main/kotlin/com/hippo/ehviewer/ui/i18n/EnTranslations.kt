@@ -300,12 +300,12 @@ object EnTranslations : Translations {
     override val settingsDownloadMediaScanSummaryOn = "Please hide your gallery apps away from other people"
     override val settingsDownloadMediaScanSummaryOff = "Most gallery apps will ignore pictures in the download path"
     override val settingsDownloadConcurrency = "Concurrency download"
-    override val settingsDownloadConcurrencySummary = { a: String -> "Up to $a images" }
+    override val settingsDownloadConcurrencySummary = { a: Int -> "Up to $a images" }
     override val settingsDownloadDownloadDelay = "Download delay"
-    override val settingsDownloadDownloadDelaySummary = { a: String -> "Delay $a ms per download" }
+    override val settingsDownloadDownloadDelaySummary = { a: Int -> "Delay $a ms per download" }
     override val settingsDownloadDownloadTimeout = "Download timeout (in seconds)"
     override val settingsDownloadPreloadImage = "Preload image"
-    override val settingsDownloadPreloadImageSummary = { a: String -> "Preload next $a image" }
+    override val settingsDownloadPreloadImageSummary = { a: Int -> "Preload next $a image" }
     override val settingsDownloadDownloadOriginImage = "Download original image"
     override val settingsDownloadDownloadOriginImageSummary = "Caution! May require GP"
     override val settingsDownloadSaveAsCbz = "Save as CBZ archive"

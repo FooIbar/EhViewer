@@ -208,9 +208,9 @@ object EsTranslations : Translations by EnTranslations {
     override val settingsDownloadMediaScanSummaryOn = "Las galerías de imágenes mostrarán los doujinshis/mangas descargados. ¡Cuidado con prestar tu móvil o tablet!"
     override val settingsDownloadMediaScanSummaryOff = "Las de galería de imágenes no mostrarán los doujinshis/mangas descargados"
     override val settingsDownloadConcurrency = "Multi-hilos al descargar"
-    override val settingsDownloadConcurrencySummary = { a: String -> "Máximo de $a imágenes" }
+    override val settingsDownloadConcurrencySummary = { a: Int -> "Máximo de $a imágenes" }
     override val settingsDownloadPreloadImage = "Precargar imagen"
-    override val settingsDownloadPreloadImageSummary = { a: String -> "Precargar las siguientes $a imágenes" }
+    override val settingsDownloadPreloadImageSummary = { a: Int -> "Precargar las siguientes $a imágenes" }
     override val settingsDownloadDownloadOriginImage = "Descargar imagen original"
     override val settingsDownloadDownloadOriginImageSummary = "¡Cuidado! Podrías recibir error 509"
     override val settingsDownloadRestoreDownloadItems = "Restaurar los elementos de descarga"

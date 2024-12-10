@@ -166,7 +166,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
             val multiThreadDownload = Settings::multiThreadDownload.observed
             SimpleMenuPreferenceInt(
                 title = settingsDownloadConcurrency,
-                summary = settingsDownloadConcurrencySummary("${multiThreadDownload.value}"),
+                summary = settingsDownloadConcurrencySummary(multiThreadDownload.value),
                 entry = R.array.multi_thread_download_entries,
                 entryValueRes = R.array.multi_thread_download_entry_values,
                 value = multiThreadDownload,
@@ -174,7 +174,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
             val downloadDelay = Settings::downloadDelay.observed
             SimpleMenuPreferenceInt(
                 title = settingsDownloadDownloadDelay,
-                summary = settingsDownloadDownloadDelaySummary("${downloadDelay.value}"),
+                summary = settingsDownloadDownloadDelaySummary(downloadDelay.value),
                 entry = R.array.download_delay_entries,
                 entryValueRes = R.array.download_delay_entry_values,
                 value = downloadDelay,
@@ -189,7 +189,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
             val preloadImage = Settings::preloadImage.observed
             SimpleMenuPreferenceInt(
                 title = settingsDownloadPreloadImage,
-                summary = settingsDownloadPreloadImageSummary("${preloadImage.value}"),
+                summary = settingsDownloadPreloadImageSummary(preloadImage.value),
                 entry = R.array.preload_image_entries,
                 entryValueRes = R.array.preload_image_entry_values,
                 value = preloadImage,

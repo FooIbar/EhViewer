@@ -309,12 +309,12 @@ interface Translations {
     val settingsDownloadMediaScanSummaryOn: String
     val settingsDownloadMediaScanSummaryOff: String
     val settingsDownloadConcurrency: String
-    val settingsDownloadConcurrencySummary: (String) -> String
+    val settingsDownloadConcurrencySummary: (Int) -> String
     val settingsDownloadDownloadDelay: String
-    val settingsDownloadDownloadDelaySummary: (String) -> String
+    val settingsDownloadDownloadDelaySummary: (Int) -> String
     val settingsDownloadDownloadTimeout: String
     val settingsDownloadPreloadImage: String
-    val settingsDownloadPreloadImageSummary: (String) -> String
+    val settingsDownloadPreloadImageSummary: (Int) -> String
     val settingsDownloadDownloadOriginImage: String
     val settingsDownloadDownloadOriginImageSummary: String
     val settingsDownloadSaveAsCbz: String

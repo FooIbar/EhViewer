@@ -208,9 +208,9 @@ object KoTranslations : Translations by EnTranslations {
     override val settingsDownloadMediaScanSummaryOn = "다른 사람들에게 갤러리 앱을 들키지 마세요."
     override val settingsDownloadMediaScanSummaryOff = "대부분의 갤러리 앱에서 다운로드 경로에 있는 사진을 무시합니다."
     override val settingsDownloadConcurrency = "다중 스레드 다운로드"
-    override val settingsDownloadConcurrencySummary = { a: String -> "${a}개 이미지까지" }
+    override val settingsDownloadConcurrencySummary = { a: Int -> "${a}개 이미지까지" }
     override val settingsDownloadPreloadImage = "이미지 미리 불러오기"
-    override val settingsDownloadPreloadImageSummary = { a: String -> "다음 ${a}개 이미지를 미리 불러옴" }
+    override val settingsDownloadPreloadImageSummary = { a: Int -> "다음 ${a}개 이미지를 미리 불러옴" }
     override val settingsDownloadDownloadOriginImage = "원본 이미지 다운로드"
     override val settingsDownloadDownloadOriginImageSummary = "이 옵션은 위험합니다! 509 오류가 발생할 수 있습니다."
     override val settingsDownloadRestoreDownloadItems = "다운로드 항목 복구"
