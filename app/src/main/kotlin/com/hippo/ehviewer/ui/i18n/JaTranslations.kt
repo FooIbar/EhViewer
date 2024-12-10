@@ -190,38 +190,16 @@ object JaTranslations : Translations by EnTranslations {
     override val downloadStateFailed2 = { a: Int -> "$a 件が未完成" }
     override val downloadStateFinish = "ダウンロード完了"
     override val stat509AlertTitle = "509 アラート"
-    override val stat509AlertText =
-        "ダウンロード制限に達しました。しばらくしてからもう一度やり直してください。"
+    override val stat509AlertText = "ダウンロード制限に達しました。しばらくしてからもう一度やり直してください。"
     override val statDownloadDoneTitle = "ダウンロード完了"
-    override val statDownloadDoneTextSucceeded = { p0: Int ->
-        "%d 件が成功"
-            .format(p0)
-    }
-    override val statDownloadDoneTextFailed = { p0: Int ->
-        "%d 件が失敗"
-            .format(p0)
-    }
-    override val statDownloadDoneTextMix = { p0: Int, p1: Int ->
-        "%d 件のダウンロードが成功、%d 件が失敗"
-            .format(p0, p1)
-    }
-    override val statDownloadDoneLineSucceeded = { p0: String ->
-        "成功: %s"
-            .format(p0)
-    }
-    override val statDownloadDoneLineFailed = { p0: String ->
-        "失敗: %s"
-            .format(p0)
-    }
+    override val statDownloadDoneTextSucceeded = { a: Int -> "$a 件が成功" }
+    override val statDownloadDoneTextFailed = { a: Int -> "$a 件が失敗" }
+    override val statDownloadDoneTextMix = { a: Int, b: Int -> "$a 件のダウンロードが成功、$b 件が失敗" }
+    override val statDownloadDoneLineSucceeded = { a: String -> "成功: $a" }
+    override val statDownloadDoneLineFailed = { a: String -> "失敗: $a" }
     override val downloadRemoveDialogTitle = "ダウンロードを削除"
-    override val downloadRemoveDialogMessage = { p0: String ->
-        "ダウンロードリストから「%s」を削除しますか？"
-            .format(p0)
-    }
-    override val downloadRemoveDialogMessage2 = { p0: Int ->
-        "ダウンロードリストから %d 件のタスクを削除しますか？"
-            .format(p0)
-    }
+    override val downloadRemoveDialogMessage = { a: String -> "ダウンロードリストから「$a」を削除しますか？" }
+    override val downloadRemoveDialogMessage2 = { a: Int -> "ダウンロードリストから $a 件のタスクを削除しますか？" }
     override val downloadRemoveDialogCheckText = "画像ファイルを削除"
     override val statDownloadActionStopAll = "すべて停止"
     override val defaultDownloadLabelName = "デフォルト"
@@ -230,17 +208,10 @@ object JaTranslations : Translations by EnTranslations {
     override val downloadStartAll = "すべて開始"
     override val downloadStopAll = "すべて停止"
     override val downloadResetReadingProgress = "閲覧進捗をリセット"
-    override val resetReadingProgressMessage =
-        "すべてのダウンロード済みのギャラリーの閲覧進捗をリセットしますか？"
+    override val resetReadingProgressMessage = "すべてのダウンロード済みのギャラリーの閲覧進捗をリセットしますか？"
     override val downloadServiceLabel = "EhViewer ダウンロードサービス"
-    override val downloadSpeedText = { p0: String ->
-        "%s"
-            .format(p0)
-    }
-    override val downloadSpeedText2 = { p0: String, p1: String ->
-        "%s - 残り: %s"
-            .format(p0, p1)
-    }
+    override val downloadSpeedText = { a: String -> a }
+    override val downloadSpeedText2 = { a: String, b: String -> "$a - 残り: $b" }
     override val rememberDownloadLabel = "ダウンロードラベルを記憶"
     override val defaultDownloadLabel = "デフォルトのダウンロードラベル"
     override val addedToDownloadList = "ダウンロードリストに追加しました"
@@ -254,10 +225,7 @@ object JaTranslations : Translations by EnTranslations {
     override val labelTextIsInvalid = "「デフォルト」は無効なラベルです"
     override val labelTextExist = "ラベルはすでに存在しています"
     override val renameLabelTitle = "ラベルの名前を変更"
-    override val deleteLabel = { p0: String ->
-        "「%s」のラベルを削除しますか？"
-            .format(p0)
-    }
+    override val deleteLabel = { a: String -> "「$a」のラベルを削除しますか？" }
     override val noHistory = "閲覧したギャラリーはここに表示されます"
     override val clearAll = "すべて消去"
     override val clearAllHistory = "履歴をすべて消去しますか？"
@@ -268,27 +236,19 @@ object JaTranslations : Translations by EnTranslations {
     override val filterTagNamespace = "タグの名前空間"
     override val filterCommenter = "コメント"
     override val filterComment = "コメントの正規表現"
-    override val deleteFilter = { p0: String ->
-        "「%s」のブロックを削除しますか？"
-            .format(p0)
-    }
+    override val deleteFilter = { a: String -> "「$a」のブロックを削除しますか？" }
     override val addFilter = "ブロックを追加"
     override val showDefinition = "ヘルプを表示"
     override val filterText = "テキストをブロック"
-    override val filterTip =
-        "E-Hentai のギャラリーリストからブロックしたものを除外します。\n\nタイトルをブロック: ブロックしたテキストを含むギャラリーを除外します。\n\nアップローダーをブロック: 該当するアップローダーを除外します。\n\nタグをブロック: 該当するタグを含むギャラリーを除外します。ギャラリーリストの取得に時間がかかる可能性があります。\n\nタグ名前空間をブロック: 該当するタグ名前空間を含むギャラリーを除外します。ギャラリーリストの取得に時間がかかる可能性があります。\n\nコメント投稿者をブロック: 該当するコメント投稿者が投稿したコメントを除外します。\n\nコメントをブロック: 正規表現に一致するコメントを除外します。"
+    override val filterTip = "E-Hentai のギャラリーリストからブロックしたものを除外します。\n\nタイトルをブロック: ブロックしたテキストを含むギャラリーを除外します。\n\nアップローダーをブロック: 該当するアップローダーを除外します。\n\nタグをブロック: 該当するタグを含むギャラリーを除外します。ギャラリーリストの取得に時間がかかる可能性があります。\n\nタグ名前空間をブロック: 該当するタグ名前空間を含むギャラリーを除外します。ギャラリーリストの取得に時間がかかる可能性があります。\n\nコメント投稿者をブロック: 該当するコメント投稿者が投稿したコメントを除外します。\n\nコメントをブロック: 正規表現に一致するコメントを除外します。"
     override val uConfig = "E-Hentai の設定"
     override val applyTip = "右上隅のチェックマークをタップして設定を保存します"
     override val myTags = "マイタグ"
     override val shareImage = "画像を共有"
-    override val imageSaved = { p0: String ->
-        "画像は「%s」に保存されました"
-            .format(p0)
-    }
+    override val imageSaved = { a: String -> "画像は「$a」に保存されました" }
     override val settingsEh = "EH"
     override val settingsEhSignOut = "ログアウト"
-    override val settingsEhIdentityCookiesSigned =
-        "このアカウントは Identity Cookie を使用してログインできます。<br><b>これは安全に保管してください</b>"
+    override val settingsEhIdentityCookiesSigned = "このアカウントは Identity Cookie を使用してログインできます。<br><b>これは安全に保管してください</b>"
     override val settingsEhIdentityCookiesGuest = "ゲストモード"
     override val settingsEhClearIgneous = "Igneous を消去"
     override val settingsUConfig = "E-Hentai の設定"
@@ -305,140 +265,87 @@ object JaTranslations : Translations by EnTranslations {
     override val settingsEhDetailSizeShort = "短い"
     override val settingsEhThumbColumns = "サムネイルのカラム数"
     override val settingsEhForceEhThumb = "E-Hentai サムネイルサーバーを使用する"
-    override val settingsEhForceEhThumbSummary =
-        "サムネイルの読み込みに問題がある場合は無効化してください"
+    override val settingsEhForceEhThumbSummary = "サムネイルの読み込みに問題がある場合は無効化してください"
     override val settingsEhShowJpnTitle = "日本語のタイトルを表示"
-    override val settingsEhShowJpnTitleSummary =
-        "E-Hentai ウェブサイトの設定で日本語のタイトルを有効化する必要があります"
+    override val settingsEhShowJpnTitleSummary = "E-Hentai ウェブサイトの設定で日本語のタイトルを有効化する必要があります"
     override val settingsEhShowGalleryPages = "ギャラリーページ数を表示"
     override val settingsEhShowGalleryPagesSummary = "リストにギャラリーのページ数を表示します"
     override val settingsEhShowGalleryComments = "ギャラリーのコメントを表示"
-    override val settingsEhShowGalleryCommentsSummary =
-        "ギャラリーの詳細ページにコメントを表示します"
+    override val settingsEhShowGalleryCommentsSummary = "ギャラリーの詳細ページにコメントを表示します"
     override val settingsEhShowGalleryCommentThreshold = "コメントスコアのしきい値"
-    override val settingsEhShowGalleryCommentThresholdSummary =
-        "このスコア以下のコメントを非表示にします (-101 は無効)"
+    override val settingsEhShowGalleryCommentThresholdSummary = "このスコア以下のコメントを非表示にします (-101 は無効)"
     override val settingsEhShowTagTranslations = "タグの翻訳を表示"
-    override val settingsEhShowTagTranslationsSummary =
-        "元のテキストの代わりに翻訳したタグを表示します (データファイルのダウンロードに時間がかかります)"
+    override val settingsEhShowTagTranslationsSummary = "元のテキストの代わりに翻訳したタグを表示します (データファイルのダウンロードに時間がかかります)"
     override val settingsEhTagTranslationsSource = "プレースホルダー"
     override val settingsEhTagTranslationsSourceUrl = "https://placeholder"
     override val settingsEhFilter = "ギャラリーをブロック"
-    override val settingsEhFilterSummary =
-        "タイトル、アップローダー、タグ、コメントの投稿者またはギャラリーをブロックします"
+    override val settingsEhFilterSummary = "タイトル、アップローダー、タグ、コメントの投稿者またはギャラリーをブロックします"
     override val settingsBlockExtraneousAds = "[試験的] 関係のない広告をブロック"
     override val settingsAdsPlaceholder = "[任意] 広告を置換するプレースホルダーを選択"
     override val settingsDownload = "ダウンロード"
     override val settingsDownloadDownloadLocation = "ダウンロード先"
     override val settingsDownloadCantGetDownloadLocation = "ダウンロード先を取得できません"
     override val settingsDownloadMediaScan = "メディアスキャンを許可する"
-    override val settingsDownloadMediaScanSummaryOn =
-        "ギャラリーアプリで他の人に見せないようにします"
-    override val settingsDownloadMediaScanSummaryOff =
-        "ほとんどのギャラリーアプリでダウンロード先のパスを無視します"
+    override val settingsDownloadMediaScanSummaryOn = "ギャラリーアプリで他の人に見せないようにします"
+    override val settingsDownloadMediaScanSummaryOff = "ほとんどのギャラリーアプリでダウンロード先のパスを無視します"
     override val settingsDownloadConcurrency = "ダウンロードのスレッド数"
-    override val settingsDownloadConcurrencySummary = { p0: String ->
-        "同時に最大 %s 枚の画像をダウンロードします"
-            .format(p0)
-    }
+    override val settingsDownloadConcurrencySummary = { a: String -> "同時に最大 $a 枚の画像をダウンロードします" }
     override val settingsDownloadDownloadDelay = "ダウンロードの遅延"
-    override val settingsDownloadDownloadDelaySummary = { p0: String ->
-        "ダウンロードで %s ミリ秒の遅延をさせます"
-            .format(p0)
-    }
+    override val settingsDownloadDownloadDelaySummary = { a: String -> "ダウンロードで $a ミリ秒の遅延をさせます" }
     override val settingsDownloadDownloadTimeout = "ダウンロードのタイムアウト (秒単位)"
     override val settingsDownloadPreloadImage = "画像をプリロード"
-    override val settingsDownloadPreloadImageSummary = { p0: String ->
-        "%s 枚の画像をプリロードします"
-            .format(p0)
-    }
+    override val settingsDownloadPreloadImageSummary = { a: String -> "$a 枚の画像をプリロードします" }
     override val settingsDownloadDownloadOriginImage = "オリジナルの画像をダウンロードする"
     override val settingsDownloadDownloadOriginImageSummary = "注意！GP が必要になる可能性があります"
     override val settingsDownloadSaveAsCbz = "CBZ アーカイブで保存"
     override val settingsDownloadArchiveMetadata = "アーカイブのメタデータ"
-    override val settingsDownloadArchiveMetadataSummary =
-        "アーカイブのダウンロード時に ComicInfo.xml を生成します"
+    override val settingsDownloadArchiveMetadataSummary = "アーカイブのダウンロード時に ComicInfo.xml を生成します"
     override val settingsDownloadReloadMetadata = "メタデータを再読み込み"
-    override val settingsDownloadReloadMetadataSummary =
-        "タグが変更された可能性のあるダウンロード項目の ComicInfo.xml を再生成します"
-    override val settingsDownloadReloadMetadataSuccessfully = { p0: Int ->
-        "%d 個の項目を再読み込みしました"
-            .format(p0)
-    }
-    override val settingsDownloadReloadMetadataFailed = { p0: String ->
-        "メタデータの再読み込みに失敗: %s"
-            .format(p0)
-    }
+    override val settingsDownloadReloadMetadataSummary = "タグが変更された可能性のあるダウンロード項目の ComicInfo.xml を再生成します"
+    override val settingsDownloadReloadMetadataSuccessfully = { a: Int -> "$a 個の項目を再読み込みしました" }
+    override val settingsDownloadReloadMetadataFailed = { a: String -> "メタデータの再読み込みに失敗: $a" }
     override val settingsDownloadRestoreDownloadItems = "ダウンロードタスクを復元"
-    override val settingsDownloadRestoreDownloadItemsSummary =
-        "ダウンロードディレクトリのダウンロードタスクを復元します"
+    override val settingsDownloadRestoreDownloadItemsSummary = "ダウンロードディレクトリのダウンロードタスクを復元します"
     override val settingsDownloadRestoreNotFound = "復元可能なダウンロードが見つかりません"
     override val settingsDownloadRestoreFailed = "復元できませんでした"
-    override val settingsDownloadRestoreSuccessfully = { p0: Int ->
-        "%d 件のタスクが復元されました"
-            .format(p0)
-    }
+    override val settingsDownloadRestoreSuccessfully = { a: Int -> "$a 件のタスクが復元されました" }
     override val settingsDownloadCleanRedundancy = "ダウンロードフォルダの不要なファイルを整理"
-    override val settingsDownloadCleanRedundancySummary =
-        "ダウンロードディレクトリからダウンロードタスクにない画像ファイルを削除します"
-    override val settingsDownloadCleanRedundancyNoRedundancy =
-        "不要なファイルが見つかりませんでした"
-    override val settingsDownloadCleanRedundancyDone = { p0: Int ->
-        "%d 件のファイルを削除しました"
-            .format(p0)
-    }
+    override val settingsDownloadCleanRedundancySummary = "ダウンロードディレクトリからダウンロードタスクにない画像ファイルを削除します"
+    override val settingsDownloadCleanRedundancyNoRedundancy = "不要なファイルが見つかりませんでした"
+    override val settingsDownloadCleanRedundancyDone = { a: Int -> "$a 件のファイルを削除しました" }
     override val settingsAdvanced = "その他の設定"
     override val settingsAdvancedSaveParseErrorBody = "解析の失敗時に HTML ファイルを保存"
-    override val settingsAdvancedSaveParseErrorBodySummary =
-        "HTML ファイルに個人情報が含まれている場合があります"
+    override val settingsAdvancedSaveParseErrorBodySummary = "HTML ファイルに個人情報が含まれている場合があります"
     override val settingsAdvancedSaveCrashLog = "アプリのクラッシュ時にレポートを保存"
     override val settingsAdvancedSaveCrashLogSummary = "クラッシュレポートはバグの修正に役立ちます"
     override val settingsAdvancedDumpLogcat = "Logcat をダンプ"
     override val settingsAdvancedDumpLogcatSummary = "Logcat のログを内部ストレージに保存します"
     override val settingsAdvancedDumpLogcatFailed = "Logcat のダンプに失敗しました"
-    override val settingsAdvancedDumpLogcatTo = { p0: String ->
-        "Logcat のログが「%s」にダンプされました"
-            .format(p0)
-    }
+    override val settingsAdvancedDumpLogcatTo = { a: String -> "Logcat のログが「$a」にダンプされました" }
     override val settingsAdvancedReadCacheSize = "読書用キャッシュのサイズ"
     override val settingsAdvancedAppLanguageTitle = "アプリの言語"
-    override val settingsAdvancedHardwareBitmapThreshold =
-        "ハードウェアビットマップ (パフォーマンス向上) のしきい値"
-    override val settingsAdvancedHardwareBitmapThresholdSummary =
-        "長い画像の読み込みに失敗する場合はこれを減らしてみてください"
+    override val settingsAdvancedHardwareBitmapThreshold = "ハードウェアビットマップ (パフォーマンス向上) のしきい値"
+    override val settingsAdvancedHardwareBitmapThresholdSummary = "長い画像の読み込みに失敗する場合はこれを減らしてみてください"
     override val settingsAdvancedExportData = "データをエクスポート"
-    override val settingsAdvancedExportDataSummary =
-        "ダウンロードリストやクイック検索などのデータを内部ストレージに保存します"
-    override val settingsAdvancedExportDataTo = { p0: String ->
-        "データを「%s」にエクスポート"
-            .format(p0)
-    }
+    override val settingsAdvancedExportDataSummary = "ダウンロードリストやクイック検索などのデータを内部ストレージに保存します"
+    override val settingsAdvancedExportDataTo = { a: String -> "データを「$a」にエクスポート" }
     override val settingsAdvancedExportDataFailed = "データをエクスポートできませんでした"
     override val settingsAdvancedImportData = "データをインポート"
     override val settingsAdvancedImportDataSummary = "以前に保存したデータを読み込みます"
     override val settingsAdvancedImportDataSuccessfully = "データをインポートしました"
     override val settingsAdvancedBackupFavorite = "お気に入りリストをバックアップ"
-    override val settingsAdvancedBackupFavoriteSummary =
-        "リモートのお気に入りリストをローカルにバックアップします"
-    override val settingsAdvancedBackupFavoriteStart = { p0: String ->
-        "お気に入りリスト「%s」をバックアップ中です"
-            .format(p0)
-    }
+    override val settingsAdvancedBackupFavoriteSummary = "リモートのお気に入りリストをローカルにバックアップします"
+    override val settingsAdvancedBackupFavoriteStart = { a: String -> "お気に入りリスト「$a」をバックアップ中です" }
     override val settingsAdvancedBackupFavoriteNothing = "バックアップするものがありません"
-    override val settingsAdvancedBackupFavoriteSuccess =
-        "お気に入りリストのバックアップに成功しました"
-    override val settingsAdvancedBackupFavoriteFailed =
-        "お気に入りリストのバックアップに失敗しました"
+    override val settingsAdvancedBackupFavoriteSuccess = "お気に入りリストのバックアップに成功しました"
+    override val settingsAdvancedBackupFavoriteFailed = "お気に入りリストのバックアップに失敗しました"
     override val settingsAbout = "このアプリについて"
     override val settingsAboutDeclarationSummary = "EhViewer は E-Hentai.org と一切関係はありません"
     override val settingsAboutAuthor = "開発者"
     override val settingsAboutLatestRelease = "最新のリリース"
     override val settingsAboutSource = "ソースコード"
     override val settingsAboutVersion = "ビルドバージョン"
-    override val settingsAboutCommitTime = { p0: String ->
-        "%s にコミットされました"
-            .format(p0)
-    }
+    override val settingsAboutCommitTime = { a: String -> "$a にコミットされました" }
     override val settingsAboutCheckForUpdates = "更新を確認"
     override val license = "ライセンス"
     override val cantReadTheFile = "ファイルを読み取れませんでした"
@@ -446,14 +353,8 @@ object JaTranslations : Translations by EnTranslations {
     override val pleaseWait = "お待ちください"
     override val cloudFavorites = "クラウドのお気に入り"
     override val localFavorites = "ローカルのお気に入り"
-    override val searchBarHint = { p0: String ->
-        "%s を検索"
-            .format(p0)
-    }
-    override val favoritesTitle = { p0: String ->
-        "%s"
-            .format(p0)
-    }
+    override val searchBarHint = { a: String -> "$a を検索" }
+    override val favoritesTitle = { a: String -> a }
     override val favoritesTitle2 = { a: String, b: String -> "$a - $b" }
     override val deleteFavoritesDialogTitle = "お気に入りから削除"
     override val deleteFavoritesDialogMessage = { a: Int -> "$a 件の項目をお気に入りリストから削除しますか？" }
