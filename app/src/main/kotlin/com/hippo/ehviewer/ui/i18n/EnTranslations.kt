@@ -215,23 +215,11 @@ object EnTranslations : Translations {
     override val statDownloadDoneTextSucceeded = { a: Int -> "$a succeeded" }
     override val statDownloadDoneTextFailed = { a: Int -> "$a failed" }
     override val statDownloadDoneTextMix = { a: Int, b: Int -> "$a succeeded, $b failed" }
-    override val statDownloadDoneLineSucceeded = { p0: String ->
-        "Succeeded: %s"
-            .format(p0)
-    }
-    override val statDownloadDoneLineFailed = { p0: String ->
-        "Failed: %s"
-            .format(p0)
-    }
+    override val statDownloadDoneLineSucceeded = { a: String -> "Succeeded: $a" }
+    override val statDownloadDoneLineFailed = { a: String -> "Failed: $a" }
     override val downloadRemoveDialogTitle = "Remove Download Item"
-    override val downloadRemoveDialogMessage = { p0: String ->
-        "Remove %s from download list ?"
-            .format(p0)
-    }
-    override val downloadRemoveDialogMessage2 = { p0: Int ->
-        "Remove %d items from download list ?"
-            .format(p0)
-    }
+    override val downloadRemoveDialogMessage = { a: String -> "Remove $a from download list ?" }
+    override val downloadRemoveDialogMessage2 = { a: Int -> "Remove $a items from download list ?" }
     override val downloadRemoveDialogCheckText = "Delete image files"
     override val statDownloadActionStopAll = "Stop all"
     override val defaultDownloadLabelName = "Default"
@@ -240,17 +228,10 @@ object EnTranslations : Translations {
     override val downloadStartAll = "Start all"
     override val downloadStopAll = "Stop all"
     override val downloadResetReadingProgress = "Reset reading progress"
-    override val resetReadingProgressMessage =
-        "Reset the reading progress of all downloaded galleries?"
+    override val resetReadingProgressMessage = "Reset the reading progress of all downloaded galleries?"
     override val downloadServiceLabel = "EhViewer Download Service"
-    override val downloadSpeedText = { p0: String ->
-        "%s"
-            .format(p0)
-    }
-    override val downloadSpeedText2 = { p0: String, p1: String ->
-        "%s, %s left"
-            .format(p0, p1)
-    }
+    override val downloadSpeedText = { a: String -> a }
+    override val downloadSpeedText2 = { a: String, b: String -> "$a, $b left" }
     override val rememberDownloadLabel = "Remember download label"
     override val defaultDownloadLabel = "Default download label"
     override val addedToDownloadList = "Added to download list"
@@ -264,10 +245,7 @@ object EnTranslations : Translations {
     override val labelTextIsInvalid = "\"Default\" is an invalid label"
     override val labelTextExist = "Label exists"
     override val renameLabelTitle = "Rename label"
-    override val deleteLabel = { p0: String ->
-        "Delete label \"%s\"?"
-            .format(p0)
-    }
+    override val deleteLabel = { a: String -> "Delete label \"$a\"?" }
     override val noHistory = "Viewed galleries will be shown here"
     override val clearAll = "Clear all"
     override val clearAllHistory = "Clear all history?"
@@ -278,27 +256,19 @@ object EnTranslations : Translations {
     override val filterTagNamespace = "Tag namespace"
     override val filterCommenter = "Commenter"
     override val filterComment = "Comment Regex"
-    override val deleteFilter = { p0: String ->
-        "Delete blocker \"%s\"?"
-            .format(p0)
-    }
+    override val deleteFilter = { a: String -> "Delete blocker \"$a\"?" }
     override val addFilter = "Add blocker"
     override val showDefinition = "Show definition"
     override val filterText = "Blocker text"
-    override val filterTip =
-        "This blocking system filters the result of EHentai website blocking system.\n\nTitle Blocker: exclude the gallery whose title contains the word.\n\nUploader Blocker: exclude the gallery which was uploaded by the uploader.\n\nTag Blocker: exclude the gallery which contain the tag, it takes more time to get gallery list.\n\nTag Namespace Blocker: exclude the gallery which contain the tag namespace, it takes more time to get gallery list.\n\nCommenter Blocker: exclude the comments posted by the commenter.\n\nComment Blocker: exclude the comments matching the regex."
+    override val filterTip = "This blocking system filters the result of EHentai website blocking system.\n\nTitle Blocker: exclude the gallery whose title contains the word.\n\nUploader Blocker: exclude the gallery which was uploaded by the uploader.\n\nTag Blocker: exclude the gallery which contain the tag, it takes more time to get gallery list.\n\nTag Namespace Blocker: exclude the gallery which contain the tag namespace, it takes more time to get gallery list.\n\nCommenter Blocker: exclude the comments posted by the commenter.\n\nComment Blocker: exclude the comments matching the regex."
     override val uConfig = "EHentai settings"
     override val applyTip = "Tap the check mark to save the settings"
     override val myTags = "My tags"
     override val shareImage = "Share image"
-    override val imageSaved = { p0: String ->
-        "Image saved to %s"
-            .format(p0)
-    }
+    override val imageSaved = { a: String -> "Image saved to $a" }
     override val settingsEh = "EH"
     override val settingsEhSignOut = "Sign out"
-    override val settingsEhIdentityCookiesSigned =
-        "Identity cookies can be used to sign in to this account.<br><b>KEEP IT SAFE</b>"
+    override val settingsEhIdentityCookiesSigned = "Identity cookies can be used to sign in to this account.<br><b>KEEP IT SAFE</b>"
     override val settingsEhIdentityCookiesGuest = "Guest mode"
     override val settingsEhClearIgneous = "Clear igneous"
     override val settingsUConfig = "EHentai settings"
@@ -315,89 +285,56 @@ object EnTranslations : Translations {
     override val settingsEhDetailSizeShort = "Short"
     override val settingsEhThumbColumns = "Thumb columns"
     override val settingsEhForceEhThumb = "Use e-hentai thumbnail server"
-    override val settingsEhForceEhThumbSummary =
-        "Try disabling this if you have trouble loading thumbnails"
+    override val settingsEhForceEhThumbSummary = "Try disabling this if you have trouble loading thumbnails"
     override val settingsEhShowJpnTitle = "Show Japanese title"
-    override val settingsEhShowJpnTitleSummary =
-        "Require enabling Japanese Title in Settings on EHentai website"
+    override val settingsEhShowJpnTitleSummary = "Require enabling Japanese Title in Settings on EHentai website"
     override val settingsEhShowGalleryPages = "Show gallery pages"
-    override val settingsEhShowGalleryPagesSummary =
-        "Display the number of pages in the gallery list"
+    override val settingsEhShowGalleryPagesSummary = "Display the number of pages in the gallery list"
     override val settingsEhShowVoteStatus = "Show tag vote status"
     override val settingsEhShowGalleryComments = "Show gallery comments"
     override val settingsEhShowGalleryCommentsSummary = "Show comments on the gallery details page"
     override val settingsEhShowGalleryCommentThreshold = "Comment score threshold"
-    override val settingsEhShowGalleryCommentThresholdSummary =
-        "Hide comments at or below this score (-101 disables)"
+    override val settingsEhShowGalleryCommentThresholdSummary = "Hide comments at or below this score (-101 disables)"
     override val settingsEhShowTagTranslations = "Show tag translations"
-    override val settingsEhShowTagTranslationsSummary =
-        "Show tag translations instead of the original text (It takes time to download the data file)"
+    override val settingsEhShowTagTranslationsSummary = "Show tag translations instead of the original text (It takes time to download the data file)"
     override val settingsEhTagTranslationsSource = "Placeholder"
     override val settingsEhTagTranslationsSourceUrl = "https://placeholder"
     override val settingsEhFilter = "Blockers"
-    override val settingsEhFilterSummary =
-        "Block gallery or comment by title, uploader, tags and commenter"
+    override val settingsEhFilterSummary = "Block gallery or comment by title, uploader, tags and commenter"
     override val settingsReadReverseControls = "Reverse physical key controls"
     override val settingsBlockExtraneousAds = "[Experimental] Block extraneous ads"
     override val settingsAdsPlaceholder = "[Optional] Pick placeholder to replace ads"
     override val settingsDownload = "Download"
     override val settingsDownloadDownloadLocation = "Download location"
-    override val settingsDownloadCantGetDownloadLocation = "Can\'t get download location"
+    override val settingsDownloadCantGetDownloadLocation = "Can't get download location"
     override val settingsDownloadMediaScan = "Allow media scan"
-    override val settingsDownloadMediaScanSummaryOn =
-        "Please hide your gallery apps away from other people"
-    override val settingsDownloadMediaScanSummaryOff =
-        "Most gallery apps will ignore pictures in the download path"
+    override val settingsDownloadMediaScanSummaryOn = "Please hide your gallery apps away from other people"
+    override val settingsDownloadMediaScanSummaryOff = "Most gallery apps will ignore pictures in the download path"
     override val settingsDownloadConcurrency = "Concurrency download"
-    override val settingsDownloadConcurrencySummary = { p0: String ->
-        "Up to %s images"
-            .format(p0)
-    }
+    override val settingsDownloadConcurrencySummary = { a: String -> "Up to $a images" }
     override val settingsDownloadDownloadDelay = "Download delay"
-    override val settingsDownloadDownloadDelaySummary = { p0: String ->
-        "Delay %s ms per download"
-            .format(p0)
-    }
+    override val settingsDownloadDownloadDelaySummary = { a: String -> "Delay $a ms per download" }
     override val settingsDownloadDownloadTimeout = "Download timeout (in seconds)"
     override val settingsDownloadPreloadImage = "Preload image"
-    override val settingsDownloadPreloadImageSummary = { p0: String ->
-        "Preload next %s image"
-            .format(p0)
-    }
+    override val settingsDownloadPreloadImageSummary = { a: String -> "Preload next $a image" }
     override val settingsDownloadDownloadOriginImage = "Download original image"
     override val settingsDownloadDownloadOriginImageSummary = "Caution! May require GP"
     override val settingsDownloadSaveAsCbz = "Save as CBZ archive"
     override val settingsDownloadArchiveMetadata = "Archive metadata"
-    override val settingsDownloadArchiveMetadataSummary =
-        "Generate ComicInfo.xml on archive download"
+    override val settingsDownloadArchiveMetadataSummary = "Generate ComicInfo.xml on archive download"
     override val settingsDownloadReloadMetadata = "Reload metadata"
-    override val settingsDownloadReloadMetadataSummary =
-        "Regenerate the ComicInfo.xml for download items whose tags may have changed"
-    override val settingsDownloadReloadMetadataSuccessfully = { p0: Int ->
-        "Reload %d items successfully"
-            .format(p0)
-    }
-    override val settingsDownloadReloadMetadataFailed = { p0: String ->
-        "Reload metadata failed: %s"
-            .format(p0)
-    }
+    override val settingsDownloadReloadMetadataSummary = "Regenerate the ComicInfo.xml for download items whose tags may have changed"
+    override val settingsDownloadReloadMetadataSuccessfully = { a: Int -> "Reload $a items successfully" }
+    override val settingsDownloadReloadMetadataFailed = { a: String -> "Reload metadata failed: $a" }
     override val settingsDownloadRestoreDownloadItems = "Restore download items"
-    override val settingsDownloadRestoreDownloadItemsSummary =
-        "Restore all download items in download location"
+    override val settingsDownloadRestoreDownloadItemsSummary = "Restore all download items in download location"
     override val settingsDownloadRestoreNotFound = "Not found download items to restore"
     override val settingsDownloadRestoreFailed = "Restore failed"
-    override val settingsDownloadRestoreSuccessfully = { p0: Int ->
-        "Restore %d items successfully"
-            .format(p0)
-    }
+    override val settingsDownloadRestoreSuccessfully = { a: Int -> "Restore $a items successfully" }
     override val settingsDownloadCleanRedundancy = "Clear download redundancy"
-    override val settingsDownloadCleanRedundancySummary =
-        "Remove gallery images which are not in download list but in download location"
+    override val settingsDownloadCleanRedundancySummary = "Remove gallery images which are not in download list but in download location"
     override val settingsDownloadCleanRedundancyNoRedundancy = "No redundancy"
-    override val settingsDownloadCleanRedundancyDone = { p0: Int ->
-        "Redundancy cleaning completed, clean-up %d items totally"
-            .format(p0)
-    }
+    override val settingsDownloadCleanRedundancyDone = { a: Int -> "Redundancy cleaning completed, clean-up $a items totally" }
     override val settingsAdvanced = "Advanced"
     override val settingsAdvancedSaveParseErrorBody = "Save HTML content when parsing error"
     override val settingsAdvancedSaveParseErrorBodySummary = "Html content may be privacy-sensitive"
@@ -406,40 +343,27 @@ object EnTranslations : Translations {
     override val settingsAdvancedDumpLogcat = "Dump logcat"
     override val settingsAdvancedDumpLogcatSummary = "Save logcat to external storage"
     override val settingsAdvancedDumpLogcatFailed = "Dump logcat failed"
-    override val settingsAdvancedDumpLogcatTo = { p0: String ->
-        "Logcat dumped to %s"
-            .format(p0)
-    }
+    override val settingsAdvancedDumpLogcatTo = { a: String -> "Logcat dumped to $a" }
     override val settingsAdvancedReadCacheSize = "Read cache size"
     override val settingsAdvancedAppLanguageTitle = "App language"
-    override val settingsAdvancedHardwareBitmapThreshold =
-        "Hardware bitmap (better performance) threshold"
-    override val settingsAdvancedHardwareBitmapThresholdSummary =
-        "Try decreasing this if long images fail to load"
+    override val settingsAdvancedHardwareBitmapThreshold = "Hardware bitmap (better performance) threshold"
+    override val settingsAdvancedHardwareBitmapThresholdSummary = "Try decreasing this if long images fail to load"
     override val settingsAdvancedExportData = "Export data"
-    override val settingsAdvancedExportDataSummary =
-        "Save data like download list, quick search list, to external storage"
-    override val settingsAdvancedExportDataTo = { p0: String ->
-        "Exported data to %s"
-            .format(p0)
-    }
+    override val settingsAdvancedExportDataSummary = "Save data like download list, quick search list, to external storage"
+    override val settingsAdvancedExportDataTo = { a: String -> "Exported data to $a" }
     override val settingsAdvancedExportDataFailed = "Failed to export data"
     override val settingsAdvancedImportData = "Import data"
     override val settingsAdvancedImportDataSummary = "Load data which were previously saved"
     override val settingsAdvancedImportDataSuccessfully = "Data imported"
     override val settingsAdvancedBackupFavorite = "Backup favorite list"
     override val settingsAdvancedBackupFavoriteSummary = "Backup remote favorite list to local"
-    override val settingsAdvancedBackupFavoriteStart = { p0: String ->
-        "Backing up favorite list %s"
-            .format(p0)
-    }
+    override val settingsAdvancedBackupFavoriteStart = { a: String -> "Backing up favorite list $a" }
     override val settingsAdvancedBackupFavoriteNothing = "Nothing to backup"
     override val settingsAdvancedBackupFavoriteSuccess = "Backup favorite list success"
     override val settingsAdvancedBackupFavoriteFailed = "Backup favorite list failed"
     override val settingsAbout = "About"
     override val settingsAboutDeclaration = "EhViewer"
-    override val settingsAboutDeclarationSummary =
-        "EhViewer is not affiliated with E-Hentai.org in any way"
+    override val settingsAboutDeclarationSummary = "EhViewer is not affiliated with E-Hentai.org in any way"
     override val settingsAboutAuthor = "Author"
     override val settingsAboutAuthorSummary = buildAnnotatedString {
         withStyle(SpanStyle(textDecoration = TextDecoration.Underline)) {
@@ -452,38 +376,22 @@ object EnTranslations : Translations {
     override val settingsAboutLatestRelease = "Latest release"
     override val settingsAboutSource = "Source"
     override val settingsAboutVersion = "Build version"
-    override val settingsAboutCommitTime = { p0: String ->
-        "Committed at %s"
-            .format(p0)
-    }
+    override val settingsAboutCommitTime = { a: String -> "Committed at $a" }
     override val settingsAboutCheckForUpdates = "Check for updates"
     override val license = "License"
-    override val cantReadTheFile = "Can\'t read the file"
+    override val cantReadTheFile = "Can't read the file"
     override val appLanguageSystem = "System Language (Default)"
     override val pleaseWait = "Please wait"
     override val cloudFavorites = "Cloud Favorites"
     override val localFavorites = "Local Favorites"
-    override val searchBarHint = { p0: String ->
-        "Search %s"
-            .format(p0)
-    }
-    override val favoritesTitle = { p0: String ->
-        "%s"
-            .format(p0)
-    }
-    override val favoritesTitle2 = { p0: String, p1: String ->
-        "%s - %s"
-            .format(p0, p1)
-    }
+    override val searchBarHint = { a: String -> "Search $a" }
+    override val favoritesTitle = { a: String -> a }
+    override val favoritesTitle2 = { a: String, b: String -> "$a - $b" }
     override val deleteFavoritesDialogTitle = "Delete from favorites"
-    override val deleteFavoritesDialogMessage = { p0: Int ->
-        "Delete %d items from favorites?"
-            .format(p0)
-    }
+    override val deleteFavoritesDialogMessage = { a: Int -> "Delete $a items from favorites?" }
     override val moveFavoritesDialogTitle = "Move favorites"
     override val defaultFavoritesCollection = "Default favorites collection"
-    override val defaultFavoritesWarning =
-        "You won\'t be able to add favorite notes if you enable this"
+    override val defaultFavoritesWarning = "You won't be able to add favorite notes if you enable this"
     override val letMeSelect = "Let me select"
     override val favoriteNote = "Favorite Note"
     override val collections = "Collections"
@@ -491,10 +399,7 @@ object EnTranslations : Translations {
     override val fromTheFuture = "From the future"
     override val justNow = "Just now"
     override val yesterday = "Yesterday"
-    override val someDaysAgo = { p0: Int ->
-        "%d days ago"
-            .format(p0)
-    }
+    override val someDaysAgo = { a: Int -> "$a days ago" }
     override val archive = "Archive"
     override val archiveFree = "Free"
     override val archiveOriginal = "Original"
@@ -509,15 +414,11 @@ object EnTranslations : Translations {
     override val imageLimitsSummary = "Used:"
     override val imageLimitsNormal = "No restrictions"
     override val imageLimitsRestricted = "Image resolution restricted to 1280x"
-    override val resetCost = { p0: Int ->
-        "Spend %d GP to reset"
-            .format(p0)
-    }
+    override val resetCost = { a: Int -> "Spend $a GP to reset" }
     override val reset = "Reset"
     override val settingsPrivacy = "Privacy"
     override val settingsPrivacySecure = "Prevent screenshots"
-    override val settingsPrivacySecureSummary =
-        "Prevent the content of the app from being taken screenshots of or shown in the \"Recent Apps\" list."
+    override val settingsPrivacySecureSummary = "Prevent the content of the app from being taken screenshots of or shown in the \"Recent Apps\" list."
     override val clearSearchHistory = "Clear device search history"
     override val clearSearchHistorySummary = "Remove searches you have performed from this device"
     override val clearSearchHistoryConfirm = "Clear search history?"
@@ -550,23 +451,14 @@ object EnTranslations : Translations {
     override val tagVoteUp = "Vote up"
     override val tagVoteWithdraw = "Withdraw vote"
     override val tagVoteSuccessfully = "Vote successfully"
-    override val deleteSearchHistory = { p0: String ->
-        "Delete \"%s\" from search history?"
-            .format(p0)
-    }
+    override val deleteSearchHistory = { a: String -> "Delete \"$a\" from search history?" }
     override val actionAddTag = "Add tag"
     override val actionAddTagTip = "Enter new tags"
-    override val commentUserUploader = { p0: String ->
-        "%s (Uploader)"
-            .format(p0)
-    }
+    override val commentUserUploader = { a: String -> "$a (Uploader)" }
     override val noNetwork = "No network"
     override val settingsEhMeteredNetworkWarning = "Metered network warning"
     override val meteredNetworkWarning = "Connected to metered networks"
-    override val readFrom = { p0: Int ->
-        "Read page %d"
-            .format(p0)
-    }
+    override val readFrom = { a: Int -> "Read page $a" }
     override val settingsEhRequestNews = "Timed request news page"
     override val settingsEhHideHvEvents = "Hide HV event Notifications"
     override val copyTrans = "Copy translation"
@@ -575,25 +467,20 @@ object EnTranslations : Translations {
     override val pickNewDownloadLocation = "Pick a new location"
     override val dontShowAgain = "Don\'t show again"
     override val openSettings = "Open settings"
-    override val appLinkNotVerifiedMessage =
-        "For Android 12 and newer, you need to manually add link to verified links in order to open E-Hentai links in EhViewer."
+    override val appLinkNotVerifiedMessage = "For Android 12 and newer, you need to manually add link to verified links in order to open E-Hentai links in EhViewer."
     override val appLinkNotVerifiedTitle = "App links not verified"
     override val openByDefault = "Open by default"
     override val backupBeforeUpdate = "Backup data before update"
     override val useCiUpdateChannel = "Use CI update channel"
     override val settingsPrivacyRequireUnlock = "Require Unlock"
     override val settingsPrivacyRequireUnlockDelay = "Lock Delay"
-    override val settingsPrivacyRequireUnlockDelaySummary = { p0: String ->
-        "No unlock is required when leaving App and returning within %s minute(s)"
-            .format(p0)
-    }
-    override val settingsPrivacyRequireUnlockDelaySummaryImmediately =
-        "Unlock is required whenever you return to this App"
+    override val settingsPrivacyRequireUnlockDelaySummary = { a: String -> "No unlock is required when leaving App and returning within $a minute(s)" }
+    override val settingsPrivacyRequireUnlockDelaySummaryImmediately = "Unlock is required whenever you return to this App"
     override val filterLabel = "Blocker Type"
     override val archivePasswd = "password"
     override val archiveNeedPasswd = "Archive need password"
     override val passwdWrong = "Password Wrong"
-    override val passwdCannotBeEmpty = "Password can\'t be empty"
+    override val passwdCannotBeEmpty = "Password can't be empty"
     override val listTileThumbSize = "Thumb size in detail mode"
     override val accountName = "Account"
     override val preloadThumbAggressively = "Preload thumbs aggressively"
@@ -606,10 +493,7 @@ object EnTranslations : Translations {
     override val updateFrequencyWeekly = "Weekly"
     override val updateFrequencyBiweekly = "Biweekly"
     override val updateFrequencyMonthly = "Monthly"
-    override val updateFailed = { p0: String ->
-        "Update failed: %s"
-            .format(p0)
-    }
+    override val updateFailed = { a: String -> "Update failed: $a" }
     override val newVersionAvailable = "New version available!"
     override val alreadyLatestVersion = "Already the latest version"
     override val permissionDenied = "Permission denied"
@@ -626,7 +510,7 @@ object EnTranslations : Translations {
     override val navZoneNext = "Next"
     override val navZoneLeft = "Left"
     override val navZoneRight = "Right"
-    override val decodeImageError = "The image couldn\'t be loaded"
+    override val decodeImageError = "The image couldn't be loaded"
     override val actionRetry = "Retry"
     override val labelDefault = "Default"
     override val rotationFree = "Free"
@@ -713,50 +597,50 @@ object EnTranslations : Translations {
     override val showBlockedImage = "Show blocked image"
     override val pageCount = { quantity: Int ->
         when (quantity) {
-            1 -> "%d page"
-            else -> "%d pages"
-        }.format(quantity)
+            1 -> "$quantity page"
+            else -> "$quantity pages"
+        }
     }
     override val someMinutesAgo = { quantity: Int ->
         when (quantity) {
             1 -> "A minute ago"
-            else -> "%d minutes ago"
-        }.format(quantity)
+            else -> "$quantity minutes ago"
+        }
     }
     override val someHoursAgo = { quantity: Int ->
         when (quantity) {
             1 -> "An hour ago"
-            else -> "%d hours ago"
-        }.format(quantity)
+            else -> "$quantity hours ago"
+        }
     }
     override val second = { quantity: Int ->
         when (quantity) {
             1 -> "sec"
             else -> "secs"
-        }.format(quantity)
+        }
     }
     override val minute = { quantity: Int ->
         when (quantity) {
             1 -> "min"
             else -> "mins"
-        }.format(quantity)
+        }
     }
     override val hour = { quantity: Int ->
         when (quantity) {
             1 -> "hour"
             else -> "hours"
-        }.format(quantity)
+        }
     }
     override val day = { quantity: Int ->
         when (quantity) {
             1 -> "day"
             else -> "days"
-        }.format(quantity)
+        }
     }
     override val year = { quantity: Int ->
         when (quantity) {
             1 -> "year"
             else -> "years"
-        }.format(quantity)
+        }
     }
 }
