@@ -159,7 +159,7 @@ object KoTranslations : Translations by EnTranslations {
     override val resetReadingProgressMessage = "다운로드한 모든 갤러리의 독서 진행도를 초기화하시겠습니까?"
     override val downloadServiceLabel = "EhViewer 다운로드 서비스"
     override val downloadSpeedText = { a: String -> a }
-    override val downloadSpeedText2 = { a: String, b: String -> "$a, $a 남음" }
+    override val downloadSpeedText2 = { a: String, b: String -> "$a, $b 남음" }
     override val rememberDownloadLabel = "다운로드 레이블 기억"
     override val defaultDownloadLabel = "기본 다운로드 레이블"
     override val addedToDownloadList = "다운로드 목록에 추가됨"
