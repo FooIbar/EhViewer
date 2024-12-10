@@ -523,7 +523,7 @@ object EnTranslations : Translations {
     override val clearSearchHistoryConfirm = "Clear search history?"
     override val searchHistoryCleared = "Search history cleared"
     override val downloadService = "Download Service"
-    override val favoriteName = "Favorite"
+    override val keyFavoriteName = "Favorite"
     override val darkTheme = "Dark theme"
     override val blackDarkTheme = "Black dark theme"
     override val harmonizeCategoryColor = "Harmonize category color for Dynamic Color"

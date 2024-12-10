@@ -520,7 +520,7 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val clearSearchHistoryConfirm = "清除搜尋記錄？"
     override val searchHistoryCleared = "已清除搜尋記錄"
     override val downloadService = "下載服務"
-    override val favoriteName = "收藏圖庫"
+    override val keyFavoriteName = "收藏圖庫"
     override val blackDarkTheme = "純黑深色主題"
     override val harmonizeCategoryColor = "以動態顏色為分類顏色配色"
     override val backupBeforeUpdate = "更新前備份資料"

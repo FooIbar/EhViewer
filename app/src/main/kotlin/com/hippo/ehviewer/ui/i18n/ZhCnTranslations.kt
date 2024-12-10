@@ -528,7 +528,7 @@ object ZhCnTranslations : Translations by EnTranslations {
     override val clearSearchHistoryConfirm = "要清除搜索记录吗？"
     override val searchHistoryCleared = "已清除搜索记录"
     override val downloadService = "下载服务"
-    override val favoriteName = "收藏画廊"
+    override val keyFavoriteName = "收藏画廊"
     override val blackDarkTheme = "纯黑深色主题"
     override val harmonizeCategoryColor = "类别颜色适配动态配色"
     override val backupBeforeUpdate = "更新前备份数据"

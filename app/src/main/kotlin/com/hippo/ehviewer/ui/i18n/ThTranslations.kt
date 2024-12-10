@@ -391,7 +391,7 @@ object ThTranslations : Translations by EnTranslations {
     override val settingsPrivacySecureSummary =
         "ป้องกันเนื้อหาต่างๆของตัวแอปจากการถูกบันทึกหน้าจอ หรือถูกแสดงในหน้ารายการ \"แอพล่าสุด\" ตอนสลับหรือระหว่างสลับไปแอปอื่น."
     override val downloadService = "บริการดาวน์โหลด"
-    override val favoriteName = "รายการโปรด"
+    override val keyFavoriteName = "รายการโปรด"
     override val pageCount = { quantity: Int ->
         when (quantity) {
             else -> "%d หน้า"

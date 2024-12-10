@@ -424,7 +424,7 @@ interface Translations {
     val clearSearchHistoryConfirm: String
     val searchHistoryCleared: String
     val downloadService: String
-    val favoriteName: String
+    val keyFavoriteName: String
     val darkTheme: String
     val blackDarkTheme: String
     val harmonizeCategoryColor: String

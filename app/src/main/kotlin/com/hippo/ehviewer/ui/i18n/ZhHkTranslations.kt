@@ -426,7 +426,7 @@ object ZhHkTranslations : Translations by EnTranslations {
     override val settingsPrivacySecure = "不允許荧幕抓取"
     override val settingsPrivacySecureSummary =
         "啟用後，將不能截取該應用的螢幕截圖，同時，將不會在系統任務切換器中顯示該應用的內容預覽，重新啟動應用以生效此更改"
-    override val favoriteName = "收藏畫廊"
+    override val keyFavoriteName = "收藏畫廊"
     override val actionSettings = "設定"
     override val actionRetry = "重試"
     override val actionShare = "分享"

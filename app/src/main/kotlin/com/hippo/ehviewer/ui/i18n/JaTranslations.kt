@@ -554,7 +554,7 @@ object JaTranslations : Translations by EnTranslations {
     override val clearSearchHistoryConfirm = "検索履歴を消去しますか？"
     override val searchHistoryCleared = "検索履歴を消去しました"
     override val downloadService = "ダウンロードサービス"
-    override val favoriteName = "お気に入り"
+    override val keyFavoriteName = "お気に入り"
     override val darkTheme = "ダークテーマ"
     override val blackDarkTheme = "ブラックダークテーマ"
     override val harmonizeCategoryColor = "カテゴリの色をダイナミックカラーで調和させる"

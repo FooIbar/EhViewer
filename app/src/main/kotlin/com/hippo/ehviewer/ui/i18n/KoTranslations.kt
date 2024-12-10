@@ -356,7 +356,7 @@ object KoTranslations : Translations by EnTranslations {
     override val settingsPrivacySecureSummary =
         "이 앱에서 스크린샷을 찍을 수 없게 하며, \"최근 앱\" 화면에서 앱의 내용을 보이지 않게 합니다."
     override val downloadService = "다운로드 서비스"
-    override val favoriteName = "즐겨찾기"
+    override val keyFavoriteName = "즐겨찾기"
     override val darkTheme = "어두운 테마"
     override val darkThemeFollowSystem = "시스템 설정"
     override val darkThemeOff = "항상 꺼짐"
