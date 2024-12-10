@@ -33,7 +33,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -70,8 +69,6 @@ import kotlinx.coroutines.launch
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
-    val title = stringResource(id = R.string.history)
-    val hint = stringResource(R.string.search_bar_hint, title)
     val animateItems by Settings.animateItems.collectAsState()
 
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
@@ -103,15 +100,15 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
         },
         expanded = searchBarExpanded,
         onExpandedChange = { searchBarExpanded = it },
-        title = title,
-        searchFieldHint = hint,
+        title = history,
+        searchFieldHint = searchBarHint(history),
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             IconButton(onClick = {
                 launch {
                     awaitConfirmationOrCancel(
                         confirmText = R.string.clear_all,
-                        text = { Text(text = stringResource(id = R.string.clear_all_history)) },
+                        text = { Text(text = clearAllHistory) },
                     )
                     EhDB.clearHistoryInfo()
                 }
@@ -185,13 +182,8 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
                         modifier = Modifier.padding(16.dp),
                         tint = MaterialTheme.colorScheme.primary,
                     )
-                    val emptyHint = if (keyword.isEmpty()) {
-                        stringResource(id = R.string.no_history)
-                    } else {
-                        stringResource(id = R.string.gallery_list_empty_hit)
-                    }
                     Text(
-                        text = emptyHint,
+                        text = if (keyword.isEmpty()) noHistory else galleryListEmptyHit,
                         style = MaterialTheme.typography.headlineMedium,
                     )
                 }

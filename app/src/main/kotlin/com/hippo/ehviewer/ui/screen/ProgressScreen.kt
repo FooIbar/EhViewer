@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.screen
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,12 +19,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -33,13 +33,12 @@ import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination<RootGraph>
 @Composable
-fun ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsNavigator) {
-    val wrong = stringResource(id = R.string.error_something_wrong_happened)
+fun AnimatedVisibilityScope.ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsNavigator) = composing(navigator) {
     var error by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(error) {
         if (error.isEmpty()) {
             if (gid == -1L || token == "invalid" || page == -1) {
-                error = wrong
+                error = errorSomethingWrongHappened
             } else {
                 runSuspendCatching {
                     EhEngine.getGalleryToken(gid, token, page)
@@ -71,7 +70,7 @@ fun ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsN
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = wrong,
+                    text = error,
                     style = MaterialTheme.typography.headlineMedium,
                 )
             }
