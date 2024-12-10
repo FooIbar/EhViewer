@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.ui.i18n
 
-object KoTranslations : Translations by EnTranslations {
+object KoStrings : Strings by EnStrings {
     override val homepage = "홈"
     override val whatsHot = "인기 갤러리"
     override val favourite = "즐겨찾기"

@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.ui.i18n
 
-object ZhTwTranslations : Translations by EnTranslations {
+object ZhTwStrings : Strings by EnStrings {
     override val homepage = "首頁"
     override val subscription = "訂閱"
     override val whatsHot = "熱門"

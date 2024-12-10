@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.ui.i18n
 
-object JaTranslations : Translations by EnTranslations {
+object JaStrings : Strings by EnStrings {
     override val homepage = "ホーム"
     override val subscription = "購読"
     override val whatsHot = "人気"

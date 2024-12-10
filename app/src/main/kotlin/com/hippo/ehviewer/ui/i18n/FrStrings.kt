@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.ui.i18n
 
-object FrTranslations : Translations by EnTranslations {
+object FrStrings : Strings by EnStrings {
     override val homepage = "Page d'acceuil"
     override val subscription = "Tags suivis"
     override val whatsHot = "Plus vus"

@@ -1,6 +1,6 @@
 package com.hippo.ehviewer.ui.i18n
 
-object ThTranslations : Translations by EnTranslations {
+object ThStrings : Strings by EnStrings {
     override val homepage = "หน้าหลัก"
     override val whatsHot = "เรื่องที่กำลังมาแรงมากๆ"
     override val favourite = "รายการโปรด"

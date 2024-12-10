@@ -10,7 +10,7 @@ import androidx.compose.ui.text.intl.Locale
 import cafe.adriel.lyricist.ProvideStrings
 import cafe.adriel.lyricist.rememberStrings
 
-interface Translations {
+interface Strings {
     val appName: String
     val siteE: String
     val siteEx: String
@@ -612,30 +612,45 @@ object Locales {
     const val ZhTw = "zh-TW"
 }
 
-val LocalTranslations: ProvidableCompositionLocal<Translations> =
-    staticCompositionLocalOf { EnTranslations }
+val Translations = mapOf(
+    Locales.En to EnStrings,
+    Locales.De to DeStrings,
+    Locales.Es to EsStrings,
+    Locales.Fr to FrStrings,
+    Locales.Ja to JaStrings,
+    Locales.Ko to KoStrings,
+    Locales.NbNo to NbNoStrings,
+    Locales.Th to ThStrings,
+    Locales.Tr to TrStrings,
+    Locales.ZhCn to ZhCnStrings,
+    Locales.ZhHk to ZhHkStrings,
+    Locales.ZhTw to ZhTwStrings,
+)
+
+val LocalStrings: ProvidableCompositionLocal<Strings> =
+    staticCompositionLocalOf { EnStrings }
 
 @Composable
 fun ProvideTranslations(content: @Composable () -> Unit) = ProvideStrings(
     rememberStrings(
-        translations = mapOf(
-            Locales.En to EnTranslations,
-            Locales.De to DeTranslations,
-            Locales.Es to EsTranslations,
-            Locales.Fr to FrTranslations,
-            Locales.Ja to JaTranslations,
-            Locales.Ko to KoTranslations,
-            Locales.NbNo to NbNoTranslations,
-            Locales.Th to ThTranslations,
-            Locales.Tr to TrTranslations,
-            Locales.ZhCn to ZhCnTranslations,
-            Locales.ZhHk to ZhHkTranslations,
-            Locales.ZhTw to ZhTwTranslations,
-        ),
-        currentLanguageTag = with(Locale.current) {
-            listOf(language, region).mapNotNull { it.ifBlank { null } }.joinToString("-")
-        },
+        translations = Translations,
+        currentLanguageTag = Locale.current.resolveLanguageTag(),
     ),
-    provider = LocalTranslations,
+    provider = LocalStrings,
     content = content,
 )
+
+fun getStrings(locale: Locale = Locale.current) = Translations[locale.resolveLanguageTag()] ?: EnStrings
+
+fun Locale.resolveLanguageTag() = when (val language = language) {
+    "zh" -> when (script) {
+        "Hans" -> Locales.ZhCn
+        else -> when (region) {
+            "HK" -> Locales.ZhHk
+            "MO", "TW" -> Locales.ZhTw
+            else -> Locales.ZhCn
+        }
+    }
+    "nb" -> Locales.NbNo
+    else -> language
+}
