@@ -32,7 +32,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import arrow.core.Either
 import arrow.core.Either.Companion.catch
@@ -47,6 +46,7 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
+import com.hippo.ehviewer.ui.i18n.Translations
 import com.hippo.ehviewer.ui.login.refreshAccountInfo
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
@@ -81,12 +81,11 @@ private val limitFlow: StateFlow<Result> = refreshEvent.conflate()
     .let { src -> merge(src, invalidateEvent.map { none() }) }
     .stateIn(limitScope, SharingStarted.Eagerly, none())
 
-context(CoroutineScope, DialogState, SnackbarHostState, DestinationsNavigator)
+context(CoroutineScope, DialogState, SnackbarHostState, DestinationsNavigator, Translations)
 @Composable
 fun AvatarIcon() {
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
     if (hasSignedIn) {
-        val placeholder = stringResource(id = R.string.please_wait)
         val result by limitFlow.collectAsState()
         IconButton(
             onClick = {
@@ -105,7 +104,7 @@ fun AvatarIcon() {
                             ) {
                                 CircularProgressIndicator()
                                 Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
-                                Text(text = placeholder)
+                                Text(text = pleaseWait)
                             }
                         }
                         result.onSome { current ->
@@ -122,16 +121,16 @@ fun AvatarIcon() {
                                             )
                                         }
                                         when (limits.maximum) {
-                                            -1 -> Text(text = stringResource(id = R.string.image_limits_restricted))
-                                            0 -> Text(text = stringResource(id = R.string.image_limits_normal))
+                                            -1 -> Text(text = imageLimitsRestricted)
+                                            0 -> Text(text = imageLimitsNormal)
                                             else -> Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Text(text = stringResource(id = R.string.image_limits_summary))
+                                                Text(text = imageLimitsSummary)
                                                 RollingNumber(number = limits.current)
                                                 Text(text = " / ")
                                                 RollingNumberPlaceholder(number = limits.maximum)
                                             }
                                         }
-                                        Text(text = stringResource(id = R.string.current_funds))
+                                        Text(text = currentFunds)
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.SpaceAround,
@@ -160,9 +159,9 @@ fun AvatarIcon() {
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.RestartAlt,
-                                                    contentDescription = stringResource(id = R.string.reset),
+                                                    contentDescription = reset,
                                                 )
-                                                Text(text = stringResource(id = R.string.reset_cost, limits.resetCost))
+                                                Text(text = resetCost(limits.resetCost))
                                             }
                                         }
                                     }
@@ -200,7 +199,7 @@ fun AvatarIcon() {
                     awaitConfirmationOrCancel(
                         confirmText = R.string.sign_in,
                         showCancelButton = false,
-                        text = { Text(text = stringResource(id = R.string.settings_eh_identity_cookies_guest)) },
+                        text = { Text(text = settingsEhIdentityCookiesGuest) },
                     )
                     EhUtils.signOut()
                 }
