@@ -16,10 +16,8 @@ object JaTranslations : Translations by EnTranslations {
     override val signInFirst = "ログインしてください"
     override val textIsEmpty = "テキストを入力してください"
     override val waring = "警告"
-    override val invalidDownloadLocation =
-        "ダウンロードパスは現在利用できません。ダウンロードパスを設定してください。"
-    override val clipboardGalleryUrlSnackMessage =
-        "クリップボードからギャラリーの URL が検出されました。"
+    override val invalidDownloadLocation = "ダウンロードパスは現在利用できません。ダウンロードパスを設定してください。"
+    override val clipboardGalleryUrlSnackMessage = "クリップボードからギャラリーの URL が検出されました。"
     override val clipboardGalleryUrlSnackAction = "表示"
     override val errorTimeout = "タイムアウト"
     override val errorUnknownHost = "不明なホスト"
@@ -37,24 +35,19 @@ object JaTranslations : Translations by EnTranslations {
     override val errorGetPtokenError = "pToken 取得エラー"
     override val errorCantSaveImage = "画像を保存できませんでした"
     override val errorInvalidNumber = "無効な数字です"
-    override val appWaring =
-        "このアプリの内容はインターネットから取得したものです。その内容の一部は心身に悪影響を与える可能性があります。それでも続行しますか？"
+    override val appWaring = "このアプリの内容はインターネットから取得したものです。その内容の一部は心身に悪影響を与える可能性があります。それでも続行しますか？"
     override val appWaring2 = "利用を続行することにより、上記の規約に同意したものとみなされます。"
     override val errorUsernameCannotEmpty = "ユーザー名は空欄にできません"
     override val errorPasswordCannotEmpty = "パスワードは空欄にできません"
     override val guestMode = "ゲストモード"
     override val signInFailed = "ログインに失敗しました"
-    override val signInFailedTip = { p0: String ->
-        "この問題が続く場合は「%s」をお試しください。"
-            .format(p0)
-    }
+    override val signInFailedTip = { a: String -> "この問題が続く場合は「$a」をお試しください。" }
     override val getIt = "了解"
     override val galleryListSearchBarHintExhentai = "ExHentai を検索"
     override val galleryListSearchBarHintEHentai = "E-Hentai を検索"
     override val galleryListSearchBarOpenGallery = "ギャラリーを開く"
     override val galleryListEmptyHit = "何も見つかりません"
-    override val galleryListEmptyHitSubscription =
-        "リストは空です。\n設定 -> EH -> マイタグでタグを購読できます。"
+    override val galleryListEmptyHitSubscription = "リストは空です。\n設定 -> EH -> マイタグでタグを購読できます。"
     override val keywordSearch = "キーワードで検索"
     override val imageSearch = "画像で検索"
     override val searchImage = "画像検索"
@@ -79,24 +72,14 @@ object JaTranslations : Translations by EnTranslations {
     override val addQuickSearchDialogTitle = "クイック検索を追加"
     override val nameIsEmpty = "タイトルが空欄です"
     override val delete = "削除"
-    override val addQuickSearchTip =
-        "ギャラリー検索結果の設定などはクイック検索として保存されます。検索の設定などを保存するには、まず検索を実行してください。"
+    override val addQuickSearchTip = "ギャラリー検索結果の設定などはクイック検索として保存されます。検索の設定などを保存するには、まず検索を実行してください。"
     override val readme = "README"
     override val imageSearchNotQuickSearch = "画像検索をクイック検索として追加できませんでした"
-    override val duplicateQuickSearch = { p0: String ->
-        "「%s」のクイック検索はすでに存在しています。"
-            .format(p0)
-    }
+    override val duplicateQuickSearch = { a: String -> "「$a」のクイック検索はすでに存在しています。" }
     override val duplicateName = "この名前はすでに使用されています。"
     override val saveProgress = "進捗を保存"
-    override val deleteQuickSearch = { p0: String ->
-        "クイック検索の「%s」を削除しますか？"
-            .format(p0)
-    }
-    override val goToHint = { p0: Int, p1: Int ->
-        "ページ: %d - 合計: %d ページ"
-            .format(p0, p1)
-    }
+    override val deleteQuickSearch = { a: String -> "クイック検索の「$a」を削除しますか？" }
+    override val goToHint = { a: Int, b: Int -> "ページ: $a - 合計: $b ページ" }
     override val any = "すべて"
     override val star2 = "2 つ星"
     override val star3 = "3 つ星"
@@ -104,18 +87,9 @@ object JaTranslations : Translations by EnTranslations {
     override val star5 = "5 つ星"
     override val download = "ダウンロード"
     override val read = "読む"
-    override val favoredTimes = { p0: Int ->
-        "\u2665 %d"
-            .format(p0)
-    }
-    override val ratingText = { p0: String, p1: Int ->
-        "%s (%.2f - %d)"
-            .format(p0, p1)
-    }
-    override val torrentCount = { p0: Int ->
-        "Torrent (%d)"
-            .format(p0)
-    }
+    override val favoredTimes = { a: Int -> "\u2665 $a" }
+    override val ratingText = { a: String, b: Int -> "%s (%.2f - %d)".format(a, b) }
+    override val torrentCount = { a: Int -> "Torrent ($a)" }
     override val share = "共有"
     override val rate = "評価"
     override val similarGallery = "類似のギャラリー"
@@ -140,20 +114,11 @@ object JaTranslations : Translations by EnTranslations {
     override val removeFromFavoriteSuccess = "お気に入りから削除しました"
     override val addToFavoriteFailure = "お気に入りの追加に失敗しました"
     override val removeFromFavoriteFailure = "お気に入りからの削除に失敗しました"
-    override val filterTheUploader = { p0: String ->
-        "アップローダーの「%s」をブロックしますか？"
-            .format(p0)
-    }
-    override val filterTheTag = { p0: String ->
-        "「%s」のタグをブロックしますか？"
-            .format(p0)
-    }
+    override val filterTheUploader = { a: String -> "アップローダーの「$a」をブロックしますか？" }
+    override val filterTheTag = { a: String -> "「$a」のタグをブロックしますか？" }
     override val filterAdded = "ブロックを追加しました"
     override val newerVersionAvailable = "このギャラリーの新しいバージョンが利用可能です。"
-    override val newerVersionTitle = { p0: String, p1: String ->
-        "%s、%s を追加しました"
-            .format(p0, p1)
-    }
+    override val newerVersionTitle = { a: String, b: String -> "$a、$b を追加しました" }
     override val rating10 = "ものすごくいい"
     override val rating9 = "すごくいい"
     override val rating8 = "とてもいい"
@@ -192,10 +157,7 @@ object JaTranslations : Translations by EnTranslations {
     override val commentFailed = "コメントに失敗しました"
     override val copyCommentText = "コメントをコピー"
     override val blockCommenter = "コメントをしたユーザーをブロック"
-    override val filterTheCommenter = { p0: String ->
-        "「%s」をブロックしますか？"
-            .format(p0)
-    }
+    override val filterTheCommenter = { a: String -> "「$a」をブロックしますか？" }
     override val editComment = "コメントを編集"
     override val editCommentSuccessfully = "コメントが編集されました"
     override val editCommentFailed = "コメントの編集に失敗しました"
@@ -210,10 +172,7 @@ object JaTranslations : Translations by EnTranslations {
     override val voteFailed = "評価に失敗しました"
     override val checkVoteStatus = "評価の詳細を表示"
     override val clickMoreComments = "タップしてさらにコメントを読み込む"
-    override val lastEdited = { p0: String ->
-        "最終更新: %s"
-            .format(p0)
-    }
+    override val lastEdited = { a: String -> "最終更新: $a" }
     override val formatBold = "太字"
     override val formatItalic = "斜体"
     override val formatUnderline = "下線"
@@ -221,20 +180,14 @@ object JaTranslations : Translations by EnTranslations {
     override val formatUrl = "URL"
     override val formatPlain = "プレーンテキスト"
     override val goTo = "ページに移動"
-    override val sceneDownloadTitle = { p0: String ->
-        "ダウンロード - %s"
-            .format(p0)
-    }
+    override val sceneDownloadTitle = { a: String -> "ダウンロード - $a" }
     override val noDownloadInfo = "ダウンロードタスクはここに表示されます"
     override val downloadStateNone = "一時停止中"
     override val downloadStateWait = "待機中"
     override val downloadStateDownloading = "ダウンロード中"
     override val downloadStateDownloaded = "ダウンロード済み"
     override val downloadStateFailed = "ダウンロードエラー"
-    override val downloadStateFailed2 = { p0: Int ->
-        "%d 件が未完成"
-            .format(p0)
-    }
+    override val downloadStateFailed2 = { a: Int -> "$a 件が未完成" }
     override val downloadStateFinish = "ダウンロード完了"
     override val stat509AlertTitle = "509 アラート"
     override val stat509AlertText =
@@ -501,19 +454,12 @@ object JaTranslations : Translations by EnTranslations {
         "%s"
             .format(p0)
     }
-    override val favoritesTitle2 = { p0: String, p1: String ->
-        "%s - %s"
-            .format(p0, p1)
-    }
+    override val favoritesTitle2 = { a: String, b: String -> "$a - $b" }
     override val deleteFavoritesDialogTitle = "お気に入りから削除"
-    override val deleteFavoritesDialogMessage = { p0: Int ->
-        "%d 件の項目をお気に入りリストから削除しますか？"
-            .format(p0)
-    }
+    override val deleteFavoritesDialogMessage = { a: Int -> "$a 件の項目をお気に入りリストから削除しますか？" }
     override val moveFavoritesDialogTitle = "お気に入りを移動"
     override val defaultFavoritesCollection = "デフォルトのお気に入りリスト"
-    override val defaultFavoritesWarning =
-        "これを有効化するとお気に入りのメモを追加することができなくなります"
+    override val defaultFavoritesWarning = "これを有効化するとお気に入りのメモを追加することができなくなります"
     override val letMeSelect = "手動で選択"
     override val favoriteNote = "お気に入りのメモ"
     override val collections = "コレクション"
@@ -521,10 +467,7 @@ object JaTranslations : Translations by EnTranslations {
     override val fromTheFuture = "未来から"
     override val justNow = "たった今"
     override val yesterday = "昨日"
-    override val someDaysAgo = { p0: Int ->
-        "%d 日前"
-            .format(p0)
-    }
+    override val someDaysAgo = { a: Int -> "$a 日前" }
     override val archive = "圧縮パッケージ"
     override val noArchives = "アーカイブなし"
     override val downloadArchiveStarted = "アーカイブのダウンロードを開始しました"
@@ -532,23 +475,18 @@ object JaTranslations : Translations by EnTranslations {
     override val archiveFree = "自由"
     override val archiveOriginal = "オリジナル"
     override val archiveResample = "リサンプル"
-    override val downloadArchiveFailureNoHath =
-        "アーカイブのダウンロードは H@H クライアントが必要です"
+    override val downloadArchiveFailureNoHath = "アーカイブのダウンロードは H@H クライアントが必要です"
     override val currentFunds = "現在の資金:"
     override val insufficientFunds = "資金が不足しています"
     override val imageLimits = "画像の制限"
     override val imageLimitsSummary = "使用中:"
     override val imageLimitsNormal = "制限なし"
     override val imageLimitsRestricted = "画面解像度は 1280x に制限されます"
-    override val resetCost = { p0: Int ->
-        "%d GP を使用してリセット"
-            .format(p0)
-    }
+    override val resetCost = { a: Int -> "$a GP を使用してリセット" }
     override val reset = "リセット"
     override val settingsPrivacy = "プライバシー"
     override val settingsPrivacySecure = "スクリーンショットを抑制する"
-    override val settingsPrivacySecureSummary =
-        "アプリのコンテンツがスクリーンショットで撮影されたり「最近使用したアプリ」のリストに表示されないようにします"
+    override val settingsPrivacySecureSummary = "アプリのコンテンツがスクリーンショットで撮影されたり「最近使用したアプリ」のリストに表示されないようにします"
     override val clearSearchHistory = "デバイスの検索履歴を消去"
     override val clearSearchHistorySummary = "このデバイスから検索履歴を消去します"
     override val clearSearchHistoryConfirm = "検索履歴を消去しますか？"
@@ -580,46 +518,31 @@ object JaTranslations : Translations by EnTranslations {
     override val tagVoteDown = "評価を下げる"
     override val tagVoteUp = "評価を上げる"
     override val tagVoteSuccessfully = "評価が成功しました"
-    override val deleteSearchHistory = { p0: String ->
-        "検索履歴から「%s」を削除しますか？"
-            .format(p0)
-    }
+    override val deleteSearchHistory = { a: String -> "検索履歴から「$a」を削除しますか？" }
     override val actionAddTag = "タグを追加"
     override val actionAddTagTip = "新しいタグを入力してください"
-    override val commentUserUploader = { p0: String ->
-        "%s (アップローダー)"
-            .format(p0)
-    }
+    override val commentUserUploader = { a: String -> "$a (アップローダー)" }
     override val noNetwork = "ネットワークがありません"
     override val settingsEhMeteredNetworkWarning = "従量制ネットワークの警告"
     override val meteredNetworkWarning = "従量制ネットワークに接続中です"
-    override val readFrom = { p0: Int ->
-        "%d ページを読む"
-            .format(p0)
-    }
+    override val readFrom = { a: Int -> "$a ページを読む" }
     override val settingsEhRequestNews = "時限リクエストのニュースページ"
     override val settingsEhHideHvEvents = "HV イベント通知を隠す"
     override val copyTrans = "翻訳をコピー"
-    override val defaultDownloadDirNotEmpty =
-        "デフォルトのダウンロードディレクトリが空ではありません！"
+    override val defaultDownloadDirNotEmpty = "デフォルトのダウンロードディレクトリが空ではありません！"
     override val resetDownloadLocation = "デフォルトにリセット"
     override val pickNewDownloadLocation = "新しい場所を選択"
     override val dontShowAgain = "今後表示しない"
     override val openSettings = "設定を開く"
-    override val appLinkNotVerifiedMessage =
-        "Android 12 以降の場合、EhViewer で E-Hentai のリンクを開くには確認済みのリンクを手動で追加する必要があります。"
+    override val appLinkNotVerifiedMessage = "Android 12 以降の場合、EhViewer で E-Hentai のリンクを開くには確認済みのリンクを手動で追加する必要があります。"
     override val appLinkNotVerifiedTitle = "アプリのリンクが確認されていません"
     override val openByDefault = "デフォルトで開く"
     override val backupBeforeUpdate = "更新前にデータをバックアップする"
     override val useCiUpdateChannel = "CI 更新チャンネルを使用する"
     override val settingsPrivacyRequireUnlock = "ロックの解除を要求する"
     override val settingsPrivacyRequireUnlockDelay = "ロックの遅延"
-    override val settingsPrivacyRequireUnlockDelaySummary = { p0: String ->
-        "%s 分以内にアプリに戻る場合はロックの解除を要求しません"
-            .format(p0)
-    }
-    override val settingsPrivacyRequireUnlockDelaySummaryImmediately =
-        "このアプリに戻るたびにロックの解除を要求します"
+    override val settingsPrivacyRequireUnlockDelaySummary = { a: String -> "$a 分以内にアプリに戻る場合はロックの解除を要求しません" }
+    override val settingsPrivacyRequireUnlockDelaySummaryImmediately = "このアプリに戻るたびにロックの解除を要求します"
     override val filterLabel = "ブロッカーのタイプ"
     override val archivePasswd = "パスワード"
     override val archiveNeedPasswd = "アーカイブにはパスワードが必要です"
@@ -629,8 +552,7 @@ object JaTranslations : Translations by EnTranslations {
     override val accountName = "アカウント"
     override val preloadThumbAggressively = "サムネイルを積極的にプリロードする"
     override val animateItems = "リスト項目のアニメーション"
-    override val animateItemsSummary =
-        "クラッシュやフレームドロップが発生する場合はこれを無効化してください"
+    override val animateItemsSummary = "クラッシュやフレームドロップが発生する場合はこれを無効化してください"
     override val autoUpdates = "自動で更新を確認する"
     override val updateFrequencyNever = "しない"
     override val updateFrequencyDaily = "毎日"
@@ -638,10 +560,7 @@ object JaTranslations : Translations by EnTranslations {
     override val updateFrequencyWeekly = "毎週"
     override val updateFrequencyBiweekly = "隔週"
     override val updateFrequencyMonthly = "毎月"
-    override val updateFailed = { p0: String ->
-        "更新に失敗: %s"
-            .format(p0)
-    }
+    override val updateFailed = { a: String -> "更新に失敗: $a" }
     override val newVersionAvailable = "新しいバージョンがあります！"
     override val alreadyLatestVersion = "すでに最新のバージョンです"
     override val permissionDenied = "権限がありません"
@@ -743,44 +662,12 @@ object JaTranslations : Translations by EnTranslations {
     override val darkThemeOn = "常に ON にする"
     override val blockedImage = "ブロックされた画像"
     override val showBlockedImage = "ブロックされた画像を表示"
-    override val pageCount = { quantity: Int ->
-        when (quantity) {
-            else -> "%d ページ"
-        }.format(quantity)
-    }
-    override val someMinutesAgo = { quantity: Int ->
-        when (quantity) {
-            else -> "%d 分前"
-        }.format(quantity)
-    }
-    override val someHoursAgo = { quantity: Int ->
-        when (quantity) {
-            else -> "%d 時間前"
-        }.format(quantity)
-    }
-    override val second = { quantity: Int ->
-        when (quantity) {
-            else -> "秒"
-        }.format(quantity)
-    }
-    override val minute = { quantity: Int ->
-        when (quantity) {
-            else -> "分"
-        }.format(quantity)
-    }
-    override val hour = { quantity: Int ->
-        when (quantity) {
-            else -> "時"
-        }.format(quantity)
-    }
-    override val day = { quantity: Int ->
-        when (quantity) {
-            else -> "日"
-        }.format(quantity)
-    }
-    override val year = { quantity: Int ->
-        when (quantity) {
-            else -> "年"
-        }.format(quantity)
-    }
+    override val pageCount = { a: Int -> "$a ページ" }
+    override val someMinutesAgo = { a: Int -> "$a 分前" }
+    override val someHoursAgo = { a: Int -> "$a 時間前" }
+    override val second = { _: Int -> "秒" }
+    override val minute = { _: Int -> "分" }
+    override val hour = { _: Int -> "時" }
+    override val day = { _: Int -> "日" }
+    override val year = { _: Int -> "年" }
 }
