@@ -25,10 +25,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
@@ -88,14 +84,7 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = comp
             )
             HtmlPreference(
                 title = settingsAboutAuthor,
-                summary = buildAnnotatedString {
-                    withStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) {
-                        appendLine("Hippo")
-                        appendLine("NekoInverter")
-                        appendLine("飛鳥澪")
-                    }
-                    append("Foolbar")
-                },
+                summary = settingsAboutAuthorSummary,
             )
             UrlPreference(
                 title = settingsAboutLatestRelease,
