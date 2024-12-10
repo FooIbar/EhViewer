@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.intl.Locale
-import cafe.adriel.lyricist.Lyricist
 import cafe.adriel.lyricist.ProvideStrings
 import cafe.adriel.lyricist.rememberStrings
 
@@ -621,8 +620,8 @@ val LocalTranslations: ProvidableCompositionLocal<Translations> =
     staticCompositionLocalOf { EnTranslations }
 
 @Composable
-fun ProvideTranslations(
-    lyricist: Lyricist<Translations> = rememberStrings(
+fun ProvideTranslations(content: @Composable () -> Unit) = ProvideStrings(
+    rememberStrings(
         translations = mapOf(
             Locales.En to EnTranslations,
             Locales.De to DeTranslations,
@@ -641,5 +640,6 @@ fun ProvideTranslations(
             listOf(language, region).mapNotNull { it.ifBlank { null } }.joinToString("-")
         },
     ),
-    content: @Composable () -> Unit,
-) = ProvideStrings(lyricist, LocalTranslations, content)
+    provider = LocalTranslations,
+    content = content,
+)
