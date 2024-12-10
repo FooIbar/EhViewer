@@ -5,11 +5,11 @@ package com.hippo.ehviewer.ui.i18n
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.text.intl.Locale
 import cafe.adriel.lyricist.LanguageTag
 import cafe.adriel.lyricist.Lyricist
 import cafe.adriel.lyricist.ProvideStrings
 import cafe.adriel.lyricist.rememberStrings
-import com.hippo.ehviewer.util.getAppLanguage
 
 interface Translations {
     val appName: String
@@ -611,12 +611,12 @@ object Locales {
     const val Fr = "fr"
     const val Ja = "ja"
     const val Ko = "ko"
-    const val NbNo = "nb_NO"
+    const val NbNo = "nb_rNO"
     const val Th = "th"
     const val Tr = "tr"
-    const val ZhCn = "zh_CN"
-    const val ZhHk = "zh_HK"
-    const val ZhTw = "zh_TW"
+    const val ZhCn = "zh_rCN"
+    const val ZhHk = "zh_rHK"
+    const val ZhTw = "zh_rTW"
 }
 
 val translations: Map<LanguageTag, Translations> = mapOf(
@@ -637,7 +637,7 @@ val translations: Map<LanguageTag, Translations> = mapOf(
 @Composable
 fun rememberTranslations(
     defaultLanguageTag: LanguageTag = "en",
-    currentLanguageTag: LanguageTag = getAppLanguage(),
+    currentLanguageTag: LanguageTag = Locale.current.toLanguageTag(),
 ) = rememberStrings(translations, defaultLanguageTag, currentLanguageTag)
 
 val LocalTranslations: ProvidableCompositionLocal<Translations> =
