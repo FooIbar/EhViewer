@@ -61,33 +61,18 @@ object EsTranslations : Translations by EnTranslations {
     override val addQuickSearchTip = "El estado de la lista de galerías se guardará como búsqueda rápida. Aplique la búsqueda primero si desea guardar el estado del panel de búsqueda."
     override val readme = "LÉEME"
     override val imageSearchNotQuickSearch = "No se puede añadir la búsqueda de imágenes como búsqueda rápida"
-    override val duplicateQuickSearch = { p0: String ->
-        "Búsqueda rápida duplicada. El nombre es \"%s\"."
-            .format(p0)
-    }
+    override val duplicateQuickSearch = { a: String -> "Búsqueda rápida duplicada. El nombre es \"$a\"." }
     override val duplicateName = "Nombre duplicado existente"
-    override val goToHint = { p0: Int, p1: Int ->
-        "Página %d, total %d páginas"
-            .format(p0, p1)
-    }
+    override val goToHint = { a: Int, b: Int -> "Página $a, total $b páginas" }
     override val star2 = "2 estrellas"
     override val star3 = "3 estrellas"
     override val star4 = "4 estrellas"
     override val star5 = "5 estrellas"
     override val download = "Descargar"
     override val read = "Leer"
-    override val favoredTimes = { p0: Int ->
-        "\u2665 %d"
-            .format(p0)
-    }
-    override val ratingText = { p0: String, p1: Int ->
-        "%s (%.2f, %d)"
-            .format(p0, p1)
-    }
-    override val torrentCount = { p0: Int ->
-        "Torrent (%d)"
-            .format(p0)
-    }
+    override val favoredTimes = { a: Int -> "\u2665 $a" }
+    override val ratingText = { a: String, b: Int -> "%s (%.2f, %d)".format(a, b) }
+    override val torrentCount = { a: Int -> "Torrent ($a)" }
     override val share = "Compartir"
     override val rate = "Valorar"
     override val similarGallery = "Similar"
@@ -153,52 +138,24 @@ object EsTranslations : Translations by EnTranslations {
     override val voteFailed = "Voto fallido"
     override val checkVoteStatus = "Verificar estado del voto"
     override val goTo = "Ir a"
-    override val sceneDownloadTitle = { p0: String ->
-        "Descargas - %s"
-            .format(p0)
-    }
+    override val sceneDownloadTitle = { a: String -> "Descargas - $a" }
     override val noDownloadInfo = "Las galerías descargadas se mostrarán acá"
     override val downloadStateWait = "Esperando"
     override val downloadStateDownloading = "Descargando"
     override val downloadStateDownloaded = "Descargado"
-    override val downloadStateFailed2 = { p0: Int ->
-        "%d incompleto"
-            .format(p0)
-    }
+    override val downloadStateFailed2 = { a: Int -> "$a incompleto" }
     override val downloadStateFinish = "Completado"
     override val stat509AlertTitle = "Alerta 509"
-    override val stat509AlertText =
-        "Se alcanzó el límite de imágenes. Detenga la descarga y espere un poco"
+    override val stat509AlertText = "Se alcanzó el límite de imágenes. Detenga la descarga y espere un poco"
     override val statDownloadDoneTitle = "Descarga completada"
-    override val statDownloadDoneTextSucceeded = { p0: Int ->
-        "%d completada"
-            .format(p0)
-    }
-    override val statDownloadDoneTextFailed = { p0: Int ->
-        "%d fallido"
-            .format(p0)
-    }
-    override val statDownloadDoneTextMix = { p0: Int, p1: Int ->
-        "%d completado, %d fallido"
-            .format(p0, p1)
-    }
-    override val statDownloadDoneLineSucceeded = { p0: String ->
-        "Completado: %s"
-            .format(p0)
-    }
-    override val statDownloadDoneLineFailed = { p0: String ->
-        "Fallido: %s"
-            .format(p0)
-    }
+    override val statDownloadDoneTextSucceeded = { a: Int -> "$a completada" }
+    override val statDownloadDoneTextFailed = { a: Int -> "$a fallido" }
+    override val statDownloadDoneTextMix = { a: Int, b: Int -> "$a completado, $b fallido" }
+    override val statDownloadDoneLineSucceeded = { a: String -> "Completado: $a" }
+    override val statDownloadDoneLineFailed = { a: String -> "Fallido: $a" }
     override val downloadRemoveDialogTitle = "Borrar galería descargada"
-    override val downloadRemoveDialogMessage = { p0: String ->
-        "¿Borrar %s de la lista de descargas?"
-            .format(p0)
-    }
-    override val downloadRemoveDialogMessage2 = { p0: Int ->
-        "¿Borrar %d galerías de la lista de descargas?"
-            .format(p0)
-    }
+    override val downloadRemoveDialogMessage = { a: String -> "¿Borrar $a de la lista de descargas?" }
+    override val downloadRemoveDialogMessage2 = { a: Int -> "¿Borrar $a galerías de la lista de descargas?" }
     override val downloadRemoveDialogCheckText = "Borrar imágenes"
     override val downloadResetReadingProgress = "Reiniciar progreso de lectura"
     override val resetReadingProgressMessage = "¿Deseas reiniciar el progreso de lectura en todas las galerías?"
@@ -209,14 +166,8 @@ object EsTranslations : Translations by EnTranslations {
     override val downloadStartAll = "Iniciar todo"
     override val downloadStopAll = "Detener todo"
     override val downloadServiceLabel = "Servicio de descarga EhViewer"
-    override val downloadSpeedText = { p0: String ->
-        "%s"
-            .format(p0)
-    }
-    override val downloadSpeedText2 = { p0: String, p1: String ->
-        "%s, %s restantes"
-            .format(p0, p1)
-    }
+    override val downloadSpeedText = { a: String -> a }
+    override val downloadSpeedText2 = { a: String, b: String -> "$a, $b restantes" }
     override val rememberDownloadLabel = "Recordar etiqueta de descarga"
     override val defaultDownloadLabel = "Etiqueta predeterminada de descarga"
     override val addedToDownloadList = "Añadido a la lista de descargas"
@@ -229,10 +180,7 @@ object EsTranslations : Translations by EnTranslations {
     override val noHistory = "Las galerías visualizadas se muestran aquí"
     override val clearAllHistory = "¿Limpiar historial?"
     override val shareImage = "Compartir imagen"
-    override val imageSaved = { p0: String ->
-        "Imagen guardada en %s"
-            .format(p0)
-    }
+    override val imageSaved = { a: String -> "Imagen guardada en $a" }
     override val settingsEh = "EH"
     override val settingsEhSignOut = "Cerrar sesión"
     override val settingsUConfig = "Configuración de EHentai"
@@ -260,50 +208,32 @@ object EsTranslations : Translations by EnTranslations {
     override val settingsDownloadMediaScanSummaryOn = "Las galerías de imágenes mostrarán los doujinshis/mangas descargados. ¡Cuidado con prestar tu móvil o tablet!"
     override val settingsDownloadMediaScanSummaryOff = "Las de galería de imágenes no mostrarán los doujinshis/mangas descargados"
     override val settingsDownloadConcurrency = "Multi-hilos al descargar"
-    override val settingsDownloadConcurrencySummary = { p0: String ->
-        "Máximo de %s imágenes"
-            .format(p0)
-    }
+    override val settingsDownloadConcurrencySummary = { a: String -> "Máximo de $a imágenes" }
     override val settingsDownloadPreloadImage = "Precargar imagen"
-    override val settingsDownloadPreloadImageSummary = { p0: String ->
-        "Precargar las siguientes %s imágenes"
-            .format(p0)
-    }
+    override val settingsDownloadPreloadImageSummary = { a: String -> "Precargar las siguientes $a imágenes" }
     override val settingsDownloadDownloadOriginImage = "Descargar imagen original"
     override val settingsDownloadDownloadOriginImageSummary = "¡Cuidado! Podrías recibir error 509"
     override val settingsDownloadRestoreDownloadItems = "Restaurar los elementos de descarga"
     override val settingsDownloadRestoreDownloadItemsSummary = "Restaurar todos los elementos de descarga en la ruta de descarga"
     override val settingsDownloadRestoreNotFound = "No se han encontrado elementos para restaurar"
     override val settingsDownloadRestoreFailed = "Restauración fallida"
-    override val settingsDownloadRestoreSuccessfully = { p0: Int ->
-        "Restauración de %d elementos completados"
-            .format(p0)
-    }
+    override val settingsDownloadRestoreSuccessfully = { a: Int -> "Restauración de $a elementos completados" }
     override val settingsDownloadCleanRedundancy = "Borrar imágenes sobrantes"
     override val settingsDownloadCleanRedundancySummary = "Elimina las imágenes almacenadas en la ruta de descarga que no se encuentran en la lista de descarga"
     override val settingsDownloadCleanRedundancyNoRedundancy = "Sin imágenes para borrar"
-    override val settingsDownloadCleanRedundancyDone = { p0: Int ->
-        "Borrado de imágenes completada, un total de %d elementos borrados"
-            .format(p0)
-    }
+    override val settingsDownloadCleanRedundancyDone = { a: Int -> "Borrado de imágenes completada, un total de $a elementos borrados" }
     override val settingsAdvanced = "Avanzado"
     override val settingsAdvancedSaveParseErrorBody = "Guardar contenido en HTML al analizar el error"
     override val settingsAdvancedSaveParseErrorBodySummary = "El contenido HTML puede ser sensible a la privacidad"
     override val settingsAdvancedDumpLogcat = "Guardado de logcat"
     override val settingsAdvancedDumpLogcatSummary = "Guardar logcat en almacenamiento externo"
     override val settingsAdvancedDumpLogcatFailed = "Guardado de logcat fallido"
-    override val settingsAdvancedDumpLogcatTo = { p0: String ->
-        "Logcat guardado en %s"
-            .format(p0)
-    }
+    override val settingsAdvancedDumpLogcatTo = { a: String -> "Logcat guardado en $a" }
     override val settingsAdvancedReadCacheSize = "Tamaño del caché (archivos temporales)"
     override val settingsAdvancedAppLanguageTitle = "Idioma de la aplicación"
     override val settingsAdvancedExportData = "Exportar datos"
     override val settingsAdvancedExportDataSummary = "Guardar datos en almacenamiento externo, tales como la lista de descarga, lista de búsqueda rápida, entre otros"
-    override val settingsAdvancedExportDataTo = { p0: String ->
-        "Datos exportados en %s"
-            .format(p0)
-    }
+    override val settingsAdvancedExportDataTo = { a: String -> "Datos exportados en $a" }
     override val settingsAdvancedExportDataFailed = "Exportación de datos fallido"
     override val settingsAdvancedImportData = "Importar datos"
     override val settingsAdvancedImportDataSummary = "Cargar datos que han sido guardado antes"
@@ -318,23 +248,11 @@ object EsTranslations : Translations by EnTranslations {
     override val pleaseWait = "Espere"
     override val cloudFavorites = "Favoritos en la nube"
     override val localFavorites = "Favoritos locales"
-    override val searchBarHint = { p0: String ->
-        "Buscar %s"
-            .format(p0)
-    }
-    override val favoritesTitle = { p0: String ->
-        "%s"
-            .format(p0)
-    }
-    override val favoritesTitle2 = { p0: String, p1: String ->
-        "%s - %s"
-            .format(p0, p1)
-    }
+    override val searchBarHint = { a: String -> "Buscar $a" }
+    override val favoritesTitle = { a: String -> a }
+    override val favoritesTitle2 = { a: String, b: String -> "$a - $b" }
     override val deleteFavoritesDialogTitle = "Eliminar de favoritos"
-    override val deleteFavoritesDialogMessage = { p0: Int ->
-        "¿Eliminar %d galerías de favoritos?"
-            .format(p0)
-    }
+    override val deleteFavoritesDialogMessage = { a: Int -> "¿Eliminar $a galerías de favoritos?" }
     override val moveFavoritesDialogTitle = "Mover favoritos"
     override val defaultFavoritesCollection = "Colección de favoritos por defecto"
     override val letMeSelect = "Déjame elegir"
@@ -342,10 +260,7 @@ object EsTranslations : Translations by EnTranslations {
     override val fromTheFuture = "Desde el futuro"
     override val justNow = "Ahora"
     override val yesterday = "Ayer"
-    override val someDaysAgo = { p0: Int ->
-        "Hace %d días atrás"
-            .format(p0)
-    }
+    override val someDaysAgo = { a: Int -> "Hace $a días atrás" }
     override val archive = "Archivo"
     override val noArchives = "Sin archivos"
     override val downloadArchiveStarted = "Descarga de archivos iniciada"
@@ -367,15 +282,9 @@ object EsTranslations : Translations by EnTranslations {
     override val filterUploader = "Uploader"
     override val filterTag = "Etiqueta"
     override val filterTagNamespace = "Etiqueta namespace"
-    override val deleteFilter = { p0: String ->
-        "¿Borrar \"%s\"?"
-            .format(p0)
-    }
+    override val deleteFilter = { a: String -> "¿Borrar \"$a\"?" }
     override val addFilter = "Bloquear etiqueta"
-    override val filterTheTag = { p0: String ->
-        "¿Deseas bloquear la etiqueta \"%s\"?"
-            .format(p0)
-    }
+    override val filterTheTag = { a: String -> "¿Deseas bloquear la etiqueta \"$a\"?" }
     override val showDefinition = "Ver definición de la etiqueta"
     override val filterAdded = "Etiqueta bloqueada"
     override val filterText = "Escribe la etiqueta"
