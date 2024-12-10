@@ -636,7 +636,7 @@ val translations: Map<LanguageTag, Translations> = mapOf(
 @Composable
 fun rememberTranslations(
     defaultLanguageTag: LanguageTag = "en",
-    currentLanguageTag: LanguageTag = Locale.current.toLanguageTag(),
+    currentLanguageTag: LanguageTag = with(Locale.current) { listOf(language, region).mapNotNull { it.ifBlank { null } } }.joinToString("-"),
 ) = rememberStrings(translations, defaultLanguageTag, currentLanguageTag)
 
 val LocalTranslations: ProvidableCompositionLocal<Translations> =
