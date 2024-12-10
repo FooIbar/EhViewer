@@ -81,7 +81,7 @@ object ZhHkTranslations : Translations by EnTranslations {
     override val download = "下載"
     override val read = "閲讀"
     override val favoredTimes = { a: Int -> "\u2665 $a" }
-    override val ratingText = { a: String, b: Int -> "%s (%.2f, %d)".format(a, b) }
+    override val ratingText = { a: String, b: Float, c: Int -> "%s (%.2f, %d)".format(a, b, c) }
     override val torrentCount = { a: Int -> "種子 ($a)" }
     override val share = "分享"
     override val rate = "評分"

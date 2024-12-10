@@ -88,7 +88,7 @@ object JaTranslations : Translations by EnTranslations {
     override val download = "ダウンロード"
     override val read = "読む"
     override val favoredTimes = { a: Int -> "\u2665 $a" }
-    override val ratingText = { a: String, b: Int -> "%s (%.2f - %d)".format(a, b) }
+    override val ratingText = { a: String, b: Float, c: Int -> "%s (%.2f - %d)".format(a, b, c) }
     override val torrentCount = { a: Int -> "Torrent ($a)" }
     override val share = "共有"
     override val rate = "評価"
@@ -173,12 +173,6 @@ object JaTranslations : Translations by EnTranslations {
     override val checkVoteStatus = "評価の詳細を表示"
     override val clickMoreComments = "タップしてさらにコメントを読み込む"
     override val lastEdited = { a: String -> "最終更新: $a" }
-    override val formatBold = "太字"
-    override val formatItalic = "斜体"
-    override val formatUnderline = "下線"
-    override val formatStrikethrough = "打ち消し線"
-    override val formatUrl = "URL"
-    override val formatPlain = "プレーンテキスト"
     override val goTo = "ページに移動"
     override val sceneDownloadTitle = { a: String -> "ダウンロード - $a" }
     override val noDownloadInfo = "ダウンロードタスクはここに表示されます"

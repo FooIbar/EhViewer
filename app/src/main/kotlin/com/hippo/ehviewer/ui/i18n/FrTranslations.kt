@@ -77,7 +77,7 @@ object FrTranslations : Translations by EnTranslations {
     override val download = "Télécharger"
     override val read = "Lire"
     override val favoredTimes = { a: Int -> "\u2665 $a" }
-    override val ratingText = { a: String, b: Int -> "%s (%.2f, %d)".format(a, b) }
+    override val ratingText = { a: String, b: Float, c: Int -> "%s (%.2f, %d)".format(a, b, c) }
     override val torrentCount = { a: Int -> "Torrent ($a)" }
     override val share = "Partager"
     override val rate = "Noter"

@@ -102,7 +102,7 @@ object EnTranslations : Translations {
     override val download = "Download"
     override val read = "Read"
     override val favoredTimes = { a: Int -> "\u2665 $a" }
-    override val ratingText = { a: String, b: Int -> "%s (%.2f, %d)".format(a, b) }
+    override val ratingText = { a: String, b: Float, c: Int -> "%s (%.2f, %d)".format(a, b, c) }
     override val torrentCount = { a: Int -> "Torrent ($a)" }
     override val share = "Share"
     override val rate = "Rate"
@@ -188,12 +188,6 @@ object EnTranslations : Translations {
     override val checkVoteStatus = "View vote details"
     override val clickMoreComments = "Click to load more comments"
     override val lastEdited = { a: String -> "Last edited: $a" }
-    override val formatBold = "Bold"
-    override val formatItalic = "Italic"
-    override val formatUnderline = "Underline"
-    override val formatStrikethrough = "Strikethrough"
-    override val formatUrl = "URL"
-    override val formatPlain = "Plain text"
     override val goTo = "Go to"
     override val sceneDownloadTitle = { a: String -> "Download - $a" }
     override val noDownloadInfo = "Download items will be shown here"

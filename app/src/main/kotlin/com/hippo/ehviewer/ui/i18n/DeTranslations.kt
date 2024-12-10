@@ -126,7 +126,7 @@ object DeTranslations : Translations by EnTranslations {
     override val keyTorrents = "Zahl der Torrents"
     override val keyTorrentUrl = "URL des Torrentdateis"
     override val favoredTimes = { a: Int -> "♥ $a" }
-    override val ratingText = { a: String, b: Int -> "%s (%.2f, %d)".format(a, b) }
+    override val ratingText = { a: String, b: Float, c: Int -> "%s (%.2f, %d)".format(a, b, c) }
     override val galleryComments = "Kommentare der Galerie"
     override val commentSuccessfully = "Kommentar erfolgreich gesendet"
     override val commentFailed = "Kommentar nicht gesendet"

@@ -111,7 +111,7 @@ interface Translations {
     val download: String
     val read: String
     val favoredTimes: (Int) -> String
-    val ratingText: (String, Int) -> String
+    val ratingText: (String, Float, Int) -> String
     val torrentCount: (Int) -> String
     val share: String
     val rate: String
@@ -197,12 +197,6 @@ interface Translations {
     val checkVoteStatus: String
     val clickMoreComments: String
     val lastEdited: (String) -> String
-    val formatBold: String
-    val formatItalic: String
-    val formatUnderline: String
-    val formatStrikethrough: String
-    val formatUrl: String
-    val formatPlain: String
     val goTo: String
     val sceneDownloadTitle: (String) -> String
     val noDownloadInfo: String

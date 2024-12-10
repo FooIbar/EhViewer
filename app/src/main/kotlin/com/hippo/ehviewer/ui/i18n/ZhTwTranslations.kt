@@ -87,7 +87,7 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val download = "下載"
     override val read = "閱讀"
     override val favoredTimes = { a: Int -> "\u2665 $a" }
-    override val ratingText = { a: String, b: Int -> "%s (%.2f, %d)".format(a, b) }
+    override val ratingText = { a: String, b: Float, c: Int -> "%s (%.2f, %d)".format(a, b, c) }
     override val torrentCount = { a: Int -> "種子 ($a)" }
     override val share = "分享"
     override val rate = "評分"
@@ -172,12 +172,6 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val checkVoteStatus = "檢視推噓狀態"
     override val clickMoreComments = "點選載入更多留言"
     override val lastEdited = { a: String -> "上次修改時間：$a" }
-    override val formatBold = "粗體"
-    override val formatItalic = "斜體"
-    override val formatUnderline = "底線"
-    override val formatStrikethrough = "刪除線"
-    override val formatUrl = "連結"
-    override val formatPlain = "純文字"
     override val goTo = "跳到"
     override val sceneDownloadTitle = { a: String -> "正在下載 - $a" }
     override val noDownloadInfo = "下載項目將顯示在此"
