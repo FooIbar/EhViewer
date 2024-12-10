@@ -35,17 +35,13 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val errorGetPtokenError = "取得 pToken 時發生錯誤"
     override val errorCantSaveImage = "無法儲存圖片"
     override val errorInvalidNumber = "無效的數字"
-    override val appWaring =
-        "本應用程式中內容來自網際網路，部分內容可能對您的生理及心理造成難以恢復的傷害。本應用程式的作者不會對由其所造成的任何影響負責。\n\n未成年人應在監護人指導下使用本應用程式。\n\n繼續使用即代表您同意上述條款。"
+    override val appWaring = "本應用程式中內容來自網際網路，部分內容可能對您的生理及心理造成難以恢復的傷害。本應用程式的作者不會對由其所造成的任何影響負責。\n\n未成年人應在監護人指導下使用本應用程式。\n\n繼續使用即代表您同意上述條款。"
     override val appWaring2 = "繼續使用即表示您同意上述條款。"
     override val errorUsernameCannotEmpty = "使用者名稱欄位不能為空"
     override val errorPasswordCannotEmpty = "密碼欄位不能為空"
     override val guestMode = "略過登入"
     override val signInFailed = "登入失敗"
-    override val signInFailedTip = { p0: String ->
-        "若持續出錯，請嘗試“%s”。"
-            .format(p0)
-    }
+    override val signInFailedTip = { a: String -> "若持續出錯，請嘗試“$a”。" }
     override val getIt = "知道了"
     override val galleryListSearchBarHintExhentai = "在 ExHentai 搜尋"
     override val galleryListSearchBarHintEHentai = "在 E-Hentai 搜尋"
@@ -75,24 +71,14 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val addQuickSearchDialogTitle = "新增快速搜尋"
     override val nameIsEmpty = "名稱是空的"
     override val delete = "刪除"
-    override val addQuickSearchTip =
-        "圖庫列表的狀態將被儲存為快速搜尋。如果你想儲存搜尋面板的狀態，請先進行搜尋。"
+    override val addQuickSearchTip = "圖庫列表的狀態將被儲存為快速搜尋。如果你想儲存搜尋面板的狀態，請先進行搜尋。"
     override val readme = "ReadMe"
     override val imageSearchNotQuickSearch = "無法將圖片搜尋加入快速搜尋"
-    override val duplicateQuickSearch = { p0: String ->
-        "已存在相同的快速搜尋，名稱為“%s”。"
-            .format(p0)
-    }
+    override val duplicateQuickSearch = { a: String -> "已存在相同的快速搜尋，名稱為“$a”。" }
     override val duplicateName = "名稱重複"
     override val saveProgress = "儲存進度"
-    override val deleteQuickSearch = { p0: String ->
-        "刪除快速搜尋“%s”？"
-            .format(p0)
-    }
-    override val goToHint = { p0: Int, p1: Int ->
-        "第 %d 頁，共 %d 頁"
-            .format(p0, p1)
-    }
+    override val deleteQuickSearch = { a: String -> "刪除快速搜尋“$a”？" }
+    override val goToHint = { a: Int, b: Int -> "第 $a 頁，共 $b 頁" }
     override val any = "不限"
     override val star2 = "2 星"
     override val star3 = "3 星"
@@ -100,18 +86,9 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val star5 = "5 星"
     override val download = "下載"
     override val read = "閱讀"
-    override val favoredTimes = { p0: Int ->
-        "\u2665 %d"
-            .format(p0)
-    }
-    override val ratingText = { p0: String, p1: Int ->
-        "%s (%.2f, %d)"
-            .format(p0, p1)
-    }
-    override val torrentCount = { p0: Int ->
-        "種子 (%d)"
-            .format(p0)
-    }
+    override val favoredTimes = { a: Int -> "\u2665 $a" }
+    override val ratingText = { a: String, b: Int -> "%s (%.2f, %d)".format(a, b) }
+    override val torrentCount = { a: Int -> "種子 ($a)" }
     override val share = "分享"
     override val rate = "評分"
     override val similarGallery = "類似圖庫"
@@ -136,20 +113,11 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val removeFromFavoriteSuccess = "從收藏中移除"
     override val addToFavoriteFailure = "無法新增至收藏"
     override val removeFromFavoriteFailure = "無法從收藏中移除"
-    override val filterTheUploader = { p0: String ->
-        "把上傳者“%s”加入過濾列表？"
-            .format(p0)
-    }
-    override val filterTheTag = { p0: String ->
-        "隱藏標籤“%s”？"
-            .format(p0)
-    }
+    override val filterTheUploader = { a: String -> "把上傳者“$a”加入過濾列表？" }
+    override val filterTheTag = { a: String -> "隱藏標籤“$a”？" }
     override val filterAdded = "已經新增篩選條件"
     override val newerVersionAvailable = "此圖庫有新版本可以使用。"
-    override val newerVersionTitle = { p0: String, p1: String ->
-        "%s, 於 %s 加入"
-            .format(p0, p1)
-    }
+    override val newerVersionTitle = { a: String, b: String -> "$a, 於 $b 加入" }
     override val rating10 = "太神啦！"
     override val rating9 = "根本把持不住"
     override val rating8 = "很棒"
@@ -188,10 +156,7 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val commentFailed = "留言失敗"
     override val copyCommentText = "複製留言文字"
     override val blockCommenter = "隱藏評論者"
-    override val filterTheCommenter = { p0: String ->
-        "隱藏評論者“%s”？"
-            .format(p0)
-    }
+    override val filterTheCommenter = { a: String -> "隱藏評論者“$a”？" }
     override val editComment = "修改留言"
     override val editCommentSuccessfully = "留言已被修改"
     override val editCommentFailed = "修改留言失敗"
@@ -206,10 +171,7 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val voteFailed = "推噓失敗"
     override val checkVoteStatus = "檢視推噓狀態"
     override val clickMoreComments = "點選載入更多留言"
-    override val lastEdited = { p0: String ->
-        "上次修改時間：%s"
-            .format(p0)
-    }
+    override val lastEdited = { a: String -> "上次修改時間：$a" }
     override val formatBold = "粗體"
     override val formatItalic = "斜體"
     override val formatUnderline = "底線"
@@ -217,53 +179,26 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val formatUrl = "連結"
     override val formatPlain = "純文字"
     override val goTo = "跳到"
-    override val sceneDownloadTitle = { p0: String ->
-        "正在下載 - %s"
-            .format(p0)
-    }
+    override val sceneDownloadTitle = { a: String -> "正在下載 - $a" }
     override val noDownloadInfo = "下載項目將顯示在此"
     override val downloadStateNone = "閒置中"
     override val downloadStateWait = "等待中"
     override val downloadStateDownloading = "下載中"
     override val downloadStateDownloaded = "已下載"
     override val downloadStateFailed = "下載失敗"
-    override val downloadStateFailed2 = { p0: Int ->
-        "還有 %d 未完成"
-            .format(p0)
-    }
+    override val downloadStateFailed2 = { a: Int -> "還有 $a 未完成" }
     override val downloadStateFinish = "大功告成"
     override val stat509AlertTitle = "509 警告"
     override val stat509AlertText = "圖片流量已用盡。請停止下載，休息一下。"
     override val statDownloadDoneTitle = "下載結束"
-    override val statDownloadDoneTextSucceeded = { p0: Int ->
-        "有 %d 項已成功下載"
-            .format(p0)
-    }
-    override val statDownloadDoneTextFailed = { p0: Int ->
-        "有 %d 項下載失敗"
-            .format(p0)
-    }
-    override val statDownloadDoneTextMix = { p0: Int, p1: Int ->
-        "%d 項成功下載，%d 項下載失敗"
-            .format(p0, p1)
-    }
-    override val statDownloadDoneLineSucceeded = { p0: String ->
-        "%s 下載成功"
-            .format(p0)
-    }
-    override val statDownloadDoneLineFailed = { p0: String ->
-        "%s 下載失敗"
-            .format(p0)
-    }
+    override val statDownloadDoneTextSucceeded = { a: Int -> "有 $a 項已成功下載" }
+    override val statDownloadDoneTextFailed = { a: Int -> "有 $a 項下載失敗" }
+    override val statDownloadDoneTextMix = { a: Int, b: Int -> "$a 項成功下載，$b 項下載失敗" }
+    override val statDownloadDoneLineSucceeded = { a: String -> "$a 下載成功" }
+    override val statDownloadDoneLineFailed = { a: String -> "$a 下載失敗" }
     override val downloadRemoveDialogTitle = "移除下載佇列"
-    override val downloadRemoveDialogMessage = { p0: String ->
-        "將 %s 從下載佇列中移除嗎？"
-            .format(p0)
-    }
-    override val downloadRemoveDialogMessage2 = { p0: Int ->
-        "從下載佇列中移除 %d 項任務嗎？"
-            .format(p0)
-    }
+    override val downloadRemoveDialogMessage = { a: String -> "將 $a 從下載佇列中移除嗎？" }
+    override val downloadRemoveDialogMessage2 = { a: Int -> "從下載佇列中移除 $a 項任務嗎？" }
     override val downloadRemoveDialogCheckText = "刪除圖檔"
     override val statDownloadActionStopAll = "全部停止"
     override val defaultDownloadLabelName = "預設"
@@ -274,14 +209,8 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val downloadResetReadingProgress = "重置閱讀進度"
     override val resetReadingProgressMessage = "重置所有已下載圖庫的閱讀進度？"
     override val downloadServiceLabel = "EhViewer 下載服務"
-    override val downloadSpeedText = { p0: String ->
-        "%s"
-            .format(p0)
-    }
-    override val downloadSpeedText2 = { p0: String, p1: String ->
-        "%s，剩餘 %s"
-            .format(p0, p1)
-    }
+    override val downloadSpeedText = { a: String -> a }
+    override val downloadSpeedText2 = { a: String, b: String -> "$a，剩餘 $b" }
     override val rememberDownloadLabel = "記住下載標籤"
     override val defaultDownloadLabel = "預設下載標籤"
     override val addedToDownloadList = "已新增至下載列表"
@@ -295,10 +224,7 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val labelTextIsInvalid = "“預設”是無效的標籤"
     override val labelTextExist = "標籤已存在"
     override val renameLabelTitle = "重新命名標籤"
-    override val deleteLabel = { p0: String ->
-        "刪除標籤“%s”？"
-            .format(p0)
-    }
+    override val deleteLabel = { a: String -> "刪除標籤“$a”？" }
     override val noHistory = "歷史紀錄將會顯示在這裡"
     override val clearAll = "全部清除"
     override val clearAllHistory = "清除所有歷史紀錄？"
@@ -309,27 +235,19 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val filterTagNamespace = "標籤組"
     override val filterCommenter = "評論者"
     override val filterComment = "評論"
-    override val deleteFilter = { p0: String ->
-        "刪除隱藏項“%s”？"
-            .format(p0)
-    }
+    override val deleteFilter = { a: String -> "刪除隱藏項“$a”？" }
     override val addFilter = "新增隱藏項"
     override val showDefinition = "檢視定義"
     override val filterText = "隱藏項文字"
-    override val filterTip =
-        "該隱藏系統會在 EHentai 網站隱藏系統的基礎上繼續隱藏圖庫。\n\n標題隱藏項：排除標題含有該關鍵字的圖庫。\n\n上傳者隱藏項：排除該上傳者上傳的圖庫。\n\n標籤隱藏項：排除包含該標籤的圖庫，這會使獲取圖庫列表花費更多時間。\n\n標籤組隱藏項：排除包含該標籤組的圖庫，這會使獲取圖庫列表花費更多時間。"
+    override val filterTip = "該隱藏系統會在 EHentai 網站隱藏系統的基礎上繼續隱藏圖庫。\n\n標題隱藏項：排除標題含有該關鍵字的圖庫。\n\n上傳者隱藏項：排除該上傳者上傳的圖庫。\n\n標籤隱藏項：排除包含該標籤的圖庫，這會使獲取圖庫列表花費更多時間。\n\n標籤組隱藏項：排除包含該標籤組的圖庫，這會使獲取圖庫列表花費更多時間。"
     override val uConfig = "EHentai 設定"
     override val applyTip = "點選右上角的勾勾以儲存設定"
     override val myTags = "我的標籤"
     override val shareImage = "分享圖片"
-    override val imageSaved = { p0: String ->
-        "已將圖片儲存至 %s"
-            .format(p0)
-    }
+    override val imageSaved = { a: String -> "已將圖片儲存至 $a" }
     override val settingsEh = "EH"
     override val settingsEhSignOut = "登出"
-    override val settingsEhIdentityCookiesSigned =
-        "身份 Cookie 可用於登入該帳號。<br><b>請注意資料安全</b>"
+    override val settingsEhIdentityCookiesSigned = "身份 Cookie 可用於登入該帳號。<br><b>請注意資料安全</b>"
     override val settingsEhIdentityCookiesGuest = "訪客模式"
     override val settingsEhClearIgneous = "清除 igneous"
     override val settingsUConfig = "EHentai 設定"
@@ -354,46 +272,29 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val settingsEhShowGalleryComments = "顯示圖庫評論"
     override val settingsEhShowGalleryCommentsSummary = "在圖庫詳情頁中顯示評論"
     override val settingsEhShowGalleryCommentThreshold = "評論分數閥值"
-    override val settingsEhShowGalleryCommentThresholdSummary =
-        "隱藏小於或等於設定分數的評論（-101 為停用）"
+    override val settingsEhShowGalleryCommentThresholdSummary = "隱藏小於或等於設定分數的評論（-101 為停用）"
     override val settingsEhShowTagTranslations = "顯示標籤翻譯"
-    override val settingsEhShowTagTranslationsSummary =
-        "顯示翻譯後的標籤而非原始文字（需花費時間來下載資料檔案）"
+    override val settingsEhShowTagTranslationsSummary = "顯示翻譯後的標籤而非原始文字（需花費時間來下載資料檔案）"
     override val settingsEhTagTranslationsSource = "補充翻譯（由 EhTagTranslation 提供）"
-    override val settingsEhTagTranslationsSourceUrl =
-        "https://github.com/EhTagTranslation/Editor/wiki"
+    override val settingsEhTagTranslationsSourceUrl = "https://github.com/EhTagTranslation/Editor/wiki"
     override val settingsEhFilter = "隱藏圖庫"
     override val settingsEhFilterSummary = "根據標題、上傳者、標籤、評論者隱藏圖庫或評論"
     override val settingsDownload = "下載"
     override val settingsDownloadDownloadLocation = "下載路徑"
     override val settingsDownloadCantGetDownloadLocation = "無法取得下載路徑"
     override val settingsDownloadConcurrency = "並行下載數"
-    override val settingsDownloadConcurrencySummary = { p0: String ->
-        "最多同時下載 %s 張圖片"
-            .format(p0)
-    }
+    override val settingsDownloadConcurrencySummary = { a: String -> "最多同時下載 $a 張圖片" }
     override val settingsDownloadPreloadImage = "預載圖片"
-    override val settingsDownloadPreloadImageSummary = { p0: String ->
-        "向後預載 %s 張圖片"
-            .format(p0)
-    }
+    override val settingsDownloadPreloadImageSummary = { a: String -> "向後預載 $a 張圖片" }
     override val settingsDownloadDownloadOriginImage = "下載原圖"
-    override val settingsDownloadDownloadOriginImageSummary =
-        "這很危險！勾選這個選項會導致圖片流量配額快速耗用"
+    override val settingsDownloadDownloadOriginImageSummary = "這很危險！勾選這個選項會導致圖片流量配額快速耗用"
     override val settingsDownloadSaveAsCbz = "儲存為 CBZ 壓縮檔"
     override val settingsDownloadArchiveMetadata = "壓縮檔中繼資料"
     override val settingsDownloadArchiveMetadataSummary = "下載壓縮檔時產生 ComicInfo.xml"
     override val settingsDownloadReloadMetadata = "重新載入中繼資料"
-    override val settingsDownloadReloadMetadataSummary =
-        "為標籤可能發生變動的下載項更新 ComicInfo.xml"
-    override val settingsDownloadReloadMetadataSuccessfully = { p0: Int ->
-        "成功載入 %d 項"
-            .format(p0)
-    }
-    override val settingsDownloadReloadMetadataFailed = { p0: String ->
-        "載入中繼資料失敗: %s"
-            .format(p0)
-    }
+    override val settingsDownloadReloadMetadataSummary = "為標籤可能發生變動的下載項更新 ComicInfo.xml"
+    override val settingsDownloadReloadMetadataSuccessfully = { a: Int -> "成功載入 $a 項" }
+    override val settingsDownloadReloadMetadataFailed = { a: String -> "載入中繼資料失敗: $a" }
     override val settingsDownloadMediaScan = "允許其他程式進行媒體掃描"
     override val settingsDownloadMediaScanSummaryOn = "請別讓別人看到你的相簿"
     override val settingsDownloadMediaScanSummaryOff = "大部分相簿軟體將會忽略顯示下載路徑中的影像"
@@ -401,17 +302,11 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val settingsDownloadRestoreDownloadItemsSummary = "復原下載路徑中的所有下載的檔案"
     override val settingsDownloadRestoreNotFound = "未尋獲可復原的已下載檔案"
     override val settingsDownloadRestoreFailed = "復原失敗"
-    override val settingsDownloadRestoreSuccessfully = { p0: Int ->
-        "成功復原 %d 項"
-            .format(p0)
-    }
+    override val settingsDownloadRestoreSuccessfully = { a: Int -> "成功復原 $a 項" }
     override val settingsDownloadCleanRedundancy = "清除冗餘的檔案"
     override val settingsDownloadCleanRedundancySummary = "清除已下載但不在下載列表中的圖檔"
     override val settingsDownloadCleanRedundancyNoRedundancy = "未發現冗餘檔案"
-    override val settingsDownloadCleanRedundancyDone = { p0: Int ->
-        "完成冗餘檔案清理，共清理了 %d 個檔案"
-            .format(p0)
-    }
+    override val settingsDownloadCleanRedundancyDone = { a: Int -> "完成冗餘檔案清理，共清理了 $a 個檔案" }
     override val settingsAdvanced = "進階"
     override val settingsAdvancedSaveParseErrorBody = "解析失敗時儲存網頁的內容"
     override val settingsAdvancedSaveParseErrorBodySummary = "網頁內容可能含有敏感的隱私資料"
@@ -420,29 +315,19 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val settingsAdvancedDumpLogcat = "傾印記錄檔"
     override val settingsAdvancedDumpLogcatSummary = "將紀錄檔儲存至外接儲存裝置"
     override val settingsAdvancedDumpLogcatFailed = "無法傾印紀錄檔"
-    override val settingsAdvancedDumpLogcatTo = { p0: String ->
-        "已將紀錄檔儲存至 %s"
-            .format(p0)
-    }
+    override val settingsAdvancedDumpLogcatTo = { a: String -> "已將紀錄檔儲存至 $a" }
     override val settingsAdvancedReadCacheSize = "閱讀快取大小"
     override val settingsAdvancedAppLanguageTitle = "應用程式介面語言"
     override val settingsAdvancedExportData = "匯出檔案"
-    override val settingsAdvancedExportDataSummary =
-        "儲存資料至外接儲存裝置，例如下載列表，快速搜尋列表"
-    override val settingsAdvancedExportDataTo = { p0: String ->
-        "已匯出資料至 %s"
-            .format(p0)
-    }
+    override val settingsAdvancedExportDataSummary = "儲存資料至外接儲存裝置，例如下載列表，快速搜尋列表"
+    override val settingsAdvancedExportDataTo = { a: String -> "已匯出資料至 $a" }
     override val settingsAdvancedExportDataFailed = "無法匯出資料"
     override val settingsAdvancedImportData = "匯入檔案"
     override val settingsAdvancedImportDataSummary = "從之前儲存的檔案匯入"
     override val settingsAdvancedImportDataSuccessfully = "成功將資料匯入"
     override val settingsAdvancedBackupFavorite = "備份收藏列表"
     override val settingsAdvancedBackupFavoriteSummary = "備份雲端收藏列表到本機"
-    override val settingsAdvancedBackupFavoriteStart = { p0: String ->
-        "正在備份收藏列表 %s"
-            .format(p0)
-    }
+    override val settingsAdvancedBackupFavoriteStart = { a: String -> "正在備份收藏列表 $a" }
     override val settingsAdvancedBackupFavoriteNothing = "沒有可以備份的收藏列表"
     override val settingsAdvancedBackupFavoriteSuccess = "備份收藏列表成功"
     override val settingsAdvancedBackupFavoriteFailed = "備份收藏列表失敗"
@@ -452,10 +337,7 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val settingsAboutLatestRelease = "最新版本"
     override val settingsAboutSource = "原始碼"
     override val settingsAboutVersion = "版本號碼"
-    override val settingsAboutCommitTime = { p0: String ->
-        "於 %s 提交"
-            .format(p0)
-    }
+    override val settingsAboutCommitTime = { a: String -> "於 $a 提交" }
     override val settingsAboutCheckForUpdates = "檢查更新"
     override val license = "授權條款"
     override val pleaseWait = "請稍候"
@@ -463,23 +345,11 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val appLanguageSystem = "系統語言（預設）"
     override val cloudFavorites = "雲端收藏"
     override val localFavorites = "本機收藏"
-    override val searchBarHint = { p0: String ->
-        "搜尋 %s"
-            .format(p0)
-    }
-    override val favoritesTitle = { p0: String ->
-        "%s"
-            .format(p0)
-    }
-    override val favoritesTitle2 = { p0: String, p1: String ->
-        "%s - %s"
-            .format(p0, p1)
-    }
+    override val searchBarHint = { a: String -> "搜尋 $a" }
+    override val favoritesTitle = { a: String -> a }
+    override val favoritesTitle2 = { a: String, b: String -> "$a - $b" }
     override val deleteFavoritesDialogTitle = "移除收藏"
-    override val deleteFavoritesDialogMessage = { p0: Int ->
-        "將 %d 項收藏移除？"
-            .format(p0)
-    }
+    override val deleteFavoritesDialogMessage = { a: Int -> "將 $a 項收藏移除？" }
     override val moveFavoritesDialogTitle = "移動收藏"
     override val defaultFavoritesCollection = "預設收藏夾"
     override val defaultFavoritesWarning = "若啟用此項將無法新增收藏備註"
@@ -490,10 +360,7 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val fromTheFuture = "來自未來"
     override val justNow = "剛剛"
     override val yesterday = "昨天"
-    override val someDaysAgo = { p0: Int ->
-        "%d 天前"
-            .format(p0)
-    }
+    override val someDaysAgo = { a: Int -> "$a 天前" }
     override val archive = "壓縮檔"
     override val archiveFree = "免費"
     override val archiveOriginal = "原始"
@@ -506,15 +373,11 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val insufficientFunds = "餘額不足"
     override val imageLimits = "圖片配額"
     override val imageLimitsSummary = "已用："
-    override val resetCost = { p0: Int ->
-        "花費 %d GP 重置"
-            .format(p0)
-    }
+    override val resetCost = { a: Int -> "花費 $a GP 重置" }
     override val reset = "重置"
     override val settingsPrivacy = "隱私"
     override val settingsPrivacySecure = "不允許螢幕擷取"
-    override val settingsPrivacySecureSummary =
-        "啟用後，將無法對本程式進行螢幕擷取，同時，將不會在系統任務切換器中顯示該程式的預覽內容，重新啟動本程式以套用此變更"
+    override val settingsPrivacySecureSummary = "啟用後，將無法對本程式進行螢幕擷取，同時，將不會在系統任務切換器中顯示該程式的預覽內容，重新啟動本程式以套用此變更"
     override val clearSearchHistory = "清除裝置上的搜尋記錄"
     override val clearSearchHistorySummary = "移除曾在此裝置上進行過的搜尋"
     override val clearSearchHistoryConfirm = "清除搜尋記錄？"
@@ -539,10 +402,7 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val downloadAll = "全部"
     override val downloadStartAllReversed = "全部開始（倒序）"
     override val settingsDownloadDownloadDelay = "下載延時"
-    override val settingsDownloadDownloadDelaySummary = { p0: String ->
-        "每次下載延時 %s 毫秒"
-            .format(p0)
-    }
+    override val settingsDownloadDownloadDelaySummary = { a: String -> "每次下載延時 $a 毫秒" }
     override val settingsDownloadDownloadTimeout = "下載超時（秒）"
     override val noBrowserInstalled = "請安裝一個瀏覽器。"
     override val toplistAlltime = "從始至終"
@@ -553,22 +413,13 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val tagVoteDown = "不，這不是"
     override val tagVoteUp = "是的，這很正確"
     override val tagVoteSuccessfully = "投票成功"
-    override val deleteSearchHistory = { p0: String ->
-        "從搜尋記錄中刪除“%s”？"
-            .format(p0)
-    }
+    override val deleteSearchHistory = { a: String -> "從搜尋記錄中刪除“$a”？" }
     override val actionAddTag = "增加標籤"
     override val actionAddTagTip = "增加新標籤"
-    override val commentUserUploader = { p0: String ->
-        "%s （上傳者）"
-            .format(p0)
-    }
+    override val commentUserUploader = { a: String -> "$a （上傳者）" }
     override val settingsEhMeteredNetworkWarning = "流量計費網路警告"
     override val meteredNetworkWarning = "正在使用流量計費網路"
-    override val readFrom = { p0: Int ->
-        "從第 %d 頁閱讀"
-            .format(p0)
-    }
+    override val readFrom = { a: Int -> "從第 $a 頁閱讀" }
     override val settingsEhRequestNews = "啟動時請求新聞頁面"
     override val settingsEhHideHvEvents = "隱藏 HV 事件通知"
     override val copyTrans = "複製翻譯"
@@ -576,16 +427,12 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val pickNewDownloadLocation = "選擇新路徑"
     override val dontShowAgain = "不再顯示"
     override val openSettings = "開啟設定"
-    override val appLinkNotVerifiedMessage =
-        "對於 Android 12 及更新的版本，您需要手動增加連結到已驗證連結才能在 EhViewer 中開啟 E-Hentai 連結。"
+    override val appLinkNotVerifiedMessage = "對於 Android 12 及更新的版本，您需要手動增加連結到已驗證連結才能在 EhViewer 中開啟 E-Hentai 連結。"
     override val appLinkNotVerifiedTitle = "應用程式連結未驗證"
     override val openByDefault = "預設開啟"
     override val settingsPrivacyRequireUnlock = "需要解鎖"
     override val settingsPrivacyRequireUnlockDelay = "鎖定延遲"
-    override val settingsPrivacyRequireUnlockDelaySummary = { p0: String ->
-        "離開程式並在 %s 分鐘內返回時不需要解鎖"
-            .format(p0)
-    }
+    override val settingsPrivacyRequireUnlockDelaySummary = { a: String -> "離開程式並在 $a 分鐘內返回時不需要解鎖" }
     override val settingsPrivacyRequireUnlockDelaySummaryImmediately = "無論何時回到程式均要求解鎖"
     override val filterLabel = "隱藏項類型"
     override val archivePasswd = "壓縮檔密碼"
@@ -604,10 +451,7 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val updateFrequencyWeekly = "每週"
     override val updateFrequencyBiweekly = "每兩週"
     override val updateFrequencyMonthly = "每月"
-    override val updateFailed = { p0: String ->
-        "更新失敗：%s"
-            .format(p0)
-    }
+    override val updateFailed = { a: String -> "更新失敗：$a" }
     override val newVersionAvailable = "有新版本可用！"
     override val alreadyLatestVersion = "已是最新版本"
     override val permissionDenied = "沒有權限"
@@ -708,44 +552,12 @@ object ZhTwTranslations : Translations by EnTranslations {
     override val darkThemeOff = "總是關閉"
     override val darkThemeOn = "總是開啟"
     override val prefCropBorders = "邊緣裁剪"
-    override val pageCount = { quantity: Int ->
-        when (quantity) {
-            else -> "%d 頁"
-        }.format(quantity)
-    }
-    override val someMinutesAgo = { quantity: Int ->
-        when (quantity) {
-            else -> "%d 分鐘前"
-        }.format(quantity)
-    }
-    override val someHoursAgo = { quantity: Int ->
-        when (quantity) {
-            else -> "%d 小時前"
-        }.format(quantity)
-    }
-    override val second = { quantity: Int ->
-        when (quantity) {
-            else -> "秒"
-        }.format(quantity)
-    }
-    override val minute = { quantity: Int ->
-        when (quantity) {
-            else -> "分鐘"
-        }.format(quantity)
-    }
-    override val hour = { quantity: Int ->
-        when (quantity) {
-            else -> "小時"
-        }.format(quantity)
-    }
-    override val day = { quantity: Int ->
-        when (quantity) {
-            else -> "天"
-        }.format(quantity)
-    }
-    override val year = { quantity: Int ->
-        when (quantity) {
-            else -> "年"
-        }.format(quantity)
-    }
+    override val pageCount = { a: Int -> "$a 頁" }
+    override val someMinutesAgo = { a: Int -> "$a 分鐘前" }
+    override val someHoursAgo = { a: Int -> "$a 小時前" }
+    override val second = { _: Int -> "秒" }
+    override val minute = { _: Int -> "分鐘" }
+    override val hour = { _: Int -> "小時" }
+    override val day = { _: Int -> "天" }
+    override val year = { _: Int -> "年" }
 }
