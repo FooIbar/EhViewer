@@ -20,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import arrow.atomic.Atomic
+import arrow.atomic.value
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.client.EhCookieStore
@@ -36,7 +37,7 @@ private const val APPLY_JS = "javascript:(function(){var apply = document.getEle
 @Composable
 fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val url = EhUrl.uConfigUrl
-    val webview = remember { Atomic<WebView?>(null) }
+    var webview by remember { Atomic<WebView?>(null)::value }
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         topBar = {
@@ -50,7 +51,7 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = co
                 actions = {
                     IconButton(
                         onClick = {
-                            webview.get()?.loadUrl(APPLY_JS)
+                            webview?.loadUrl(APPLY_JS)
                             navigator.popBackStack()
                         },
                     ) {
@@ -66,7 +67,7 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = co
             state = state,
             modifier = Modifier.padding(paddingValues).fillMaxSize(),
             onCreated = { it.setDefaultSettings() },
-            factory = { WebView(it).apply { webview.set(this) } },
+            factory = { WebView(it).apply { webview = this } },
         )
         LaunchedEffect(Unit) { snackbarHostState.showSnackbar(applyTip) }
         DisposableEffect(Unit) {
