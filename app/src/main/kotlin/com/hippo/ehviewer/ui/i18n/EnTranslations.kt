@@ -1,5 +1,10 @@
 package com.hippo.ehviewer.ui.i18n
 
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
+
 object EnTranslations : Translations {
     override val appName = "EhViewer"
 
@@ -827,7 +832,14 @@ object EnTranslations : Translations {
 
     override val settingsAboutAuthor = "Author"
 
-    override val settingsAboutAuthorSummary = "<del>Hippo &lt;ehviewersu@gmail.com&gt;</del><br><del>NekoInverter</del><br><del>飛鳥澪</del><br>Foolbar"
+    override val settingsAboutAuthorSummary = buildAnnotatedString {
+        withStyle(SpanStyle(textDecoration = TextDecoration.Underline)) {
+            appendLine("Hippo")
+            appendLine("NekoInverter")
+            appendLine("飛鳥澪")
+        }
+        appendLine("Foolbar")
+    }
 
     override val settingsAboutLatestRelease = "Latest release"
 
