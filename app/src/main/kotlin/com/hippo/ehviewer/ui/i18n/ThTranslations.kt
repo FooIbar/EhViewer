@@ -61,7 +61,7 @@ object ThTranslations : Translations by EnTranslations {
     override val addQuickSearchTip = "รายการของแกลเลอรี่ต่างๆจะถูกบันทึกเป็นการค้นหาอย่างด่วน ต้องทำการค้นหาก่อนเพื่อบันทึกลงในรายการของแผงการค้นหา"
     override val readme = "อ่านก่อนสักนิด"
     override val imageSearchNotQuickSearch = "ไม่สามารถเพิ่มรูปในการค้นหาให้เป็นการค้นหาอย่างด่วนได้"
-    override val duplicateQuickSearch = { a: String -> "มีตัวค้นหาอย่างด่วนอยู่แล้วในชื่อ \"${a}\"." }
+    override val duplicateQuickSearch = { a: String -> "มีตัวค้นหาอย่างด่วนอยู่แล้วในชื่อ \"$a\"." }
     override val duplicateName = "ชื่อนี้มีการใช้งานอยู่แล้ว"
     override val goToHint = { a: Int, b: Int -> "หน้า $a, มีทั้งหมด $b หน้า" }
     override val star2 = "2 ดาว"
