@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.settings
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,7 +44,6 @@ import androidx.compose.runtime.currentRecomposeScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,8 +61,8 @@ import com.hippo.ehviewer.client.EhFilter.trigger
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.tools.Await
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -74,18 +74,14 @@ import moe.tarsin.coroutines.groupByToObserved
 
 @Destination<RootGraph>
 @Composable
-fun FilterScreen(navigator: DestinationsNavigator) {
-    val scope = rememberCoroutineScope()
+fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val allFilterMap = remember { scope.async { EhFilter.filters.await().groupByToObserved { it.mode } } }
-    val dialogState = LocalDialogState.current
-    val textIsEmpty = stringResource(R.string.text_is_empty)
-    val labelExist = stringResource(R.string.label_text_exist)
+    val allFilterMap = remember { async { EhFilter.filters.await().groupByToObserved { it.mode } } }
     val animateItems by Settings.animateItems.collectAsState()
 
     fun addFilter() {
-        scope.launch {
-            dialogState.dialog { cont ->
+        launch {
+            dialog { cont ->
                 val types = stringArrayResource(id = R.array.filter_entries)
                 val type = rememberTextFieldState(types[0])
                 val state = rememberTextFieldState()
@@ -103,7 +99,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                             cont.resume(Unit)
                             requireNotNull(allFilterMap.getCompleted()[mode]).add(filter)
                         } else {
-                            error = labelExist
+                            error = labelTextExist
                         }
                     }
                 }
@@ -111,7 +107,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                     onDismissRequest = { cont.cancel() },
                     confirmButton = {
                         TextButton(onClick = ::invalidateAndSave) {
-                            Text(text = stringResource(id = R.string.add))
+                            Text(text = add)
                         }
                     },
                     dismissButton = {
@@ -120,7 +116,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                         }
                     },
                     title = {
-                        Text(text = stringResource(id = R.string.add_filter))
+                        Text(text = addFilter)
                     },
                     text = {
                         var expanded by remember { mutableStateOf(false) }
@@ -134,7 +130,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                                     readOnly = true,
                                     state = type,
                                     label = {
-                                        Text(text = stringResource(id = R.string.filter_label))
+                                        Text(text = filterLabel)
                                     },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                                     colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
@@ -159,7 +155,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                             val isError = error != null
                             OutlinedTextField(
                                 state = state,
-                                label = { Text(text = stringResource(id = R.string.filter_text)) },
+                                label = { Text(text = filterText) },
                                 supportingText = { error?.let { Text(text = it) } },
                                 trailingIcon = {
                                     if (isError) {
@@ -185,7 +181,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.filter)) },
+                title = { Text(text = filter) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -193,12 +189,12 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                 },
                 actions = {
                     IconButton(onClick = {
-                        scope.launch {
-                            dialogState.awaitConfirmationOrCancel(
+                        launch {
+                            awaitConfirmationOrCancel(
                                 title = R.string.filter,
                                 showCancelButton = false,
                             ) {
-                                Text(text = stringResource(id = R.string.filter_tip))
+                                Text(text = filterTip)
                             }
                         }
                     }) {
@@ -222,17 +218,17 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                 var showTip = true
                 filters.forEach { (filterMode, filters) ->
                     val title = when (filterMode) {
-                        FilterMode.TITLE -> R.string.filter_title
-                        FilterMode.UPLOADER -> R.string.filter_uploader
-                        FilterMode.TAG -> R.string.filter_tag
-                        FilterMode.TAG_NAMESPACE -> R.string.filter_tag_namespace
-                        FilterMode.COMMENTER -> R.string.filter_commenter
-                        FilterMode.COMMENT -> R.string.filter_comment
+                        FilterMode.TITLE -> filterTitle
+                        FilterMode.UPLOADER -> filterUploader
+                        FilterMode.TAG -> filterTag
+                        FilterMode.TAG_NAMESPACE -> filterTagNamespace
+                        FilterMode.COMMENTER -> filterCommenter
+                        FilterMode.COMMENT -> filterComment
                     }
                     if (filters.isNotEmpty()) {
                         item(key = filterMode) {
                             Text(
-                                text = stringResource(id = title),
+                                text = title,
                                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp).thenIf(animateItems) { animateItem() },
                                 color = MaterialTheme.colorScheme.tertiary,
                                 style = MaterialTheme.typography.titleMedium,
@@ -251,9 +247,9 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                                 Text(text = filter.text, modifier = Modifier.weight(1F))
                                 IconButton(
                                     onClick = {
-                                        scope.launch {
-                                            dialogState.awaitConfirmationOrCancel(confirmText = R.string.delete) {
-                                                Text(text = stringResource(id = R.string.delete_filter, filter.text))
+                                        launch {
+                                            awaitConfirmationOrCancel(confirmText = R.string.delete) {
+                                                Text(text = deleteFilter(filter.text))
                                             }
                                             filter.forget {
                                                 filters.remove(filter)
@@ -283,7 +279,7 @@ fun FilterScreen(navigator: DestinationsNavigator) {
                                 tint = MaterialTheme.colorScheme.primary,
                             )
                             Text(
-                                text = stringResource(id = R.string.filter),
+                                text = filter,
                                 style = MaterialTheme.typography.headlineMedium,
                             )
                         }

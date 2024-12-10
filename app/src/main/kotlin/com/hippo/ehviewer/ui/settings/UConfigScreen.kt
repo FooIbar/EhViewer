@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.settings
 
 import android.webkit.WebView
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -18,13 +19,13 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import arrow.atomic.Atomic
+import arrow.atomic.value
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhUrl
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.util.setDefaultSettings
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -34,14 +35,14 @@ private const val APPLY_JS = "javascript:(function(){var apply = document.getEle
 
 @Destination<RootGraph>
 @Composable
-fun UConfigScreen(navigator: DestinationsNavigator) {
+fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val url = EhUrl.uConfigUrl
-    val webview = remember { Atomic<WebView?>(null) }
+    var webview by remember { Atomic<WebView?>(null)::value }
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.u_config)) },
+                title = { Text(text = uConfig) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -50,7 +51,7 @@ fun UConfigScreen(navigator: DestinationsNavigator) {
                 actions = {
                     IconButton(
                         onClick = {
-                            webview.get()?.loadUrl(APPLY_JS)
+                            webview?.loadUrl(APPLY_JS)
                             navigator.popBackStack()
                         },
                     ) {
@@ -66,9 +67,8 @@ fun UConfigScreen(navigator: DestinationsNavigator) {
             state = state,
             modifier = Modifier.padding(paddingValues).fillMaxSize(),
             onCreated = { it.setDefaultSettings() },
-            factory = { WebView(it).apply { webview.set(this) } },
+            factory = { WebView(it).apply { webview = this } },
         )
-        val applyTip = stringResource(id = R.string.apply_tip)
         LaunchedEffect(Unit) { snackbarHostState.showSnackbar(applyTip) }
         DisposableEffect(Unit) {
             onDispose {

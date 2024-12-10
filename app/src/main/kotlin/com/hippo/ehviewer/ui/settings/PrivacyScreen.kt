@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -15,39 +16,34 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
+import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.isAuthenticationSupported
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Destination<RootGraph>
 @Composable
-fun PrivacyScreen(navigator: DestinationsNavigator) {
+fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = composing(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
-    val dialogState = LocalDialogState.current
+    fun launchSnackBar(content: String) = launch { snackbarHostState.showSnackbar(content) }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.settings_privacy)) },
+                title = { Text(text = settingsPrivacy) },
                 navigationIcon = {
-                    IconButton(onClick = { navigator.popBackStack() }) {
+                    IconButton(onClick = { popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
                 },
@@ -59,37 +55,36 @@ fun PrivacyScreen(navigator: DestinationsNavigator) {
         Column(modifier = Modifier.padding(it).nestedScroll(scrollBehavior.nestedScrollConnection)) {
             val security = Settings.security.asMutableState()
             SwitchPreference(
-                title = stringResource(id = R.string.settings_privacy_require_unlock),
+                title = settingsPrivacyRequireUnlock,
                 value = security.rememberedAccessor,
-                enabled = LocalContext.current.isAuthenticationSupported(),
+                enabled = isAuthenticationSupported(),
             )
             AnimatedVisibility(visible = security.value) {
                 val securityDelay = Settings::securityDelay.observed
                 val summary = if (securityDelay.value == 0) {
-                    stringResource(id = R.string.settings_privacy_require_unlock_delay_summary_immediately)
+                    settingsPrivacyRequireUnlockDelaySummaryImmediately
                 } else {
-                    stringResource(id = R.string.settings_privacy_require_unlock_delay_summary, securityDelay.value)
+                    settingsPrivacyRequireUnlockDelaySummary(securityDelay.value)
                 }
                 IntSliderPreference(
                     maxValue = 30,
-                    title = stringResource(id = R.string.settings_privacy_require_unlock_delay),
+                    title = settingsPrivacyRequireUnlockDelay,
                     summary = summary,
                     value = securityDelay.rememberedAccessor,
                     enabled = LocalContext.current.isAuthenticationSupported(),
                 )
             }
             SwitchPreference(
-                title = stringResource(id = R.string.settings_privacy_secure),
-                summary = stringResource(id = R.string.settings_privacy_secure_summary),
+                title = settingsPrivacySecure,
+                summary = settingsPrivacySecureSummary,
                 value = Settings::enabledSecurity,
             )
-            val searchHistoryCleared = stringResource(id = R.string.search_history_cleared)
             Preference(
-                title = stringResource(id = R.string.clear_search_history),
-                summary = stringResource(id = R.string.clear_search_history_summary),
+                title = clearSearchHistory,
+                summary = clearSearchHistorySummary,
             ) {
-                coroutineScope.launch {
-                    dialogState.awaitConfirmationOrCancel(
+                launch {
+                    awaitConfirmationOrCancel(
                         confirmText = R.string.clear_all,
                         title = R.string.clear_search_history_confirm,
                     )

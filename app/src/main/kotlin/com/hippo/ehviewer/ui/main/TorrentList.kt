@@ -18,36 +18,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.parser.Torrent
 import com.hippo.ehviewer.client.parser.format
+import com.hippo.ehviewer.ui.i18n.Translations
 
+context(Translations)
 @Composable
 fun TorrentList(
     items: List<Torrent>,
     onItemClick: (Torrent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val title = stringResource(R.string.torrents)
     Column(
         modifier = modifier.padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(text = title, style = MaterialTheme.typography.headlineSmall)
+        Text(text = torrents, style = MaterialTheme.typography.headlineSmall)
         val labelStyle = MaterialTheme.typography.labelLarge
         LazyColumn(
             contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(items) {
-                Column(
-                    modifier = Modifier.clickable { onItemClick(it) }.minimumInteractiveComponentSize()
-                        .padding(horizontal = 8.dp),
-                ) {
+                Column(modifier = Modifier.clickable { onItemClick(it) }.minimumInteractiveComponentSize().padding(horizontal = 8.dp)) {
                     Text(
                         text = it.name,
                         modifier = Modifier.basicMarquee(

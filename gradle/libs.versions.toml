@@ -25,6 +25,7 @@ kotlinx-datetime = "0.6.1"
 kotlinx-serialization = "1.7.3"
 ksp = "2.1.0-1.0.29"
 ktor = "3.0.2"
+lyricist = "1.7.0"
 okhttp = "5.0.0-alpha.14"
 okio = "3.9.1"
 splitties = "3.0.0"
@@ -93,6 +94,8 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 
 ktlint = "com.pinterest:ktlint:1.4.0"
+
+lyricist = { module = "cafe.adriel.lyricist:lyricist", version.ref = "lyricist" }
 
 okhttp-bom = { module = "com.squareup.okhttp3:okhttp-bom", version.ref = "okhttp" }
 okhttp-android = { module = "com.squareup.okhttp3:okhttp-android" }
