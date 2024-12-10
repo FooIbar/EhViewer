@@ -612,12 +612,12 @@ object Locales {
     const val Fr = "fr"
     const val Ja = "ja"
     const val Ko = "ko"
-    const val NbNo = "nb_rNO"
+    const val NbNo = "nb-NO"
     const val Th = "th"
     const val Tr = "tr"
-    const val ZhCn = "zh_rCN"
-    const val ZhHk = "zh_rHK"
-    const val ZhTw = "zh_rTW"
+    const val ZhCn = "zh-CN"
+    const val ZhHk = "zh-HK"
+    const val ZhTw = "zh-TW"
 }
 
 val translations: Map<LanguageTag, Translations> = mapOf(
