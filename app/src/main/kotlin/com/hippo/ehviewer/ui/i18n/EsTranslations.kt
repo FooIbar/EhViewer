@@ -16,8 +16,7 @@ object EsTranslations : Translations by EnTranslations {
     override val signInFirst = "Por favor, inicie sesión primero"
     override val textIsEmpty = "El texto está vacío"
     override val waring = "Advertencia"
-    override val invalidDownloadLocation =
-        "Parece que la ubicación de descarga no está disponible. Establece la ubicación en Configuración."
+    override val invalidDownloadLocation = "Parece que la ubicación de descarga no está disponible. Establece la ubicación en Configuración."
     override val errorTimeout = "Sin tiempo"
     override val errorUnknownHost = "Host desconocido"
     override val errorRedirection = "Demasiadas redirecciones"
@@ -34,8 +33,7 @@ object EsTranslations : Translations by EnTranslations {
     override val errorGetPtokenError = "Error al obtener token"
     override val errorCantSaveImage = "Imposible guardar la imagen"
     override val errorInvalidNumber = "Número invalido"
-    override val appWaring =
-        "El contenido de esta aplicación es de Internet. Algunas de ellas pueden causarle daño psicológico. Ahora sabes los riesgos anteriormente mencionado y te gustaría asumirlos"
+    override val appWaring = "El contenido de esta aplicación es de Internet. Algunas de ellas pueden causarle daño psicológico. Ahora sabes los riesgos anteriormente mencionado y te gustaría asumirlos"
     override val errorUsernameCannotEmpty = "El usuario no puede estar vacío"
     override val guestMode = "Saltar inicio de sesión"
     override val signInFailed = "Inicio de sesión fallido"
@@ -60,11 +58,9 @@ object EsTranslations : Translations by EnTranslations {
     override val quickSearchTip = "Pulsar \"+\" para añadir a la búsqueda rápida"
     override val addQuickSearchDialogTitle = "Añadir búsqueda rápida"
     override val nameIsEmpty = "Nombre vacío"
-    override val addQuickSearchTip =
-        "El estado de la lista de galerías se guardará como búsqueda rápida. Aplique la búsqueda primero si desea guardar el estado del panel de búsqueda."
+    override val addQuickSearchTip = "El estado de la lista de galerías se guardará como búsqueda rápida. Aplique la búsqueda primero si desea guardar el estado del panel de búsqueda."
     override val readme = "LÉEME"
-    override val imageSearchNotQuickSearch =
-        "No se puede añadir la búsqueda de imágenes como búsqueda rápida"
+    override val imageSearchNotQuickSearch = "No se puede añadir la búsqueda de imágenes como búsqueda rápida"
     override val duplicateQuickSearch = { p0: String ->
         "Búsqueda rápida duplicada. El nombre es \"%s\"."
             .format(p0)
@@ -205,8 +201,7 @@ object EsTranslations : Translations by EnTranslations {
     }
     override val downloadRemoveDialogCheckText = "Borrar imágenes"
     override val downloadResetReadingProgress = "Reiniciar progreso de lectura"
-    override val resetReadingProgressMessage =
-        "¿Deseas reiniciar el progreso de lectura en todas las galerías?"
+    override val resetReadingProgressMessage = "¿Deseas reiniciar el progreso de lectura en todas las galerías?"
     override val statDownloadActionStopAll = "Detener todo"
     override val defaultDownloadLabelName = "Predeterminado"
     override val downloadMoveDialogTitle = "Mover"
@@ -253,21 +248,17 @@ object EsTranslations : Translations by EnTranslations {
     override val settingsEhDetailSizeLong = "Largo"
     override val settingsEhDetailSizeShort = "Corto"
     override val settingsEhShowJpnTitle = "Mostrar títulos en japonés"
-    override val settingsEhShowJpnTitleSummary =
-        "Es necesario habilitar los títulos en japonés en la propia página de EHentai"
+    override val settingsEhShowJpnTitleSummary = "Es necesario habilitar los títulos en japonés en la propia página de EHentai"
     override val settingsEhShowGalleryPages = "Mostrar número de páginas de la galería"
     override val settingsEhShowGalleryPagesSummary = "Se verá cuántas páginas tiene una galería"
     override val settingsEhFilter = "Filtrado de galerías"
-    override val settingsEhFilterSummary =
-        "Filtrado de galerías por título, uploader y etiquetas. Para más detalles presiona el ícono (i) en la parte superior del menú"
+    override val settingsEhFilterSummary = "Filtrado de galerías por título, uploader y etiquetas. Para más detalles presiona el ícono (i) en la parte superior del menú"
     override val settingsDownload = "Descargas"
     override val settingsDownloadDownloadLocation = "Ruta de descargas"
     override val settingsDownloadCantGetDownloadLocation = "No se puede obtener ruta de descargas"
     override val settingsDownloadMediaScan = "Permitir escaneo de medios"
-    override val settingsDownloadMediaScanSummaryOn =
-        "Las galerías de imágenes mostrarán los doujinshis/mangas descargados. ¡Cuidado con prestar tu móvil o tablet!"
-    override val settingsDownloadMediaScanSummaryOff =
-        "Las de galería de imágenes no mostrarán los doujinshis/mangas descargados"
+    override val settingsDownloadMediaScanSummaryOn = "Las galerías de imágenes mostrarán los doujinshis/mangas descargados. ¡Cuidado con prestar tu móvil o tablet!"
+    override val settingsDownloadMediaScanSummaryOff = "Las de galería de imágenes no mostrarán los doujinshis/mangas descargados"
     override val settingsDownloadConcurrency = "Multi-hilos al descargar"
     override val settingsDownloadConcurrencySummary = { p0: String ->
         "Máximo de %s imágenes"
@@ -281,8 +272,7 @@ object EsTranslations : Translations by EnTranslations {
     override val settingsDownloadDownloadOriginImage = "Descargar imagen original"
     override val settingsDownloadDownloadOriginImageSummary = "¡Cuidado! Podrías recibir error 509"
     override val settingsDownloadRestoreDownloadItems = "Restaurar los elementos de descarga"
-    override val settingsDownloadRestoreDownloadItemsSummary =
-        "Restaurar todos los elementos de descarga en la ruta de descarga"
+    override val settingsDownloadRestoreDownloadItemsSummary = "Restaurar todos los elementos de descarga en la ruta de descarga"
     override val settingsDownloadRestoreNotFound = "No se han encontrado elementos para restaurar"
     override val settingsDownloadRestoreFailed = "Restauración fallida"
     override val settingsDownloadRestoreSuccessfully = { p0: Int ->
@@ -290,18 +280,15 @@ object EsTranslations : Translations by EnTranslations {
             .format(p0)
     }
     override val settingsDownloadCleanRedundancy = "Borrar imágenes sobrantes"
-    override val settingsDownloadCleanRedundancySummary =
-        "Elimina las imágenes almacenadas en la ruta de descarga que no se encuentran en la lista de descarga"
+    override val settingsDownloadCleanRedundancySummary = "Elimina las imágenes almacenadas en la ruta de descarga que no se encuentran en la lista de descarga"
     override val settingsDownloadCleanRedundancyNoRedundancy = "Sin imágenes para borrar"
     override val settingsDownloadCleanRedundancyDone = { p0: Int ->
         "Borrado de imágenes completada, un total de %d elementos borrados"
             .format(p0)
     }
     override val settingsAdvanced = "Avanzado"
-    override val settingsAdvancedSaveParseErrorBody =
-        "Guardar contenido en HTML al analizar el error"
-    override val settingsAdvancedSaveParseErrorBodySummary =
-        "El contenido HTML puede ser sensible a la privacidad"
+    override val settingsAdvancedSaveParseErrorBody = "Guardar contenido en HTML al analizar el error"
+    override val settingsAdvancedSaveParseErrorBodySummary = "El contenido HTML puede ser sensible a la privacidad"
     override val settingsAdvancedDumpLogcat = "Guardado de logcat"
     override val settingsAdvancedDumpLogcatSummary = "Guardar logcat en almacenamiento externo"
     override val settingsAdvancedDumpLogcatFailed = "Guardado de logcat fallido"
@@ -312,8 +299,7 @@ object EsTranslations : Translations by EnTranslations {
     override val settingsAdvancedReadCacheSize = "Tamaño del caché (archivos temporales)"
     override val settingsAdvancedAppLanguageTitle = "Idioma de la aplicación"
     override val settingsAdvancedExportData = "Exportar datos"
-    override val settingsAdvancedExportDataSummary =
-        "Guardar datos en almacenamiento externo, tales como la lista de descarga, lista de búsqueda rápida, entre otros"
+    override val settingsAdvancedExportDataSummary = "Guardar datos en almacenamiento externo, tales como la lista de descarga, lista de búsqueda rápida, entre otros"
     override val settingsAdvancedExportDataTo = { p0: String ->
         "Datos exportados en %s"
             .format(p0)
@@ -393,60 +379,58 @@ object EsTranslations : Translations by EnTranslations {
     override val showDefinition = "Ver definición de la etiqueta"
     override val filterAdded = "Etiqueta bloqueada"
     override val filterText = "Escribe la etiqueta"
-    override val filterTip =
-        "Este sistema de bloqueo filtrará las galerías de EHentai que contengan la etiqueta especificada acá.\n\nBloqueo de título: excluye las galerías cuyo título contenga la palabra.\n\nBloqueo de uploader: Excluye las galerías que publicadas por el uploader.\n\nBloqueo de etiqueta: excluye galerías que contengan la etiqueta, tomará más tiempo en obtener la lista de galerías.\n\nBloqueo de etiqueta namespace: excluye galerías que contengan la etiqueta namespace, tomará más tiempo en obtener la lista de galerías. Nota: Con namespace quiere decir etiquetas como \"male\", \"female\", \"misc\", entre otros."
+    override val filterTip = "Este sistema de bloqueo filtrará las galerías de EHentai que contengan la etiqueta especificada acá.\n\nBloqueo de título: excluye las galerías cuyo título contenga la palabra.\n\nBloqueo de uploader: Excluye las galerías que publicadas por el uploader.\n\nBloqueo de etiqueta: excluye galerías que contengan la etiqueta, tomará más tiempo en obtener la lista de galerías.\n\nBloqueo de etiqueta namespace: excluye galerías que contengan la etiqueta namespace, tomará más tiempo en obtener la lista de galerías. Nota: Con namespace quiere decir etiquetas como \"male\", \"female\", \"misc\", entre otros."
     override val settingsPrivacySecure = "Impedir capturas de pantalla"
-    override val settingsPrivacySecureSummary =
-        "Si habilitas esta opción no podrás hacer captura de pantalla y el sistema no mostrará una previsualización en el multitareas.\n\nDeberás reiniciar la aplicación para activar esta función."
+    override val settingsPrivacySecureSummary = "Si habilitas esta opción no podrás hacer captura de pantalla y el sistema no mostrará una previsualización en el multitareas.\n\nDeberás reiniciar la aplicación para activar esta función."
     override val uConfig = "Ajustes EHentai"
     override val applyTip = "Toca la marca de verificación para guardar los cambios"
     override val darkThemeFollowSystem = "Sigue el sistema"
     override val pageCount = { quantity: Int ->
         when (quantity) {
-            1 -> "%d páginas"
-            else -> "%d páginas"
-        }.format(quantity)
+            1 -> "$quantity páginas"
+            else -> "$quantity páginas"
+        }
     }
     override val someMinutesAgo = { quantity: Int ->
         when (quantity) {
             1 -> "Hace un minuto"
-            else -> "Hace %d minutos"
-        }.format(quantity)
+            else -> "Hace $quantity minutos"
+        }
     }
     override val someHoursAgo = { quantity: Int ->
         when (quantity) {
             1 -> "Hace una hora"
-            else -> "Hace %d horas"
-        }.format(quantity)
+            else -> "Hace $quantity horas"
+        }
     }
     override val second = { quantity: Int ->
         when (quantity) {
             1 -> "segundo"
             else -> "segundos"
-        }.format(quantity)
+        }
     }
     override val minute = { quantity: Int ->
         when (quantity) {
             1 -> "minuto"
             else -> "minutos"
-        }.format(quantity)
+        }
     }
     override val hour = { quantity: Int ->
         when (quantity) {
             1 -> "hora"
             else -> "horas"
-        }.format(quantity)
+        }
     }
     override val day = { quantity: Int ->
         when (quantity) {
             1 -> "día"
             else -> "días"
-        }.format(quantity)
+        }
     }
     override val year = { quantity: Int ->
         when (quantity) {
             1 -> "año"
             else -> "años"
-        }.format(quantity)
+        }
     }
 }
