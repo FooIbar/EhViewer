@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.intl.Locale
-import cafe.adriel.lyricist.LanguageTag
 import cafe.adriel.lyricist.Lyricist
 import cafe.adriel.lyricist.ProvideStrings
 import cafe.adriel.lyricist.rememberStrings
@@ -618,34 +617,29 @@ object Locales {
     const val ZhTw = "zh-TW"
 }
 
-val translations: Map<LanguageTag, Translations> = mapOf(
-    Locales.En to EnTranslations,
-    Locales.De to DeTranslations,
-    Locales.Es to EsTranslations,
-    Locales.Fr to FrTranslations,
-    Locales.Ja to JaTranslations,
-    Locales.Ko to KoTranslations,
-    Locales.NbNo to NbNoTranslations,
-    Locales.Th to ThTranslations,
-    Locales.Tr to TrTranslations,
-    Locales.ZhCn to ZhCnTranslations,
-    Locales.ZhHk to ZhHkTranslations,
-    Locales.ZhTw to ZhTwTranslations,
-)
-
-@Composable
-fun rememberTranslations(
-    defaultLanguageTag: LanguageTag = "en",
-    currentLanguageTag: LanguageTag = with(Locale.current) { listOf(language, region).mapNotNull { it.ifBlank { null } } }.joinToString("-"),
-) = rememberStrings(translations, defaultLanguageTag, currentLanguageTag)
-
 val LocalTranslations: ProvidableCompositionLocal<Translations> =
     staticCompositionLocalOf { EnTranslations }
 
 @Composable
 fun ProvideTranslations(
-    lyricist: Lyricist<Translations> = rememberTranslations(),
+    lyricist: Lyricist<Translations> = rememberStrings(
+        translations = mapOf(
+            Locales.En to EnTranslations,
+            Locales.De to DeTranslations,
+            Locales.Es to EsTranslations,
+            Locales.Fr to FrTranslations,
+            Locales.Ja to JaTranslations,
+            Locales.Ko to KoTranslations,
+            Locales.NbNo to NbNoTranslations,
+            Locales.Th to ThTranslations,
+            Locales.Tr to TrTranslations,
+            Locales.ZhCn to ZhCnTranslations,
+            Locales.ZhHk to ZhHkTranslations,
+            Locales.ZhTw to ZhTwTranslations,
+        ),
+        currentLanguageTag = with(Locale.current) {
+            listOf(language, region).mapNotNull { it.ifBlank { null } }.joinToString("-")
+        },
+    ),
     content: @Composable () -> Unit,
-) {
-    ProvideStrings(lyricist, LocalTranslations, content)
-}
+) = ProvideStrings(lyricist, LocalTranslations, content)
