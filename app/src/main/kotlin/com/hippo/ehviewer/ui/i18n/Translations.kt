@@ -5,7 +5,6 @@ package com.hippo.ehviewer.ui.i18n
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.intl.Locale
 import cafe.adriel.lyricist.LanguageTag
 import cafe.adriel.lyricist.Lyricist
@@ -372,7 +371,6 @@ interface Translations {
     val settingsAboutDeclaration: String
     val settingsAboutDeclarationSummary: String
     val settingsAboutAuthor: String
-    val settingsAboutAuthorSummary: AnnotatedString
     val settingsAboutLatestRelease: String
     val settingsAboutSource: String
     val settingsAboutVersion: String
