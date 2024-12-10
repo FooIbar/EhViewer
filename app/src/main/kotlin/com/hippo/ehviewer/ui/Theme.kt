@@ -14,7 +14,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
 import com.hippo.ehviewer.ui.i18n.ProvideTranslations
-import com.hippo.ehviewer.ui.i18n.rememberTranslations
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalDialogState
@@ -32,7 +31,7 @@ inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -
                 LocalDialogState provides dialogState,
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    ProvideTranslations(rememberTranslations()) {
+                    ProvideTranslations {
                         content()
                         dialogState.value?.invoke(this)
                     }
