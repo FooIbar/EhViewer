@@ -46,7 +46,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -99,8 +98,6 @@ import moe.tarsin.coroutines.runSwallowingWithUI
 @Composable
 fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
     // Immutables
-    val localFavName = stringResource(R.string.local_favorites)
-    val cloudFavName = stringResource(R.string.cloud_favorites)
     val animateItems by Settings.animateItems.collectAsState()
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
 
@@ -115,18 +112,13 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     val favCatName = remember(urlBuilder) {
         when (val favCat = urlBuilder.favCat) {
             in 0..9 -> Settings.favCat[favCat]
-            FavListUrlBuilder.FAV_CAT_LOCAL -> localFavName.also { searchBarOffsetY = 0 }
-            else -> cloudFavName
+            FavListUrlBuilder.FAV_CAT_LOCAL -> localFavorites.also { searchBarOffsetY = 0 }
+            else -> cloudFavorites
         }
     }
-    val title = if (keyword.isNullOrBlank()) {
-        stringResource(R.string.favorites_title, favCatName)
-    } else {
-        stringResource(R.string.favorites_title_2, favCatName, keyword)
-    }
+    val title = if (keyword.isNullOrBlank()) favoritesTitle(favCatName) else favoritesTitle2(favCatName, keyword)
     val density = LocalDensity.current
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
-    val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
     val data = rememberInVM(isLocalFav) {
         if (isLocalFav) {
             Pager(PagingConfig(20, jumpThreshold = 40)) {
@@ -186,7 +178,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     ProvideSideSheetContent { sheetState ->
         val localFavCount by localFavCountFlow.collectAsState(0)
         TopAppBar(
-            title = { Text(text = stringResource(id = R.string.collections)) },
+            title = { Text(text = collections) },
             windowInsets = EmptyWindowInsets,
             colors = topBarOnDrawerColor(),
         )
@@ -196,11 +188,11 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                 scope.invalidate()
             }
         }
-        val localFav = stringResource(id = R.string.local_favorites) to localFavCount
+        val localFav = localFavorites to localFavCount
         val faves = if (hasSignedIn) {
             arrayOf(
                 localFav,
-                stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
+                cloudFavorites to Settings.favCloudCount,
                 *Settings.favCat.zip(Settings.favCount.toTypedArray()).toTypedArray(),
             )
         } else {
@@ -241,7 +233,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             if (it) checkedInfoMap.clear()
         },
         title = title,
-        searchFieldHint = searchBarHint,
+        searchFieldHint = searchBarHint(favCatName),
         tagNamespace = !isLocalFav,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
@@ -390,7 +382,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             onClick(Icons.Default.Delete) {
                 val info = checkedInfoMap.takeAndClear()
                 awaitConfirmationOrCancel(title = R.string.delete_favorites_dialog_title) {
-                    Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
+                    Text(text = deleteFavoritesDialogMessage(info.size))
                 }
                 val srcCat = urlBuilder.favCat
                 runSwallowingWithUI {
@@ -407,7 +399,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             onClick(Icons.AutoMirrored.Default.DriveFileMove) {
                 // First is local favorite, the other 10 is cloud favorite
                 val items = buildList {
-                    add(localFavName)
+                    add(localFavorites)
                     if (hasSignedIn) {
                         addAll(Settings.favCat)
                     }

@@ -25,7 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.ListUrlBuilder
@@ -47,7 +46,6 @@ import kotlinx.coroutines.launch
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) = composing(navigator) {
-    val selectImageFirst = stringResource(R.string.select_image_first)
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
     val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
@@ -55,7 +53,7 @@ fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.image_search)) },
+                title = { Text(text = imageSearch) },
             )
         },
         floatingActionButton = {
@@ -96,7 +94,7 @@ fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) 
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = stringResource(id = R.string.search_image),
+                    text = searchImage,
                     modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium,
