@@ -12,8 +12,7 @@ import androidx.compose.ui.text.withStyle
 import cafe.adriel.lyricist.ProvideStrings
 import cafe.adriel.lyricist.rememberStrings
 
-// Note: check for unused res by removing 'data' class
-data class Strings(
+class Strings(
     val appName: String = "EhViewer",
     val siteE: String = "e-hentai",
     val siteEx: String = "exhentai",
