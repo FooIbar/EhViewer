@@ -1,602 +1,655 @@
-@file:Suppress("ktlint:standard:property-naming")
-
 package com.hippo.ehviewer.ui.i18n
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.withStyle
 import cafe.adriel.lyricist.ProvideStrings
 import cafe.adriel.lyricist.rememberStrings
 
-interface Strings {
-    val appName: String
-    val siteE: String
-    val siteEx: String
-    val doujinshi: String
-    val manga: String
-    val artistCg: String
-    val gameCg: String
-    val western: String
-    val nonH: String
-    val imageSet: String
-    val cosplay: String
-    val asianPorn: String
-    val misc: String
-    val homepage: String
-    val subscription: String
-    val whatsHot: String
-    val favourite: String
-    val history: String
-    val downloads: String
-    val settings: String
-    val username: String
-    val password: String
-    val signIn: String
-    val register: String
-    val signInViaWebview: String
-    val signInFirst: String
-    val textIsEmpty: String
-    val waring: String
-    val invalidDownloadLocation: String
-    val clipboardGalleryUrlSnackMessage: String
-    val clipboardGalleryUrlSnackAction: String
-    val errorTimeout: String
-    val errorUnknownHost: String
-    val errorRedirection: String
-    val errorSocket: String
-    val errorUnknown: String
-    val errorCantFindActivity: String
-    val errorCannotParseTheUrl: String
-    val errorDecodingFailed: String
-    val errorReadingFailed: String
-    val errorOutOfRange: String
-    val errorParseError: String
-    val error509: String
-    val errorInvalidUrl: String
-    val errorGetPtokenError: String
-    val errorCantSaveImage: String
-    val errorInvalidNumber: String
-    val appWaring: String
-    val appWaring2: String
-    val errorUsernameCannotEmpty: String
-    val errorPasswordCannotEmpty: String
-    val guestMode: String
-    val signInFailed: String
-    val signInFailedTip: (String) -> String
-    val getIt: String
-    val galleryListSearchBarHintExhentai: String
-    val galleryListSearchBarHintEHentai: String
-    val galleryListSearchBarOpenGallery: String
-    val galleryListEmptyHit: String
-    val galleryListEmptyHitSubscription: String
-    val keywordSearch: String
-    val imageSearch: String
-    val searchImage: String
-    val searchSh: String
-    val searchSto: String
-    val searchSr: String
-    val searchSpTo: String
-    val searchSpErr1: String
-    val searchSpErr2: String
-    val searchSpSuffix: String
-    val searchSf: String
-    val searchSfl: String
-    val searchSfu: String
-    val searchSft: String
-    val selectImage: String
-    val selectImageFirst: String
-    val addToFavourites: String
-    val removeFromFavourites: String
-    val deleteDownloads: String
-    val quickSearch: String
-    val quickSearchTip: String
-    val addQuickSearchDialogTitle: String
-    val translateTagForTagger: String
-    val nameIsEmpty: String
-    val delete: String
-    val addQuickSearchTip: String
-    val readme: String
-    val imageSearchNotQuickSearch: String
-    val duplicateQuickSearch: (String) -> String
-    val duplicateName: String
-    val saveProgress: String
-    val deleteQuickSearch: (String) -> String
-    val goToHint: (Int, Int) -> String
-    val any: String
-    val star2: String
-    val star3: String
-    val star4: String
-    val star5: String
-    val download: String
-    val read: String
-    val favoredTimes: (Int) -> String
-    val ratingText: (String, Float, Int) -> String
-    val torrentCount: (Int) -> String
-    val share: String
-    val rate: String
-    val similarGallery: String
-    val searchCover: String
-    val noTags: String
-    val noComments: String
-    val noMoreComments: String
-    val moreComment: String
-    val refresh: String
-    val viewOriginal: String
-    val openInOtherApp: String
-    val clearImageCache: String
-    val clearImageCacheConfirm: String
-    val imageCacheCleared: String
-    val rateSuccessfully: String
-    val rateFailed: String
-    val noTorrents: String
-    val torrents: String
-    val notFavorited: String
-    val addFavoritesDialogTitle: String
-    val addToFavoriteSuccess: String
-    val removeFromFavoriteSuccess: String
-    val addToFavoriteFailure: String
-    val removeFromFavoriteFailure: String
-    val filterTheUploader: (String) -> String
-    val filterTheTag: (String) -> String
-    val filterAdded: String
-    val newerVersionAvailable: String
-    val newerVersionTitle: (String, String) -> String
-    val rating10: String
-    val rating9: String
-    val rating8: String
-    val rating7: String
-    val rating6: String
-    val rating5: String
-    val rating4: String
-    val rating3: String
-    val rating2: String
-    val rating1: String
-    val rating0: String
-    val ratingNone: String
-    val galleryInfo: String
-    val copiedToClipboard: String
-    val keyGid: String
-    val keyToken: String
-    val keyUrl: String
-    val keyTitle: String
-    val keyTitleJpn: String
-    val keyThumb: String
-    val keyCategory: String
-    val keyUploader: String
-    val keyPosted: String
-    val keyParent: String
-    val keyVisible: String
-    val keyLanguage: String
-    val keyPages: String
-    val keySize: String
-    val keyFavoriteCount: String
-    val keyFavorited: String
-    val keyRatingCount: String
-    val keyRating: String
-    val keyTorrents: String
-    val keyTorrentUrl: String
-    val galleryComments: String
-    val commentSuccessfully: String
-    val commentFailed: String
-    val copyCommentText: String
-    val blockCommenter: String
-    val filterTheCommenter: (String) -> String
-    val editComment: String
-    val editCommentSuccessfully: String
-    val editCommentFailed: String
-    val voteUp: String
-    val cancelVoteUp: String
-    val voteDown: String
-    val cancelVoteDown: String
-    val voteUpSuccessfully: String
-    val cancelVoteUpSuccessfully: String
-    val voteDownSuccessfully: String
-    val cancelVoteDownSuccessfully: String
-    val voteFailed: String
-    val checkVoteStatus: String
-    val clickMoreComments: String
-    val lastEdited: (String) -> String
-    val goTo: String
-    val sceneDownloadTitle: (String) -> String
-    val noDownloadInfo: String
-    val downloadStateNone: String
-    val downloadStateWait: String
-    val downloadStateDownloading: String
-    val downloadStateDownloaded: String
-    val downloadStateFailed: String
-    val downloadStateFailed2: (Int) -> String
-    val downloadStateFinish: String
-    val stat509AlertTitle: String
-    val stat509AlertText: String
-    val statDownloadDoneTitle: String
-    val statDownloadDoneTextSucceeded: (Int) -> String
-    val statDownloadDoneTextFailed: (Int) -> String
-    val statDownloadDoneTextMix: (Int, Int) -> String
-    val statDownloadDoneLineSucceeded: (String) -> String
-    val statDownloadDoneLineFailed: (String) -> String
-    val downloadRemoveDialogTitle: String
-    val downloadRemoveDialogMessage: (String) -> String
-    val downloadRemoveDialogMessage2: (Int) -> String
-    val downloadRemoveDialogCheckText: String
-    val statDownloadActionStopAll: String
-    val defaultDownloadLabelName: String
-    val downloadMoveDialogTitle: String
-    val downloadLabels: String
-    val downloadStartAll: String
-    val downloadStopAll: String
-    val downloadResetReadingProgress: String
-    val resetReadingProgressMessage: String
-    val downloadServiceLabel: String
-    val downloadSpeedText: (String) -> String
-    val downloadSpeedText2: (String, String) -> String
-    val rememberDownloadLabel: String
-    val defaultDownloadLabel: String
-    val addedToDownloadList: String
-    val selectGroupingMode: String
-    val selectGroupingModeCustom: String
-    val selectGroupingModeArtist: String
-    val unknownArtists: String
-    val add: String
-    val newLabelTitle: String
-    val labelTextIsEmpty: String
-    val labelTextIsInvalid: String
-    val labelTextExist: String
-    val renameLabelTitle: String
-    val deleteLabel: (String) -> String
-    val noHistory: String
-    val clearAll: String
-    val clearAllHistory: String
-    val filter: String
-    val filterTitle: String
-    val filterUploader: String
-    val filterTag: String
-    val filterTagNamespace: String
-    val filterCommenter: String
-    val filterComment: String
-    val deleteFilter: (String) -> String
-    val addFilter: String
-    val showDefinition: String
-    val filterText: String
-    val filterTip: String
-    val uConfig: String
-    val applyTip: String
-    val myTags: String
-    val shareImage: String
-    val imageSaved: (String) -> String
-    val settingsEh: String
-    val settingsEhSignOut: String
-    val settingsEhIdentityCookiesSigned: String
-    val settingsEhIdentityCookiesGuest: String
-    val settingsEhClearIgneous: String
-    val settingsUConfig: String
-    val settingsUConfigSummary: String
-    val settingsMyTags: String
-    val settingsMyTagsSummary: String
-    val settingsEhGallerySite: String
-    val settingsEhLaunchPage: String
-    val settingsEhListMode: String
-    val settingsEhListModeDetail: String
-    val settingsEhListModeThumb: String
-    val settingsEhDetailSize: String
-    val settingsEhDetailSizeLong: String
-    val settingsEhDetailSizeShort: String
-    val settingsEhThumbColumns: String
-    val settingsEhForceEhThumb: String
-    val settingsEhForceEhThumbSummary: String
-    val settingsEhShowJpnTitle: String
-    val settingsEhShowJpnTitleSummary: String
-    val settingsEhShowGalleryPages: String
-    val settingsEhShowGalleryPagesSummary: String
-    val settingsEhShowVoteStatus: String
-    val settingsEhShowGalleryComments: String
-    val settingsEhShowGalleryCommentsSummary: String
-    val settingsEhShowGalleryCommentThreshold: String
-    val settingsEhShowGalleryCommentThresholdSummary: String
-    val settingsEhShowTagTranslations: String
-    val settingsEhShowTagTranslationsSummary: String
-    val settingsEhTagTranslationsSource: String
-    val settingsEhTagTranslationsSourceUrl: String
-    val settingsEhFilter: String
-    val settingsEhFilterSummary: String
-    val settingsReadReverseControls: String
-    val settingsBlockExtraneousAds: String
-    val settingsAdsPlaceholder: String
-    val settingsDownload: String
-    val settingsDownloadDownloadLocation: String
-    val settingsDownloadCantGetDownloadLocation: String
-    val settingsDownloadMediaScan: String
-    val settingsDownloadMediaScanSummaryOn: String
-    val settingsDownloadMediaScanSummaryOff: String
-    val settingsDownloadConcurrency: String
-    val settingsDownloadConcurrencySummary: (Int) -> String
-    val settingsDownloadDownloadDelay: String
-    val settingsDownloadDownloadDelaySummary: (Int) -> String
-    val settingsDownloadDownloadTimeout: String
-    val settingsDownloadPreloadImage: String
-    val settingsDownloadPreloadImageSummary: (Int) -> String
-    val settingsDownloadDownloadOriginImage: String
-    val settingsDownloadDownloadOriginImageSummary: String
-    val settingsDownloadSaveAsCbz: String
-    val settingsDownloadArchiveMetadata: String
-    val settingsDownloadArchiveMetadataSummary: String
-    val settingsDownloadReloadMetadata: String
-    val settingsDownloadReloadMetadataSummary: String
-    val settingsDownloadReloadMetadataSuccessfully: (Int) -> String
-    val settingsDownloadReloadMetadataFailed: (String) -> String
-    val settingsDownloadRestoreDownloadItems: String
-    val settingsDownloadRestoreDownloadItemsSummary: String
-    val settingsDownloadRestoreNotFound: String
-    val settingsDownloadRestoreFailed: String
-    val settingsDownloadRestoreSuccessfully: (Int) -> String
-    val settingsDownloadCleanRedundancy: String
-    val settingsDownloadCleanRedundancySummary: String
-    val settingsDownloadCleanRedundancyNoRedundancy: String
-    val settingsDownloadCleanRedundancyDone: (Int) -> String
-    val settingsAdvanced: String
-    val settingsAdvancedSaveParseErrorBody: String
-    val settingsAdvancedSaveParseErrorBodySummary: String
-    val settingsAdvancedSaveCrashLog: String
-    val settingsAdvancedSaveCrashLogSummary: String
-    val settingsAdvancedDumpLogcat: String
-    val settingsAdvancedDumpLogcatSummary: String
-    val settingsAdvancedDumpLogcatFailed: String
-    val settingsAdvancedDumpLogcatTo: (String) -> String
-    val settingsAdvancedReadCacheSize: String
-    val settingsAdvancedAppLanguageTitle: String
-    val settingsAdvancedHardwareBitmapThreshold: String
-    val settingsAdvancedHardwareBitmapThresholdSummary: String
-    val settingsAdvancedExportData: String
-    val settingsAdvancedExportDataSummary: String
-    val settingsAdvancedExportDataTo: (String) -> String
-    val settingsAdvancedExportDataFailed: String
-    val settingsAdvancedImportData: String
-    val settingsAdvancedImportDataSummary: String
-    val settingsAdvancedImportDataSuccessfully: String
-    val settingsAdvancedBackupFavorite: String
-    val settingsAdvancedBackupFavoriteSummary: String
-    val settingsAdvancedBackupFavoriteStart: (String) -> String
-    val settingsAdvancedBackupFavoriteNothing: String
-    val settingsAdvancedBackupFavoriteSuccess: String
-    val settingsAdvancedBackupFavoriteFailed: String
-    val settingsAbout: String
-    val settingsAboutDeclaration: String
-    val settingsAboutDeclarationSummary: String
-    val settingsAboutAuthor: String
-    val settingsAboutAuthorSummary: AnnotatedString
-    val settingsAboutLatestRelease: String
-    val settingsAboutSource: String
-    val settingsAboutVersion: String
-    val settingsAboutCommitTime: (String) -> String
-    val settingsAboutCheckForUpdates: String
-    val license: String
-    val cantReadTheFile: String
-    val appLanguageSystem: String
-    val pleaseWait: String
-    val cloudFavorites: String
-    val localFavorites: String
-    val searchBarHint: (String) -> String
-    val favoritesTitle: (String) -> String
-    val favoritesTitle2: (String, String) -> String
-    val deleteFavoritesDialogTitle: String
-    val deleteFavoritesDialogMessage: (Int) -> String
-    val moveFavoritesDialogTitle: String
-    val defaultFavoritesCollection: String
-    val defaultFavoritesWarning: String
-    val letMeSelect: String
-    val favoriteNote: String
-    val collections: String
-    val errorSomethingWrongHappened: String
-    val fromTheFuture: String
-    val justNow: String
-    val yesterday: String
-    val someDaysAgo: (Int) -> String
-    val archive: String
-    val archiveFree: String
-    val archiveOriginal: String
-    val archiveResample: String
-    val noArchives: String
-    val downloadArchiveStarted: String
-    val downloadArchiveFailure: String
-    val downloadArchiveFailureNoHath: String
-    val currentFunds: String
-    val insufficientFunds: String
-    val imageLimits: String
-    val imageLimitsSummary: String
-    val imageLimitsNormal: String
-    val imageLimitsRestricted: String
-    val resetCost: (Int) -> String
-    val reset: String
-    val settingsPrivacy: String
-    val settingsPrivacySecure: String
-    val settingsPrivacySecureSummary: String
-    val clearSearchHistory: String
-    val clearSearchHistorySummary: String
-    val clearSearchHistoryConfirm: String
-    val searchHistoryCleared: String
-    val downloadService: String
-    val keyFavoriteName: String
-    val darkTheme: String
-    val blackDarkTheme: String
-    val harmonizeCategoryColor: String
-    val sortBy: String
-    val addedTimeDesc: String
-    val addedTimeAsc: String
-    val uploadedTimeDesc: String
-    val uploadedTimeAsc: String
-    val titleAsc: String
-    val titleDesc: String
-    val pageCountAsc: String
-    val pageCountDesc: String
-    val groupByDownloadLabel: String
-    val downloadFilter: String
-    val downloadAll: String
-    val downloadStartAllReversed: String
-    val noBrowserInstalled: String
-    val toplistAlltime: String
-    val toplistPastyear: String
-    val toplistPastmonth: String
-    val toplistYesterday: String
-    val toplist: String
-    val tagVoteDown: String
-    val tagVoteUp: String
-    val tagVoteWithdraw: String
-    val tagVoteSuccessfully: String
-    val deleteSearchHistory: (String) -> String
-    val actionAddTag: String
-    val actionAddTagTip: String
-    val commentUserUploader: (String) -> String
-    val noNetwork: String
-    val settingsEhMeteredNetworkWarning: String
-    val meteredNetworkWarning: String
-    val readFrom: (Int) -> String
-    val settingsEhRequestNews: String
-    val settingsEhHideHvEvents: String
-    val copyTrans: String
-    val defaultDownloadDirNotEmpty: String
-    val resetDownloadLocation: String
-    val pickNewDownloadLocation: String
-    val dontShowAgain: String
-    val openSettings: String
-    val appLinkNotVerifiedMessage: String
-    val appLinkNotVerifiedTitle: String
-    val openByDefault: String
-    val backupBeforeUpdate: String
-    val useCiUpdateChannel: String
-    val settingsPrivacyRequireUnlock: String
-    val settingsPrivacyRequireUnlockDelay: String
-    val settingsPrivacyRequireUnlockDelaySummary: (Int) -> String
-    val settingsPrivacyRequireUnlockDelaySummaryImmediately: String
-    val filterLabel: String
-    val archivePasswd: String
-    val archiveNeedPasswd: String
-    val passwdWrong: String
-    val passwdCannotBeEmpty: String
-    val listTileThumbSize: String
-    val accountName: String
-    val preloadThumbAggressively: String
-    val animateItems: String
-    val animateItemsSummary: String
-    val autoUpdates: String
-    val updateFrequencyNever: String
-    val updateFrequencyDaily: String
-    val updateFrequency3days: String
-    val updateFrequencyWeekly: String
-    val updateFrequencyBiweekly: String
-    val updateFrequencyMonthly: String
-    val updateFailed: (String) -> String
-    val newVersionAvailable: String
-    val alreadyLatestVersion: String
-    val permissionDenied: String
-    val downloadGalleryFirst: String
-    val exportAsArchive: String
-    val exportAsArchiveSuccess: String
-    val exportAsArchiveFailed: String
-    val prefCropBorders: String
-    val actionSettings: String
-    val prefRotationType: String
-    val viewer: String
-    val actionMenu: String
-    val navZonePrev: String
-    val navZoneNext: String
-    val navZoneLeft: String
-    val navZoneRight: String
-    val decodeImageError: String
-    val actionRetry: String
-    val labelDefault: String
-    val rotationFree: String
-    val rotationPortrait: String
-    val rotationReversePortrait: String
-    val rotationLandscape: String
-    val rotationForcePortrait: String
-    val rotationForceLandscape: String
-    val leftToRightViewer: String
-    val rightToLeftViewer: String
-    val verticalViewer: String
-    val webtoonViewer: String
-    val verticalPlusViewer: String
-    val pagerViewer: String
-    val prefFullscreen: String
-    val prefCutoutShort: String
-    val prefPageTransitions: String
-    val prefShowPageNumber: String
-    val prefShowReaderSeekbar: String
-    val prefDoubleTapToZoom: String
-    val prefCustomBrightness: String
-    val prefGrayscale: String
-    val prefInvertedColors: String
-    val prefCustomColorFilter: String
-    val prefColorFilterMode: String
-    val filterModeMultiply: String
-    val filterModeScreen: String
-    val filterModeOverlay: String
-    val filterModeLighten: String
-    val filterModeDarken: String
-    val prefKeepScreenOn: String
-    val prefReadWithTappingInverted: String
-    val tappingInvertedNone: String
-    val tappingInvertedHorizontal: String
-    val tappingInvertedVertical: String
-    val tappingInvertedBoth: String
-    val prefReadWithLongTap: String
-    val prefReaderTheme: String
-    val whiteBackground: String
-    val grayBackground: String
-    val blackBackground: String
-    val automaticBackground: String
-    val lNav: String
-    val kindlishNav: String
-    val edgeNav: String
-    val rightAndLeftNav: String
-    val disabledNav: String
-    val prefViewerNav: String
-    val prefImageScaleType: String
-    val scaleTypeFitScreen: String
-    val scaleTypeStretch: String
-    val scaleTypeFitWidth: String
-    val scaleTypeFitHeight: String
-    val scaleTypeOriginalSize: String
-    val scaleTypeSmartFit: String
-    val prefNavigatePan: String
-    val prefLandscapeZoom: String
-    val prefZoomStart: String
-    val zoomStartAutomatic: String
-    val zoomStartLeft: String
-    val zoomStartRight: String
-    val zoomStartCenter: String
-    val rotationType: String
-    val prefCategoryReadingMode: String
-    val prefWebtoonSidePadding: String
-    val webtoonSidePadding0: String
-    val webtoonSidePadding5: String
-    val webtoonSidePadding10: String
-    val webtoonSidePadding15: String
-    val webtoonSidePadding20: String
-    val webtoonSidePadding25: String
-    val prefCategoryGeneral: String
-    val customFilter: String
-    val actionShare: String
-    val actionCopy: String
-    val actionSave: String
-    val actionSaveTo: String
-    val wideColorGamut: String
-    val settingsEhRequestNewsTimepicker: String
-    val darkThemeFollowSystem: String
-    val darkThemeOff: String
-    val darkThemeOn: String
-    val blockedImage: String
-    val showBlockedImage: String
-    val pageCount: (quantity: Int) -> String
-    val someMinutesAgo: (quantity: Int) -> String
-    val someHoursAgo: (quantity: Int) -> String
-    val second: (quantity: Int) -> String
-    val minute: (quantity: Int) -> String
-    val hour: (quantity: Int) -> String
-    val day: (quantity: Int) -> String
-    val year: (quantity: Int) -> String
-}
+// Note: check for unused res by removing 'data' class
+data class Strings(
+    val appName: String = "EhViewer",
+    val siteE: String = "e-hentai",
+    val siteEx: String = "exhentai",
+    val doujinshi: String = "DOUJINSHI",
+    val manga: String = "MANGA",
+    val artistCg: String = "ARTIST CG",
+    val gameCg: String = "GAME CG",
+    val western: String = "WESTERN",
+    val nonH: String = "NON-H",
+    val imageSet: String = "IMAGE SET",
+    val cosplay: String = "COSPLAY",
+    val asianPorn: String = "ASIAN PORN",
+    val misc: String = "MISC",
+    val homepage: String = "Homepage",
+    val subscription: String = "Subscription",
+    val whatsHot: String = "What's hot",
+    val favourite: String = "Favourite",
+    val history: String = "History",
+    val downloads: String = "Downloads",
+    val settings: String = "Settings",
+    val username: String = "Username",
+    val password: String = "Password",
+    val signIn: String = "Sign in",
+    val register: String = "Register",
+    val signInViaWebview: String = "Sign in via WebView",
+    val signInFirst: String = "Please sign in first",
+    val textIsEmpty: String = "Text is empty",
+    val waring: String = "Warning",
+    val invalidDownloadLocation: String = "It seems download location is not available. Please set it in Settings.",
+    val clipboardGalleryUrlSnackMessage: String = "There is a gallery URL in the clipboard",
+    val clipboardGalleryUrlSnackAction: String = "View",
+    val errorTimeout: String = "Timeout",
+    val errorUnknownHost: String = "Unknown host",
+    val errorRedirection: String = "Too many redirections",
+    val errorSocket: String = "Network error",
+    val errorUnknown: String = "Weird",
+    val errorCantFindActivity: String = "Can't find the application",
+    val errorCannotParseTheUrl: String = "Can't parse the URL",
+    val errorDecodingFailed: String = "Decoding failed",
+    val errorReadingFailed: String = "Reading Failed",
+    val errorOutOfRange: String = "Out of range",
+    val errorParseError: String = "Parse error",
+    val error509: String = "509",
+    val errorInvalidUrl: String = "Invalid URL",
+    val errorGetPtokenError: String = "Get pToken error",
+    val errorCantSaveImage: String = "Can't save image",
+    val errorInvalidNumber: String = "Invalid number",
+    val appWaring: String = "The content of this application is from the Internet. Some of it may do physical or mental harm to you. You have learnt the risks above and would like to undertake them. By continuing to use it, you agree to the above terms.",
+    val appWaring2: String = "By continuing to use it, you agree to the above terms.",
+    val errorUsernameCannotEmpty: String = "Username cannot be empty",
+    val errorPasswordCannotEmpty: String = "Password cannot be empty",
+    val guestMode: String = "Guest mode",
+    val signInFailed: String = "Sign in failed",
+    val signInFailedTip: (String) -> String = { a: String -> "If this issue continues, try \"$a\"." },
+    val getIt: String = "Got it",
+    val galleryListSearchBarHintExhentai: String = "Search ExHentai",
+    val galleryListSearchBarHintEHentai: String = "Search E-Hentai",
+    val galleryListSearchBarOpenGallery: String = "Open the gallery",
+    val galleryListEmptyHit: String = "The World is Big and the panda sit alone",
+    val galleryListEmptyHitSubscription: String = "Subscribe to tags in Settings->EH->My tags",
+    val keywordSearch: String = "Keyword search",
+    val imageSearch: String = "Image search",
+    val searchImage: String = "Image Search",
+    val searchSh: String = "Expunged",
+    val searchSto: String = "Has Torrent",
+    val searchSr: String = "Minimum Rating",
+    val searchSpTo: String = "to",
+    val searchSpErr1: String = "The page range maximum cannot be below 10",
+    val searchSpErr2: String = "The page range is too narrow",
+    val searchSpSuffix: String = "",
+    val searchSf: String = "Disable default filters for:",
+    val searchSfl: String = "Language",
+    val searchSfu: String = "Uploader",
+    val searchSft: String = "Tags",
+    val selectImage: String = "Select image",
+    val selectImageFirst: String = "Please select image first",
+    val addToFavourites: String = "Add to favourites",
+    val removeFromFavourites: String = "Remove from favourites",
+    val deleteDownloads: String = "Delete downloads",
+    val quickSearch: String = "Quick search",
+    val quickSearchTip: String = "Tap \"+\" to add Quick Search",
+    val addQuickSearchDialogTitle: String = "Add Quick Search",
+    val translateTagForTagger: String = "Use tag translation",
+    val nameIsEmpty: String = "Name is empty",
+    val delete: String = "Delete",
+    val addQuickSearchTip: String = "The state of gallery list will be saved as quick search. Perform a search first to save the state of search panel.",
+    val readme: String = "README",
+    val imageSearchNotQuickSearch: String = "Can't add image search as quick search",
+    val duplicateQuickSearch: (String) -> String = { a: String -> "A duplicate quick search exists. The name is \"$a\"." },
+    val duplicateName: String = "This name is already in use.",
+    val saveProgress: String = "Save progress",
+    val deleteQuickSearch: (String) -> String = { a: String -> "Delete quick search \"$a\"?" },
+    val goToHint: (Int, Int) -> String = { a: Int, b: Int -> "Page $a, total $b pages" },
+    val any: String = "Any",
+    val star2: String = "2 stars",
+    val star3: String = "3 stars",
+    val star4: String = "4 stars",
+    val star5: String = "5 stars",
+    val download: String = "Download",
+    val read: String = "Read",
+    val favoredTimes: (Int) -> String = { a: Int -> "\u2665 $a" },
+    val ratingText: (String, Float, Int) -> String = { a: String, b: Float, c: Int -> "%s (%.2f, %d)".format(a, b, c) },
+    val torrentCount: (Int) -> String = { a: Int -> "Torrent ($a)" },
+    val share: String = "Share",
+    val rate: String = "Rate",
+    val similarGallery: String = "Similar",
+    val searchCover: String = "Search Cover",
+    val noTags: String = "No tags",
+    val noComments: String = "No comments",
+    val noMoreComments: String = "No more comments",
+    val moreComment: String = "More comments",
+    val refresh: String = "Refresh",
+    val viewOriginal: String = "View original image",
+    val openInOtherApp: String = "Open with other app",
+    val clearImageCache: String = "Clear image cache",
+    val clearImageCacheConfirm: String = "Clear all cached images for this gallery?",
+    val imageCacheCleared: String = "Image cache cleared",
+    val rateSuccessfully: String = "Rate successfully",
+    val rateFailed: String = "Rate failed",
+    val noTorrents: String = "No torrents",
+    val torrents: String = "Torrents",
+    val notFavorited: String = "Not favorited",
+    val addFavoritesDialogTitle: String = "Add to favorites",
+    val addToFavoriteSuccess: String = "Added to favorites",
+    val removeFromFavoriteSuccess: String = "Removed from favorites",
+    val addToFavoriteFailure: String = "Failed to add to favorites",
+    val removeFromFavoriteFailure: String = "Failed to remove from favorites",
+    val filterTheUploader: (String) -> String = { a: String -> "Block the uploader \"$a\"?" },
+    val filterTheTag: (String) -> String = { a: String -> "Block the tag \"$a\"?" },
+    val filterAdded: String = "Blocker added",
+    val newerVersionAvailable: String = "There are newer versions of this gallery available.",
+    val newerVersionTitle: (String, String) -> String = { a: String, b: String -> "$a, added $b" },
+    val rating10: String = "MASTERPIECE",
+    val rating9: String = "AMAZING",
+    val rating8: String = "GREAT",
+    val rating7: String = "GOOD",
+    val rating6: String = "OKAY",
+    val rating5: String = "MEDIOCRE",
+    val rating4: String = "BAD",
+    val rating3: String = "AWFUL",
+    val rating2: String = "PAINFUL",
+    val rating1: String = "UNBEARABLE",
+    val rating0: String = "DISASTER",
+    val ratingNone: String = "(´_ゝ`)",
+    val galleryInfo: String = "Gallery Info",
+    val copiedToClipboard: String = "Copied to clipboard",
+    val keyGid: String = "GID",
+    val keyToken: String = "Token",
+    val keyUrl: String = "URL",
+    val keyTitle: String = "Title",
+    val keyTitleJpn: String = "Jpn Title",
+    val keyThumb: String = "Thumb",
+    val keyCategory: String = "Category",
+    val keyUploader: String = "Uploader",
+    val keyPosted: String = "Posted",
+    val keyParent: String = "Parent",
+    val keyVisible: String = "Visible",
+    val keyLanguage: String = "Language",
+    val keyPages: String = "Pages",
+    val keySize: String = "Size",
+    val keyFavoriteCount: String = "Favorite count",
+    val keyFavorited: String = "Favorited",
+    val keyRatingCount: String = "Rating count",
+    val keyRating: String = "Rating",
+    val keyTorrents: String = "Torrents",
+    val keyTorrentUrl: String = "Torrent URL",
+    val galleryComments: String = "Gallery Comments",
+    val commentSuccessfully: String = "Comment post successfully",
+    val commentFailed: String = "Failed to post the comment",
+    val copyCommentText: String = "Copy comment text",
+    val blockCommenter: String = "Block the commenter",
+    val filterTheCommenter: (String) -> String = { a: String -> "Block the commenter \"$a\"?" },
+    val editComment: String = "Edit comment",
+    val editCommentSuccessfully: String = "The comment has been edited",
+    val editCommentFailed: String = "Failed to edit the comment",
+    val voteUp: String = "Vote up",
+    val cancelVoteUp: String = "Cancel up-vote",
+    val voteDown: String = "Vote down",
+    val cancelVoteDown: String = "Cancel down-vote",
+    val voteUpSuccessfully: String = "Voted up successfully",
+    val cancelVoteUpSuccessfully: String = "Cancel up-vote successfully",
+    val voteDownSuccessfully: String = "Voted down successfully",
+    val cancelVoteDownSuccessfully: String = "Down-vote cancelled successfully",
+    val voteFailed: String = "Vote failed",
+    val checkVoteStatus: String = "View vote details",
+    val clickMoreComments: String = "Click to load more comments",
+    val lastEdited: (String) -> String = { a: String -> "Last edited: $a" },
+    val goTo: String = "Go to",
+    val sceneDownloadTitle: (String) -> String = { a: String -> "Download - $a" },
+    val noDownloadInfo: String = "Download items will be shown here",
+    val downloadStateNone: String = "Idle",
+    val downloadStateWait: String = "Waiting",
+    val downloadStateDownloading: String = "Downloading",
+    val downloadStateDownloaded: String = "Downloaded",
+    val downloadStateFailed: String = "Failed",
+    val downloadStateFailed2: (Int) -> String = { a: Int -> "$a incomplete" },
+    val downloadStateFinish: String = "Done",
+    val stat509AlertTitle: String = "509 Alert",
+    val stat509AlertText: String = "Image limit has been reached. Please stop download and have a relax.",
+    val statDownloadDoneTitle: String = "Download Finished",
+    val statDownloadDoneTextSucceeded: (Int) -> String = { a: Int -> "$a succeeded" },
+    val statDownloadDoneTextFailed: (Int) -> String = { a: Int -> "$a failed" },
+    val statDownloadDoneTextMix: (Int, Int) -> String = { a: Int, b: Int -> "$a succeeded, $b failed" },
+    val statDownloadDoneLineSucceeded: (String) -> String = { a: String -> "Succeeded: $a" },
+    val statDownloadDoneLineFailed: (String) -> String = { a: String -> "Failed: $a" },
+    val downloadRemoveDialogTitle: String = "Remove Download Item",
+    val downloadRemoveDialogMessage: (String) -> String = { a: String -> "Remove $a from download list ?" },
+    val downloadRemoveDialogMessage2: (Int) -> String = { a: Int -> "Remove $a items from download list ?" },
+    val downloadRemoveDialogCheckText: String = "Delete image files",
+    val statDownloadActionStopAll: String = "Stop all",
+    val defaultDownloadLabelName: String = "Default",
+    val downloadMoveDialogTitle: String = "Move",
+    val downloadLabels: String = "Download labels",
+    val downloadStartAll: String = "Start all",
+    val downloadStopAll: String = "Stop all",
+    val downloadResetReadingProgress: String = "Reset reading progress",
+    val resetReadingProgressMessage: String = "Reset the reading progress of all downloaded galleries?",
+    val downloadServiceLabel: String = "EhViewer Download Service",
+    val downloadSpeedText: (String) -> String = { a: String -> a },
+    val downloadSpeedText2: (String, String) -> String = { a: String, b: String -> "$a, $b left" },
+    val rememberDownloadLabel: String = "Remember download label",
+    val defaultDownloadLabel: String = "Default download label",
+    val addedToDownloadList: String = "Added to download list",
+    val selectGroupingMode: String = "Select Grouping Mode",
+    val selectGroupingModeCustom: String = "Custom",
+    val selectGroupingModeArtist: String = "Artist",
+    val unknownArtists: String = "Unknown",
+    val add: String = "Add",
+    val newLabelTitle: String = "New label",
+    val labelTextIsEmpty: String = "Label text is empty",
+    val labelTextIsInvalid: String = "\"Default\" is an invalid label",
+    val labelTextExist: String = "Label exists",
+    val renameLabelTitle: String = "Rename label",
+    val deleteLabel: (String) -> String = { a: String -> "Delete label \"$a\"?" },
+    val noHistory: String = "Viewed galleries will be shown here",
+    val clearAll: String = "Clear all",
+    val clearAllHistory: String = "Clear all history?",
+    val filter: String = "Blockers",
+    val filterTitle: String = "Title",
+    val filterUploader: String = "Uploader",
+    val filterTag: String = "Tag",
+    val filterTagNamespace: String = "Tag namespace",
+    val filterCommenter: String = "Commenter",
+    val filterComment: String = "Comment Regex",
+    val deleteFilter: (String) -> String = { a: String -> "Delete blocker \"$a\"?" },
+    val addFilter: String = "Add blocker",
+    val showDefinition: String = "Show definition",
+    val filterText: String = "Blocker text",
+    val filterTip: String = "This blocking system filters the result of EHentai website blocking system.\n\nTitle Blocker: exclude the gallery whose title contains the word.\n\nUploader Blocker: exclude the gallery which was uploaded by the uploader.\n\nTag Blocker: exclude the gallery which contain the tag, it takes more time to get gallery list.\n\nTag Namespace Blocker: exclude the gallery which contain the tag namespace, it takes more time to get gallery list.\n\nCommenter Blocker: exclude the comments posted by the commenter.\n\nComment Blocker: exclude the comments matching the regex.",
+    val uConfig: String = "EHentai settings",
+    val applyTip: String = "Tap the check mark to save the settings",
+    val myTags: String = "My tags",
+    val shareImage: String = "Share image",
+    val imageSaved: (String) -> String = { a: String -> "Image saved to $a" },
+    val settingsEh: String = "EH",
+    val settingsEhSignOut: String = "Sign out",
+    val settingsEhIdentityCookiesSigned: String = "Identity cookies can be used to sign in to this account.<br><b>KEEP IT SAFE</b>",
+    val settingsEhIdentityCookiesGuest: String = "Guest mode",
+    val settingsEhClearIgneous: String = "Clear igneous",
+    val settingsUConfig: String = "EHentai settings",
+    val settingsUConfigSummary: String = "Settings on EHentai website",
+    val settingsMyTags: String = "My tags",
+    val settingsMyTagsSummary: String = "My tags on EHentai website",
+    val settingsEhGallerySite: String = "Gallery site",
+    val settingsEhLaunchPage: String = "Launch page",
+    val settingsEhListMode: String = "List mode",
+    val settingsEhListModeDetail: String = "Detail",
+    val settingsEhListModeThumb: String = "Thumb",
+    val settingsEhDetailSize: String = "Detail width",
+    val settingsEhDetailSizeLong: String = "Long",
+    val settingsEhDetailSizeShort: String = "Short",
+    val settingsEhThumbColumns: String = "Thumb columns",
+    val settingsEhForceEhThumb: String = "Use e-hentai thumbnail server",
+    val settingsEhForceEhThumbSummary: String = "Try disabling this if you have trouble loading thumbnails",
+    val settingsEhShowJpnTitle: String = "Show Japanese title",
+    val settingsEhShowJpnTitleSummary: String = "Require enabling Japanese Title in Settings on EHentai website",
+    val settingsEhShowGalleryPages: String = "Show gallery pages",
+    val settingsEhShowGalleryPagesSummary: String = "Display the number of pages in the gallery list",
+    val settingsEhShowVoteStatus: String = "Show tag vote status",
+    val settingsEhShowGalleryComments: String = "Show gallery comments",
+    val settingsEhShowGalleryCommentsSummary: String = "Show comments on the gallery details page",
+    val settingsEhShowGalleryCommentThreshold: String = "Comment score threshold",
+    val settingsEhShowGalleryCommentThresholdSummary: String = "Hide comments at or below this score (-101 disables)",
+    val settingsEhShowTagTranslations: String = "Show tag translations",
+    val settingsEhShowTagTranslationsSummary: String = "Show tag translations instead of the original text (It takes time to download the data file)",
+    val settingsEhTagTranslationsSource: String = "Placeholder",
+    val settingsEhTagTranslationsSourceUrl: String = "https://placeholder",
+    val settingsEhFilter: String = "Blockers",
+    val settingsEhFilterSummary: String = "Block gallery or comment by title, uploader, tags and commenter",
+    val settingsReadReverseControls: String = "Reverse physical key controls",
+    val settingsBlockExtraneousAds: String = "[Experimental] Block extraneous ads",
+    val settingsAdsPlaceholder: String = "[Optional] Pick placeholder to replace ads",
+    val settingsDownload: String = "Download",
+    val settingsDownloadDownloadLocation: String = "Download location",
+    val settingsDownloadCantGetDownloadLocation: String = "Can't get download location",
+    val settingsDownloadMediaScan: String = "Allow media scan",
+    val settingsDownloadMediaScanSummaryOn: String = "Please hide your gallery apps away from other people",
+    val settingsDownloadMediaScanSummaryOff: String = "Most gallery apps will ignore pictures in the download path",
+    val settingsDownloadConcurrency: String = "Concurrency download",
+    val settingsDownloadConcurrencySummary: (Int) -> String = { a: Int -> "Up to $a images" },
+    val settingsDownloadDownloadDelay: String = "Download delay",
+    val settingsDownloadDownloadDelaySummary: (Int) -> String = { a: Int -> "Delay $a ms per download" },
+    val settingsDownloadDownloadTimeout: String = "Download timeout (in seconds)",
+    val settingsDownloadPreloadImage: String = "Preload image",
+    val settingsDownloadPreloadImageSummary: (Int) -> String = { a: Int -> "Preload next $a image" },
+    val settingsDownloadDownloadOriginImage: String = "Download original image",
+    val settingsDownloadDownloadOriginImageSummary: String = "Caution! May require GP",
+    val settingsDownloadSaveAsCbz: String = "Save as CBZ archive",
+    val settingsDownloadArchiveMetadata: String = "Archive metadata",
+    val settingsDownloadArchiveMetadataSummary: String = "Generate ComicInfo.xml on archive download",
+    val settingsDownloadReloadMetadata: String = "Reload metadata",
+    val settingsDownloadReloadMetadataSummary: String = "Regenerate the ComicInfo.xml for download items whose tags may have changed",
+    val settingsDownloadReloadMetadataSuccessfully: (Int) -> String = { a: Int -> "Reload $a items successfully" },
+    val settingsDownloadReloadMetadataFailed: (String) -> String = { a: String -> "Reload metadata failed: $a" },
+    val settingsDownloadRestoreDownloadItems: String = "Restore download items",
+    val settingsDownloadRestoreDownloadItemsSummary: String = "Restore all download items in download location",
+    val settingsDownloadRestoreNotFound: String = "Not found download items to restore",
+    val settingsDownloadRestoreFailed: String = "Restore failed",
+    val settingsDownloadRestoreSuccessfully: (Int) -> String = { a: Int -> "Restore $a items successfully" },
+    val settingsDownloadCleanRedundancy: String = "Clear download redundancy",
+    val settingsDownloadCleanRedundancySummary: String = "Remove gallery images which are not in download list but in download location",
+    val settingsDownloadCleanRedundancyNoRedundancy: String = "No redundancy",
+    val settingsDownloadCleanRedundancyDone: (Int) -> String = { a: Int -> "Redundancy cleaning completed, clean-up $a items totally" },
+    val settingsAdvanced: String = "Advanced",
+    val settingsAdvancedSaveParseErrorBody: String = "Save HTML content when parsing error",
+    val settingsAdvancedSaveParseErrorBodySummary: String = "Html content may be privacy-sensitive",
+    val settingsAdvancedSaveCrashLog: String = "Save crash log when app crashes",
+    val settingsAdvancedSaveCrashLogSummary: String = "Crash logs help developers fix bugs",
+    val settingsAdvancedDumpLogcat: String = "Dump logcat",
+    val settingsAdvancedDumpLogcatSummary: String = "Save logcat to external storage",
+    val settingsAdvancedDumpLogcatFailed: String = "Dump logcat failed",
+    val settingsAdvancedDumpLogcatTo: (String) -> String = { a: String -> "Logcat dumped to $a" },
+    val settingsAdvancedReadCacheSize: String = "Read cache size",
+    val settingsAdvancedAppLanguageTitle: String = "App language",
+    val settingsAdvancedHardwareBitmapThreshold: String = "Hardware bitmap (better performance) threshold",
+    val settingsAdvancedHardwareBitmapThresholdSummary: String = "Try decreasing this if long images fail to load",
+    val settingsAdvancedExportData: String = "Export data",
+    val settingsAdvancedExportDataSummary: String = "Save data like download list, quick search list, to external storage",
+    val settingsAdvancedExportDataTo: (String) -> String = { a: String -> "Exported data to $a" },
+    val settingsAdvancedExportDataFailed: String = "Failed to export data",
+    val settingsAdvancedImportData: String = "Import data",
+    val settingsAdvancedImportDataSummary: String = "Load data which were previously saved",
+    val settingsAdvancedImportDataSuccessfully: String = "Data imported",
+    val settingsAdvancedBackupFavorite: String = "Backup favorite list",
+    val settingsAdvancedBackupFavoriteSummary: String = "Backup remote favorite list to local",
+    val settingsAdvancedBackupFavoriteStart: (String) -> String = { a: String -> "Backing up favorite list $a" },
+    val settingsAdvancedBackupFavoriteNothing: String = "Nothing to backup",
+    val settingsAdvancedBackupFavoriteSuccess: String = "Backup favorite list success",
+    val settingsAdvancedBackupFavoriteFailed: String = "Backup favorite list failed",
+    val settingsAbout: String = "About",
+    val settingsAboutDeclaration: String = "EhViewer",
+    val settingsAboutDeclarationSummary: String = "EhViewer is not affiliated with E-Hentai.org in any way",
+    val settingsAboutAuthor: String = "Author",
+    val settingsAboutAuthorSummary: AnnotatedString = buildAnnotatedString {
+        withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
+            appendLine("Hippo")
+            appendLine("NekoInverter")
+            appendLine("飛鳥澪")
+        }
+        append("Foolbar")
+    },
+    val settingsAboutLatestRelease: String = "Latest release",
+    val settingsAboutSource: String = "Source",
+    val settingsAboutVersion: String = "Build version",
+    val settingsAboutCommitTime: (String) -> String = { a: String -> "Committed at $a" },
+    val settingsAboutCheckForUpdates: String = "Check for updates",
+    val license: String = "License",
+    val cantReadTheFile: String = "Can't read the file",
+    val appLanguageSystem: String = "System Language (Default)",
+    val pleaseWait: String = "Please wait",
+    val cloudFavorites: String = "Cloud Favorites",
+    val localFavorites: String = "Local Favorites",
+    val searchBarHint: (String) -> String = { a: String -> "Search $a" },
+    val favoritesTitle: (String) -> String = { a: String -> a },
+    val favoritesTitle2: (String, String) -> String = { a: String, b: String -> "$a - $b" },
+    val deleteFavoritesDialogTitle: String = "Delete from favorites",
+    val deleteFavoritesDialogMessage: (Int) -> String = { a: Int -> "Delete $a items from favorites?" },
+    val moveFavoritesDialogTitle: String = "Move favorites",
+    val defaultFavoritesCollection: String = "Default favorites collection",
+    val defaultFavoritesWarning: String = "You won't be able to add favorite notes if you enable this",
+    val letMeSelect: String = "Let me select",
+    val favoriteNote: String = "Favorite Note",
+    val collections: String = "Collections",
+    val errorSomethingWrongHappened: String = "Something wrong happened",
+    val fromTheFuture: String = "From the future",
+    val justNow: String = "Just now",
+    val yesterday: String = "Yesterday",
+    val someDaysAgo: (Int) -> String = { a: Int -> "$a days ago" },
+    val archive: String = "Archive",
+    val archiveFree: String = "Free",
+    val archiveOriginal: String = "Original",
+    val archiveResample: String = "Resample",
+    val noArchives: String = "No Archives",
+    val downloadArchiveStarted: String = "Archive download started",
+    val downloadArchiveFailure: String = "Failed to download archive",
+    val downloadArchiveFailureNoHath: String = "Need H@H client for archive download",
+    val currentFunds: String = "Current Funds:",
+    val insufficientFunds: String = "Insufficient Funds",
+    val imageLimits: String = "Image Limits",
+    val imageLimitsSummary: String = "Used:",
+    val imageLimitsNormal: String = "No restrictions",
+    val imageLimitsRestricted: String = "Image resolution restricted to 1280x",
+    val resetCost: (Int) -> String = { a: Int -> "Spend $a GP to reset" },
+    val reset: String = "Reset",
+    val settingsPrivacy: String = "Privacy",
+    val settingsPrivacySecure: String = "Prevent screenshots",
+    val settingsPrivacySecureSummary: String = "Prevent the content of the app from being taken screenshots of or shown in the \"Recent Apps\" list.",
+    val clearSearchHistory: String = "Clear device search history",
+    val clearSearchHistorySummary: String = "Remove searches you have performed from this device",
+    val clearSearchHistoryConfirm: String = "Clear search history?",
+    val searchHistoryCleared: String = "Search history cleared",
+    val downloadService: String = "Download Service",
+    val keyFavoriteName: String = "Favorite",
+    val darkTheme: String = "Dark theme",
+    val blackDarkTheme: String = "Black dark theme",
+    val harmonizeCategoryColor: String = "Harmonize category color for Dynamic Color",
+    val sortBy: String = "Sort by",
+    val addedTimeDesc: String = "Added time (descending)",
+    val addedTimeAsc: String = "Added time (ascending)",
+    val uploadedTimeDesc: String = "Uploaded time (descending)",
+    val uploadedTimeAsc: String = "Uploaded time (ascending)",
+    val titleAsc: String = "Title (ascending)",
+    val titleDesc: String = "Title (descending)",
+    val pageCountAsc: String = "Page count (ascending)",
+    val pageCountDesc: String = "Page count (descending)",
+    val groupByDownloadLabel: String = "Group by download label",
+    val downloadFilter: String = "Filter",
+    val downloadAll: String = "All",
+    val downloadStartAllReversed: String = "Start all (reversed)",
+    val noBrowserInstalled: String = "Just install a browser please.",
+    val toplistAlltime: String = "All-Time",
+    val toplistPastyear: String = "Past Year",
+    val toplistPastmonth: String = "Past Month",
+    val toplistYesterday: String = "Yesterday",
+    val toplist: String = "Toplist",
+    val tagVoteDown: String = "Vote down",
+    val tagVoteUp: String = "Vote up",
+    val tagVoteWithdraw: String = "Withdraw vote",
+    val tagVoteSuccessfully: String = "Vote successfully",
+    val deleteSearchHistory: (String) -> String = { a: String -> "Delete \"$a\" from search history?" },
+    val actionAddTag: String = "Add tag",
+    val actionAddTagTip: String = "Enter new tags",
+    val commentUserUploader: (String) -> String = { a: String -> "$a (Uploader)" },
+    val noNetwork: String = "No network",
+    val settingsEhMeteredNetworkWarning: String = "Metered network warning",
+    val meteredNetworkWarning: String = "Connected to metered networks",
+    val readFrom: (Int) -> String = { a: Int -> "Read page $a" },
+    val settingsEhRequestNews: String = "Timed request news page",
+    val settingsEhHideHvEvents: String = "Hide HV event Notifications",
+    val copyTrans: String = "Copy translation",
+    val defaultDownloadDirNotEmpty: String = "The default download directory is not empty!",
+    val resetDownloadLocation: String = "Reset to default",
+    val pickNewDownloadLocation: String = "Pick a new location",
+    val dontShowAgain: String = "Don\'t show again",
+    val openSettings: String = "Open settings",
+    val appLinkNotVerifiedMessage: String = "For Android 12 and newer, you need to manually add link to verified links in order to open E-Hentai links in EhViewer.",
+    val appLinkNotVerifiedTitle: String = "App links not verified",
+    val openByDefault: String = "Open by default",
+    val backupBeforeUpdate: String = "Backup data before update",
+    val useCiUpdateChannel: String = "Use CI update channel",
+    val settingsPrivacyRequireUnlock: String = "Require Unlock",
+    val settingsPrivacyRequireUnlockDelay: String = "Lock Delay",
+    val settingsPrivacyRequireUnlockDelaySummary: (Int) -> String = { a: Int -> "No unlock is required when leaving App and returning within $a minute(s)" },
+    val settingsPrivacyRequireUnlockDelaySummaryImmediately: String = "Unlock is required whenever you return to this App",
+    val filterLabel: String = "Blocker Type",
+    val archivePasswd: String = "password",
+    val archiveNeedPasswd: String = "Archive need password",
+    val passwdWrong: String = "Password Wrong",
+    val passwdCannotBeEmpty: String = "Password can't be empty",
+    val listTileThumbSize: String = "Thumb size in detail mode",
+    val accountName: String = "Account",
+    val preloadThumbAggressively: String = "Preload thumbs aggressively",
+    val animateItems: String = "List item animations",
+    val animateItemsSummary: String = "Try disabling this if you are facing crashes / frame drops",
+    val autoUpdates: String = "Automatically check for updates",
+    val updateFrequencyNever: String = "Never",
+    val updateFrequencyDaily: String = "Daily",
+    val updateFrequency3days: String = "Every 3 days",
+    val updateFrequencyWeekly: String = "Weekly",
+    val updateFrequencyBiweekly: String = "Biweekly",
+    val updateFrequencyMonthly: String = "Monthly",
+    val updateFailed: (String) -> String = { a: String -> "Update failed: $a" },
+    val newVersionAvailable: String = "New version available!",
+    val alreadyLatestVersion: String = "Already the latest version",
+    val permissionDenied: String = "Permission denied",
+    val downloadGalleryFirst: String = "Please download the gallery first!",
+    val exportAsArchive: String = "Export as archive",
+    val exportAsArchiveSuccess: String = "Export succeed",
+    val exportAsArchiveFailed: String = "Export failed",
+    val prefCropBorders: String = "Crop borders",
+    val actionSettings: String = "Settings",
+    val prefRotationType: String = "Default rotation type",
+    val viewer: String = "Reading mode",
+    val actionMenu: String = "Menu",
+    val navZonePrev: String = "Prev",
+    val navZoneNext: String = "Next",
+    val navZoneLeft: String = "Left",
+    val navZoneRight: String = "Right",
+    val decodeImageError: String = "The image couldn't be loaded",
+    val actionRetry: String = "Retry",
+    val labelDefault: String = "Default",
+    val rotationFree: String = "Free",
+    val rotationPortrait: String = "Portrait",
+    val rotationReversePortrait: String = "Reverse portrait",
+    val rotationLandscape: String = "Landscape",
+    val rotationForcePortrait: String = "Locked portrait",
+    val rotationForceLandscape: String = "Locked landscape",
+    val leftToRightViewer: String = "Left to right",
+    val rightToLeftViewer: String = "Right to left",
+    val verticalViewer: String = "Vertical",
+    val webtoonViewer: String = "Webtoon",
+    val verticalPlusViewer: String = "Continuous vertical",
+    val pagerViewer: String = "Paged",
+    val prefFullscreen: String = "Fullscreen",
+    val prefCutoutShort: String = "Show content in cutout area",
+    val prefPageTransitions: String = "Animate page transitions",
+    val prefShowPageNumber: String = "Show page number",
+    val prefShowReaderSeekbar: String = "Show page jumping seekbar",
+    val prefDoubleTapToZoom: String = "Double tap to zoom",
+    val prefCustomBrightness: String = "Custom brightness",
+    val prefGrayscale: String = "Grayscale",
+    val prefInvertedColors: String = "Inverted",
+    val prefCustomColorFilter: String = "Custom color filter",
+    val prefColorFilterMode: String = "Color filter blend mode",
+    val filterModeMultiply: String = "Multiply",
+    val filterModeScreen: String = "Screen",
+    val filterModeOverlay: String = "Overlay",
+    val filterModeLighten: String = "Dodge / Lighten",
+    val filterModeDarken: String = "Burn / Darken",
+    val prefKeepScreenOn: String = "Keep screen on",
+    val prefReadWithTappingInverted: String = "Invert tap zones",
+    val tappingInvertedNone: String = "None",
+    val tappingInvertedHorizontal: String = "Horizontal",
+    val tappingInvertedVertical: String = "Vertical",
+    val tappingInvertedBoth: String = "Both",
+    val prefReadWithLongTap: String = "Show on long tap",
+    val prefReaderTheme: String = "Background color",
+    val whiteBackground: String = "White",
+    val grayBackground: String = "Gray",
+    val blackBackground: String = "Black",
+    val automaticBackground: String = "Auto",
+    val lNav: String = "L shaped",
+    val kindlishNav: String = "Kindle-ish",
+    val edgeNav: String = "Edge",
+    val rightAndLeftNav: String = "Right and Left",
+    val disabledNav: String = "Disabled",
+    val prefViewerNav: String = "Tap zones",
+    val prefImageScaleType: String = "Scale type",
+    val scaleTypeFitScreen: String = "Fit screen",
+    val scaleTypeStretch: String = "Stretch",
+    val scaleTypeFitWidth: String = "Fit width",
+    val scaleTypeFitHeight: String = "Fit height",
+    val scaleTypeOriginalSize: String = "Original size",
+    val scaleTypeSmartFit: String = "Smart fit",
+    val prefNavigatePan: String = "Pan wide images when tapping",
+    val prefLandscapeZoom: String = "Zoom landscape image",
+    val prefZoomStart: String = "Zoom start position",
+    val zoomStartAutomatic: String = "Automatic",
+    val zoomStartLeft: String = "Left",
+    val zoomStartRight: String = "Right",
+    val zoomStartCenter: String = "Center",
+    val rotationType: String = "Rotation type",
+    val prefCategoryReadingMode: String = "Reading mode",
+    val prefWebtoonSidePadding: String = "Side padding",
+    val webtoonSidePadding0: String = "None",
+    val webtoonSidePadding5: String = "5%",
+    val webtoonSidePadding10: String = "10%",
+    val webtoonSidePadding15: String = "15%",
+    val webtoonSidePadding20: String = "20%",
+    val webtoonSidePadding25: String = "25%",
+    val prefCategoryGeneral: String = "General",
+    val customFilter: String = "Custom filter",
+    val actionShare: String = "Share",
+    val actionCopy: String = "Copy",
+    val actionSave: String = "Save",
+    val actionSaveTo: String = "Save to…",
+    val wideColorGamut: String = "Use Display P3 color space",
+    val settingsEhRequestNewsTimepicker: String = "Set time to request news",
+    val darkThemeFollowSystem: String = "Follow system",
+    val darkThemeOff: String = "Always off",
+    val darkThemeOn: String = "Always on",
+    val blockedImage: String = "Blocked image",
+    val showBlockedImage: String = "Show blocked image",
+    val pageCount: (quantity: Int) -> String = { quantity: Int ->
+        when (quantity) {
+            1 -> "$quantity page"
+            else -> "$quantity pages"
+        }
+    },
+    val someMinutesAgo: (quantity: Int) -> String = { quantity: Int ->
+        when (quantity) {
+            1 -> "A minute ago"
+            else -> "$quantity minutes ago"
+        }
+    },
+    val someHoursAgo: (quantity: Int) -> String = { quantity: Int ->
+        when (quantity) {
+            1 -> "An hour ago"
+            else -> "$quantity hours ago"
+        }
+    },
+    val second: (quantity: Int) -> String = { quantity: Int ->
+        when (quantity) {
+            1 -> "sec"
+            else -> "secs"
+        }
+    },
+    val minute: (quantity: Int) -> String = { quantity: Int ->
+        when (quantity) {
+            1 -> "min"
+            else -> "mins"
+        }
+    },
+    val hour: (quantity: Int) -> String = { quantity: Int ->
+        when (quantity) {
+            1 -> "hour"
+            else -> "hours"
+        }
+    },
+    val day: (quantity: Int) -> String = { quantity: Int ->
+        when (quantity) {
+            1 -> "day"
+            else -> "days"
+        }
+    },
+    val year: (quantity: Int) -> String = { quantity: Int ->
+        when (quantity) {
+            1 -> "year"
+            else -> "years"
+        }
+    },
+)
 
+val EnStrings = Strings()
+
+@Suppress("ktlint:standard:property-naming")
 object Locales {
     const val En = "en"
     const val De = "de"
