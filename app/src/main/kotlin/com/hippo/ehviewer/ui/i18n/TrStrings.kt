@@ -67,11 +67,11 @@ val TrStrings = Strings(
     textIsEmpty = "Yazı boş",
     errorUnknownHost = "Bilinmeyen host",
     appWaring = "Bu uygulamadaki içerikler internetten alınmaktadır. Bazı içerikler fiziksel veya zihinsel olarak size zararlı gelebilir.Yukarıda, riskleri öğrendiniz ve üstleneceksiniz. \nKullanmaya devam ederek, yukarıdaki koşulları kabul edersiniz.",
-    signInFailedTip = { a: String -> "Bu sorun devam ederse, \"$a\" seçeneğini deneyin." },
+    signInFailedTip = { a -> "Bu sorun devam ederse, \"$a\" seçeneğini deneyin." },
     galleryListSearchBarOpenGallery = "Galeriyi aç",
     galleryListSearchBarHintEHentai = "E-Hentai'de Arayın",
     galleryListEmptyHitSubscription = "Etiketlere Ayarlar->EH->Etiketlerim yerinden abone olun",
-    duplicateQuickSearch = { a: String -> "Aynı bir hızlı arama zaten var. Adı \"$a\"." },
+    duplicateQuickSearch = { a -> "Aynı bir hızlı arama zaten var. Adı \"$a\"." },
     searchSpErr1 = "Sayfa oranı en fazla 10un altında olamaz",
     readme = "BENIOKU",
 )

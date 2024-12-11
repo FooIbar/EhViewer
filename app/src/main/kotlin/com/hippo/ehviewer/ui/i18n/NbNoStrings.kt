@@ -29,8 +29,8 @@ val NbNoStrings = Strings(
     noTorrents = "Ingen torrenter",
     searchSfl = "Språk",
     guestMode = "Fortsett uten å logge inn",
-    favoredTimes = { a: Int -> "♥ $a" },
-    torrentCount = { a: Int -> "Torrent ($a)" },
+    favoredTimes = { a -> "♥ $a" },
+    torrentCount = { a -> "Torrent ($a)" },
     share = "Del",
     galleryListSearchBarOpenGallery = "Åpne galleriet",
     searchSpTo = "til",
@@ -58,7 +58,7 @@ val NbNoStrings = Strings(
     tagVoteUp = "Stem opp",
     prefGrayscale = "Gråskala",
     actionShare = "Del",
-    filterTheTag = { a: String -> "Blokker etiketten «$a»?" },
+    filterTheTag = { a -> "Blokker etiketten «$a»?" },
     rating9 = "Underbar",
     errorInvalidUrl = "Ugyldig nettadresse",
     errorCannotParseTheUrl = "Kan ikke tolke nettadressen",
@@ -71,7 +71,7 @@ val NbNoStrings = Strings(
     errorDecodingFailed = "Dekoding mislyktes",
     errorReadingFailed = "Lesing mislyktes",
     errorParseError = "Tolkningsfeil",
-    filterTheUploader = { a: String -> "Blokker opplasteren «$a»?" },
+    filterTheUploader = { a -> "Blokker opplasteren «$a»?" },
     rating10 = "Mesterverk",
     rating8 = "Storslått",
     rating6 = "OK",
@@ -87,7 +87,7 @@ val NbNoStrings = Strings(
     settingsAdvanced = "Avansert",
     settingsAbout = "Om",
     settingsAdvancedExportData = "Eksporter data",
-    settingsAdvancedExportDataTo = { a: String -> "Data eksportert til $a" },
+    settingsAdvancedExportDataTo = { a -> "Data eksportert til $a" },
     settingsAdvancedImportData = "Importer data",
     settingsAboutSource = "Kildekode",
     rating1 = "Utolererbar",
@@ -113,7 +113,7 @@ val NbNoStrings = Strings(
     galleryComments = "Gallerikommentarer",
     downloadStateWait = "Venter",
     downloadStateFailed = "Mislykket",
-    downloadStateFailed2 = { a: Int -> "$a ufullstendig" },
+    downloadStateFailed2 = { a -> "$a ufullstendig" },
     downloadLabels = "Last ned etiketter",
     downloadStartAll = "Start alle",
     editComment = "Rediger kommentar",
@@ -126,7 +126,7 @@ val NbNoStrings = Strings(
     downloadRemoveDialogCheckText = "Slett bildefiler",
     settingsEhGallerySite = "Galleriside",
     downloadStopAll = "Stopp alle",
-    imageSaved = { a: String -> "Bilde lagret i $a" },
+    imageSaved = { a -> "Bilde lagret i $a" },
     settingsDownloadDownloadOriginImage = "Last ned opprinnelig bilde",
     settingsPrivacySecure = "Forhindre skjermavbildninger",
     downloadService = "Nedlastingstjeneste",
@@ -137,7 +137,7 @@ val NbNoStrings = Strings(
     actionAddTag = "Legg til etikett",
     resetDownloadLocation = "Tilbakestill til forvalg",
     dontShowAgain = "Ikke vis igjen",
-    commentUserUploader = { a: String -> "$a (opplaster)" },
+    commentUserUploader = { a -> "$a (opplaster)" },
     copyTrans = "Kopier oversettelse",
     prefRotationType = "Forvalgt rotasjonstype",
     viewer = "Lesemodus",
@@ -178,47 +178,47 @@ val NbNoStrings = Strings(
     moveFavoritesDialogTitle = "Flytt favoritter",
     letMeSelect = "La meg velge",
     toplistPastmonth = "Forrige måned",
-    deleteSearchHistory = { a: String -> "Slett «$a» fra søkehistorikk?" },
+    deleteSearchHistory = { a -> "Slett «$a» fra søkehistorikk?" },
     collections = "Samlinger",
     tagVoteDown = "Stem ned",
     yesterday = "I går",
-    someDaysAgo = { a: Int -> "$a dager siden" },
+    someDaysAgo = { a -> "$a dager siden" },
     downloadAll = "Alle",
     actionSave = "Lagre",
     settingsPrivacy = "Personvern",
     noArchives = "Ingen arkiver",
     actionSaveTo = "Lagre i …",
-    pageCount = { quantity: Int ->
+    pageCount = { quantity ->
         when (quantity) {
             1 -> "$quantity side"
             else -> "$quantity sider"
         }
     },
-    someMinutesAgo = { quantity: Int ->
+    someMinutesAgo = { quantity ->
         when (quantity) {
             1 -> "Et minutt siden"
             else -> "$quantity minutter siden"
         }
     },
-    minute = { _: Int -> "min" },
-    someHoursAgo = { quantity: Int ->
+    minute = { "min" },
+    someHoursAgo = { quantity ->
         when (quantity) {
             1 -> "Én time siden"
             else -> "$quantity timer siden"
         }
     },
-    hour = { quantity: Int ->
+    hour = { quantity ->
         when (quantity) {
             1 -> "time"
             else -> "timer"
         }
     },
-    second = { _: Int -> "sek" },
-    day = { quantity: Int ->
+    second = { "sek" },
+    day = { quantity ->
         when (quantity) {
             1 -> "dag"
             else -> "dager"
         }
     },
-    year = { _: Int -> "år" },
+    year = { "år" },
 )

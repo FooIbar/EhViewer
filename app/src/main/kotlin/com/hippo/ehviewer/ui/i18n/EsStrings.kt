@@ -61,18 +61,18 @@ val EsStrings = Strings(
     addQuickSearchTip = "El estado de la lista de galerías se guardará como búsqueda rápida. Aplique la búsqueda primero si desea guardar el estado del panel de búsqueda.",
     readme = "LÉEME",
     imageSearchNotQuickSearch = "No se puede añadir la búsqueda de imágenes como búsqueda rápida",
-    duplicateQuickSearch = { a: String -> "Búsqueda rápida duplicada. El nombre es \"$a\"." },
+    duplicateQuickSearch = { a -> "Búsqueda rápida duplicada. El nombre es \"$a\"." },
     duplicateName = "Nombre duplicado existente",
-    goToHint = { a: Int, b: Int -> "Página $a, total $b páginas" },
+    goToHint = { a, b -> "Página $a, total $b páginas" },
     star2 = "2 estrellas",
     star3 = "3 estrellas",
     star4 = "4 estrellas",
     star5 = "5 estrellas",
     download = "Descargar",
     read = "Leer",
-    favoredTimes = { a: Int -> "\u2665 $a" },
-    ratingText = { a: String, b: Float, c: Int -> "%s (%.2f, %d)".format(a, b, c) },
-    torrentCount = { a: Int -> "Torrent ($a)" },
+    favoredTimes = { a -> "\u2665 $a" },
+    ratingText = { a, b, c -> "%s (%.2f, %d)".format(a, b, c) },
+    torrentCount = { a -> "Torrent ($a)" },
     share = "Compartir",
     rate = "Valorar",
     similarGallery = "Similar",
@@ -138,24 +138,24 @@ val EsStrings = Strings(
     voteFailed = "Voto fallido",
     checkVoteStatus = "Verificar estado del voto",
     goTo = "Ir a",
-    sceneDownloadTitle = { a: String -> "Descargas - $a" },
+    sceneDownloadTitle = { a -> "Descargas - $a" },
     noDownloadInfo = "Las galerías descargadas se mostrarán acá",
     downloadStateWait = "Esperando",
     downloadStateDownloading = "Descargando",
     downloadStateDownloaded = "Descargado",
-    downloadStateFailed2 = { a: Int -> "$a incompleto" },
+    downloadStateFailed2 = { a -> "$a incompleto" },
     downloadStateFinish = "Completado",
     stat509AlertTitle = "Alerta 509",
     stat509AlertText = "Se alcanzó el límite de imágenes. Detenga la descarga y espere un poco",
     statDownloadDoneTitle = "Descarga completada",
-    statDownloadDoneTextSucceeded = { a: Int -> "$a completada" },
-    statDownloadDoneTextFailed = { a: Int -> "$a fallido" },
-    statDownloadDoneTextMix = { a: Int, b: Int -> "$a completado, $b fallido" },
-    statDownloadDoneLineSucceeded = { a: String -> "Completado: $a" },
-    statDownloadDoneLineFailed = { a: String -> "Fallido: $a" },
+    statDownloadDoneTextSucceeded = { a -> "$a completada" },
+    statDownloadDoneTextFailed = { a -> "$a fallido" },
+    statDownloadDoneTextMix = { a, b -> "$a completado, $b fallido" },
+    statDownloadDoneLineSucceeded = { a -> "Completado: $a" },
+    statDownloadDoneLineFailed = { a -> "Fallido: $a" },
     downloadRemoveDialogTitle = "Borrar galería descargada",
-    downloadRemoveDialogMessage = { a: String -> "¿Borrar $a de la lista de descargas?" },
-    downloadRemoveDialogMessage2 = { a: Int -> "¿Borrar $a galerías de la lista de descargas?" },
+    downloadRemoveDialogMessage = { a -> "¿Borrar $a de la lista de descargas?" },
+    downloadRemoveDialogMessage2 = { a -> "¿Borrar $a galerías de la lista de descargas?" },
     downloadRemoveDialogCheckText = "Borrar imágenes",
     downloadResetReadingProgress = "Reiniciar progreso de lectura",
     resetReadingProgressMessage = "¿Deseas reiniciar el progreso de lectura en todas las galerías?",
@@ -166,8 +166,8 @@ val EsStrings = Strings(
     downloadStartAll = "Iniciar todo",
     downloadStopAll = "Detener todo",
     downloadServiceLabel = "Servicio de descarga EhViewer",
-    downloadSpeedText = { a: String -> a },
-    downloadSpeedText2 = { a: String, b: String -> "$a, $b restantes" },
+    downloadSpeedText = { a -> a },
+    downloadSpeedText2 = { a, b -> "$a, $b restantes" },
     rememberDownloadLabel = "Recordar etiqueta de descarga",
     defaultDownloadLabel = "Etiqueta predeterminada de descarga",
     addedToDownloadList = "Añadido a la lista de descargas",
@@ -180,7 +180,7 @@ val EsStrings = Strings(
     noHistory = "Las galerías visualizadas se muestran aquí",
     clearAllHistory = "¿Limpiar historial?",
     shareImage = "Compartir imagen",
-    imageSaved = { a: String -> "Imagen guardada en $a" },
+    imageSaved = { a -> "Imagen guardada en $a" },
     settingsEh = "EH",
     settingsEhSignOut = "Cerrar sesión",
     settingsUConfig = "Configuración de EHentai",
@@ -208,32 +208,32 @@ val EsStrings = Strings(
     settingsDownloadMediaScanSummaryOn = "Las galerías de imágenes mostrarán los doujinshis/mangas descargados. ¡Cuidado con prestar tu móvil o tablet!",
     settingsDownloadMediaScanSummaryOff = "Las de galería de imágenes no mostrarán los doujinshis/mangas descargados",
     settingsDownloadConcurrency = "Multi-hilos al descargar",
-    settingsDownloadConcurrencySummary = { a: Int -> "Máximo de $a imágenes" },
+    settingsDownloadConcurrencySummary = { a -> "Máximo de $a imágenes" },
     settingsDownloadPreloadImage = "Precargar imagen",
-    settingsDownloadPreloadImageSummary = { a: Int -> "Precargar las siguientes $a imágenes" },
+    settingsDownloadPreloadImageSummary = { a -> "Precargar las siguientes $a imágenes" },
     settingsDownloadDownloadOriginImage = "Descargar imagen original",
     settingsDownloadDownloadOriginImageSummary = "¡Cuidado! Podrías recibir error 509",
     settingsDownloadRestoreDownloadItems = "Restaurar los elementos de descarga",
     settingsDownloadRestoreDownloadItemsSummary = "Restaurar todos los elementos de descarga en la ruta de descarga",
     settingsDownloadRestoreNotFound = "No se han encontrado elementos para restaurar",
     settingsDownloadRestoreFailed = "Restauración fallida",
-    settingsDownloadRestoreSuccessfully = { a: Int -> "Restauración de $a elementos completados" },
+    settingsDownloadRestoreSuccessfully = { a -> "Restauración de $a elementos completados" },
     settingsDownloadCleanRedundancy = "Borrar imágenes sobrantes",
     settingsDownloadCleanRedundancySummary = "Elimina las imágenes almacenadas en la ruta de descarga que no se encuentran en la lista de descarga",
     settingsDownloadCleanRedundancyNoRedundancy = "Sin imágenes para borrar",
-    settingsDownloadCleanRedundancyDone = { a: Int -> "Borrado de imágenes completada, un total de $a elementos borrados" },
+    settingsDownloadCleanRedundancyDone = { a -> "Borrado de imágenes completada, un total de $a elementos borrados" },
     settingsAdvanced = "Avanzado",
     settingsAdvancedSaveParseErrorBody = "Guardar contenido en HTML al analizar el error",
     settingsAdvancedSaveParseErrorBodySummary = "El contenido HTML puede ser sensible a la privacidad",
     settingsAdvancedDumpLogcat = "Guardado de logcat",
     settingsAdvancedDumpLogcatSummary = "Guardar logcat en almacenamiento externo",
     settingsAdvancedDumpLogcatFailed = "Guardado de logcat fallido",
-    settingsAdvancedDumpLogcatTo = { a: String -> "Logcat guardado en $a" },
+    settingsAdvancedDumpLogcatTo = { a -> "Logcat guardado en $a" },
     settingsAdvancedReadCacheSize = "Tamaño del caché (archivos temporales)",
     settingsAdvancedAppLanguageTitle = "Idioma de la aplicación",
     settingsAdvancedExportData = "Exportar datos",
     settingsAdvancedExportDataSummary = "Guardar datos en almacenamiento externo, tales como la lista de descarga, lista de búsqueda rápida, entre otros",
-    settingsAdvancedExportDataTo = { a: String -> "Datos exportados en $a" },
+    settingsAdvancedExportDataTo = { a -> "Datos exportados en $a" },
     settingsAdvancedExportDataFailed = "Exportación de datos fallido",
     settingsAdvancedImportData = "Importar datos",
     settingsAdvancedImportDataSummary = "Cargar datos que han sido guardado antes",
@@ -248,11 +248,11 @@ val EsStrings = Strings(
     pleaseWait = "Espere",
     cloudFavorites = "Favoritos en la nube",
     localFavorites = "Favoritos locales",
-    searchBarHint = { a: String -> "Buscar $a" },
-    favoritesTitle = { a: String -> a },
-    favoritesTitle2 = { a: String, b: String -> "$a - $b" },
+    searchBarHint = { a -> "Buscar $a" },
+    favoritesTitle = { a -> a },
+    favoritesTitle2 = { a, b -> "$a - $b" },
     deleteFavoritesDialogTitle = "Eliminar de favoritos",
-    deleteFavoritesDialogMessage = { a: Int -> "¿Eliminar $a galerías de favoritos?" },
+    deleteFavoritesDialogMessage = { a -> "¿Eliminar $a galerías de favoritos?" },
     moveFavoritesDialogTitle = "Mover favoritos",
     defaultFavoritesCollection = "Colección de favoritos por defecto",
     letMeSelect = "Déjame elegir",
@@ -260,7 +260,7 @@ val EsStrings = Strings(
     fromTheFuture = "Desde el futuro",
     justNow = "Ahora",
     yesterday = "Ayer",
-    someDaysAgo = { a: Int -> "Hace $a días atrás" },
+    someDaysAgo = { a -> "Hace $a días atrás" },
     archive = "Archivo",
     noArchives = "Sin archivos",
     downloadArchiveStarted = "Descarga de archivos iniciada",
@@ -282,9 +282,9 @@ val EsStrings = Strings(
     filterUploader = "Uploader",
     filterTag = "Etiqueta",
     filterTagNamespace = "Etiqueta namespace",
-    deleteFilter = { a: String -> "¿Borrar \"$a\"?" },
+    deleteFilter = { a -> "¿Borrar \"$a\"?" },
     addFilter = "Bloquear etiqueta",
-    filterTheTag = { a: String -> "¿Deseas bloquear la etiqueta \"$a\"?" },
+    filterTheTag = { a -> "¿Deseas bloquear la etiqueta \"$a\"?" },
     showDefinition = "Ver definición de la etiqueta",
     filterAdded = "Etiqueta bloqueada",
     filterText = "Escribe la etiqueta",
@@ -294,49 +294,49 @@ val EsStrings = Strings(
     uConfig = "Ajustes EHentai",
     applyTip = "Toca la marca de verificación para guardar los cambios",
     darkThemeFollowSystem = "Sigue el sistema",
-    pageCount = { quantity: Int ->
+    pageCount = { quantity ->
         when (quantity) {
             1 -> "$quantity páginas"
             else -> "$quantity páginas"
         }
     },
-    someMinutesAgo = { quantity: Int ->
+    someMinutesAgo = { quantity ->
         when (quantity) {
             1 -> "Hace un minuto"
             else -> "Hace $quantity minutos"
         }
     },
-    someHoursAgo = { quantity: Int ->
+    someHoursAgo = { quantity ->
         when (quantity) {
             1 -> "Hace una hora"
             else -> "Hace $quantity horas"
         }
     },
-    second = { quantity: Int ->
+    second = { quantity ->
         when (quantity) {
             1 -> "segundo"
             else -> "segundos"
         }
     },
-    minute = { quantity: Int ->
+    minute = { quantity ->
         when (quantity) {
             1 -> "minuto"
             else -> "minutos"
         }
     },
-    hour = { quantity: Int ->
+    hour = { quantity ->
         when (quantity) {
             1 -> "hora"
             else -> "horas"
         }
     },
-    day = { quantity: Int ->
+    day = { quantity ->
         when (quantity) {
             1 -> "día"
             else -> "días"
         }
     },
-    year = { quantity: Int ->
+    year = { quantity ->
         when (quantity) {
             1 -> "año"
             else -> "años"

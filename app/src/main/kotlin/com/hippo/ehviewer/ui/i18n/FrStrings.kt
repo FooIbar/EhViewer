@@ -67,18 +67,18 @@ val FrStrings = Strings(
     addQuickSearchTip = "Le resultat de la liste de galerie sera sauvegardé comme une Recherche rapide. Cherchez d'abord pour sauvegarder l'état du panneau recherche.",
     readme = "README",
     imageSearchNotQuickSearch = "Impossible d'ajouter recherche d'une image comme une Recherche rapide.",
-    duplicateQuickSearch = { a: String -> "Une Recherche rapide avec le nom \"$a\" déjà existe." },
+    duplicateQuickSearch = { a -> "Une Recherche rapide avec le nom \"$a\" déjà existe." },
     duplicateName = "Ce nom déjà existe",
-    goToHint = { a: Int, b: Int -> "Page $a, avec un totale de $a pages" },
+    goToHint = { a, b -> "Page $a, avec un totale de $b pages" },
     star2 = "2 étoiles",
     star3 = "3 étoiles",
     star4 = "4 étoiles",
     star5 = "5 étoiles",
     download = "Télécharger",
     read = "Lire",
-    favoredTimes = { a: Int -> "\u2665 $a" },
-    ratingText = { a: String, b: Float, c: Int -> "%s (%.2f, %d)".format(a, b, c) },
-    torrentCount = { a: Int -> "Torrent ($a)" },
+    favoredTimes = { a -> "\u2665 $a" },
+    ratingText = { a, b, c -> "%s (%.2f, %d)".format(a, b, c) },
+    torrentCount = { a -> "Torrent ($a)" },
     share = "Partager",
     rate = "Noter",
     similarGallery = "Similaire(s)",
@@ -99,8 +99,8 @@ val FrStrings = Strings(
     removeFromFavoriteSuccess = "Retirer de favoris",
     addToFavoriteFailure = "Impossible de l'ajouter à favoris",
     removeFromFavoriteFailure = "Impossible de la retirer de favoris",
-    filterTheUploader = { a: String -> "Bloquer l'uploader \"$a\" ?" },
-    filterTheTag = { a: String -> "Bloquer le tag \"$a\" ?" },
+    filterTheUploader = { a -> "Bloquer l'uploader \"$a\" ?" },
+    filterTheTag = { a -> "Bloquer le tag \"$a\" ?" },
     filterAdded = "Bloqué(e)",
     rating10 = "CHEF-D'ŒUVRE",
     rating9 = "IRRÉSISTABLE",
@@ -150,26 +150,26 @@ val FrStrings = Strings(
     voteFailed = "Échec du vote",
     checkVoteStatus = "Voir les détails des votes",
     goTo = "Aller à",
-    sceneDownloadTitle = { a: String -> "Téléchargement - $a" },
+    sceneDownloadTitle = { a -> "Téléchargement - $a" },
     noDownloadInfo = "Vos téléchargements s'afficheront ici",
     downloadStateNone = "En veille",
     downloadStateWait = "En attente",
     downloadStateDownloading = "Téléchargement en cours",
     downloadStateDownloaded = "Téléchargement completé",
     downloadStateFailed = "Échec",
-    downloadStateFailed2 = { a: Int -> "$a non complet" },
+    downloadStateFailed2 = { a -> "$a non complet" },
     downloadStateFinish = "Complet",
     stat509AlertTitle = "Erreur 509",
     stat509AlertText = "Votre limite d'obtention d'images est atteinte. Arrêtez le téléchargement et réessayez plus tard.",
     statDownloadDoneTitle = "Téléchargement completé",
-    statDownloadDoneTextSucceeded = { a: Int -> "$a avec succés" },
-    statDownloadDoneTextFailed = { a: Int -> "$a échoué(s)" },
-    statDownloadDoneTextMix = { a: Int, b: Int -> "$a avec succés, $a échoué(s)" },
-    statDownloadDoneLineSucceeded = { a: String -> "Complété(s) : $a" },
-    statDownloadDoneLineFailed = { a: String -> "Échoué(s) : $a" },
+    statDownloadDoneTextSucceeded = { a -> "$a avec succés" },
+    statDownloadDoneTextFailed = { a -> "$a échoué(s)" },
+    statDownloadDoneTextMix = { a, b -> "$a avec succés, $a échoué(s)" },
+    statDownloadDoneLineSucceeded = { a -> "Complété(s) : $a" },
+    statDownloadDoneLineFailed = { a -> "Échoué(s) : $a" },
     downloadRemoveDialogTitle = "Retire téléchargement",
-    downloadRemoveDialogMessage = { a: String -> "Retirer $a de la liste de téléchargement ?" },
-    downloadRemoveDialogMessage2 = { a: Int -> "Retirer $a articles de la liste de téléchargement ?" },
+    downloadRemoveDialogMessage = { a -> "Retirer $a de la liste de téléchargement ?" },
+    downloadRemoveDialogMessage2 = { a -> "Retirer $a articles de la liste de téléchargement ?" },
     downloadRemoveDialogCheckText = "Supprimer fiches d'image",
     statDownloadActionStopAll = "Arrêter tout",
     defaultDownloadLabelName = "Défaut",
@@ -180,8 +180,8 @@ val FrStrings = Strings(
     downloadResetReadingProgress = "Réinitialiser les progrès de lecture",
     resetReadingProgressMessage = "Réinitialiser les progrès de lecture de toutes galéries téléchargées ?",
     downloadServiceLabel = "Service du téléchargement EhViewer",
-    downloadSpeedText = { a: String -> a },
-    downloadSpeedText2 = { a: String, b: String -> "$a, encore $b" },
+    downloadSpeedText = { a -> a },
+    downloadSpeedText2 = { a, b -> "$a, encore $b" },
     rememberDownloadLabel = "Enregistrer le label de téléchargement",
     defaultDownloadLabel = "Label de téléchargement par défaut",
     addedToDownloadList = "Ajouté à la liste de téléchargement",
@@ -199,7 +199,7 @@ val FrStrings = Strings(
     filterUploader = "Uploader",
     filterTag = "Tag",
     filterTagNamespace = "Espace de nom de tag",
-    deleteFilter = { a: String -> "Supprimer le bloqueur bloqueur \"$a\" ?" },
+    deleteFilter = { a -> "Supprimer le bloqueur bloqueur \"$a\" ?" },
     showDefinition = "Montrer les expliques",
     addFilter = "Ajouter un bloqueur",
     filterText = "Texte du bloqueur",
@@ -207,7 +207,7 @@ val FrStrings = Strings(
     uConfig = "Paramètres EHentai",
     applyTip = "Appuyez sur la coche pour sauvegarder les changements",
     shareImage = "Partager l'image",
-    imageSaved = { a: String -> "Image sauvegardée à $a" },
+    imageSaved = { a -> "Image sauvegardée à $a" },
     settingsEh = "EH",
     settingsEhSignOut = "Se déconnecter",
     settingsUConfig = "Paramètres EHentai",
@@ -233,20 +233,20 @@ val FrStrings = Strings(
     settingsDownloadMediaScanSummaryOn = "Ne montrez jamais vos applications galerie à personne",
     settingsDownloadMediaScanSummaryOff = "La plupart d'applications galerie ignorent les images dans le chemin de téléchargement",
     settingsDownloadConcurrency = "Téléchargement multi-thread",
-    settingsDownloadConcurrencySummary = { a: Int -> "Jusqu'à $a image(s)" },
+    settingsDownloadConcurrencySummary = { a -> "Jusqu'à $a image(s)" },
     settingsDownloadPreloadImage = "Charger les images d'avance",
-    settingsDownloadPreloadImageSummary = { a: Int -> "Charger les prochaine $a images" },
+    settingsDownloadPreloadImageSummary = { a -> "Charger les prochaine $a images" },
     settingsDownloadDownloadOriginImage = "Télécharger l'images originales",
     settingsDownloadDownloadOriginImageSummary = "Vous allez obtenir l'erreur 509 plus facilement",
     settingsDownloadRestoreDownloadItems = "Rétablir les galeries téléchargées",
     settingsDownloadRestoreDownloadItemsSummary = "Rétablir tous objets déjà téléchargés dans la destination de téléchargement",
     settingsDownloadRestoreNotFound = "Aucun objet trouvé à rétablir",
     settingsDownloadRestoreFailed = "Échec de rétablissement",
-    settingsDownloadRestoreSuccessfully = { a: Int -> "$a objets rétablis avec succès" },
+    settingsDownloadRestoreSuccessfully = { a -> "$a objets rétablis avec succès" },
     settingsDownloadCleanRedundancy = "Effacer fiches inutiles de téléchargement",
     settingsDownloadCleanRedundancySummary = "Effacer les fiches des galeries qui ne sont pas dans la liste de téléchargement mais se trouvent dans la destination de téléchargement",
     settingsDownloadCleanRedundancyNoRedundancy = "Rien à effacer",
-    settingsDownloadCleanRedundancyDone = { a: Int -> "Nettoyage complété avec succès, $a objets effacés" },
+    settingsDownloadCleanRedundancyDone = { a -> "Nettoyage complété avec succès, $a objets effacés" },
     settingsAdvanced = "Avancé",
     settingsAdvancedSaveParseErrorBody = "Enrég. les HTMLs avec erreurs",
     settingsAdvancedSaveParseErrorBodySummary = "Le fiche HTML pouvait contenir les informations personnelles",
@@ -255,13 +255,13 @@ val FrStrings = Strings(
     settingsAdvancedDumpLogcat = "Sauvegarder le journal logcat",
     settingsAdvancedDumpLogcatSummary = "Sauvegarder le journal logcat au stockage externe",
     settingsAdvancedDumpLogcatFailed = "Echec de sauvegarde",
-    settingsAdvancedDumpLogcatTo = { a: String -> "Fiche sauvegardé à $a" },
+    settingsAdvancedDumpLogcatTo = { a -> "Fiche sauvegardé à $a" },
     clipboardGalleryUrlSnackMessage = "Un lien d'un galerie est détecté dans les presse-papiers.",
     clipboardGalleryUrlSnackAction = "Aller",
     settingsAdvancedReadCacheSize = "Taille du cache pour la lecture",
     settingsAdvancedExportData = "Exporter les données",
     settingsAdvancedExportDataSummary = "Sauvegarder les données au stockage externe, y compris la liste de téléchargement, la liste de recherche rapide",
-    settingsAdvancedExportDataTo = { a: String -> "Données exportées à $a" },
+    settingsAdvancedExportDataTo = { a -> "Données exportées à $a" },
     settingsAdvancedExportDataFailed = "Échec d'exportation de données",
     settingsAdvancedImportData = "Importer les données",
     settingsAdvancedImportDataSummary = "Charger les données exportées",
@@ -277,11 +277,11 @@ val FrStrings = Strings(
     pleaseWait = "Merci de patienter",
     cloudFavorites = "Favoris de cloud",
     localFavorites = "Favoris locales",
-    searchBarHint = { a: String -> "Chercher dans $a" },
-    favoritesTitle = { a: String -> a },
-    favoritesTitle2 = { a: String, b: String -> "$a - $a" },
+    searchBarHint = { a -> "Chercher dans $a" },
+    favoritesTitle = { a -> a },
+    favoritesTitle2 = { a, b -> "$a - $b" },
     deleteFavoritesDialogTitle = "Effacer de favoris",
-    deleteFavoritesDialogMessage = { a: Int -> "Effacer $a objets de favoris ?" },
+    deleteFavoritesDialogMessage = { a -> "Effacer $a objets de favoris ?" },
     moveFavoritesDialogTitle = "Déplacer favoris",
     defaultFavoritesCollection = "Collection favoris par défaut",
     letMeSelect = "Sélectionner manuellement",
@@ -290,7 +290,7 @@ val FrStrings = Strings(
     fromTheFuture = "Du futur",
     justNow = "En ce moment",
     yesterday = "Hier",
-    someDaysAgo = { a: Int -> "Il y a $a jours" },
+    someDaysAgo = { a -> "Il y a $a jours" },
     archive = "Fiches archives",
     noArchives = "Aucun fiche archives",
     downloadArchiveStarted = "Téléchargement du fiche archives a commencé",
@@ -309,49 +309,49 @@ val FrStrings = Strings(
     darkThemeFollowSystem = "Identique au système",
     darkThemeOff = "Toujours actif",
     darkThemeOn = "Toujours inactif",
-    pageCount = { quantity: Int ->
+    pageCount = { quantity ->
         when (quantity) {
             1 -> "$quantity page"
             else -> "$quantity pages"
         }
     },
-    someMinutesAgo = { quantity: Int ->
+    someMinutesAgo = { quantity ->
         when (quantity) {
             1 -> "Il y a $quantity minute"
             else -> "Il y a $quantity minutes"
         }
     },
-    someHoursAgo = { quantity: Int ->
+    someHoursAgo = { quantity ->
         when (quantity) {
             1 -> "Il y a $quantity heure"
             else -> "Il y a $quantity heures"
         }
     },
-    second = { quantity: Int ->
+    second = { quantity ->
         when (quantity) {
             1 -> "$quantity sec"
             else -> "secs"
         }
     },
-    minute = { quantity: Int ->
+    minute = { quantity ->
         when (quantity) {
             1 -> "$quantity min"
             else -> "mins"
         }
     },
-    hour = { quantity: Int ->
+    hour = { quantity ->
         when (quantity) {
             1 -> "$quantity heure"
             else -> "heures"
         }
     },
-    day = { quantity: Int ->
+    day = { quantity ->
         when (quantity) {
             1 -> "$quantity jour"
             else -> "jours"
         }
     },
-    year = { quantity: Int ->
+    year = { quantity ->
         when (quantity) {
             1 -> "$quantity an"
             else -> "ans"
