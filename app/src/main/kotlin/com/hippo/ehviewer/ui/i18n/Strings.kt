@@ -67,7 +67,7 @@ data class Strings(
     val errorPasswordCannotEmpty: String = "Password cannot be empty",
     val guestMode: String = "Guest mode",
     val signInFailed: String = "Sign in failed",
-    val signInFailedTip: (String) -> String = { a: String -> "If this issue continues, try \"$a\"." },
+    val signInFailedTip: (String) -> String = { a -> "If this issue continues, try \"$a\"." },
     val getIt: String = "Got it",
     val galleryListSearchBarHintExhentai: String = "Search ExHentai",
     val galleryListSearchBarHintEHentai: String = "Search E-Hentai",
@@ -102,11 +102,11 @@ data class Strings(
     val addQuickSearchTip: String = "The state of gallery list will be saved as quick search. Perform a search first to save the state of search panel.",
     val readme: String = "README",
     val imageSearchNotQuickSearch: String = "Can't add image search as quick search",
-    val duplicateQuickSearch: (String) -> String = { a: String -> "A duplicate quick search exists. The name is \"$a\"." },
+    val duplicateQuickSearch: (String) -> String = { a -> "A duplicate quick search exists. The name is \"$a\"." },
     val duplicateName: String = "This name is already in use.",
     val saveProgress: String = "Save progress",
-    val deleteQuickSearch: (String) -> String = { a: String -> "Delete quick search \"$a\"?" },
-    val goToHint: (Int, Int) -> String = { a: Int, b: Int -> "Page $a, total $b pages" },
+    val deleteQuickSearch: (String) -> String = { a -> "Delete quick search \"$a\"?" },
+    val goToHint: (Int, Int) -> String = { a, b -> "Page $a, total $b pages" },
     val any: String = "Any",
     val star2: String = "2 stars",
     val star3: String = "3 stars",
@@ -114,9 +114,9 @@ data class Strings(
     val star5: String = "5 stars",
     val download: String = "Download",
     val read: String = "Read",
-    val favoredTimes: (Int) -> String = { a: Int -> "\u2665 $a" },
-    val ratingText: (String, Float, Int) -> String = { a: String, b: Float, c: Int -> "%s (%.2f, %d)".format(a, b, c) },
-    val torrentCount: (Int) -> String = { a: Int -> "Torrent ($a)" },
+    val favoredTimes: (Int) -> String = { a -> "\u2665 $a" },
+    val ratingText: (String, Float, Int) -> String = { a, b, c -> "%s (%.2f, %d)".format(a, b, c) },
+    val torrentCount: (Int) -> String = { a -> "Torrent ($a)" },
     val share: String = "Share",
     val rate: String = "Rate",
     val similarGallery: String = "Similar",
@@ -141,11 +141,11 @@ data class Strings(
     val removeFromFavoriteSuccess: String = "Removed from favorites",
     val addToFavoriteFailure: String = "Failed to add to favorites",
     val removeFromFavoriteFailure: String = "Failed to remove from favorites",
-    val filterTheUploader: (String) -> String = { a: String -> "Block the uploader \"$a\"?" },
-    val filterTheTag: (String) -> String = { a: String -> "Block the tag \"$a\"?" },
+    val filterTheUploader: (String) -> String = { a -> "Block the uploader \"$a\"?" },
+    val filterTheTag: (String) -> String = { a -> "Block the tag \"$a\"?" },
     val filterAdded: String = "Blocker added",
     val newerVersionAvailable: String = "There are newer versions of this gallery available.",
-    val newerVersionTitle: (String, String) -> String = { a: String, b: String -> "$a, added $b" },
+    val newerVersionTitle: (String, String) -> String = { a, b -> "$a, added $b" },
     val rating10: String = "MASTERPIECE",
     val rating9: String = "AMAZING",
     val rating8: String = "GREAT",
@@ -185,7 +185,7 @@ data class Strings(
     val commentFailed: String = "Failed to post the comment",
     val copyCommentText: String = "Copy comment text",
     val blockCommenter: String = "Block the commenter",
-    val filterTheCommenter: (String) -> String = { a: String -> "Block the commenter \"$a\"?" },
+    val filterTheCommenter: (String) -> String = { a -> "Block the commenter \"$a\"?" },
     val editComment: String = "Edit comment",
     val editCommentSuccessfully: String = "The comment has been edited",
     val editCommentFailed: String = "Failed to edit the comment",
@@ -200,28 +200,28 @@ data class Strings(
     val voteFailed: String = "Vote failed",
     val checkVoteStatus: String = "View vote details",
     val clickMoreComments: String = "Click to load more comments",
-    val lastEdited: (String) -> String = { a: String -> "Last edited: $a" },
+    val lastEdited: (String) -> String = { a -> "Last edited: $a" },
     val goTo: String = "Go to",
-    val sceneDownloadTitle: (String) -> String = { a: String -> "Download - $a" },
+    val sceneDownloadTitle: (String) -> String = { a -> "Download - $a" },
     val noDownloadInfo: String = "Download items will be shown here",
     val downloadStateNone: String = "Idle",
     val downloadStateWait: String = "Waiting",
     val downloadStateDownloading: String = "Downloading",
     val downloadStateDownloaded: String = "Downloaded",
     val downloadStateFailed: String = "Failed",
-    val downloadStateFailed2: (Int) -> String = { a: Int -> "$a incomplete" },
+    val downloadStateFailed2: (Int) -> String = { a -> "$a incomplete" },
     val downloadStateFinish: String = "Done",
     val stat509AlertTitle: String = "509 Alert",
     val stat509AlertText: String = "Image limit has been reached. Please stop download and have a relax.",
     val statDownloadDoneTitle: String = "Download Finished",
-    val statDownloadDoneTextSucceeded: (Int) -> String = { a: Int -> "$a succeeded" },
-    val statDownloadDoneTextFailed: (Int) -> String = { a: Int -> "$a failed" },
-    val statDownloadDoneTextMix: (Int, Int) -> String = { a: Int, b: Int -> "$a succeeded, $b failed" },
-    val statDownloadDoneLineSucceeded: (String) -> String = { a: String -> "Succeeded: $a" },
-    val statDownloadDoneLineFailed: (String) -> String = { a: String -> "Failed: $a" },
+    val statDownloadDoneTextSucceeded: (Int) -> String = { a -> "$a succeeded" },
+    val statDownloadDoneTextFailed: (Int) -> String = { a -> "$a failed" },
+    val statDownloadDoneTextMix: (Int, Int) -> String = { a, b -> "$a succeeded, $b failed" },
+    val statDownloadDoneLineSucceeded: (String) -> String = { a -> "Succeeded: $a" },
+    val statDownloadDoneLineFailed: (String) -> String = { a -> "Failed: $a" },
     val downloadRemoveDialogTitle: String = "Remove Download Item",
-    val downloadRemoveDialogMessage: (String) -> String = { a: String -> "Remove $a from download list ?" },
-    val downloadRemoveDialogMessage2: (Int) -> String = { a: Int -> "Remove $a items from download list ?" },
+    val downloadRemoveDialogMessage: (String) -> String = { a -> "Remove $a from download list ?" },
+    val downloadRemoveDialogMessage2: (Int) -> String = { a -> "Remove $a items from download list ?" },
     val downloadRemoveDialogCheckText: String = "Delete image files",
     val statDownloadActionStopAll: String = "Stop all",
     val defaultDownloadLabelName: String = "Default",
@@ -232,8 +232,8 @@ data class Strings(
     val downloadResetReadingProgress: String = "Reset reading progress",
     val resetReadingProgressMessage: String = "Reset the reading progress of all downloaded galleries?",
     val downloadServiceLabel: String = "EhViewer Download Service",
-    val downloadSpeedText: (String) -> String = { a: String -> a },
-    val downloadSpeedText2: (String, String) -> String = { a: String, b: String -> "$a, $b left" },
+    val downloadSpeedText: (String) -> String = { a -> a },
+    val downloadSpeedText2: (String, String) -> String = { a, b -> "$a, $b left" },
     val rememberDownloadLabel: String = "Remember download label",
     val defaultDownloadLabel: String = "Default download label",
     val addedToDownloadList: String = "Added to download list",
@@ -247,7 +247,7 @@ data class Strings(
     val labelTextIsInvalid: String = "\"Default\" is an invalid label",
     val labelTextExist: String = "Label exists",
     val renameLabelTitle: String = "Rename label",
-    val deleteLabel: (String) -> String = { a: String -> "Delete label \"$a\"?" },
+    val deleteLabel: (String) -> String = { a -> "Delete label \"$a\"?" },
     val noHistory: String = "Viewed galleries will be shown here",
     val clearAll: String = "Clear all",
     val clearAllHistory: String = "Clear all history?",
@@ -258,7 +258,7 @@ data class Strings(
     val filterTagNamespace: String = "Tag namespace",
     val filterCommenter: String = "Commenter",
     val filterComment: String = "Comment Regex",
-    val deleteFilter: (String) -> String = { a: String -> "Delete blocker \"$a\"?" },
+    val deleteFilter: (String) -> String = { a -> "Delete blocker \"$a\"?" },
     val addFilter: String = "Add blocker",
     val showDefinition: String = "Show definition",
     val filterText: String = "Blocker text",
@@ -267,7 +267,7 @@ data class Strings(
     val applyTip: String = "Tap the check mark to save the settings",
     val myTags: String = "My tags",
     val shareImage: String = "Share image",
-    val imageSaved: (String) -> String = { a: String -> "Image saved to $a" },
+    val imageSaved: (String) -> String = { a -> "Image saved to $a" },
     val settingsEh: String = "EH",
     val settingsEhSignOut: String = "Sign out",
     val settingsEhIdentityCookiesSigned: String = "Identity cookies can be used to sign in to this account.<br><b>KEEP IT SAFE</b>",
@@ -313,12 +313,12 @@ data class Strings(
     val settingsDownloadMediaScanSummaryOn: String = "Please hide your gallery apps away from other people",
     val settingsDownloadMediaScanSummaryOff: String = "Most gallery apps will ignore pictures in the download path",
     val settingsDownloadConcurrency: String = "Concurrency download",
-    val settingsDownloadConcurrencySummary: (Int) -> String = { a: Int -> "Up to $a images" },
+    val settingsDownloadConcurrencySummary: (Int) -> String = { a -> "Up to $a images" },
     val settingsDownloadDownloadDelay: String = "Download delay",
-    val settingsDownloadDownloadDelaySummary: (Int) -> String = { a: Int -> "Delay $a ms per download" },
+    val settingsDownloadDownloadDelaySummary: (Int) -> String = { a -> "Delay $a ms per download" },
     val settingsDownloadDownloadTimeout: String = "Download timeout (in seconds)",
     val settingsDownloadPreloadImage: String = "Preload image",
-    val settingsDownloadPreloadImageSummary: (Int) -> String = { a: Int -> "Preload next $a image" },
+    val settingsDownloadPreloadImageSummary: (Int) -> String = { a -> "Preload next $a image" },
     val settingsDownloadDownloadOriginImage: String = "Download original image",
     val settingsDownloadDownloadOriginImageSummary: String = "Caution! May require GP",
     val settingsDownloadSaveAsCbz: String = "Save as CBZ archive",
@@ -326,17 +326,17 @@ data class Strings(
     val settingsDownloadArchiveMetadataSummary: String = "Generate ComicInfo.xml on archive download",
     val settingsDownloadReloadMetadata: String = "Reload metadata",
     val settingsDownloadReloadMetadataSummary: String = "Regenerate the ComicInfo.xml for download items whose tags may have changed",
-    val settingsDownloadReloadMetadataSuccessfully: (Int) -> String = { a: Int -> "Reload $a items successfully" },
-    val settingsDownloadReloadMetadataFailed: (String) -> String = { a: String -> "Reload metadata failed: $a" },
+    val settingsDownloadReloadMetadataSuccessfully: (Int) -> String = { a -> "Reload $a items successfully" },
+    val settingsDownloadReloadMetadataFailed: (String) -> String = { a -> "Reload metadata failed: $a" },
     val settingsDownloadRestoreDownloadItems: String = "Restore download items",
     val settingsDownloadRestoreDownloadItemsSummary: String = "Restore all download items in download location",
     val settingsDownloadRestoreNotFound: String = "Not found download items to restore",
     val settingsDownloadRestoreFailed: String = "Restore failed",
-    val settingsDownloadRestoreSuccessfully: (Int) -> String = { a: Int -> "Restore $a items successfully" },
+    val settingsDownloadRestoreSuccessfully: (Int) -> String = { a -> "Restore $a items successfully" },
     val settingsDownloadCleanRedundancy: String = "Clear download redundancy",
     val settingsDownloadCleanRedundancySummary: String = "Remove gallery images which are not in download list but in download location",
     val settingsDownloadCleanRedundancyNoRedundancy: String = "No redundancy",
-    val settingsDownloadCleanRedundancyDone: (Int) -> String = { a: Int -> "Redundancy cleaning completed, clean-up $a items totally" },
+    val settingsDownloadCleanRedundancyDone: (Int) -> String = { a -> "Redundancy cleaning completed, clean-up $a items totally" },
     val settingsAdvanced: String = "Advanced",
     val settingsAdvancedSaveParseErrorBody: String = "Save HTML content when parsing error",
     val settingsAdvancedSaveParseErrorBodySummary: String = "Html content may be privacy-sensitive",
@@ -345,21 +345,21 @@ data class Strings(
     val settingsAdvancedDumpLogcat: String = "Dump logcat",
     val settingsAdvancedDumpLogcatSummary: String = "Save logcat to external storage",
     val settingsAdvancedDumpLogcatFailed: String = "Dump logcat failed",
-    val settingsAdvancedDumpLogcatTo: (String) -> String = { a: String -> "Logcat dumped to $a" },
+    val settingsAdvancedDumpLogcatTo: (String) -> String = { a -> "Logcat dumped to $a" },
     val settingsAdvancedReadCacheSize: String = "Read cache size",
     val settingsAdvancedAppLanguageTitle: String = "App language",
     val settingsAdvancedHardwareBitmapThreshold: String = "Hardware bitmap (better performance) threshold",
     val settingsAdvancedHardwareBitmapThresholdSummary: String = "Try decreasing this if long images fail to load",
     val settingsAdvancedExportData: String = "Export data",
     val settingsAdvancedExportDataSummary: String = "Save data like download list, quick search list, to external storage",
-    val settingsAdvancedExportDataTo: (String) -> String = { a: String -> "Exported data to $a" },
+    val settingsAdvancedExportDataTo: (String) -> String = { a -> "Exported data to $a" },
     val settingsAdvancedExportDataFailed: String = "Failed to export data",
     val settingsAdvancedImportData: String = "Import data",
     val settingsAdvancedImportDataSummary: String = "Load data which were previously saved",
     val settingsAdvancedImportDataSuccessfully: String = "Data imported",
     val settingsAdvancedBackupFavorite: String = "Backup favorite list",
     val settingsAdvancedBackupFavoriteSummary: String = "Backup remote favorite list to local",
-    val settingsAdvancedBackupFavoriteStart: (String) -> String = { a: String -> "Backing up favorite list $a" },
+    val settingsAdvancedBackupFavoriteStart: (String) -> String = { a -> "Backing up favorite list $a" },
     val settingsAdvancedBackupFavoriteNothing: String = "Nothing to backup",
     val settingsAdvancedBackupFavoriteSuccess: String = "Backup favorite list success",
     val settingsAdvancedBackupFavoriteFailed: String = "Backup favorite list failed",
@@ -378,7 +378,7 @@ data class Strings(
     val settingsAboutLatestRelease: String = "Latest release",
     val settingsAboutSource: String = "Source",
     val settingsAboutVersion: String = "Build version",
-    val settingsAboutCommitTime: (String) -> String = { a: String -> "Committed at $a" },
+    val settingsAboutCommitTime: (String) -> String = { a -> "Committed at $a" },
     val settingsAboutCheckForUpdates: String = "Check for updates",
     val license: String = "License",
     val cantReadTheFile: String = "Can't read the file",
@@ -386,11 +386,11 @@ data class Strings(
     val pleaseWait: String = "Please wait",
     val cloudFavorites: String = "Cloud Favorites",
     val localFavorites: String = "Local Favorites",
-    val searchBarHint: (String) -> String = { a: String -> "Search $a" },
-    val favoritesTitle: (String) -> String = { a: String -> a },
-    val favoritesTitle2: (String, String) -> String = { a: String, b: String -> "$a - $b" },
+    val searchBarHint: (String) -> String = { a -> "Search $a" },
+    val favoritesTitle: (String) -> String = { a -> a },
+    val favoritesTitle2: (String, String) -> String = { a, b -> "$a - $b" },
     val deleteFavoritesDialogTitle: String = "Delete from favorites",
-    val deleteFavoritesDialogMessage: (Int) -> String = { a: Int -> "Delete $a items from favorites?" },
+    val deleteFavoritesDialogMessage: (Int) -> String = { a -> "Delete $a items from favorites?" },
     val moveFavoritesDialogTitle: String = "Move favorites",
     val defaultFavoritesCollection: String = "Default favorites collection",
     val defaultFavoritesWarning: String = "You won't be able to add favorite notes if you enable this",
@@ -401,7 +401,7 @@ data class Strings(
     val fromTheFuture: String = "From the future",
     val justNow: String = "Just now",
     val yesterday: String = "Yesterday",
-    val someDaysAgo: (Int) -> String = { a: Int -> "$a days ago" },
+    val someDaysAgo: (Int) -> String = { a -> "$a days ago" },
     val archive: String = "Archive",
     val archiveFree: String = "Free",
     val archiveOriginal: String = "Original",
@@ -416,7 +416,7 @@ data class Strings(
     val imageLimitsSummary: String = "Used:",
     val imageLimitsNormal: String = "No restrictions",
     val imageLimitsRestricted: String = "Image resolution restricted to 1280x",
-    val resetCost: (Int) -> String = { a: Int -> "Spend $a GP to reset" },
+    val resetCost: (Int) -> String = { a -> "Spend $a GP to reset" },
     val reset: String = "Reset",
     val settingsPrivacy: String = "Privacy",
     val settingsPrivacySecure: String = "Prevent screenshots",
@@ -453,14 +453,14 @@ data class Strings(
     val tagVoteUp: String = "Vote up",
     val tagVoteWithdraw: String = "Withdraw vote",
     val tagVoteSuccessfully: String = "Vote successfully",
-    val deleteSearchHistory: (String) -> String = { a: String -> "Delete \"$a\" from search history?" },
+    val deleteSearchHistory: (String) -> String = { a -> "Delete \"$a\" from search history?" },
     val actionAddTag: String = "Add tag",
     val actionAddTagTip: String = "Enter new tags",
-    val commentUserUploader: (String) -> String = { a: String -> "$a (Uploader)" },
+    val commentUserUploader: (String) -> String = { a -> "$a (Uploader)" },
     val noNetwork: String = "No network",
     val settingsEhMeteredNetworkWarning: String = "Metered network warning",
     val meteredNetworkWarning: String = "Connected to metered networks",
-    val readFrom: (Int) -> String = { a: Int -> "Read page $a" },
+    val readFrom: (Int) -> String = { a -> "Read page $a" },
     val settingsEhRequestNews: String = "Timed request news page",
     val settingsEhHideHvEvents: String = "Hide HV event Notifications",
     val copyTrans: String = "Copy translation",
@@ -476,7 +476,7 @@ data class Strings(
     val useCiUpdateChannel: String = "Use CI update channel",
     val settingsPrivacyRequireUnlock: String = "Require Unlock",
     val settingsPrivacyRequireUnlockDelay: String = "Lock Delay",
-    val settingsPrivacyRequireUnlockDelaySummary: (Int) -> String = { a: Int -> "No unlock is required when leaving App and returning within $a minute(s)" },
+    val settingsPrivacyRequireUnlockDelaySummary: (Int) -> String = { a -> "No unlock is required when leaving App and returning within $a minute(s)" },
     val settingsPrivacyRequireUnlockDelaySummaryImmediately: String = "Unlock is required whenever you return to this App",
     val filterLabel: String = "Blocker Type",
     val archivePasswd: String = "password",
@@ -495,7 +495,7 @@ data class Strings(
     val updateFrequencyWeekly: String = "Weekly",
     val updateFrequencyBiweekly: String = "Biweekly",
     val updateFrequencyMonthly: String = "Monthly",
-    val updateFailed: (String) -> String = { a: String -> "Update failed: $a" },
+    val updateFailed: (String) -> String = { a -> "Update failed: $a" },
     val newVersionAvailable: String = "New version available!",
     val alreadyLatestVersion: String = "Already the latest version",
     val permissionDenied: String = "Permission denied",
@@ -597,49 +597,49 @@ data class Strings(
     val darkThemeOn: String = "Always on",
     val blockedImage: String = "Blocked image",
     val showBlockedImage: String = "Show blocked image",
-    val pageCount: (quantity: Int) -> String = { quantity: Int ->
+    val pageCount: (quantity: Int) -> String = { quantity ->
         when (quantity) {
             1 -> "$quantity page"
             else -> "$quantity pages"
         }
     },
-    val someMinutesAgo: (quantity: Int) -> String = { quantity: Int ->
+    val someMinutesAgo: (quantity: Int) -> String = { quantity ->
         when (quantity) {
             1 -> "A minute ago"
             else -> "$quantity minutes ago"
         }
     },
-    val someHoursAgo: (quantity: Int) -> String = { quantity: Int ->
+    val someHoursAgo: (quantity: Int) -> String = { quantity ->
         when (quantity) {
             1 -> "An hour ago"
             else -> "$quantity hours ago"
         }
     },
-    val second: (quantity: Int) -> String = { quantity: Int ->
+    val second: (quantity: Int) -> String = { quantity ->
         when (quantity) {
             1 -> "sec"
             else -> "secs"
         }
     },
-    val minute: (quantity: Int) -> String = { quantity: Int ->
+    val minute: (quantity: Int) -> String = { quantity ->
         when (quantity) {
             1 -> "min"
             else -> "mins"
         }
     },
-    val hour: (quantity: Int) -> String = { quantity: Int ->
+    val hour: (quantity: Int) -> String = { quantity ->
         when (quantity) {
             1 -> "hour"
             else -> "hours"
         }
     },
-    val day: (quantity: Int) -> String = { quantity: Int ->
+    val day: (quantity: Int) -> String = { quantity ->
         when (quantity) {
             1 -> "day"
             else -> "days"
         }
     },
-    val year: (quantity: Int) -> String = { quantity: Int ->
+    val year: (quantity: Int) -> String = { quantity ->
         when (quantity) {
             1 -> "year"
             else -> "years"
