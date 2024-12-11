@@ -12,6 +12,7 @@ import androidx.compose.ui.text.withStyle
 import cafe.adriel.lyricist.ProvideStrings
 import cafe.adriel.lyricist.rememberStrings
 
+// Note: Comment this HOF to check unused res
 inline fun strings(f: Strings.() -> Unit) = Strings().apply(f)
 
 class Strings {
