@@ -39,6 +39,7 @@ import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.image.PathSource
 import com.hippo.ehviewer.jni.archiveFdBatch
 import com.hippo.ehviewer.util.FileUtils
+import com.hippo.ehviewer.util.copyTo
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.ehviewer.util.sha1
 import com.hippo.files.delete
@@ -49,7 +50,6 @@ import com.hippo.files.list
 import com.hippo.files.mkdirs
 import com.hippo.files.moveTo
 import com.hippo.files.openFileDescriptor
-import com.hippo.files.outputStream
 import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.plugins.timeout
@@ -221,9 +221,7 @@ class SpiderDen(val info: GalleryInfo) {
         val url = response.request.url.toString()
         val extension = MimeTypeMap.getFileExtensionFromUrl(url).ifEmpty { "jpg" }
         return saveResponseMeta(index, extension) { outFile ->
-            outFile.outputStream().use {
-                response.bodyAsChannel().copyTo(it.channel)
-            }
+            response.bodyAsChannel().copyTo(outFile)
             FileHashRegex.find(url)?.let {
                 val expected = it.groupValues[1]
                 val actual = outFile.sha1()

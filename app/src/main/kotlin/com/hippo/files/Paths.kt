@@ -2,12 +2,9 @@ package com.hippo.files
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.os.ParcelFileDescriptor
 import androidx.core.net.toUri
-import java.io.FileInputStream
-import java.io.FileOutputStream
+import kotlinx.io.Sink
 import kotlinx.io.Source
-import kotlinx.io.asSource
 import kotlinx.io.buffered
 import okio.Path
 import okio.Path.Companion.toPath
@@ -34,11 +31,9 @@ infix fun Path.moveTo(target: Path) = SystemFileSystem.atomicMove(this, target)
 
 fun Path.openFileDescriptor(mode: String) = SystemFileSystem.openFileDescriptor(this, mode)
 
-fun Path.inputStream(): FileInputStream = ParcelFileDescriptor.AutoCloseInputStream(SystemFileSystem.openFileDescriptor(this, "r"))
+inline fun <T> Path.read(f: Source.() -> T) = SystemFileSystem.rawSource(this).buffered().use(f)
 
-fun Path.outputStream(): FileOutputStream = ParcelFileDescriptor.AutoCloseOutputStream(SystemFileSystem.openFileDescriptor(this, "wt"))
-
-inline fun <T> Path.read(f: Source.() -> T) = inputStream().asSource().buffered().use(f)
+inline fun <T> Path.write(f: Sink.() -> T) = SystemFileSystem.rawSink(this).buffered().use(f)
 
 fun Path.toUri(): Uri {
     val str = toString()

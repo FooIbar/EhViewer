@@ -16,8 +16,9 @@ import com.hippo.ehviewer.client.data.TagNamespace.Male
 import com.hippo.ehviewer.client.data.TagNamespace.Mixed
 import com.hippo.ehviewer.client.data.TagNamespace.Other
 import com.hippo.ehviewer.client.data.TagNamespace.Parody
-import com.hippo.files.inputStream
-import com.hippo.files.outputStream
+import com.hippo.ehviewer.ui.screen.implicit
+import com.hippo.files.read
+import com.hippo.files.write
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -25,12 +26,12 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import net.devrieze.xmlutil.serialization.kxio.decodeFromSource
+import net.devrieze.xmlutil.serialization.kxio.encodeToSink
 import nl.adaptivity.xmlutil.XmlDeclMode
 import nl.adaptivity.xmlutil.core.XmlVersion
-import nl.adaptivity.xmlutil.newWriter
 import nl.adaptivity.xmlutil.serialization.XML
 import nl.adaptivity.xmlutil.serialization.XmlElement
-import nl.adaptivity.xmlutil.xmlStreaming
 import okio.Path
 
 const val COMIC_INFO_FILE = "ComicInfo.xml"
@@ -107,18 +108,14 @@ fun ComicInfo.toSimpleTags() = listOfNotNull(
 ).flatten().ifEmpty { null }
 
 fun ComicInfo.write(file: Path) {
-    file.outputStream().bufferedWriter().use {
-        xmlStreaming.newWriter(it).use { writer ->
-            xml.encodeToWriter(writer, ComicInfo.serializer(), this)
-        }
+    file.write {
+        xml.encodeToSink(this, implicit<ComicInfo>())
     }
 }
 
 fun readComicInfo(file: Path): ComicInfo? = runCatching {
-    file.inputStream().bufferedReader().use {
-        xmlStreaming.newReader(it).use { reader ->
-            xml.decodeFromReader(ComicInfo.serializer(), reader)
-        }
+    file.read {
+        xml.decodeFromSource<ComicInfo>(this)
     }
 }.getOrNull()
 

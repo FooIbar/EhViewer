@@ -4,8 +4,8 @@ import com.hippo.ehviewer.coil.edit
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.legacy.readLegacySpiderInfo
-import com.hippo.files.outputStream
 import com.hippo.files.read
+import com.hippo.files.write
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.io.readByteArray
 import kotlinx.serialization.Serializable
@@ -37,15 +37,13 @@ private val cbor = Cbor {
 }
 
 fun SpiderInfo.write(file: Path) {
-    file.outputStream().use {
-        it.write(cbor.encodeToByteArray(this))
-    }
+    file.write { write(cbor.encodeToByteArray(this)) }
 }
 
 fun SpiderInfo.saveToCache() {
     runSuspendCatching {
         spiderInfoCache.edit(gid.toString()) {
-            data.toFile().writeBytes(cbor.encodeToByteArray(this@saveToCache))
+            data.write { write(cbor.encodeToByteArray(this@saveToCache)) }
         }
     }.onFailure {
         logcat(it)

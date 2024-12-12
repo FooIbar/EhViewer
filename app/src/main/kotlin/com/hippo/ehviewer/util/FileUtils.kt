@@ -15,9 +15,10 @@
  */
 package com.hippo.ehviewer.util
 
-import com.hippo.files.outputStream
+import com.hippo.files.write
 import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.copyTo
+import io.ktor.utils.io.InternalAPI
+import io.ktor.utils.io.rethrowCloseCauseIfNeeded
 import java.io.File
 import java.util.Locale
 import kotlin.math.ln
@@ -125,8 +126,13 @@ object FileUtils {
     fun getNameFromFilename(filename: String?) = filename?.substringBeforeLast('.')?.ifEmpty { null }
 }
 
+@OptIn(InternalAPI::class)
 suspend fun ByteReadChannel.copyTo(file: Path) {
-    file.outputStream().use {
-        copyTo(it.channel)
+    file.write {
+        while (!isClosedForRead) {
+            transferFrom(readBuffer)
+            awaitContent()
+        }
+        rethrowCloseCauseIfNeeded()
     }
 }

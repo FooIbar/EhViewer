@@ -7,7 +7,7 @@ import com.hippo.ehviewer.client.executeAndParseAs
 import com.hippo.ehviewer.client.executeSafely
 import com.hippo.ehviewer.util.copyTo
 import com.hippo.ehviewer.util.ensureSuccess
-import com.hippo.files.outputStream
+import com.hippo.files.write
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
@@ -18,6 +18,7 @@ import java.util.zip.ZipInputStream
 import kotlin.time.Duration.Companion.days
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.io.asSource
 import moe.tarsin.coroutines.runSuspendCatching
 import okio.Path
 import tachiyomi.data.release.GithubArtifacts
@@ -79,9 +80,7 @@ object AppUpdater {
             response.bodyAsChannel().toInputStream().use { stream ->
                 ZipInputStream(stream).use { zip ->
                     zip.nextEntry
-                    path.outputStream().use {
-                        zip.copyTo(it)
-                    }
+                    path.write { transferFrom(zip.asSource()) }
                 }
             }
         } else {
