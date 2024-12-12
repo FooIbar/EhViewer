@@ -30,7 +30,7 @@ okhttp = "5.0.0-alpha.14"
 okio = "3.9.1"
 splitties = "3.0.0"
 telephoto = "0.14.0"
-xmlutil = "0.90.3"
+xmlutil = "0.90.4-SNAPSHOT"
 junit = "1.2.1"
 uiautomator = "2.4.0-alpha01"
 benchmark = "1.4.0-alpha06"
@@ -112,6 +112,7 @@ serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-jso
 serialization-json-io = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json-io", version.ref = "kotlinx-serialization" }
 
 serialization-xml = { module = "io.github.pdvrieze.xmlutil:serialization", version.ref = "xmlutil" }
+serialization-xml-io = { module = "io.github.pdvrieze.xmlutil:serialization-io", version.ref = "xmlutil" }
 
 splitties-appctx = { module = "com.louiscad.splitties:splitties-appctx", version.ref = "splitties" }
 splitties-arch-room = { module = "com.louiscad.splitties:splitties-arch-room", version.ref = "splitties" }
@@ -129,7 +130,7 @@ androidx-profileinstaller = { module = "androidx.profileinstaller:profileinstall
 arrow = ["arrow-fx-coroutines", "arrow-functions", "arrow-resilience"]
 coil = ["coil-compose", "coil-gif", "coil-network"]
 compose = ["compose-foundation", "compose-material-icons-extended", "compose-material3", "compose-material3-adaptive", "compose-ui-util"]
-kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-io", "serialization-xml"]
+kotlinx-serialization = ["serialization-cbor", "serialization-json", "serialization-json-io", "serialization-xml", "serialization-xml-io"]
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
 
 [plugins]
