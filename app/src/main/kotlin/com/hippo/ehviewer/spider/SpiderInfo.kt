@@ -4,6 +4,7 @@ import com.hippo.ehviewer.coil.edit
 import com.hippo.ehviewer.coil.read
 import com.hippo.ehviewer.ktbuilder.diskCache
 import com.hippo.ehviewer.legacy.readLegacySpiderInfo
+import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.files.read
 import com.hippo.files.write
 import eu.kanade.tachiyomi.util.system.logcat
@@ -37,13 +38,13 @@ private val cbor = Cbor {
 }
 
 fun SpiderInfo.write(file: Path) {
-    file.write { write(cbor.encodeToByteArray(this)) }
+    file.write { write(cbor.encodeToByteArray(implicit<SpiderInfo>())) }
 }
 
 fun SpiderInfo.saveToCache() {
     runSuspendCatching {
         spiderInfoCache.edit(gid.toString()) {
-            data.write { write(cbor.encodeToByteArray(this@saveToCache)) }
+            write(data)
         }
     }.onFailure {
         logcat(it)
