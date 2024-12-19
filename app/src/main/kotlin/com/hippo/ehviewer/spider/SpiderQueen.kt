@@ -17,6 +17,8 @@
 package com.hippo.ehviewer.spider
 
 import androidx.annotation.IntDef
+import arrow.core.Either
+import arrow.core.getOrElse
 import arrow.core.partially1
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -149,7 +151,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 
     private var downloadMode = false
-    val isReady
+
+    private val isReady
         get() = this::spiderInfo.isInitialized && this::pageStates.isInitialized
 
     private val updateLock = Mutex()
@@ -210,10 +213,16 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     private suspend fun doPrepare() {
         spiderDen.initDownloadDirIfExist()
-        spiderInfo = readSpiderInfoFromLocal() ?: readSpiderInfoFromInternet()
-        pageStates = IntArray(spiderInfo.pages)
-        check(spiderInfo.pages > 0)
-        notifyGetPages(spiderInfo.pages)
+        val pages = Either.catch {
+            spiderInfo = readSpiderInfoFromLocal() ?: readSpiderInfoFromInternet()
+            spiderInfo.pages
+        }.getOrElse {
+            logcat(it)
+            galleryInfo.pages
+        }
+        check(pages > 0)
+        pageStates = IntArray(pages)
+        notifyGetPages(pages)
     }
 
     suspend fun awaitReady() = prepareJob.await()
@@ -539,7 +548,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
         private suspend fun doInJob(index: Int, force: Boolean, orgImg: Boolean, skipHath: Boolean) {
             suspend fun getPToken(index: Int): String? {
-                if (index !in 0 until size) return null
+                if (!isReady || index !in 0 until size) return null
                 return spiderInfo.pTokenMap[index]
                     ?: getPTokenFromMultiPageViewer(index)
                     ?: getPTokenFromInternet(index)
@@ -591,7 +600,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     if (imageUrl == null) {
                         runSuspendCatching {
                             EhEngine.getGalleryPageApi(
-                                spiderInfo.gid,
+                                galleryInfo.gid,
                                 index,
                                 pToken,
                                 localShowKey,
@@ -617,7 +626,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         if (retries == 1 && skipHathKey != null) {
                             originImageUrl += "?nl=$skipHathKey"
                         }
-                        val pageUrl = EhUrl.getPageUrl(spiderInfo.gid, index, pToken)
+                        val pageUrl = EhUrl.getPageUrl(galleryInfo.gid, index, pToken)
                         EhEngine.getOriginalImageUrl(originImageUrl!!, pageUrl) to referer
                     } else {
                         // Original image url won't change, so only set forceHtml in this case
