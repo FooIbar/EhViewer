@@ -22,8 +22,8 @@ import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.util.lerp
 import arrow.fx.coroutines.parMapNotNull
 import com.hippo.ehviewer.EhDB
@@ -81,7 +81,10 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     private val mAllInfoMap = allInfoList.associateBy { it.gid } as MutableMap<Long, DownloadInfo>
 
     // All labels without default label
-    val labelList = runAssertingNotMainThread { EhDB.getAllDownloadLabelList() }.toMutableStateList()
+    // Create the SnapshotStateList first in case the database query is time-consuming
+    val labelList = mutableStateListOf<DownloadLabel>().apply {
+        addAll(runAssertingNotMainThread { EhDB.getAllDownloadLabelList() })
+    }
 
     // Store download info wait to start
     private val mWaitList = ArrayDeque<DownloadInfo>()
