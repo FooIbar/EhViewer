@@ -113,12 +113,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
 
 [[package]]
-name = "bit_reverse"
-version = "0.1.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99528ca30abb9495c7e106bf7c3177b257c62040fc0f2909fe470b0f43097296"
-
-[[package]]
 name = "bitflags"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1418,11 +1412,10 @@ dependencies = [
 
 [[package]]
 name = "rxing"
-version = "0.6.4"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6a67d9437113b225dc74acfdc7a89b7f1ce8fe498de282a5a0b0ae2e09e41e6"
+checksum = "d94fd9d595e62b2c9ee033626bf28218da9cf3b3196f20d7e2c004a702bda71c"
 dependencies = [
- "bit_reverse",
  "chrono",
  "chrono-tz",
  "codepage-437",
@@ -1441,9 +1434,9 @@ dependencies = [
 
 [[package]]
 name = "rxing-one-d-proc-derive"
-version = "0.5.3"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59c92a4da773eed06d54210368684b4325bc70a0f8b0cc4d50a106bf71b954f2"
+checksum = "6cee044776de75d7df23e58bfbc8799d859c2980ee247bb9bf925e4fd7d8cc6d"
 dependencies = [
  "quote",
  "syn",
