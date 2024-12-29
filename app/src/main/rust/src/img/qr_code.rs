@@ -4,7 +4,7 @@ use anyhow::Result;
 use image::{GrayImage, ImageBuffer};
 use rxing::common::HybridBinarizer;
 use rxing::qrcode::detector::FinderPatternFinder;
-use rxing::{BinaryBitmap, DecodingHintDictionary, Luma8LuminanceSource, Point};
+use rxing::{BinaryBitmap, DecodeHints, Luma8LuminanceSource, Point};
 use std::f32::consts::FRAC_1_SQRT_2;
 
 fn image_buffer_to_luma8<P: CustomPixel>(
@@ -24,9 +24,7 @@ impl ImageConsumer<bool> for QrCode {
     fn apply<P: CustomPixel>(self, image: &ImageBuffer<P, &[P::Subpixel]>) -> Result<bool> {
         let source = image_buffer_to_luma8(image);
         let image = BinaryBitmap::new(HybridBinarizer::new(source));
-        match FinderPatternFinder::new(image.get_black_matrix())
-            .find(&DecodingHintDictionary::new())
-        {
+        match FinderPatternFinder::new(image.get_black_matrix()).find(&DecodeHints::default()) {
             Ok(info) => {
                 // Check if the region is squarish
                 let top_left = Point::from(info.getTopLeft());
