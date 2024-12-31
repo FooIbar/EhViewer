@@ -186,6 +186,13 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
                 title = settingsDownloadConnectionTimeout,
                 value = Settings::connTimeout,
             )
+            IntSliderPreference(
+                maxValue = 1024,
+                minValue = 128,
+                step = 6,
+                title = settingsDownloadConnectionTimeout,
+                value = Settings::timeoutSpeed,
+            )
             val preloadImage = Settings::preloadImage.observed
             SimpleMenuPreferenceInt(
                 title = settingsDownloadPreloadImage,
