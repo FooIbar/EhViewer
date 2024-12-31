@@ -142,6 +142,7 @@ object Settings : DataStorePreferences(null) {
     var multiThreadDownload by intPref("download_thread_2", 3)
     var preloadImage by intPref("preload_image_2", 5)
     var downloadTimeout by intPref("download_timeout", 60)
+    var connTimeout by intPref("conn_timeout", 10)
     var theme by intPref("theme_2", -1).observed { updateWhenThemeChanges() }
     var readCacheSize by intPref("read_cache_size_2", 640)
     var launchPage by intPref("launch_page_2", 0)

@@ -72,6 +72,7 @@ object AppUpdater {
 
     suspend fun downloadUpdate(url: String, path: Path) = ghStatement(url) {
         timeout {
+            connectTimeoutMillis = Settings.connTimeout * 1000L
             requestTimeoutMillis = 60_000
         }
     }.executeSafely { response ->

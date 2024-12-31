@@ -407,6 +407,7 @@ object ZhCnStrings : Strings by EnStrings {
     override val settingsDownloadDownloadDelay = "下载延时"
     override val settingsDownloadDownloadDelaySummary = { a: Int -> "每次下载延时 $a 毫秒" }
     override val settingsDownloadDownloadTimeout = "下载超时（秒）"
+    override val settingsDownloadConnectionTimeout = "连接超时（秒）"
     override val noBrowserInstalled = "请安装一个浏览器。"
     override val toplistAlltime = "从始至终"
     override val toplistPastyear = "过去一年"
