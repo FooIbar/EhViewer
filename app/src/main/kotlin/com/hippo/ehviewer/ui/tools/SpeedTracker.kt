@@ -5,19 +5,19 @@ import androidx.collection.mutableObjectIntMapOf
 import arrow.fx.coroutines.fixedRate
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.executeSafely
+import com.hippo.ehviewer.ktor.reset
 import com.hippo.ehviewer.util.LowSpeedException
 import com.hippo.ehviewer.util.ensureSuccess
+import io.ktor.client.plugins.ConnectTimeoutException
 import io.ktor.client.plugins.onDownload
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.HttpStatement
-import io.ktor.client.statement.request
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
@@ -57,40 +57,40 @@ class SpeedTracker(val window: Duration = 1.seconds) {
 }
 
 suspend inline fun <R> timeoutBySpeed(
-    crossinline req: suspend (HttpRequestBuilder.() -> Unit) -> HttpStatement,
+    url: String,
+    crossinline request: suspend (HttpRequestBuilder.() -> Unit) -> HttpStatement,
     crossinline l: suspend (Long, Long, Int) -> Unit,
     crossinline f: suspend (HttpResponse) -> R,
-) = with(SpeedTracker(2.seconds)) {
-    var prev = 0L
-    req {
+) = coroutineScope {
+    val watchdog = launch {
+        delay(Settings.connTimeout.seconds)
+        throw ConnectTimeoutException(url, Settings.connTimeout * 1000L)
+    }
+    val tracker = SpeedTracker(2.seconds)
+    request {
+        var prev = 0L
         onDownload { done, total ->
             val bytesRead = (done - prev).toInt()
-            track(bytesRead)
+            tracker.track(bytesRead)
             l(total!!, done, bytesRead)
             prev = done
         }
-        timeout { connectTimeoutMillis = Settings.connTimeout * 1000L }
+        timeout { reset() }
     }.executeSafely { resp ->
+        watchdog.cancel()
         resp.status.ensureSuccess()
-        val timeoutSpeed = Settings.timeoutSpeed * 1024.0
-        coroutineScope {
-            val work = async { f(resp) }
-            val job = launch {
-                delay(2.seconds) // Tolerant 4 secs for receiving
-                speedFlow(1.seconds).collect { speed ->
-                    if (timeoutSpeed != 0.0 && speed < timeoutSpeed) {
-                        throw LowSpeedException(
-                            resp.request.url.toString(),
-                            speed.toLong(),
-                        )
-                    }
+        val speedWatchdog = launch {
+            val timeoutSpeed = Settings.timeoutSpeed * 1024.0
+            tracker.speedFlow(1.seconds).collect { speed ->
+                if (timeoutSpeed != 0.0 && speed < timeoutSpeed) {
+                    throw LowSpeedException(url, speed.toLong())
                 }
             }
-            try {
-                work.await()
-            } finally {
-                job.cancel()
-            }
+        }
+        try {
+            f(resp)
+        } finally {
+            speedWatchdog.cancel()
         }
     }
 }
