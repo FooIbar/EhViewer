@@ -194,7 +194,7 @@ fun DownloadCard(
                         )
                     }
                     Text(
-                        text = FileUtils.humanReadableByteCount(speed.coerceAtLeast(0), false) + "/S",
+                        text = FileUtils.humanReadableByteCount(speed.coerceAtLeast(0)) + "/S",
                         modifier = Modifier.layoutId(speedRef),
                     )
                 }
