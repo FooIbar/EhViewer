@@ -76,8 +76,8 @@ suspend inline fun <R> timeoutBySpeed(
         coroutineScope {
             val work = async { f(resp) }
             val job = launch {
-                delay(4.seconds) // Tolerant 4 secs for receiving
-                speedFlow(2.seconds).collect { speed ->
+                delay(2.seconds) // Tolerant 4 secs for receiving
+                speedFlow(1.seconds).collect { speed ->
                     if (timeoutSpeed != 0.0 && speed < timeoutSpeed) {
                         throw LowSpeedException(
                             resp.request.url.toString(),
