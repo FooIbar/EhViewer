@@ -36,7 +36,7 @@ class SpeedTracker(val window: Duration = 1.seconds) {
                 val cutoff = now - window
                 received.removeIf { time, _ -> time < cutoff }
                 received.fold(0) { total, _, v -> total + v } / (window / 1.seconds)
-            } ?: 0f
+            } ?: 0.0
         }
     }
 }
