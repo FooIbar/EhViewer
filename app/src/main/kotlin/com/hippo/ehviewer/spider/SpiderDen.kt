@@ -177,6 +177,7 @@ class SpiderDen(val info: GalleryInfo) {
             prev = done
         }
         timeout {
+            connectTimeoutMillis = Settings.connTimeout * 1000L
             requestTimeoutMillis = downloadTimeout
         }
     }.executeSafely {
