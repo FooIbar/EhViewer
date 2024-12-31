@@ -13,16 +13,30 @@ import kotlinx.coroutines.sync.withLock
 class SpeedTracker(val window: Duration = 1.seconds) {
     private val mutex = Mutex()
     private val received = mutableObjectIntMapOf<TimeSource.Monotonic.ValueTimeMark>()
+    private var start: TimeSource.Monotonic.ValueTimeMark? = null
 
-    suspend fun reset() = mutex.withLock { received.clear() }
+    suspend fun reset() = mutex.withLock {
+        received.clear()
+        start = null
+    }
 
-    suspend fun track(bytes: Int) = mutex.withLock { received[TimeSource.Monotonic.markNow()] = bytes }
+    suspend fun track(bytes: Int) = TimeSource.Monotonic.markNow().let { now ->
+        mutex.withLock {
+            start = start ?: now
+            received[now] = bytes
+        }
+    }
 
     fun speedFlow(sample: Duration = 1.seconds) = fixedRate(sample).map {
         mutex.withLock {
-            val passed = TimeSource.Monotonic.markNow() - window
-            received.removeIf { time, _ -> time < passed }
-            received.fold(0) { total, _, v -> total + v } / (window / 1.seconds)
+            start?.let { start ->
+                val now = TimeSource.Monotonic.markNow()
+                val passed = now - start
+                val window = passed.coerceAtMost(window)
+                val cutoff = now - window
+                received.removeIf { time, _ -> time < cutoff }
+                received.fold(0) { total, _, v -> total + v } / (window / 1.seconds)
+            } ?: 0f
         }
     }
 }
