@@ -30,3 +30,8 @@ fun appendHAtHBlacklist(host: String) = synchronized(blacklist) {
     blacklist.blacklist[host] = Clock.System.now()
     cache.write { writeFully(Cbor.encodeToByteArray(blacklist)) }
 }
+
+fun trimHAtHBlacklist(time: Instant = Clock.System.now()) = synchronized(blacklist) {
+    blacklist.blacklist.values.removeIf { i -> i < time }
+    cache.write { writeFully(Cbor.encodeToByteArray(blacklist)) }
+}
