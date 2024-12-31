@@ -50,7 +50,6 @@ import com.hippo.files.find
 import com.hippo.files.toOkioPath
 import com.hippo.files.toUri
 import eu.kanade.tachiyomi.util.system.logcat
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -721,7 +720,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         fun start() {
             if (currentJob == null) {
                 currentJob = launch {
-                    tracker.speedFlow(1.seconds).collect { speed ->
+                    tracker.speedFlow().collect { speed ->
                         runInternal(speed.toLong())
                     }
                 }
