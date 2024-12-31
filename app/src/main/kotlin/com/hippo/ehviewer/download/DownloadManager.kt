@@ -24,7 +24,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.util.lerp
 import arrow.fx.coroutines.parMapNotNull
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
@@ -41,6 +40,7 @@ import com.hippo.ehviewer.spider.downloadDirname
 import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromPath
 import com.hippo.ehviewer.spider.toSimpleTags
+import com.hippo.ehviewer.ui.tools.SpeedTracker
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.insertWith
 import com.hippo.ehviewer.util.mapNotNull
@@ -53,7 +53,6 @@ import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.transform
@@ -713,28 +712,26 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     private val mSpeedReminder = object {
-        private val mContentLengthMap = SparseLongArray()
-        private val mReceivedSizeMap = SparseLongArray()
+        private val contentLengthMap = SparseLongArray()
+        private val receivedSizeMap = SparseLongArray()
+        private val tracker = SpeedTracker()
         private val mutex = Mutex()
-        private var mBytesRead = 0L
-        private var oldSpeed = -1L
         private var currentJob: Job? = null
         fun start() {
             if (currentJob == null) {
                 currentJob = launch {
-                    while (true) {
-                        runInternal()
+                    tracker.speedFlow().collect { speed ->
+                        updateSpeed(speed.toLong())
                     }
                 }
             }
         }
 
         suspend fun stop() {
-            mBytesRead = 0
-            oldSpeed = -1
+            tracker.reset()
             mutex.withLock {
-                mContentLengthMap.clear()
-                mReceivedSizeMap.clear()
+                contentLengthMap.clear()
+                receivedSizeMap.clear()
             }
             currentJob?.cancel()
             currentJob = null
@@ -742,48 +739,43 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
         suspend fun onDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {
             mutex.withLock {
-                mContentLengthMap.put(index, contentLength)
-                mReceivedSizeMap.put(index, receivedSize)
+                contentLengthMap.put(index, contentLength)
+                receivedSizeMap.put(index, receivedSize)
             }
-            mBytesRead += bytesRead.toLong()
+            tracker.track(bytesRead)
         }
 
         suspend fun onDone(index: Int) {
             mutex.withLock {
-                mContentLengthMap.delete(index)
-                mReceivedSizeMap.delete(index)
+                contentLengthMap.delete(index)
+                receivedSizeMap.delete(index)
             }
         }
 
         suspend fun onFinish() {
             mutex.withLock {
-                mContentLengthMap.clear()
-                mReceivedSizeMap.clear()
+                contentLengthMap.clear()
+                receivedSizeMap.clear()
             }
         }
 
-        private suspend fun runInternal() {
+        private suspend fun updateSpeed(speed: Long) {
             mCurrentTask?.let { info ->
-                var newSpeed = mBytesRead / 2
-                if (oldSpeed != -1L) {
-                    newSpeed = lerp(oldSpeed, newSpeed, 0.75f)
-                }
-                oldSpeed = newSpeed
-                info.speed = newSpeed
+                info.speed = speed
 
                 // Calculate remaining
                 if (info.total <= 0) {
                     info.remaining = -1
-                } else if (newSpeed == 0L) {
+                } else if (speed == 0L) {
                     info.remaining = 300L * 24L * 60L * 60L * 1000L // 300 days
                 } else {
                     var downloadingCount = 0
                     var downloadingContentLengthSum = 0L
                     var totalSize = 0L
                     mutex.withLock {
-                        for (i in 0..<mContentLengthMap.size()) {
-                            val contentLength = mContentLengthMap.valueAt(i)
-                            val receivedSize = mReceivedSizeMap.valueAt(i)
+                        for (i in 0..<contentLengthMap.size()) {
+                            val contentLength = contentLengthMap.valueAt(i)
+                            val receivedSize = receivedSizeMap.valueAt(i)
                             downloadingCount++
                             downloadingContentLengthSum += contentLength
                             totalSize += contentLength - receivedSize
@@ -791,14 +783,12 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                     }
                     if (downloadingCount != 0) {
                         totalSize += downloadingContentLengthSum * (info.total - info.downloaded - downloadingCount) / downloadingCount
-                        info.remaining = totalSize / newSpeed * 1000
+                        info.remaining = totalSize / speed * 1000
                     }
                 }
                 mDownloadListener?.onDownload(info)
                 mutableNotifyFlow.emit(info)
             }
-            mBytesRead = 0
-            delay(2000)
         }
     }
 

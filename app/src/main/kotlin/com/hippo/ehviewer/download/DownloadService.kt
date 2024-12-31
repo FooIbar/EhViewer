@@ -246,7 +246,7 @@ class DownloadService :
 
     override fun onDownload(info: DownloadInfo) {
         val speed = info.speed.coerceAtLeast(0)
-        val speedText = FileUtils.humanReadableByteCount(speed, false) + "/s"
+        val speedText = FileUtils.humanReadableByteCount(speed) + "/s"
         val remaining = info.remaining
         val text = if (remaining >= 0) {
             val interval = ReadableTime.getShortTimeInterval(remaining)

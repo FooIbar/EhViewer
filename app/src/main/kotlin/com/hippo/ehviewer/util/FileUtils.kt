@@ -40,16 +40,13 @@ object FileUtils {
      * @param si    si units
      * @return the human readable string
      */
-    fun humanReadableByteCount(bytes: Long, si: Boolean): String {
-        val unit = if (si) 1000 else 1024
-        if (bytes < unit) return "$bytes B"
-        val exp = (ln(bytes.toDouble()) / ln(unit.toDouble())).toInt()
-        val pre = (if (si) "kMGTPE" else "KMGTPE")[exp - 1].toString() + if (si) "" else "i"
-        return String.format(
+    fun humanReadableByteCount(bytes: Long): String {
+        if (bytes < 1024) return "$bytes B"
+        val exp = (ln(bytes.toDouble()) / ln(1024f)).toInt()
+        return "%.1f %sB".format(
             Locale.US,
-            "%.1f %sB",
-            bytes / unit.toDouble().pow(exp.toDouble()),
-            pre,
+            bytes / 1024.toDouble().pow(exp.toDouble()),
+            ("KMGTPE")[exp - 1].toString() + "i",
         )
     }
 
