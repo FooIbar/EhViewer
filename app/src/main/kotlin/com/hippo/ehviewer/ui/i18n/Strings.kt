@@ -313,8 +313,8 @@ interface Strings {
     val settingsDownloadConcurrencySummary: (Int) -> String
     val settingsDownloadDownloadDelay: String
     val settingsDownloadDownloadDelaySummary: (Int) -> String
-    val settingsDownloadDownloadTimeout: String
     val settingsDownloadConnectionTimeout: String
+    val settingsDownloadTimeoutSpeed: String
     val settingsDownloadPreloadImage: String
     val settingsDownloadPreloadImageSummary: (Int) -> String
     val settingsDownloadDownloadOriginImage: String

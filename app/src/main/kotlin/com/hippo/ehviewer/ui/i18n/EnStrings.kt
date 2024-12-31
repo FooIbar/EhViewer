@@ -308,8 +308,8 @@ object EnStrings : Strings {
     override val settingsDownloadConcurrencySummary = { a: Int -> "Up to $a images" }
     override val settingsDownloadDownloadDelay = "Download delay"
     override val settingsDownloadDownloadDelaySummary = { a: Int -> "Delay $a ms per download" }
-    override val settingsDownloadDownloadTimeout = "Download timeout (in seconds)"
     override val settingsDownloadConnectionTimeout = "Connection timeout (in seconds)"
+    override val settingsDownloadTimeoutSpeed = "Minimum response speed (in KB/s)"
     override val settingsDownloadPreloadImage = "Preload image"
     override val settingsDownloadPreloadImageSummary = { a: Int -> "Preload next $a image" }
     override val settingsDownloadDownloadOriginImage = "Download original image"

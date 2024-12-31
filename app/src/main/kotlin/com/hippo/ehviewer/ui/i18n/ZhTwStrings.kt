@@ -397,7 +397,6 @@ object ZhTwStrings : Strings by EnStrings {
     override val downloadStartAllReversed = "全部開始（倒序）"
     override val settingsDownloadDownloadDelay = "下載延時"
     override val settingsDownloadDownloadDelaySummary = { a: Int -> "每次下載延時 $a 毫秒" }
-    override val settingsDownloadDownloadTimeout = "下載超時（秒）"
     override val noBrowserInstalled = "請安裝一個瀏覽器。"
     override val toplistAlltime = "從始至終"
     override val toplistPastyear = "過去一年"

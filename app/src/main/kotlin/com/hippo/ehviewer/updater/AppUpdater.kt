@@ -4,11 +4,9 @@ import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.executeAndParseAs
-import com.hippo.ehviewer.client.executeSafely
+import com.hippo.ehviewer.ui.tools.timeoutBySpeed
 import com.hippo.ehviewer.util.copyTo
-import com.hippo.ehviewer.util.ensureSuccess
 import com.hippo.files.write
-import io.ktor.client.plugins.timeout
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.header
 import io.ktor.client.request.prepareGet
@@ -70,24 +68,22 @@ object AppUpdater {
         return null
     }
 
-    suspend fun downloadUpdate(url: String, path: Path) = ghStatement(url) {
-        timeout {
-            connectTimeoutMillis = Settings.connTimeout * 1000L
-            requestTimeoutMillis = 60_000
-        }
-    }.executeSafely { response ->
-        response.status.ensureSuccess()
-        if (url.endsWith("zip")) {
-            response.bodyAsChannel().toInputStream().use { stream ->
-                ZipInputStream(stream).use { zip ->
-                    zip.nextEntry
-                    path.write { transferFrom(zip.asSource()) }
+    suspend fun downloadUpdate(url: String, path: Path) = timeoutBySpeed(
+        { ghStatement(url, builder = it) },
+        { _, _, _ -> },
+        { response ->
+            if (url.endsWith("zip")) {
+                response.bodyAsChannel().toInputStream().use { stream ->
+                    ZipInputStream(stream).use { zip ->
+                        zip.nextEntry
+                        path.write { transferFrom(zip.asSource()) }
+                    }
                 }
+            } else {
+                response.bodyAsChannel().copyTo(path)
             }
-        } else {
-            response.bodyAsChannel().copyTo(path)
-        }
-    }
+        },
+    )
 }
 
 private suspend inline fun ghStatement(
