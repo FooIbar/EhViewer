@@ -60,7 +60,7 @@ suspend inline fun <R> timeoutBySpeed(
     crossinline req: suspend (HttpRequestBuilder.() -> Unit) -> HttpStatement,
     crossinline l: suspend (Long, Long, Int) -> Unit,
     crossinline f: suspend (HttpResponse) -> R,
-) = SpeedTracker(2.seconds).apply {
+) = with(SpeedTracker(2.seconds)) {
     var prev = 0L
     req {
         onDownload { done, total ->
