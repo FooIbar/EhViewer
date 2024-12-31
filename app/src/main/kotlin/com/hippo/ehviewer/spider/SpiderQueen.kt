@@ -638,14 +638,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     repeat(2) { times ->
                         runCatching {
                             logcat(WORKER_DEBUG_TAG) { "Start download image $index attempt #$times" }
-                            val success = spiderDen.makeHttpCallAndSaveImage(
+                            spiderDen.makeHttpCallAndSaveImage(
                                 index,
                                 targetImageUrl,
                                 referer,
                                 this@SpiderQueen::notifyPageDownload.partially1(index),
                             )
-
-                            check(success)
                             logcat(WORKER_DEBUG_TAG) { "Download image $index succeed" }
                             updatePageState(index, STATE_FINISHED)
                             return

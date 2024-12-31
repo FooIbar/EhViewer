@@ -38,8 +38,11 @@ import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.download.tempDownloadDir
 import com.hippo.ehviewer.image.PathSource
 import com.hippo.ehviewer.jni.archiveFdBatch
+import com.hippo.ehviewer.ui.tools.SpeedTracker
 import com.hippo.ehviewer.util.FileUtils
+import com.hippo.ehviewer.util.LowSpeedException
 import com.hippo.ehviewer.util.copyTo
+import com.hippo.ehviewer.util.ensureSuccess
 import com.hippo.ehviewer.util.sendTo
 import com.hippo.ehviewer.util.sha1
 import com.hippo.files.delete
@@ -56,12 +59,16 @@ import io.ktor.client.plugins.timeout
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsChannel
 import io.ktor.client.statement.request
-import io.ktor.http.isSuccess
 import io.ktor.utils.io.copyTo
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import okio.Path
 
 class SpiderDen(val info: GalleryInfo) {
@@ -72,7 +79,6 @@ class SpiderDen(val info: GalleryInfo) {
     private var tempDownloadDir: Path? = null
     private val saveAsCbz = Settings.saveAsCbz
     private val archiveName = "$gid.cbz"
-    private val downloadTimeout = Settings.downloadTimeout * 1000L
 
     private val lock = ReentrantReadWriteLock()
 
@@ -170,21 +176,39 @@ class SpiderDen(val info: GalleryInfo) {
         url: String,
         referer: String?,
         notifyProgress: (Long, Long, Int) -> Unit,
-    ) = ehRequest(url, referer) {
-        var prev = 0L
-        onDownload { done, total ->
-            notifyProgress(total!!, done, (done - prev).toInt())
-            prev = done
-        }
-        timeout {
-            connectTimeoutMillis = Settings.connTimeout * 1000L
-            requestTimeoutMillis = downloadTimeout
-        }
-    }.executeSafely {
-        if (it.status.isSuccess()) {
-            saveFromHttpResponse(index, it)
-        } else {
-            false
+    ) {
+        val tracker = SpeedTracker(2.seconds)
+        return ehRequest(url, referer) {
+            var prev = 0L
+            onDownload { done, total ->
+                val bytesRead = (done - prev).toInt()
+                tracker.track(bytesRead)
+                notifyProgress(total!!, done, bytesRead)
+                prev = done
+            }
+            timeout { connectTimeoutMillis = Settings.connTimeout * 1000L }
+        }.executeSafely { resp ->
+            resp.status.ensureSuccess()
+            val timeoutSpeed = Settings.timeoutSpeed * 1024.0
+            coroutineScope {
+                val work = async { check(saveFromHttpResponse(index, resp)) }
+                val job = launch {
+                    delay(4.seconds) // Tolerant 4 secs for receiving
+                    tracker.speedFlow(2.seconds).collect { speed ->
+                        if (speed < timeoutSpeed) {
+                            throw LowSpeedException(
+                                resp.request.url.toString(),
+                                speed.toLong(),
+                            )
+                        }
+                    }
+                }
+                try {
+                    work.await()
+                } finally {
+                    job.cancel()
+                }
+            }
         }
     }
 

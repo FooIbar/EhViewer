@@ -286,7 +286,6 @@ object JaStrings : Strings by EnStrings {
     override val settingsDownloadConcurrencySummary = { a: Int -> "同時に最大 $a 枚の画像をダウンロードします" }
     override val settingsDownloadDownloadDelay = "ダウンロードの遅延"
     override val settingsDownloadDownloadDelaySummary = { a: Int -> "ダウンロードで $a ミリ秒の遅延をさせます" }
-    override val settingsDownloadDownloadTimeout = "ダウンロードのタイムアウト (秒単位)"
     override val settingsDownloadPreloadImage = "画像をプリロード"
     override val settingsDownloadPreloadImageSummary = { a: Int -> "$a 枚の画像をプリロードします" }
     override val settingsDownloadDownloadOriginImage = "オリジナルの画像をダウンロードする"

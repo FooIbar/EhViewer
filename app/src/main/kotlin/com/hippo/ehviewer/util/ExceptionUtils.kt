@@ -20,7 +20,13 @@ import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
+import kotlinx.io.IOException
 import splitties.init.appCtx
+
+class LowSpeedException(
+    url: String,
+    speed: Long,
+) : IOException("Response speed too slow [url=$url, speed=${FileUtils.humanReadableByteCount(speed)}")
 
 fun Throwable.displayString(): String = when (this) {
     is HttpRequestTimeoutException,
