@@ -26,12 +26,10 @@ import splitties.init.appCtx
 class LowSpeedException(
     url: String,
     speed: Long,
-) : IOException("Response speed too slow [url=$url, speed=${FileUtils.humanReadableByteCount(speed)}")
+) : IOException("Response speed too slow [url=$url, speed=${FileUtils.humanReadableByteCount(speed)}]")
 
 fun Throwable.displayString(): String = when (this) {
-    is HttpRequestTimeoutException,
-    is ConnectTimeoutException, is SocketTimeoutException,
-    -> appCtx.getString(R.string.error_timeout)
+    is HttpRequestTimeoutException, is ConnectTimeoutException, is SocketTimeoutException, is LowSpeedException -> appCtx.getString(R.string.error_timeout)
 
     else -> {
         logcat(this)
