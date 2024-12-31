@@ -38,8 +38,10 @@ import com.hippo.ehviewer.client.parser.GalleryDetailParser.parsePreviewPages
 import com.hippo.ehviewer.client.parser.GalleryMultiPageViewerPTokenParser
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.util.displayString
+import com.hippo.ehviewer.util.isHAtHTimeoutException
 import com.hippo.files.find
 import eu.kanade.tachiyomi.util.system.logcat
+import io.ktor.http.Url
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
@@ -635,6 +637,12 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     }
                     checkNotNull(targetImageUrl)
 
+                    val host = Url(targetImageUrl).host
+                    if (Settings.hAtHBlacklist && blacklist.blacklist.containsKey(host)) {
+                        logcat(WORKER_DEBUG_TAG) { "$host hits H@H blacklist" }
+                        return@repeat
+                    }
+
                     runCatching {
                         logcat(WORKER_DEBUG_TAG) { "Start download image $index" }
                         spiderDen.makeHttpCallAndSaveImage(
@@ -648,7 +656,10 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         return
                     }.onFailure {
                         spiderDen.removeIntermediateFiles(index)
-                        logcat(WORKER_DEBUG_TAG) { "Download image $index attempt" }
+                        logcat(WORKER_DEBUG_TAG) { "Download image $index failed" }
+                        if (Settings.hAtHBlacklist && it.isHAtHTimeoutException()) {
+                            appendHAtHBlacklist(host)
+                        }
                         when (it) {
                             is CancellationException, is FileNotFoundException -> throw it
                         }
