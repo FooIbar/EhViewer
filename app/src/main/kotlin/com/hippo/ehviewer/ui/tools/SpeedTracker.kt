@@ -4,6 +4,7 @@ import androidx.collection.MutableObjectIntMap
 import androidx.collection.mutableObjectIntMapOf
 import arrow.fx.coroutines.fixedRate
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.flow.map
@@ -32,7 +33,7 @@ class SpeedTracker(val window: Duration = 1.seconds) {
             start?.let { start ->
                 val now = TimeSource.Monotonic.markNow()
                 val passed = now - start
-                val window = passed.coerceAtMost(window)
+                val window = passed.coerceIn(10.milliseconds, window)
                 val cutoff = now - window
                 received.removeIf { time, _ -> time < cutoff }
                 received.fold(0) { total, _, v -> total + v } / (window / 1.seconds)
