@@ -190,7 +190,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
                 maxValue = 1024,
                 minValue = 0,
                 step = 7,
-                title = settingsDownloadConnectionTimeout,
+                title = settingsDownloadTimeoutSpeed,
                 value = Settings::timeoutSpeed,
             )
             val preloadImage = Settings::preloadImage.observed
