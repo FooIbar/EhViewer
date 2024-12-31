@@ -712,8 +712,8 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
     }
 
     private val mSpeedReminder = object {
-        private val mContentLengthMap = SparseLongArray()
-        private val mReceivedSizeMap = SparseLongArray()
+        private val contentLengthMap = SparseLongArray()
+        private val receivedSizeMap = SparseLongArray()
         private val tracker = SpeedTracker()
         private val mutex = Mutex()
         private var currentJob: Job? = null
@@ -721,7 +721,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
             if (currentJob == null) {
                 currentJob = launch {
                     tracker.speedFlow().collect { speed ->
-                        runInternal(speed.toLong())
+                        updateSpeed(speed.toLong())
                     }
                 }
             }
@@ -730,8 +730,8 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
         suspend fun stop() {
             tracker.reset()
             mutex.withLock {
-                mContentLengthMap.clear()
-                mReceivedSizeMap.clear()
+                contentLengthMap.clear()
+                receivedSizeMap.clear()
             }
             currentJob?.cancel()
             currentJob = null
@@ -739,27 +739,27 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
 
         suspend fun onDownload(index: Int, contentLength: Long, receivedSize: Long, bytesRead: Int) {
             mutex.withLock {
-                mContentLengthMap.put(index, contentLength)
-                mReceivedSizeMap.put(index, receivedSize)
+                contentLengthMap.put(index, contentLength)
+                receivedSizeMap.put(index, receivedSize)
             }
             tracker.track(bytesRead)
         }
 
         suspend fun onDone(index: Int) {
             mutex.withLock {
-                mContentLengthMap.delete(index)
-                mReceivedSizeMap.delete(index)
+                contentLengthMap.delete(index)
+                receivedSizeMap.delete(index)
             }
         }
 
         suspend fun onFinish() {
             mutex.withLock {
-                mContentLengthMap.clear()
-                mReceivedSizeMap.clear()
+                contentLengthMap.clear()
+                receivedSizeMap.clear()
             }
         }
 
-        private suspend fun runInternal(speed: Long) {
+        private suspend fun updateSpeed(speed: Long) {
             mCurrentTask?.let { info ->
                 info.speed = speed
 
@@ -773,9 +773,9 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                     var downloadingContentLengthSum = 0L
                     var totalSize = 0L
                     mutex.withLock {
-                        for (i in 0..<mContentLengthMap.size()) {
-                            val contentLength = mContentLengthMap.valueAt(i)
-                            val receivedSize = mReceivedSizeMap.valueAt(i)
+                        for (i in 0..<contentLengthMap.size()) {
+                            val contentLength = contentLengthMap.valueAt(i)
+                            val receivedSize = receivedSizeMap.valueAt(i)
                             downloadingCount++
                             downloadingContentLengthSum += contentLength
                             totalSize += contentLength - receivedSize
