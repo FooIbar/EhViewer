@@ -28,11 +28,9 @@ class LowSpeedException(
     speed: Long,
 ) : IOException("Response speed too slow [url=$url, speed=${FileUtils.humanReadableByteCount(speed)}]")
 
-fun Throwable.displayString(): String = when (this) {
-    is HttpRequestTimeoutException, is ConnectTimeoutException, is SocketTimeoutException, is LowSpeedException -> appCtx.getString(R.string.error_timeout)
-
-    else -> {
-        logcat(this)
-        message ?: appCtx.getString(R.string.error_unknown)
+fun Throwable.displayString(): String = logcat(this).let {
+    when (this) {
+        is HttpRequestTimeoutException, is ConnectTimeoutException, is SocketTimeoutException, is LowSpeedException -> appCtx.getString(R.string.error_timeout)
+        else -> message ?: appCtx.getString(R.string.error_unknown)
     }
 }
