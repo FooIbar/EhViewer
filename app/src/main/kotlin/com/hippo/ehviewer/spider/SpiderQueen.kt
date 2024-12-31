@@ -635,26 +635,24 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     }
                     checkNotNull(targetImageUrl)
 
-                    repeat(2) { times ->
-                        runCatching {
-                            logcat(WORKER_DEBUG_TAG) { "Start download image $index attempt #$times" }
-                            spiderDen.makeHttpCallAndSaveImage(
-                                index,
-                                targetImageUrl,
-                                referer,
-                                this@SpiderQueen::notifyPageDownload.partially1(index),
-                            )
-                            logcat(WORKER_DEBUG_TAG) { "Download image $index succeed" }
-                            updatePageState(index, STATE_FINISHED)
-                            return
-                        }.onFailure {
-                            spiderDen.removeIntermediateFiles(index)
-                            logcat(WORKER_DEBUG_TAG) { "Download image $index attempt #$times failed" }
-                            when (it) {
-                                is CancellationException, is FileNotFoundException -> throw it
-                            }
-                            error = it.displayString()
+                    runCatching {
+                        logcat(WORKER_DEBUG_TAG) { "Start download image $index" }
+                        spiderDen.makeHttpCallAndSaveImage(
+                            index,
+                            targetImageUrl,
+                            referer,
+                            this@SpiderQueen::notifyPageDownload.partially1(index),
+                        )
+                        logcat(WORKER_DEBUG_TAG) { "Download image $index succeed" }
+                        updatePageState(index, STATE_FINISHED)
+                        return
+                    }.onFailure {
+                        spiderDen.removeIntermediateFiles(index)
+                        logcat(WORKER_DEBUG_TAG) { "Download image $index attempt" }
+                        when (it) {
+                            is CancellationException, is FileNotFoundException -> throw it
                         }
+                        error = it.displayString()
                     }
                 }
             }.onFailure {
