@@ -193,6 +193,10 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
                 title = settingsDownloadTimeoutSpeed,
                 value = Settings::timeoutSpeed,
             )
+            SwitchPreference(
+                title = settingsDownloadHAtHBlacklist,
+                value = Settings::hAtHBlacklist,
+            )
             val preloadImage = Settings::preloadImage.observed
             SimpleMenuPreferenceInt(
                 title = settingsDownloadPreloadImage,
