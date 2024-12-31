@@ -195,7 +195,7 @@ class SpiderDen(val info: GalleryInfo) {
                 val job = launch {
                     delay(4.seconds) // Tolerant 4 secs for receiving
                     tracker.speedFlow(2.seconds).collect { speed ->
-                        if (speed < timeoutSpeed) {
+                        if (timeoutSpeed != 0.0 && speed < timeoutSpeed) {
                             throw LowSpeedException(
                                 resp.request.url.toString(),
                                 speed.toLong(),
