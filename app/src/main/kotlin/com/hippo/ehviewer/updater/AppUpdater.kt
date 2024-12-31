@@ -4,7 +4,7 @@ import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.executeAndParseAs
-import com.hippo.ehviewer.ui.tools.timeoutBySpeed
+import com.hippo.ehviewer.spider.timeoutBySpeed
 import com.hippo.ehviewer.util.copyTo
 import com.hippo.files.write
 import io.ktor.client.request.HttpRequestBuilder

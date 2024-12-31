@@ -148,6 +148,7 @@ object Settings : DataStorePreferences(null) {
     var launchPage by intPref("launch_page_2", 0)
     var commentThreshold by intPref("comment_threshold", -101)
     var hardwareBitmapThreshold by intPref("hardware_bitmap_threshold", 16384)
+    var hAtHBlacklist by boolPref("H@H_blacklist", false).observed { updateWhenHAtHBlacklistChanges() }
     var showComments by boolPref("show_gallery_comments", true)
     var requestNews by boolPref("request_news", false).observed { updateWhenRequestNewsChanges() }
     var hideHvEvents by boolPref("hide_hv_events", false)

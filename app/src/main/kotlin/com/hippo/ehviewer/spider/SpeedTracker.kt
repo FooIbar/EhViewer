@@ -1,4 +1,4 @@
-package com.hippo.ehviewer.ui.tools
+package com.hippo.ehviewer.spider
 
 import androidx.collection.MutableObjectIntMap
 import androidx.collection.mutableObjectIntMapOf
@@ -17,25 +17,26 @@ import io.ktor.client.statement.HttpStatement
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.TimeSource
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 class SpeedTracker(val window: Duration = 1.seconds) {
     private val mutex = Mutex()
-    private val received = mutableObjectIntMapOf<TimeSource.Monotonic.ValueTimeMark>()
-    private var start: TimeSource.Monotonic.ValueTimeMark? = null
+    private val received = mutableObjectIntMapOf<Instant>()
+    private var start: Instant? = null
 
     suspend fun reset() = mutex.withLock {
         received.clear()
         start = null
     }
 
-    suspend fun track(bytes: Int) = TimeSource.Monotonic.markNow().let { now ->
+    suspend fun track(bytes: Int) = Clock.System.now().let { now ->
         mutex.withLock {
             start = start ?: now
             received[now] = bytes
@@ -45,7 +46,7 @@ class SpeedTracker(val window: Duration = 1.seconds) {
     fun speedFlow(sample: Duration = 1.seconds) = fixedRate(sample).map {
         mutex.withLock {
             start?.let { start ->
-                val now = TimeSource.Monotonic.markNow()
+                val now = Clock.System.now()
                 val passed = now - start
                 val window = passed.coerceIn(10.milliseconds, window)
                 val cutoff = now - window
