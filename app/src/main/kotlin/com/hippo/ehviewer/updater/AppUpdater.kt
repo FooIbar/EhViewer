@@ -69,6 +69,7 @@ object AppUpdater {
     }
 
     suspend fun downloadUpdate(url: String, path: Path) = timeoutBySpeed(
+        url,
         { ghStatement(url, builder = it) },
         { _, _, _ -> },
         { response ->

@@ -1,11 +1,11 @@
 package com.hippo.ehviewer.ktor
 
 import com.hippo.ehviewer.BuildConfig
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhCookieStore
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngineConfig
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.HttpTimeoutConfig
 import io.ktor.client.plugins.SaveBodyPlugin
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.cookies.HttpCookies
@@ -22,7 +22,7 @@ fun <T : HttpClientEngineConfig> HttpClientConfig<T>.configureCommon(redirect: B
         storage = EhCookieStore
     }
     install(HttpTimeout) {
-        connectTimeoutMillis = Settings.connTimeout * 1000L
+        reset()
         requestTimeoutMillis = 10_000
     }
     install(UserAgent) {
@@ -36,4 +36,10 @@ fun <T : HttpClientEngineConfig> HttpClientConfig<T>.configureCommon(redirect: B
     install(SaveBodyPlugin) {
         disabled = true
     }
+}
+
+fun HttpTimeoutConfig.reset() = apply {
+    requestTimeoutMillis = HttpTimeoutConfig.INFINITE_TIMEOUT_MS
+    connectTimeoutMillis = HttpTimeoutConfig.INFINITE_TIMEOUT_MS
+    socketTimeoutMillis = HttpTimeoutConfig.INFINITE_TIMEOUT_MS
 }
