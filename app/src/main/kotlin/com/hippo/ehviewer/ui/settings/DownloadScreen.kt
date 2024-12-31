@@ -182,7 +182,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
             IntSliderPreference(
                 maxValue = 20,
                 minValue = 5,
-                step = 1,
+                step = 14,
                 title = settingsDownloadConnectionTimeout,
                 value = Settings::connTimeout,
             )
