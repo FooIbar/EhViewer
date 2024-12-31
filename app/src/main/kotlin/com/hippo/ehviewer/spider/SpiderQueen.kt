@@ -578,6 +578,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             var forceHtml = false
             val original = Settings.downloadOriginImage || orgImg
             runSuspendCatching {
+                var lasthost: String? = null
                 repeat(3) { retries ->
                     var imageUrl: String? = null
                     var localShowKey: String?
@@ -638,9 +639,17 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                     checkNotNull(targetImageUrl)
 
                     val host = Url(targetImageUrl).host
-                    if (Settings.hAtHBlacklist && blacklist.blacklist.containsKey(host)) {
-                        logcat(WORKER_DEBUG_TAG) { "$host hits H@H blacklist" }
-                        return@repeat
+                    synchronized(blacklist) {
+                        if (lasthost == host) {
+                            blacklist.blacklist.remove(host)
+                            logcat(WORKER_DEBUG_TAG) { "Drop $host from H@H blacklist as its resource is unique for now!" }
+                        }
+
+                        if (Settings.hAtHBlacklist && blacklist.blacklist.containsKey(host)) {
+                            logcat(WORKER_DEBUG_TAG) { "$host hits H@H blacklist!" }
+                            lasthost = host
+                            return@repeat
+                        }
                     }
 
                     runCatching {
