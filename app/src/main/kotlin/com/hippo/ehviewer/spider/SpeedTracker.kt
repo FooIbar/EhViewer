@@ -15,6 +15,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.HttpStatement
 import kotlin.math.pow
+import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -97,7 +98,7 @@ suspend inline fun <R> timeoutBySpeed(
     }
 }
 
-fun speedLevelToSpeed(level: Int) = 2f.pow(level).toInt()
+fun speedLevelToSpeed(level: Int) = 2f.pow(level).roundToInt()
 
 inline fun <T, R> MutableObjectIntMap<T>.fold(initial: R, operation: (acc: R, T, Int) -> R): R {
     var accumulator = initial
