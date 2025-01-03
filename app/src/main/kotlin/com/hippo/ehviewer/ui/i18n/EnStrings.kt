@@ -2,7 +2,7 @@ package com.hippo.ehviewer.ui.i18n
 
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 
 object EnStrings : Strings {
@@ -361,7 +361,7 @@ object EnStrings : Strings {
     override val settingsAboutDeclarationSummary = "EhViewer is not affiliated with E-Hentai.org in any way"
     override val settingsAboutAuthor = "Author"
     override val settingsAboutAuthorSummary = buildAnnotatedString {
-        withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
+        withStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) {
             appendLine("Hippo")
             appendLine("NekoInverter")
             appendLine("飛鳥澪")
