@@ -576,7 +576,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             var forceHtml = false
             val original = Settings.downloadOriginImage || orgImg
             runSuspendCatching {
-                var lasthost: String? = null
                 repeat(3) { retries ->
                     var imageUrl: String? = null
                     var localShowKey: String?
