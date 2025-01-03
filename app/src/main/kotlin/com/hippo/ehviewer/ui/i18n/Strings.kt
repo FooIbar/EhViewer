@@ -315,7 +315,6 @@ interface Strings {
     val settingsDownloadDownloadDelaySummary: (Int) -> String
     val settingsDownloadConnectionTimeout: String
     val settingsDownloadTimeoutSpeed: String
-    val settingsDownloadHAtHBlacklist: String
     val settingsDownloadPreloadImage: String
     val settingsDownloadPreloadImageSummary: (Int) -> String
     val settingsDownloadDownloadOriginImage: String
