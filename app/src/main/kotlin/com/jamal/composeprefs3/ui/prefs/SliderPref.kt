@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.ui.main.RollingNumber
+import kotlin.math.roundToInt
 
 @Composable
 fun SliderPref(
@@ -72,7 +73,7 @@ fun SliderPref(
             )
             if (showValue) {
                 RollingNumber(
-                    number = display(value).toInt(),
+                    number = display(value).roundToInt(),
                     color = textColor,
                     modifier = Modifier.weight(0.5f),
                 )
