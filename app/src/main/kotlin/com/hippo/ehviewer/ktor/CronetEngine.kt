@@ -130,7 +130,6 @@ class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cr
             data.body.toUploadDataProvider()?.let { setUploadDataProvider(it, executor) }
         }.build().apply {
             start()
-            continuation.invokeOnCancellation { cancel() }
             callContext.job.invokeOnCompletion { cancel() }
         }
     }

@@ -167,7 +167,7 @@ class SpiderDen(val info: GalleryInfo) {
     ) = timeoutBySpeed(
         url,
         { ehRequest(url, referer, builder = it) },
-        { a, b, c -> notifyProgress(a, b, c) },
+        notifyProgress,
         { resp -> check(saveFromHttpResponse(index, resp)) },
     )
 

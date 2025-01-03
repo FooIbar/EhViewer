@@ -20,14 +20,8 @@ import eu.kanade.tachiyomi.util.system.logcat
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
-import javax.net.ssl.SSLHandshakeException
 import kotlinx.io.IOException
 import splitties.init.appCtx
-
-fun Throwable.isHAtHTimeoutException() = when (this) {
-    is HttpRequestTimeoutException, is ConnectTimeoutException, is SocketTimeoutException, is LowSpeedException, is SSLHandshakeException -> true
-    else -> false
-}
 
 class LowSpeedException(
     url: String,
