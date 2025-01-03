@@ -14,6 +14,7 @@ import io.ktor.client.plugins.timeout
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.HttpStatement
+import kotlin.math.pow
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -81,7 +82,7 @@ suspend inline fun <R> timeoutBySpeed(
         watchdog.cancel()
         resp.status.ensureSuccess()
         val speedWatchdog = launch {
-            val timeoutSpeed = Settings.timeoutSpeed * 1024.0
+            val timeoutSpeed = speedLevelToSpeed(Settings.timeoutSpeed) * 1024.0
             tracker.speedFlow(1.seconds).collect { speed ->
                 if (timeoutSpeed != 0.0 && speed < timeoutSpeed) {
                     throw LowSpeedException(url, speed.toLong())
@@ -95,6 +96,8 @@ suspend inline fun <R> timeoutBySpeed(
         }
     }
 }
+
+fun speedLevelToSpeed(level: Int) = 2f.pow(level).toInt()
 
 inline fun <T, R> MutableObjectIntMap<T>.fold(initial: R, operation: (acc: R, T, Int) -> R): R {
     var accumulator = initial

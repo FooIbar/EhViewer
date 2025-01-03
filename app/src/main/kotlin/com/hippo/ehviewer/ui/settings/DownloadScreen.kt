@@ -50,6 +50,7 @@ import com.hippo.ehviewer.spider.SpiderDen
 import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromPath
+import com.hippo.ehviewer.spider.speedLevelToSpeed
 import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.ui.tools.observed
@@ -187,11 +188,12 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = c
                 value = Settings::connTimeout,
             )
             IntSliderPreference(
-                maxValue = 1024,
-                minValue = 0,
-                step = 7,
+                maxValue = 10,
+                minValue = 4,
+                step = 5,
                 title = settingsDownloadTimeoutSpeed,
                 value = Settings::timeoutSpeed,
+                display = ::speedLevelToSpeed,
             )
             SwitchPreference(
                 title = settingsDownloadHAtHBlacklist,
