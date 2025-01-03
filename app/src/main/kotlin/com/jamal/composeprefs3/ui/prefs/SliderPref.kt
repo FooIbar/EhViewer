@@ -34,6 +34,7 @@ fun SliderPref(
     textColor: Color = MaterialTheme.colorScheme.onBackground,
     enabled: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
+    display: (Float) -> Float = { it },
 ) {
     var value by remember { mutableFloatStateOf(defaultValue) }
     Column(
@@ -72,7 +73,7 @@ fun SliderPref(
             )
             if (showValue) {
                 RollingNumber(
-                    number = value.roundToInt(),
+                    number = display(value).roundToInt(),
                     color = textColor,
                     modifier = Modifier.weight(0.5f),
                 )
