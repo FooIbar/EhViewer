@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.dailycheck.updateDailyCheckWork
-import com.hippo.ehviewer.spider.trimHAtHBlacklist
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
 import com.hippo.ehviewer.util.isAtLeastS
 import eu.kanade.tachiyomi.util.lang.launchIO
@@ -67,10 +66,4 @@ fun updateWhenGallerySiteChanges() {
 
 fun updateWhenTagTranslationChanges() {
     EhTagDatabase.launchUpdate()
-}
-
-fun updateWhenHAtHBlacklistChanges() {
-    collectScope.launchIO {
-        trimHAtHBlacklist()
-    }
 }
