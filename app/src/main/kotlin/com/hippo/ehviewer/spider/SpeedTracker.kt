@@ -2,6 +2,7 @@ package com.hippo.ehviewer.spider
 
 import androidx.collection.MutableObjectIntMap
 import androidx.collection.mutableObjectIntMapOf
+import arrow.atomic.Atomic
 import arrow.fx.coroutines.fixedRate
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.executeSafely
@@ -27,6 +28,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.io.IOException
 
 class SpeedTracker(val window: Duration = 1.seconds) {
     private val mutex = Mutex()
@@ -59,15 +61,19 @@ class SpeedTracker(val window: Duration = 1.seconds) {
     }
 }
 
+private typealias OnTimeout = (IOException) -> Unit
+
 suspend inline fun <R> timeoutBySpeed(
     url: String,
     crossinline request: suspend (HttpRequestBuilder.() -> Unit) -> HttpStatement,
     crossinline l: suspend (Long, Long, Int) -> Unit,
     crossinline f: suspend (HttpResponse) -> R,
+    noinline t: OnTimeout = { throw it },
 ) = coroutineScope {
+    val onTimeout = Atomic<OnTimeout?>(t).let { { e: IOException -> it.getAndSet(null)?.invoke(e) } }
     val watchdog = launch {
         delay(Settings.connTimeout.seconds)
-        throw ConnectTimeoutException(url, Settings.connTimeout * 1000L)
+        onTimeout(ConnectTimeoutException(url, Settings.connTimeout * 1000L))
     }
     val tracker = SpeedTracker(2.seconds)
     request {
@@ -86,7 +92,7 @@ suspend inline fun <R> timeoutBySpeed(
             val timeoutSpeed = speedLevelToSpeed(Settings.timeoutSpeed) * 1024.0
             tracker.speedFlow(1.seconds).collect { speed ->
                 if (timeoutSpeed != 0.0 && speed < timeoutSpeed) {
-                    throw LowSpeedException(url, speed.toLong())
+                    onTimeout(LowSpeedException(url, speed.toLong()))
                 }
             }
         }
