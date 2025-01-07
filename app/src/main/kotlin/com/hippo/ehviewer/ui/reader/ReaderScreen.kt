@@ -375,7 +375,6 @@ suspend fun <T> usePageLoader(args: ReaderScreenArgs, block: suspend (PageLoader
     is ReaderScreenArgs.Gallery -> {
         val info = args.info
         val page = args.page.takeUnless { it == -1 } ?: EhDB.getReadProgress(info.gid)
-        check(page in 0..<info.pages)
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         if (archive != null) {
             useArchivePageLoader(archive, info.gid, page, info.hasAds, block = block)

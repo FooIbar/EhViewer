@@ -34,6 +34,11 @@ private const val MIN_CACHE_SIZE = 256 * 1024 * 1024
 
 context(CoroutineScope)
 abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
+
+    init {
+        require(startPage in 0..<size) { "Start page ($startPage) is out of bound of [0, $size)" }
+    }
+
     private val mutex = NamedMutex<Int>()
     private val semaphore = Semaphore(4)
 
