@@ -315,3 +315,11 @@ spotless {
         ktlint(ktlintVersion)
     }
 }
+
+// https://github.com/pdvrieze/xmlutil/issues/261
+configurations.all {
+    resolutionStrategy.dependencySubstitution {
+        substitute(module("io.github.pdvrieze.xmlutil:serialization"))
+            .using(module("io.github.pdvrieze.xmlutil:serialization-android:0.90.4-20241203.194031-11"))
+    }
+}
