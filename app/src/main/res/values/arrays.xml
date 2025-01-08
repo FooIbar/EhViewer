@@ -165,11 +165,11 @@
         <item>@string/filter_comment</item>
     </string-array>
 
-    <string-array name="tag_translation_metadata" tools:ignore="InconsistentArrays">
+    <string-array name="tag_translation_metadata">
         <item>tag-translations-zh-rCN.json.sha1</item>
-        <item>https://raw.githubusercontent.com/Ehviewer-Overhauled/EhTagTranslation/tag-translations/tag-translations/tag-translations-zh-rCN.json.sha1</item>
+        <item>https://raw.githubusercontent.com/EhTagTranslation/DatabaseReleases/refs/heads/master/sha</item>
         <item>tag-translations-zh-rCN.json</item>
-        <item>https://raw.githubusercontent.com/Ehviewer-Overhauled/EhTagTranslation/tag-translations/tag-translations/tag-translations-zh-rCN.json</item>
+        <item>https://raw.githubusercontent.com/EhTagTranslation/DatabaseReleases/refs/heads/master/db.text.json</item>
     </string-array>
 
     <string-array name="night_mode_entries" translatable="false">
