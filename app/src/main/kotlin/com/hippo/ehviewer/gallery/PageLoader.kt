@@ -33,7 +33,9 @@ private const val MAX_CACHE_SIZE = 512 * 1024 * 1024
 private const val MIN_CACHE_SIZE = 256 * 1024 * 1024
 
 context(CoroutineScope)
-abstract class PageLoader(val gid: Long, var startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
+abstract class PageLoader(val gid: Long, startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
+    var startPage = startPage.coerceIn(0, size - 1)
+
     private val mutex = NamedMutex<Int>()
     private val semaphore = Semaphore(4)
 
