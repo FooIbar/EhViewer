@@ -19,31 +19,36 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import arrow.core.Either
 import com.hippo.ehviewer.EhApplication.Companion.ktorClient
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.TagNamespace
 import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.util.AppConfig
-import com.hippo.ehviewer.util.copyTo
+import com.hippo.ehviewer.util.bodyAsUtf8Text
 import com.hippo.ehviewer.util.ensureSuccess
-import com.hippo.ehviewer.util.sha1
 import com.hippo.ehviewer.util.utf8
-import com.hippo.files.delete
-import com.hippo.files.moveTo
+import com.hippo.files.metadataOrNull
 import com.hippo.files.read
+import com.hippo.files.write
 import eu.kanade.tachiyomi.util.system.logcat
-import io.ktor.client.HttpClient
 import io.ktor.client.request.prepareGet
-import io.ktor.client.statement.bodyAsChannel
+import kotlin.time.Duration.Companion.days
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.io.Source
+import kotlinx.io.writeString
+import kotlinx.serialization.json.io.encodeToSink
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import moe.tarsin.coroutines.runSuspendCatching
-import okio.Path
 import splitties.init.appCtx
 
 object EhTagDatabase : CoroutineScope {
@@ -100,20 +105,13 @@ object EhTagDatabase : CoroutineScope {
 
     private fun String.containsIgnoreSpace(other: String, ignoreCase: Boolean = true): Boolean = removeSpace().contains(other.removeSpace(), ignoreCase)
 
-    private fun metadata(context: Context): Array<String>? = context.resources.getStringArray(R.array.tag_translation_metadata)
-        .takeIf { it.size == 4 }
+    private fun metadata(context: Context): Array<String> = context.resources.getStringArray(R.array.tag_translation_metadata)
 
     fun isTranslatable(context: Context): Boolean = context.resources.getBoolean(R.bool.tag_translatable)
 
-    private suspend fun fetch(client: HttpClient, url: String, file: Path) {
-        runCatching {
-            client.prepareGet(url).executeSafely {
-                it.status.ensureSuccess()
-                it.bodyAsChannel().copyTo(file)
-            }
-        }.onFailure {
-            file.delete()
-        }.getOrThrow()
+    private suspend fun fetch(url: String) = ktorClient.prepareGet(url).executeSafely {
+        it.status.ensureSuccess()
+        it.bodyAsUtf8Text()
     }
 
     fun launchUpdate() = launch {
@@ -127,59 +125,39 @@ object EhTagDatabase : CoroutineScope {
     }
 
     private suspend fun atomicallyUpdate() {
-        val (sha1Name, sha1Url, dataName, dataUrl) = metadata(appCtx) ?: return
+        val (sha1Name, sha1Url, dataName, dataUrl) = metadata(appCtx)
         val workdir = AppConfig.tagTranslationsDir
         val sha1File = workdir / sha1Name
         val dataFile = workdir / dataName
 
-        fun updateInMemoryData() {
-            tagGroups = dataFile.read(Source::parseAs)
-            initialized = true
-        }
+        if (!initialized) {
+            Either.catch {
+                tagGroups = dataFile.read(Source::parseAs)
+                initialized = true
 
-        // Check current sha1 and current data
-        val currentSha1 = runSuspendCatching {
-            dataFile.sha1().also {
-                check(sha1File.utf8() == it)
-                if (!initialized) updateInMemoryData()
+                // Perform only one automatic update (on app startup) per day
+                val lastModified = Instant.fromEpochMilliseconds(dataFile.metadataOrNull()!!.lastModifiedAtMillis!!)
+                if (Clock.System.now() - lastModified < 1.days) return
+            }.onLeft {
+                logcat(it)
             }
-        }.onFailure {
-            sha1File.delete()
-            dataFile.delete()
+        }
+
+        val currentSha1 = Either.catch {
+            sha1File.utf8()
         }.getOrNull()
+        val newSha1 = fetch(sha1Url)
+        if (newSha1 == currentSha1) return
 
-        // Save new sha1
-        val tempSha1File = workdir / "$sha1Name.tmp"
-        fetch(ktorClient, sha1Url, tempSha1File)
-        val tempSha1 = tempSha1File.utf8()
-
-        // Check new sha1 and current sha1
-        if (tempSha1 == currentSha1) {
-            // The data is the same
-            tempSha1File.delete()
-            return
+        val rawData = fetch(dataUrl)
+        tagGroups = json.parseToJsonElement(rawData).jsonObject["data"]!!.jsonArray.associate { e ->
+            val data = e.jsonObject
+            val namespace = data["namespace"]!!.jsonPrimitive.content
+            val prefix = if (namespace == "rows") NAMESPACE_PREFIX else TagNamespace.from(namespace)!!.prefix!!
+            prefix to data["data"]!!.jsonObject.mapValues { it.value.jsonObject["name"]!!.jsonPrimitive.content }
         }
-
-        // Save new data
-        val tempDataFile = workdir / "$dataName.tmp"
-        fetch(ktorClient, dataUrl, tempDataFile)
-
-        // Check new sha1 and new data
-        runSuspendCatching {
-            check(tempDataFile.sha1() == tempSha1)
-        }.onFailure {
-            tempSha1File.delete()
-            tempDataFile.delete()
-            throw it
-        }.onSuccess {
-            // Replace current sha1 and current data with new sha1 and new data
-            sha1File.delete()
-            dataFile.delete()
-            tempSha1File moveTo sha1File
-            tempDataFile moveTo dataFile
-
-            // Read new EhTagDatabase
-            updateInMemoryData()
-        }
+        initialized = true
+        sha1File.write { writeString(newSha1) }
+        dataFile.write { json.encodeToSink(tagGroups, this) }
     }
 }
