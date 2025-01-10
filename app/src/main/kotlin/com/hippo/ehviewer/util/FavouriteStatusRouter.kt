@@ -34,35 +34,35 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 
 object FavouriteStatusRouter {
-    fun modifyFavourites(gid: Long, slot: Int) {
-        globalFlow.tryEmit(gid to slot)
+    fun notify(galleryInfo: GalleryInfo) {
+        globalFlow.tryEmit(galleryInfo)
     }
 
     private val listenerScope = CoroutineScope(Dispatchers.IO)
 
-    val globalFlow = MutableSharedFlow<Pair<Long, Int>>(extraBufferCapacity = 1).apply {
+    val globalFlow = MutableSharedFlow<GalleryInfo>(extraBufferCapacity = 1).apply {
         listenerScope.launch {
-            collect { (gid, slot) ->
-                EhDB.updateFavoriteSlot(gid, slot)
+            collect { info ->
+                EhDB.updateFavoriteSlot(info.gid, info.favoriteSlot)
             }
         }
     }
 
-    suspend fun collect(collector: FlowCollector<Pair<Long, Int>>): Nothing = globalFlow.collect(collector)
+    suspend fun collect(collector: FlowCollector<GalleryInfo>): Nothing = globalFlow.collect(collector)
 
     @Stable
     @Composable
     inline fun <R> collectAsState(initial: GalleryInfo, crossinline transform: @DisallowComposableCalls (Int) -> R) = remember {
-        globalFlow.transform { (gid, slot) -> if (initial.gid == gid) emit(transform(slot)) }
+        globalFlow.transform { info -> if (initial.gid == info.gid) emit(transform(info.favoriteSlot)) }
     }.collectAsState(transform(initial.favoriteSlot))
 
     @Composable
     fun Observe(list: LazyPagingItems<out GalleryInfo>) {
         val realList by rememberUpdatedStateInVM(newValue = list.itemSnapshotList.items)
         launchInVM {
-            collect { (gid, newSlot) ->
-                realList.forEach { info ->
-                    if (info.gid == gid) info.favoriteSlot = newSlot
+            collect { info ->
+                realList.forEach { item ->
+                    if (item.gid == info.gid) item.favoriteSlot = info.favoriteSlot
                 }
             }
         }
