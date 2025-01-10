@@ -233,13 +233,17 @@ private suspend fun doModifyFavorites(
     slot: Int = NOT_FAVORITED,
     localFavorited: Boolean = true,
     note: String = "",
-): Boolean {
+) = with(galleryInfo) {
     val add = when (slot) {
         NOT_FAVORITED -> { // Remove from cloud favorites first
-            if (galleryInfo.favoriteSlot > LOCAL_FAVORITED) {
-                EhEngine.modifyFavorites(galleryInfo.gid, galleryInfo.token)
-            } else if (localFavorited) {
+            if (favoriteSlot > LOCAL_FAVORITED) {
+                EhEngine.modifyFavorites(gid, token)
+                favoriteSlot = if (localFavorited) LOCAL_FAVORITED else NOT_FAVORITED
+                favoriteName = null
+                favoriteNote = null
+            } else {
                 EhDB.removeLocalFavorites(galleryInfo)
+                favoriteSlot = NOT_FAVORITED
             }
             false
         }
@@ -250,30 +254,27 @@ private suspend fun doModifyFavorites(
             } else {
                 EhDB.putLocalFavorites(galleryInfo)
             }
+            // Keep cloud favorite slot
+            if (favoriteSlot == NOT_FAVORITED) {
+                favoriteSlot = LOCAL_FAVORITED
+            } else if (favoriteSlot == LOCAL_FAVORITED) {
+                favoriteSlot = NOT_FAVORITED
+            }
             !localFavorited
         }
 
         in 0..9 -> {
-            EhEngine.modifyFavorites(galleryInfo.gid, galleryInfo.token, slot, note)
-            galleryInfo.favoriteNote = note
+            EhEngine.modifyFavorites(gid, token, slot, note)
+            favoriteSlot = slot
+            favoriteName = Settings.favCat[slot]
+            favoriteNote = note
             true
         }
 
         else -> throw EhException("Invalid favorite slot!")
     }
-    if (add) { // Cloud favorites have priority
-        if (slot != LOCAL_FAVORITED || galleryInfo.favoriteSlot == NOT_FAVORITED) {
-            galleryInfo.favoriteSlot = slot
-            galleryInfo.favoriteName = Settings.favCat.getOrNull(slot)
-            FavouriteStatusRouter.modifyFavourites(galleryInfo.gid, slot)
-        }
-    } else if (slot != LOCAL_FAVORITED || galleryInfo.favoriteSlot == LOCAL_FAVORITED) {
-        val newSlot = if (galleryInfo.favoriteSlot > LOCAL_FAVORITED && localFavorited) LOCAL_FAVORITED else NOT_FAVORITED
-        galleryInfo.favoriteSlot = newSlot
-        galleryInfo.favoriteName = null
-        FavouriteStatusRouter.modifyFavourites(galleryInfo.gid, newSlot)
-    }
-    return add
+    FavouriteStatusRouter.notify(galleryInfo)
+    add
 }
 
 suspend fun removeFromFavorites(galleryInfo: BaseGalleryInfo) = doModifyFavorites(
