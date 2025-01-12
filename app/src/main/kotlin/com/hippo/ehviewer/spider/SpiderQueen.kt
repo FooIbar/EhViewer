@@ -397,9 +397,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     private fun isStateDone(state: Int): Boolean = state == STATE_FINISHED || state == STATE_FAILED
 
     fun updatePageState(index: Int, @State state: Int, error: String? = null) {
-        var oldState: Int
         synchronized<Unit>(mPageStateLock) {
-            oldState = pageStates[index]
+            val oldState = pageStates[index]
             pageStates[index] = state
             if (!isStateDone(oldState) && isStateDone(state)) {
                 mDownloadedPages.incrementAndGet()

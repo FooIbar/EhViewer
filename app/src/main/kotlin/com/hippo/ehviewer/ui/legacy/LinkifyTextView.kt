@@ -41,7 +41,7 @@ class LinkifyTextView(
                     val x = event.x + scrollX - totalPaddingLeft
                     val y = event.y + scrollY - totalPaddingTop
                     val line = layout.getLineForVertical(y.toInt())
-                    val off = layout.getOffsetForHorizontal(line, x.toFloat())
+                    val off = layout.getOffsetForHorizontal(line, x)
                     val spans = text.getSpans<URLSpan>(off, off)
                     if (spans.isNotEmpty()) {
                         onUrlClick(spans[0].url)

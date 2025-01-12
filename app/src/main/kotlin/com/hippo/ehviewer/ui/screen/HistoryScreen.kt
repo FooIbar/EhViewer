@@ -19,12 +19,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.fork.SwipeToDismissBox
 import androidx.compose.material3.fork.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -142,14 +144,14 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = co
             ) { index ->
                 val info = historyData[index]
                 if (info != null) {
-                    val dismissState = rememberSwipeToDismissBoxState(
-                        confirmValueChange = {
+                    val dismissState = rememberSwipeToDismissBoxState()
+                    LaunchedEffect(dismissState) {
+                        snapshotFlow { dismissState.currentValue }.collect {
                             if (it == SwipeToDismissBoxValue.EndToStart) {
-                                launch { EhDB.deleteHistoryInfo(info) }
+                                EhDB.deleteHistoryInfo(info)
                             }
-                            true
-                        },
-                    )
+                        }
+                    }
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {},

@@ -47,7 +47,6 @@ private val SnapAnimationSpec = SpringSpec<Float>()
  *
  * @param initialValue The initial value of the state.
  * @param density The density that this state can use to convert values to and from dp.
- * @param confirmValueChange Optional callback invoked to confirm or veto a pending state change.
  * while a swipe is in progress and when settling after the swipe ends. This is the distance from
  * the start of a transition. It will be, depending on the direction of the interaction, added or
  * subtracted from/to the origin offset. It should always be a positive value.
@@ -55,13 +54,8 @@ private val SnapAnimationSpec = SpringSpec<Float>()
 class SwipeToDismissBoxState(
     initialValue: SwipeToDismissBoxValue,
     internal val density: Density,
-    confirmValueChange: (SwipeToDismissBoxValue) -> Boolean = { true },
 ) {
-    internal val anchoredDraggableState =
-        AnchoredDraggableState(
-            initialValue = initialValue,
-            confirmValueChange = confirmValueChange,
-        )
+    internal val anchoredDraggableState = AnchoredDraggableState(initialValue)
 
     internal val offset: Float get() = anchoredDraggableState.offset
 
@@ -138,18 +132,9 @@ class SwipeToDismissBoxState(
         /**
          * The default [Saver] implementation for [SwipeToDismissBoxState].
          */
-        fun Saver(
-            confirmValueChange: (SwipeToDismissBoxValue) -> Boolean,
-            density: Density,
-        ) = Saver<SwipeToDismissBoxState, SwipeToDismissBoxValue>(
+        fun Saver(density: Density) = Saver<SwipeToDismissBoxState, SwipeToDismissBoxValue>(
             save = { it.currentValue },
-            restore = {
-                SwipeToDismissBoxState(
-                    it,
-                    density,
-                    confirmValueChange,
-                )
-            },
+            restore = { SwipeToDismissBoxState(it, density) },
         )
     }
 }
@@ -158,7 +143,6 @@ class SwipeToDismissBoxState(
  * Create and [remember] a [SwipeToDismissBoxState].
  *
  * @param initialValue The initial value of the state.
- * @param confirmValueChange Optional callback invoked to confirm or veto a pending state change.
  * while a swipe is in progress and when settling after the swipe ends. This is the distance from
  * the start of a transition. It will be, depending on the direction of the interaction, added or
  * subtracted from/to the origin offset. It should always be a positive value.
@@ -166,16 +150,10 @@ class SwipeToDismissBoxState(
 @Composable
 fun rememberSwipeToDismissBoxState(
     initialValue: SwipeToDismissBoxValue = SwipeToDismissBoxValue.Settled,
-    confirmValueChange: (SwipeToDismissBoxValue) -> Boolean = { true },
 ): SwipeToDismissBoxState {
     val density = LocalDensity.current
-    return rememberSaveable(
-        saver = SwipeToDismissBoxState.Saver(
-            confirmValueChange = confirmValueChange,
-            density = density,
-        ),
-    ) {
-        SwipeToDismissBoxState(initialValue, density, confirmValueChange)
+    return rememberSaveable(saver = SwipeToDismissBoxState.Saver(density)) {
+        SwipeToDismissBoxState(initialValue, density)
     }
 }
 

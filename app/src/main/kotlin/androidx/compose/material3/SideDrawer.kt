@@ -56,15 +56,9 @@ private val AnimationSpec = TweenSpec<Float>(durationMillis = 256)
 
 @Suppress("NotCloseable")
 @Stable
-class DrawerState2(
-    initialValue: DrawerValue,
-    val confirmStateChange: (DrawerValue) -> Boolean = { true },
-) {
+class DrawerState2(initialValue: DrawerValue) {
 
-    val anchoredDraggableState = AnchoredDraggableState(
-        initialValue = initialValue,
-        confirmValueChange = confirmStateChange,
-    )
+    val anchoredDraggableState = AnchoredDraggableState(initialValue)
 
     /**
      * Whether the drawer is open.
@@ -206,9 +200,9 @@ class DrawerState2(
         /**
          * The default [Saver] implementation for [DrawerState2].
          */
-        fun Saver(confirmStateChange: (DrawerValue) -> Boolean) = Saver<DrawerState2, DrawerValue>(
+        fun Saver() = Saver<DrawerState2, DrawerValue>(
             save = { it.currentValue },
-            restore = { DrawerState2(it, confirmStateChange) },
+            restore = { DrawerState2(it) },
         )
     }
 }
@@ -217,14 +211,12 @@ class DrawerState2(
  * Create and [remember] a [DrawerState2].
  *
  * @param initialValue The initial value of the state.
- * @param confirmStateChange Optional callback invoked to confirm or veto a pending state change.
  */
 @Composable
 fun rememberDrawerState2(
     initialValue: DrawerValue,
-    confirmStateChange: (DrawerValue) -> Boolean = { true },
-): DrawerState2 = rememberSaveable(saver = DrawerState2.Saver(confirmStateChange)) {
-    DrawerState2(initialValue, confirmStateChange)
+): DrawerState2 = rememberSaveable(saver = DrawerState2.Saver()) {
+    DrawerState2(initialValue)
 }
 
 @Composable
@@ -282,7 +274,7 @@ fun ModalSideDrawer(
         Scrim(
             open = drawerState.isOpen,
             onClose = {
-                if (gesturesEnabled && drawerState.confirmStateChange(DrawerValue.Closed)) {
+                if (gesturesEnabled) {
                     scope.launch { drawerState.close() }
                 }
             },
