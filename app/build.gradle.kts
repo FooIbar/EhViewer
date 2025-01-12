@@ -263,32 +263,34 @@ dependencies {
 
 kotlin {
     jvmToolchain(21)
+
+    // https://kotlinlang.org/docs/gradle-compiler-options.html#all-compiler-options
     compilerOptions {
-        freeCompilerArgs = listOf(
-            // https://kotlinlang.org/docs/compiler-reference.html#progressive
-            "-progressive",
+        progressiveMode = true
+        optIn.addAll(
+            "coil3.annotation.ExperimentalCoilApi",
+            "androidx.compose.foundation.layout.ExperimentalLayoutApi",
+            "androidx.compose.material3.ExperimentalMaterial3Api",
+            "androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
+            "androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
+            "androidx.compose.ui.ExperimentalComposeUiApi",
+            "androidx.compose.foundation.ExperimentalFoundationApi",
+            "androidx.compose.animation.ExperimentalAnimationApi",
+            "androidx.compose.animation.ExperimentalSharedTransitionApi",
+            "androidx.paging.ExperimentalPagingApi",
+            "kotlin.ExperimentalStdlibApi",
+            "kotlin.contracts.ExperimentalContracts",
+            "kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "kotlinx.coroutines.FlowPreview",
+            "kotlinx.serialization.ExperimentalSerializationApi",
+            "splitties.experimental.ExperimentalSplittiesApi",
+            "splitties.preferences.DataStorePreferencesPreview",
+        )
+        freeCompilerArgs.addAll(
             "-Xjvm-default=all",
             "-Xcontext-receivers",
             "-Xwhen-guards",
             "-Xsuppress-warning=CONTEXT_RECEIVERS_DEPRECATED",
-
-            "-opt-in=coil3.annotation.ExperimentalCoilApi",
-            "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
-            "-opt-in=androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
-            "-opt-in=androidx.compose.ui.ExperimentalComposeUiApi",
-            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-            "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
-            "-opt-in=androidx.compose.animation.ExperimentalSharedTransitionApi",
-            "-opt-in=androidx.paging.ExperimentalPagingApi",
-            "-opt-in=kotlin.ExperimentalStdlibApi",
-            "-opt-in=kotlin.contracts.ExperimentalContracts",
-            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-opt-in=kotlinx.coroutines.FlowPreview",
-            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
-            "-opt-in=splitties.experimental.ExperimentalSplittiesApi",
-            "-opt-in=splitties.preferences.DataStorePreferencesPreview",
         )
     }
 }

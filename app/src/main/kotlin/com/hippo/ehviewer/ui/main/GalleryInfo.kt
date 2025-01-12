@@ -255,7 +255,7 @@ fun GalleryInfoGridItem(
                 }
             }
             if (shouldShowLanguage) {
-                Text(text = "${info.simpleLanguage}")
+                Text(text = info.simpleLanguage.orEmpty())
             }
         }
     }
