@@ -243,7 +243,7 @@ dependencies {
     implementation(libs.bundles.coil)
 
     implementation(libs.telephoto.zoomable)
-    implementation(libs.lyricist)
+
     implementation(libs.ktor.client.okhttp)
 
     implementation(libs.bundles.kotlinx.serialization)

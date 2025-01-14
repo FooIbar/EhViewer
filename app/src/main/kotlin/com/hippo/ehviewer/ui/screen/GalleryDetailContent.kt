@@ -103,7 +103,6 @@ import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.destinations.GalleryCommentsScreenDestination
 import com.hippo.ehviewer.ui.getFavoriteIcon
-import com.hippo.ehviewer.ui.i18n.Strings
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.main.ArchiveList
 import com.hippo.ehviewer.ui.main.EhPreviewItem
@@ -154,7 +153,7 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.runSwallowingWithUI
 
-context(CoroutineScope, DestinationsNavigator, DialogState, MainActivity, SnackbarHostState, SharedTransitionScope, TransitionsVisibilityScope, Strings)
+context(CoroutineScope, DestinationsNavigator, DialogState, MainActivity, SnackbarHostState, SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun GalleryDetailContent(
     galleryInfo: GalleryInfo,
@@ -379,7 +378,7 @@ fun GalleryDetailContent(
     }
 }
 
-context(Context, CoroutineScope, DestinationsNavigator, DialogState, SnackbarHostState, Strings)
+context(Context, CoroutineScope, DestinationsNavigator, DialogState, SnackbarHostState)
 @Composable
 fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     @Composable
@@ -401,9 +400,9 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     fun GalleryDetailComment(commentsList: List<GalleryComment>) {
         val maxShowCount = 2
         val commentText = when {
-            commentsList.isEmpty() -> noComments
-            commentsList.size <= maxShowCount -> noMoreComments
-            else -> moreComment
+            commentsList.isEmpty() -> stringResource(R.string.no_comments)
+            commentsList.size <= maxShowCount -> stringResource(R.string.no_more_comments)
+            else -> stringResource(R.string.more_comment)
         }
         fun navigateToCommentScreen() {
             navigate(GalleryCommentsScreenDestination(galleryDetail.gid))
@@ -440,7 +439,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     }
     suspend fun showNewerVersionDialog() {
         val items = galleryDetail.newerVersions.map {
-            newerVersionTitle(it.title.orEmpty(), it.posted.orEmpty())
+            getString(R.string.newer_version_title, it.title, it.posted)
         }
         val selected = awaitSelectItem(items)
         val info = galleryDetail.newerVersions[selected]
@@ -458,7 +457,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                 modifier = Modifier.fillMaxWidth().height(32.dp),
             ) {
             }
-            Text(text = newerVersionAvailable)
+            Text(text = stringResource(id = R.string.newer_version_available))
         }
         Spacer(modifier = Modifier.size(keylineMargin))
     }
@@ -468,12 +467,16 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     ) {
         val favSlot by FavouriteStatusRouter.collectAsState(galleryDetail) { it }
         val favButtonText = if (favSlot != NOT_FAVORITED) {
-            galleryDetail.favoriteName ?: localFavorites
+            galleryDetail.favoriteName ?: stringResource(id = R.string.local_favorites)
         } else {
-            notFavorited
+            stringResource(id = R.string.not_favorited)
         }
         val favoritesLock = remember { MutatorMutex() }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            val removeSucceed = stringResource(R.string.remove_from_favorite_success)
+            val addSucceed = stringResource(R.string.add_to_favorite_success)
+            // val removeFailed = stringResource(R.string.remove_from_favorite_failure)
+            val addFailed = stringResource(R.string.add_to_favorite_failure)
             FilledTertiaryIconToggleButton(
                 checked = favSlot != NOT_FAVORITED,
                 onCheckedChange = {
@@ -483,13 +486,13 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                                 modifyFavorites(galleryDetail.galleryInfo)
                             }.onSuccess { add ->
                                 if (add) {
-                                    showSnackbar(addToFavoriteSuccess)
+                                    showSnackbar(addSucceed)
                                 } else {
-                                    showSnackbar(removeFromFavoriteSuccess)
+                                    showSnackbar(removeSucceed)
                                 }
                             }.onFailure {
                                 // TODO: We don't know if it's add or remove
-                                showSnackbar(addToFavoriteFailure)
+                                showSnackbar(addFailed)
                             }
                         }
                     }
@@ -504,7 +507,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         }
         EhIconButton(
             icon = Icons.Default.Search,
-            text = similarGallery,
+            text = stringResource(id = R.string.similar_gallery),
             onClick = {
                 val keyword = EhUtils.extractTitle(galleryDetail.title)
                 val artistTag = galleryDetail.tagGroups.artistTag()
@@ -532,6 +535,11 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                 }
             },
         )
+        val signInFirst = stringResource(R.string.sign_in_first)
+        val noArchive = stringResource(R.string.no_archives)
+        val downloadStarted = stringResource(R.string.download_archive_started)
+        val downloadFailed = stringResource(R.string.download_archive_failure)
+        val failureNoHath = stringResource(R.string.download_archive_failure_no_hath)
         val archiveResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
                 with(galleryDetail) {
@@ -547,7 +555,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                     runSuspendCatching {
                         val (archiveList, funds) = bgWork { archiveResult.await() }
                         if (archiveList.isEmpty()) {
-                            showSnackbar(noArchives)
+                            showSnackbar(noArchive)
                         } else {
                             val selected = showNoButton {
                                 ArchiveList(
@@ -557,15 +565,15 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                                 )
                             }
                             EhUtils.downloadArchive(galleryDetail, selected)
-                            showSnackbar(downloadArchiveStarted)
+                            showSnackbar(downloadStarted)
                         }
                     }.onFailure {
                         when (it) {
-                            is NoHAtHClientException -> showSnackbar(downloadArchiveFailureNoHath)
+                            is NoHAtHClientException -> showSnackbar(failureNoHath)
                             is EhException -> showSnackbar(it.displayString())
                             else -> {
                                 logcat(it)
-                                showSnackbar(downloadArchiveFailure)
+                                showSnackbar(downloadFailed)
                             }
                         }
                     }
@@ -574,9 +582,11 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         }
         EhIconButton(
             icon = Icons.Default.FolderZip,
-            text = archive,
+            text = stringResource(id = R.string.archive),
             onClick = ::showArchiveDialog,
         )
+        val torrentText = stringResource(R.string.torrent_count, galleryDetail.torrentCount)
+        val noTorrents = stringResource(R.string.no_torrents)
         val torrentResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
                 parZip(
@@ -611,7 +621,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         }
         EhIconButton(
             icon = EhIcons.Default.Magnet,
-            text = torrentCount(galleryDetail.torrentCount),
+            text = torrentText,
             onClick = {
                 launchIO {
                     when {

@@ -153,6 +153,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
         }
     }
 
+    val signInFirst = stringResource(R.string.sign_in_first)
     Scaffold(
         topBar = {
             LargeTopAppBar(
@@ -199,7 +200,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                         onDismissRequest = { dropdown = false },
                     ) {
                         DropdownMenuItem(
-                            text = { Text(text = actionAddTag) },
+                            text = { Text(text = stringResource(id = R.string.action_add_tag)) },
                             onClick = {
                                 dropdown = false
                                 val detail = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
@@ -217,7 +218,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                             },
                         )
                         DropdownMenuItem(
-                            text = { Text(text = refresh) },
+                            text = { Text(text = stringResource(id = R.string.refresh)) },
                             onClick = {
                                 dropdown = false
                                 // Invalidate cache
@@ -228,8 +229,9 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                 getDetailError = ""
                             },
                         )
+                        val imageCacheClear = stringResource(R.string.image_cache_cleared)
                         DropdownMenuItem(
-                            text = { Text(text = clearImageCache) },
+                            text = { Text(text = stringResource(id = R.string.clear_image_cache)) },
                             onClick = {
                                 dropdown = false
                                 val gd = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
@@ -238,25 +240,27 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                         confirmText = R.string.clear_all,
                                         title = R.string.clear_image_cache,
                                     ) {
-                                        Text(text = clearImageCacheConfirm)
+                                        Text(text = stringResource(id = R.string.clear_image_cache_confirm))
                                     }
                                     (0..<gd.pages).forEach {
                                         val key = getImageKey(gd.gid, it)
                                         imageCache.remove(key)
                                     }
-                                    showSnackbar(imageCacheCleared)
+                                    showSnackbar(imageCacheClear)
                                 }
                             },
                         )
                         DropdownMenuItem(
-                            text = { Text(text = openInOtherApp) },
+                            text = { Text(text = stringResource(id = R.string.open_in_other_app)) },
                             onClick = {
                                 dropdown = false
                                 openBrowser(galleryDetailUrl)
                             },
                         )
+                        val exportSuccess = stringResource(id = R.string.export_as_archive_success)
+                        val exportFailed = stringResource(id = R.string.export_as_archive_failed)
                         DropdownMenuItem(
-                            text = { Text(text = exportAsArchive) },
+                            text = { Text(text = stringResource(id = R.string.export_as_archive)) },
                             onClick = {
                                 dropdown = false
                                 launchIO {
@@ -265,7 +269,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                     if (!canExport) {
                                         awaitConfirmationOrCancel(
                                             showCancelButton = false,
-                                            text = { Text(text = downloadGalleryFirst) },
+                                            text = { Text(text = stringResource(id = R.string.download_gallery_first)) },
                                         )
                                     } else {
                                         val info = galleryInfo!!
@@ -282,11 +286,11 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                                         SpiderDen(info, dirname).exportAsCbz(file)
                                                     }
                                                 }
-                                                exportAsArchiveSuccess
+                                                exportSuccess
                                             }.getOrElse {
                                                 logcat(it)
                                                 file.delete()
-                                                exportAsArchiveFailed
+                                                exportFailed
                                             }
                                             showSnackbar(message = msg)
                                         }

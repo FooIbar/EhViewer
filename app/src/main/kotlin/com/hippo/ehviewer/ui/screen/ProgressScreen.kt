@@ -19,7 +19,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
@@ -34,11 +36,12 @@ import moe.tarsin.coroutines.runSuspendCatching
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsNavigator) = Screen(navigator) {
+    val wrong = stringResource(id = R.string.error_something_wrong_happened)
     var error by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(error) {
         if (error.isEmpty()) {
             if (gid == -1L || token == "invalid" || page == -1) {
-                error = errorSomethingWrongHappened
+                error = wrong
             } else {
                 runSuspendCatching {
                     EhEngine.getGalleryToken(gid, token, page)
