@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -41,7 +42,7 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = settingsPrivacy) },
+                title = { Text(text = stringResource(id = R.string.settings_privacy)) },
                 navigationIcon = {
                     IconButton(onClick = { popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -55,33 +56,34 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
         Column(modifier = Modifier.padding(it).nestedScroll(scrollBehavior.nestedScrollConnection)) {
             val security = Settings.security.asMutableState()
             SwitchPreference(
-                title = settingsPrivacyRequireUnlock,
+                title = stringResource(id = R.string.settings_privacy_require_unlock),
                 value = security.rememberedAccessor,
                 enabled = isAuthenticationSupported(),
             )
             AnimatedVisibility(visible = security.value) {
                 val securityDelay = Settings::securityDelay.observed
                 val summary = if (securityDelay.value == 0) {
-                    settingsPrivacyRequireUnlockDelaySummaryImmediately
+                    stringResource(id = R.string.settings_privacy_require_unlock_delay_summary_immediately)
                 } else {
-                    settingsPrivacyRequireUnlockDelaySummary(securityDelay.value)
+                    stringResource(id = R.string.settings_privacy_require_unlock_delay_summary, securityDelay.value)
                 }
                 IntSliderPreference(
                     maxValue = 30,
-                    title = settingsPrivacyRequireUnlockDelay,
+                    title = stringResource(id = R.string.settings_privacy_require_unlock_delay),
                     summary = summary,
                     value = securityDelay.rememberedAccessor,
                     enabled = LocalContext.current.isAuthenticationSupported(),
                 )
             }
             SwitchPreference(
-                title = settingsPrivacySecure,
-                summary = settingsPrivacySecureSummary,
+                title = stringResource(id = R.string.settings_privacy_secure),
+                summary = stringResource(id = R.string.settings_privacy_secure_summary),
                 value = Settings::enabledSecurity,
             )
+            val searchHistoryCleared = stringResource(id = R.string.search_history_cleared)
             Preference(
-                title = clearSearchHistory,
-                summary = clearSearchHistorySummary,
+                title = stringResource(id = R.string.clear_search_history),
+                summary = stringResource(id = R.string.clear_search_history_summary),
             ) {
                 launch {
                     awaitConfirmationOrCancel(

@@ -87,7 +87,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = settingsDownload) },
+                title = { Text(text = stringResource(id = R.string.settings_download)) },
                 navigationIcon = {
                     IconButton(onClick = { popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -99,6 +99,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             var downloadLocationState by ::downloadLocation.observed
+            val cannotGetDownloadLocation = stringResource(id = R.string.settings_download_cant_get_download_location)
             val selectDownloadDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { treeUri ->
                 treeUri?.run {
                     launchIO {
@@ -110,7 +111,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                             downloadLocationState = path
                         }.onFailure {
                             logcat(it)
-                            launchSnackBar(settingsDownloadCantGetDownloadLocation)
+                            launchSnackBar(cannotGetDownloadLocation)
                         }
                     }
                 }
@@ -154,28 +155,28 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                                 logcat(it)
                             }
                         }
-                        launchSnackBar(settingsDownloadCantGetDownloadLocation)
+                        launchSnackBar(cannotGetDownloadLocation)
                     }
                 }
             }
             val mediaScan = Settings::mediaScan.observed
             SwitchPreference(
-                title = settingsDownloadMediaScan,
-                summary = if (mediaScan.value) settingsDownloadMediaScanSummaryOn else settingsDownloadMediaScanSummaryOff,
+                title = stringResource(id = R.string.settings_download_media_scan),
+                summary = if (mediaScan.value) stringResource(id = R.string.settings_download_media_scan_summary_on) else stringResource(id = R.string.settings_download_media_scan_summary_off),
                 value = mediaScan.rememberedAccessor,
             )
             val multiThreadDownload = Settings::multiThreadDownload.observed
             SimpleMenuPreferenceInt(
-                title = settingsDownloadConcurrency,
-                summary = settingsDownloadConcurrencySummary(multiThreadDownload.value),
+                title = stringResource(id = R.string.settings_download_concurrency),
+                summary = stringResource(id = R.string.settings_download_concurrency_summary, multiThreadDownload.value),
                 entry = R.array.multi_thread_download_entries,
                 entryValueRes = R.array.multi_thread_download_entry_values,
                 value = multiThreadDownload,
             )
             val downloadDelay = Settings::downloadDelay.observed
             SimpleMenuPreferenceInt(
-                title = settingsDownloadDownloadDelay,
-                summary = settingsDownloadDownloadDelaySummary(downloadDelay.value),
+                title = stringResource(id = R.string.settings_download_download_delay),
+                summary = stringResource(id = R.string.settings_download_download_delay_summary, downloadDelay.value),
                 entry = R.array.download_delay_entries,
                 entryValueRes = R.array.download_delay_entry_values,
                 value = downloadDelay,
@@ -184,21 +185,21 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 maxValue = 10,
                 minValue = 2,
                 step = 7,
-                title = settingsDownloadConnectionTimeout,
+                title = stringResource(id = R.string.settings_download_connection_timeout),
                 value = Settings::connTimeout,
             )
             IntSliderPreference(
                 maxValue = 10,
                 minValue = 4,
                 step = 5,
-                title = settingsDownloadTimeoutSpeed,
+                title = stringResource(id = R.string.settings_download_timeout_speed),
                 value = Settings::timeoutSpeed,
                 display = ::speedLevelToSpeed,
             )
             val preloadImage = Settings::preloadImage.observed
             SimpleMenuPreferenceInt(
-                title = settingsDownloadPreloadImage,
-                summary = settingsDownloadPreloadImageSummary(preloadImage.value),
+                title = stringResource(id = R.string.settings_download_preload_image),
+                summary = stringResource(id = R.string.settings_download_preload_image_summary, preloadImage.value),
                 entry = R.array.preload_image_entries,
                 entryValueRes = R.array.preload_image_entry_values,
                 value = preloadImage,

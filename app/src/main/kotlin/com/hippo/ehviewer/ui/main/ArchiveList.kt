@@ -17,13 +17,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.parser.Archive
 import com.hippo.ehviewer.client.parser.Funds
-import com.hippo.ehviewer.ui.i18n.Strings
 
-context(Strings)
 @Composable
 fun ArchiveList(
     funds: Funds,
@@ -31,6 +31,10 @@ fun ArchiveList(
     onItemClick: (Archive) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val currentFunds = stringResource(R.string.current_funds)
+    val archiveFree = stringResource(R.string.archive_free)
+    val archiveOriginal = stringResource(R.string.archive_original)
+    val archiveResample = stringResource(R.string.archive_resample)
     val fundsStyle = MaterialTheme.typography.labelLarge
     val (hAtH, nonHAtH) = remember(items) { items.partition { it.isHAtH } }
     LazyVerticalGrid(

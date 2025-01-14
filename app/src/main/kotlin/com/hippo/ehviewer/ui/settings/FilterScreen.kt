@@ -77,6 +77,8 @@ import moe.tarsin.coroutines.groupByToObserved
 fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val allFilterMap = remember { async { EhFilter.filters.await().groupByToObserved { it.mode } } }
+    val textIsEmpty = stringResource(R.string.text_is_empty)
+    val labelExist = stringResource(R.string.label_text_exist)
     val animateItems by Settings.animateItems.collectAsState()
 
     fun addFilter() {
@@ -99,7 +101,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                             cont.resume(Unit)
                             requireNotNull(allFilterMap.getCompleted()[mode]).add(filter)
                         } else {
-                            error = labelTextExist
+                            error = labelExist
                         }
                     }
                 }
@@ -107,7 +109,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                     onDismissRequest = { cont.cancel() },
                     confirmButton = {
                         TextButton(onClick = ::invalidateAndSave) {
-                            Text(text = add)
+                            Text(text = stringResource(id = R.string.add))
                         }
                     },
                     dismissButton = {
@@ -116,7 +118,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                         }
                     },
                     title = {
-                        Text(text = addFilter)
+                        Text(text = stringResource(id = R.string.add_filter))
                     },
                     text = {
                         var expanded by remember { mutableStateOf(false) }
@@ -130,7 +132,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                                     readOnly = true,
                                     state = type,
                                     label = {
-                                        Text(text = filterLabel)
+                                        Text(text = stringResource(id = R.string.filter_label))
                                     },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                                     colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
@@ -155,7 +157,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                             val isError = error != null
                             OutlinedTextField(
                                 state = state,
-                                label = { Text(text = filterText) },
+                                label = { Text(text = stringResource(id = R.string.filter_text)) },
                                 supportingText = { error?.let { Text(text = it) } },
                                 trailingIcon = {
                                     if (isError) {
@@ -181,7 +183,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = filter) },
+                title = { Text(text = stringResource(id = R.string.filter)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -194,7 +196,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                                 title = R.string.filter,
                                 showCancelButton = false,
                             ) {
-                                Text(text = filterTip)
+                                Text(text = stringResource(id = R.string.filter_tip))
                             }
                         }
                     }) {
@@ -218,17 +220,17 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                 var showTip = true
                 filters.forEach { (filterMode, filters) ->
                     val title = when (filterMode) {
-                        FilterMode.TITLE -> filterTitle
-                        FilterMode.UPLOADER -> filterUploader
-                        FilterMode.TAG -> filterTag
-                        FilterMode.TAG_NAMESPACE -> filterTagNamespace
-                        FilterMode.COMMENTER -> filterCommenter
-                        FilterMode.COMMENT -> filterComment
+                        FilterMode.TITLE -> R.string.filter_title
+                        FilterMode.UPLOADER -> R.string.filter_uploader
+                        FilterMode.TAG -> R.string.filter_tag
+                        FilterMode.TAG_NAMESPACE -> R.string.filter_tag_namespace
+                        FilterMode.COMMENTER -> R.string.filter_commenter
+                        FilterMode.COMMENT -> R.string.filter_comment
                     }
                     if (filters.isNotEmpty()) {
                         item(key = filterMode) {
                             Text(
-                                text = title,
+                                text = stringResource(id = title),
                                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp).thenIf(animateItems) { animateItem() },
                                 color = MaterialTheme.colorScheme.tertiary,
                                 style = MaterialTheme.typography.titleMedium,
@@ -249,7 +251,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                                     onClick = {
                                         launch {
                                             awaitConfirmationOrCancel(confirmText = R.string.delete) {
-                                                Text(text = deleteFilter(filter.text))
+                                                Text(text = stringResource(id = R.string.delete_filter, filter.text))
                                             }
                                             filter.forget {
                                                 filters.remove(filter)
@@ -279,7 +281,7 @@ fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Scr
                                 tint = MaterialTheme.colorScheme.primary,
                             )
                             Text(
-                                text = filter,
+                                text = stringResource(id = R.string.filter),
                                 style = MaterialTheme.typography.headlineMedium,
                             )
                         }
