@@ -13,7 +13,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
-import com.hippo.ehviewer.ui.i18n.ProvideTranslations
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalGlobalDialogState
@@ -29,10 +28,8 @@ inline fun ComponentActivity.setMD3Content(crossinline content: @Composable Dial
             val dialogState = remember { DialogState() }
             CompositionLocalProvider(LocalGlobalDialogState provides dialogState) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    ProvideTranslations {
-                        content(dialogState)
-                        dialogState.Place()
-                    }
+                    content(dialogState)
+                    dialogState.Place()
                 }
             }
         }

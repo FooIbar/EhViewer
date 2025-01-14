@@ -341,7 +341,8 @@
     <string name="settings_download_concurrency_summary">Up to %s images</string>
     <string name="settings_download_download_delay">Download delay</string>
     <string name="settings_download_download_delay_summary">Delay %s ms per download</string>
-    <string name="settings_download_download_timeout">Download timeout (in seconds)</string>
+    <string name="settings_download_connection_timeout">Connection timeout (in seconds)</string>
+    <string name="settings_download_timeout_speed">Minimum response speed (in KB/s)</string>
     <string name="settings_download_preload_image">Preload image</string>
     <string name="settings_download_preload_image_summary">Preload next %s image</string>
     <string name="settings_download_download_origin_image">Download original image</string>

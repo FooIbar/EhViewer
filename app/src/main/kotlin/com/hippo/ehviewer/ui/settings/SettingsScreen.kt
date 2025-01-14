@@ -18,6 +18,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
+import com.hippo.ehviewer.R
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.SadPanda
 import com.hippo.ehviewer.ui.Screen
@@ -37,7 +39,7 @@ fun AnimatedVisibilityScope.SettingsScreen(navigator: DestinationsNavigator) = S
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = settings) },
+                title = { Text(text = stringResource(id = R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -50,31 +52,31 @@ fun AnimatedVisibilityScope.SettingsScreen(navigator: DestinationsNavigator) = S
         Column(modifier = Modifier.padding(it).nestedScroll(scrollBehavior.nestedScrollConnection)) {
             PreferenceHeader(
                 icon = EhIcons.Default.SadPanda,
-                title = settingsEh,
+                title = R.string.settings_eh,
                 childRoute = EhScreenDestination,
                 navigator = navigator,
             )
             PreferenceHeader(
                 icon = Icons.Default.Download,
-                title = settingsDownload,
+                title = R.string.settings_download,
                 childRoute = DownloadScreenDestination,
                 navigator = navigator,
             )
             PreferenceHeader(
                 icon = Icons.Default.Security,
-                title = settingsPrivacy,
+                title = R.string.settings_privacy,
                 childRoute = PrivacyScreenDestination,
                 navigator = navigator,
             )
             PreferenceHeader(
                 icon = Icons.Default.Adb,
-                title = settingsAdvanced,
+                title = R.string.settings_advanced,
                 childRoute = AdvancedScreenDestination,
                 navigator = navigator,
             )
             PreferenceHeader(
                 icon = Icons.Default.Info,
-                title = settingsAbout,
+                title = R.string.settings_about,
                 childRoute = AboutScreenDestination,
                 navigator = navigator,
             )
