@@ -8,7 +8,7 @@ import androidx.compose.runtime.snapshots.Snapshot
 import kotlinx.coroutines.flow.Flow
 
 @Composable
-fun <T : Any> delegateSnapshotUpdate(
+fun <T : Any> asyncState(
     record: () -> T,
     transform: Flow<T>.() -> Flow<T> = { this },
 ) = remember(transform, record) {
