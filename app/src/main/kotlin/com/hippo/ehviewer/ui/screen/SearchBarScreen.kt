@@ -59,6 +59,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.min
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -224,7 +225,7 @@ fun SearchBarScreen(
                     },
                     expanded = expanded,
                     onExpandedChange = onExpandedChange,
-                    modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2).fillMaxWidth(),
+                    modifier = Modifier.widthIn(max = min(720.dp, maxWidth - SearchBarHorizontalPadding * 2)).fillMaxWidth(),
                     placeholder = {
                         val contentActive by activeState.state
                         val text = title.takeUnless { expanded || contentActive } ?: searchFieldHint
