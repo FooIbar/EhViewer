@@ -595,15 +595,14 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     val invalidNum = stringResource(R.string.error_invalid_number)
     val outOfRange = stringResource(R.string.error_out_of_range)
 
-    val hideFab by delegateSnapshotUpdate {
-        record { fabHidden }
-        transform {
-            // Bug: IDE failed to inference 'hide's type
+    val hideFab by delegateSnapshotUpdate(
+        record = { fabHidden },
+        transform = {
             onEachLatest { hide: Boolean ->
                 if (!hide) delay(FAB_ANIMATE_TIME.toLong())
             }
-        }
-    }
+        },
+    )
 
     FabLayout(
         hidden = hideFab,

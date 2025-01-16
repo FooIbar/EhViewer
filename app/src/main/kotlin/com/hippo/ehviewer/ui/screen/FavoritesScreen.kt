@@ -331,15 +331,14 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         )
     }
 
-    val hideFab by delegateSnapshotUpdate {
-        record { fabHidden }
-        transform {
-            // Bug: IDE failed to inference 'hide's type
+    val hideFab by delegateSnapshotUpdate(
+        record = { fabHidden },
+        transform = {
             onEachLatest { hide: Boolean ->
                 if (!hide) delay(FAB_ANIMATE_TIME.toLong())
             }
-        }
-    }
+        },
+    )
 
     FabLayout(
         hidden = hideFab && !selectMode,

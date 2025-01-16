@@ -129,10 +129,10 @@ fun FabLayout(
     }
     val builder by rememberUpdatedState(fabBuilder)
 
-    val secondaryFab by delegateSnapshotUpdate {
-        record { buildFab(builder) }
-        transform { onEachLatest { state.collapse(MutatePriority.PreventUserInput) } }
-    }
+    val secondaryFab by delegateSnapshotUpdate(
+        record = { buildFab(builder) },
+        transform = { onEachLatest { state.collapse(MutatePriority.PreventUserInput) } },
+    )
 
     val density = LocalDensity.current
     val interval = remember(density) { with(density) { FabInterval.roundToPx() } }
