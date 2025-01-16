@@ -598,7 +598,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     val hideFab by asyncState(
         produce = { fabHidden },
         transform = {
-            onEachLatest { hide: Boolean ->
+            onEachLatest { hide ->
                 if (!hide) delay(FAB_ANIMATE_TIME.toLong())
             }
         },
