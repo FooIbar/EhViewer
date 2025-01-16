@@ -75,7 +75,7 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
-import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
+import com.hippo.ehviewer.ui.tools.asyncState
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
@@ -331,7 +331,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         )
     }
 
-    val hideFab by delegateSnapshotUpdate(
+    val hideFab by asyncState(
         record = { fabHidden },
         transform = {
             onEachLatest { hide: Boolean ->

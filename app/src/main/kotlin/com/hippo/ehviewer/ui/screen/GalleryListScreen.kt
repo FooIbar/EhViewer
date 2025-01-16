@@ -110,7 +110,7 @@ import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
-import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
+import com.hippo.ehviewer.ui.tools.asyncState
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
@@ -595,7 +595,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     val invalidNum = stringResource(R.string.error_invalid_number)
     val outOfRange = stringResource(R.string.error_out_of_range)
 
-    val hideFab by delegateSnapshotUpdate(
+    val hideFab by asyncState(
         record = { fabHidden },
         transform = {
             onEachLatest { hide: Boolean ->

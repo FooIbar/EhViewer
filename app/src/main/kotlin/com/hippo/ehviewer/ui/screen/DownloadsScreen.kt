@@ -110,7 +110,7 @@ import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
-import com.hippo.ehviewer.ui.tools.delegateSnapshotUpdate
+import com.hippo.ehviewer.ui.tools.asyncState
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
@@ -633,7 +633,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         }
     }
 
-    val hideFab by delegateSnapshotUpdate(
+    val hideFab by asyncState(
         record = { fabHidden },
         transform = {
             onEachLatest { hide ->
