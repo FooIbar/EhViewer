@@ -224,7 +224,7 @@ fun SearchBarScreen(
                     },
                     expanded = expanded,
                     onExpandedChange = onExpandedChange,
-                    modifier = Modifier.fillMaxWidth().widthIn(max = maxWidth - SearchBarHorizontalPadding * 2),
+                    modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2).fillMaxWidth(),
                     placeholder = {
                         val contentActive by activeState.state
                         val text = title.takeUnless { expanded || contentActive } ?: searchFieldHint
