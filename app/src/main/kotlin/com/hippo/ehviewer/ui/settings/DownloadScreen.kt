@@ -51,8 +51,8 @@ import com.hippo.ehviewer.spider.SpiderQueen.Companion.SPIDER_INFO_FILENAME
 import com.hippo.ehviewer.spider.readComicInfo
 import com.hippo.ehviewer.spider.readCompatFromPath
 import com.hippo.ehviewer.spider.speedLevelToSpeed
-import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
+import com.hippo.ehviewer.ui.screen
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.AppConfig
@@ -81,7 +81,7 @@ import splitties.init.appCtx
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     fun launchSnackBar(content: String) = launch { showSnackbar(content) }
     Scaffold(

@@ -41,10 +41,10 @@ import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.collectAsState
-import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
 import com.hippo.ehviewer.ui.destinations.MyTagsScreenDestination
 import com.hippo.ehviewer.ui.destinations.UConfigScreenDestination
+import com.hippo.ehviewer.ui.screen
 import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
@@ -60,7 +60,7 @@ import kotlinx.datetime.LocalTime
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }

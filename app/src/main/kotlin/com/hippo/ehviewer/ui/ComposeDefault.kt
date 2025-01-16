@@ -20,7 +20,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
-inline fun <R> AnimatedVisibilityScope.composing(
+inline fun <R> AnimatedVisibilityScope.screen(
     navigator: DestinationsNavigator,
     block: @Composable context(Strings, MainActivity, SnackbarHostState, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, CoroutineScope)
     () -> R,

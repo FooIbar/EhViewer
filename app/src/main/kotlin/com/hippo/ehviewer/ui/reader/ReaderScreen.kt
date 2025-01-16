@@ -27,6 +27,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -69,7 +70,8 @@ import com.hippo.ehviewer.gallery.status
 import com.hippo.ehviewer.gallery.unblock
 import com.hippo.ehviewer.gallery.useArchivePageLoader
 import com.hippo.ehviewer.gallery.useEhPageLoader
-import com.hippo.ehviewer.ui.composing
+import com.hippo.ehviewer.ui.MainActivity
+import com.hippo.ehviewer.ui.screen
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
@@ -88,6 +90,7 @@ import eu.kanade.tachiyomi.ui.reader.ReaderPageSheetMeta
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
 import eu.kanade.tachiyomi.util.lang.launchIO
 import kotlin.coroutines.resume
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
@@ -115,7 +118,7 @@ private fun Background(
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = screen(navigator) {
     val bgColor by collectBackgroundColorAsState()
     val uiController = rememberSystemUiController()
     DisposableEffect(uiController) {
@@ -163,15 +166,16 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
                 val loader = result.value
                 val info = (args as? ReaderScreenArgs.Gallery)?.info
                 key(loader) {
-                    ReaderScreen(loader, info, navigator)
+                    ReaderScreen(loader, info)
                 }
             }
         }
     }
 }
 
+context(MainActivity, SnackbarHostState, DialogState, CoroutineScope)
 @Composable
-fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
     ConfigureKeepScreenOn()
     LaunchedEffect(Unit) {
         val orientation = requestedOrientation

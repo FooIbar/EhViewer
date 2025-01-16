@@ -51,10 +51,10 @@ import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.History
 import com.hippo.ehviewer.ui.DrawerHandle
-import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.doGalleryInfoAction
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.plus
+import com.hippo.ehviewer.ui.screen
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.rememberInVM
@@ -70,7 +70,7 @@ import kotlinx.coroutines.launch
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = screen(navigator) {
     val animateItems by Settings.animateItems.collectAsState()
 
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
