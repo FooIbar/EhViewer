@@ -117,8 +117,13 @@ interface DialogScope<R> {
 
 typealias MutableComposable = MutableState<(@Composable BoxScope.() -> Unit)?>
 
-class DialogState : MutableComposable by mutableStateOf(null) {
-    val mutex = MutatorMutex()
+class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable by mutableStateOf(null) {
+    @Composable
+    fun rememberLocal() = remember { DialogState(mutex) }
+
+    context(BoxScope)
+    @Composable
+    fun Place() = value?.let { it() }
 
     fun dismiss() {
         value = null
@@ -753,4 +758,4 @@ private fun CheckableItem(text: String, checked: Boolean, modifier: Modifier = M
 private val IconWithTextCorner = RoundedCornerShape(8.dp)
 private val DatePickerTitlePadding = PaddingValues(start = 24.dp, end = 12.dp, top = 16.dp)
 
-val LocalDialogState = compositionLocalOf<DialogState> { error("CompositionLocal LocalDialogState not present!") }
+val LocalGlobalDialogState = compositionLocalOf<DialogState> { error("CompositionLocal LocalDialogState not present!") }

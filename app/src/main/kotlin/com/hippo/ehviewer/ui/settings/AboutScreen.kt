@@ -31,8 +31,8 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.download.downloadLocation
+import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.LicenseScreenDestination
-import com.hippo.ehviewer.ui.screen
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.updater.AppUpdater
@@ -55,7 +55,7 @@ private const val RELEASE_URL = "$REPO_URL/releases"
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = screen(navigator) {
+fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }

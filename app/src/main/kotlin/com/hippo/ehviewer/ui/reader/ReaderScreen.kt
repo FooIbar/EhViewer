@@ -71,7 +71,7 @@ import com.hippo.ehviewer.gallery.unblock
 import com.hippo.ehviewer.gallery.useArchivePageLoader
 import com.hippo.ehviewer.gallery.useEhPageLoader
 import com.hippo.ehviewer.ui.MainActivity
-import com.hippo.ehviewer.ui.screen
+import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
@@ -118,7 +118,7 @@ private fun Background(
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = screen(navigator) {
+fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: DestinationsNavigator) = Screen(navigator) {
     val bgColor by collectBackgroundColorAsState()
     val uiController = rememberSystemUiController()
     DisposableEffect(uiController) {

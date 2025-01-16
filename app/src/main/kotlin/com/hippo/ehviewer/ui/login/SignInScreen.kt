@@ -61,9 +61,9 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.EhUtils
+import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
-import com.hippo.ehviewer.ui.screen
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.ui.tools.autofill
 import com.hippo.ehviewer.util.displayString
@@ -76,7 +76,7 @@ import kotlinx.coroutines.Job
 
 @Destination<RootGraph>(start = true)
 @Composable
-fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = screen(navigator) {
+fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val windowSizeClass = LocalWindowSizeClass.current
     val focusManager = LocalFocusManager.current
     var isProgressIndicatorVisible by rememberSaveable { mutableStateOf(false) }

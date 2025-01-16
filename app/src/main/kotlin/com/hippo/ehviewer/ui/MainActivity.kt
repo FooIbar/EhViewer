@@ -136,7 +136,6 @@ import com.hippo.ehviewer.ui.screen.navWithUrl
 import com.hippo.ehviewer.ui.settings.showNewVersion
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.util.AppConfig
@@ -219,7 +218,6 @@ class MainActivity : EhActivity() {
         super.onCreate(savedInstanceState)
         setMD3Content {
             val configuration = LocalConfiguration.current
-            val dialogState = LocalDialogState.current
             val navDrawerState = rememberDrawerState(DrawerValue.Closed)
             val sideSheetState = rememberDrawerState2(DrawerValue.Closed)
             val snackbarState = remember { SnackbarHostState() }
@@ -252,13 +250,13 @@ class MainActivity : EhActivity() {
             if (!AppConfig.isBenchmark) {
                 val noNetwork = stringResource(R.string.no_network)
                 LaunchedEffect(Unit) {
-                    runCatching { dialogState.checkDownloadLocation() }
-                    runCatching { dialogState.checkAppLinkVerify() }
+                    runCatching { checkDownloadLocation() }
+                    runCatching { checkAppLinkVerify() }
                     if (hasNetwork) {
                         runSuspendCatching {
                             withIOContext {
                                 AppUpdater.checkForUpdate()?.let {
-                                    dialogState.showNewVersion(this@MainActivity, it)
+                                    showNewVersion(this@MainActivity, it)
                                 }
                             }
                         }.onFailure {
@@ -284,7 +282,7 @@ class MainActivity : EhActivity() {
                                 else -> {
                                     val url = uri.toString()
                                     if (!navigator.navWithUrl(url)) {
-                                        val new = dialogState.awaitInputText(initial = url, title = cannotParse)
+                                        val new = awaitInputText(initial = url, title = cannotParse)
                                         addTextToClipboard(new)
                                     }
                                 }

@@ -16,24 +16,22 @@ import androidx.navigation.NavBackStackEntry
 import com.hippo.ehviewer.ui.i18n.ProvideTranslations
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.DialogState
-import com.hippo.ehviewer.ui.tools.LocalDialogState
+import com.hippo.ehviewer.ui.tools.LocalGlobalDialogState
 import com.hippo.ehviewer.ui.tools.ProvideVectorPainterCache
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import soup.compose.material.motion.animation.materialSharedAxisXIn
 import soup.compose.material.motion.animation.materialSharedAxisXOut
 import soup.compose.material.motion.animation.rememberSlideDistance
 
-inline fun ComponentActivity.setMD3Content(crossinline content: @Composable () -> Unit) = setContent {
+inline fun ComponentActivity.setMD3Content(crossinline content: @Composable DialogState.() -> Unit) = setContent {
     EhTheme(useDarkTheme = isSystemInDarkTheme()) {
         ProvideVectorPainterCache {
             val dialogState = remember { DialogState() }
-            CompositionLocalProvider(
-                LocalDialogState provides dialogState,
-            ) {
+            CompositionLocalProvider(LocalGlobalDialogState provides dialogState) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     ProvideTranslations {
-                        content()
-                        dialogState.value?.invoke(this)
+                        content(dialogState)
+                        dialogState.Place()
                     }
                 }
             }
