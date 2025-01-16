@@ -634,7 +634,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     }
 
     val hideFab by asyncState(
-        record = { fabHidden },
+        produce = { fabHidden },
         transform = {
             onEachLatest { hide ->
                 if (!hide) delay(FAB_ANIMATE_TIME.toLong())

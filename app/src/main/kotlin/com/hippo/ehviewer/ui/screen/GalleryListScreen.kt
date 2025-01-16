@@ -596,7 +596,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     val outOfRange = stringResource(R.string.error_out_of_range)
 
     val hideFab by asyncState(
-        record = { fabHidden },
+        produce = { fabHidden },
         transform = {
             onEachLatest { hide: Boolean ->
                 if (!hide) delay(FAB_ANIMATE_TIME.toLong())

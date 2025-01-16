@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun <T : Any> asyncState(
-    record: () -> T,
+    produce: () -> T,
     transform: Flow<T>.() -> Flow<T> = { this },
-) = remember(transform, record) {
-    Snapshot.withoutReadObservation(record) to transform(snapshotFlow(record))
+) = remember(transform, produce) {
+    Snapshot.withoutReadObservation(produce) to transform(snapshotFlow(produce))
 }.let { (initial, flow) ->
     flow.collectAsState(initial)
 }

@@ -130,7 +130,7 @@ fun FabLayout(
     val builder by rememberUpdatedState(fabBuilder)
 
     val secondaryFab by asyncState(
-        record = { buildFab(builder) },
+        produce = { buildFab(builder) },
         transform = { onEachLatest { state.collapse(MutatePriority.PreventUserInput) } },
     )
 
