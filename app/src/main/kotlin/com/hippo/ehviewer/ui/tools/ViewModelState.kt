@@ -82,34 +82,6 @@ fun launchInVM(
 }
 
 @Composable
-fun launchInVM(
-    key: Any?,
-    context: CoroutineContext = EmptyCoroutineContext,
-    start: CoroutineStart = CoroutineStart.DEFAULT,
-    block: suspend CoroutineScope.() -> Unit,
-) = rememberUpdatedStateInVM(key).let { key ->
-    val f by rememberUpdatedStateInVM(block)
-    rememberInVM {
-        nonNullState {
-            viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
-                snapshotFlow { key.value }.mapLatest {
-                    coroutineScope { value = launch(context, start, f) }
-                }.collect()
-            }
-        }
-    }
-}
-
-@Composable
-fun <R> asyncInVM(
-    context: CoroutineContext = EmptyCoroutineContext,
-    start: CoroutineStart = CoroutineStart.DEFAULT,
-    block: suspend CoroutineScope.() -> R,
-) = rememberInVM {
-    viewModelScope.async(context, start, block)
-}
-
-@Composable
 fun <R> asyncInVM(
     key: Any?,
     context: CoroutineContext = EmptyCoroutineContext,

@@ -35,7 +35,6 @@ import arrow.atomic.Atomic
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.settings.PreferenceTokens.PreferenceTextPadding
 import com.hippo.ehviewer.util.ProgressDialog
-import com.jamal.composeprefs3.ui.prefs.DropDownPref
 import com.jamal.composeprefs3.ui.prefs.DropDownPrefInt
 import com.jamal.composeprefs3.ui.prefs.SliderPref
 import com.jamal.composeprefs3.ui.prefs.SpannedTextPref
@@ -133,20 +132,6 @@ fun SimpleMenuPreferenceInt(title: String, summary: String? = null, @ArrayRes en
     }
     check(entryArray.size == valuesArray.size)
     DropDownPrefInt(title = title, summary = summary, defaultValue = v, onValueChange = ::set, useSelectedAsSummary = summary.isNullOrBlank(), entries = map)
-}
-
-@Composable
-fun SimpleMenuPreference(title: String, @ArrayRes entry: Int, @ArrayRes entryValueRes: Int, value: KMutableProperty0<String>) {
-    val entryArray = stringArrayResource(id = entry)
-    val valuesArray = stringArrayResource(id = entryValueRes)
-    val map = remember {
-        val iter = entryArray.iterator()
-        valuesArray.associateWith { iter.next() }
-    }
-    var v by remember { mutableStateOf(value.get()) }
-    fun set(new: String) = value.set(new.also { v = it })
-    check(entryArray.size == valuesArray.size)
-    DropDownPref(title = title, defaultValue = v, onValueChange = ::set, useSelectedAsSummary = true, entries = map)
 }
 
 @Composable
