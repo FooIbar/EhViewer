@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
@@ -40,7 +41,7 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.SearchBarInputField
+import androidx.compose.material3.SearchBarDefaults.InputField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -215,7 +216,7 @@ fun SearchBarScreen(
             modifier = Modifier.align(Alignment.TopCenter).thenIf(!expanded) { offset { IntOffset(0, searchBarOffsetY()) } }
                 .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)),
             inputField = {
-                SearchBarInputField(
+                InputField(
                     state = searchFieldState,
                     onSearch = {
                         hideSearchView()
@@ -223,7 +224,7 @@ fun SearchBarScreen(
                     },
                     expanded = expanded,
                     onExpandedChange = onExpandedChange,
-                    modifier = Modifier.widthIn(max = maxWidth - SearchBarHorizontalPadding * 2),
+                    modifier = Modifier.fillMaxWidth().widthIn(max = maxWidth - SearchBarHorizontalPadding * 2),
                     placeholder = {
                         val contentActive by activeState.state
                         val text = title.takeUnless { expanded || contentActive } ?: searchFieldHint
