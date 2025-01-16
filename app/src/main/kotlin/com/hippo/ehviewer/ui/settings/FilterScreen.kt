@@ -61,7 +61,7 @@ import com.hippo.ehviewer.client.EhFilter.trigger
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Filter
 import com.hippo.ehviewer.dao.FilterMode
-import com.hippo.ehviewer.ui.composing
+import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.ramcosta.composedestinations.annotation.Destination
@@ -74,7 +74,7 @@ import moe.tarsin.coroutines.groupByToObserved
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.FilterScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val allFilterMap = remember { async { EhFilter.filters.await().groupByToObserved { it.mode } } }
     val animateItems by Settings.animateItems.collectAsState()

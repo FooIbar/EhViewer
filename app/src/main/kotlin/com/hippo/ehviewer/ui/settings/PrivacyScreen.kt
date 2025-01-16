@@ -23,7 +23,7 @@ import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
-import com.hippo.ehviewer.ui.composing
+import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.isAuthenticationSupported
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     fun launchSnackBar(content: String) = launch { snackbarHostState.showSnackbar(content) }

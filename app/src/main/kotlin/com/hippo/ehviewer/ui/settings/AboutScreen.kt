@@ -31,10 +31,9 @@ import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.download.downloadLocation
-import com.hippo.ehviewer.ui.composing
+import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.LicenseScreenDestination
 import com.hippo.ehviewer.ui.tools.DialogState
-import com.hippo.ehviewer.ui.tools.LocalDialogState
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.updater.Release
@@ -56,12 +55,11 @@ private const val RELEASE_URL = "$REPO_URL/releases"
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    val dialogState = LocalDialogState.current
     fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
     Scaffold(
         topBar = {
@@ -118,7 +116,7 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = comp
             WorkPreference(title = settingsAboutCheckForUpdates) {
                 runSuspendCatching {
                     AppUpdater.checkForUpdate(true)?.let {
-                        dialogState.showNewVersion(context, it)
+                        showNewVersion(context, it)
                     } ?: launchSnackBar(alreadyLatestVersion)
                 }.onFailure {
                     launchSnackBar(updateFailed(it.displayString()))

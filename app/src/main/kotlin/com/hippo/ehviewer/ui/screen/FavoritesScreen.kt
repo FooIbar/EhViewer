@@ -65,8 +65,8 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.LocalSideSheetState
+import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.awaitSelectDate
-import com.hippo.ehviewer.ui.composing
 import com.hippo.ehviewer.ui.main.AvatarIcon
 import com.hippo.ehviewer.ui.main.FAB_ANIMATE_TIME
 import com.hippo.ehviewer.ui.main.FabLayout
@@ -96,7 +96,7 @@ import moe.tarsin.coroutines.runSwallowingWithUI
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     // Immutables
     val animateItems by Settings.animateItems.collectAsState()
     val hasSignedIn by Settings.hasSignedIn.collectAsState()

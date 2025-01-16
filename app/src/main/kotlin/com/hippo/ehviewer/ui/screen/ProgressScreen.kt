@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
-import com.hippo.ehviewer.ui.composing
+import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -33,7 +33,7 @@ import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsNavigator) = Screen(navigator) {
     var error by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(error) {
         if (error.isEmpty()) {

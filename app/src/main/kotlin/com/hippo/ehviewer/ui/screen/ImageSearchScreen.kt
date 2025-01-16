@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
-import com.hippo.ehviewer.ui.composing
+import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.ImageSearch
 import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.tools.snackBarPadding
@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
 
 @Destination<RootGraph>
 @Composable
-fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) = composing(navigator) {
+fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
     val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
