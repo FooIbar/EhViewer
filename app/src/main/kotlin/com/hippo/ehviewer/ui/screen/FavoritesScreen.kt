@@ -334,7 +334,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     val hideFab by asyncState(
         produce = { fabHidden },
         transform = {
-            onEachLatest { hide: Boolean ->
+            onEachLatest { hide ->
                 if (!hide) delay(FAB_ANIMATE_TIME.toLong())
             }
         },
