@@ -24,10 +24,10 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
-inline fun <R> AnimatedVisibilityScope.Screen(
+inline fun AnimatedVisibilityScope.Screen(
     navigator: DestinationsNavigator,
     block: @Composable context(Strings, MainActivity, SnackbarHostState, SnackbarContext, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, CoroutineScope)
-    () -> R,
+    () -> Unit,
 ) = Box(modifier = Modifier.fillMaxSize()) {
     val dialogState = with(LocalGlobalDialogState.current) { rememberLocal() }
     with(NoopTransitionsVisibilityScope) {

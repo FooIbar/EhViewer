@@ -17,14 +17,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -62,9 +59,7 @@ import kotlinx.datetime.LocalTime
 @Composable
 fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
     Scaffold(
         topBar = {
@@ -78,7 +73,6 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -113,7 +107,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                                         IconButton(onClick = {
                                             copyTextToClipboard(state.text, true)
                                             // Avoid double notify user since system have done that on Tiramisu above
-                                            if (!isAtLeastT) launchSnackBar(copiedToClipboard)
+                                            if (!isAtLeastT) launchSnackbar(copiedToClipboard)
                                         }) {
                                             Icon(imageVector = Icons.Default.ContentCopy, contentDescription = null)
                                         }
