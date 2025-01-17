@@ -30,7 +30,6 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -382,7 +381,7 @@ class MainActivity : EhActivity() {
                 LocalSideSheetState provides sideSheetState,
                 LocalDrawerHandle provides drawerHandle,
                 LocalSnackBarHostState provides snackbarState,
-                LocalSnackbarContext provides remember { SnackbarContext(snackbarState, MutatorMutex()) },
+                LocalSnackbarContext provides remember { SnackbarContext(snackbarState) },
                 LocalSnackBarFabPadding provides animateDpAsState(snackbarFabPadding, label = "SnackbarFabPadding"),
                 LocalWindowSizeClass provides adaptiveInfo.windowSizeClass,
             ) {

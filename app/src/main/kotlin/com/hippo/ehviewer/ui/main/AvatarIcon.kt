@@ -20,7 +20,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -48,6 +47,7 @@ import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.i18n.Strings
 import com.hippo.ehviewer.ui.login.refreshAccountInfo
+import com.hippo.ehviewer.ui.screen.SnackbarContext
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.util.displayString
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -81,7 +81,7 @@ private val limitFlow: StateFlow<Result> = refreshEvent.conflate()
     .let { src -> merge(src, invalidateEvent.map { none() }) }
     .stateIn(limitScope, SharingStarted.Eagerly, none())
 
-context(CoroutineScope, DialogState, SnackbarHostState, DestinationsNavigator, Strings)
+context(CoroutineScope, DialogState, SnackbarContext, DestinationsNavigator, Strings)
 @Composable
 fun AvatarIcon() {
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
