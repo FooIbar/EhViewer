@@ -30,6 +30,7 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -130,6 +131,7 @@ import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.destinations.SubscriptionScreenDestination
 import com.hippo.ehviewer.ui.destinations.ToplistScreenDestination
 import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
+import com.hippo.ehviewer.ui.screen.SnackbarContext
 import com.hippo.ehviewer.ui.screen.asDst
 import com.hippo.ehviewer.ui.screen.asDstWith
 import com.hippo.ehviewer.ui.screen.navWithUrl
@@ -380,6 +382,7 @@ class MainActivity : EhActivity() {
                 LocalSideSheetState provides sideSheetState,
                 LocalDrawerHandle provides drawerHandle,
                 LocalSnackBarHostState provides snackbarState,
+                LocalSnackbarContext provides remember { SnackbarContext(snackbarState, MutatorMutex()) },
                 LocalSnackBarFabPadding provides animateDpAsState(snackbarFabPadding, label = "SnackbarFabPadding"),
                 LocalWindowSizeClass provides adaptiveInfo.windowSizeClass,
             ) {
@@ -560,6 +563,7 @@ class MainActivity : EhActivity() {
     }
 }
 
+val LocalSnackbarContext = compositionLocalOf<SnackbarContext> { error("CompositionLocal LocalSnackbarContext not present!") }
 val LocalNavDrawerState = compositionLocalOf<DrawerState> { error("CompositionLocal LocalNavDrawerState not present!") }
 val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }
 val LocalDrawerHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerHandle not present!") }
