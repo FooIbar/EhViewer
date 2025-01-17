@@ -297,7 +297,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                         if (data.itemCount == 0) return@IconButton
                         launch {
                             if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
-                                showSnackbar(invalidImageQuickSearch)
+                                launchSnackbar(invalidImageQuickSearch)
                             } else {
                                 val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
                                 val next = firstItem.gid + 1
@@ -305,7 +305,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                     if (urlBuilder.equalsQuickSearch(q)) {
                                         val nextStr = q.name.substringAfterLast('@', "")
                                         if (nextStr.toLongOrNull() == next) {
-                                            showSnackbar(getString(R.string.duplicate_quick_search, q.name))
+                                            launchSnackbar(getString(R.string.duplicate_quick_search, q.name))
                                             return@launch
                                         }
                                     }
