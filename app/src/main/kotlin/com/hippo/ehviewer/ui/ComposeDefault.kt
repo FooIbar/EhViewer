@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -26,7 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 inline fun AnimatedVisibilityScope.Screen(
     navigator: DestinationsNavigator,
-    block: @Composable context(Strings, MainActivity, SnackbarHostState, SnackbarContext, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, CoroutineScope)
+    block: @Composable context(Strings, MainActivity, SnackbarContext, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, CoroutineScope)
     () -> Unit,
 ) = Box(modifier = Modifier.fillMaxSize()) {
     val dialogState = with(LocalGlobalDialogState.current) { rememberLocal() }
@@ -35,7 +34,6 @@ inline fun AnimatedVisibilityScope.Screen(
             block(
                 LocalStrings.current,
                 with(LocalContext.current) { remember { findActivity() } },
-                LocalSnackBarHostState.current,
                 LocalSnackbarContext.current,
                 dialogState,
                 LocalSharedTransitionScope.current,
