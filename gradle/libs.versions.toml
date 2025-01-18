@@ -19,6 +19,7 @@ arrow = "2.0.0"
 coil = "3.0.4"
 compose-bom = "2025.01.00"
 compose-destinations = "2.1.0-beta15"
+compose-multiplatform = "1.7.3"
 kotlin = "2.1.0"
 kotlinx-coroutines = "1.10.1"
 kotlinx-datetime = "0.6.1"
@@ -135,10 +136,13 @@ aboutlibrariesPlugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref 
 android-application = { id = "com.android.application", version.ref = "agp" }
 composeCompilerReportGenerator = { id = "dev.shreyaspatil.compose-compiler-report-generator", version = "1.4.1" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 spotless = { id = "com.diffplug.spotless", version = "7.0.2" }
 android-test = { id = "com.android.test", version.ref = "agp" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "benchmark" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
