@@ -16,6 +16,9 @@
 
 <!-- German translations by UShimamura -->
 <resources>
+    <string name="ok">OK</string>
+    <string name="cancel">Abbrechen</string>
+
     <string name="homepage">Startseite</string>
     <string name="subscription">Gefolgte Etiketten</string>
     <string name="whats_hot">Beliebt</string>

@@ -18,13 +18,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.torrents
 import com.hippo.ehviewer.client.parser.Torrent
 import com.hippo.ehviewer.client.parser.format
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun TorrentList(
@@ -32,7 +33,7 @@ fun TorrentList(
     onItemClick: (Torrent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val title = stringResource(R.string.torrents)
+    val title = stringResource(Res.string.torrents)
     Column(
         modifier = modifier.padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

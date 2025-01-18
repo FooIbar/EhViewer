@@ -3,7 +3,6 @@ package com.hippo.ehviewer.ui.settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.annotation.ArrayRes
-import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,7 +29,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.integerArrayResource
 import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import arrow.atomic.Atomic
@@ -51,6 +49,8 @@ import kotlin.reflect.KMutableProperty0
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 object PreferenceTokens {
     val PreferenceHeaderHeight = 56.dp
@@ -62,7 +62,7 @@ object PreferenceTokens {
 @Composable
 fun PreferenceHeader(
     icon: Painter,
-    @StringRes title: Int,
+    title: StringResource,
     childRoute: DirectionDestinationSpec,
     navigator: DestinationsNavigator,
 ) {
@@ -73,14 +73,14 @@ fun PreferenceHeader(
         Spacer(modifier = Modifier.size(PreferenceTokens.PreferenceIconPadding))
         Icon(painter = icon, contentDescription = null, modifier = Modifier.size(PreferenceTokens.PreferenceIconSize), tint = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.size(PreferenceTokens.PreferenceIconPadding))
-        Text(text = stringResource(id = title), modifier = Modifier.padding(PreferenceTextPadding), style = MaterialTheme.typography.bodyLarge)
+        Text(text = stringResource(title), modifier = Modifier.padding(PreferenceTextPadding), style = MaterialTheme.typography.bodyLarge)
     }
 }
 
 @Composable
 fun PreferenceHeader(
     icon: ImageVector,
-    @StringRes title: Int,
+    title: StringResource,
     childRoute: DirectionDestinationSpec,
     navigator: DestinationsNavigator,
 ) = PreferenceHeader(

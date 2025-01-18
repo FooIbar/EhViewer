@@ -35,11 +35,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.add_favorites_dialog_title
+import com.ehviewer.core.common.add_to_favorite_failure
+import com.ehviewer.core.common.add_to_favorite_success
+import com.ehviewer.core.common.add_to_favourites
+import com.ehviewer.core.common.added_to_download_list
+import com.ehviewer.core.common.default_download_label_name
+import com.ehviewer.core.common.delete_downloads
+import com.ehviewer.core.common.download
+import com.ehviewer.core.common.download_move_dialog_title
+import com.ehviewer.core.common.download_remove_dialog_check_text
+import com.ehviewer.core.common.download_remove_dialog_message
+import com.ehviewer.core.common.download_remove_dialog_message_2
+import com.ehviewer.core.common.download_remove_dialog_title
+import com.ehviewer.core.common.favorite_note
+import com.ehviewer.core.common.go_to
+import com.ehviewer.core.common.local_favorites
+import com.ehviewer.core.common.read
+import com.ehviewer.core.common.remember_download_label
+import com.ehviewer.core.common.remove_from_favorite_failure
+import com.ehviewer.core.common.remove_from_favorite_success
+import com.ehviewer.core.common.remove_from_favourites
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUtils
@@ -83,7 +103,8 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.todayIn
 import moe.tarsin.coroutines.runSuspendCatching
 import okio.Path
-import splitties.init.appCtx
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 
 private fun removeNoMediaFile(downloadDir: Path) {
     (downloadDir / ".nomedia").delete()
@@ -127,7 +148,7 @@ suspend fun DialogState.startDownload(
     }
     if (toAdd.isEmpty()) {
         return with(findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list)
+            showTip(Res.string.added_to_download_list)
         }
     }
     var justStart = forceDefault
@@ -153,21 +174,21 @@ suspend fun DialogState.startDownload(
         }
         // Notify
         with(findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list)
+            showTip(Res.string.added_to_download_list)
         }
     } else {
         // Let use chose label
         val list = DownloadManager.labelList
         val items = buildList {
-            add(getString(R.string.default_download_label_name))
+            add(getString(Res.string.default_download_label_name))
             list.forEach {
                 add(it.label)
             }
         }
         val (selected, checked) = awaitSelectItemWithCheckBox(
             items,
-            title = R.string.download,
-            checkBoxText = R.string.remember_download_label,
+            title = Res.string.download,
+            checkBoxText = Res.string.remember_download_label,
         )
         val label1 = if (selected == 0) null else items[selected].takeIf { DownloadManager.containLabel(it) }
         // Start download
@@ -186,7 +207,7 @@ suspend fun DialogState.startDownload(
             Settings.hasDefaultDownloadLabel = false
         }
         with(context.findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list)
+            showTip(Res.string.added_to_download_list)
         }
     }
 }
@@ -197,13 +218,13 @@ suspend fun DialogState.modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
         val isFavorited = galleryInfo.favoriteSlot != NOT_FAVORITED
         val defaultFavSlot = Settings.defaultFavSlot
         if (defaultFavSlot == -2) {
-            val localFav = getFavoriteIcon(localFavorited) to appCtx.getString(R.string.local_favorites)
+            val localFav = getFavoriteIcon(localFavorited) to getString(Res.string.local_favorites)
             val cloudFav = Settings.favCat.mapIndexed { index, name ->
                 getFavoriteIcon(galleryInfo.favoriteSlot == index) to name
             }
             val items = buildList {
                 if (isFavorited) {
-                    val remove = Icons.Default.HeartBroken to appCtx.getString(R.string.remove_from_favourites)
+                    val remove = Icons.Default.HeartBroken to getString(Res.string.remove_from_favourites)
                     add(remove)
                 }
                 add(localFav)
@@ -214,8 +235,8 @@ suspend fun DialogState.modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
             }
             val (slot, note) = awaitSelectItemWithIconAndTextField(
                 items,
-                title = R.string.add_favorites_dialog_title,
-                hint = R.string.favorite_note,
+                title = Res.string.add_favorites_dialog_title,
+                hint = Res.string.favorite_note,
                 initialNote = galleryInfo.favoriteNote.orEmpty(),
                 maxChar = MAX_FAVNOTE_CHAR,
             )
@@ -293,21 +314,21 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
     val downloaded = DownloadManager.getDownloadState(info.gid) != DownloadInfo.STATE_INVALID
     val favorited = info.favoriteSlot != NOT_FAVORITED
     val items = buildList {
-        add(Icons.AutoMirrored.Default.MenuBook to R.string.read)
+        add(Icons.AutoMirrored.Default.MenuBook to Res.string.read)
         val download = if (downloaded) {
-            Icons.Default.Delete to R.string.delete_downloads
+            Icons.Default.Delete to Res.string.delete_downloads
         } else {
-            Icons.Default.Download to R.string.download
+            Icons.Default.Download to Res.string.download
         }
         add(download)
         val favorite = if (favorited) {
-            Icons.Default.HeartBroken to R.string.remove_from_favourites
+            Icons.Default.HeartBroken to Res.string.remove_from_favourites
         } else {
-            Icons.Default.Favorite to R.string.add_to_favourites
+            Icons.Default.Favorite to Res.string.add_to_favourites
         }
         add(favorite)
         if (downloaded) {
-            add(Icons.AutoMirrored.Default.DriveFileMove to R.string.download_move_dialog_title)
+            add(Icons.AutoMirrored.Default.DriveFileMove to Res.string.download_move_dialog_title)
         }
     }
     val selected = awaitSelectItemWithIcon(items, EhUtils.getSuitableTitle(info))
@@ -329,16 +350,16 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
             2 -> if (favorited) {
                 runSuspendCatching {
                     removeFromFavorites(info)
-                    showTip(R.string.remove_from_favorite_success)
+                    showTip(Res.string.remove_from_favorite_success)
                 }.onFailure {
-                    showTip(R.string.remove_from_favorite_failure)
+                    showTip(Res.string.remove_from_favorite_failure)
                 }
             } else {
                 runSuspendCatching {
                     modifyFavorites(info)
-                    showTip(R.string.add_to_favorite_success)
+                    showTip(Res.string.add_to_favorite_success)
                 }.onFailure {
-                    showTip(R.string.add_to_favorite_failure)
+                    showTip(Res.string.add_to_favorite_failure)
                 }
             }
 
@@ -353,7 +374,7 @@ private const val MAX_FAVNOTE_CHAR = 200
 private suspend fun DialogState.confirmRemoveDownload(text: String): Boolean {
     val checked = awaitResult(
         initial = Settings.removeImageFiles,
-        title = R.string.download_remove_dialog_title,
+        title = Res.string.download_remove_dialog_title,
     ) {
         Column {
             Text(
@@ -365,7 +386,7 @@ private suspend fun DialogState.confirmRemoveDownload(text: String): Boolean {
                 modifier = Modifier.fillMaxWidth(),
                 checked = expectedValue,
                 onCheckedChange = { expectedValue = it },
-                label = stringResource(id = R.string.download_remove_dialog_check_text),
+                label = stringResource(Res.string.download_remove_dialog_check_text),
                 indication = null,
             )
         }
@@ -375,7 +396,7 @@ private suspend fun DialogState.confirmRemoveDownload(text: String): Boolean {
 }
 
 suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo) {
-    val text = appCtx.getString(R.string.download_remove_dialog_message, EhUtils.getSuitableTitle(info))
+    val text = getString(Res.string.download_remove_dialog_message, EhUtils.getSuitableTitle(info))
     val checked = confirmRemoveDownload(text)
     withIOContext {
         DownloadManager.deleteDownload(info.gid, checked)
@@ -383,7 +404,7 @@ suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo) {
 }
 
 suspend fun DialogState.confirmRemoveDownloadRange(list: Collection<DownloadInfo>) {
-    val text = appCtx.getString(R.string.download_remove_dialog_message_2, list.size)
+    val text = getString(Res.string.download_remove_dialog_message_2, list.size)
     val checked = confirmRemoveDownload(text)
     withIOContext {
         // Delete
@@ -402,28 +423,28 @@ suspend fun DialogState.confirmRemoveDownloadRange(list: Collection<DownloadInfo
 }
 
 suspend fun DialogState.showMoveDownloadLabel(info: GalleryInfo) {
-    val defaultLabel = appCtx.getString(R.string.default_download_label_name)
+    val defaultLabel = getString(Res.string.default_download_label_name)
     val labels = buildList {
         add(defaultLabel)
         DownloadManager.labelList.forEach {
             add(it.label)
         }
     }
-    val selected = awaitSelectItem(labels, R.string.download_move_dialog_title)
+    val selected = awaitSelectItem(labels, Res.string.download_move_dialog_title)
     val downloadInfo = DownloadManager.getDownloadInfo(info.gid) ?: return
     val label = if (selected == 0) null else labels[selected]
     DownloadManager.changeLabel(listOf(downloadInfo), label)
 }
 
 suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>): String? {
-    val defaultLabel = appCtx.getString(R.string.default_download_label_name)
+    val defaultLabel = getString(Res.string.default_download_label_name)
     val labels = buildList {
         add(defaultLabel)
         DownloadManager.labelList.forEach {
             add(it.label)
         }
     }
-    val selected = awaitSelectItem(labels, R.string.download_move_dialog_title)
+    val selected = awaitSelectItem(labels, Res.string.download_move_dialog_title)
     val label = if (selected == 0) null else labels[selected]
     DownloadManager.changeLabel(list, label)
     return label
@@ -436,7 +457,7 @@ suspend fun DialogState.awaitSelectDate(): String? {
     val yesterdayMillis = yesterday.toEpochMillis()
     val dateRange = initialMillis..yesterdayMillis
     val dateMillis = awaitSelectDate(
-        title = R.string.go_to,
+        title = Res.string.go_to,
         yearRange = initial.year..yesterday.year,
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis in dateRange

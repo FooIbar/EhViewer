@@ -14,6 +14,10 @@
   ~ limitations under the License.
   -->
 <resources>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="copy">Copy</string>
+
     <string name="app_name" translatable="false">EhViewer</string>
     <string name="site_e" translatable="false">e-hentai</string>
     <string name="site_ex" translatable="false">exhentai</string>

@@ -32,7 +32,40 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.animate_items
+import com.ehviewer.core.common.animate_items_summary
+import com.ehviewer.core.common.cant_read_the_file
+import com.ehviewer.core.common.open_by_default
+import com.ehviewer.core.common.preload_thumb_aggressively
+import com.ehviewer.core.common.settings_ads_placeholder
+import com.ehviewer.core.common.settings_advanced
+import com.ehviewer.core.common.settings_advanced_app_language_title
+import com.ehviewer.core.common.settings_advanced_backup_favorite
+import com.ehviewer.core.common.settings_advanced_backup_favorite_failed
+import com.ehviewer.core.common.settings_advanced_backup_favorite_nothing
+import com.ehviewer.core.common.settings_advanced_backup_favorite_start
+import com.ehviewer.core.common.settings_advanced_backup_favorite_success
+import com.ehviewer.core.common.settings_advanced_backup_favorite_summary
+import com.ehviewer.core.common.settings_advanced_dump_logcat
+import com.ehviewer.core.common.settings_advanced_dump_logcat_failed
+import com.ehviewer.core.common.settings_advanced_dump_logcat_summary
+import com.ehviewer.core.common.settings_advanced_dump_logcat_to
+import com.ehviewer.core.common.settings_advanced_export_data
+import com.ehviewer.core.common.settings_advanced_export_data_failed
+import com.ehviewer.core.common.settings_advanced_export_data_summary
+import com.ehviewer.core.common.settings_advanced_export_data_to
+import com.ehviewer.core.common.settings_advanced_hardware_bitmap_threshold
+import com.ehviewer.core.common.settings_advanced_hardware_bitmap_threshold_summary
+import com.ehviewer.core.common.settings_advanced_import_data
+import com.ehviewer.core.common.settings_advanced_import_data_successfully
+import com.ehviewer.core.common.settings_advanced_import_data_summary
+import com.ehviewer.core.common.settings_advanced_read_cache_size
+import com.ehviewer.core.common.settings_advanced_save_crash_log
+import com.ehviewer.core.common.settings_advanced_save_crash_log_summary
+import com.ehviewer.core.common.settings_advanced_save_parse_error_body
+import com.ehviewer.core.common.settings_advanced_save_parse_error_body_summary
+import com.ehviewer.core.common.settings_block_extraneous_ads
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
@@ -69,6 +102,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 
 @Destination<RootGraph>
 @Composable
@@ -81,7 +116,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.settings_advanced)) },
+                title = { Text(text = stringResource(Res.string.settings_advanced)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -94,18 +129,18 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             SwitchPreference(
-                title = stringResource(id = R.string.settings_advanced_save_parse_error_body),
-                summary = stringResource(id = R.string.settings_advanced_save_parse_error_body_summary),
+                title = stringResource(Res.string.settings_advanced_save_parse_error_body),
+                summary = stringResource(Res.string.settings_advanced_save_parse_error_body_summary),
                 value = Settings::saveParseErrorBody,
             )
             val stripAds = Settings.stripExtraneousAds.asMutableState()
             SwitchPreference(
-                title = stringResource(id = R.string.settings_block_extraneous_ads),
+                title = stringResource(Res.string.settings_block_extraneous_ads),
                 value = stripAds.rememberedAccessor,
             )
             AnimatedVisibility(visible = stripAds.value) {
                 LauncherPreference(
-                    title = stringResource(id = R.string.settings_ads_placeholder),
+                    title = stringResource(Res.string.settings_ads_placeholder),
                     contract = ActivityResultContracts.PickVisualMedia(),
                     key = PickVisualMediaRequest(mediaType = ImageOnly),
                 ) { uri ->
@@ -119,14 +154,14 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 }
             }
             SwitchPreference(
-                title = stringResource(id = R.string.settings_advanced_save_crash_log),
-                summary = stringResource(id = R.string.settings_advanced_save_crash_log_summary),
+                title = stringResource(Res.string.settings_advanced_save_crash_log),
+                summary = stringResource(Res.string.settings_advanced_save_crash_log_summary),
                 value = Settings::saveCrashLog,
             )
-            val dumpLogError = stringResource(id = R.string.settings_advanced_dump_logcat_failed)
+            val dumpLogError = stringResource(Res.string.settings_advanced_dump_logcat_failed)
             LauncherPreference(
-                title = stringResource(id = R.string.settings_advanced_dump_logcat),
-                summary = stringResource(id = R.string.settings_advanced_dump_logcat_summary),
+                title = stringResource(Res.string.settings_advanced_dump_logcat),
+                summary = stringResource(Res.string.settings_advanced_dump_logcat_summary),
                 contract = ActivityResultContracts.CreateDocument("application/zip"),
                 key = "log-" + ReadableTime.getFilenamableTime() + ".zip",
             ) { uri ->
@@ -149,7 +184,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                                 CrashHandler.collectInfo(zipOs.writer())
                                 Runtime.getRuntime().exec("logcat -d").inputStream.use { it.copyTo(zipOs) }
                             }
-                            launchSnackBar(getString(R.string.settings_advanced_dump_logcat_to, uri.displayPath))
+                            launchSnackBar(getString(Res.string.settings_advanced_dump_logcat_to, uri.displayPath.orEmpty()))
                         }
                     }.onFailure {
                         launchSnackBar(dumpLogError)
@@ -158,7 +193,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 }
             }
             SimpleMenuPreferenceInt(
-                title = stringResource(id = R.string.settings_advanced_read_cache_size),
+                title = stringResource(Res.string.settings_advanced_read_cache_size),
                 entry = R.array.read_cache_size_entries,
                 entryValueRes = R.array.read_cache_size_entry_values,
                 value = Settings::readCacheSize.observed,
@@ -166,7 +201,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
             var currentLanguage by remember { mutableStateOf(getAppLanguage()) }
             val languages = remember { context.getLanguages() }
             DropDownPref(
-                title = stringResource(id = R.string.settings_advanced_app_language_title),
+                title = stringResource(Res.string.settings_advanced_app_language_title),
                 defaultValue = currentLanguage,
                 onValueChange = {
                     setAppLanguage(it)
@@ -187,26 +222,26 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 IntSliderPreference(
                     maxValue = 16384,
                     step = 3,
-                    title = stringResource(id = R.string.settings_advanced_hardware_bitmap_threshold),
-                    summary = stringResource(id = R.string.settings_advanced_hardware_bitmap_threshold_summary),
+                    title = stringResource(Res.string.settings_advanced_hardware_bitmap_threshold),
+                    summary = stringResource(Res.string.settings_advanced_hardware_bitmap_threshold_summary),
                     value = Settings::hardwareBitmapThreshold,
                 )
             }
             SwitchPreference(
-                title = stringResource(id = R.string.preload_thumb_aggressively),
+                title = stringResource(Res.string.preload_thumb_aggressively),
                 value = Settings::preloadThumbAggressively,
             )
             var animateItems by Settings.animateItems.asMutableState()
             SwitchPref(
                 checked = animateItems,
                 onMutate = { animateItems = !animateItems },
-                title = stringResource(id = R.string.animate_items),
-                summary = stringResource(id = R.string.animate_items_summary),
+                title = stringResource(Res.string.animate_items),
+                summary = stringResource(Res.string.animate_items_summary),
             )
-            val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)
+            val exportFailed = stringResource(Res.string.settings_advanced_export_data_failed)
             LauncherPreference(
-                title = stringResource(id = R.string.settings_advanced_export_data),
-                summary = stringResource(id = R.string.settings_advanced_export_data_summary),
+                title = stringResource(Res.string.settings_advanced_export_data),
+                summary = stringResource(Res.string.settings_advanced_export_data_summary),
                 contract = ActivityResultContracts.CreateDocument("application/octet-stream"),
                 key = ReadableTime.getFilenamableTime() + ".db",
             ) { uri ->
@@ -214,18 +249,18 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     context.runCatching {
                         grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                         EhDB.exportDB(context, uri.toOkioPath())
-                        launchSnackBar(getString(R.string.settings_advanced_export_data_to, uri.displayPath))
+                        launchSnackBar(getString(Res.string.settings_advanced_export_data_to, uri.displayPath.orEmpty()))
                     }.onFailure {
                         logcat(it)
                         launchSnackBar(exportFailed)
                     }
                 }
             }
-            val importFailed = stringResource(id = R.string.cant_read_the_file)
-            val importSucceed = stringResource(id = R.string.settings_advanced_import_data_successfully)
+            val importFailed = stringResource(Res.string.cant_read_the_file)
+            val importSucceed = stringResource(Res.string.settings_advanced_import_data_successfully)
             LauncherPreference(
-                title = stringResource(id = R.string.settings_advanced_import_data),
-                summary = stringResource(id = R.string.settings_advanced_import_data_summary),
+                title = stringResource(Res.string.settings_advanced_import_data),
+                summary = stringResource(Res.string.settings_advanced_import_data_summary),
                 contract = ActivityResultContracts.GetContent(),
                 key = "application/octet-stream",
             ) { uri ->
@@ -242,12 +277,12 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
             }
             val hasSignedIn by Settings.hasSignedIn.collectAsState()
             if (hasSignedIn) {
-                val backupNothing = stringResource(id = R.string.settings_advanced_backup_favorite_nothing)
-                val backupFailed = stringResource(id = R.string.settings_advanced_backup_favorite_failed)
-                val backupSucceed = stringResource(id = R.string.settings_advanced_backup_favorite_success)
+                val backupNothing = stringResource(Res.string.settings_advanced_backup_favorite_nothing)
+                val backupFailed = stringResource(Res.string.settings_advanced_backup_favorite_failed)
+                val backupSucceed = stringResource(Res.string.settings_advanced_backup_favorite_success)
                 Preference(
-                    title = stringResource(id = R.string.settings_advanced_backup_favorite),
-                    summary = stringResource(id = R.string.settings_advanced_backup_favorite_summary),
+                    title = stringResource(Res.string.settings_advanced_backup_favorite),
+                    summary = stringResource(Res.string.settings_advanced_backup_favorite_summary),
                 ) {
                     val favListUrlBuilder = FavListUrlBuilder()
                     var favTotal = 0
@@ -261,7 +296,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                             favIndex += result.galleryInfoList.size
                             val status = "($favIndex/$favTotal)"
                             EhDB.putLocalFavorites(result.galleryInfoList)
-                            launchSnackBar(context.getString(R.string.settings_advanced_backup_favorite_start, status))
+                            launchSnackBar(getString(Res.string.settings_advanced_backup_favorite_start, status))
                             if (result.next != null) {
                                 delay(Settings.downloadDelay.toLong())
                                 favListUrlBuilder.setIndex(result.next, true)
@@ -281,7 +316,7 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     }
                 }
             }
-            Preference(title = stringResource(id = R.string.open_by_default)) {
+            Preference(title = stringResource(Res.string.open_by_default)) {
                 context.run {
                     try {
                         @SuppressLint("InlinedApi")

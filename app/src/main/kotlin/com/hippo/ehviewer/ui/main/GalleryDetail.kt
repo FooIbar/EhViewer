@@ -26,10 +26,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.favored_times
+import com.ehviewer.core.common.page_count
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryDetail
@@ -38,6 +39,8 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.ui.tools.detailThumbGenerator
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun GalleryDetailHeaderInfoCard(
@@ -70,14 +73,14 @@ fun GalleryDetailHeaderInfoCard(
                     }.padding(start = 16.dp),
                 )
                 Text(
-                    text = stringResource(id = R.string.favored_times, favoriteCount),
+                    text = stringResource(Res.string.favored_times, favoriteCount),
                     modifier = Modifier.constrainAs(favRef) {
                         start.linkTo(parent.start)
                         top.linkTo(langRef.bottom)
                     }.padding(top = 8.dp),
                 )
                 Text(
-                    text = pluralStringResource(id = R.plurals.page_count, pages, pages),
+                    text = pluralStringResource(Res.plurals.page_count, pages, pages),
                     modifier = Modifier.constrainAs(pagesRef) {
                         baseline.linkTo(favRef.baseline)
                         end.linkTo(parent.end)

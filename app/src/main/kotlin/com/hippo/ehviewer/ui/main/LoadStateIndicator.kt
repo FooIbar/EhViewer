@@ -7,10 +7,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.paging.LoadState
-import com.hippo.ehviewer.R
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.action_retry
 import com.hippo.ehviewer.util.displayString
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun LoadStateIndicator(
@@ -26,7 +27,7 @@ fun LoadStateIndicator(
         Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = state.error.displayString())
             Button(onClick = retry) {
-                Text(text = stringResource(id = R.string.action_retry))
+                Text(text = stringResource(Res.string.action_retry))
             }
         }
     }

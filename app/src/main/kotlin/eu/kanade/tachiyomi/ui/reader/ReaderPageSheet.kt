@@ -1,6 +1,5 @@
 package eu.kanade.tachiyomi.ui.reader
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,10 +23,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.action_copy
+import com.ehviewer.core.common.action_save
+import com.ehviewer.core.common.action_save_to
+import com.ehviewer.core.common.action_share
+import com.ehviewer.core.common.refresh
+import com.ehviewer.core.common.show_blocked_image
+import com.ehviewer.core.common.view_original
 import moe.tarsin.kt.andThen
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ReaderPageSheetMeta(
@@ -41,21 +48,21 @@ fun ReaderPageSheetMeta(
     dismiss: () -> Unit,
 ) {
     @Composable
-    fun Item(icon: ImageVector, @StringRes text: Int, onClick: () -> Unit) = Row(
+    fun Item(icon: ImageVector, text: StringResource, onClick: () -> Unit) = Row(
         modifier = Modifier.fillMaxWidth().height(56.dp).clickable(onClick = onClick andThen dismiss).padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(imageVector = icon, contentDescription = null)
         Spacer(modifier = Modifier.size(32.dp))
-        Text(text = stringResource(id = text))
+        Text(text = stringResource(text))
     }
     Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
-        showAds?.let { Item(icon = Icons.Default.Visibility, text = R.string.show_blocked_image, onClick = it) }
-        Item(icon = Icons.Default.Refresh, text = R.string.refresh, onClick = retry)
-        Item(icon = Icons.Default.Visibility, text = R.string.view_original, onClick = retryOrigin)
-        Item(icon = Icons.Default.Share, text = R.string.action_share, onClick = share)
-        Item(icon = Icons.Default.FileCopy, text = R.string.action_copy, onClick = copy)
-        Item(icon = Icons.Default.Save, text = R.string.action_save, onClick = save)
-        Item(icon = Icons.Default.Save, text = R.string.action_save_to, onClick = saveTo)
+        showAds?.let { Item(icon = Icons.Default.Visibility, text = Res.string.show_blocked_image, onClick = it) }
+        Item(icon = Icons.Default.Refresh, text = Res.string.refresh, onClick = retry)
+        Item(icon = Icons.Default.Visibility, text = Res.string.view_original, onClick = retryOrigin)
+        Item(icon = Icons.Default.Share, text = Res.string.action_share, onClick = share)
+        Item(icon = Icons.Default.FileCopy, text = Res.string.action_copy, onClick = copy)
+        Item(icon = Icons.Default.Save, text = Res.string.action_save, onClick = save)
+        Item(icon = Icons.Default.Save, text = Res.string.action_save_to, onClick = saveTo)
     }
 }

@@ -29,7 +29,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -37,7 +36,12 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import arrow.core.Tuple9
-import com.hippo.ehviewer.R
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.download_state_failed
+import com.ehviewer.core.common.download_state_failed_2
+import com.ehviewer.core.common.download_state_finish
+import com.ehviewer.core.common.download_state_none
+import com.ehviewer.core.common.download_state_wait
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.dao.DownloadInfo
@@ -47,6 +51,7 @@ import com.hippo.ehviewer.ui.tools.GalleryListCardRating
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
 import com.hippo.ehviewer.ui.tools.noopThumbGenerator
 import com.hippo.ehviewer.util.FileUtils
+import org.jetbrains.compose.resources.stringResource
 
 private val ids = Tuple9(1, 2, 3, 4, 5, 6, 7, 8, 9)
 
@@ -128,15 +133,15 @@ fun DownloadCard(
                 thumb(info)
             }
         }
-        val stateFailed = stringResource(R.string.download_state_failed)
-        val stateFailed2 = stringResource(R.string.download_state_failed_2, info.legacy)
+        val stateFailed = stringResource(Res.string.download_state_failed)
+        val stateFailed2 = stringResource(Res.string.download_state_failed_2, info.legacy)
         val downloadState by DownloadManager.collectDownloadState(info.gid)
         val stateText = when (downloadState) {
-            DownloadInfo.STATE_NONE -> stringResource(R.string.download_state_none)
-            DownloadInfo.STATE_WAIT -> stringResource(R.string.download_state_wait)
+            DownloadInfo.STATE_NONE -> stringResource(Res.string.download_state_none)
+            DownloadInfo.STATE_WAIT -> stringResource(Res.string.download_state_wait)
             DownloadInfo.STATE_DOWNLOAD -> null
             DownloadInfo.STATE_FAILED -> if (info.legacy <= 0) stateFailed else stateFailed2
-            DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_finish)
+            DownloadInfo.STATE_FINISH -> stringResource(Res.string.download_state_finish)
             else -> null // Chill, will be removed soon
         }
         ConstraintLayout(

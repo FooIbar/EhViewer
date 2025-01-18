@@ -55,13 +55,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.delete
+import com.ehviewer.core.common.delete_search_history
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.TagNamespace
@@ -84,6 +85,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 fun interface SuggestionProvider {
     fun providerSuggestions(text: String): Suggestion?
@@ -192,8 +194,8 @@ fun SearchBarScreen(
 
     fun deleteKeyword(keyword: String) {
         scope.launch {
-            awaitConfirmationOrCancel(confirmText = R.string.delete) {
-                Text(text = stringResource(id = R.string.delete_search_history, keyword))
+            awaitConfirmationOrCancel(confirmText = Res.string.delete) {
+                Text(text = stringResource(Res.string.delete_search_history, keyword))
             }
             mSearchDatabase.deleteQuery(keyword)
             updateSuggestions()

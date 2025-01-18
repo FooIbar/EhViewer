@@ -14,14 +14,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import com.hippo.ehviewer.R
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.custom_filter
+import com.ehviewer.core.common.pref_category_general
+import com.ehviewer.core.common.pref_category_reading_mode
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
-private val tabs = intArrayOf(
-    R.string.pref_category_reading_mode,
-    R.string.pref_category_general,
-    R.string.custom_filter,
+private val tabs = arrayOf(
+    Res.string.pref_category_reading_mode,
+    Res.string.pref_category_general,
+    Res.string.custom_filter,
 )
 
 @Composable
@@ -41,7 +44,7 @@ fun SettingsPager(modifier: Modifier = Modifier, onPageSelected: (Int) -> Unit) 
             Tab(
                 selected = pagerState.currentPage == index,
                 onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                text = { Text(text = stringResource(id = res)) },
+                text = { Text(text = stringResource(res)) },
                 unselectedContentColor = MaterialTheme.colorScheme.onSurface,
             )
         }

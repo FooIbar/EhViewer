@@ -15,6 +15,8 @@
   -->
 
 <resources>
+    <string name="ok">Aceptar</string>
+    <string name="cancel">Cancelar</string>
 
     <!-- Category -->
 

@@ -1,7 +1,6 @@
 package com.hippo.ehviewer.ui.tools
 
 import android.content.Context
-import androidx.annotation.StringRes
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -83,7 +82,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -95,7 +93,12 @@ import arrow.core.Either
 import arrow.core.raise.Raise
 import arrow.core.raise.either
 import arrow.core.right
-import com.hippo.ehviewer.R
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.action_add_tag
+import com.ehviewer.core.common.action_add_tag_tip
+import com.ehviewer.core.common.cancel
+import com.ehviewer.core.common.ok
+import com.ehviewer.core.common.translate_tag_for_tagger
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhTagDatabase.suggestion
 import com.jamal.composeprefs3.ui.ifNotNullThen
@@ -106,6 +109,8 @@ import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 fun interface ActionScope {
     fun onSelect(action: String, that: suspend () -> Unit)
@@ -139,7 +144,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
 
     suspend fun <R> awaitResult(
         initial: R,
-        @StringRes title: Int? = null,
+        title: StringResource? = null,
         invalidator: (suspend Raise<String>.(R) -> Unit)? = null,
         block: @Composable DialogScope<R>.(String?) -> Unit,
     ): R = dialog { cont ->
@@ -165,17 +170,17 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
                         cont.resume(state.value)
                     }
                 }) {
-                    Text(text = stringResource(id = android.R.string.ok))
+                    Text(text = stringResource(Res.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = {
                     cont.cancel()
                 }) {
-                    Text(text = stringResource(id = android.R.string.cancel))
+                    Text(text = stringResource(Res.string.cancel))
                 }
             },
-            title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+            title = title.ifNotNullThen { Text(text = stringResource(title!!)) },
             text = { block(impl, errorMsg) },
         )
     }
@@ -189,23 +194,23 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
             confirmButton = {
                 TextButton(
                     onClick = { cont.resume(selected.toList()) },
-                    content = { Text(text = stringResource(id = android.R.string.ok)) },
+                    content = { Text(text = stringResource(Res.string.ok)) },
                 )
             },
             dismissButton = {
                 TextButton(
                     onClick = { cont.cancel() },
-                    content = { Text(text = stringResource(id = android.R.string.cancel)) },
+                    content = { Text(text = stringResource(Res.string.cancel)) },
                 )
             },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = stringResource(id = R.string.action_add_tag))
+                    Text(text = stringResource(Res.string.action_add_tag))
                     val context = LocalContext.current
                     if (EhTagDatabase.isTranslatable(context)) {
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
-                            text = stringResource(id = R.string.translate_tag_for_tagger),
+                            text = stringResource(Res.string.translate_tag_for_tagger),
                             style = MaterialTheme.typography.titleSmall,
                         )
                         Checkbox(
@@ -241,7 +246,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
                         OutlinedTextField(
                             modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
                             state = state,
-                            label = { Text(text = stringResource(id = R.string.action_add_tag_tip)) },
+                            label = { Text(text = stringResource(Res.string.action_add_tag_tip)) },
                             trailingIcon = {
                                 IconButton(
                                     onClick = {
@@ -311,7 +316,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
         title: String? = null,
         hint: String? = null,
         isNumber: Boolean = false,
-        @StringRes confirmText: Int = android.R.string.ok,
+        confirmText: StringResource = Res.string.ok,
         onUserDismiss: (() -> Unit)? = null,
         invalidator: (suspend Raise<String>.(String) -> Unit)? = null,
     ) = dialog { cont ->
@@ -335,7 +340,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
                         }
                     }
                 }) {
-                    Text(text = stringResource(id = confirmText))
+                    Text(text = stringResource(confirmText))
                 }
             },
             title = title.ifNotNullThen { Text(text = title!!) },
@@ -361,10 +366,10 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
 
     suspend fun awaitInputTextWithCheckBox(
         initial: String = "",
-        @StringRes title: Int? = null,
-        @StringRes hint: Int? = null,
+        title: StringResource? = null,
+        hint: StringResource? = null,
         checked: Boolean,
-        @StringRes checkBoxText: Int,
+        checkBoxText: StringResource,
         isNumber: Boolean = false,
         invalidator: (suspend Raise<String>.(String, Boolean) -> Unit)? = null,
     ): Pair<String, Boolean> = dialog { cont ->
@@ -386,10 +391,10 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
                         }
                     }
                 }) {
-                    Text(text = stringResource(id = android.R.string.ok))
+                    Text(text = stringResource(Res.string.ok))
                 }
             },
-            title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+            title = title.ifNotNullThen { Text(text = stringResource(title!!)) },
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -397,7 +402,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
                     OutlinedTextField(
                         state = state,
                         label = hint?.let {
-                            { Text(text = stringResource(id = it)) }
+                            { Text(text = stringResource(it)) }
                         },
                         trailingIcon = error.ifNotNullThen {
                             Icon(
@@ -423,9 +428,9 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
     }
 
     suspend fun awaitConfirmationOrCancel(
-        @StringRes confirmText: Int = android.R.string.ok,
-        @StringRes dismissText: Int = android.R.string.cancel,
-        @StringRes title: Int? = null,
+        confirmText: StringResource = Res.string.ok,
+        dismissText: StringResource = Res.string.cancel,
+        title: StringResource? = null,
         showConfirmButton: Boolean = true,
         showCancelButton: Boolean = true,
         onCancelButtonClick: () -> Unit = {},
@@ -437,7 +442,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
             confirmButton = {
                 if (showConfirmButton) {
                     TextButton(onClick = { cont.resume(Unit) }) {
-                        Text(text = stringResource(id = confirmText))
+                        Text(text = stringResource(confirmText))
                     }
                 }
             },
@@ -446,10 +451,10 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
                     onCancelButtonClick()
                     cont.cancel()
                 }) {
-                    Text(text = stringResource(id = dismissText))
+                    Text(text = stringResource(dismissText))
                 }
             },
-            title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+            title = title.ifNotNullThen { Text(text = stringResource(title!!)) },
             text = text,
             properties = if (secure) {
                 DialogProperties(securePolicy = SecureFlagPolicy.SecureOn)
@@ -460,7 +465,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
     }
 
     suspend fun awaitSelectDate(
-        @StringRes title: Int,
+        title: StringResource,
         initialSelectedDateMillis: Long? = null,
         initialDisplayedMonthMillis: Long? = initialSelectedDateMillis,
         yearRange: IntRange = DatePickerDefaults.YearRange,
@@ -479,12 +484,12 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
             onDismissRequest = { cont.cancel() },
             confirmButton = {
                 TextButton(onClick = { cont.resume(state.selectedDateMillis) }) {
-                    Text(text = stringResource(id = android.R.string.ok))
+                    Text(text = stringResource(Res.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { cont.cancel() }) {
-                    Text(text = stringResource(id = android.R.string.cancel))
+                    Text(text = stringResource(Res.string.cancel))
                 }
             },
         ) {
@@ -492,7 +497,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
                 state = state,
                 title = {
                     Text(
-                        text = stringResource(id = title),
+                        text = stringResource(title),
                         modifier = Modifier.padding(DatePickerTitlePadding),
                     )
                 },
@@ -548,10 +553,10 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
                     Row(modifier = Modifier.height(40.dp).fillMaxWidth()) {
                         Spacer(modifier = Modifier.weight(1f))
                         TextButton(onClick = { cont.cancel() }) {
-                            Text(stringResource(id = android.R.string.cancel))
+                            Text(stringResource(Res.string.cancel))
                         }
                         TextButton(onClick = { cont.resume(state.hour to state.minute) }) {
-                            Text(stringResource(id = android.R.string.ok))
+                            Text(stringResource(Res.string.ok))
                         }
                     }
                 }
@@ -562,12 +567,12 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
     suspend fun awaitSingleChoice(
         items: List<String>,
         selected: Int,
-        @StringRes title: Int? = null,
+        title: StringResource? = null,
     ): Int = showNoButton {
         Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
             title?.let {
                 Text(
-                    text = stringResource(id = it),
+                    text = stringResource(it),
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.headlineSmall,
                 )
@@ -586,21 +591,21 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
 
     suspend fun awaitSelectItem(
         items: List<String>,
-        @StringRes title: Int? = null,
+        title: StringResource? = null,
         selected: Int = -1,
         respectDefaultWidth: Boolean = true,
     ) = awaitSelectItem(items, title?.right(), selected, respectDefaultWidth)
 
     suspend fun awaitSelectItem(
         items: List<String>,
-        title: Either<String, Int>?,
+        title: Either<String, StringResource>?,
         selected: Int = -1,
         respectDefaultWidth: Boolean = true,
     ): Int = showNoButton(respectDefaultWidth) {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
             if (title != null) {
                 Text(
-                    text = title.fold({ it }, { stringResource(id = it) }),
+                    text = title.fold({ it }, { stringResource(it) }),
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.headlineSmall,
                 )
@@ -618,7 +623,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
     }
 
     suspend inline fun awaitSelectAction(
-        @StringRes title: Int? = null,
+        title: StringResource? = null,
         selected: Int = -1,
         builder: ActionScope.() -> Unit,
     ): suspend () -> Unit {
@@ -629,15 +634,15 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
 
     suspend fun awaitSelectItemWithCheckBox(
         items: List<String>,
-        @StringRes title: Int,
-        @StringRes checkBoxText: Int,
+        title: StringResource,
+        checkBoxText: StringResource,
         selected: Int = -1,
         initialChecked: Boolean = false,
     ): Pair<Int, Boolean> = showNoButton {
         var checked by remember { mutableStateOf(initialChecked) }
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
             Text(
-                text = stringResource(id = title),
+                text = stringResource(title),
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                 style = MaterialTheme.typography.headlineSmall,
             )
@@ -660,7 +665,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
     }
 
     suspend fun awaitSelectItemWithIcon(
-        items: List<Pair<ImageVector, Int>>,
+        items: List<Pair<ImageVector, StringResource>>,
         title: String,
     ): Int = showNoButton {
         LazyColumn {
@@ -669,7 +674,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
             }
             itemsIndexed(items) { index, (icon, text) ->
                 ListItem(
-                    headlineContent = { Text(text = stringResource(id = text), style = MaterialTheme.typography.titleMedium) },
+                    headlineContent = { Text(text = stringResource(text), style = MaterialTheme.typography.titleMedium) },
                     modifier = Modifier.clickable { resume(index) }.padding(horizontal = 8.dp),
                     leadingContent = { Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor) },
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -680,13 +685,13 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
 
     suspend fun awaitSelectItemWithIconAndTextField(
         items: List<Pair<ImageVector, String>>,
-        @StringRes title: Int,
-        @StringRes hint: Int,
+        title: StringResource,
+        hint: StringResource,
         initialNote: String,
         maxChar: Int,
     ): Pair<Int, String> = showNoButton(false) {
         Column {
-            Text(text = stringResource(id = title), modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp), style = MaterialTheme.typography.titleMedium)
+            Text(text = stringResource(title), modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp), style = MaterialTheme.typography.titleMedium)
             CircularLayout(
                 modifier = Modifier.fillMaxWidth().aspectRatio(1F),
                 placeFirstItemInCenter = true,
@@ -695,7 +700,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
                 TextField(
                     state = note,
                     modifier = Modifier.fillMaxWidth(0.45F).aspectRatio(1F),
-                    label = { Text(text = stringResource(id = hint)) },
+                    label = { Text(text = stringResource(hint)) },
                     trailingIcon = {
                         if (note.text.isNotEmpty()) {
                             IconButton(onClick = { note.clearText() }) {

@@ -57,7 +57,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.viewModelScope
@@ -70,6 +69,36 @@ import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.add
+import com.ehviewer.core.common.add_quick_search_dialog_title
+import com.ehviewer.core.common.add_quick_search_tip
+import com.ehviewer.core.common.app_name
+import com.ehviewer.core.common.delete
+import com.ehviewer.core.common.delete_quick_search
+import com.ehviewer.core.common.duplicate_name
+import com.ehviewer.core.common.duplicate_quick_search
+import com.ehviewer.core.common.error_invalid_number
+import com.ehviewer.core.common.error_out_of_range
+import com.ehviewer.core.common.gallery_list_search_bar_hint_e_hentai
+import com.ehviewer.core.common.gallery_list_search_bar_hint_exhentai
+import com.ehviewer.core.common.gallery_list_search_bar_open_gallery
+import com.ehviewer.core.common.go_to
+import com.ehviewer.core.common.go_to_hint
+import com.ehviewer.core.common.homepage
+import com.ehviewer.core.common.image_search_not_quick_search
+import com.ehviewer.core.common.name_is_empty
+import com.ehviewer.core.common.quick_search
+import com.ehviewer.core.common.quick_search_tip
+import com.ehviewer.core.common.readme
+import com.ehviewer.core.common.save_progress
+import com.ehviewer.core.common.subscription
+import com.ehviewer.core.common.toplist
+import com.ehviewer.core.common.toplist_alltime
+import com.ehviewer.core.common.toplist_pastmonth
+import com.ehviewer.core.common.toplist_pastyear
+import com.ehviewer.core.common.toplist_yesterday
+import com.ehviewer.core.common.whats_hot
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -130,6 +159,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -180,8 +211,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     val listState = rememberLazyGridState()
     val gridState = rememberLazyStaggeredGridState()
     val isTopList = remember(urlBuilder) { urlBuilder.mode == MODE_TOPLIST }
-    val ehHint = stringResource(R.string.gallery_list_search_bar_hint_e_hentai)
-    val exHint = stringResource(R.string.gallery_list_search_bar_hint_exhentai)
+    val ehHint = stringResource(Res.string.gallery_list_search_bar_hint_e_hentai)
+    val exHint = stringResource(Res.string.gallery_list_search_bar_hint_exhentai)
     val searchBarHint by rememberUpdatedState(if (EhUtils.isExHentai) exHint else ehHint)
     val suitableTitle = getSuitableTitleForUrlBuilder(urlBuilder)
     val data = rememberInVM {
@@ -253,7 +284,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     if (isTopList) {
         ProvideSideSheetContent { sheetState ->
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.toplist)) },
+                title = { Text(text = stringResource(Res.string.toplist)) },
                 windowInsets = EmptyWindowInsets,
                 colors = topBarOnDrawerColor(),
             )
@@ -275,24 +306,24 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     } else {
         ProvideSideSheetContent { sheetState ->
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.quick_search)) },
+                title = { Text(text = stringResource(Res.string.quick_search)) },
                 colors = topBarOnDrawerColor(),
                 actions = {
                     IconButton(onClick = {
                         launch {
-                            awaitConfirmationOrCancel(title = R.string.quick_search, showCancelButton = false) {
-                                Text(text = stringResource(id = R.string.add_quick_search_tip))
+                            awaitConfirmationOrCancel(title = Res.string.quick_search, showCancelButton = false) {
+                                Text(text = stringResource(Res.string.add_quick_search_tip))
                             }
                         }
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.Help,
-                            contentDescription = stringResource(id = R.string.readme),
+                            contentDescription = stringResource(Res.string.readme),
                         )
                     }
-                    val invalidImageQuickSearch = stringResource(R.string.image_search_not_quick_search)
-                    val nameEmpty = stringResource(R.string.name_is_empty)
-                    val dupName = stringResource(R.string.duplicate_name)
+                    val invalidImageQuickSearch = stringResource(Res.string.image_search_not_quick_search)
+                    val nameEmpty = stringResource(Res.string.name_is_empty)
+                    val dupName = stringResource(Res.string.duplicate_name)
                     IconButton(onClick = {
                         if (data.itemCount == 0) return@IconButton
                         launch {
@@ -305,17 +336,17 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                     if (urlBuilder.equalsQuickSearch(q)) {
                                         val nextStr = q.name.substringAfterLast('@', "")
                                         if (nextStr.toLongOrNull() == next) {
-                                            showSnackbar(getString(R.string.duplicate_quick_search, q.name))
+                                            showSnackbar(getString(Res.string.duplicate_quick_search, q.name))
                                             return@launch
                                         }
                                     }
                                 }
                                 awaitInputTextWithCheckBox(
                                     initial = quickSearchName ?: urlBuilder.keyword.orEmpty(),
-                                    title = R.string.add_quick_search_dialog_title,
-                                    hint = R.string.quick_search,
+                                    title = Res.string.add_quick_search_dialog_title,
+                                    hint = Res.string.quick_search,
                                     checked = saveProgress,
-                                    checkBoxText = R.string.save_progress,
+                                    checkBoxText = Res.string.save_progress,
                                 ) { input, checked ->
                                     var text = input.trim()
                                     ensure(text.isNotBlank()) { nameEmpty }
@@ -333,7 +364,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                     }) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(id = R.string.add),
+                            contentDescription = stringResource(Res.string.add),
                         )
                     }
                 },
@@ -365,8 +396,8 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                 snapshotFlow { dismissState.currentValue }.collect { value ->
                                     if (value == SwipeToDismissBoxValue.EndToStart) {
                                         runCatching {
-                                            awaitConfirmationOrCancel(confirmText = R.string.delete) {
-                                                Text(text = stringResource(R.string.delete_quick_search, item.name))
+                                            awaitConfirmationOrCancel(confirmText = Res.string.delete) {
+                                                Text(text = stringResource(Res.string.delete_quick_search, item.name))
                                             }
                                         }.onSuccess {
                                             EhDB.deleteQuickSearch(item)
@@ -449,7 +480,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 Await({ delay(200) }) {
                     if (quickSearchList.isEmpty()) {
                         Text(
-                            text = stringResource(id = R.string.quick_search_tip),
+                            text = stringResource(Res.string.quick_search_tip),
                             modifier = Modifier.align(Alignment.Center),
                         )
                     }
@@ -461,7 +492,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
 
-    val openGalleryKeyword = stringResource(R.string.gallery_list_search_bar_open_gallery)
+    val openGalleryKeyword = stringResource(Res.string.gallery_list_search_bar_open_gallery)
     abstract class UrlSuggestion : Suggestion() {
         override val keyword = openGalleryKeyword
         override val canOpenDirectly = true
@@ -525,7 +556,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         trailingIcon = {
             val sheetState = LocalSideSheetState.current
             IconButton(onClick = { launch { sheetState.open() } }) {
-                Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(id = R.string.quick_search))
+                Icon(imageVector = Icons.Outlined.Bookmarks, contentDescription = stringResource(Res.string.quick_search))
             }
             AvatarIcon()
         },
@@ -591,9 +622,9 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         )
     }
 
-    val gotoTitle = stringResource(R.string.go_to)
-    val invalidNum = stringResource(R.string.error_invalid_number)
-    val outOfRange = stringResource(R.string.error_out_of_range)
+    val gotoTitle = stringResource(Res.string.go_to)
+    val invalidNum = stringResource(Res.string.error_invalid_number)
+    val outOfRange = stringResource(Res.string.error_out_of_range)
 
     val hideFab by asyncState(
         produce = { fabHidden },
@@ -624,7 +655,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             onClick(EhIcons.Default.GoTo) {
                 if (isTopList) {
                     val page = urlBuilder.jumpTo?.toIntOrNull() ?: 0
-                    val hint = getString(R.string.go_to_hint, page + 1, TOPLIST_PAGES)
+                    val hint = getString(Res.string.go_to_hint, page + 1, TOPLIST_PAGES)
                     val text = awaitInputText(title = gotoTitle, hint = hint, isNumber = true) { oriText ->
                         val goto = ensureNotNull(oriText.trim().toIntOrNull()) { invalidNum } - 1
                         ensure(goto in 0..<TOPLIST_PAGES) { outOfRange }
@@ -658,15 +689,15 @@ private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder, appName: B
     val category = urlBuilder.category
     val mode = urlBuilder.mode
     return if (mode == MODE_WHATS_HOT) {
-        stringResource(R.string.whats_hot)
+        stringResource(Res.string.whats_hot)
     } else if (!keyword.isNullOrEmpty()) {
         when (mode) {
             MODE_TOPLIST -> {
                 when (keyword) {
-                    "11" -> stringResource(R.string.toplist_alltime)
-                    "12" -> stringResource(R.string.toplist_pastyear)
-                    "13" -> stringResource(R.string.toplist_pastmonth)
-                    "15" -> stringResource(R.string.toplist_yesterday)
+                    "11" -> stringResource(Res.string.toplist_alltime)
+                    "12" -> stringResource(Res.string.toplist_pastyear)
+                    "13" -> stringResource(Res.string.toplist_pastmonth)
+                    "15" -> stringResource(Res.string.toplist_yesterday)
                     else -> null
                 }
             }
@@ -677,11 +708,11 @@ private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder, appName: B
             else -> keyword
         }
     } else if (category == EhUtils.NONE && urlBuilder.advanceSearch == -1) {
-        val appNameStr = stringResource(R.string.app_name)
-        val homepageStr = stringResource(R.string.homepage)
+        val appNameStr = stringResource(Res.string.app_name)
+        val homepageStr = stringResource(Res.string.homepage)
         when (mode) {
             MODE_NORMAL -> if (appName) appNameStr else homepageStr
-            MODE_SUBSCRIPTION -> stringResource(R.string.subscription)
+            MODE_SUBSCRIPTION -> stringResource(Res.string.subscription)
             else -> null
         }
     } else if (category.countOneBits() == 1) {

@@ -15,6 +15,9 @@
   ~ limitations under the License.
   -->
 <resources>
+    <string name="ok">OK</string>
+    <string name="cancel">キャンセル</string>
+
     <!-- Theme -->
     <!-- Category -->
     <string name="homepage">ホーム</string>

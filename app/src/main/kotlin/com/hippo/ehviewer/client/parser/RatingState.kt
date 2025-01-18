@@ -19,7 +19,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RateGalleryResult(
+data class RatingState(
     @SerialName("rating_avg")
     val rating: Float,
     @SerialName("rating_cnt")

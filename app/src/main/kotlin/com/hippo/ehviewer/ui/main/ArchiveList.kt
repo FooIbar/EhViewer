@@ -17,12 +17,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.archive_free
+import com.ehviewer.core.common.archive_original
+import com.ehviewer.core.common.archive_resample
+import com.ehviewer.core.common.current_funds
 import com.hippo.ehviewer.client.parser.Archive
 import com.hippo.ehviewer.client.parser.Funds
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ArchiveList(
@@ -31,10 +35,10 @@ fun ArchiveList(
     onItemClick: (Archive) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val currentFunds = stringResource(R.string.current_funds)
-    val archiveFree = stringResource(R.string.archive_free)
-    val archiveOriginal = stringResource(R.string.archive_original)
-    val archiveResample = stringResource(R.string.archive_resample)
+    val currentFunds = stringResource(Res.string.current_funds)
+    val archiveFree = stringResource(Res.string.archive_free)
+    val archiveOriginal = stringResource(Res.string.archive_original)
+    val archiveResample = stringResource(Res.string.archive_resample)
     val fundsStyle = MaterialTheme.typography.labelLarge
     val (hAtH, nonHAtH) = remember(items) { items.partition { it.isHAtH } }
     LazyVerticalGrid(

@@ -16,8 +16,13 @@
 package com.hippo.ehviewer.util
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.from_the_future
+import com.ehviewer.core.common.just_now
+import com.ehviewer.core.common.some_days_ago
+import com.ehviewer.core.common.some_hours_ago
+import com.ehviewer.core.common.some_minutes_ago
+import com.ehviewer.core.common.yesterday
 import com.hippo.ehviewer.R
 import java.util.Locale
 import kotlinx.datetime.Clock
@@ -29,6 +34,8 @@ import kotlinx.datetime.format.MonthNames
 import kotlinx.datetime.format.Padding
 import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import splitties.init.appCtx
 
 object ReadableTime {
@@ -104,22 +111,22 @@ object ReadableTime {
         val now = nowInstant.toEpochMilliseconds()
         val diff = now - time
         return when {
-            (diff < 0 || time <= 0) -> stringResource(id = R.string.from_the_future)
-            diff < MINUTE_MILLIS -> stringResource(id = R.string.just_now)
-            diff < 2 * MINUTE_MILLIS -> pluralStringResource(R.plurals.some_minutes_ago, 1, 1)
+            (diff < 0 || time <= 0) -> stringResource(Res.string.from_the_future)
+            diff < MINUTE_MILLIS -> stringResource(Res.string.just_now)
+            diff < 2 * MINUTE_MILLIS -> pluralStringResource(Res.plurals.some_minutes_ago, 1, 1)
             diff < 50 * MINUTE_MILLIS -> {
                 val minutes = (diff / MINUTE_MILLIS).toInt()
-                pluralStringResource(R.plurals.some_minutes_ago, minutes, minutes)
+                pluralStringResource(Res.plurals.some_minutes_ago, minutes, minutes)
             }
-            diff < 90 * MINUTE_MILLIS -> pluralStringResource(R.plurals.some_hours_ago, 1, 1)
+            diff < 90 * MINUTE_MILLIS -> pluralStringResource(Res.plurals.some_hours_ago, 1, 1)
             diff < 24 * HOUR_MILLIS -> {
                 val hours = (diff / HOUR_MILLIS).toInt()
-                pluralStringResource(R.plurals.some_hours_ago, hours, hours)
+                pluralStringResource(Res.plurals.some_hours_ago, hours, hours)
             }
             diff < 48 * HOUR_MILLIS -> {
-                stringResource(id = R.string.yesterday)
+                stringResource(Res.string.yesterday)
             }
-            diff < WEEK_MILLIS -> stringResource(R.string.some_days_ago, (diff / DAY_MILLIS).toInt())
+            diff < WEEK_MILLIS -> stringResource(Res.string.some_days_ago, (diff / DAY_MILLIS).toInt())
             else -> {
                 val timeZone = TimeZone.currentSystemDefault()
                 val nowDate = nowInstant.toLocalDateTime(timeZone).date

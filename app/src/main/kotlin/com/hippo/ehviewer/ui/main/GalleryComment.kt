@@ -19,15 +19,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.parseAsHtml
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.comment_user_uploader
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.GalleryComment
 import com.hippo.ehviewer.ui.legacy.CoilImageGetter
 import com.hippo.ehviewer.ui.legacy.LinkifyTextView
 import com.hippo.ehviewer.util.ReadableTime
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun GalleryCommentCard(
@@ -56,7 +58,7 @@ fun GalleryCommentCard(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             ProvideTextStyle(value = MaterialTheme.typography.titleSmall) {
-                val userText = if (uploader) stringResource(id = R.string.comment_user_uploader, user.orEmpty()) else user.orEmpty()
+                val userText = if (uploader) stringResource(Res.string.comment_user_uploader, user.orEmpty()) else user.orEmpty()
                 Text(
                     text = userText,
                     modifier = Modifier.clickable(onClick = onUserClick),

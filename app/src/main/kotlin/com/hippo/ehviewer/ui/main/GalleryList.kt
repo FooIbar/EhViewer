@@ -42,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
@@ -51,6 +50,8 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.gallery_list_empty_hit
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -68,6 +69,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Stable
 operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
@@ -219,7 +221,7 @@ fun GalleryList(
 
             is LoadState.NotLoading -> if (data.itemCount == 0) {
                 // Only for local favorites as empty gallery lists from network are treated as error
-                ErrorTip(modifier = Modifier.widthIn(max = 228.dp), text = stringResource(id = R.string.gallery_list_empty_hit))
+                ErrorTip(modifier = Modifier.widthIn(max = 228.dp), text = stringResource(Res.string.gallery_list_empty_hit))
             }
         }
 

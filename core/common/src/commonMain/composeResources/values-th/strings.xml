@@ -15,6 +15,8 @@
   -->
 
 <resources>
+    <string name="ok">ตกลง</string>
+    <string name="cancel">ยกเลิก</string>
 
     <!-- Theme -->
 

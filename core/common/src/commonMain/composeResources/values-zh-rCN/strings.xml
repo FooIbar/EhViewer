@@ -14,6 +14,9 @@
   ~ limitations under the License.
   -->
 <resources>
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+
     <!-- Theme -->
     <string name="homepage">主页</string>
     <string name="subscription">订阅</string>

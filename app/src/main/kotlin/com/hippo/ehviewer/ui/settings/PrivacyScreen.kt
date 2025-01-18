@@ -19,9 +19,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.clear_all
+import com.ehviewer.core.common.clear_search_history
+import com.ehviewer.core.common.clear_search_history_confirm
+import com.ehviewer.core.common.clear_search_history_summary
+import com.ehviewer.core.common.search_history_cleared
+import com.ehviewer.core.common.settings_privacy
+import com.ehviewer.core.common.settings_privacy_require_unlock
+import com.ehviewer.core.common.settings_privacy_require_unlock_delay
+import com.ehviewer.core.common.settings_privacy_require_unlock_delay_summary
+import com.ehviewer.core.common.settings_privacy_require_unlock_delay_summary_immediately
+import com.ehviewer.core.common.settings_privacy_secure
+import com.ehviewer.core.common.settings_privacy_secure_summary
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.ui.Screen
@@ -32,6 +43,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Destination<RootGraph>
 @Composable
@@ -42,7 +54,7 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.settings_privacy)) },
+                title = { Text(text = stringResource(Res.string.settings_privacy)) },
                 navigationIcon = {
                     IconButton(onClick = { popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -56,39 +68,39 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
         Column(modifier = Modifier.padding(it).nestedScroll(scrollBehavior.nestedScrollConnection)) {
             val security = Settings.security.asMutableState()
             SwitchPreference(
-                title = stringResource(id = R.string.settings_privacy_require_unlock),
+                title = stringResource(Res.string.settings_privacy_require_unlock),
                 value = security.rememberedAccessor,
                 enabled = isAuthenticationSupported(),
             )
             AnimatedVisibility(visible = security.value) {
                 val securityDelay = Settings::securityDelay.observed
                 val summary = if (securityDelay.value == 0) {
-                    stringResource(id = R.string.settings_privacy_require_unlock_delay_summary_immediately)
+                    stringResource(Res.string.settings_privacy_require_unlock_delay_summary_immediately)
                 } else {
-                    stringResource(id = R.string.settings_privacy_require_unlock_delay_summary, securityDelay.value)
+                    stringResource(Res.string.settings_privacy_require_unlock_delay_summary, securityDelay.value)
                 }
                 IntSliderPreference(
                     maxValue = 30,
-                    title = stringResource(id = R.string.settings_privacy_require_unlock_delay),
+                    title = stringResource(Res.string.settings_privacy_require_unlock_delay),
                     summary = summary,
                     value = securityDelay.rememberedAccessor,
                     enabled = LocalContext.current.isAuthenticationSupported(),
                 )
             }
             SwitchPreference(
-                title = stringResource(id = R.string.settings_privacy_secure),
-                summary = stringResource(id = R.string.settings_privacy_secure_summary),
+                title = stringResource(Res.string.settings_privacy_secure),
+                summary = stringResource(Res.string.settings_privacy_secure_summary),
                 value = Settings::enabledSecurity,
             )
-            val searchHistoryCleared = stringResource(id = R.string.search_history_cleared)
+            val searchHistoryCleared = stringResource(Res.string.search_history_cleared)
             Preference(
-                title = stringResource(id = R.string.clear_search_history),
-                summary = stringResource(id = R.string.clear_search_history_summary),
+                title = stringResource(Res.string.clear_search_history),
+                summary = stringResource(Res.string.clear_search_history_summary),
             ) {
                 launch {
                     awaitConfirmationOrCancel(
-                        confirmText = R.string.clear_all,
-                        title = R.string.clear_search_history_confirm,
+                        confirmText = Res.string.clear_all,
+                        title = Res.string.clear_search_history_confirm,
                     )
                     searchDatabase.searchDao().clear()
                     launchSnackBar(searchHistoryCleared)

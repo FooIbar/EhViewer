@@ -75,10 +75,37 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import arrow.core.partially1
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.default_download_label
+import com.ehviewer.core.common.default_download_label_name
+import com.ehviewer.core.common.delete
+import com.ehviewer.core.common.delete_label
+import com.ehviewer.core.common.download_all
+import com.ehviewer.core.common.download_filter
+import com.ehviewer.core.common.download_labels
+import com.ehviewer.core.common.download_reset_reading_progress
+import com.ehviewer.core.common.download_start_all
+import com.ehviewer.core.common.download_start_all_reversed
+import com.ehviewer.core.common.download_stop_all
+import com.ehviewer.core.common.group_by_download_label
+import com.ehviewer.core.common.label_text_exist
+import com.ehviewer.core.common.label_text_is_empty
+import com.ehviewer.core.common.label_text_is_invalid
+import com.ehviewer.core.common.let_me_select
+import com.ehviewer.core.common.new_label_title
+import com.ehviewer.core.common.no_download_info
+import com.ehviewer.core.common.rename_label_title
+import com.ehviewer.core.common.reset_reading_progress_message
+import com.ehviewer.core.common.scene_download_title
+import com.ehviewer.core.common.search_bar_hint
+import com.ehviewer.core.common.select_grouping_mode
+import com.ehviewer.core.common.select_grouping_mode_artist
+import com.ehviewer.core.common.select_grouping_mode_custom
+import com.ehviewer.core.common.sort_by
+import com.ehviewer.core.common.unknown_artists
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -127,6 +154,7 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
+import org.jetbrains.compose.resources.stringResource
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -154,15 +182,15 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     fun getTranslation(tag: String) = ehTags?.run {
         getTranslation(TagNamespace.Artist.prefix, tag) ?: getTranslation(TagNamespace.Cosplayer.prefix, tag)
     } ?: tag
-    val allName = stringResource(R.string.download_all)
-    val defaultName = stringResource(R.string.default_download_label_name)
-    val unknownName = stringResource(R.string.unknown_artists)
+    val allName = stringResource(Res.string.download_all)
+    val defaultName = stringResource(Res.string.default_download_label_name)
+    val unknownName = stringResource(Res.string.unknown_artists)
     val emptyLabelName = when (filterMode) {
         DownloadsFilterMode.ARTIST -> unknownName
         DownloadsFilterMode.CUSTOM -> defaultName
     }
     val title = stringResource(
-        R.string.scene_download_title,
+        Res.string.scene_download_title,
         with(filterState) {
             when (label) {
                 "" -> allName
@@ -171,19 +199,19 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             }
         },
     )
-    val hint = stringResource(R.string.search_bar_hint, title)
+    val hint = stringResource(Res.string.search_bar_hint, title)
     val list = remember(filterState, invalidateKey) {
         downloadInfoList.filterTo(mutableStateListOf()) { info ->
             filterState.take(info)
         }
     }
 
-    val newLabel = stringResource(R.string.new_label_title)
-    val renameLabel = stringResource(R.string.rename_label_title)
-    val labelsStr = stringResource(R.string.download_labels)
-    val labelEmpty = stringResource(R.string.label_text_is_empty)
-    val defaultInvalid = stringResource(R.string.label_text_is_invalid)
-    val labelExists = stringResource(R.string.label_text_exist)
+    val newLabel = stringResource(Res.string.new_label_title)
+    val renameLabel = stringResource(Res.string.rename_label_title)
+    val labelsStr = stringResource(Res.string.download_labels)
+    val labelEmpty = stringResource(Res.string.label_text_is_empty)
+    val defaultInvalid = stringResource(Res.string.label_text_is_invalid)
+    val labelExists = stringResource(Res.string.label_text_exist)
     val downloadsCountGroupByArtist by rememberInVM { EhDB.downloadsCountByArtist }.collectAsState(emptyMap())
     val downloadsCountGroupByLabel by rememberInVM { EhDB.downloadsCountByLabel }.collectAsState(emptyMap())
     val downloadsCount = when (filterMode) {
@@ -237,7 +265,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     ) {
                         Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
                     }
-                    val letMeSelect = stringResource(R.string.let_me_select)
+                    val letMeSelect = stringResource(Res.string.let_me_select)
                     IconButton(
                         onClick = {
                             launch {
@@ -246,7 +274,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                 } else {
                                     DownloadManager.labelList.indexOfFirst { it.label == Settings.defaultDownloadLabel } + 2
                                 }
-                                awaitSelectAction(R.string.default_download_label, selected) {
+                                awaitSelectAction(Res.string.default_download_label, selected) {
                                     onSelect(letMeSelect) {
                                         Settings.hasDefaultDownloadLabel = false
                                     }
@@ -267,12 +295,12 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         Icon(imageVector = Icons.Default.Download, contentDescription = null)
                     }
                 }
-                val custom = stringResource(R.string.select_grouping_mode_custom)
-                val artist = stringResource(R.string.select_grouping_mode_artist)
+                val custom = stringResource(Res.string.select_grouping_mode_custom)
+                val artist = stringResource(Res.string.select_grouping_mode_artist)
                 IconButton(
                     onClick = {
                         launch {
-                            awaitSelectAction(R.string.select_grouping_mode) {
+                            awaitSelectAction(Res.string.select_grouping_mode) {
                                 val select = { mode: DownloadsFilterMode ->
                                     filterState = filterState.copy(mode = mode, label = "")
                                     Settings.downloadFilterMode.value = mode.flag
@@ -342,8 +370,8 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     snapshotFlow { dismissState.currentValue }.collect {
                         if (it == SwipeToDismissBoxValue.EndToStart) {
                             runCatching {
-                                awaitConfirmationOrCancel(confirmText = R.string.delete) {
-                                    Text(text = stringResource(R.string.delete_label, item))
+                                awaitConfirmationOrCancel(confirmText = Res.string.delete) {
+                                    Text(text = stringResource(Res.string.delete_label, item))
                                 }
                             }.onSuccess {
                                 DownloadManager.deleteLabel(item)
@@ -465,14 +493,14 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.download_labels)) },
+                    text = { Text(text = stringResource(Res.string.download_labels)) },
                     onClick = {
                         expanded = false
                         launch { sideSheetState.open() }
                     },
                 )
                 DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.download_start_all)) },
+                    text = { Text(text = stringResource(Res.string.download_start_all)) },
                     onClick = {
                         expanded = false
                         val intent = Intent(implicit<Activity>(), DownloadService::class.java)
@@ -481,22 +509,19 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     },
                 )
                 DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.download_stop_all)) },
+                    text = { Text(text = stringResource(Res.string.download_stop_all)) },
                     onClick = {
                         expanded = false
                         launchIO { DownloadManager.stopAllDownload() }
                     },
                 )
                 DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.download_reset_reading_progress)) },
+                    text = { Text(text = stringResource(Res.string.download_reset_reading_progress)) },
                     onClick = {
                         expanded = false
                         launchIO {
-                            awaitConfirmationOrCancel(
-                                confirmText = android.R.string.ok,
-                                dismissText = android.R.string.cancel,
-                            ) {
-                                Text(text = stringResource(id = R.string.reset_reading_progress_message))
+                            awaitConfirmationOrCancel {
+                                Text(text = stringResource(Res.string.reset_reading_progress_message))
                             }
                             withNonCancellableContext {
                                 DownloadManager.resetAllReadingProgress()
@@ -505,7 +530,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     },
                 )
                 DropdownMenuItem(
-                    text = { Text(text = stringResource(id = R.string.download_start_all_reversed)) },
+                    text = { Text(text = stringResource(Res.string.download_start_all_reversed)) },
                     onClick = {
                         expanded = false
                         val gidList = list.filter { it.state != DownloadInfo.STATE_FINISH }.asReversed().mapToLongArray(DownloadInfo::gid)
@@ -625,7 +650,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         tint = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        text = stringResource(id = R.string.no_download_info),
+                        text = stringResource(Res.string.no_download_info),
                         style = MaterialTheme.typography.headlineMedium,
                     )
                 }
@@ -662,8 +687,8 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 val sortModes = resources.getStringArray(R.array.download_sort_modes).toList()
                 val (selected, checked) = awaitSelectItemWithCheckBox(
                     sortModes,
-                    R.string.sort_by,
-                    R.string.group_by_download_label,
+                    Res.string.sort_by,
+                    Res.string.group_by_download_label,
                     SortMode.All.indexOfFirst { it.field == oldMode.field && it.order == oldMode.order },
                     oldMode.groupByDownloadLabel,
                 )
@@ -677,7 +702,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 val state = awaitSingleChoice(
                     downloadStates,
                     filterState.state + 1,
-                    R.string.download_filter,
+                    Res.string.download_filter,
                 ) - 1
                 filterState = filterState.copy(state = state)
             }

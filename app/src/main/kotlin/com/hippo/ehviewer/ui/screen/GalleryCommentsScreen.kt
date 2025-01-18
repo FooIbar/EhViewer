@@ -69,7 +69,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.input.TextFieldValue
@@ -81,6 +80,29 @@ import androidx.core.text.buildSpannedString
 import androidx.core.text.getSpans
 import androidx.core.text.inSpans
 import androidx.core.text.parseAsHtml
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.block_commenter
+import com.ehviewer.core.common.cancel_vote_down
+import com.ehviewer.core.common.cancel_vote_down_successfully
+import com.ehviewer.core.common.cancel_vote_up
+import com.ehviewer.core.common.cancel_vote_up_successfully
+import com.ehviewer.core.common.check_vote_status
+import com.ehviewer.core.common.click_more_comments
+import com.ehviewer.core.common.comment_failed
+import com.ehviewer.core.common.comment_successfully
+import com.ehviewer.core.common.copy_comment_text
+import com.ehviewer.core.common.edit_comment
+import com.ehviewer.core.common.edit_comment_failed
+import com.ehviewer.core.common.edit_comment_successfully
+import com.ehviewer.core.common.filter_added
+import com.ehviewer.core.common.filter_the_commenter
+import com.ehviewer.core.common.gallery_comments
+import com.ehviewer.core.common.last_edited
+import com.ehviewer.core.common.vote_down
+import com.ehviewer.core.common.vote_down_successfully
+import com.ehviewer.core.common.vote_failed
+import com.ehviewer.core.common.vote_up
+import com.ehviewer.core.common.vote_up_successfully
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -111,10 +133,10 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import eu.kanade.tachiyomi.util.system.logcat
-import kotlin.collections.forEach
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import org.jetbrains.compose.resources.stringResource
 
 private val URL_PATTERN = Regex("(http|https)://[a-z0-9A-Z%-]+(\\.[a-z0-9A-Z%-]+)+(:\\d{1,5})?(/[a-zA-Z0-9-_~:#@!&',;=%/*.?+$\\[\\]()]+)?/?")
 
@@ -156,7 +178,7 @@ fun processComment(
             withSpans(color) {
                 append(
                     stringResource(
-                        R.string.last_edited,
+                        Res.string.last_edited,
                         ReadableTime.getTimeAgo(comment.lastEdited),
                     ),
                 )
@@ -192,18 +214,18 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
         comments = detail.comments
     }
 
-    val copyComment = stringResource(R.string.copy_comment_text)
-    val blockCommenter = stringResource(R.string.block_commenter)
-    val editComment = stringResource(R.string.edit_comment)
-    val cancelVoteUp = stringResource(R.string.cancel_vote_up)
-    val cancelVoteDown = stringResource(R.string.cancel_vote_down)
-    val voteUp = stringResource(R.string.vote_up)
-    val voteDown = stringResource(R.string.vote_down)
-    val checkVoteStatus = stringResource(R.string.check_vote_status)
-    val editCommentSuccess = stringResource(R.string.edit_comment_successfully)
-    val commentSuccess = stringResource(R.string.comment_successfully)
-    val editCommentFail = stringResource(R.string.edit_comment_failed)
-    val commentFail = stringResource(R.string.comment_failed)
+    val copyComment = stringResource(Res.string.copy_comment_text)
+    val blockCommenter = stringResource(Res.string.block_commenter)
+    val editComment = stringResource(Res.string.edit_comment)
+    val cancelVoteUp = stringResource(Res.string.cancel_vote_up)
+    val cancelVoteDown = stringResource(Res.string.cancel_vote_down)
+    val voteUp = stringResource(Res.string.vote_up)
+    val voteDown = stringResource(Res.string.vote_down)
+    val checkVoteStatus = stringResource(Res.string.check_vote_status)
+    val editCommentSuccess = stringResource(Res.string.edit_comment_successfully)
+    val commentSuccess = stringResource(Res.string.comment_successfully)
+    val editCommentFail = stringResource(Res.string.edit_comment_failed)
+    val commentFail = stringResource(Res.string.comment_failed)
 
     val focusManager = LocalFocusManager.current
 
@@ -227,10 +249,10 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
         }
     }
 
-    val filterAdded = stringResource(R.string.filter_added)
+    val filterAdded = stringResource(Res.string.filter_added)
     suspend fun showFilterCommenter(comment: GalleryComment) {
         val commenter = comment.user ?: return
-        awaitConfirmationOrCancel { Text(text = stringResource(R.string.filter_the_commenter, commenter)) }
+        awaitConfirmationOrCancel { Text(text = stringResource(Res.string.filter_the_commenter, commenter)) }
         Filter(FilterMode.COMMENTER, commenter).remember()
         comments = comments.copy(comments = comments.comments.filterNot { it.user == commenter })
         showSnackbar(filterAdded)
@@ -268,7 +290,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.gallery_comments)) },
+                title = { Text(text = stringResource(Res.string.gallery_comments)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -319,11 +341,11 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                     0.dp
                 }
             }
-            val voteUpSucceed = stringResource(R.string.vote_up_successfully)
-            val cancelVoteUpSucceed = stringResource(R.string.cancel_vote_up_successfully)
-            val voteDownSucceed = stringResource(R.string.vote_down_successfully)
-            val cancelVoteDownSucceed = stringResource(R.string.cancel_vote_down_successfully)
-            val voteFailed = stringResource(R.string.vote_failed)
+            val voteUpSucceed = stringResource(Res.string.vote_up_successfully)
+            val cancelVoteUpSucceed = stringResource(Res.string.cancel_vote_up_successfully)
+            val voteDownSucceed = stringResource(Res.string.vote_down_successfully)
+            val cancelVoteDownSucceed = stringResource(Res.string.cancel_vote_down_successfully)
+            val voteFailed = stringResource(Res.string.vote_failed)
             val layoutDirection = LocalLayoutDirection.current
             val lazyListState = rememberLazyListState()
             LazyColumn(
@@ -436,7 +458,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                                         },
                                         modifier = Modifier.fillMaxWidth(),
                                     ) {
-                                        Text(text = stringResource(id = R.string.click_more_comments))
+                                        Text(text = stringResource(Res.string.click_more_comments))
                                     }
                                 }
                             }

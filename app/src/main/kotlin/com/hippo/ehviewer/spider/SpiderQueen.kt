@@ -20,7 +20,8 @@ import androidx.annotation.IntDef
 import arrow.core.Either
 import arrow.core.getOrElse
 import arrow.core.partially1
-import com.hippo.ehviewer.R
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.error_get_ptoken_error
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.EhUrl
@@ -60,7 +61,7 @@ import kotlinx.coroutines.sync.withPermit
 import moe.tarsin.coroutines.runSuspendCatching
 import okio.FileNotFoundException
 import okio.Path
-import splitties.init.appCtx
+import org.jetbrains.compose.resources.getString
 
 class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineScope {
     override val coroutineContext = Dispatchers.IO + Job()
@@ -560,7 +561,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 if (!force && index in spiderDen) {
                     return updatePageState(index, STATE_FINISHED)
                 }
-                pToken = getPToken(index) ?: return updatePageState(index, STATE_FAILED, PTOKEN_FAILED_MESSAGE)
+                pToken = getPToken(index) ?: return updatePageState(index, STATE_FAILED, getString(Res.string.error_get_ptoken_error))
                 previousPToken = getPToken(index - 1)
 
                 // The lock for delay should be acquired before anything else to maintain FIFO order
@@ -666,7 +667,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
     }
 }
 
-private val PTOKEN_FAILED_MESSAGE = appCtx.getString(R.string.error_get_ptoken_error)
 private val URL_509_PATTERN = Regex("\\.org/.+/509s?\\.gif")
 private const val FORCE_RETRY = "Force retry"
 private const val WORKER_DEBUG_TAG = "SpiderQueenWorker"

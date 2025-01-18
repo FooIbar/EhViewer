@@ -19,9 +19,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.error_something_wrong_happened
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
@@ -32,11 +32,12 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import moe.tarsin.coroutines.runSuspendCatching
+import org.jetbrains.compose.resources.stringResource
 
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsNavigator) = Screen(navigator) {
-    val wrong = stringResource(id = R.string.error_something_wrong_happened)
+    val wrong = stringResource(Res.string.error_something_wrong_happened)
     var error by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(error) {
         if (error.isEmpty()) {

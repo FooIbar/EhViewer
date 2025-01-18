@@ -45,7 +45,7 @@ import com.hippo.ehviewer.client.parser.GalleryPageParser
 import com.hippo.ehviewer.client.parser.GalleryTokenApiParser
 import com.hippo.ehviewer.client.parser.HomeParser
 import com.hippo.ehviewer.client.parser.ProfileParser
-import com.hippo.ehviewer.client.parser.RateGalleryResult
+import com.hippo.ehviewer.client.parser.RatingState
 import com.hippo.ehviewer.client.parser.SignInParser
 import com.hippo.ehviewer.client.parser.TorrentParser
 import com.hippo.ehviewer.client.parser.TorrentResult
@@ -372,7 +372,7 @@ object EhEngine {
         }.fetchUsingAsText { GalleryPageParser.parse(filterNot { it == '\\' }) }
     }
 
-    suspend fun rateGallery(apiUid: Long, apiKey: String?, gid: Long, token: String, rating: Float): RateGalleryResult = ehRequest(EhUrl.apiUrl, EhUrl.getGalleryDetailUrl(gid, token), EhUrl.origin) {
+    suspend fun rateGallery(apiUid: Long, apiKey: String?, gid: Long, token: String, rating: Float): RatingState = ehRequest(EhUrl.apiUrl, EhUrl.getGalleryDetailUrl(gid, token), EhUrl.origin) {
         jsonBody {
             put("method", "rategallery")
             put("apiuid", apiUid)

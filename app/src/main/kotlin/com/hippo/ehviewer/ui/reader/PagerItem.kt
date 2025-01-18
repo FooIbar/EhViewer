@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -33,8 +32,11 @@ import coil3.DrawableImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.action_retry
+import com.ehviewer.core.common.blocked_image
+import com.ehviewer.core.common.decode_image_error
 import com.google.accompanist.drawablepainter.DrawablePainter
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.gallery.Page
@@ -48,6 +50,7 @@ import eu.kanade.tachiyomi.ui.reader.viewer.CombinedCircularProgressIndicator
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.drop
 import moe.tarsin.kt.unreachable
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun PagerItem(
@@ -66,7 +69,7 @@ fun PagerItem(
             }
         }
     }
-    val defaultError = stringResource(id = R.string.decode_image_error)
+    val defaultError = stringResource(Res.string.decode_image_error)
     when (val state = page.statusObserved) {
         is PageStatus.Queued, is PageStatus.Loading -> {
             Box(
@@ -128,7 +131,7 @@ fun PagerItem(
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     Button(onClick = { pageLoader.retryPage(page.index) }, modifier = Modifier.padding(8.dp)) {
-                        Text(text = stringResource(id = R.string.action_retry))
+                        Text(text = stringResource(Res.string.action_retry))
                     }
                 }
             }
@@ -181,7 +184,7 @@ fun AdsPlaceholder(
             contentAlignment = Alignment.Center,
         ) {
             if (placeholderState is AsyncImagePainter.State.Error) {
-                Text(text = stringResource(id = R.string.blocked_image))
+                Text(text = stringResource(Res.string.blocked_image))
             }
         }
     }

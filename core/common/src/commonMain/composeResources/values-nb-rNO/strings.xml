@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="ok">OK</string>
+    <string name="cancel">Avbryt</string>
+
     <string name="text_is_empty">Tekst tom</string>
     <string name="waring">Advarsel</string>
     <string name="clipboard_gallery_url_snack_action">Vis</string>

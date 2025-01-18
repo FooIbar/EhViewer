@@ -28,10 +28,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.hippo.ehviewer.R
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.action_settings
+import com.ehviewer.core.common.pref_crop_borders
+import com.ehviewer.core.common.pref_rotation_type
+import com.ehviewer.core.common.viewer
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.collectAsState
@@ -41,6 +44,7 @@ import com.hippo.ehviewer.icons.filled.CropOff
 import eu.kanade.tachiyomi.ui.reader.setting.OrientationType
 import eu.kanade.tachiyomi.ui.reader.setting.PreferenceType
 import eu.kanade.tachiyomi.ui.reader.setting.ReadingModeType
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun BottomReaderBar(onClickSettings: () -> Unit) {
@@ -57,7 +61,7 @@ fun BottomReaderBar(onClickSettings: () -> Unit) {
     ) {
         val readingMode by Settings.readingMode.collectAsState { ReadingModeType.fromPreference(it) }
         DropdownIconButton(
-            label = stringResource(R.string.viewer),
+            label = stringResource(Res.string.viewer),
             menuItems = ReadingModeType.entries,
             selectedItem = readingMode,
             onSelectedItemChange = {
@@ -67,7 +71,7 @@ fun BottomReaderBar(onClickSettings: () -> Unit) {
         )
         val orientationMode by Settings.orientationMode.collectAsState { OrientationType.fromPreference(it) }
         DropdownIconButton(
-            label = stringResource(R.string.pref_rotation_type),
+            label = stringResource(Res.string.pref_rotation_type),
             menuItems = OrientationType.entries,
             selectedItem = orientationMode,
             onSelectedItemChange = {
@@ -79,13 +83,13 @@ fun BottomReaderBar(onClickSettings: () -> Unit) {
         IconButton(onClick = { cropBorder = !cropBorder }) {
             Icon(
                 imageVector = if (cropBorder) EhIcons.Default.Crop else EhIcons.Default.CropOff,
-                contentDescription = stringResource(R.string.pref_crop_borders),
+                contentDescription = stringResource(Res.string.pref_crop_borders),
             )
         }
         IconButton(onClick = onClickSettings) {
             Icon(
                 imageVector = Icons.Outlined.Settings,
-                contentDescription = stringResource(R.string.action_settings),
+                contentDescription = stringResource(Res.string.action_settings),
             )
         }
     }

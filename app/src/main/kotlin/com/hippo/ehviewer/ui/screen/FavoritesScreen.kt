@@ -46,7 +46,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -55,8 +54,17 @@ import androidx.paging.PagingState
 import androidx.paging.cachedIn
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.filter
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.cloud_favorites
+import com.ehviewer.core.common.collections
+import com.ehviewer.core.common.delete_favorites_dialog_message
+import com.ehviewer.core.common.delete_favorites_dialog_title
+import com.ehviewer.core.common.favorites_title
+import com.ehviewer.core.common.favorites_title_2
+import com.ehviewer.core.common.local_favorites
+import com.ehviewer.core.common.move_favorites_dialog_title
+import com.ehviewer.core.common.search_bar_hint
 import com.hippo.ehviewer.EhDB
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -94,13 +102,14 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.runSwallowingWithUI
+import org.jetbrains.compose.resources.stringResource
 
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     // Immutables
-    val localFavName = stringResource(R.string.local_favorites)
-    val cloudFavName = stringResource(R.string.cloud_favorites)
+    val localFavName = stringResource(Res.string.local_favorites)
+    val cloudFavName = stringResource(Res.string.cloud_favorites)
     val animateItems by Settings.animateItems.collectAsState()
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
 
@@ -120,13 +129,13 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         }
     }
     val title = if (keyword.isNullOrBlank()) {
-        stringResource(R.string.favorites_title, favCatName)
+        stringResource(Res.string.favorites_title, favCatName)
     } else {
-        stringResource(R.string.favorites_title_2, favCatName, keyword)
+        stringResource(Res.string.favorites_title_2, favCatName, keyword)
     }
     val density = LocalDensity.current
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
-    val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
+    val searchBarHint = stringResource(Res.string.search_bar_hint, favCatName)
     val data = rememberInVM(isLocalFav) {
         if (isLocalFav) {
             Pager(PagingConfig(20, jumpThreshold = 40)) {
@@ -186,7 +195,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     ProvideSideSheetContent { sheetState ->
         val localFavCount by localFavCountFlow.collectAsState(0)
         TopAppBar(
-            title = { Text(text = stringResource(id = R.string.collections)) },
+            title = { Text(text = stringResource(Res.string.collections)) },
             windowInsets = EmptyWindowInsets,
             colors = topBarOnDrawerColor(),
         )
@@ -196,11 +205,11 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                 scope.invalidate()
             }
         }
-        val localFav = stringResource(id = R.string.local_favorites) to localFavCount
+        val localFav = stringResource(Res.string.local_favorites) to localFavCount
         val faves = if (hasSignedIn) {
             arrayOf(
                 localFav,
-                stringResource(id = R.string.cloud_favorites) to Settings.favCloudCount,
+                stringResource(Res.string.cloud_favorites) to Settings.favCloudCount,
                 *Settings.favCat.zip(Settings.favCount.toTypedArray()).toTypedArray(),
             )
         } else {
@@ -388,8 +397,8 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             }
             onClick(Icons.Default.Delete) {
                 val info = checkedInfoMap.takeAndClear()
-                awaitConfirmationOrCancel(title = R.string.delete_favorites_dialog_title) {
-                    Text(text = stringResource(R.string.delete_favorites_dialog_message, info.size))
+                awaitConfirmationOrCancel(title = Res.string.delete_favorites_dialog_title) {
+                    Text(text = stringResource(Res.string.delete_favorites_dialog_message, info.size))
                 }
                 val srcCat = urlBuilder.favCat
                 runSwallowingWithUI {
@@ -411,7 +420,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                         addAll(Settings.favCat)
                     }
                 }
-                val index = awaitSelectItem(items, R.string.move_favorites_dialog_title)
+                val index = awaitSelectItem(items, Res.string.move_favorites_dialog_title)
                 val srcCat = urlBuilder.favCat
                 val dstCat = if (index == 0) FavListUrlBuilder.FAV_CAT_LOCAL else index - 1
                 val info = checkedInfoMap.takeAndClear()
