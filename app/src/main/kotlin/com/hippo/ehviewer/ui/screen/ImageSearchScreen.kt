@@ -70,7 +70,7 @@ fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) 
                             )
                         }
                     } else {
-                        launch { showSnackbar(selectImageFirst) }
+                        launchSnackbar(selectImageFirst)
                     }
                 },
                 modifier = Modifier.snackBarPadding(),

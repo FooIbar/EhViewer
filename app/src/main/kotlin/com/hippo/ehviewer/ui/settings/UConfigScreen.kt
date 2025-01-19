@@ -10,8 +10,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -38,7 +36,6 @@ private const val APPLY_JS = "javascript:(function(){var apply = document.getEle
 fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val url = EhUrl.uConfigUrl
     var webview by remember { Atomic<WebView?>(null)::value }
-    val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -60,7 +57,6 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Sc
                 },
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         val state = rememberWebViewState(url = url)
         WebView(
@@ -69,7 +65,7 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Sc
             onCreated = { it.setDefaultSettings() },
             factory = { WebView(it).apply { webview = this } },
         )
-        LaunchedEffect(Unit) { snackbarHostState.showSnackbar(applyTip) }
+        LaunchedEffect(Unit) { launchSnackbar(applyTip) }
         DisposableEffect(Unit) {
             onDispose {
                 EhCookieStore.flush()

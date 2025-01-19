@@ -205,7 +205,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                 val detail = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
                                 launchIO {
                                     if (detail.apiUid < 0) {
-                                        showSnackbar(signInFirst)
+                                        launchSnackbar(signInFirst)
                                     } else {
                                         val tags = awaitSelectTags()
                                         if (tags.isNotEmpty()) {
@@ -244,7 +244,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                         val key = getImageKey(gd.gid, it)
                                         imageCache.remove(key)
                                     }
-                                    showSnackbar(imageCacheCleared)
+                                    launchSnackbar(imageCacheCleared)
                                 }
                             },
                         )
@@ -288,7 +288,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                                 file.delete()
                                                 exportAsArchiveFailed
                                             }
-                                            showSnackbar(message = msg)
+                                            launchSnackbar(msg)
                                         }
                                     }
                                 }

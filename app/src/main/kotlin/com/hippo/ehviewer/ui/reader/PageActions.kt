@@ -10,7 +10,6 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.SnackbarHostState
 import androidx.core.content.FileProvider
 import com.hippo.ehviewer.BuildConfig.APPLICATION_ID
 import com.hippo.ehviewer.R
@@ -18,6 +17,7 @@ import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.gallery.Page
 import com.hippo.ehviewer.gallery.PageLoader
+import com.hippo.ehviewer.ui.screen.SnackbarContext
 import com.hippo.ehviewer.util.AppConfig
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.awaitActivityResult
@@ -28,9 +28,9 @@ import com.hippo.ehviewer.util.requestPermission
 import com.hippo.files.toOkioPath
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.Clock
 import moe.tarsin.coroutines.runSuspendCatching
-import okio.Path.Companion.toOkioPath
 import splitties.systemservices.clipboardManager
 
 context(PageLoader)
@@ -41,14 +41,14 @@ private fun Context.provideImage(index: Int): Uri? {
     return FileProvider.getUriForFile(this, "$APPLICATION_ID.fileprovider", file.toFile())
 }
 
-context(SnackbarHostState, Context, PageLoader)
-suspend fun shareImage(page: Page, info: GalleryInfo? = null) {
+context(SnackbarContext, CoroutineScope, Context, PageLoader)
+fun shareImage(page: Page, info: GalleryInfo? = null) {
     val error = getString(R.string.error_cant_save_image)
     val share = getString(R.string.share_image)
     val noActivity = getString(R.string.error_cant_find_activity)
     val uri = provideImage(page.index)
     if (uri == null) {
-        showSnackbar(error)
+        launchSnackbar(error)
         return
     }
     val intent = Intent(Intent.ACTION_SEND).apply {
@@ -61,35 +61,33 @@ suspend fun shareImage(page: Page, info: GalleryInfo? = null) {
     }
     try {
         startActivity(Intent.createChooser(intent, share))
-    } catch (e: Throwable) {
-        showSnackbar(noActivity)
+    } catch (_: Throwable) {
+        launchSnackbar(noActivity)
     }
 }
 
-context(SnackbarHostState, Context, PageLoader)
-suspend fun copy(page: Page) {
+context(SnackbarContext, CoroutineScope, Context, PageLoader)
+fun copy(page: Page) {
     val error = getString(R.string.error_cant_save_image)
     val copied = getString(R.string.copied_to_clipboard)
     val uri = provideImage(page.index)
     if (uri == null) {
-        showSnackbar(error)
+        launchSnackbar(error)
         return
     }
     val clipData = ClipData.newUri(contentResolver, "ehviewer", uri)
     clipboardManager.setPrimaryClip(clipData)
-    if (!isAtLeastT) {
-        showSnackbar(copied)
-    }
+    if (!isAtLeastT) launchSnackbar(copied)
 }
 
-context(SnackbarHostState, Context, PageLoader)
+context(SnackbarContext, CoroutineScope, Context, PageLoader)
 suspend fun save(page: Page) {
     val granted = isAtLeastQ || requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     val cannotSave = getString(R.string.error_cant_save_image)
     if (granted) {
         val filename = getImageFilename(page.index)
         if (filename == null) {
-            showSnackbar(cannotSave)
+            launchSnackbar(cannotSave)
             return
         }
         val extension = FileUtils.getExtensionFromFilename(filename)
@@ -108,7 +106,7 @@ suspend fun save(page: Page) {
             val path = File(dir, AppConfig.APP_DIRNAME)
             realPath = path.toString()
             if (!FileUtils.ensureDirectory(path)) {
-                showSnackbar(cannotSave)
+                launchSnackbar(cannotSave)
                 return
             }
             values.put(MediaStore.MediaColumns.DATA, realPath + File.separator + filename)
@@ -121,26 +119,26 @@ suspend fun save(page: Page) {
                 } catch (e: Exception) {
                     e.logcat(e)
                 }
-                showSnackbar(cannotSave)
+                launchSnackbar(cannotSave)
             } else if (isAtLeastQ) {
                 val contentValues = ContentValues()
                 contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
                 contentResolver.update(imageUri, contentValues, null, null)
             }
-            showSnackbar(getString(R.string.image_saved, realPath + File.separator + filename))
+            launchSnackbar(getString(R.string.image_saved, realPath + File.separator + filename))
         } else {
-            showSnackbar(cannotSave)
+            launchSnackbar(cannotSave)
         }
     } else {
-        showSnackbar(getString(R.string.permission_denied))
+        launchSnackbar(getString(R.string.permission_denied))
     }
 }
 
-context(SnackbarHostState, Context, PageLoader)
+context(SnackbarContext, CoroutineScope, Context, PageLoader)
 suspend fun saveTo(page: Page) {
     val filename = getImageFilename(page.index)
     if (filename == null) {
-        showSnackbar(getString(R.string.error_cant_save_image))
+        launchSnackbar(getString(R.string.error_cant_save_image))
         return
     }
     val extension = FileUtils.getExtensionFromFilename(filename)
@@ -149,10 +147,10 @@ suspend fun saveTo(page: Page) {
         val uri = awaitActivityResult(ActivityResultContracts.CreateDocument(mimeType), filename)
         if (uri != null) {
             save(index, uri.toOkioPath())
-            showSnackbar(getString(R.string.image_saved, uri.displayPath))
+            launchSnackbar(getString(R.string.image_saved, uri.displayPath))
         }
     }.onFailure {
         it.logcat(it)
-        showSnackbar(getString(R.string.error_cant_find_activity))
+        launchSnackbar(getString(R.string.error_cant_find_activity))
     }
 }

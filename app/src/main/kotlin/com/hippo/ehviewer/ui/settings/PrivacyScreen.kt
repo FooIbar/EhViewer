@@ -9,13 +9,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -36,8 +33,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val snackbarHostState = remember { SnackbarHostState() }
-    fun launchSnackBar(content: String) = launch { snackbarHostState.showSnackbar(content) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -50,7 +45,6 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) {
         Column(modifier = Modifier.padding(it).nestedScroll(scrollBehavior.nestedScrollConnection)) {
             val security = Settings.security.asMutableState()
@@ -89,7 +83,7 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
                         title = R.string.clear_search_history_confirm,
                     )
                     searchDatabase.searchDao().clear()
-                    launchSnackBar(searchHistoryCleared)
+                    launchSnackbar(searchHistoryCleared)
                 }
             }
         }

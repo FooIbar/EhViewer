@@ -27,7 +27,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -72,6 +71,7 @@ import com.hippo.ehviewer.gallery.useArchivePageLoader
 import com.hippo.ehviewer.gallery.useEhPageLoader
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.Screen
+import com.hippo.ehviewer.ui.screen.SnackbarContext
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
@@ -173,7 +173,7 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
     }
 }
 
-context(MainActivity, SnackbarHostState, DialogState, CoroutineScope)
+context(MainActivity, SnackbarContext, DialogState, CoroutineScope)
 @Composable
 fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
     ConfigureKeepScreenOn()

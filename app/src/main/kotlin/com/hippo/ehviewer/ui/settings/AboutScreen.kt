@@ -14,14 +14,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -46,8 +42,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 
 private const val REPO_URL = "https://github.com/${BuildConfig.REPO_NAME}"
@@ -58,9 +52,6 @@ private const val RELEASE_URL = "$REPO_URL/releases"
 fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -73,7 +64,6 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             Preference(
@@ -117,9 +107,9 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
                 runSuspendCatching {
                     AppUpdater.checkForUpdate(true)?.let {
                         showNewVersion(context, it)
-                    } ?: launchSnackBar(alreadyLatestVersion)
+                    } ?: launchSnackbar(alreadyLatestVersion)
                 }.onFailure {
-                    launchSnackBar(updateFailed(it.displayString()))
+                    launchSnackbar(updateFailed(it.displayString()))
                 }
             }
         }
