@@ -105,7 +105,7 @@ logcat = "com.squareup.logcat:logcat:0.1"
 
 okio-jvm = { module = "com.squareup.okio:okio-jvm", version.ref = "okio" }
 
-reorderable = "sh.calvin.reorderable:reorderable:2.4.2"
+reorderable = "sh.calvin.reorderable:reorderable:2.4.3"
 
 serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinx-serialization" }
 serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
