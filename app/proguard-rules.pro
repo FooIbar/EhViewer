@@ -11,6 +11,9 @@
     public static final ** CREATOR;
 }
 
+# Compose multiplatform resources
+-dontwarn androidx.test.platform.app.InstrumentationRegistry
+
 # Ktor logger
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 
