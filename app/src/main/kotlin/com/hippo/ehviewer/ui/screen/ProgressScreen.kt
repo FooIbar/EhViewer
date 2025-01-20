@@ -20,6 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.error_something_wrong_happened
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.big.SadAndroid
@@ -30,15 +32,17 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import moe.tarsin.coroutines.runSuspendCatching
+import org.jetbrains.compose.resources.stringResource
 
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.ProgressScreen(gid: Long, token: String, page: Int, navigator: DestinationsNavigator) = Screen(navigator) {
+    val wrong = stringResource(Res.string.error_something_wrong_happened)
     var error by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(error) {
         if (error.isEmpty()) {
             if (gid == -1L || token == "invalid" || page == -1) {
-                error = errorSomethingWrongHappened
+                error = wrong
             } else {
                 runSuspendCatching {
                     EhEngine.getGalleryToken(gid, token, page)
@@ -70,7 +74,7 @@ fun AnimatedVisibilityScope.ProgressScreen(gid: Long, token: String, page: Int, 
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = error,
+                    text = wrong,
                     style = MaterialTheme.typography.headlineMedium,
                 )
             }

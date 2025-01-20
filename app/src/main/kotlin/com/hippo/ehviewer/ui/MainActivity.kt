@@ -102,13 +102,33 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.compose.rememberNavController
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.app_link_not_verified_message
+import com.ehviewer.core.common.app_link_not_verified_title
+import com.ehviewer.core.common.clipboard_gallery_url_snack_action
+import com.ehviewer.core.common.clipboard_gallery_url_snack_message
+import com.ehviewer.core.common.dont_show_again
+import com.ehviewer.core.common.downloads
+import com.ehviewer.core.common.error_cannot_parse_the_url
+import com.ehviewer.core.common.favourite
+import com.ehviewer.core.common.history
+import com.ehviewer.core.common.homepage
+import com.ehviewer.core.common.invalid_download_location
+import com.ehviewer.core.common.metered_network_warning
+import com.ehviewer.core.common.no_network
+import com.ehviewer.core.common.open_settings
+import com.ehviewer.core.common.settings
+import com.ehviewer.core.common.subscription
+import com.ehviewer.core.common.toplist
+import com.ehviewer.core.common.update_failed
+import com.ehviewer.core.common.waring
+import com.ehviewer.core.common.whats_hot
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.ListUrlBuilder
@@ -162,18 +182,21 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import splitties.systemservices.clipboardManager
 import splitties.systemservices.connectivityManager
 
-private val navItems = arrayOf<Triple<Direction, Int, ImageVector>>(
-    Triple(HomePageScreenDestination, R.string.homepage, Icons.Default.Home),
-    Triple(SubscriptionScreenDestination, R.string.subscription, EhIcons.Default.Subscriptions),
-    Triple(WhatshotScreenDestination, R.string.whats_hot, Icons.Default.Whatshot),
-    Triple(ToplistScreenDestination, R.string.toplist, Icons.Default.FormatListNumbered),
-    Triple(FavouritesScreenDestination, R.string.favourite, Icons.Default.Favorite),
-    Triple(HistoryScreenDestination, R.string.history, Icons.Default.History),
-    Triple(DownloadsScreenDestination, R.string.downloads, Icons.Default.Download),
-    Triple(SettingsScreenDestination, R.string.settings, Icons.Default.Settings),
+private val navItems = arrayOf<Triple<Direction, StringResource, ImageVector>>(
+    Triple(HomePageScreenDestination, Res.string.homepage, Icons.Default.Home),
+    Triple(SubscriptionScreenDestination, Res.string.subscription, EhIcons.Default.Subscriptions),
+    Triple(WhatshotScreenDestination, Res.string.whats_hot, Icons.Default.Whatshot),
+    Triple(ToplistScreenDestination, Res.string.toplist, Icons.Default.FormatListNumbered),
+    Triple(FavouritesScreenDestination, Res.string.favourite, Icons.Default.Favorite),
+    Triple(HistoryScreenDestination, Res.string.history, Icons.Default.History),
+    Triple(DownloadsScreenDestination, Res.string.downloads, Icons.Default.Download),
+    Triple(SettingsScreenDestination, Res.string.settings, Icons.Default.Settings),
 )
 
 val StartDestination
@@ -233,12 +256,12 @@ class MainActivity : EhActivity() {
                 val valid = withIOContext { downloadLocation.isDirectory }
                 if (!valid) {
                     awaitConfirmationOrCancel(
-                        confirmText = R.string.open_settings,
-                        title = R.string.waring,
+                        confirmText = Res.string.open_settings,
+                        title = Res.string.waring,
                         showCancelButton = false,
                     ) {
                         Text(
-                            text = stringResource(id = R.string.invalid_download_location),
+                            text = stringResource(Res.string.invalid_download_location),
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
@@ -248,7 +271,7 @@ class MainActivity : EhActivity() {
 
             val hasNetwork = remember { connectivityManager.activeNetwork != null }
             if (!AppConfig.isBenchmark) {
-                val noNetwork = stringResource(R.string.no_network)
+                val noNetwork = stringResource(Res.string.no_network)
                 LaunchedEffect(Unit) {
                     runCatching { checkDownloadLocation() }
                     runCatching { checkAppLinkVerify() }
@@ -260,7 +283,7 @@ class MainActivity : EhActivity() {
                                 }
                             }
                         }.onFailure {
-                            snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
+                            snackbarState.showSnackbar(getString(Res.string.update_failed, it.displayString()))
                         }
                     } else {
                         snackbarState.showSnackbar(noNetwork)
@@ -268,7 +291,7 @@ class MainActivity : EhActivity() {
                 }
             }
 
-            val cannotParse = stringResource(R.string.error_cannot_parse_the_url)
+            val cannotParse = stringResource(Res.string.error_cannot_parse_the_url)
             LaunchedEffect(Unit) {
                 intentFlow.collect { intent ->
                     when (intent.action) {
@@ -324,8 +347,8 @@ class MainActivity : EhActivity() {
                     snackbarState.showSnackbar(it)
                 }
             }
-            val warning = stringResource(R.string.metered_network_warning)
-            val settings = stringResource(R.string.settings)
+            val warning = stringResource(Res.string.metered_network_warning)
+            val settings = stringResource(Res.string.settings)
             val checkMeteredNetwork by Settings.meteredNetworkWarning.collectAsState()
             if (checkMeteredNetwork) {
                 LaunchedEffect(Unit) {
@@ -342,8 +365,8 @@ class MainActivity : EhActivity() {
                     }
                 }
             }
-            val snackMessage = stringResource(R.string.clipboard_gallery_url_snack_message)
-            val snackAction = stringResource(R.string.clipboard_gallery_url_snack_action)
+            val snackMessage = stringResource(Res.string.clipboard_gallery_url_snack_message)
+            val snackAction = stringResource(Res.string.clipboard_gallery_url_snack_action)
             LifecycleResumeEffect(scope) {
                 val job = scope.launch {
                     delay(300)
@@ -420,7 +443,7 @@ class MainActivity : EhActivity() {
                                     navItems.forEach { (direction, stringId, icon) ->
                                         NavigationDrawerItem(
                                             label = {
-                                                Text(text = stringResource(id = stringId))
+                                                Text(text = stringResource(stringId))
                                             },
                                             selected = currentDestination === direction,
                                             onClick = {
@@ -505,15 +528,15 @@ class MainActivity : EhActivity() {
             if (hasUnverified) {
                 var checked by mutableStateOf(false)
                 awaitConfirmationOrCancel(
-                    confirmText = R.string.open_settings,
-                    title = R.string.app_link_not_verified_title,
+                    confirmText = Res.string.open_settings,
+                    title = Res.string.app_link_not_verified_title,
                     onCancelButtonClick = {
                         if (checked) Settings.appLinkVerifyTip = true
                     },
                 ) {
                     Column {
                         Text(
-                            text = stringResource(id = R.string.app_link_not_verified_message),
+                            text = stringResource(Res.string.app_link_not_verified_message),
                             style = MaterialTheme.typography.titleMedium,
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -521,7 +544,7 @@ class MainActivity : EhActivity() {
                             modifier = Modifier.fillMaxWidth(),
                             checked = checked,
                             onCheckedChange = { checked = it },
-                            label = stringResource(id = R.string.dont_show_again),
+                            label = stringResource(Res.string.dont_show_again),
                             indication = null,
                         )
                     }
@@ -553,6 +576,8 @@ class MainActivity : EhActivity() {
     }
 
     fun showTip(@StringRes id: Int, useToast: Boolean = false) = showTip(getString(id), useToast)
+
+    suspend fun showTip(res: StringResource, useToast: Boolean = false) = showTip(getString(res), useToast)
 
     override fun onProvideAssistContent(outContent: AssistContent?) {
         super.onProvideAssistContent(outContent)

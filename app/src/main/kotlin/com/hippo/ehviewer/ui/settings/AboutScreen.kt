@@ -20,12 +20,34 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.unit.dp
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.already_latest_version
+import com.ehviewer.core.common.auto_updates
+import com.ehviewer.core.common.backup_before_update
+import com.ehviewer.core.common.download
+import com.ehviewer.core.common.license
+import com.ehviewer.core.common.new_version_available
+import com.ehviewer.core.common.settings_about
+import com.ehviewer.core.common.settings_about_author
+import com.ehviewer.core.common.settings_about_author_summary
+import com.ehviewer.core.common.settings_about_check_for_updates
+import com.ehviewer.core.common.settings_about_commit_time
+import com.ehviewer.core.common.settings_about_declaration
+import com.ehviewer.core.common.settings_about_declaration_summary
+import com.ehviewer.core.common.settings_about_latest_release
+import com.ehviewer.core.common.settings_about_source
+import com.ehviewer.core.common.settings_about_version
+import com.ehviewer.core.common.update_failed
+import com.ehviewer.core.common.use_ci_update_channel
 import com.hippo.ehviewer.BuildConfig
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
@@ -49,9 +71,19 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 
 private const val REPO_URL = "https://github.com/${BuildConfig.REPO_NAME}"
 private const val RELEASE_URL = "$REPO_URL/releases"
+
+@Composable
+@Stable
+private fun versionCode() = "${BuildConfig.VERSION_NAME} (${BuildConfig.COMMIT_SHA})\n" + stringResource(Res.string.settings_about_commit_time, AppConfig.commitTime)
+
+@Composable
+@Stable
+private fun author() = AnnotatedString.fromHtml(stringResource(Res.string.settings_about_author_summary).replace('$', '@'))
 
 @Destination<RootGraph>
 @Composable
@@ -64,7 +96,7 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = settingsAbout) },
+                title = { Text(text = stringResource(Res.string.settings_about)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -77,49 +109,49 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             Preference(
-                title = settingsAboutDeclaration,
-                summary = settingsAboutDeclarationSummary,
+                title = stringResource(Res.string.settings_about_declaration),
+                summary = stringResource(Res.string.settings_about_declaration_summary),
             )
             HtmlPreference(
-                title = settingsAboutAuthor,
-                summary = settingsAboutAuthorSummary,
+                title = stringResource(Res.string.settings_about_author),
+                summary = author(),
             )
             UrlPreference(
-                title = settingsAboutLatestRelease,
+                title = stringResource(Res.string.settings_about_latest_release),
                 url = RELEASE_URL,
             )
             UrlPreference(
-                title = settingsAboutSource,
+                title = stringResource(Res.string.settings_about_source),
                 url = REPO_URL,
             )
-            Preference(title = license) {
+            Preference(title = stringResource(Res.string.license)) {
                 navigator.navigate(LicenseScreenDestination)
             }
             Preference(
-                title = settingsAboutVersion,
-                summary = "${BuildConfig.VERSION_NAME} (${BuildConfig.COMMIT_SHA})\n" + settingsAboutCommitTime(AppConfig.commitTime),
+                title = stringResource(Res.string.settings_about_version),
+                summary = versionCode(),
             )
             SwitchPreference(
-                title = backupBeforeUpdate,
+                title = stringResource(Res.string.backup_before_update),
                 value = Settings::backupBeforeUpdate,
             )
             SwitchPreference(
-                title = useCiUpdateChannel,
+                title = stringResource(Res.string.use_ci_update_channel),
                 value = Settings::useCIUpdateChannel,
             )
             SimpleMenuPreferenceInt(
-                title = autoUpdates,
+                title = stringResource(Res.string.auto_updates),
                 entry = R.array.update_frequency,
                 entryValueRes = R.array.update_frequency_values,
                 value = Settings::updateIntervalDays.observed,
             )
-            WorkPreference(title = settingsAboutCheckForUpdates) {
+            WorkPreference(title = stringResource(Res.string.settings_about_check_for_updates)) {
                 runSuspendCatching {
                     AppUpdater.checkForUpdate(true)?.let {
                         showNewVersion(context, it)
-                    } ?: launchSnackBar(alreadyLatestVersion)
+                    } ?: launchSnackBar(getString(Res.string.already_latest_version))
                 }.onFailure {
-                    launchSnackBar(updateFailed(it.displayString()))
+                    launchSnackBar(getString(Res.string.update_failed, it.displayString()))
                 }
             }
         }
@@ -128,8 +160,8 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
 
 suspend fun DialogState.showNewVersion(context: Context, release: Release) {
     awaitConfirmationOrCancel(
-        confirmText = R.string.download,
-        title = R.string.new_version_available,
+        confirmText = Res.string.download,
+        title = Res.string.new_version_available,
     ) {
         Column(Modifier.verticalScroll(rememberScrollState())) {
             Text(

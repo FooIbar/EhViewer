@@ -16,21 +16,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.res.stringResource
 import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.pref_color_filter_mode
+import com.ehviewer.core.common.pref_custom_brightness
+import com.ehviewer.core.common.pref_custom_color_filter
+import com.ehviewer.core.common.pref_grayscale
+import com.ehviewer.core.common.pref_inverted_colors
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.ui.main.RollingNumber
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ColorFilterSetting() = Column(modifier = Modifier.verticalScroll(rememberScrollState()).navigationBarsPadding()) {
     val customBrightness = Settings.customBrightness.asMutableState()
     SwitchChoice(
-        title = stringResource(id = R.string.pref_custom_brightness),
+        title = stringResource(Res.string.pref_custom_brightness),
         field = customBrightness,
     )
     AnimatedVisibility(visible = customBrightness.value) {
@@ -44,7 +50,7 @@ fun ColorFilterSetting() = Column(modifier = Modifier.verticalScroll(rememberScr
     }
     val colorFilter = Settings.colorFilter.asMutableState()
     SwitchChoice(
-        title = stringResource(id = R.string.pref_custom_color_filter),
+        title = stringResource(Res.string.pref_custom_color_filter),
         field = colorFilter,
     )
     AnimatedVisibility(visible = colorFilter.value) {
@@ -86,17 +92,17 @@ fun ColorFilterSetting() = Column(modifier = Modifier.verticalScroll(rememberScr
         }
     }
     SpinnerChoice(
-        title = stringResource(id = R.string.pref_color_filter_mode),
+        title = stringResource(Res.string.pref_color_filter_mode),
         entries = stringArrayResource(id = R.array.color_filter_modes),
         values = arrayOf("0", "1", "2", "3", "4", "5"),
         field = Settings.colorFilterMode.asMutableState(),
     )
     SwitchChoice(
-        title = stringResource(id = R.string.pref_grayscale),
+        title = stringResource(Res.string.pref_grayscale),
         field = Settings.grayScale.asMutableState(),
     )
     SwitchChoice(
-        title = stringResource(id = R.string.pref_inverted_colors),
+        title = stringResource(Res.string.pref_inverted_colors),
         field = Settings.invertedColors.asMutableState(),
     )
 }

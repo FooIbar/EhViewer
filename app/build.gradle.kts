@@ -8,7 +8,7 @@ val isRelease: Boolean
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
@@ -102,9 +102,10 @@ android {
     flavorDimensions += "api"
 
     productFlavors {
-        create("default")
+        create("default") {
+            minSdk = 26
+        }
         create("marshmallow") {
-            minSdk = 23
             applicationIdSuffix = ".m"
             versionNameSuffix = "-M"
         }
@@ -182,6 +183,8 @@ baselineProfile {
 }
 
 dependencies {
+    implementation(projects.core.common)
+
     // https://developer.android.com/jetpack/androidx/releases/activity
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
@@ -243,7 +246,7 @@ dependencies {
     implementation(libs.bundles.coil)
 
     implementation(libs.telephoto.zoomable)
-    implementation(libs.lyricist)
+
     implementation(libs.ktor.client.okhttp)
 
     implementation(libs.bundles.kotlinx.serialization)

@@ -10,8 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.hippo.ehviewer.ui.i18n.LocalStrings
-import com.hippo.ehviewer.ui.i18n.Strings
 import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LocalGlobalDialogState
@@ -25,14 +23,13 @@ import kotlinx.coroutines.CoroutineScope
 @Composable
 inline fun <R> AnimatedVisibilityScope.Screen(
     navigator: DestinationsNavigator,
-    block: @Composable context(Strings, MainActivity, SnackbarHostState, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, CoroutineScope)
+    block: @Composable context(MainActivity, SnackbarHostState, DialogState, SharedTransitionScope, TransitionsVisibilityScope, DestinationsNavigator, CoroutineScope)
     () -> R,
 ) = Box(modifier = Modifier.fillMaxSize()) {
     val dialogState = with(LocalGlobalDialogState.current) { rememberLocal() }
     with(NoopTransitionsVisibilityScope) {
         togetherWith(implicit<AnimatedVisibilityScope>()) {
             block(
-                LocalStrings.current,
                 with(LocalContext.current) { remember { findActivity() } },
                 LocalSnackBarHostState.current,
                 dialogState,

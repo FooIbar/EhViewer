@@ -12,8 +12,14 @@ import android.webkit.MimeTypeMap
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarHostState
 import androidx.core.content.FileProvider
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.copied_to_clipboard
+import com.ehviewer.core.common.error_cant_find_activity
+import com.ehviewer.core.common.error_cant_save_image
+import com.ehviewer.core.common.image_saved
+import com.ehviewer.core.common.permission_denied
+import com.ehviewer.core.common.share_image
 import com.hippo.ehviewer.BuildConfig.APPLICATION_ID
-import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUrl
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.gallery.Page
@@ -30,7 +36,7 @@ import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import kotlinx.datetime.Clock
 import moe.tarsin.coroutines.runSuspendCatching
-import okio.Path.Companion.toOkioPath
+import org.jetbrains.compose.resources.getString
 import splitties.systemservices.clipboardManager
 
 context(PageLoader)
@@ -43,9 +49,9 @@ private fun Context.provideImage(index: Int): Uri? {
 
 context(SnackbarHostState, Context, PageLoader)
 suspend fun shareImage(page: Page, info: GalleryInfo? = null) {
-    val error = getString(R.string.error_cant_save_image)
-    val share = getString(R.string.share_image)
-    val noActivity = getString(R.string.error_cant_find_activity)
+    val error = getString(Res.string.error_cant_save_image)
+    val share = getString(Res.string.share_image)
+    val noActivity = getString(Res.string.error_cant_find_activity)
     val uri = provideImage(page.index)
     if (uri == null) {
         showSnackbar(error)
@@ -68,8 +74,8 @@ suspend fun shareImage(page: Page, info: GalleryInfo? = null) {
 
 context(SnackbarHostState, Context, PageLoader)
 suspend fun copy(page: Page) {
-    val error = getString(R.string.error_cant_save_image)
-    val copied = getString(R.string.copied_to_clipboard)
+    val error = getString(Res.string.error_cant_save_image)
+    val copied = getString(Res.string.copied_to_clipboard)
     val uri = provideImage(page.index)
     if (uri == null) {
         showSnackbar(error)
@@ -85,7 +91,7 @@ suspend fun copy(page: Page) {
 context(SnackbarHostState, Context, PageLoader)
 suspend fun save(page: Page) {
     val granted = isAtLeastQ || requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    val cannotSave = getString(R.string.error_cant_save_image)
+    val cannotSave = getString(Res.string.error_cant_save_image)
     if (granted) {
         val filename = getImageFilename(page.index)
         if (filename == null) {
@@ -127,12 +133,12 @@ suspend fun save(page: Page) {
                 contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
                 contentResolver.update(imageUri, contentValues, null, null)
             }
-            showSnackbar(getString(R.string.image_saved, realPath + File.separator + filename))
+            showSnackbar(getString(Res.string.image_saved, realPath + File.separator + filename))
         } else {
             showSnackbar(cannotSave)
         }
     } else {
-        showSnackbar(getString(R.string.permission_denied))
+        showSnackbar(getString(Res.string.permission_denied))
     }
 }
 
@@ -140,7 +146,7 @@ context(SnackbarHostState, Context, PageLoader)
 suspend fun saveTo(page: Page) {
     val filename = getImageFilename(page.index)
     if (filename == null) {
-        showSnackbar(getString(R.string.error_cant_save_image))
+        showSnackbar(getString(Res.string.error_cant_save_image))
         return
     }
     val extension = FileUtils.getExtensionFromFilename(filename)
@@ -149,10 +155,10 @@ suspend fun saveTo(page: Page) {
         val uri = awaitActivityResult(ActivityResultContracts.CreateDocument(mimeType), filename)
         if (uri != null) {
             save(index, uri.toOkioPath())
-            showSnackbar(getString(R.string.image_saved, uri.displayPath))
+            showSnackbar(getString(Res.string.image_saved, uri.displayPath.orEmpty()))
         }
     }.onFailure {
         it.logcat(it)
-        showSnackbar(getString(R.string.error_cant_find_activity))
+        showSnackbar(getString(Res.string.error_cant_find_activity))
     }
 }

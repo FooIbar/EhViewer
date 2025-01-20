@@ -55,6 +55,11 @@ import arrow.core.Either
 import arrow.core.Either.Companion.catch
 import arrow.core.raise.ensure
 import arrow.core.right
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.archive_need_passwd
+import com.ehviewer.core.common.archive_passwd
+import com.ehviewer.core.common.passwd_cannot_be_empty
+import com.ehviewer.core.common.passwd_wrong
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
@@ -99,6 +104,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.kt.unreachable
+import org.jetbrains.compose.resources.getString
 
 sealed interface ReaderScreenArgs : Parcelable {
     @Parcelize
@@ -390,12 +396,12 @@ suspend fun <T> usePageLoader(args: ReaderScreenArgs, block: suspend (PageLoader
         args.uri.toOkioPath(),
         passwdProvider = { invalidator ->
             awaitInputText(
-                title = getString(R.string.archive_need_passwd),
-                hint = getString(R.string.archive_passwd),
+                title = getString(Res.string.archive_need_passwd),
+                hint = getString(Res.string.archive_passwd),
                 onUserDismiss = { popBackStack() },
             ) { text ->
-                ensure(text.isNotBlank()) { getString(R.string.passwd_cannot_be_empty) }
-                ensure(invalidator(text)) { getString(R.string.passwd_wrong) }
+                ensure(text.isNotBlank()) { getString(Res.string.passwd_cannot_be_empty) }
+                ensure(invalidator(text)) { getString(Res.string.passwd_wrong) }
             }
         },
         block = block,

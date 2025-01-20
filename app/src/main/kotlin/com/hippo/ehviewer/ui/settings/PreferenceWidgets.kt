@@ -49,6 +49,8 @@ import kotlin.reflect.KMutableProperty0
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 object PreferenceTokens {
     val PreferenceHeaderHeight = 56.dp
@@ -60,7 +62,7 @@ object PreferenceTokens {
 @Composable
 fun PreferenceHeader(
     icon: Painter,
-    title: String,
+    title: StringResource,
     childRoute: DirectionDestinationSpec,
     navigator: DestinationsNavigator,
 ) {
@@ -71,14 +73,14 @@ fun PreferenceHeader(
         Spacer(modifier = Modifier.size(PreferenceTokens.PreferenceIconPadding))
         Icon(painter = icon, contentDescription = null, modifier = Modifier.size(PreferenceTokens.PreferenceIconSize), tint = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.size(PreferenceTokens.PreferenceIconPadding))
-        Text(text = title, modifier = Modifier.padding(PreferenceTextPadding), style = MaterialTheme.typography.bodyLarge)
+        Text(text = stringResource(title), modifier = Modifier.padding(PreferenceTextPadding), style = MaterialTheme.typography.bodyLarge)
     }
 }
 
 @Composable
 fun PreferenceHeader(
     icon: ImageVector,
-    title: String,
+    title: StringResource,
     childRoute: DirectionDestinationSpec,
     navigator: DestinationsNavigator,
 ) = PreferenceHeader(

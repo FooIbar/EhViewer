@@ -47,7 +47,6 @@ import androidx.compose.ui.autofill.AutofillType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -56,6 +55,20 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.app_waring
+import com.ehviewer.core.common.app_waring_2
+import com.ehviewer.core.common.error_password_cannot_empty
+import com.ehviewer.core.common.error_username_cannot_empty
+import com.ehviewer.core.common.get_it
+import com.ehviewer.core.common.guest_mode
+import com.ehviewer.core.common.password
+import com.ehviewer.core.common.register
+import com.ehviewer.core.common.sign_in
+import com.ehviewer.core.common.sign_in_failed
+import com.ehviewer.core.common.sign_in_failed_tip
+import com.ehviewer.core.common.sign_in_via_webview
+import com.ehviewer.core.common.username
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhEngine
@@ -73,6 +86,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Job
+import org.jetbrains.compose.resources.stringResource
 
 @Destination<RootGraph>(start = true)
 @Composable
@@ -113,14 +127,14 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                     focusManager.clearFocus()
                     isProgressIndicatorVisible = false
                     awaitConfirmationOrCancel(
-                        confirmText = R.string.get_it,
-                        title = R.string.sign_in_failed,
+                        confirmText = Res.string.get_it,
+                        title = Res.string.sign_in_failed,
                         showCancelButton = false,
                         text = {
                             Text(
                                 """
                                 ${it.displayString()}
-                                ${stringResource(R.string.sign_in_failed_tip, stringResource(R.string.sign_in_via_webview))}
+                                ${stringResource(Res.string.sign_in_failed_tip, stringResource(Res.string.sign_in_via_webview))}
                                 """.trimIndent(),
                             )
                         },
@@ -140,8 +154,8 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                 autofillTypes = listOf(AutofillType.Username),
                 onFill = { username.setTextAndPlaceCursorAtEnd(it) },
             ),
-            label = { Text(stringResource(R.string.username)) },
-            supportingText = { if (showUsernameError) Text(stringResource(R.string.error_username_cannot_empty)) },
+            label = { Text(stringResource(Res.string.username)) },
+            supportingText = { if (showUsernameError) Text(stringResource(Res.string.error_username_cannot_empty)) },
             trailingIcon = { if (showUsernameError) Icon(imageVector = Icons.Filled.Info, contentDescription = null) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             lineLimits = TextFieldLineLimits.SingleLine,
@@ -153,8 +167,8 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                 autofillTypes = listOf(AutofillType.Password),
                 onFill = { password.setTextAndPlaceCursorAtEnd(it) },
             ),
-            label = { Text(stringResource(R.string.password)) },
-            supportingText = { if (showPasswordError) Text(stringResource(R.string.error_password_cannot_empty)) },
+            label = { Text(stringResource(Res.string.password)) },
+            supportingText = { if (showPasswordError) Text(stringResource(Res.string.error_password_cannot_empty)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             onKeyboardAction = { signIn() },
             trailingIcon = {
@@ -186,12 +200,12 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                     )
                     UsernameAndPasswordTextField()
                     Text(
-                        text = stringResource(id = R.string.app_waring),
+                        text = stringResource(Res.string.app_waring),
                         modifier = Modifier.widthIn(max = dimensionResource(id = R.dimen.single_max_width)).padding(top = 24.dp),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        text = stringResource(id = R.string.app_waring_2),
+                        text = stringResource(Res.string.app_waring_2),
                         modifier = Modifier.widthIn(max = dimensionResource(id = R.dimen.single_max_width)).padding(top = 12.dp),
                         style = MaterialTheme.typography.titleLarge,
                     )
@@ -201,13 +215,13 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                             onClick = { openBrowser(EhUrl.URL_REGISTER) },
                             modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
                         ) {
-                            Text(text = stringResource(id = R.string.register))
+                            Text(text = stringResource(Res.string.register))
                         }
                         Button(
                             onClick = ::signIn,
                             modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
                         ) {
-                            Text(text = stringResource(id = R.string.sign_in))
+                            Text(text = stringResource(Res.string.sign_in))
                         }
                     }
                     Row(modifier = Modifier.padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -220,7 +234,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                                     withStyle(
                                         style = SpanStyle(textDecoration = TextDecoration.Underline),
                                     ) {
-                                        append(stringResource(id = R.string.sign_in_via_webview))
+                                        append(stringResource(Res.string.sign_in_via_webview))
                                     }
                                 },
                             )
@@ -237,7 +251,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                                     withStyle(
                                         style = SpanStyle(textDecoration = TextDecoration.Underline),
                                     ) {
-                                        append(stringResource(id = R.string.guest_mode))
+                                        append(stringResource(Res.string.guest_mode))
                                     }
                                 },
                             )
@@ -261,12 +275,12 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                             modifier = Modifier.padding(dimensionResource(id = R.dimen.keyline_margin)),
                         )
                         Text(
-                            text = stringResource(id = R.string.app_waring),
+                            text = stringResource(Res.string.app_waring),
                             modifier = Modifier.widthIn(max = 360.dp),
                             style = MaterialTheme.typography.titleMedium,
                         )
                         Text(
-                            text = stringResource(id = R.string.app_waring_2),
+                            text = stringResource(Res.string.app_waring_2),
                             modifier = Modifier.widthIn(max = 360.dp),
                             style = MaterialTheme.typography.titleLarge,
                         )
@@ -282,13 +296,13 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                                 onClick = ::signIn,
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
-                                Text(text = stringResource(id = R.string.sign_in))
+                                Text(text = stringResource(Res.string.sign_in))
                             }
                             FilledTonalButton(
                                 onClick = { openBrowser(EhUrl.URL_REGISTER) },
                                 modifier = Modifier.padding(horizontal = 4.dp).width(128.dp),
                             ) {
-                                Text(text = stringResource(id = R.string.register))
+                                Text(text = stringResource(Res.string.register))
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -302,7 +316,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                                         withStyle(
                                             style = SpanStyle(textDecoration = TextDecoration.Underline),
                                         ) {
-                                            append(stringResource(id = R.string.sign_in_via_webview))
+                                            append(stringResource(Res.string.sign_in_via_webview))
                                         }
                                     },
                                 )
@@ -319,7 +333,7 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
                                         withStyle(
                                             style = SpanStyle(textDecoration = TextDecoration.Underline),
                                         ) {
-                                            append(stringResource(id = R.string.guest_mode))
+                                            append(stringResource(Res.string.guest_mode))
                                         }
                                     },
                                 )

@@ -3,7 +3,6 @@ package com.hippo.ehviewer.ui.screen
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import androidx.annotation.StringRes
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.clickable
@@ -39,7 +38,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -50,7 +48,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.LocalPinnableContainer
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
@@ -66,6 +63,61 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import arrow.core.partially1
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parZip
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.action_copy
+import com.ehviewer.core.common.add_filter
+import com.ehviewer.core.common.add_to_favorite_failure
+import com.ehviewer.core.common.add_to_favorite_success
+import com.ehviewer.core.common.archive
+import com.ehviewer.core.common.copy_trans
+import com.ehviewer.core.common.download
+import com.ehviewer.core.common.download_archive_failure
+import com.ehviewer.core.common.download_archive_failure_no_hath
+import com.ehviewer.core.common.download_archive_started
+import com.ehviewer.core.common.download_state_downloaded
+import com.ehviewer.core.common.download_state_downloading
+import com.ehviewer.core.common.download_state_failed
+import com.ehviewer.core.common.download_state_none
+import com.ehviewer.core.common.download_state_wait
+import com.ehviewer.core.common.filter_added
+import com.ehviewer.core.common.filter_the_tag
+import com.ehviewer.core.common.filter_the_uploader
+import com.ehviewer.core.common.local_favorites
+import com.ehviewer.core.common.more_comment
+import com.ehviewer.core.common.newer_version_available
+import com.ehviewer.core.common.newer_version_title
+import com.ehviewer.core.common.no_archives
+import com.ehviewer.core.common.no_comments
+import com.ehviewer.core.common.no_more_comments
+import com.ehviewer.core.common.no_tags
+import com.ehviewer.core.common.no_torrents
+import com.ehviewer.core.common.not_favorited
+import com.ehviewer.core.common.rate
+import com.ehviewer.core.common.rate_failed
+import com.ehviewer.core.common.rate_successfully
+import com.ehviewer.core.common.rating0
+import com.ehviewer.core.common.rating1
+import com.ehviewer.core.common.rating10
+import com.ehviewer.core.common.rating2
+import com.ehviewer.core.common.rating3
+import com.ehviewer.core.common.rating4
+import com.ehviewer.core.common.rating5
+import com.ehviewer.core.common.rating6
+import com.ehviewer.core.common.rating7
+import com.ehviewer.core.common.rating8
+import com.ehviewer.core.common.rating9
+import com.ehviewer.core.common.rating_none
+import com.ehviewer.core.common.rating_text
+import com.ehviewer.core.common.read
+import com.ehviewer.core.common.read_from
+import com.ehviewer.core.common.remove_from_favorite_success
+import com.ehviewer.core.common.show_definition
+import com.ehviewer.core.common.sign_in_first
+import com.ehviewer.core.common.similar_gallery
+import com.ehviewer.core.common.tag_vote_down
+import com.ehviewer.core.common.tag_vote_up
+import com.ehviewer.core.common.tag_vote_withdraw
+import com.ehviewer.core.common.torrent_count
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -87,6 +139,7 @@ import com.hippo.ehviewer.client.data.asGalleryDetail
 import com.hippo.ehviewer.client.data.findBaseInfo
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.NoHAtHClientException
+import com.hippo.ehviewer.client.parser.RatingState
 import com.hippo.ehviewer.coil.PrefetchAround
 import com.hippo.ehviewer.coil.justDownload
 import com.hippo.ehviewer.collectAsState
@@ -103,7 +156,6 @@ import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.ui.confirmRemoveDownload
 import com.hippo.ehviewer.ui.destinations.GalleryCommentsScreenDestination
 import com.hippo.ehviewer.ui.getFavoriteIcon
-import com.hippo.ehviewer.ui.i18n.Strings
 import com.hippo.ehviewer.ui.jumpToReaderByPage
 import com.hippo.ehviewer.ui.main.ArchiveList
 import com.hippo.ehviewer.ui.main.EhPreviewItem
@@ -153,8 +205,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.runSwallowingWithUI
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 
-context(CoroutineScope, DestinationsNavigator, DialogState, MainActivity, SnackbarHostState, SharedTransitionScope, TransitionsVisibilityScope, Strings)
+context(CoroutineScope, DestinationsNavigator, DialogState, MainActivity, SnackbarHostState, SharedTransitionScope, TransitionsVisibilityScope)
 @Composable
 fun GalleryDetailContent(
     galleryInfo: GalleryInfo,
@@ -168,23 +222,23 @@ fun GalleryDetailContent(
     val galleryDetail = galleryInfo.asGalleryDetail()
     val windowSizeClass = LocalWindowSizeClass.current
     val thumbColumns by Settings.thumbColumns.collectAsState()
-    val readText = stringResource(R.string.read)
+    val readText = stringResource(Res.string.read)
     val startPage by rememberInVM {
         EhDB.getReadProgressFlow(galleryInfo.gid)
     }.collectAsState(0)
     val readButtonText = if (startPage == 0) {
         readText
     } else {
-        stringResource(R.string.read_from, startPage + 1)
+        stringResource(Res.string.read_from, startPage + 1)
     }
     val downloadState by DownloadManager.collectDownloadState(galleryInfo.gid)
     val downloadButtonText = when (downloadState) {
-        DownloadInfo.STATE_INVALID -> stringResource(R.string.download)
-        DownloadInfo.STATE_NONE -> stringResource(R.string.download_state_none)
-        DownloadInfo.STATE_WAIT -> stringResource(R.string.download_state_wait)
-        DownloadInfo.STATE_DOWNLOAD -> stringResource(R.string.download_state_downloading)
-        DownloadInfo.STATE_FINISH -> stringResource(R.string.download_state_downloaded)
-        DownloadInfo.STATE_FAILED -> stringResource(R.string.download_state_failed)
+        DownloadInfo.STATE_INVALID -> stringResource(Res.string.download)
+        DownloadInfo.STATE_NONE -> stringResource(Res.string.download_state_none)
+        DownloadInfo.STATE_WAIT -> stringResource(Res.string.download_state_wait)
+        DownloadInfo.STATE_DOWNLOAD -> stringResource(Res.string.download_state_downloading)
+        DownloadInfo.STATE_FINISH -> stringResource(Res.string.download_state_downloaded)
+        DownloadInfo.STATE_FAILED -> stringResource(Res.string.download_state_failed)
         else -> error("Invalid DownloadState!!!")
     }
     fun onReadButtonClick() {
@@ -222,7 +276,7 @@ fun GalleryDetailContent(
         }
     }
 
-    val filterAdded = stringResource(R.string.filter_added)
+    val filterAdded = stringResource(Res.string.filter_added)
     fun showFilterUploaderDialog(galleryInfo: GalleryInfo) {
         val uploader = galleryInfo.uploader
         val disowned = uploader == "(Disowned)"
@@ -231,7 +285,7 @@ fun GalleryDetailContent(
         }
         launchIO {
             awaitConfirmationOrCancel {
-                Text(text = stringResource(R.string.filter_the_uploader, uploader))
+                Text(text = stringResource(Res.string.filter_the_uploader, uploader))
             }
             Filter(FilterMode.UPLOADER, uploader).remember()
             showSnackbar(filterAdded)
@@ -379,7 +433,7 @@ fun GalleryDetailContent(
     }
 }
 
-context(Context, CoroutineScope, DestinationsNavigator, DialogState, SnackbarHostState, Strings)
+context(Context, CoroutineScope, DestinationsNavigator, DialogState, SnackbarHostState)
 @Composable
 fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     @Composable
@@ -401,9 +455,9 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     fun GalleryDetailComment(commentsList: List<GalleryComment>) {
         val maxShowCount = 2
         val commentText = when {
-            commentsList.isEmpty() -> noComments
-            commentsList.size <= maxShowCount -> noMoreComments
-            else -> moreComment
+            commentsList.isEmpty() -> stringResource(Res.string.no_comments)
+            commentsList.size <= maxShowCount -> stringResource(Res.string.no_more_comments)
+            else -> stringResource(Res.string.more_comment)
         }
         fun navigateToCommentScreen() {
             navigate(GalleryCommentsScreenDestination(galleryDetail.gid))
@@ -440,7 +494,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     }
     suspend fun showNewerVersionDialog() {
         val items = galleryDetail.newerVersions.map {
-            newerVersionTitle(it.title.orEmpty(), it.posted.orEmpty())
+            getString(Res.string.newer_version_title, it.title.orEmpty(), it.posted.orEmpty())
         }
         val selected = awaitSelectItem(items)
         val info = galleryDetail.newerVersions[selected]
@@ -458,7 +512,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                 modifier = Modifier.fillMaxWidth().height(32.dp),
             ) {
             }
-            Text(text = newerVersionAvailable)
+            Text(text = stringResource(Res.string.newer_version_available))
         }
         Spacer(modifier = Modifier.size(keylineMargin))
     }
@@ -468,12 +522,16 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     ) {
         val favSlot by FavouriteStatusRouter.collectAsState(galleryDetail) { it }
         val favButtonText = if (favSlot != NOT_FAVORITED) {
-            galleryDetail.favoriteName ?: localFavorites
+            galleryDetail.favoriteName ?: stringResource(Res.string.local_favorites)
         } else {
-            notFavorited
+            stringResource(Res.string.not_favorited)
         }
         val favoritesLock = remember { MutatorMutex() }
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            val removeSucceed = stringResource(Res.string.remove_from_favorite_success)
+            val addSucceed = stringResource(Res.string.add_to_favorite_success)
+            // val removeFailed = stringResource(Res.string.remove_from_favorite_failure)
+            val addFailed = stringResource(Res.string.add_to_favorite_failure)
             FilledTertiaryIconToggleButton(
                 checked = favSlot != NOT_FAVORITED,
                 onCheckedChange = {
@@ -483,13 +541,13 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                                 modifyFavorites(galleryDetail.galleryInfo)
                             }.onSuccess { add ->
                                 if (add) {
-                                    showSnackbar(addToFavoriteSuccess)
+                                    showSnackbar(addSucceed)
                                 } else {
-                                    showSnackbar(removeFromFavoriteSuccess)
+                                    showSnackbar(removeSucceed)
                                 }
                             }.onFailure {
                                 // TODO: We don't know if it's add or remove
-                                showSnackbar(addToFavoriteFailure)
+                                showSnackbar(addFailed)
                             }
                         }
                     }
@@ -504,7 +562,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         }
         EhIconButton(
             icon = Icons.Default.Search,
-            text = similarGallery,
+            text = stringResource(Res.string.similar_gallery),
             onClick = {
                 val keyword = EhUtils.extractTitle(galleryDetail.title)
                 val artistTag = galleryDetail.tagGroups.artistTag()
@@ -532,6 +590,11 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                 }
             },
         )
+        val signInFirst = stringResource(Res.string.sign_in_first)
+        val noArchive = stringResource(Res.string.no_archives)
+        val downloadStarted = stringResource(Res.string.download_archive_started)
+        val downloadFailed = stringResource(Res.string.download_archive_failure)
+        val failureNoHath = stringResource(Res.string.download_archive_failure_no_hath)
         val archiveResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
                 with(galleryDetail) {
@@ -547,7 +610,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                     runSuspendCatching {
                         val (archiveList, funds) = bgWork { archiveResult.await() }
                         if (archiveList.isEmpty()) {
-                            showSnackbar(noArchives)
+                            showSnackbar(noArchive)
                         } else {
                             val selected = showNoButton {
                                 ArchiveList(
@@ -557,15 +620,15 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                                 )
                             }
                             EhUtils.downloadArchive(galleryDetail, selected)
-                            showSnackbar(downloadArchiveStarted)
+                            showSnackbar(downloadStarted)
                         }
                     }.onFailure {
                         when (it) {
-                            is NoHAtHClientException -> showSnackbar(downloadArchiveFailureNoHath)
+                            is NoHAtHClientException -> showSnackbar(failureNoHath)
                             is EhException -> showSnackbar(it.displayString())
                             else -> {
                                 logcat(it)
-                                showSnackbar(downloadArchiveFailure)
+                                showSnackbar(downloadFailed)
                             }
                         }
                     }
@@ -574,9 +637,11 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         }
         EhIconButton(
             icon = Icons.Default.FolderZip,
-            text = archive,
+            text = stringResource(Res.string.archive),
             onClick = ::showArchiveDialog,
         )
+        val torrentText = stringResource(Res.string.torrent_count, galleryDetail.torrentCount)
+        val noTorrents = stringResource(Res.string.no_torrents)
         val torrentResult = remember(galleryDetail) {
             async(Dispatchers.IO + Job(), CoroutineStart.LAZY) {
                 parZip(
@@ -611,7 +676,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         }
         EhIconButton(
             icon = EhIcons.Default.Magnet,
-            text = torrentCount(galleryDetail.torrentCount),
+            text = torrentText,
             onClick = {
                 launchIO {
                     when {
@@ -623,28 +688,28 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         )
     }
     Spacer(modifier = Modifier.size(keylineMargin))
-    fun getAllRatingText(rating: Float, ratingCount: Int): String = getString(
-        R.string.rating_text,
-        getString(getRatingText(rating)),
-        rating,
-        ratingCount,
-    )
-    var ratingText by rememberSaveable {
-        mutableStateOf(getAllRatingText(galleryDetail.rating, galleryDetail.ratingCount))
+    var ratingState by rememberSaveable {
+        mutableStateOf(RatingState(galleryDetail.rating, galleryDetail.ratingCount))
     }
-    val rateSucceed = stringResource(R.string.rate_successfully)
-    val rateFailed = stringResource(R.string.rate_failed)
-    val signInFirst = stringResource(R.string.sign_in_first)
+    val ratingText = stringResource(
+        Res.string.rating_text,
+        stringResource(getRatingText(ratingState.rating)),
+        ratingState.rating,
+        ratingState.ratingCount,
+    )
+    val rateSucceed = stringResource(Res.string.rate_successfully)
+    val rateFailed = stringResource(Res.string.rate_failed)
+    val signInFirst = stringResource(Res.string.sign_in_first)
     fun showRateDialog() {
         launchIO {
             if (galleryDetail.apiUid < 0) {
                 showSnackbar(signInFirst)
                 return@launchIO
             }
-            val pendingRating = awaitResult(galleryDetail.rating.coerceAtLeast(.5f), title = R.string.rate) {
+            val pendingRating = awaitResult(galleryDetail.rating.coerceAtLeast(.5f), title = Res.string.rate) {
                 Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    var text by remember { mutableIntStateOf(getRatingText(expectedValue)) }
-                    Text(text = stringResource(id = text), style = MaterialTheme.typography.bodyLarge)
+                    var text by remember { mutableStateOf(getRatingText(expectedValue)) }
+                    Text(text = stringResource(text), style = MaterialTheme.typography.bodyLarge)
                     Spacer(modifier = Modifier.size(keylineMargin))
                     GalleryRatingBar(
                         rating = expectedValue,
@@ -662,7 +727,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                     rating = result.rating
                     ratingCount = result.ratingCount
                 }
-                ratingText = getAllRatingText(result.rating, result.ratingCount)
+                ratingState = result
                 showSnackbar(rateSucceed)
             }.onFailure {
                 logcat(it)
@@ -687,17 +752,17 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text = stringResource(id = R.string.no_tags))
+            Text(text = stringResource(Res.string.no_tags))
         }
     } else {
-        val copy = stringResource(android.R.string.copy)
-        val copyTrans = stringResource(R.string.copy_trans)
-        val showDefine = stringResource(R.string.show_definition)
-        val addFilter = stringResource(R.string.add_filter)
-        val filterAdded = stringResource(R.string.filter_added)
-        val upTag = stringResource(R.string.tag_vote_up)
-        val downTag = stringResource(R.string.tag_vote_down)
-        val withDraw = stringResource(R.string.tag_vote_withdraw)
+        val copy = stringResource(Res.string.action_copy)
+        val copyTrans = stringResource(Res.string.copy_trans)
+        val showDefine = stringResource(Res.string.show_definition)
+        val addFilter = stringResource(Res.string.add_filter)
+        val filterAdded = stringResource(Res.string.filter_added)
+        val upTag = stringResource(Res.string.tag_vote_up)
+        val downTag = stringResource(Res.string.tag_vote_down)
+        val withDraw = stringResource(Res.string.tag_vote_withdraw)
         GalleryTags(
             tagGroups = tags,
             onTagClick = {
@@ -719,7 +784,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                             openBrowser(EhUrl.getTagDefinitionUrl(rawValue))
                         }
                         onSelect(addFilter) {
-                            awaitConfirmationOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
+                            awaitConfirmationOrCancel { Text(text = stringResource(Res.string.filter_the_tag, tag)) }
                             Filter(FilterMode.TAG, tag).remember()
                             showSnackbar(filterAdded)
                         }
@@ -745,20 +810,19 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     }
 }
 
-@StringRes
-private fun getRatingText(rating: Float): Int = when ((rating * 2).roundToInt()) {
-    0 -> R.string.rating0
-    1 -> R.string.rating1
-    2 -> R.string.rating2
-    3 -> R.string.rating3
-    4 -> R.string.rating4
-    5 -> R.string.rating5
-    6 -> R.string.rating6
-    7 -> R.string.rating7
-    8 -> R.string.rating8
-    9 -> R.string.rating9
-    10 -> R.string.rating10
-    else -> R.string.rating_none
+private fun getRatingText(rating: Float) = when ((rating * 2).roundToInt()) {
+    0 -> Res.string.rating0
+    1 -> Res.string.rating1
+    2 -> Res.string.rating2
+    3 -> Res.string.rating3
+    4 -> Res.string.rating4
+    5 -> Res.string.rating5
+    6 -> Res.string.rating6
+    7 -> Res.string.rating7
+    8 -> Res.string.rating8
+    9 -> Res.string.rating9
+    10 -> Res.string.rating10
+    else -> Res.string.rating_none
 }
 
 private fun List<GalleryTagGroup>.artistTag() = find { (ns, _) -> ns == TagNamespace.Artist || ns == TagNamespace.Cosplayer }?.let { (ns, tags) -> "$ns:${tags[0].text}" }

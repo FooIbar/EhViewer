@@ -1,13 +1,12 @@
 package eu.kanade.tachiyomi.ui.reader.setting
 
-import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.jetbrains.compose.resources.StringResource
 
 interface PreferenceType {
     val prefValue: Int
 
-    @get:StringRes
-    val stringRes: Int
+    val stringRes: StringResource
 
     val icon: ImageVector
 

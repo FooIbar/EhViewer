@@ -441,7 +441,6 @@
     <string name="download_start_all_reversed">全部開始（倒序）</string>
     <string name="settings_download_download_delay">下載延時</string>
     <string name="settings_download_download_delay_summary">每次下載延時 %s 毫秒</string>
-    <string name="settings_download_download_timeout">下載超時（秒）</string>
     <string name="no_browser_installed">請安裝一個瀏覽器。</string>
     <string name="toplist_alltime">從始至終</string>
     <string name="toplist_pastyear">過去一年</string>

@@ -13,10 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.select_image
 import com.hippo.ehviewer.R
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ImageSearch(
@@ -40,6 +42,6 @@ fun ImageSearch(
         onClick = onSelectImage,
         modifier = Modifier.fillMaxWidth().padding(8.dp),
     ) {
-        Text(text = stringResource(id = R.string.select_image))
+        Text(text = stringResource(Res.string.select_image))
     }
 }

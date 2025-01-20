@@ -325,7 +325,6 @@
     <string name="settings_download_concurrency_summary">同時に最大 %s 枚の画像をダウンロードします</string>
     <string name="settings_download_download_delay">ダウンロードの遅延</string>
     <string name="settings_download_download_delay_summary">ダウンロードで %s ミリ秒の遅延をさせます</string>
-    <string name="settings_download_download_timeout">ダウンロードのタイムアウト (秒単位)</string>
     <string name="settings_download_preload_image">画像をプリロード</string>
     <string name="settings_download_preload_image_summary">%s 枚の画像をプリロードします</string>
     <string name="settings_download_download_origin_image">オリジナルの画像をダウンロードする</string>

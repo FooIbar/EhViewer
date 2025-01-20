@@ -21,6 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import arrow.atomic.Atomic
 import arrow.atomic.value
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.apply_tip
+import com.ehviewer.core.common.u_config
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.client.EhCookieStore
@@ -30,6 +33,7 @@ import com.hippo.ehviewer.util.setDefaultSettings
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import org.jetbrains.compose.resources.stringResource
 
 private const val APPLY_JS = "javascript:(function(){var apply = document.getElementById(\"apply\").children[0];apply.click();})();"
 
@@ -42,7 +46,7 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Sc
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = uConfig) },
+                title = { Text(text = stringResource(Res.string.u_config)) },
                 navigationIcon = {
                     IconButton(onClick = { navigator.popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -69,6 +73,7 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Sc
             onCreated = { it.setDefaultSettings() },
             factory = { WebView(it).apply { webview = this } },
         )
+        val applyTip = stringResource(Res.string.apply_tip)
         LaunchedEffect(Unit) { snackbarHostState.showSnackbar(applyTip) }
         DisposableEffect(Unit) {
             onDispose {

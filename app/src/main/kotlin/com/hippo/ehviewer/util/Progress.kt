@@ -13,14 +13,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import com.hippo.ehviewer.R.string
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.please_wait
 import com.hippo.ehviewer.ui.tools.DialogState
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProgressDialog() {
@@ -40,7 +41,7 @@ fun ProgressDialog() {
             ) {
                 CircularProgressIndicator()
                 Spacer(modifier = Modifier.size(18.dp))
-                Text(text = stringResource(id = string.please_wait))
+                Text(text = stringResource(Res.string.please_wait))
             }
         }
     }

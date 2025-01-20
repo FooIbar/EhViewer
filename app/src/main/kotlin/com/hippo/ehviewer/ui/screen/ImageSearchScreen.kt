@@ -26,6 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.image_search
+import com.ehviewer.core.common.search_image
+import com.ehviewer.core.common.select_image_first
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.ListUrlBuilder
 import com.hippo.ehviewer.client.data.ListUrlBuilder.Companion.MODE_IMAGE_SEARCH
@@ -42,10 +46,12 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) = Screen(navigator) {
+    val selectImageFirst = stringResource(Res.string.select_image_first)
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
     val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
     var imageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
@@ -53,7 +59,7 @@ fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = imageSearch) },
+                title = { Text(text = stringResource(Res.string.image_search)) },
             )
         },
         floatingActionButton = {
@@ -94,7 +100,7 @@ fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) 
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = searchImage,
+                    text = stringResource(Res.string.search_image),
                     modifier = Modifier.height(dimensionResource(id = R.dimen.search_category_title_height)),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium,

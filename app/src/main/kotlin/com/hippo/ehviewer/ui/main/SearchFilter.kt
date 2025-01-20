@@ -30,10 +30,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import arrow.core.raise.ensure
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.any
+import com.ehviewer.core.common.artist_cg
+import com.ehviewer.core.common.asian_porn
+import com.ehviewer.core.common.cosplay
+import com.ehviewer.core.common.doujinshi
+import com.ehviewer.core.common.game_cg
+import com.ehviewer.core.common.image_set
+import com.ehviewer.core.common.key_language
+import com.ehviewer.core.common.key_pages
+import com.ehviewer.core.common.manga
+import com.ehviewer.core.common.misc
+import com.ehviewer.core.common.non_h
+import com.ehviewer.core.common.search_sf
+import com.ehviewer.core.common.search_sfl
+import com.ehviewer.core.common.search_sft
+import com.ehviewer.core.common.search_sfu
+import com.ehviewer.core.common.search_sh
+import com.ehviewer.core.common.search_sp_err1
+import com.ehviewer.core.common.search_sp_err2
+import com.ehviewer.core.common.search_sp_suffix
+import com.ehviewer.core.common.search_sp_to
+import com.ehviewer.core.common.search_sr
+import com.ehviewer.core.common.search_sto
+import com.ehviewer.core.common.western
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
@@ -45,18 +69,19 @@ import com.hippo.ehviewer.ui.tools.DropdownFilterChip
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.toIntOrDefault
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 private val categoryTable = arrayOf(
-    EhUtils.DOUJINSHI to R.string.doujinshi,
-    EhUtils.MANGA to R.string.manga,
-    EhUtils.ARTIST_CG to R.string.artist_cg,
-    EhUtils.GAME_CG to R.string.game_cg,
-    EhUtils.WESTERN to R.string.western,
-    EhUtils.NON_H to R.string.non_h,
-    EhUtils.IMAGE_SET to R.string.image_set,
-    EhUtils.COSPLAY to R.string.cosplay,
-    EhUtils.ASIAN_PORN to R.string.asian_porn,
-    EhUtils.MISC to R.string.misc,
+    EhUtils.DOUJINSHI to Res.string.doujinshi,
+    EhUtils.MANGA to Res.string.manga,
+    EhUtils.ARTIST_CG to Res.string.artist_cg,
+    EhUtils.GAME_CG to Res.string.game_cg,
+    EhUtils.WESTERN to Res.string.western,
+    EhUtils.NON_H to Res.string.non_h,
+    EhUtils.IMAGE_SET to Res.string.image_set,
+    EhUtils.COSPLAY to Res.string.cosplay,
+    EhUtils.ASIAN_PORN to Res.string.asian_porn,
+    EhUtils.MISC to Res.string.misc,
 )
 
 context(DialogState)
@@ -86,7 +111,7 @@ fun SearchFilter(
             FilterChip(
                 selected = isCategoryChecked(it.first),
                 onClick = { onCategoryChange(category xor it.first) },
-                label = { Text(text = stringResource(id = it.second)) },
+                label = { Text(text = stringResource(it.second)) },
                 modifier = Modifier.thenIf(animateItems) { animateItem() },
             )
         }
@@ -95,8 +120,8 @@ fun SearchFilter(
         modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        val any = stringResource(id = R.string.any)
-        val languageStr = stringResource(id = R.string.key_language)
+        val any = stringResource(Res.string.any)
+        val languageStr = stringResource(Res.string.key_language)
         val languages = remember {
             val translatable = EhTagDatabase.initialized && EhTagDatabase.isTranslatable(context)
             List(S_LANG_TAGS.size + 1) { i ->
@@ -118,8 +143,8 @@ fun SearchFilter(
             selectedItemIndex = language + 1,
             onSelectedItemIndexChange = { onLanguageChange(it - 1) },
         )
-        val minRatingItems = stringArrayResource(id = R.array.search_min_rating)
-        val minRatingStr = stringResource(id = R.string.search_sr)
+        val minRatingItems = stringArrayResource(R.array.search_min_rating)
+        val minRatingStr = stringResource(Res.string.search_sr)
         DropdownFilterChip(
             label = minRatingStr,
             menuItems = minRatingItems.asList(),
@@ -128,9 +153,9 @@ fun SearchFilter(
                 onAdvancedOptionChange(advancedOption.copy(minRating = if (it == 0) 0 else it + 1))
             },
         )
-        val pageErr1 = stringResource(R.string.search_sp_err1)
-        val pageErr2 = stringResource(R.string.search_sp_err2)
-        val pages = stringResource(id = R.string.key_pages)
+        val pageErr1 = stringResource(Res.string.search_sp_err1)
+        val pageErr2 = stringResource(Res.string.search_sp_err2)
+        val pages = stringResource(Res.string.key_pages)
         val pagesText = remember(advancedOption.fromPage, advancedOption.toPage) {
             with(advancedOption) {
                 val hasFrom = fromPage > 0
@@ -152,7 +177,7 @@ fun SearchFilter(
                 scope.launch {
                     val (from, to) = awaitResult(
                         initial = advancedOption.fromPage to advancedOption.toPage,
-                        title = R.string.key_pages,
+                        title = Res.string.key_pages,
                         invalidator = { (min, max) ->
                             if (max != 0) {
                                 if (min != 0) {
@@ -179,7 +204,7 @@ fun SearchFilter(
                                     singleLine = true,
                                     isError = error != null,
                                 )
-                                Text(text = stringResource(id = R.string.search_sp_to))
+                                Text(text = stringResource(Res.string.search_sp_to))
                                 OutlinedTextField(
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     value = expectedValue.second.takeIf { it > 0 }?.toString().orEmpty(),
@@ -190,7 +215,7 @@ fun SearchFilter(
                                     singleLine = true,
                                     isError = error != null,
                                 )
-                                Text(text = stringResource(id = R.string.search_sp_suffix))
+                                Text(text = stringResource(Res.string.search_sp_suffix))
                             }
                             if (error != null) {
                                 ListItem(
@@ -219,28 +244,28 @@ fun SearchFilter(
         FilterChip(
             selected = checked(AdvanceTable.SH),
             onClick = { advancedOption.inv(AdvanceTable.SH) },
-            label = { Text(text = stringResource(id = R.string.search_sh)) },
+            label = { Text(text = stringResource(Res.string.search_sh)) },
         )
         FilterChip(
             selected = checked(AdvanceTable.STO),
             onClick = { advancedOption.inv(AdvanceTable.STO) },
-            label = { Text(text = stringResource(id = R.string.search_sto)) },
+            label = { Text(text = stringResource(Res.string.search_sto)) },
         )
-        val disableFilter = stringResource(id = R.string.search_sf)
+        val disableFilter = stringResource(Res.string.search_sf)
         FilterChip(
             selected = checked(AdvanceTable.SFL),
             onClick = { advancedOption.inv(AdvanceTable.SFL) },
-            label = { Text(text = disableFilter + stringResource(id = R.string.search_sfl)) },
+            label = { Text(text = disableFilter + stringResource(Res.string.search_sfl)) },
         )
         FilterChip(
             selected = checked(AdvanceTable.SFU),
             onClick = { advancedOption.inv(AdvanceTable.SFU) },
-            label = { Text(text = disableFilter + stringResource(id = R.string.search_sfu)) },
+            label = { Text(text = disableFilter + stringResource(Res.string.search_sfu)) },
         )
         FilterChip(
             selected = checked(AdvanceTable.SFT),
             onClick = { advancedOption.inv(AdvanceTable.SFT) },
-            label = { Text(text = disableFilter + stringResource(id = R.string.search_sft)) },
+            label = { Text(text = disableFilter + stringResource(Res.string.search_sft)) },
         )
     }
 }

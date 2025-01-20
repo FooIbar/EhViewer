@@ -15,6 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.license
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.openBrowser
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
@@ -22,6 +24,7 @@ import com.mikepenz.aboutlibraries.ui.compose.m3.LibraryDefaults
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import org.jetbrains.compose.resources.stringResource
 
 @Destination<RootGraph>
 @Composable
@@ -30,7 +33,7 @@ fun AnimatedVisibilityScope.LicenseScreen(navigator: DestinationsNavigator) = Sc
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = license) },
+                title = { Text(text = stringResource(Res.string.license)) },
                 navigationIcon = {
                     IconButton(onClick = { popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)

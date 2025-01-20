@@ -44,6 +44,13 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import androidx.paging.map
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.clear_all
+import com.ehviewer.core.common.clear_all_history
+import com.ehviewer.core.common.gallery_list_empty_hit
+import com.ehviewer.core.common.history
+import com.ehviewer.core.common.no_history
+import com.ehviewer.core.common.search_bar_hint
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -67,10 +74,13 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Screen(navigator) {
+    val title = stringResource(Res.string.history)
+    val hint = stringResource(Res.string.search_bar_hint, title)
     val animateItems by Settings.animateItems.collectAsState()
 
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
@@ -102,15 +112,15 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
         },
         expanded = searchBarExpanded,
         onExpandedChange = { searchBarExpanded = it },
-        title = history,
-        searchFieldHint = searchBarHint(history),
+        title = title,
+        searchFieldHint = hint,
         searchBarOffsetY = { searchBarOffsetY },
         trailingIcon = {
             IconButton(onClick = {
                 launch {
                     awaitConfirmationOrCancel(
-                        confirmText = R.string.clear_all,
-                        text = { Text(text = clearAllHistory) },
+                        confirmText = Res.string.clear_all,
+                        text = { Text(text = stringResource(Res.string.clear_all_history)) },
                     )
                     EhDB.clearHistoryInfo()
                 }
@@ -184,8 +194,13 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
                         modifier = Modifier.padding(16.dp),
                         tint = MaterialTheme.colorScheme.primary,
                     )
+                    val emptyHint = if (keyword.isEmpty()) {
+                        stringResource(Res.string.no_history)
+                    } else {
+                        stringResource(Res.string.gallery_list_empty_hit)
+                    }
                     Text(
-                        text = if (keyword.isEmpty()) noHistory else galleryListEmptyHit,
+                        text = emptyHint,
                         style = MaterialTheme.typography.headlineMedium,
                     )
                 }

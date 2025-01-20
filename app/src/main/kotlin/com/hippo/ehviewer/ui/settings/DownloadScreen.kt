@@ -28,10 +28,48 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import arrow.fx.coroutines.parMap
 import arrow.fx.coroutines.parMapNotNull
+import com.ehviewer.core.common.Res
+import com.ehviewer.core.common.cancel
+import com.ehviewer.core.common.default_download_dir_not_empty
+import com.ehviewer.core.common.delete
+import com.ehviewer.core.common.pick_new_download_location
+import com.ehviewer.core.common.reset_download_location
+import com.ehviewer.core.common.settings_download
+import com.ehviewer.core.common.settings_download_archive_metadata
+import com.ehviewer.core.common.settings_download_archive_metadata_summary
+import com.ehviewer.core.common.settings_download_cant_get_download_location
+import com.ehviewer.core.common.settings_download_clean_redundancy
+import com.ehviewer.core.common.settings_download_clean_redundancy_done
+import com.ehviewer.core.common.settings_download_clean_redundancy_no_redundancy
+import com.ehviewer.core.common.settings_download_clean_redundancy_summary
+import com.ehviewer.core.common.settings_download_concurrency
+import com.ehviewer.core.common.settings_download_concurrency_summary
+import com.ehviewer.core.common.settings_download_connection_timeout
+import com.ehviewer.core.common.settings_download_download_delay
+import com.ehviewer.core.common.settings_download_download_delay_summary
+import com.ehviewer.core.common.settings_download_download_location
+import com.ehviewer.core.common.settings_download_download_origin_image
+import com.ehviewer.core.common.settings_download_download_origin_image_summary
+import com.ehviewer.core.common.settings_download_media_scan
+import com.ehviewer.core.common.settings_download_media_scan_summary_off
+import com.ehviewer.core.common.settings_download_media_scan_summary_on
+import com.ehviewer.core.common.settings_download_preload_image
+import com.ehviewer.core.common.settings_download_preload_image_summary
+import com.ehviewer.core.common.settings_download_reload_metadata
+import com.ehviewer.core.common.settings_download_reload_metadata_failed
+import com.ehviewer.core.common.settings_download_reload_metadata_successfully
+import com.ehviewer.core.common.settings_download_reload_metadata_summary
+import com.ehviewer.core.common.settings_download_restore_download_items
+import com.ehviewer.core.common.settings_download_restore_download_items_summary
+import com.ehviewer.core.common.settings_download_restore_failed
+import com.ehviewer.core.common.settings_download_restore_not_found
+import com.ehviewer.core.common.settings_download_restore_successfully
+import com.ehviewer.core.common.settings_download_save_as_cbz
+import com.ehviewer.core.common.settings_download_timeout_speed
+import com.ehviewer.core.common.waring
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -77,7 +115,8 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import okio.Path
 import okio.Path.Companion.toOkioPath
-import splitties.init.appCtx
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 
 @Destination<RootGraph>
 @Composable
@@ -87,7 +126,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = settingsDownload) },
+                title = { Text(text = stringResource(Res.string.settings_download)) },
                 navigationIcon = {
                     IconButton(onClick = { popBackStack() }) {
                         Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
@@ -99,6 +138,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             var downloadLocationState by ::downloadLocation.observed
+            val cannotGetDownloadLocation = stringResource(Res.string.settings_download_cant_get_download_location)
             val selectDownloadDirLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { treeUri ->
                 treeUri?.run {
                     launchIO {
@@ -110,13 +150,13 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                             downloadLocationState = path
                         }.onFailure {
                             logcat(it)
-                            launchSnackBar(settingsDownloadCantGetDownloadLocation)
+                            launchSnackBar(cannotGetDownloadLocation)
                         }
                     }
                 }
             }
             Preference(
-                title = stringResource(id = R.string.settings_download_download_location),
+                title = stringResource(Res.string.settings_download_download_location),
                 summary = downloadLocationState.toUri().displayPath,
             ) {
                 launchIO {
@@ -124,18 +164,18 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                     if (defaultDownloadDir?.delete() == false) {
                         val path = defaultDownloadDir.toOkioPath()
                         awaitConfirmationOrCancel(
-                            confirmText = R.string.pick_new_download_location,
+                            confirmText = Res.string.pick_new_download_location,
                             dismissText = if (downloadLocationState != path) {
-                                R.string.reset_download_location
+                                Res.string.reset_download_location
                             } else {
-                                android.R.string.cancel
+                                Res.string.cancel
                             },
-                            title = R.string.waring,
+                            title = Res.string.waring,
                             onCancelButtonClick = {
                                 downloadLocationState = path
                             },
                         ) {
-                            Text(stringResource(id = R.string.default_download_dir_not_empty))
+                            Text(stringResource(Res.string.default_download_dir_not_empty))
                         }
                     }
                     try {
@@ -154,28 +194,28 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                                 logcat(it)
                             }
                         }
-                        launchSnackBar(settingsDownloadCantGetDownloadLocation)
+                        launchSnackBar(cannotGetDownloadLocation)
                     }
                 }
             }
             val mediaScan = Settings::mediaScan.observed
             SwitchPreference(
-                title = settingsDownloadMediaScan,
-                summary = if (mediaScan.value) settingsDownloadMediaScanSummaryOn else settingsDownloadMediaScanSummaryOff,
+                title = stringResource(Res.string.settings_download_media_scan),
+                summary = if (mediaScan.value) stringResource(Res.string.settings_download_media_scan_summary_on) else stringResource(Res.string.settings_download_media_scan_summary_off),
                 value = mediaScan.rememberedAccessor,
             )
             val multiThreadDownload = Settings::multiThreadDownload.observed
             SimpleMenuPreferenceInt(
-                title = settingsDownloadConcurrency,
-                summary = settingsDownloadConcurrencySummary(multiThreadDownload.value),
+                title = stringResource(Res.string.settings_download_concurrency),
+                summary = stringResource(Res.string.settings_download_concurrency_summary, multiThreadDownload.value),
                 entry = R.array.multi_thread_download_entries,
                 entryValueRes = R.array.multi_thread_download_entry_values,
                 value = multiThreadDownload,
             )
             val downloadDelay = Settings::downloadDelay.observed
             SimpleMenuPreferenceInt(
-                title = settingsDownloadDownloadDelay,
-                summary = settingsDownloadDownloadDelaySummary(downloadDelay.value),
+                title = stringResource(Res.string.settings_download_download_delay),
+                summary = stringResource(Res.string.settings_download_download_delay_summary, downloadDelay.value),
                 entry = R.array.download_delay_entries,
                 entryValueRes = R.array.download_delay_entry_values,
                 value = downloadDelay,
@@ -184,42 +224,42 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 maxValue = 10,
                 minValue = 2,
                 step = 7,
-                title = settingsDownloadConnectionTimeout,
+                title = stringResource(Res.string.settings_download_connection_timeout),
                 value = Settings::connTimeout,
             )
             IntSliderPreference(
                 maxValue = 10,
                 minValue = 4,
                 step = 5,
-                title = settingsDownloadTimeoutSpeed,
+                title = stringResource(Res.string.settings_download_timeout_speed),
                 value = Settings::timeoutSpeed,
                 display = ::speedLevelToSpeed,
             )
             val preloadImage = Settings::preloadImage.observed
             SimpleMenuPreferenceInt(
-                title = settingsDownloadPreloadImage,
-                summary = settingsDownloadPreloadImageSummary(preloadImage.value),
+                title = stringResource(Res.string.settings_download_preload_image),
+                summary = stringResource(Res.string.settings_download_preload_image_summary, preloadImage.value),
                 entry = R.array.preload_image_entries,
                 entryValueRes = R.array.preload_image_entry_values,
                 value = preloadImage,
             )
             SwitchPreference(
-                title = stringResource(id = R.string.settings_download_download_origin_image),
-                summary = stringResource(id = R.string.settings_download_download_origin_image_summary),
+                title = stringResource(Res.string.settings_download_download_origin_image),
+                summary = stringResource(Res.string.settings_download_download_origin_image_summary),
                 value = Settings::downloadOriginImage,
             )
             SwitchPreference(
-                title = stringResource(id = R.string.settings_download_save_as_cbz),
+                title = stringResource(Res.string.settings_download_save_as_cbz),
                 value = Settings::saveAsCbz,
             )
             SwitchPreference(
-                title = stringResource(id = R.string.settings_download_archive_metadata),
-                summary = stringResource(id = R.string.settings_download_archive_metadata_summary),
+                title = stringResource(Res.string.settings_download_archive_metadata),
+                summary = stringResource(Res.string.settings_download_archive_metadata_summary),
                 value = Settings::archiveMetadata,
             )
             WorkPreference(
-                title = stringResource(id = R.string.settings_download_reload_metadata),
-                summary = stringResource(id = R.string.settings_download_reload_metadata_summary),
+                title = stringResource(Res.string.settings_download_reload_metadata),
+                summary = stringResource(Res.string.settings_download_reload_metadata_summary),
             ) {
                 fun DownloadInfo.isStable(): Boolean {
                     val downloadTime = downloadDir?.resolve(COMIC_INFO_FILE)?.metadataOrNull()?.lastModifiedAtMillis ?: return false
@@ -238,16 +278,16 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                             di.galleryInfo.also { SpiderDen(it, di.dirname!!).writeComicInfo(false) }
                         }
                         EhDB.updateGalleryInfo(toUpdate)
-                        launchSnackBar(getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
+                        launchSnackBar(getString(Res.string.settings_download_reload_metadata_successfully, toUpdate.size))
                     }
                 }.onFailure {
-                    launchSnackBar(getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
+                    launchSnackBar(getString(Res.string.settings_download_reload_metadata_failed, it.displayString()))
                 }
             }
-            val restoreFailed = stringResource(id = R.string.settings_download_restore_failed)
+            val restoreFailed = stringResource(Res.string.settings_download_restore_failed)
             WorkPreference(
-                title = stringResource(id = R.string.settings_download_restore_download_items),
-                summary = stringResource(id = R.string.settings_download_restore_download_items_summary),
+                title = stringResource(Res.string.settings_download_restore_download_items),
+                summary = stringResource(Res.string.settings_download_restore_download_items_summary),
             ) {
                 var restoreDirCount = 0
                 suspend fun getRestoreItem(file: Path): RestoreItem? {
@@ -299,8 +339,8 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 }
             }
             WorkPreference(
-                title = stringResource(id = R.string.settings_download_clean_redundancy),
-                summary = stringResource(id = R.string.settings_download_clean_redundancy_summary),
+                title = stringResource(Res.string.settings_download_clean_redundancy),
+                summary = stringResource(Res.string.settings_download_clean_redundancy_summary),
             ) {
                 fun isRedundant(file: Path): Boolean {
                     if (!file.isDirectory) return false
@@ -311,8 +351,8 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 val list = downloadLocation.list().filter(::isRedundant)
                 if (list.isNotEmpty()) {
                     awaitConfirmationOrCancel(
-                        confirmText = R.string.delete,
-                        title = R.string.settings_download_clean_redundancy,
+                        confirmText = Res.string.delete,
+                        title = Res.string.settings_download_clean_redundancy,
                     ) {
                         LazyColumn {
                             items(list) {
@@ -334,8 +374,18 @@ private class RestoreItem(
     token: String,
     val galleryInfo: BaseGalleryInfo = BaseGalleryInfo(gid, token),
 ) : GalleryInfo by galleryInfo
-private val RESTORE_NOT_FOUND = appCtx.getString(R.string.settings_download_restore_not_found)
-private val RESTORE_COUNT_MSG = { cnt: Int -> if (cnt == 0) RESTORE_NOT_FOUND else appCtx.getString(R.string.settings_download_restore_successfully, cnt) }
-private val NO_REDUNDANCY = appCtx.getString(R.string.settings_download_clean_redundancy_no_redundancy)
-private val CLEAR_REDUNDANCY_DONE = { cnt: Int -> appCtx.getString(R.string.settings_download_clean_redundancy_done, cnt) }
-private val FINAL_CLEAR_REDUNDANCY_MSG = { cnt: Int -> if (cnt == 0) NO_REDUNDANCY else CLEAR_REDUNDANCY_DONE(cnt) }
+
+private val RESTORE_COUNT_MSG: suspend (Int) -> String = { cnt ->
+    if (cnt == 0) {
+        getString(Res.string.settings_download_restore_not_found)
+    } else {
+        getString(Res.string.settings_download_restore_successfully, cnt)
+    }
+}
+private val FINAL_CLEAR_REDUNDANCY_MSG: suspend (Int) -> String = { cnt ->
+    if (cnt == 0) {
+        getString(Res.string.settings_download_clean_redundancy_no_redundancy)
+    } else {
+        getString(Res.string.settings_download_clean_redundancy_done, cnt)
+    }
+}
