@@ -46,6 +46,7 @@ fun AnimatedVisibilityScope.LicenseScreen(navigator: DestinationsNavigator) = Sc
         LibrariesContainer(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             librariesBlock = { ctx ->
+                // Avoid `Resources.getIdentifier()` call
                 Libs.Builder().withJson(ctx, R.raw.aboutlibraries).build()
             },
             contentPadding = paddingValues,
