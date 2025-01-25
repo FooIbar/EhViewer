@@ -15,10 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import com.hippo.ehviewer.R
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.openBrowser
+import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibraryDefaults
+import com.mikepenz.aboutlibraries.util.withJson
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -42,6 +45,9 @@ fun AnimatedVisibilityScope.LicenseScreen(navigator: DestinationsNavigator) = Sc
     ) { paddingValues ->
         LibrariesContainer(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            librariesBlock = { ctx ->
+                Libs.Builder().withJson(ctx, R.raw.aboutlibraries).build()
+            },
             contentPadding = paddingValues,
             colors = LibraryDefaults.libraryColors(badgeBackgroundColor = MaterialTheme.colorScheme.tertiary),
             padding = LibraryDefaults.libraryPadding(badgeContentPadding = PaddingValues(4.dp)),
