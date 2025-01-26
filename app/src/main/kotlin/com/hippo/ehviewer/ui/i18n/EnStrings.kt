@@ -280,6 +280,8 @@ object EnStrings : Strings {
     override val settingsEhThumbColumns = "Thumb columns"
     override val settingsEhForceEhThumb = "Use e-hentai thumbnail server"
     override val settingsEhForceEhThumbSummary = "Try disabling this if you have trouble loading thumbnails"
+    override val settingsEhUseOnionSite = "Use onion site"
+    override val settingsEhUseOnionSiteSummary = "For exhentai, requires Orbot"
     override val settingsEhShowJpnTitle = "Show Japanese title"
     override val settingsEhShowJpnTitleSummary = "Require enabling Japanese Title in Settings on EHentai website"
     override val settingsEhShowGalleryPages = "Show gallery pages"

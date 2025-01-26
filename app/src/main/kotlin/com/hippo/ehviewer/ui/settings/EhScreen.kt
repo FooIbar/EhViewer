@@ -131,13 +131,23 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                     entryValueRes = R.array.gallery_site_entry_values,
                     value = gallerySite,
                 )
-                AnimatedVisibility(gallerySite.value == EhUrl.SITE_EX) {
+                val isEx = gallerySite.value == EhUrl.SITE_EX
+                AnimatedVisibility(isEx) {
                     var forceEhThumb by Settings.forceEhThumb.asMutableState()
                     SwitchPref(
                         checked = forceEhThumb,
                         onMutate = { forceEhThumb = !forceEhThumb },
                         title = settingsEhForceEhThumb,
                         summary = settingsEhForceEhThumbSummary,
+                    )
+                }
+                AnimatedVisibility(isEx) {
+                    var useOnionSite by Settings.useOnionSite.asMutableState()
+                    SwitchPref(
+                        checked = useOnionSite,
+                        onMutate = { useOnionSite = !useOnionSite },
+                        title = settingsEhUseOnionSite,
+                        summary = settingsEhUseOnionSiteSummary,
                     )
                 }
                 Preference(

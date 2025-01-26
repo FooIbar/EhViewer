@@ -19,38 +19,45 @@ import com.hippo.ehviewer.Settings
 import io.ktor.http.Parameters
 import io.ktor.http.ParametersBuilder
 import io.ktor.http.URLBuilder
-import io.ktor.http.URLProtocol
 
 object EhUrl {
     const val SITE_E = 0
     const val SITE_EX = 1
-    const val DOMAIN_EX = "exhentai.org"
     const val DOMAIN_E = "e-hentai.org"
-    const val HOST_EX = "https://$DOMAIN_EX/"
-    const val API_EX = "https://s.exhentai.org/api.php"
     const val FAV_PATH = "favorites.php"
     const val WATCHED_PATH = "watched"
-    const val URL_UCONFIG_EX = HOST_EX + "uconfig.php"
-    const val URL_MY_TAGS_EX = HOST_EX + "mytags"
     const val HOST_E = "https://$DOMAIN_E/"
     const val API_E = "https://api.e-hentai.org/api.php"
     const val URL_UCONFIG_E = HOST_E + "uconfig.php"
     const val URL_MY_TAGS_E = HOST_E + "mytags"
     const val API_SIGN_IN = "https://forums.e-hentai.org/index.php?act=Login&CODE=01"
-    const val URL_POPULAR_E = "https://e-hentai.org/popular"
-    const val URL_POPULAR_EX = "https://exhentai.org/popular"
+    const val URL_POPULAR_E = "https://$DOMAIN_E/popular"
     const val URL_IMAGE_SEARCH_E = "https://upload.e-hentai.org/image_lookup.php"
-    const val URL_IMAGE_SEARCH_EX = "https://exhentai.org/upload/image_lookup.php"
     const val URL_SIGN_IN = "https://forums.e-hentai.org/index.php?act=Login"
     const val URL_REGISTER = "https://forums.e-hentai.org/index.php?act=Reg&CODE=00"
     const val URL_FORUMS = "https://forums.e-hentai.org/"
     const val URL_FUNDS = HOST_E + "exchange.php?t=gp"
     const val URL_HOME = HOST_E + "home.php"
     const val URL_NEWS = HOST_E + "news.php"
-    const val REFERER_EX = "https://$DOMAIN_EX"
-    const val ORIGIN_EX = REFERER_EX
     const val REFERER_E = "https://$DOMAIN_E"
     const val ORIGIN_E = REFERER_E
+    val DOMAIN_EX: String
+        get() = when (Settings.useOnionSite.value) {
+            true -> "exhentai55ld2wyap5juskbm67czulomrouspdacjamjeloj7ugjbsad.onion"
+            else -> "exhentai.org"
+        }
+    val HOST_EX: String
+        get() = when (Settings.useOnionSite.value) {
+            true -> "http"
+            else -> "https"
+        } + "://$DOMAIN_EX/"
+    val API_EX = HOST_EX + "api.php"
+    val URL_UCONFIG_EX = HOST_EX + "uconfig.php"
+    val URL_MY_TAGS_EX = HOST_EX + "mytags"
+    val URL_POPULAR_EX = HOST_EX + "popular"
+    val URL_IMAGE_SEARCH_EX = HOST_EX + "upload/image_lookup.php"
+    val REFERER_EX = HOST_EX
+    val ORIGIN_EX = HOST_EX
 
     val domain: String
         get() = when (Settings.gallerySite.value) {
@@ -151,7 +158,6 @@ inline fun ehUrl(path: List<String>, host: String = EhUrl.domain, builder: Param
 )
 
 fun ehUrl(path: List<String>, host: String = EhUrl.domain, parameters: Parameters = Parameters.Empty) = URLBuilder(
-    protocol = URLProtocol.HTTPS,
     host = host,
     pathSegments = path,
     parameters = parameters,

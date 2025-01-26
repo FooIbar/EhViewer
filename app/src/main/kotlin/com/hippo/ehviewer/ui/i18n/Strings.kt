@@ -285,6 +285,8 @@ interface Strings {
     val settingsEhThumbColumns: String
     val settingsEhForceEhThumb: String
     val settingsEhForceEhThumbSummary: String
+    val settingsEhUseOnionSite: String
+    val settingsEhUseOnionSiteSummary: String
     val settingsEhShowJpnTitle: String
     val settingsEhShowJpnTitleSummary: String
     val settingsEhShowGalleryPages: String

@@ -68,6 +68,7 @@
                 <data android:scheme="http" />
                 <data android:scheme="https" />
                 <data android:host="exhentai.org" />
+                <data android:host="exhentai55ld2wyap5juskbm67czulomrouspdacjamjeloj7ugjbsad.onion" />
                 <data android:host="e-hentai.org" />
             </intent-filter>
             <intent-filter>
