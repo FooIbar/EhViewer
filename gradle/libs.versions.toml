@@ -33,7 +33,7 @@ telephoto = "0.14.0"
 xmlutil = "0.90.4-SNAPSHOT"
 junit = "1.2.1"
 uiautomator = "2.4.0-alpha01"
-benchmark = "1.4.0-alpha06"
+benchmark = "1.4.0-alpha07"
 profileinstaller = "1.4.1"
 
 [libraries]
