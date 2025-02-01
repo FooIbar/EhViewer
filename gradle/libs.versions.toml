@@ -1,5 +1,5 @@
 [versions]
-aboutlibraries = "11.2.3"
+aboutlibraries = "11.5.0"
 accompanist = "0.37.0"
 agp = "8.8.0"
 androidx-activity = "1.10.0"
