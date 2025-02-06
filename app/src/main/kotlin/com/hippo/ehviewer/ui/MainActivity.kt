@@ -66,7 +66,6 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -130,6 +129,7 @@ import com.hippo.ehviewer.ui.destinations.SignInScreenDestination
 import com.hippo.ehviewer.ui.destinations.SubscriptionScreenDestination
 import com.hippo.ehviewer.ui.destinations.ToplistScreenDestination
 import com.hippo.ehviewer.ui.destinations.WhatshotScreenDestination
+import com.hippo.ehviewer.ui.screen.SnackbarContext
 import com.hippo.ehviewer.ui.screen.asDst
 import com.hippo.ehviewer.ui.screen.asDstWith
 import com.hippo.ehviewer.ui.screen.navWithUrl
@@ -220,7 +220,7 @@ class MainActivity : EhActivity() {
             val configuration = LocalConfiguration.current
             val navDrawerState = rememberDrawerState(DrawerValue.Closed)
             val sideSheetState = rememberDrawerState2(DrawerValue.Closed)
-            val snackbarState = remember { SnackbarHostState() }
+            val snackbar = remember { SnackbarContext() }
             val scope = rememberCoroutineScope()
             val navController = rememberNavController()
             val navigator = navController.rememberDestinationsNavigator()
@@ -260,10 +260,10 @@ class MainActivity : EhActivity() {
                                 }
                             }
                         }.onFailure {
-                            snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))
+                            snackbar.showSnackbar(getString(R.string.update_failed, it.displayString()))
                         }
                     } else {
-                        snackbarState.showSnackbar(noNetwork)
+                        snackbar.showSnackbar(noNetwork)
                     }
                 }
             }
@@ -321,7 +321,7 @@ class MainActivity : EhActivity() {
 
             LaunchedEffect(Unit) {
                 tipFlow.collectLatest {
-                    snackbarState.showSnackbar(it)
+                    snackbar.showSnackbar(it)
                 }
             }
             val warning = stringResource(R.string.metered_network_warning)
@@ -331,13 +331,13 @@ class MainActivity : EhActivity() {
                 LaunchedEffect(Unit) {
                     if (connectivityManager.isActiveNetworkMetered) {
                         if (isAtLeastQ) {
-                            val ret = snackbarState.showSnackbar(warning, settings, true)
+                            val ret = snackbar.showSnackbar(warning, settings, true)
                             if (ret == SnackbarResult.ActionPerformed) {
                                 val panelIntent = Intent(android.provider.Settings.Panel.ACTION_INTERNET_CONNECTIVITY)
                                 startActivity(panelIntent)
                             }
                         } else {
-                            snackbarState.showSnackbar(warning)
+                            snackbar.showSnackbar(warning)
                         }
                     }
                 }
@@ -360,7 +360,7 @@ class MainActivity : EhActivity() {
                             launch = { navigator.navigate(ProgressScreenDestination(result2.gid, result2.pToken, result2.page)) }
                         }
                         launch?.let {
-                            val ret = snackbarState.showSnackbar(snackMessage, snackAction, true)
+                            val ret = snackbar.showSnackbar(snackMessage, snackAction, true)
                             if (ret == SnackbarResult.ActionPerformed) it()
                         }
                     }
@@ -379,14 +379,14 @@ class MainActivity : EhActivity() {
                 LocalNavDrawerState provides navDrawerState,
                 LocalSideSheetState provides sideSheetState,
                 LocalDrawerHandle provides drawerHandle,
-                LocalSnackBarHostState provides snackbarState,
+                LocalSnackbarContext provides snackbar,
                 LocalSnackBarFabPadding provides animateDpAsState(snackbarFabPadding, label = "SnackbarFabPadding"),
                 LocalWindowSizeClass provides adaptiveInfo.windowSizeClass,
             ) {
                 Scaffold(
                     snackbarHost = {
                         SnackbarHost(
-                            hostState = snackbarState,
+                            hostState = snackbar.state,
                             modifier = Modifier.onGloballyPositioned {
                                 with(density) {
                                     snackbarFabPadding = it.size.height.toDp()
@@ -560,10 +560,10 @@ class MainActivity : EhActivity() {
     }
 }
 
+val LocalSnackbarContext = compositionLocalOf<SnackbarContext> { error("CompositionLocal LocalSnackbarContext not present!") }
 val LocalNavDrawerState = compositionLocalOf<DrawerState> { error("CompositionLocal LocalNavDrawerState not present!") }
 val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }
 val LocalDrawerHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerHandle not present!") }
-val LocalSnackBarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackBarHostState not present!") }
 val LocalSnackBarFabPadding = compositionLocalOf<State<Dp>> { error("CompositionLocal LocalSnackBarFabPadding not present!") }
 val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope> { error("CompositionLocal LocalSharedTransitionScope not present!") }
 

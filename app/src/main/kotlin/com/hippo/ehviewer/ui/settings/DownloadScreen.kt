@@ -83,7 +83,6 @@ import splitties.init.appCtx
 @Composable
 fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    fun launchSnackBar(content: String) = launch { showSnackbar(content) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -110,7 +109,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                             downloadLocationState = path
                         }.onFailure {
                             logcat(it)
-                            launchSnackBar(settingsDownloadCantGetDownloadLocation)
+                            launchSnackbar(settingsDownloadCantGetDownloadLocation)
                         }
                     }
                 }
@@ -154,7 +153,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                                 logcat(it)
                             }
                         }
-                        launchSnackBar(settingsDownloadCantGetDownloadLocation)
+                        launchSnackbar(settingsDownloadCantGetDownloadLocation)
                     }
                 }
             }
@@ -238,10 +237,10 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                             di.galleryInfo.also { SpiderDen(it, di.dirname!!).writeComicInfo(false) }
                         }
                         EhDB.updateGalleryInfo(toUpdate)
-                        launchSnackBar(getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
+                        launchSnackbar(getString(R.string.settings_download_reload_metadata_successfully, toUpdate.size))
                     }
                 }.onFailure {
-                    launchSnackBar(getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
+                    launchSnackbar(getString(R.string.settings_download_reload_metadata_failed, it.displayString()))
                 }
             }
             val restoreFailed = stringResource(id = R.string.settings_download_restore_failed)
@@ -282,7 +281,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                         fillGalleryListByApi(it, EhUrl.referer)
                     }
                     if (result.isEmpty()) {
-                        launchSnackBar(RESTORE_COUNT_MSG(restoreDirCount))
+                        launchSnackbar(RESTORE_COUNT_MSG(restoreDirCount))
                     } else {
                         val count = result.parMap {
                             if (it.pages != 0) {
@@ -291,11 +290,11 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                                 SpiderDen(it.galleryInfo, it.dirname).writeComicInfo(false)
                             }
                         }.size
-                        launchSnackBar(RESTORE_COUNT_MSG(count + restoreDirCount))
+                        launchSnackbar(RESTORE_COUNT_MSG(count + restoreDirCount))
                     }
                 }.onFailure {
                     logcat(it)
-                    launchSnackBar(restoreFailed)
+                    launchSnackbar(restoreFailed)
                 }
             }
             WorkPreference(
@@ -322,7 +321,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                     }
                 }
                 val cnt = list.count { runCatching { it.delete() }.getOrNull() != null }
-                launchSnackBar(FINAL_CLEAR_REDUNDANCY_MSG(cnt))
+                launchSnackbar(FINAL_CLEAR_REDUNDANCY_MSG(cnt))
             }
         }
     }

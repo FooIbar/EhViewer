@@ -220,10 +220,10 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
             userComment = TextFieldValue()
             commentId = -1L
             comments = it
-            showSnackbar(msg)
+            launchSnackbar(msg)
         }.onFailure {
             val text = if (commentId != -1L) editCommentFail else commentFail
-            showSnackbar(text + "\n" + it.displayString())
+            launchSnackbar(text + "\n" + it.displayString())
         }
     }
 
@@ -233,7 +233,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
         awaitConfirmationOrCancel { Text(text = stringResource(R.string.filter_the_commenter, commenter)) }
         Filter(FilterMode.COMMENTER, commenter).remember()
         comments = comments.copy(comments = comments.comments.filterNot { it.user == commenter })
-        showSnackbar(filterAdded)
+        launchSnackbar(filterAdded)
     }
 
     suspend fun showCommentVoteStatus(comment: GalleryComment) {
@@ -346,7 +346,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                                 refreshComment(true)
                             }
                         }.onSuccess { result ->
-                            showSnackbar(
+                            launchSnackbar(
                                 if (isUp) {
                                     if (0 != result.vote) voteUpSucceed else cancelVoteUpSucceed
                                 } else {
@@ -354,7 +354,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                                 },
                             )
                         }.onFailure {
-                            showSnackbar(voteFailed)
+                            launchSnackbar(voteFailed)
                         }
                     }
 

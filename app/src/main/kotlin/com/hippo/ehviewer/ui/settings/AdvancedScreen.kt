@@ -9,6 +9,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -18,8 +19,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,6 +40,7 @@ import com.hippo.ehviewer.asMutableState
 import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
+import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
 import com.hippo.ehviewer.util.AdsPlaceholderFile
@@ -72,12 +72,10 @@ import moe.tarsin.coroutines.runSuspendCatching
 
 @Destination<RootGraph>
 @Composable
-fun AdvancedScreen(navigator: DestinationsNavigator) {
+fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -90,7 +88,6 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             SwitchPreference(
@@ -149,10 +146,10 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                                 CrashHandler.collectInfo(zipOs.writer())
                                 Runtime.getRuntime().exec("logcat -d").inputStream.use { it.copyTo(zipOs) }
                             }
-                            launchSnackBar(getString(R.string.settings_advanced_dump_logcat_to, uri.displayPath))
+                            launchSnackbar(getString(R.string.settings_advanced_dump_logcat_to, uri.displayPath))
                         }
                     }.onFailure {
-                        launchSnackBar(dumpLogError)
+                        launchSnackbar(dumpLogError)
                         logcat(it)
                     }
                 }
@@ -214,10 +211,10 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     context.runCatching {
                         grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
                         EhDB.exportDB(context, uri.toOkioPath())
-                        launchSnackBar(getString(R.string.settings_advanced_export_data_to, uri.displayPath))
+                        launchSnackbar(getString(R.string.settings_advanced_export_data_to, uri.displayPath))
                     }.onFailure {
                         logcat(it)
-                        launchSnackBar(exportFailed)
+                        launchSnackbar(exportFailed)
                     }
                 }
             }
@@ -233,10 +230,10 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     context.runCatching {
                         grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         EhDB.importDB(context, uri)
-                        launchSnackBar(importSucceed)
+                        launchSnackbar(importSucceed)
                     }.onFailure {
                         logcat(it)
-                        launchSnackBar(importFailed)
+                        launchSnackbar(importFailed)
                     }
                 }
             }
@@ -255,13 +252,13 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                     tailrec suspend fun doBackup() {
                         val result = EhEngine.getFavorites(favListUrlBuilder.build())
                         if (result.galleryInfoList.isEmpty()) {
-                            launchSnackBar(backupNothing)
+                            launchSnackbar(backupNothing)
                         } else {
                             if (favTotal == 0) favTotal = result.countArray.sum()
                             favIndex += result.galleryInfoList.size
                             val status = "($favIndex/$favTotal)"
                             EhDB.putLocalFavorites(result.galleryInfoList)
-                            launchSnackBar(context.getString(R.string.settings_advanced_backup_favorite_start, status))
+                            launchSnackbar(context.getString(R.string.settings_advanced_backup_favorite_start, status))
                             if (result.next != null) {
                                 delay(Settings.downloadDelay.toLong())
                                 favListUrlBuilder.setIndex(result.next, true)
@@ -273,10 +270,10 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                         runSuspendCatching {
                             doBackup()
                         }.onSuccess {
-                            launchSnackBar(backupSucceed)
+                            launchSnackbar(backupSucceed)
                         }.onFailure {
                             logcat(it)
-                            launchSnackBar(backupFailed)
+                            launchSnackbar(backupFailed)
                         }
                     }
                 }

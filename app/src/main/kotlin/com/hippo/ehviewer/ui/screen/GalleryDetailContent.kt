@@ -34,7 +34,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -154,7 +153,7 @@ import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.runSwallowingWithUI
 
-context(CoroutineScope, DestinationsNavigator, DialogState, MainActivity, SnackbarHostState, SharedTransitionScope, TransitionsVisibilityScope, Strings)
+context(CoroutineScope, DestinationsNavigator, DialogState, MainActivity, SnackbarContext, SharedTransitionScope, TransitionsVisibilityScope, Strings)
 @Composable
 fun GalleryDetailContent(
     galleryInfo: GalleryInfo,
@@ -234,7 +233,7 @@ fun GalleryDetailContent(
                 Text(text = stringResource(R.string.filter_the_uploader, uploader))
             }
             Filter(FilterMode.UPLOADER, uploader).remember()
-            showSnackbar(filterAdded)
+            launchSnackbar(filterAdded)
         }
     }
     fun onDownloadButtonClick() {
@@ -379,7 +378,7 @@ fun GalleryDetailContent(
     }
 }
 
-context(Context, CoroutineScope, DestinationsNavigator, DialogState, SnackbarHostState, Strings)
+context(Context, CoroutineScope, DestinationsNavigator, DialogState, SnackbarContext, Strings)
 @Composable
 fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     @Composable
@@ -483,13 +482,13 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                                 modifyFavorites(galleryDetail.galleryInfo)
                             }.onSuccess { add ->
                                 if (add) {
-                                    showSnackbar(addToFavoriteSuccess)
+                                    launchSnackbar(addToFavoriteSuccess)
                                 } else {
-                                    showSnackbar(removeFromFavoriteSuccess)
+                                    launchSnackbar(removeFromFavoriteSuccess)
                                 }
                             }.onFailure {
                                 // TODO: We don't know if it's add or remove
-                                showSnackbar(addToFavoriteFailure)
+                                launchSnackbar(addToFavoriteFailure)
                             }
                         }
                     }
@@ -542,12 +541,12 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         fun showArchiveDialog() {
             launchIO {
                 if (galleryDetail.apiUid < 0) {
-                    showSnackbar(signInFirst)
+                    launchSnackbar(signInFirst)
                 } else {
                     runSuspendCatching {
                         val (archiveList, funds) = bgWork { archiveResult.await() }
                         if (archiveList.isEmpty()) {
-                            showSnackbar(noArchives)
+                            launchSnackbar(noArchives)
                         } else {
                             val selected = showNoButton {
                                 ArchiveList(
@@ -557,15 +556,15 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                                 )
                             }
                             EhUtils.downloadArchive(galleryDetail, selected)
-                            showSnackbar(downloadArchiveStarted)
+                            launchSnackbar(downloadArchiveStarted)
                         }
                     }.onFailure {
                         when (it) {
-                            is NoHAtHClientException -> showSnackbar(downloadArchiveFailureNoHath)
-                            is EhException -> showSnackbar(it.displayString())
+                            is NoHAtHClientException -> launchSnackbar(downloadArchiveFailureNoHath)
+                            is EhException -> launchSnackbar(it.displayString())
                             else -> {
                                 logcat(it)
-                                showSnackbar(downloadArchiveFailure)
+                                launchSnackbar(downloadArchiveFailure)
                             }
                         }
                     }
@@ -589,7 +588,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
         suspend fun showTorrentDialog() {
             val (torrentList, key) = bgWork { torrentResult.await() }
             if (torrentList.isEmpty()) {
-                showSnackbar(noTorrents)
+                launchSnackbar(noTorrents)
             } else {
                 val selected = showNoButton(false) {
                     TorrentList(
@@ -615,7 +614,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
             onClick = {
                 launchIO {
                     when {
-                        galleryDetail.torrentCount <= 0 -> showSnackbar(noTorrents)
+                        galleryDetail.torrentCount <= 0 -> launchSnackbar(noTorrents)
                         else -> runSwallowingWithUI { showTorrentDialog() }
                     }
                 }
@@ -638,7 +637,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
     fun showRateDialog() {
         launchIO {
             if (galleryDetail.apiUid < 0) {
-                showSnackbar(signInFirst)
+                launchSnackbar(signInFirst)
                 return@launchIO
             }
             val pendingRating = awaitResult(galleryDetail.rating.coerceAtLeast(.5f), title = R.string.rate) {
@@ -663,10 +662,10 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                     ratingCount = result.ratingCount
                 }
                 ratingText = getAllRatingText(result.rating, result.ratingCount)
-                showSnackbar(rateSucceed)
+                launchSnackbar(rateSucceed)
             }.onFailure {
                 logcat(it)
-                showSnackbar(rateFailed)
+                launchSnackbar(rateFailed)
             }
         }
     }
@@ -721,7 +720,7 @@ fun BelowHeader(galleryDetail: GalleryDetail, voteTag: VoteTag) {
                         onSelect(addFilter) {
                             awaitConfirmationOrCancel { Text(text = stringResource(R.string.filter_the_tag, tag)) }
                             Filter(FilterMode.TAG, tag).remember()
-                            showSnackbar(filterAdded)
+                            launchSnackbar(filterAdded)
                         }
                         if (galleryDetail.apiUid >= 0) {
                             when (vote) {
