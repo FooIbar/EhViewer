@@ -73,7 +73,9 @@
 | フレーバー      | 最小の Android バージョン | 注意事項                                     |
 |-------------|-------------------------|-------------------------------------------|
 | Default     | 8.0                     | アニメーション WebP のサポートは Android 9 以降が必要です |
-| Marshmallow | 6.0                     | サポートは限定的、保証はできません            |
+| Marshmallow | 6.0*                     | サポートは限定的、保証はできません            |
+
+*Android 6 のデバイスは [ISRG Root X1](https://letsencrypt.org/certs/isrgrootx1.pem) 証明書のインストールが必要です
 
 <a href="https://github.com/FooIbar/EhViewer/releases">
 <img alt="Get it on GitHub" src="https://github.com/Ehviewer-Overhauled/Art/blob/master/get-it-on-github.svg" width="200px"/>
