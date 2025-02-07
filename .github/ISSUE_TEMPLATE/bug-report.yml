@@ -147,5 +147,5 @@ body:
       - label: 您确保这个 Issue 只提及一个问题。如果您有多个问题报告，烦请发起多个 Issue / Ensure there is only one bug report in this issue. Please make mutiply issue for mutiply bugs
         required: true
 
-      - label: 您确保已使用最新 [CI 版本](https://github.com/FooIbar/EhViewer/actions)测试，并且该问题在最新 CI 版本中并未解决 / This bug have not solved in latest [CI version](https://github.com/FooIbar/EhViewer/actions)
+      - label: 您确保已使用最新 [CI 版本](https://github.com/FooIbar/EhViewer/actions/workflows/ci.yml?query=event%3Apush)测试，并且该问题在最新 CI 版本中并未解决 / This bug have not solved in latest [CI version](https://github.com/FooIbar/EhViewer/actions/workflows/ci.yml?query=event%3Apush)
         required: true
