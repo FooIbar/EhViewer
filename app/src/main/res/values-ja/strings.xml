@@ -88,6 +88,7 @@
     <string name="quick_search">クイック検索</string>
     <string name="quick_search_tip">「+」をタップしてクイック検索を追加します</string>
     <string name="add_quick_search_dialog_title">クイック検索を追加</string>
+    <string name="translate_tag_for_tagger">タグの翻訳を使用する</string>
     <string name="name_is_empty">タイトルが空欄です</string>
     <string name="delete">削除</string>
     <string name="add_quick_search_tip">ギャラリー検索結果の設定などはクイック検索として保存されます。検索の設定などを保存するには、まず検索を実行してください。</string>
@@ -303,6 +304,7 @@
     <string name="settings_eh_show_jpn_title_summary">E-Hentai ウェブサイトの設定で日本語のタイトルを有効化する必要があります</string>
     <string name="settings_eh_show_gallery_pages">ギャラリーページ数を表示</string>
     <string name="settings_eh_show_gallery_pages_summary">リストにギャラリーのページ数を表示します</string>
+    <string name="settings_eh_show_vote_status">タグの投票状態を表示する</string>
     <string name="settings_eh_show_gallery_comments">ギャラリーのコメントを表示</string>
     <string name="settings_eh_show_gallery_comments_summary">ギャラリーの詳細ページにコメントを表示します</string>
     <string name="settings_eh_show_gallery_comment_threshold">コメントスコアのしきい値</string>
@@ -313,6 +315,7 @@
     <string name="settings_eh_tag_translations_source_url">https://placeholder</string>
     <string name="settings_eh_filter">ギャラリーをブロック</string>
     <string name="settings_eh_filter_summary">タイトル、アップローダー、タグ、コメントの投稿者またはギャラリーをブロックします</string>
+    <string name="settings_read_reverse_controls">物理ボタンのコントロールを反転</string>
     <string name="settings_block_extraneous_ads">[試験的] 関係のない広告をブロック</string>
     <string name="settings_ads_placeholder">[任意] 広告を置換するプレースホルダーを選択</string>
     <string name="settings_download">ダウンロード</string>
@@ -409,13 +412,13 @@
     <string name="just_now">たった今</string>
     <string name="yesterday">昨日</string>
     <string name="some_days_ago">%d 日前</string>
-    <string name="archive">圧縮パッケージ</string>
-    <string name="no_archives">アーカイブなし</string>
-    <string name="download_archive_started">アーカイブのダウンロードを開始しました</string>
-    <string name="download_archive_failure">アーカイブをダウンロードできませんでした</string>
+    <string name="archive">アーカイブ</string>
     <string name="archive_free">自由</string>
     <string name="archive_original">オリジナル</string>
     <string name="archive_resample">リサンプル</string>
+    <string name="no_archives">アーカイブなし</string>
+    <string name="download_archive_started">アーカイブのダウンロードを開始しました</string>
+    <string name="download_archive_failure">アーカイブをダウンロードできませんでした</string>
     <string name="download_archive_failure_no_hath">アーカイブのダウンロードは H@H クライアントが必要です</string>
     <string name="current_funds">現在の資金:</string>
     <string name="insufficient_funds">資金が不足しています</string>
@@ -458,10 +461,11 @@
     <string name="toplist">トップリスト</string>
     <string name="tag_vote_down">評価を下げる</string>
     <string name="tag_vote_up">評価を上げる</string>
+    <string name="tag_vote_withdraw">投票を撤回</string>
     <string name="tag_vote_successfully">評価が成功しました</string>
     <string name="delete_search_history">検索履歴から「%s」を削除しますか？</string>
     <string name="action_add_tag">タグを追加</string>
-    <string name="action_add_tag_tip">新しいタグを入力してください</string>
+    <string name="action_add_tag_tip">新しいタグを入力</string>
     <string name="comment_user_uploader">%s (アップローダー)</string>
     <string name="no_network">ネットワークがありません</string>
     <string name="settings_eh_metered_network_warning">従量制ネットワークの警告</string>
