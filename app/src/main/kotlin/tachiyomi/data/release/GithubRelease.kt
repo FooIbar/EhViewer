@@ -15,8 +15,8 @@ data class GithubRelease(
     @SerialName("assets") val assets: List<GitHubAssets>,
 ) {
     fun getDownloadLink(): String {
-        val asset = assets.find { AppConfig.matchVariant(it.downloadLink) } ?: assets[0]
-        return asset.downloadLink
+        val asset = assets.find { AppConfig.matchVariant(it.name) } ?: assets[0]
+        return asset.url
     }
 }
 
@@ -24,4 +24,4 @@ data class GithubRelease(
  * Assets class containing download url.
  */
 @Serializable
-data class GitHubAssets(@SerialName("browser_download_url") val downloadLink: String)
+data class GitHubAssets(val url: String, val name: String)
