@@ -8,9 +8,11 @@ import com.hippo.ehviewer.spider.timeoutBySpeed
 import com.hippo.ehviewer.util.copyTo
 import com.hippo.files.write
 import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.header
+import io.ktor.client.request.accept
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.prepareGet
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.ContentType
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import java.util.zip.ZipInputStream
 import kotlin.time.Duration.Companion.days
@@ -70,7 +72,12 @@ object AppUpdater {
 
     suspend fun downloadUpdate(url: String, path: Path) = timeoutBySpeed(
         url,
-        { ghStatement(url, builder = it) },
+        {
+            ghStatement(url) {
+                accept(ContentType.Application.OctetStream)
+                it()
+            }
+        },
         { _, _, _ -> },
         { response ->
             if (url.endsWith("zip")) {
@@ -91,7 +98,7 @@ private suspend inline fun ghStatement(
     url: String,
     builder: HttpRequestBuilder.() -> Unit = {},
 ) = ktorClient.prepareGet(url) {
-    header("Authorization", GithubTokenParts.joinToString("_", prefix = "Bearer "))
+    bearerAuth(GithubTokenParts.joinToString("_"))
     apply(builder)
 }
 
