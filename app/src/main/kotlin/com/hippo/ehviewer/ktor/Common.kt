@@ -12,6 +12,7 @@ import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
+import io.ktor.util.appendIfNameAbsent
 
 const val CHROME_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${BuildConfig.CHROME_VERSION}.0.0.0 Safari/537.36"
 private const val CHROME_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
@@ -29,7 +30,7 @@ fun <T : HttpClientEngineConfig> HttpClientConfig<T>.configureCommon(redirect: B
         agent = CHROME_USER_AGENT
     }
     defaultRequest {
-        header(HttpHeaders.Accept, CHROME_ACCEPT)
+        headers.appendIfNameAbsent(HttpHeaders.Accept, CHROME_ACCEPT)
         header(HttpHeaders.AcceptLanguage, CHROME_ACCEPT_LANGUAGE)
     }
     followRedirects = redirect
