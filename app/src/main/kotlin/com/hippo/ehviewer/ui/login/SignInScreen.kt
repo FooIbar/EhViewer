@@ -19,7 +19,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -43,11 +42,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.autofill.AutofillType
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -65,8 +66,9 @@ import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
-import com.hippo.ehviewer.ui.tools.autofill
+import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.displayString
+import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -136,25 +138,23 @@ fun AnimatedVisibilityScope.SignInScreen(navigator: DestinationsNavigator) = Scr
     fun UsernameAndPasswordTextField() {
         OutlinedTextField(
             state = username,
-            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width)).autofill(
-                autofillTypes = listOf(AutofillType.Username),
-                onFill = { username.setTextAndPlaceCursorAtEnd(it) },
-            ),
+            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width))
+                .semantics { contentType = ContentType.Username }
+                .thenIf(!showUsernameError) { padding(bottom = 16.dp) },
             label = { Text(stringResource(R.string.username)) },
-            supportingText = { if (showUsernameError) Text(stringResource(R.string.error_username_cannot_empty)) },
-            trailingIcon = { if (showUsernameError) Icon(imageVector = Icons.Filled.Info, contentDescription = null) },
+            supportingText = showUsernameError.ifTrueThen { Text(stringResource(R.string.error_username_cannot_empty)) },
+            trailingIcon = showUsernameError.ifTrueThen { Icon(imageVector = Icons.Filled.Info, contentDescription = null) },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             lineLimits = TextFieldLineLimits.SingleLine,
             isError = showUsernameError,
         )
         OutlinedSecureTextField(
             state = password,
-            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width)).autofill(
-                autofillTypes = listOf(AutofillType.Password),
-                onFill = { password.setTextAndPlaceCursorAtEnd(it) },
-            ),
+            modifier = Modifier.width(dimensionResource(id = R.dimen.single_max_width))
+                .semantics { contentType = ContentType.Password }
+                .thenIf(!showPasswordError) { padding(bottom = 16.dp) },
             label = { Text(stringResource(R.string.password)) },
-            supportingText = { if (showPasswordError) Text(stringResource(R.string.error_password_cannot_empty)) },
+            supportingText = showPasswordError.ifTrueThen { Text(stringResource(R.string.error_password_cannot_empty)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             onKeyboardAction = { signIn() },
             trailingIcon = {
