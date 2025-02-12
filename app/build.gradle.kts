@@ -92,11 +92,6 @@ android {
             }
             debugSymbolLevel = "FULL"
         }
-        externalNativeBuild {
-            cmake {
-                arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
-            }
-        }
     }
 
     flavorDimensions += "api"
