@@ -24,7 +24,7 @@ android {
     minSdk = 26
     targetSdk = 35
     ndkVersion = "28.0.13004108"
-    buildToolsVersion = "35.0.0"
+    buildToolsVersion = "35.0.1"
 }
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
