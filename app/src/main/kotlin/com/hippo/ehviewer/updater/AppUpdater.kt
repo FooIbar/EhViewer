@@ -70,28 +70,32 @@ object AppUpdater {
         return null
     }
 
-    suspend fun downloadUpdate(url: String, path: Path) = timeoutBySpeed(
-        url,
-        {
-            ghStatement(url) {
-                accept(ContentType.Application.OctetStream)
-                it()
-            }
-        },
-        { _, _, _ -> },
-        { response ->
-            if (url.endsWith("zip")) {
-                response.bodyAsChannel().toInputStream().use { stream ->
-                    ZipInputStream(stream).use { zip ->
-                        zip.nextEntry
-                        path.write { transferFrom(zip.asSource()) }
-                    }
+    suspend fun downloadUpdate(url: String, path: Path) {
+        val isZip = url.endsWith("zip")
+        timeoutBySpeed(
+            url,
+            {
+                ghStatement(url) {
+                    // https://docs.github.com/en/rest/releases/assets?apiVersion=2022-11-28#get-a-release-asset
+                    if (!isZip) accept(ContentType.Application.OctetStream)
+                    it()
                 }
-            } else {
-                response.bodyAsChannel().copyTo(path)
-            }
-        },
-    )
+            },
+            { _, _, _ -> },
+            { response ->
+                if (isZip) {
+                    response.bodyAsChannel().toInputStream().use { stream ->
+                        ZipInputStream(stream).use { zip ->
+                            zip.nextEntry
+                            path.write { transferFrom(zip.asSource()) }
+                        }
+                    }
+                } else {
+                    response.bodyAsChannel().copyTo(path)
+                }
+            },
+        )
+    }
 }
 
 private suspend inline fun ghStatement(
