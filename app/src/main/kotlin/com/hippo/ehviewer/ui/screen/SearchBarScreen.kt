@@ -159,7 +159,7 @@ fun SearchBarScreen(
         mSuggestionList = mergedSuggestionFlow().toList()
     }
 
-    if (searchBarState.isExpanded) {
+    if (searchBarState.expanded) {
         LaunchedEffect(Unit) {
             snapshotFlow { searchFieldState.text }.collectLatest {
                 updateSuggestions()
@@ -204,11 +204,11 @@ fun SearchBarScreen(
                 },
                 modifier = Modifier.widthIn(max = (maxWidth - SearchBarHorizontalPadding * 2).coerceAtMost(M3SearchBarMaxWidth)).fillMaxWidth(),
                 placeholder = {
-                    val text = title.takeUnless { searchBarState.isExpanded } ?: searchFieldHint
+                    val text = title.takeUnless { searchBarState.expanded } ?: searchFieldHint
                     Text(text, overflow = TextOverflow.Ellipsis, maxLines = 1)
                 },
                 leadingIcon = {
-                    if (searchBarState.isExpanded) {
+                    if (searchBarState.expanded) {
                         IconButton(onClick = { hideSearchView() }) {
                             Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                         }
@@ -220,7 +220,7 @@ fun SearchBarScreen(
                     }
                 },
                 trailingIcon = {
-                    if (searchBarState.isExpanded) {
+                    if (searchBarState.expanded) {
                         AnimatedContent(targetState = searchFieldState.text.isNotEmpty()) { hasText ->
                             if (hasText) {
                                 IconButton(onClick = { searchFieldState.clearText() }) {
@@ -311,5 +311,5 @@ private val WhitespaceRegex = Regex("\\s+")
 private val SearchBarHorizontalPadding = 16.dp
 private val M3SearchBarMaxWidth = 720.dp
 
-val SearchBarState.isExpanded
-    get() = this.currentValue == SearchBarValue.Expanded
+val SearchBarState.expanded
+    get() = this.targetValue == SearchBarValue.Expanded

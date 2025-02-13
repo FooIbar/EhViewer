@@ -231,9 +231,9 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, BaseGalleryInfo>() }
     val selectMode = checkedInfoMap.isNotEmpty()
-    DrawerHandle(!selectMode && !searchBarState.isExpanded)
+    DrawerHandle(!selectMode && !searchBarState.expanded)
     LaunchedEffect(searchBarState) {
-        snapshotFlow { searchBarState.isExpanded }.collect {
+        snapshotFlow { searchBarState.expanded }.collect {
             fabHidden = it
             if (it) checkedInfoMap.clear()
         }

@@ -147,7 +147,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     var fabHidden by remember { mutableStateOf(false) }
     val checkedInfoMap = remember { mutableStateMapOf<Long, DownloadInfo>() }
     val selectMode by rememberUpdatedState(checkedInfoMap.isNotEmpty())
-    DrawerHandle(!selectMode && !searchBarState.isExpanded)
+    DrawerHandle(!selectMode && !searchBarState.expanded)
 
     val density = LocalDensity.current
     val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(implicit<Context>()) && EhTagDatabase.initialized
@@ -444,7 +444,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     }
 
     LaunchedEffect(searchBarState) {
-        snapshotFlow { searchBarState.isExpanded }.collect {
+        snapshotFlow { searchBarState.expanded }.collect {
             fabHidden = it
             if (it) checkedInfoMap.clear()
         }

@@ -162,7 +162,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     var category by rememberMutableStateInDataStore("SearchCategory") { EhUtils.ALL_CATEGORY }
     var advancedSearchOption by rememberMutableStateInDataStore("AdvancedSearchOption") { AdvancedSearchOption() }
 
-    DrawerHandle(!searchBarState.isExpanded)
+    DrawerHandle(!searchBarState.expanded)
 
     LaunchedEffect(urlBuilder) {
         if (urlBuilder.category != EhUtils.NONE) category = urlBuilder.category
@@ -462,7 +462,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
     LaunchedEffect(searchBarState) {
-        snapshotFlow { searchBarState.isExpanded }.collect { fabHidden = it }
+        snapshotFlow { searchBarState.expanded }.collect { fabHidden = it }
     }
 
     val openGalleryKeyword = stringResource(R.string.gallery_list_search_bar_open_gallery)

@@ -71,7 +71,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
     val searchBarState = rememberSearchBarState()
     var keyword by rememberSaveable { mutableStateOf("") }
 
-    DrawerHandle(!searchBarState.isExpanded)
+    DrawerHandle(!searchBarState.expanded)
 
     val historyData = rememberInVM {
         Pager(config = PagingConfig(pageSize = 20, jumpThreshold = 40)) {
