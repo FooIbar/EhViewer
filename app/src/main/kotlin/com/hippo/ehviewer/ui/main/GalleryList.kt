@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -44,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -63,6 +65,7 @@ import com.hippo.ehviewer.ui.screen.collectDetailSizeAsState
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.util.displayString
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
@@ -224,7 +227,7 @@ fun GalleryList(
         PullToRefreshDefaults.Indicator(
             state = refreshState,
             isRefreshing = isRefreshing,
-            modifier = with(scrollBehavior) { Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding()).searchBarScrollBehavior() },
+            modifier = with(scrollBehavior) { Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding()).offset { IntOffset(0, scrollBehavior.scrollOffset.roundToInt()) } },
         )
     }
 }
