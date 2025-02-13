@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -24,6 +23,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -44,7 +44,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -90,10 +89,9 @@ fun GalleryList(
     detailItemContent: @Composable (LazyGridItemScope.(BaseGalleryInfo) -> Unit),
     thumbListState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit),
-    searchBarOffsetY: () -> Int,
+    scrollBehavior: SearchBarScrollBehavior,
     scrollToTopOnRefresh: Boolean = true,
     onRefresh: () -> Unit,
-    onLoading: () -> Unit,
 ) {
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
     val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
@@ -189,7 +187,7 @@ fun GalleryList(
         when (val state = data.loadState.refresh) {
             is LoadState.Loading -> if (!isRefreshing && scrollToTopOnRefresh) {
                 LaunchedEffect(Unit) {
-                    onLoading()
+                    scrollBehavior.scrollOffset = 0f
                 }
                 LaunchedEffect(Unit) {
                     if (listMode == 0) {
@@ -226,8 +224,7 @@ fun GalleryList(
         PullToRefreshDefaults.Indicator(
             state = refreshState,
             isRefreshing = isRefreshing,
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding())
-                .offset { IntOffset(0, searchBarOffsetY()) },
+            modifier = with(scrollBehavior) { Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding()).searchBarScrollBehavior() },
         )
     }
 }
