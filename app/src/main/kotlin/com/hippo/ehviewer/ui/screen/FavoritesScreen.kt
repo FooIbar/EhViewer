@@ -47,7 +47,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -125,7 +124,6 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     } else {
         stringResource(R.string.favorites_title_2, favCatName, keyword)
     }
-    val density = LocalDensity.current
     val localFavCountFlow = rememberInVM { EhDB.localFavCount }
     val searchBarHint = stringResource(R.string.search_bar_hint, favCatName)
     val data = rememberInVM(isLocalFav) {
@@ -273,7 +271,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         }
         GalleryList(
             data = data,
-            contentModifier = Modifier.nestedScroll(searchBarConnection),
+            contentModifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).nestedScroll(searchBarConnection),
             contentPadding = contentPadding,
             listMode = listMode,
             detailItemContent = { info ->

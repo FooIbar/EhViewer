@@ -549,7 +549,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 val thumbColumns by Settings.thumbColumns.collectAsState()
                 FastScrollLazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Fixed(thumbColumns),
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).nestedScroll(searchBarConnection).fillMaxSize(),
                     contentPadding = realPadding,
                     verticalItemSpacing = gridInterval,
                     horizontalArrangement = Arrangement.spacedBy(gridInterval),
@@ -566,7 +566,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 }
             } else {
                 FastScrollLazyColumn(
-                    modifier = Modifier.nestedScroll(searchBarConnection).fillMaxSize(),
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).nestedScroll(searchBarConnection).fillMaxSize(),
                     contentPadding = realPadding,
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
                 ) {
