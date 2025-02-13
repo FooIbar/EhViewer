@@ -271,7 +271,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         }
         GalleryList(
             data = data,
-            contentModifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).nestedScroll(searchBarConnection),
+            contentModifier = Modifier.nestedScroll(searchBarConnection),
             contentPadding = contentPadding,
             listMode = listMode,
             detailItemContent = { info ->

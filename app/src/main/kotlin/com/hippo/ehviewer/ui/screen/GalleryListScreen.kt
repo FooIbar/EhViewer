@@ -556,7 +556,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         }
         GalleryList(
             data = data,
-            contentModifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection).nestedScroll(searchBarConnection),
+            contentModifier = Modifier.nestedScroll(searchBarConnection),
             contentPadding = contentPadding,
             listMode = listMode,
             detailListState = listState,

@@ -42,6 +42,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -130,7 +131,7 @@ fun GalleryList(
             val columnWidth by collectDetailSizeAsState()
             FastScrollLazyVerticalGrid(
                 columns = GridCells.Adaptive(columnWidth),
-                modifier = contentModifier,
+                modifier = contentModifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 state = detailListState,
                 contentPadding = contentPadding + PaddingValues(marginH, marginV),
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
@@ -160,7 +161,7 @@ fun GalleryList(
             val thumbColumns by Settings.thumbColumns.collectAsState()
             FastScrollLazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(thumbColumns),
-                modifier = contentModifier,
+                modifier = contentModifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 state = thumbListState,
                 contentPadding = contentPadding + PaddingValues(marginH, marginV),
                 verticalItemSpacing = gridInterval,
