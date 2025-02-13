@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.ClearAll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.fork.SwipeToDismissBox
@@ -29,7 +28,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -71,7 +69,6 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
     val hint = stringResource(R.string.search_bar_hint, title)
     val animateItems by Settings.animateItems.collectAsState()
     val searchBarState = rememberSearchBarState()
-    val scrollBehavior = SearchBarDefaults.enterAlwaysSearchBarScrollBehavior()
     var keyword by rememberSaveable { mutableStateOf("") }
 
     DrawerHandle(!searchBarState.expanded)
@@ -99,7 +96,6 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
         title = title,
         searchFieldHint = hint,
         searchBarState = searchBarState,
-        scrollBehavior = scrollBehavior,
         trailingIcon = {
             IconButton(onClick = {
                 launch {
@@ -118,7 +114,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
         val cardHeight by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         FastScrollLazyColumn(
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = paddingValues + PaddingValues(horizontal = marginH),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.gallery_list_interval)),
         ) {

@@ -1,9 +1,7 @@
 package com.hippo.ehviewer.ui.screen
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -48,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -186,100 +185,98 @@ fun SearchBarScreen(
         }
     }
 
-    @SuppressLint("UnusedBoxWithConstraintsScope")
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val inputField = @Composable {
-            InputField(
-                textFieldState = searchFieldState,
-                searchBarState = searchBarState,
-                onSearch = {
-                    hideSearchView()
-                    onApplySearch()
-                },
-                placeholder = {
-                    val text = title.takeUnless { searchBarState.expanded } ?: searchFieldHint
-                    Text(text, overflow = TextOverflow.Ellipsis, maxLines = 1)
-                },
-                leadingIcon = {
-                    if (searchBarState.expanded) {
-                        IconButton(onClick = { hideSearchView() }) {
-                            Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
-                        }
-                    } else {
-                        val drawerState = LocalNavDrawerState.current
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = null)
-                        }
+    val inputField = @Composable {
+        InputField(
+            textFieldState = searchFieldState,
+            searchBarState = searchBarState,
+            onSearch = {
+                hideSearchView()
+                onApplySearch()
+            },
+            placeholder = {
+                val text = title.takeUnless { searchBarState.expanded } ?: searchFieldHint
+                Text(text, overflow = TextOverflow.Ellipsis, maxLines = 1)
+            },
+            leadingIcon = {
+                if (searchBarState.expanded) {
+                    IconButton(onClick = { hideSearchView() }) {
+                        Icon(Icons.AutoMirrored.Default.ArrowBack, contentDescription = null)
                     }
-                },
-                trailingIcon = {
-                    if (searchBarState.expanded) {
-                        AnimatedContent(targetState = searchFieldState.text.isNotEmpty()) { hasText ->
-                            if (hasText) {
-                                IconButton(onClick = { searchFieldState.clearText() }) {
-                                    Icon(Icons.Default.Close, contentDescription = null)
-                                }
-                            } else {
-                                IconButton(onClick = { navigate(ImageSearchScreenDestination) }) {
-                                    Icon(Icons.Default.ImageSearch, contentDescription = null)
-                                }
-                            }
-                        }
-                    } else {
-                        Row {
-                            trailingIcon()
-                        }
-                    }
-                },
-            )
-        }
-        Scaffold(
-            topBar = {
-                TopSearchBar(
-                    state = searchBarState,
-                    inputField = inputField,
-                    scrollBehavior = scrollBehavior,
-                )
-                ExpandedFullScreenSearchBar(
-                    state = searchBarState,
-                    inputField = inputField,
-                ) {
-                    filter?.invoke()
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues(),
-                    ) {
-                        // Workaround for prepending before the first item
-                        item {}
-                        items(mSuggestionList, key = { it.keyword.hashCode() * 31 + it.canDelete.hashCode() }) {
-                            ListItem(
-                                headlineContent = { Text(text = it.keyword) },
-                                supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
-                                leadingContent = it.canOpenDirectly.ifTrueThen {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Default.MenuBook,
-                                        contentDescription = null,
-                                    )
-                                },
-                                trailingContent = it.canDelete.ifTrueThen {
-                                    IconButton(onClick = { deleteKeyword(it.keyword) }) {
-                                        Icon(
-                                            imageVector = Icons.Default.Close,
-                                            contentDescription = null,
-                                        )
-                                    }
-                                },
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                                modifier = Modifier.clickable { it.onClick() }.thenIf(animateItems) { animateItem() },
-                            )
-                        }
+                } else {
+                    val drawerState = LocalNavDrawerState.current
+                    IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        Icon(Icons.Default.Menu, contentDescription = null)
                     }
                 }
             },
-            floatingActionButton = floatingActionButton,
-            content = content,
+            trailingIcon = {
+                if (searchBarState.expanded) {
+                    AnimatedContent(targetState = searchFieldState.text.isNotEmpty()) { hasText ->
+                        if (hasText) {
+                            IconButton(onClick = { searchFieldState.clearText() }) {
+                                Icon(Icons.Default.Close, contentDescription = null)
+                            }
+                        } else {
+                            IconButton(onClick = { navigate(ImageSearchScreenDestination) }) {
+                                Icon(Icons.Default.ImageSearch, contentDescription = null)
+                            }
+                        }
+                    }
+                } else {
+                    Row {
+                        trailingIcon()
+                    }
+                }
+            },
         )
     }
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            TopSearchBar(
+                state = searchBarState,
+                inputField = inputField,
+                scrollBehavior = scrollBehavior,
+            )
+            ExpandedFullScreenSearchBar(
+                state = searchBarState,
+                inputField = inputField,
+            ) {
+                filter?.invoke()
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom).asPaddingValues(),
+                ) {
+                    // Workaround for prepending before the first item
+                    item {}
+                    items(mSuggestionList, key = { it.keyword.hashCode() * 31 + it.canDelete.hashCode() }) {
+                        ListItem(
+                            headlineContent = { Text(text = it.keyword) },
+                            supportingContent = it.hint.ifNotNullThen { Text(text = it.hint!!) },
+                            leadingContent = it.canOpenDirectly.ifTrueThen {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Default.MenuBook,
+                                    contentDescription = null,
+                                )
+                            },
+                            trailingContent = it.canDelete.ifTrueThen {
+                                IconButton(onClick = { deleteKeyword(it.keyword) }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = null,
+                                    )
+                                }
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            modifier = Modifier.clickable { it.onClick() }.thenIf(animateItems) { animateItem() },
+                        )
+                    }
+                }
+            }
+        },
+        floatingActionButton = floatingActionButton,
+        content = content,
+    )
 }
 
 fun wrapTagKeyword(keyword: String, translate: Boolean = false): String = if (keyword.endsWith(':')) {
