@@ -68,7 +68,6 @@ import com.jamal.composeprefs3.ui.ifNotNullThen
 import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.launchIO
-import eu.kanade.tachiyomi.util.lang.launchUI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
@@ -209,7 +208,7 @@ fun SearchBarScreen(
                         }
                     } else {
                         val drawerState = LocalNavDrawerState.current
-                        IconButton(onClick = { scope.launchUI { drawerState.open() } }) {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = null)
                         }
                     }
