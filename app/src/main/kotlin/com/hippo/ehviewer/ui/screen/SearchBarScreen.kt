@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.input.TextFieldState
@@ -54,8 +52,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.coerceAtMost
-import androidx.compose.ui.unit.dp
 import com.hippo.ehviewer.EhApplication.Companion.searchDatabase
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
@@ -202,7 +198,6 @@ fun SearchBarScreen(
                     hideSearchView()
                     onApplySearch()
                 },
-                modifier = Modifier.widthIn(max = (maxWidth - SearchBarHorizontalPadding * 2).coerceAtMost(M3SearchBarMaxWidth)).fillMaxWidth(),
                 placeholder = {
                     val text = title.takeUnless { searchBarState.expanded } ?: searchFieldHint
                     Text(text, overflow = TextOverflow.Ellipsis, maxLines = 1)
@@ -308,8 +303,6 @@ fun wrapTagKeyword(keyword: String, translate: Boolean = false): String = if (ke
 }
 
 private val WhitespaceRegex = Regex("\\s+")
-private val SearchBarHorizontalPadding = 16.dp
-private val M3SearchBarMaxWidth = 720.dp
 
 val SearchBarState.expanded
-    get() = this.targetValue == SearchBarValue.Expanded
+    get() = targetValue == SearchBarValue.Expanded
