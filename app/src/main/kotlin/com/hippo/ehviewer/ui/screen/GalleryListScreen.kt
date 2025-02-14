@@ -231,7 +231,14 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     FavouriteStatusRouter.Observe(data)
     val listMode by Settings.listMode.collectAsState()
 
-    val quickSearchList = remember { mutableStateListOf<QuickSearch>() }
+    val quickSearchList = rememberInVM {
+        mutableStateListOf<QuickSearch>().apply {
+            viewModelScope.launch {
+                val list = EhDB.getAllQuickSearch()
+                addAll(list)
+            }
+        }
+    }
     val entries = stringArrayResource(id = R.array.toplist_entries)
     val values = stringArrayResource(id = R.array.toplist_values)
     val toplists = remember { entries zip values }
@@ -243,11 +250,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         listState.firstVisibleItemIndex
     } else {
         gridState.firstVisibleItemIndex
-    }
-
-    LaunchedEffect(Unit) {
-        val list = EhDB.getAllQuickSearch()
-        quickSearchList.addAll(list)
     }
 
     if (isTopList) {
