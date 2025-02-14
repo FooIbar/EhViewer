@@ -107,6 +107,7 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.tools.Await
+import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
@@ -231,7 +232,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
     FavouriteStatusRouter.Observe(data)
     val listMode by Settings.listMode.collectAsState()
 
-    val quickSearchList = remember { mutableStateListOf<QuickSearch>() }
     val entries = stringArrayResource(id = R.array.toplist_entries)
     val values = stringArrayResource(id = R.array.toplist_values)
     val toplists = remember { entries zip values }
@@ -243,11 +243,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         listState.firstVisibleItemIndex
     } else {
         gridState.firstVisibleItemIndex
-    }
-
-    LaunchedEffect(Unit) {
-        val list = EhDB.getAllQuickSearch()
-        quickSearchList.addAll(list)
     }
 
     if (isTopList) {
@@ -274,6 +269,11 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         }
     } else {
         ProvideSideSheetContent { sheetState ->
+            val quickSearchList = remember { mutableStateListOf<QuickSearch>() }
+            LaunchedEffect(Unit) {
+                val list = EhDB.getAllQuickSearch()
+                quickSearchList.addAll(list)
+            }
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.quick_search)) },
                 colors = topBarOnDrawerColor(),
@@ -340,6 +340,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 windowInsets = EmptyWindowInsets,
             )
             Box(modifier = Modifier.fillMaxSize()) {
+                val dialogState by rememberUpdatedState(implicit<DialogState>())
                 val quickSearchListState = rememberLazyListState()
                 val hapticFeedback = rememberHapticFeedback()
                 val reorderableLazyListState = rememberReorderableLazyListState(quickSearchListState) { from, to ->
@@ -365,7 +366,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                 snapshotFlow { dismissState.currentValue }.collect { value ->
                                     if (value == SwipeToDismissBoxValue.EndToStart) {
                                         runCatching {
-                                            awaitConfirmationOrCancel(confirmText = R.string.delete) {
+                                            dialogState.awaitConfirmationOrCancel(confirmText = R.string.delete) {
                                                 Text(text = stringResource(R.string.delete_quick_search, item.name))
                                             }
                                         }.onSuccess {

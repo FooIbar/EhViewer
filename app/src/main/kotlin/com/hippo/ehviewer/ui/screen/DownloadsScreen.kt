@@ -106,6 +106,7 @@ import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.showMoveDownloadLabelList
 import com.hippo.ehviewer.ui.tools.Await
+import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
@@ -289,6 +290,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             },
         )
 
+        val dialogState by rememberUpdatedState(implicit<DialogState>())
         val labelsListState = rememberLazyListState()
         val editEnable = DownloadsFilterMode.CUSTOM == filterMode
         val hapticFeedback = rememberHapticFeedback()
@@ -342,7 +344,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     snapshotFlow { dismissState.currentValue }.collect {
                         if (it == SwipeToDismissBoxValue.EndToStart) {
                             runCatching {
-                                awaitConfirmationOrCancel(confirmText = R.string.delete) {
+                                dialogState.awaitConfirmationOrCancel(confirmText = R.string.delete) {
                                     Text(text = stringResource(R.string.delete_label, item))
                                 }
                             }.onSuccess {
