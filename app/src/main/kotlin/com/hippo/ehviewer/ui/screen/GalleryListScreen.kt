@@ -293,44 +293,47 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                     val invalidImageQuickSearch = stringResource(R.string.image_search_not_quick_search)
                     val nameEmpty = stringResource(R.string.name_is_empty)
                     val dupName = stringResource(R.string.duplicate_name)
-                    IconButton(onClick = {
-                        if (data.itemCount == 0) return@IconButton
-                        launch {
-                            if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
-                                showSnackbar(invalidImageQuickSearch)
-                            } else {
-                                val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
-                                val next = firstItem.gid + 1
-                                quickSearchList.fastForEach { q ->
-                                    if (urlBuilder.equalsQuickSearch(q)) {
-                                        val nextStr = q.name.substringAfterLast('@', "")
-                                        if (nextStr.toLongOrNull() == next) {
-                                            showSnackbar(getString(R.string.duplicate_quick_search, q.name))
-                                            return@launch
+                    IconButton(
+                        onClick = {
+                            launch {
+                                if (urlBuilder.mode == MODE_IMAGE_SEARCH) {
+                                    showSnackbar(invalidImageQuickSearch)
+                                } else {
+                                    // itemCount == 0 is treated as error, so no need to check here
+                                    val firstItem = data.itemSnapshotList.items[getFirstVisibleItemIndex()]
+                                    val next = firstItem.gid + 1
+                                    quickSearchList.fastForEach { q ->
+                                        if (urlBuilder.equalsQuickSearch(q)) {
+                                            val nextStr = q.name.substringAfterLast('@', "")
+                                            if (nextStr.toLongOrNull() == next) {
+                                                showSnackbar(getString(R.string.duplicate_quick_search, q.name))
+                                                return@launch
+                                            }
                                         }
                                     }
-                                }
-                                awaitInputTextWithCheckBox(
-                                    initial = quickSearchName ?: urlBuilder.keyword.orEmpty(),
-                                    title = R.string.add_quick_search_dialog_title,
-                                    hint = R.string.quick_search,
-                                    checked = saveProgress,
-                                    checkBoxText = R.string.save_progress,
-                                ) { input, checked ->
-                                    var text = input.trim()
-                                    ensure(text.isNotBlank()) { nameEmpty }
-                                    if (checked) text += "@$next"
-                                    ensure(quickSearchList.none { it.name == text }) { dupName }
-                                    val quickSearch = urlBuilder.toQuickSearch(text)
-                                    quickSearch.position = quickSearchList.size
-                                    // Insert to DB first to update the id
-                                    EhDB.insertQuickSearch(quickSearch)
-                                    quickSearchList.add(quickSearch)
-                                    saveProgress = checked
+                                    awaitInputTextWithCheckBox(
+                                        initial = quickSearchName ?: urlBuilder.keyword.orEmpty(),
+                                        title = R.string.add_quick_search_dialog_title,
+                                        hint = R.string.quick_search,
+                                        checked = saveProgress,
+                                        checkBoxText = R.string.save_progress,
+                                    ) { input, checked ->
+                                        var text = input.trim()
+                                        ensure(text.isNotBlank()) { nameEmpty }
+                                        if (checked) text += "@$next"
+                                        ensure(quickSearchList.none { it.name == text }) { dupName }
+                                        val quickSearch = urlBuilder.toQuickSearch(text)
+                                        quickSearch.position = quickSearchList.size
+                                        // Insert to DB first to update the id
+                                        EhDB.insertQuickSearch(quickSearch)
+                                        quickSearchList.add(quickSearch)
+                                        saveProgress = checked
+                                    }
                                 }
                             }
-                        }
-                    }) {
+                        },
+                        enabled = data.loadState.isIdle,
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = stringResource(id = R.string.add),
