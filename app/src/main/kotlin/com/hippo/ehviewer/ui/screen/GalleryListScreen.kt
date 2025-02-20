@@ -364,6 +364,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                             animateItemModifier = Modifier.thenIf(animateItems) { animateItem() },
                         ) { isDragging ->
                             // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
+                            // SQLite may reuse ROWIDs from previously deleted rows so they'll have the same key
                             val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
                             LaunchedEffect(dismissState) {
                                 snapshotFlow { dismissState.currentValue }.collect { value ->
