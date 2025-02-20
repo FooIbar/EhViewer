@@ -339,6 +339,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 val index by rememberUpdatedState(itemIndex)
                 val item by rememberUpdatedState(label)
                 // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
+                // SQLite may reuse ROWIDs from previously deleted rows so they'll have the same key
                 val dismissState = remember { SwipeToDismissBoxState(SwipeToDismissBoxValue.Settled, density) }
                 LaunchedEffect(dismissState) {
                     snapshotFlow { dismissState.currentValue }.collect {
