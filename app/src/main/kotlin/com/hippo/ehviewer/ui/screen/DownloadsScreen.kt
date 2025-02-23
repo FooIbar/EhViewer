@@ -312,12 +312,11 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         switchLabel("")
                         closeSheet()
                     },
-                    tonalElevation = 1.dp,
                     shadowElevation = 1.dp,
                     headlineContent = {
                         Text("$allName [$totalCount]")
                     },
-                    colors = listItemOnDrawerColor(),
+                    colors = listItemOnDrawerColor(filterState.label == ""),
                 )
             }
             item {
@@ -326,12 +325,11 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         switchLabel(null)
                         closeSheet()
                     },
-                    tonalElevation = 1.dp,
                     shadowElevation = 1.dp,
                     headlineContent = {
                         Text("$emptyLabelName [${downloadsCount.getOrDefault(null, 0)}]")
                     },
-                    colors = listItemOnDrawerColor(),
+                    colors = listItemOnDrawerColor(filterState.label == null),
                 )
             }
 
@@ -385,7 +383,6 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                 switchLabel(item)
                                 closeSheet()
                             },
-                            tonalElevation = 1.dp,
                             shadowElevation = elevation,
                             headlineContent = {
                                 val name = if (filterMode == DownloadsFilterMode.ARTIST) getTranslation(label) else label
@@ -437,7 +434,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                     }
                                 }
                             },
-                            colors = listItemOnDrawerColor(),
+                            colors = listItemOnDrawerColor(filterState.label == item),
                         )
                     }
                 }
