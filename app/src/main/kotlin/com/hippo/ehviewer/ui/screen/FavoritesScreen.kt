@@ -220,7 +220,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                         Settings.recentFavCat = newCat
                         launch { sheetState.close() }
                     },
-                    colors = listItemOnDrawerColor(),
+                    colors = listItemOnDrawerColor(urlBuilder.favCat == index - 2),
                 )
             }
         }

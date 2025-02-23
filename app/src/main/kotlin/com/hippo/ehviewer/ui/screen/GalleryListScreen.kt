@@ -263,7 +263,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                     headlineContent = {
                         Text(text = name)
                     },
-                    colors = listItemOnDrawerColor(),
+                    colors = listItemOnDrawerColor(urlBuilder.keyword == keyword),
                 )
             }
         }
@@ -415,7 +415,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                         }
                                         launch { sheetState.close() }
                                     },
-                                    tonalElevation = 1.dp,
                                     shadowElevation = elevation,
                                     headlineContent = {
                                         Text(text = item.name)
@@ -445,7 +444,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                             Icon(imageVector = Icons.Default.Reorder, contentDescription = null)
                                         }
                                     },
-                                    colors = listItemOnDrawerColor(),
+                                    colors = listItemOnDrawerColor(false),
                                 )
                             }
                         }
