@@ -86,7 +86,7 @@ material-kolor = "com.materialkolor:material-kolor:2.0.2"
 
 desugar = "com.android.tools:desugar_jdk_libs:2.1.5"
 
-diff = "io.github.petertrr:kotlin-multiplatform-diff:0.7.0"
+diff = "io.github.petertrr:kotlin-multiplatform-diff:1.0.0"
 jsoup = "org.jsoup:jsoup:1.18.3"
 
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
