@@ -26,7 +26,6 @@ import com.hippo.ehviewer.client.data.GalleryInfo
 
 const val URL_PREFIX_THUMB_E = "https://ehgt.org/"
 const val URL_PREFIX_THUMB_EX = "https://s.exhentai.org/"
-const val URL_SIGNATURE_THUMB_NORMAL = ".hath.network/c"
 private const val URL_PREFIX_V1_THUMB_EX = URL_PREFIX_THUMB_EX + "t/"
 private val V2PreviewKeyRegex = Regex("/c([m12]/)[^/]+/(\\d+-\\d+)")
 
@@ -40,9 +39,6 @@ fun getV2PreviewKey(url: String) = "$".plus(
     } ?: url,
 )
 
-val String.isV2PreviewKey
-    get() = startsWith('$')
-
 val GalleryInfo.thumbUrl
     get() = keyToUrl(thumbKey!!)
 
@@ -55,8 +51,6 @@ fun keyToUrl(key: String, exSite: Boolean = useExThumb) = if (key.startsWith("ht
         if (exSite) URL_PREFIX_V1_THUMB_EX else URL_PREFIX_THUMB_E
     } + key
 }
-
-fun flipThumbSite(url: String) = keyToUrl(getThumbKey(url), !useExThumb)
 
 private val useExThumb
     get() = EhUtils.isExHentai && !Settings.forceEhThumb.value
