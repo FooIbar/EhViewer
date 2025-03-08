@@ -311,8 +311,6 @@
     <string name="settings_eh_detail_size_long">Long</string>
     <string name="settings_eh_detail_size_short">Short</string>
     <string name="settings_eh_thumb_columns">Thumb columns</string>
-    <string name="settings_eh_force_eh_thumb">Use e-hentai thumbnail server</string>
-    <string name="settings_eh_force_eh_thumb_summary">Try disabling this if you have trouble loading thumbnails</string>
     <string name="settings_eh_show_jpn_title">Show Japanese title</string>
     <string name="settings_eh_show_jpn_title_summary">Require enabling Japanese Title in Settings on EHentai website</string>
     <string name="settings_eh_show_gallery_pages">Show gallery pages</string>

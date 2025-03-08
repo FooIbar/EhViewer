@@ -114,9 +114,6 @@ object Settings : DataStorePreferences(null) {
     val languageFilter = intPref("language_filter", -1)
     val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
     val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
-
-    // Enabled by default as some ExHentai thumbnail servers do not support HTTP/2
-    val forceEhThumb = boolPref("force_eh_thumb", true)
     val hasSignedIn = boolPref("has_signed_in", EhCookieStore.hasSignedIn())
     val needSignIn = boolPref("need_sign_in", true)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
