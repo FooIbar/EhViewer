@@ -15,7 +15,6 @@
  */
 package com.hippo.ehviewer.client
 
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.GalleryInfo
 
 // Normal Preview (v2): https://*.hath.network/c(m|1|2)/[timed token]/[gid]-[index].(jpg|webp)
@@ -42,15 +41,12 @@ fun getV2PreviewKey(url: String) = "$".plus(
 val GalleryInfo.thumbUrl
     get() = keyToUrl(thumbKey!!)
 
-fun keyToUrl(key: String, exSite: Boolean = useExThumb) = if (key.startsWith("https:")) {
+fun keyToUrl(key: String) = if (key.startsWith("https:")) {
     key
 } else {
     if (key.endsWith("webp")) {
-        if (exSite) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E
+        if (EhUtils.isExHentai) URL_PREFIX_THUMB_EX else URL_PREFIX_THUMB_E
     } else {
-        if (exSite) URL_PREFIX_V1_THUMB_EX else URL_PREFIX_THUMB_E
+        if (EhUtils.isExHentai) URL_PREFIX_V1_THUMB_EX else URL_PREFIX_THUMB_E
     } + key
 }
-
-private val useExThumb
-    get() = EhUtils.isExHentai && !Settings.forceEhThumb.value

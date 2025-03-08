@@ -114,7 +114,6 @@ object Settings : DataStorePreferences(null) {
     val languageFilter = intPref("language_filter", -1)
     val downloadSortMode = intPref("download_sort_mode", SortMode.Default.flag)
     val downloadFilterMode = intPref("download_filter_mode", DownloadsFilterMode.Default.flag)
-    val forceEhThumb = boolPref("force_eh_thumb", false)
     val hasSignedIn = boolPref("has_signed_in", EhCookieStore.hasSignedIn())
     val needSignIn = boolPref("need_sign_in", true)
     val meteredNetworkWarning = boolPref("cellular_network_warning", false)
