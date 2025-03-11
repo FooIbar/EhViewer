@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Reorder
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -50,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -254,7 +257,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
             )
             toplists.forEach { (name, keyword) ->
                 ListItem(
-                    modifier = Modifier.clickable {
+                    modifier = Modifier.padding(horizontal = 4.dp).clip(CardDefaults.shape).clickable {
                         Settings.recentToplist = keyword
                         urlBuilder = ListUrlBuilder(MODE_TOPLIST, mKeyword = keyword)
                         data.refresh()
@@ -352,7 +355,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 }
                 var fromIndex by remember { mutableIntStateOf(-1) }
                 FastScrollLazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp),
                     state = quickSearchListState,
                     contentPadding = WindowInsets.systemBars.only(WindowInsetsSides.Bottom).asPaddingValues(),
                 ) {
@@ -401,7 +404,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                     label = "elevation",
                                 )
                                 ListItem(
-                                    modifier = Modifier.clickable {
+                                    modifier = Modifier.clip(CardDefaults.shape).clickable {
                                         if (urlBuilder.mode == MODE_WHATS_HOT) {
                                             val builder = ListUrlBuilder(item).apply {
                                                 language = languageFilter
