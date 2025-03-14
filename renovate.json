@@ -38,6 +38,12 @@
   },
   "packageRules": [
     {
+      "matchDepNames": [
+        "com.mikepenz{:.}aboutlibraries*"
+      ],
+      "automerge": false
+    },
+    {
       "description": "Disable updates for SNAPSHOTs",
       "matchDatasources": [
         "maven"
