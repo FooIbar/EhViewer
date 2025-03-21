@@ -37,14 +37,13 @@ import okio.Path
 
 typealias PasswdInvalidator = (String) -> Boolean
 typealias PasswdProvider = suspend (PasswdInvalidator) -> String
-val emptyPasswdProvider: PasswdProvider = { error("Managed Archive have password???") }
 
 suspend inline fun <T> useArchivePageLoader(
     file: Path,
     gid: Long = 0,
     startPage: Int = 0,
     hasAds: Boolean = false,
-    noinline passwdProvider: PasswdProvider = emptyPasswdProvider,
+    crossinline passwdProvider: PasswdProvider,
     crossinline block: suspend (PageLoader) -> T,
 ) = autoCloseScope {
     coroutineScope {
