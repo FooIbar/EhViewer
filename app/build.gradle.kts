@@ -143,8 +143,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles("proguard-rules.pro")
             signingConfig = signConfig
         }
