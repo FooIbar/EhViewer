@@ -7,9 +7,9 @@ class MutexWithCounter() : Mutex by Mutex(), Counter by counter()
 
 object MutexPool : DefaultPool<MutexWithCounter>(capacity = 32) {
     override fun produceInstance() = MutexWithCounter()
-    override fun validateInstance(mutex: MutexWithCounter) {
-        check(!mutex.isLocked)
-        check(mutex.isFree)
+    override fun validateInstance(instance: MutexWithCounter) {
+        check(!instance.isLocked)
+        check(instance.isFree)
     }
 }
 
