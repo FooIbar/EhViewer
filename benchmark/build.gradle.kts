@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.ehviewer.baselineprofile"
-    compileSdk = 35
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         minSdk = 28
-        targetSdk = 35
+        targetSdk = 36
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
