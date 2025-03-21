@@ -24,7 +24,7 @@ suspend fun <T> useEhPageLoader(
         )
         queen.awaitReady()
         val loader = install(
-            object : PageLoader(info.gid, startPage, queen.size, info.hasAds) {
+            object : PageLoader(this, info.gid, startPage, queen.size, info.hasAds) {
                 override val title by lazy { EhUtils.getSuitableTitle(info) }
 
                 override fun getImageExtension(index: Int) = queen.getExtension(index)
