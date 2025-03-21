@@ -12,10 +12,10 @@ import kotlinx.coroutines.coroutineScope
 import moe.tarsin.kt.install
 import okio.Path
 
-suspend fun <T> useEhPageLoader(
+suspend inline fun <T> useEhPageLoader(
     info: GalleryInfo,
     startPage: Int,
-    block: suspend (PageLoader) -> T,
+    crossinline block: suspend (PageLoader) -> T,
 ) = autoCloseScope {
     coroutineScope {
         val queen = install(
