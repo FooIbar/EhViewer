@@ -58,7 +58,7 @@ suspend fun <T> useArchivePageLoader(
             archivePasswds += passwdProvider(::providePassword)
         }
         val loader = install(
-            object : PageLoader(gid, startPage, size, hasAds) {
+            object : PageLoader(this, gid, startPage, size, hasAds) {
                 override val title by lazy { FileUtils.getNameFromFilename(file.displayName)!! }
 
                 override fun getImageExtension(index: Int) = getExtension(index)
