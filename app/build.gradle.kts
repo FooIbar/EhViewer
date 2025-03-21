@@ -274,6 +274,7 @@ kotlin {
             "androidx.compose.animation.ExperimentalSharedTransitionApi",
             "androidx.paging.ExperimentalPagingApi",
             "kotlin.ExperimentalStdlibApi",
+            "kotlin.concurrent.atomics.ExperimentalAtomicApi",
             "kotlin.contracts.ExperimentalContracts",
             "kotlinx.coroutines.ExperimentalCoroutinesApi",
             "kotlinx.coroutines.FlowPreview",
