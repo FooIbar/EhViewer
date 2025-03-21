@@ -20,8 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import arrow.atomic.Atomic
-import arrow.atomic.value
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
 import com.hippo.ehviewer.R
@@ -32,6 +30,7 @@ import com.hippo.ehviewer.util.setDefaultSettings
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlin.concurrent.atomics.AtomicReference
 
 private const val APPLY_JS = "javascript:(function(){var apply = document.getElementById(\"apply\").children[0];apply.click();})();"
 
@@ -39,7 +38,7 @@ private const val APPLY_JS = "javascript:(function(){var apply = document.getEle
 @Composable
 fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val url = EhUrl.uConfigUrl
-    var webview by remember { Atomic<WebView?>(null)::value }
+    val webview = remember { AtomicReference<WebView?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     Scaffold(
         topBar = {
@@ -53,7 +52,7 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Sc
                 actions = {
                     IconButton(
                         onClick = {
-                            webview?.loadUrl(APPLY_JS)
+                            webview.load()?.loadUrl(APPLY_JS)
                             navigator.popBackStack()
                         },
                     ) {
@@ -69,7 +68,7 @@ fun AnimatedVisibilityScope.UConfigScreen(navigator: DestinationsNavigator) = Sc
             state = state,
             modifier = Modifier.padding(paddingValues).fillMaxSize(),
             onCreated = { it.setDefaultSettings() },
-            factory = { WebView(it).apply { webview = this } },
+            factory = { WebView(it).apply { webview.store(this) } },
         )
         val applyTip = stringResource(id = R.string.apply_tip)
         LaunchedEffect(Unit) { snackbarHostState.showSnackbar(applyTip) }
