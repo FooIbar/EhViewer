@@ -45,7 +45,7 @@ import com.hippo.ehviewer.download.DownloadManager
 import com.hippo.ehviewer.ui.tools.CrystalCard
 import com.hippo.ehviewer.ui.tools.GalleryListCardRating
 import com.hippo.ehviewer.ui.tools.TransitionsVisibilityScope
-import com.hippo.ehviewer.ui.tools.noopThumbGenerator
+import com.hippo.ehviewer.ui.tools.listThumbGenerator
 import com.hippo.ehviewer.util.FileUtils
 
 private val ids = Tuple9(1, 2, 3, 4, 5, 6, 7, 8, 9)
@@ -109,9 +109,7 @@ fun DownloadCard(
     Row {
         val thumb = remember {
             movableContentOf<DownloadInfo> {
-                // Disabled due to https://github.com/FooIbar/EhViewer/issues/2085
-                // with(listThumbGenerator) {
-                with(noopThumbGenerator) {
+                with(listThumbGenerator) {
                     EhAsyncCropThumb(
                         key = it,
                         modifier = Modifier.aspectRatio(DEFAULT_RATIO).fillMaxSize(),

@@ -68,7 +68,6 @@ val SETNode.syntheticKey: String
 
 val listThumbGenerator = SETNodeGenerator()
 val detailThumbGenerator = SETNodeGenerator()
-val noopThumbGenerator = SETNodeGenerator()
 
 fun initSETConnection() {
     listThumbGenerator connectTo detailThumbGenerator
