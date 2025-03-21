@@ -375,13 +375,13 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
 }
 
 context(Context, DialogState, DestinationsNavigator)
-suspend fun <T> usePageLoader(args: ReaderScreenArgs, block: suspend (PageLoader) -> T) = when (args) {
+suspend inline fun <T> usePageLoader(args: ReaderScreenArgs, crossinline block: suspend (PageLoader) -> T) = when (args) {
     is ReaderScreenArgs.Gallery -> {
         val info = args.info
         val page = args.page.takeUnless { it == -1 } ?: EhDB.getReadProgress(info.gid)
         val archive = DownloadManager.getDownloadInfo(info.gid)?.archiveFile
         if (archive != null) {
-            useArchivePageLoader(archive, info.gid, page, info.hasAds, block = block)
+            useArchivePageLoader(archive, info.gid, page, info.hasAds, { error("Managed Archive have password???") }, block)
         } else {
             useEhPageLoader(info, page, block)
         }
