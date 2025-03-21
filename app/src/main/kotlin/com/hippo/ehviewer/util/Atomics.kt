@@ -17,7 +17,7 @@ inline fun <R> AtomicInt.update(function: (Int) -> Int, transform: (old: Int, ne
         callsInPlace(transform, InvocationKind.AT_MOST_ONCE)
     }
     loop { cur ->
-        val upd = function(load())
+        val upd = function(cur)
         if (compareAndSet(cur, upd)) return transform(cur, upd)
     }
 }
