@@ -1,7 +1,6 @@
 package com.hippo.ehviewer.gallery
 
 import androidx.collection.SieveCache
-import arrow.atomic.value
 import arrow.fx.coroutines.ExitCase
 import arrow.fx.coroutines.bracketCase
 import com.hippo.ehviewer.EhDB
@@ -13,8 +12,8 @@ import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.detectAds
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastO
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 import kotlinx.coroutines.CoroutineScope
@@ -50,7 +49,7 @@ abstract class PageLoader(val scope: CoroutineScope, val gid: Long, startPage: I
 
     fun decodePreloadRange(index: Int) = index - 3..index + 3
 
-    fun needDecode(index: Int) = index in decodePreloadRange(prevIndex) &&
+    fun needDecode(index: Int) = index in decodePreloadRange(prevIndex.load()) &&
         lock.read { index !in cache } &&
         pages[index].status !is PageStatus.Ready &&
         pages[index].status !is PageStatus.Blocked
@@ -79,7 +78,7 @@ abstract class PageLoader(val scope: CoroutineScope, val gid: Long, startPage: I
         pages.forEach(Page::reset)
     }
 
-    private var prevIndex by AtomicInteger(-1)::value
+    private val prevIndex = AtomicInt(-1)
 
     fun retryPage(index: Int, orgImg: Boolean = false) {
         notifyPageWait(index)
@@ -131,12 +130,12 @@ abstract class PageLoader(val scope: CoroutineScope, val gid: Long, startPage: I
     }
 
     fun request(index: Int) {
-        val prefetchRange = if (index >= prevIndex) {
+        val prefetchRange = if (index >= prevIndex.load()) {
             index + 1..(index + prefetchPageCount).coerceAtMost(size - 1)
         } else {
             index - 1 downTo (index - prefetchPageCount).coerceAtLeast(0)
         }
-        prevIndex = index
+        prevIndex.store(index)
         val image = lock.read { cache[index] }
         if (image != null) {
             notifyPageSucceed(index, image, false)

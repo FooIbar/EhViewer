@@ -33,7 +33,6 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import arrow.atomic.Atomic
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.settings.PreferenceTokens.PreferenceTextPadding
 import com.hippo.ehviewer.util.ProgressDialog
@@ -44,6 +43,7 @@ import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.jamal.composeprefs3.ui.prefs.TextPref
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
+import kotlin.concurrent.atomics.AtomicReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.math.roundToInt
@@ -152,8 +152,8 @@ fun WorkPreference(title: String, summary: String? = null, work: suspend Corouti
 @Composable
 fun <I, O> LauncherPreference(title: String, summary: String? = null, contract: ActivityResultContract<I, O>, key: I, work: suspend CoroutineScope.(O) -> Unit) {
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    val callback = remember { Atomic<(O) -> Unit> {} }
-    val launcher = rememberLauncherForActivityResult(contract = contract) { callback.getAndSet { }.invoke(it) }
+    val callback = remember { AtomicReference<(O) -> Unit> {} }
+    val launcher = rememberLauncherForActivityResult(contract = contract) { callback.exchange { }.invoke(it) }
     var completed by remember { mutableStateOf(true) }
     if (!completed) {
         ProgressDialog()
@@ -161,7 +161,7 @@ fun <I, O> LauncherPreference(title: String, summary: String? = null, contract: 
     Preference(title = title, summary = summary) {
         coroutineScope.launch {
             val o = suspendCoroutine { cont ->
-                callback.set { cont.resume(it) }
+                callback.store { cont.resume(it) }
                 launcher.launch(key)
             }
             completed = false

@@ -16,7 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
-import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.fetchAndIncrement
 
 val NoopTransitionsVisibilityScope = TransitionsVisibilityScope(emptySet())
 
@@ -73,14 +74,14 @@ fun initSETConnection() {
     listThumbGenerator connectTo detailThumbGenerator
 }
 
-private val atomicIncId = AtomicInteger()
+private val atomicIncId = AtomicInt(0)
 
 class SETNodeGenerator {
     private val tracker = hashMapOf<String, SETNode>()
     private val opposites = mutableListOf<SETNodeGenerator>()
 
     fun summon(contentKey: String): SETNode {
-        val node = opposites.firstNotNullOfOrNull { it.tracker[contentKey] } ?: SETNode(contentKey = contentKey, uniqueID = "${atomicIncId.getAndIncrement()}")
+        val node = opposites.firstNotNullOfOrNull { it.tracker[contentKey] } ?: SETNode(contentKey = contentKey, uniqueID = "${atomicIncId.fetchAndIncrement()}")
         tracker[contentKey] = node
         return node
     }

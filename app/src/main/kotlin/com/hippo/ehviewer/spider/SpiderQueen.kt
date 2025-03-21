@@ -40,7 +40,9 @@ import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
 import com.hippo.ehviewer.util.displayString
 import com.hippo.files.find
 import eu.kanade.tachiyomi.util.system.logcat
-import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.decrementAndFetch
+import kotlin.concurrent.atomics.incrementAndFetch
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import kotlinx.coroutines.CancellationException
@@ -71,8 +73,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
 
     val spiderDen: SpiderDen = SpiderDen(galleryInfo)
     private val mPageStateLock = Any()
-    private val mDownloadedPages = AtomicInteger(0)
-    private val mFinishedPages = AtomicInteger(0)
+    private val mDownloadedPages = AtomicInt(0)
+    private val mFinishedPages = AtomicInt(0)
     private val mSpiderListeners: MutableList<OnSpiderListener> = ArrayList()
 
     private var mReadReference = 0
@@ -116,8 +118,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             mSpiderListeners.forEach {
                 it.onPageSuccess(
                     index,
-                    mFinishedPages.get(),
-                    mDownloadedPages.get(),
+                    mFinishedPages.load(),
+                    mDownloadedPages.load(),
                     pageStates.size,
                 )
             }
@@ -130,8 +132,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                 it.onPageFailure(
                     index,
                     error,
-                    mFinishedPages.get(),
-                    mDownloadedPages.get(),
+                    mFinishedPages.load(),
+                    mDownloadedPages.load(),
                     pageStates.size,
                 )
             }
@@ -142,8 +144,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         synchronized(mSpiderListeners) {
             mSpiderListeners.forEach {
                 it.onFinish(
-                    mFinishedPages.get(),
-                    mDownloadedPages.get(),
+                    mFinishedPages.load(),
+                    mDownloadedPages.load(),
                     pageStates.size,
                 )
             }
@@ -182,8 +184,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         }
                         i++
                     }
-                    mDownloadedPages.lazySet(0)
-                    mFinishedPages.lazySet(0)
+                    mDownloadedPages.store(0)
+                    mFinishedPages.store(0)
                 }
                 mWorkerScope.enterDownloadMode()
             }
@@ -401,14 +403,14 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
             val oldState = pageStates[index]
             pageStates[index] = state
             if (!isStateDone(oldState) && isStateDone(state)) {
-                mDownloadedPages.incrementAndGet()
+                mDownloadedPages.incrementAndFetch()
             } else if (isStateDone(oldState) && !isStateDone(state)) {
-                mDownloadedPages.decrementAndGet()
+                mDownloadedPages.decrementAndFetch()
             }
             if (oldState != STATE_FINISHED && state == STATE_FINISHED) {
-                mFinishedPages.incrementAndGet()
+                mFinishedPages.incrementAndFetch()
             } else if (oldState == STATE_FINISHED && state != STATE_FINISHED) {
-                mFinishedPages.decrementAndGet()
+                mFinishedPages.decrementAndFetch()
             }
         }
 
@@ -418,8 +420,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         } else if (state == STATE_FINISHED) {
             notifyPageSuccess(index)
         }
-        if (mDownloadedPages.get() == size) {
-            if (mFinishedPages.get() == size) archiveJob.start()
+        if (mDownloadedPages.load() == size) {
+            if (mFinishedPages.load() == size) archiveJob.start()
             notifyAllPageDownloaded()
         }
     }
