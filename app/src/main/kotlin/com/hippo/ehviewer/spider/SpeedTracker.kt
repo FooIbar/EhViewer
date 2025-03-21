@@ -2,7 +2,6 @@ package com.hippo.ehviewer.spider
 
 import androidx.collection.MutableObjectIntMap
 import androidx.collection.mutableObjectIntMapOf
-import arrow.atomic.Atomic
 import arrow.fx.coroutines.fixedRate
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.executeSafely
@@ -15,6 +14,7 @@ import io.ktor.client.plugins.timeout
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.HttpStatement
+import kotlin.concurrent.atomics.AtomicReference
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.time.Duration
@@ -70,7 +70,7 @@ suspend inline fun <R> timeoutBySpeed(
     crossinline f: suspend (HttpResponse) -> R,
     noinline t: OnTimeout = { throw it },
 ) = coroutineScope {
-    val onTimeout = Atomic<OnTimeout?>(t).let { { e: IOException -> it.getAndSet(null)?.invoke(e) } }
+    val onTimeout = AtomicReference<OnTimeout?>(t).let { { e: IOException -> it.exchange(null)?.invoke(e) } }
     val watchdog = launch {
         delay(Settings.connTimeout.seconds)
         onTimeout(ConnectTimeoutException(url, Settings.connTimeout * 1000L))

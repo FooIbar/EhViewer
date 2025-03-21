@@ -20,16 +20,17 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import arrow.atomic.AtomicInt
 import com.hippo.ehviewer.R
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import java.io.File
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.fetchAndIncrement
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 // Fuck off the silly Android launcher and callback :)
 
-private val atomicInteger = AtomicInt()
+private val atomicInteger = AtomicInt(0)
 
 private val Context.lifecycle: Lifecycle
     get() {
@@ -44,7 +45,7 @@ private val Context.lifecycle: Lifecycle
     }
 
 suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<I, O>, input: I): O {
-    val key = "activity_rq#${atomicInteger.getAndIncrement()}"
+    val key = "activity_rq#${atomicInteger.fetchAndIncrement()}"
     var launcher: ActivityResultLauncher<I>? = null
     var observer: LifecycleEventObserver? = null
     observer = LifecycleEventObserver { _, event ->
