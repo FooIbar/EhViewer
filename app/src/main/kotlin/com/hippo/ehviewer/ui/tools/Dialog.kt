@@ -142,7 +142,7 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
         @StringRes title: Int? = null,
         invalidator: (suspend Raise<String>.(R) -> Unit)? = null,
         block: @Composable DialogScope<R>.(String?) -> Unit,
-    ): R = dialog { cont ->
+    ) = dialog { cont ->
         val state = remember(cont) { mutableStateOf(initial) }
         var errorMsg by remember(cont) { mutableStateOf<String?>(null) }
         val impl = remember(cont) {
