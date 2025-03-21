@@ -171,7 +171,7 @@ private fun PageContainer(
                     delay(500)
                     val contentSize = zoomableState.transformedContentBounds.size
                     val scale = ContentScale.FillHeight.computeScaleFactor(contentSize, layoutSize)
-                    val targetScale = scale.scaleX.coerceAtMost(zoomableState.zoomSpec.maxZoomFactor)
+                    val targetScale = scale.scaleX.coerceAtMost(zoomableState.zoomSpec.maximum.factor)
                     val offset = alignment.align(0, layoutSize.width.toInt(), LayoutDirection.Ltr)
                     zoomableState.zoomTo(targetScale, Offset(offset.toFloat(), 0f))
                 }
