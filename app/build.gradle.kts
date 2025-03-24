@@ -287,6 +287,7 @@ kotlin {
             "-Xcontext-receivers",
             "-Xwhen-guards",
             "-Xsuppress-warning=CONTEXT_RECEIVERS_DEPRECATED",
+            "-Xannotation-default-target=param-property",
         )
     }
 }
