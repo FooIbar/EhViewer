@@ -362,7 +362,6 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                         ReorderableItem(
                             reorderableLazyListState,
                             item.id!!,
-                            animateItemModifier = Modifier.animateItem(),
                         ) { isDragging ->
                             // Not using rememberSwipeToDismissBoxState to prevent LazyColumn from reusing it
                             // SQLite may reuse ROWIDs from previously deleted rows so they'll have the same key

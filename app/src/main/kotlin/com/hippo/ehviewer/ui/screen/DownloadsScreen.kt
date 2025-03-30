@@ -362,7 +362,6 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     reorderableLabelState,
                     id,
                     enabled = editEnable,
-                    animateItemModifier = Modifier.animateItem(),
                 ) { isDragging ->
                     SwipeToDismissBox(
                         state = dismissState,
