@@ -196,13 +196,6 @@ fun AdvancedScreen(navigator: DestinationsNavigator) {
                 title = stringResource(id = R.string.preload_thumb_aggressively),
                 value = Settings::preloadThumbAggressively,
             )
-            var animateItems by Settings.animateItems.asMutableState()
-            SwitchPref(
-                checked = animateItems,
-                onMutate = { animateItems = !animateItems },
-                title = stringResource(id = R.string.animate_items),
-                summary = stringResource(id = R.string.animate_items_summary),
-            )
             val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)
             LauncherPreference(
                 title = stringResource(id = R.string.settings_advanced_export_data),

@@ -22,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -35,14 +34,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import arrow.core.raise.ensure
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.GalleryInfo.Companion.S_LANG_TAGS
-import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.DropdownFilterChip
-import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.toIntOrDefault
 import kotlinx.coroutines.launch
 
@@ -72,7 +68,6 @@ fun SearchFilter(
 ) = Column(modifier) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val animateItems by Settings.animateItems.collectAsState()
     fun isCategoryChecked(bit: Int) = category and bit != 0
     val categories = remember(category) { categoryTable.sortedBy { !isCategoryChecked(it.first) } }
     LazyRow(
@@ -87,7 +82,7 @@ fun SearchFilter(
                 selected = isCategoryChecked(it.first),
                 onClick = { onCategoryChange(category xor it.first) },
                 label = { Text(text = stringResource(id = it.second)) },
-                modifier = Modifier.thenIf(animateItems) { animateItem() },
+                modifier = Modifier.animateItem(),
             )
         }
     }

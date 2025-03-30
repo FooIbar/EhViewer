@@ -99,7 +99,6 @@ import com.hippo.ehviewer.ui.tools.animateFloatMergePredictiveBackAsState
 import com.hippo.ehviewer.ui.tools.normalizeSpan
 import com.hippo.ehviewer.ui.tools.rememberBBCodeTextToolbar
 import com.hippo.ehviewer.ui.tools.snackBarPadding
-import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.ui.tools.toBBCode
 import com.hippo.ehviewer.ui.tools.updateSpan
 import com.hippo.ehviewer.util.ReadableTime
@@ -173,7 +172,6 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var commenting by rememberSaveable { mutableStateOf(false) }
     val animationProgress by animateFloatMergePredictiveBackAsState(enable = commenting) { commenting = false }
-    val animateItems by Settings.animateItems.collectAsState()
 
     val galleryDetail = remember { detailCache[gid]!! }
     val userCommentBackField = remember { mutableStateOf(TextFieldValue()) }
@@ -390,7 +388,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                     }()
 
                     GalleryCommentCard(
-                        modifier = Modifier.thenIf(animateItems) { animateItem() },
+                        modifier = Modifier.animateItem(),
                         comment = item,
                         onUserClick = {
                             navigate(

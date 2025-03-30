@@ -83,7 +83,6 @@ import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.asyncState
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.takeAndClear
 import com.ramcosta.composedestinations.annotation.Destination
@@ -105,7 +104,6 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
     // Immutables
     val localFavName = stringResource(R.string.local_favorites)
     val cloudFavName = stringResource(R.string.cloud_favorites)
-    val animateItems by Settings.animateItems.collectAsState()
     val hasSignedIn by Settings.hasSignedIn.collectAsState()
 
     // Meta State
@@ -284,7 +282,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                 val checked = info.gid in checkedInfoMap
                 CheckableItem(
                     checked = checked,
-                    modifier = Modifier.thenIf(animateItems) { animateItem() },
+                    modifier = Modifier.animateItem(),
                 ) { interactionSource ->
                     GalleryInfoListItem(
                         onClick = {
@@ -313,7 +311,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                 val checked = info.gid in checkedInfoMap
                 CheckableItem(
                     checked = checked,
-                    modifier = Modifier.thenIf(animateItems) { animateItem() },
+                    modifier = Modifier.animateItem(),
                 ) { interactionSource ->
                     GalleryInfoGridItem(
                         onClick = {
