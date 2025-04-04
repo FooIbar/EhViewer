@@ -116,7 +116,6 @@ import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.asyncState
 import com.hippo.ehviewer.ui.tools.rememberHapticFeedback
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.takeAndClear
 import com.jamal.composeprefs3.ui.ifTrueThen
@@ -143,7 +142,6 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
     var invalidateKey by rememberSaveable { mutableStateOf(false) }
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
-    val animateItems by Settings.animateItems.collectAsState()
 
     var fabExpanded by remember { mutableStateOf(false) }
     var fabHidden by remember { mutableStateOf(false) }
@@ -364,7 +362,6 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     reorderableLabelState,
                     id,
                     enabled = editEnable,
-                    animateItemModifier = Modifier.thenIf(animateItems) { animateItem() },
                 ) { isDragging ->
                     SwipeToDismissBox(
                         state = dismissState,
@@ -560,7 +557,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                             onClick = ::onItemClick.partially1(info),
                             onLongClick = { navigate(info.galleryInfo.asDst()) },
                             info = info,
-                            modifier = Modifier.thenIf(animateItems) { animateItem() },
+                            modifier = Modifier.animateItem(),
                             showLanguage = false,
                         )
                     }
@@ -575,7 +572,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                         val checked = info.gid in checkedInfoMap
                         CheckableItem(
                             checked = checked,
-                            modifier = Modifier.thenIf(animateItems) { animateItem() },
+                            modifier = Modifier.animateItem(),
                         ) { interactionSource ->
                             DownloadCard(
                                 onClick = {
