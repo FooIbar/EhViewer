@@ -59,7 +59,6 @@ import com.hippo.ehviewer.ui.main.plus
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.rememberInVM
-import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -74,7 +73,6 @@ import kotlinx.coroutines.launch
 fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val title = stringResource(id = R.string.history)
     val hint = stringResource(R.string.search_bar_hint, title)
-    val animateItems by Settings.animateItems.collectAsState()
 
     var searchBarExpanded by rememberSaveable { mutableStateOf(false) }
     var searchBarOffsetY by remember { mutableIntStateOf(0) }
@@ -158,7 +156,7 @@ fun AnimatedVisibilityScope.HistoryScreen(navigator: DestinationsNavigator) = Sc
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {},
-                        modifier = Modifier.thenIf(animateItems) { animateItem() },
+                        modifier = Modifier.animateItem(),
                         enableDismissFromStartToEnd = false,
                     ) {
                         GalleryInfoListItem(
