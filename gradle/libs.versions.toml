@@ -32,7 +32,7 @@ telephoto = "0.15.1"
 xmlutil = "0.91.0"
 junit = "1.2.1"
 uiautomator = "2.4.0-alpha01"
-benchmark = "1.4.0-alpha10"
+benchmark = "1.4.0-alpha11"
 profileinstaller = "1.4.1"
 
 [libraries]
