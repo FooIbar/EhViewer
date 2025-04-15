@@ -372,6 +372,7 @@
     <string name="settings_advanced_dump_logcat_to">Logcat dumped to %s</string>
     <string name="settings_advanced_read_cache_size">Read cache size</string>
     <string name="settings_advanced_app_language_title">App language</string>
+    <string name="settings_advanced_enable_quic">QUIC support</string>
     <string name="settings_advanced_hardware_bitmap_threshold">Hardware bitmap (better performance) threshold</string>
     <string name="settings_advanced_hardware_bitmap_threshold_summary">Try decreasing this if long images fail to load</string>
     <string name="settings_advanced_export_data">Export data</string>
@@ -398,6 +399,7 @@
     <string name="settings_about_commit_time">Committed at %s</string>
     <string name="settings_about_check_for_updates">Check for updates</string>
     <string name="license">License</string>
+    <string name="settings_restart">Restart to apply changes?</string>
     <string name="cant_read_the_file">Can\'t read the file</string>
     <string name="app_language_system">System Language (Default)</string>
     <!-- ExcludedLanguagesScene -->

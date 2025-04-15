@@ -64,6 +64,7 @@ import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastT
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.requestPermission
+import com.hippo.ehviewer.util.restartApplication
 import com.hippo.ehviewer.util.toEpochMillis
 import com.hippo.ehviewer.util.toLocalDateTime
 import com.hippo.files.delete
@@ -444,4 +445,12 @@ suspend fun DialogState.awaitSelectDate(): String? {
     )
     val date = dateMillis?.run { toLocalDateTime().date.toString() }
     return date
+}
+
+context(Context)
+suspend fun DialogState.showRestartDialog() {
+    awaitConfirmationOrCancel {
+        Text(stringResource(R.string.settings_restart))
+    }
+    restartApplication()
 }

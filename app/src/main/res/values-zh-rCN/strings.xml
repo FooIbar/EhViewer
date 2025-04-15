@@ -352,6 +352,7 @@
     <string name="settings_advanced_dump_logcat_to">已保存日志至 %s</string>
     <string name="settings_advanced_read_cache_size">阅读缓存大小</string>
     <string name="settings_advanced_app_language_title">App 界面语言</string>
+    <string name="settings_advanced_enable_quic">QUIC 支持</string>
     <string name="settings_advanced_hardware_bitmap_threshold">硬件位图（性能更好）阈值</string>
     <string name="settings_advanced_hardware_bitmap_threshold_summary">若长图无法加载请尝试减小此项</string>
     <string name="settings_advanced_export_data">导出数据</string>
@@ -376,6 +377,7 @@
     <string name="settings_about_version">版本号</string>
     <string name="settings_about_commit_time">于 %s 提交</string>
     <string name="settings_about_check_for_updates">检查更新</string>
+    <string name="settings_restart">重启以应用更改？</string>
     <!-- ExcludedLanguagesScene -->
     <string name="please_wait">请稍候</string>
     <string name="cant_read_the_file">无法读取文件</string>
