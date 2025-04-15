@@ -124,6 +124,7 @@ object Settings : DataStorePreferences(null) {
     val security = boolPref("require_unlock", false)
     val animateItems = boolPref("animate_items", true)
     val enableCronet = boolPref("enable_cronet", true)
+    val enableQuic = boolPref("enable_quic", true)
     val displayName = stringOrNullPref("display_name", null)
     val avatar = stringOrNullPref("avatar", null)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)

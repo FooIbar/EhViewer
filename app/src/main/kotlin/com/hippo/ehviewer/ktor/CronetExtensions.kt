@@ -7,7 +7,7 @@ import android.os.Build
 import androidx.annotation.RequiresExtension
 import java.io.File
 
-fun CronetConfig.configureClient() {
+fun CronetConfig.configureClient(enableQuic: Boolean) {
     config = {
         setEnableBrotli(true)
 
@@ -16,8 +16,11 @@ fun CronetConfig.configureClient() {
         setStoragePath(cache.path)
         setEnableHttpCache(HttpEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 4096)
 
-        addQuicHint("e-hentai.org", 443, 443)
-        addQuicHint("forums.e-hentai.org", 443, 443)
-        addQuicHint("exhentai.org", 443, 443)
+        setEnableQuic(enableQuic)
+        if (enableQuic) {
+            addQuicHint("e-hentai.org", 443, 443)
+            addQuicHint("forums.e-hentai.org", 443, 443)
+            addQuicHint("exhentai.org", 443, 443)
+        }
     }
 }
