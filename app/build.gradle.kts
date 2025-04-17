@@ -298,8 +298,10 @@ ksp {
 }
 
 aboutLibraries {
-    duplicationMode = MERGE
-    duplicationRule = GROUP
+    library {
+        duplicationMode = MERGE
+        duplicationRule = GROUP
+    }
 }
 
 val ktlintVersion = libs.ktlint.get().version
