@@ -1,5 +1,5 @@
 [versions]
-aboutlibraries = "12.0.0-b03"
+aboutlibraries = "12.0.0-b03+compose_1_8-2"
 aboutlibraries-plugin = "12.0.0-b03"
 accompanist = "0.37.2"
 agp = "8.9.1"
