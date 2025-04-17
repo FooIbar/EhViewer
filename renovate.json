@@ -45,6 +45,12 @@
       "allowedVersions": "!/SNAPSHOT$/"
     },
     {
+      "matchDepNames": [
+        "com.mikepenz{:.}aboutlibraries*"
+      ],
+      "automerge": false
+    },
+    {
       "groupName": "AGP",
       "matchDepNames": [
         "com.android.application",
@@ -52,14 +58,6 @@
         "com.android.test"
       ],
       "allowedVersions": "/^[\\d.]+(-alpha\\d+)?$/"
-    },
-    {
-      "groupName": "Kotlin & KSP",
-      "matchSourceUrls": [
-        "https://github.com/JetBrains/kotlin",
-        "https://github.com/google/ksp"
-      ],
-      "recreateWhen": "never"
     },
     {
       "matchDepNames": [
