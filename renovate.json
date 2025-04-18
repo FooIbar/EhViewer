@@ -46,7 +46,7 @@
     },
     {
       "matchDepNames": [
-        "com.mikepenz{:.}aboutlibraries*"
+        "com.mikepenz{:,.}aboutlibraries*"
       ],
       "automerge": false
     },
