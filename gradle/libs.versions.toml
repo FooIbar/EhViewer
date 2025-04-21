@@ -2,7 +2,7 @@
 aboutlibraries = "12.0.0-b03+compose_1_8-2"
 aboutlibraries-plugin = "12.0.0"
 accompanist = "0.37.2"
-agp = "8.9.1"
+agp = "8.9.2"
 androidx-activity = "1.10.1"
 androidx-appcompat = "1.7.0"
 androidx-biometric = "1.4.0-alpha03"
