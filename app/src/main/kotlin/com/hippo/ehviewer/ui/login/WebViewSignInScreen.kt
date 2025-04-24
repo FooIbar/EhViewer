@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.login
 
-import android.webkit.WebView
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable

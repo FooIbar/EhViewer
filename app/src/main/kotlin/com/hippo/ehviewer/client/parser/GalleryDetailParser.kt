@@ -53,9 +53,7 @@ import kotlinx.datetime.format.char
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
 import org.jsoup.select.NodeTraversor
-import org.jsoup.select.NodeVisitor
 
 object GalleryDetailParser {
     private val PATTERN_ERROR = Regex("<div class=\"d\">\n<p>([^<]+)</p>")
@@ -404,11 +402,9 @@ object GalleryDetailParser {
         val chd = cdiv.getElementById("chd")
         var hasMore = false
         NodeTraversor.traverse(
-            object : NodeVisitor {
-                override fun head(node: Node, depth: Int) {
-                    if (node is Element && node.text() == "click to show all") {
-                        hasMore = true
-                    }
+            { node, depth ->
+                if (node is Element && node.text() == "click to show all") {
+                    hasMore = true
                 }
             },
             chd!!,

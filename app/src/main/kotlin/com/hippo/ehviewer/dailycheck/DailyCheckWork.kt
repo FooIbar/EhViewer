@@ -3,12 +3,12 @@ package com.hippo.ehviewer.dailycheck
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.text.style.URLSpan
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.PendingIntentCompat
+import androidx.core.net.toUri
 import androidx.core.text.getSpans
 import androidx.core.text.parseAsHtml
 import androidx.work.Constraints
@@ -110,7 +110,7 @@ fun showEventNotification(html: String) {
         .setStyle(NotificationCompat.BigTextStyle())
     val urls = text.getSpans<URLSpan>(0, text.length)
     if (urls.isNotEmpty()) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(urls.first().url))
+        val intent = Intent(Intent.ACTION_VIEW, urls.first().url.toUri())
         val pi = PendingIntentCompat.getActivity(appCtx, 0, intent, 0, false)
         msg.setContentIntent(pi)
     }

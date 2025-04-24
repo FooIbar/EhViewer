@@ -227,7 +227,7 @@
         <item>3</item>
     </string-array>
 
-    <string-array name="color_filter_modes">
+    <string-array name="color_filter_modes" tools:ignore="InconsistentArrays">
         <item>@string/label_default</item>
         <item>@string/filter_mode_multiply</item>
         <item>@string/filter_mode_screen</item>

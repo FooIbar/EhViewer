@@ -24,6 +24,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.core.util.size
 import arrow.fx.coroutines.parMapNotNull
 import com.hippo.ehviewer.EhDB
 import com.hippo.ehviewer.Settings
@@ -773,7 +774,7 @@ object DownloadManager : OnSpiderListener, CoroutineScope {
                     var downloadingContentLengthSum = 0L
                     var totalSize = 0L
                     mutex.withLock {
-                        for (i in 0..<contentLengthMap.size()) {
+                        for (i in 0..<contentLengthMap.size) {
                             val contentLength = contentLengthMap.valueAt(i)
                             val receivedSize = receivedSizeMap.valueAt(i)
                             downloadingCount++

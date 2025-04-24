@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.ui.reader
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ContentValues
 import android.content.Context
@@ -30,7 +31,6 @@ import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
 import kotlinx.datetime.Clock
 import moe.tarsin.coroutines.runSuspendCatching
-import okio.Path.Companion.toOkioPath
 import splitties.systemservices.clipboardManager
 
 context(PageLoader)
@@ -61,7 +61,7 @@ suspend fun shareImage(page: Page, info: GalleryInfo? = null) {
     }
     try {
         startActivity(Intent.createChooser(intent, share))
-    } catch (e: Throwable) {
+    } catch (_: ActivityNotFoundException) {
         showSnackbar(noActivity)
     }
 }

@@ -392,10 +392,10 @@ object EhEngine {
                 jsonBody {
                     put("method", "gdata")
                     array("gidlist") {
-                        it.forEach {
+                        it.forEach { info ->
                             addJsonArray {
-                                add(it.gid)
-                                add(it.token)
+                                add(info.gid)
+                                add(info.token)
                             }
                         }
                     }

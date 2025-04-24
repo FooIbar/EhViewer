@@ -37,7 +37,6 @@ object FileUtils {
      * http://stackoverflow.com/questions/3758606/
      *
      * @param bytes the bytes to convert
-     * @param si    si units
      * @return the human readable string
      */
     fun humanReadableByteCount(bytes: Long): String {
