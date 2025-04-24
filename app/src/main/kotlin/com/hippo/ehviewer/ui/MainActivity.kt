@@ -79,7 +79,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.currentCompositeKeyHash
+import androidx.compose.runtime.currentCompositeKeyHashCode
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -370,7 +370,7 @@ class MainActivity : EhActivity() {
                 onPauseOrDispose { job.cancel() }
             }
             val currentDestination by navController.currentDestinationAsState()
-            val drawerHandle = remember { mutableStateListOf<Int>() }
+            val drawerHandle = remember { mutableStateListOf<Long>() }
             var snackbarFabPadding by remember { mutableStateOf(0.dp) }
             val drawerEnabled = drawerHandle.isNotEmpty()
             val density = LocalDensity.current
@@ -563,7 +563,7 @@ class MainActivity : EhActivity() {
 
 val LocalNavDrawerState = compositionLocalOf<DrawerState> { error("CompositionLocal LocalNavDrawerState not present!") }
 val LocalSideSheetState = compositionLocalOf<DrawerState2> { error("CompositionLocal LocalSideSheetState not present!") }
-val LocalDrawerHandle = compositionLocalOf<SnapshotStateList<Int>> { error("CompositionLocal LocalDrawerHandle not present!") }
+val LocalDrawerHandle = compositionLocalOf<SnapshotStateList<Long>> { error("CompositionLocal LocalDrawerHandle not present!") }
 val LocalSnackBarHostState = compositionLocalOf<SnackbarHostState> { error("CompositionLocal LocalSnackBarHostState not present!") }
 val LocalSnackBarFabPadding = compositionLocalOf<State<Dp>> { error("CompositionLocal LocalSnackBarFabPadding not present!") }
 val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope> { error("CompositionLocal LocalSharedTransitionScope not present!") }
@@ -571,7 +571,7 @@ val LocalSharedTransitionScope = compositionLocalOf<SharedTransitionScope> { err
 @Composable
 fun DrawerHandle(enabled: Boolean) {
     if (enabled) {
-        val current = currentCompositeKeyHash
+        val current = currentCompositeKeyHashCode
         val handle = LocalDrawerHandle.current
         DisposableEffect(current) {
             handle.add(current)

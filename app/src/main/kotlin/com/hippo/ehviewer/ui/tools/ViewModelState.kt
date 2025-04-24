@@ -1,12 +1,12 @@
 package com.hippo.ehviewer.ui.tools
 
-import androidx.collection.mutableIntObjectMapOf
+import androidx.collection.mutableLongObjectMapOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
-import androidx.compose.runtime.currentCompositeKeyHash
+import androidx.compose.runtime.currentCompositeKeyHashCode
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,14 +30,14 @@ import kotlinx.coroutines.launch
 inline fun <T : Any> nonNullState(block: MutableState<T>.() -> Unit) = (mutableStateOf<T?>(null) as MutableState<T>).apply(block) as State<T>
 
 class StateMapViewModel : ViewModel() {
-    val statesMap = mutableIntObjectMapOf<ArrayDeque<Any>>()
+    val statesMap = mutableLongObjectMapOf<ArrayDeque<Any>>()
 }
 
 @Composable
 inline fun <reified T : Any> rememberInVM(
     crossinline init: @DisallowComposableCalls ViewModel.() -> T,
 ) = with(viewModel<StateMapViewModel>()) {
-    val compositeKey = currentCompositeKeyHash
+    val compositeKey = currentCompositeKeyHashCode
     remember {
         val states = statesMap.getOrPut(compositeKey, ::ArrayDeque)
         states.removeLastOrNull() as T? ?: init()
@@ -56,7 +56,7 @@ inline fun <T : Any, K : Any> rememberInVM(
     key: K,
     crossinline init: @DisallowComposableCalls ViewModel.() -> T,
 ) = with(viewModel<StateMapViewModel>()) {
-    val compositeKey = currentCompositeKeyHash
+    val compositeKey = currentCompositeKeyHashCode
     remember(key) {
         val states = statesMap.getOrPut(compositeKey, ::ArrayDeque)
         @Suppress("UNCHECKED_CAST")
