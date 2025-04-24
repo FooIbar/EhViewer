@@ -404,7 +404,7 @@ fun AnimatedVisibilityScope.GalleryCommentsScreen(gid: Long, navigator: Destinat
                         onUrlClick = {
                             if (it.startsWith("#c")) {
                                 it.substring(2).toLongOrNull()?.let { id ->
-                                    val index = comments.comments.indexOfFirst { it.id == id }
+                                    val index = comments.comments.indexOfFirst { c -> c.id == id }
                                     if (index != -1) {
                                         launch { lazyListState.animateScrollToItem(index) }
                                     }

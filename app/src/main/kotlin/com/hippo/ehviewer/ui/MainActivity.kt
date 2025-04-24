@@ -106,6 +106,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.navigation.compose.rememberNavController
@@ -532,13 +533,13 @@ class MainActivity : EhActivity() {
                 try {
                     val intent = Intent(
                         android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
-                        Uri.parse("package:$packageName"),
+                        "package:$packageName".toUri(),
                     )
                     startActivity(intent)
                 } catch (_: Throwable) {
                     val intent = Intent(
                         android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:$packageName"),
+                        "package:$packageName".toUri(),
                     )
                     startActivity(intent)
                 }
@@ -556,7 +557,7 @@ class MainActivity : EhActivity() {
 
     override fun onProvideAssistContent(outContent: AssistContent?) {
         super.onProvideAssistContent(outContent)
-        shareUrl?.let { outContent?.webUri = Uri.parse(shareUrl) }
+        shareUrl?.let { outContent?.webUri = it.toUri() }
     }
 }
 

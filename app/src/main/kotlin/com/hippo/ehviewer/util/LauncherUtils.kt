@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -86,7 +87,7 @@ suspend fun Context.requestInstallPermission(): Boolean {
             ActivityResultContracts.StartActivityForResult(),
             Intent(
                 Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                Uri.parse("package:$packageName"),
+                "package:$packageName".toUri(),
             ),
         )
         requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)

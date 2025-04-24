@@ -17,9 +17,9 @@ package com.hippo.ehviewer.ui
 
 import android.content.ActivityNotFoundException
 import android.content.Context
-import android.net.Uri
 import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.net.toUri
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.data.GalleryDetail
 import com.hippo.ehviewer.client.parser.GalleryPageUrlParser
@@ -30,7 +30,7 @@ private val intent = CustomTabsIntent.Builder().apply { setShowTitle(true) }.bui
 fun Context.openBrowser(url: String) {
     if (url.isEmpty()) return
     try {
-        intent.launchUrl(this, Uri.parse(url))
+        intent.launchUrl(this, url.toUri())
     } catch (e: ActivityNotFoundException) {
         Toast.makeText(this, R.string.no_browser_installed, Toast.LENGTH_LONG).show()
     }
