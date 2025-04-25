@@ -1,6 +1,5 @@
 [versions]
-aboutlibraries = "12.0.0-b03+compose_1_8-2"
-aboutlibraries-plugin = "12.0.0"
+aboutlibraries = "12.1.0-rc01"
 accompanist = "0.37.2"
 agp = "8.9.2"
 androidx-activity = "1.10.1"
@@ -132,7 +131,7 @@ kotlinx-serialization = ["serialization-cbor", "serialization-json", "serializat
 splitties = ["splitties-appctx", "splitties-arch-room", "splitties-preferences", "splitties-systemservices"]
 
 [plugins]
-aboutlibrariesPlugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries-plugin" }
+aboutlibrariesPlugin = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutlibraries" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 composeCompilerReportGenerator = { id = "dev.shreyaspatil.compose-compiler-report-generator", version = "1.4.2" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
