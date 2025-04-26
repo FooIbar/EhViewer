@@ -45,12 +45,6 @@
       "allowedVersions": "!/SNAPSHOT$/"
     },
     {
-      "matchDepNames": [
-        "com.mikepenz{:,.}aboutlibraries*"
-      ],
-      "automerge": false
-    },
-    {
       "groupName": "AGP",
       "matchDepNames": [
         "com.android.application",

@@ -46,7 +46,8 @@ fun AnimatedVisibilityScope.LicenseScreen(navigator: DestinationsNavigator) = Sc
         LibrariesContainer(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             librariesBlock = { ctx ->
-                // Avoid `Resources.getIdentifier()` call
+                // Avoid `Resources.getIdentifier()` call for strict resource shrinking
+                // https://developer.android.com/build/shrink-code#strict-reference-checks
                 Libs.Builder().withJson(ctx, R.raw.aboutlibraries).build()
             },
             contentPadding = paddingValues,
