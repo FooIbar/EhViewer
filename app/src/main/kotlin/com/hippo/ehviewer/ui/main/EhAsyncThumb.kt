@@ -16,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.ConstraintsSizeResolver
 import coil3.compose.rememberAsyncImagePainter
@@ -62,15 +61,19 @@ fun EhAsyncCropThumb(
     modifier: Modifier = Modifier,
 ) = SharedElementBox(key = "${key.gid}", shape = ShapeDefaults.Medium) {
     var contentScale by remember(key) { mutableStateOf(ContentScale.Fit) }
-    AsyncImage(
-        model = requestOf(key),
+    val request = requestOf(key)
+    Image(
+        // https://github.com/coil-kt/coil/issues/2959
+        painter = rememberAsyncImagePainter(
+            model = request,
+            onSuccess = {
+                if (it.result.image.shouldCrop) {
+                    contentScale = ContentScale.Crop
+                }
+            },
+        ),
         contentDescription = null,
-        modifier = modifier,
-        onSuccess = {
-            if (it.result.image.shouldCrop) {
-                contentScale = ContentScale.Crop
-            }
-        },
+        modifier = modifier.imageRequest(request),
         contentScale = contentScale,
     )
 }
