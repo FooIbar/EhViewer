@@ -31,7 +31,7 @@ splitties = "3.0.0"
 telephoto = "0.15.1"
 xmlutil = "0.91.0"
 junit = "1.2.1"
-uiautomator = "2.4.0-alpha01"
+uiautomator = "2.4.0-alpha02"
 benchmark = "1.4.0-beta01"
 profileinstaller = "1.4.1"
 
