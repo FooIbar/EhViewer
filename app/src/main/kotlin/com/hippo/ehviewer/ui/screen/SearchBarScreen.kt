@@ -65,7 +65,6 @@ import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhTagDatabase
 import com.hippo.ehviewer.client.data.TagNamespace
-import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.dao.Search
 import com.hippo.ehviewer.dao.SearchDao
 import com.hippo.ehviewer.ui.LocalNavDrawerState
@@ -120,7 +119,6 @@ fun SearchBarScreen(
     val mSearchDatabase = searchDatabase.searchDao()
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val context = LocalContext.current
-    val animateItems by Settings.animateItems.collectAsState()
 
     class TagSuggestion(
         override val hint: String?,
@@ -294,7 +292,7 @@ fun SearchBarScreen(
                             }
                         },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        modifier = Modifier.clickable { it.onClick() }.thenIf(animateItems) { animateItem() },
+                        modifier = Modifier.clickable { it.onClick() }.animateItem(),
                     )
                 }
             }
