@@ -213,6 +213,7 @@ fun GalleryInfoGridItem(
     modifier: Modifier = Modifier,
     showLanguage: Boolean = true,
     showPages: Boolean = true,
+    showFavoriteStatus: Boolean = true,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) = ElevatedCard(
     modifier = modifier,
@@ -256,6 +257,17 @@ fun GalleryInfoGridItem(
             }
             if (shouldShowLanguage) {
                 Text(text = info.simpleLanguage.orEmpty())
+            }
+        }
+        if (showFavoriteStatus) {
+            val isFavorited by FavouriteStatusRouter.collectAsState(info) { it != NOT_FAVORITED }
+            if (isFavorited) {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = null,
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(2.dp),
+                    tint = EhUtils.favoriteIconColor,
+                )
             }
         }
     }

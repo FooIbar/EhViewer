@@ -153,6 +153,8 @@ object EhUtils {
 
     val categoryTextColor = Color(0xffe6e0e9)
 
+    val favoriteIconColor = Color(0xffff3040)
+
     fun signOut() {
         EhCookieStore.removeAllCookies()
         Settings.displayName.value = null
