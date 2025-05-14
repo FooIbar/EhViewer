@@ -313,17 +313,18 @@ object EhDB {
         val offset = currentQuickSearchList.size
         val importList = quickSearchList.filter { newQS ->
             currentQuickSearchList.none { it.name == newQS.name }
-        }.onEachIndexed { index, q -> q.position = index + offset }
+        }.onEachIndexed { index, q ->
+            q.id = null
+            q.position = index + offset
+        }
         importQuickSearch(importList)
 
         oldDB.localFavoritesDao().list().let {
             importLocalFavorites(it)
         }
 
-        val filterList = oldDB.filterDao().list()
-        val currentFilterList = db.filterDao().list()
-        filterList.forEach {
-            if (it !in currentFilterList) addFilter(it)
+        oldDB.filterDao().list().forEach {
+            addFilter(it)
         }
     }
 }
