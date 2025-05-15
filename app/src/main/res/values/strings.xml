@@ -71,6 +71,7 @@
     <string name="sign_in_failed">Sign in failed</string>
     <string name="sign_in_failed_tip">If this issue continues, try \"%s\".</string>
     <string name="get_it">Got it</string>
+    <string name="cloudflare_bypass_failed">Failed to bypass Cloudflare challenge</string>
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">Search ExHentai</string>
     <string name="gallery_list_search_bar_hint_e_hentai">Search E-Hentai</string>
@@ -514,6 +515,8 @@
     <string name="preload_thumb_aggressively">Preload thumbs aggressively</string>
     <string name="animate_items">List item animations</string>
     <string name="animate_items_summary">Try disabling this if you are facing crashes / frame drops</string>
+    <string name="desktop_site">Desktop site</string>
+    <string name="desktop_site_summary">Higher default image resolution\nTry disabling this if failed to bypass Cloudflare</string>
     <string name="auto_updates">Automatically check for updates</string>
     <string name="update_frequency_never">Never</string>
     <string name="update_frequency_daily">Daily</string>

@@ -125,6 +125,7 @@ object Settings : DataStorePreferences(null) {
     val animateItems = boolPref("animate_items", true)
     val enableCronet = boolPref("enable_cronet", true)
     val enableQuic = boolPref("enable_quic", true)
+    val desktopSite = boolPref("desktop_site", true)
     val displayName = stringOrNullPref("display_name", null)
     val avatar = stringOrNullPref("avatar", null)
     val recentDownloadLabel = stringOrNullPref("recent_download_label", null)

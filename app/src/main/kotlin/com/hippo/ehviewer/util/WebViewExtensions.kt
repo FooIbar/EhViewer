@@ -2,7 +2,7 @@ package com.hippo.ehviewer.util
 
 import android.annotation.SuppressLint
 import android.webkit.WebView
-import com.hippo.ehviewer.BuildConfig
+import com.hippo.ehviewer.ktor.CHROME_MOBILE_USER_AGENT
 
 @SuppressLint("SetJavaScriptEnabled")
 fun WebView.setDefaultSettings() = with(settings) {
@@ -10,8 +10,6 @@ fun WebView.setDefaultSettings() = with(settings) {
     displayZoomControls = false
     javaScriptEnabled = true
 
-    // Use mobile user-agent to bypass Cloudflare
+    // Always use mobile user-agent to bypass Cloudflare
     userAgentString = CHROME_MOBILE_USER_AGENT
 }
-
-private const val CHROME_MOBILE_USER_AGENT = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${BuildConfig.CHROME_VERSION}.0.0.0 Mobile Safari/537.36"
