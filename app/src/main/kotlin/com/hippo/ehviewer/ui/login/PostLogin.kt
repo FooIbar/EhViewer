@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.login
 
+import arrow.core.Either.Companion.catch
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.EhCookieStore
 import com.hippo.ehviewer.client.EhEngine
@@ -11,39 +12,43 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import moe.tarsin.coroutines.runSuspendCatching
 
-suspend fun CoroutineScope.refreshAccountInfo() = runSuspendCatching {
+suspend fun CoroutineScope.refreshAccountInfo() = catch {
     with(EhEngine.getProfile()) {
         Settings.displayName.value = displayName
         Settings.avatar.value = avatar
     }
-}.onFailure {
+}.onLeft {
     logcat(it)
 }
 
 @OptIn(DelicateCoroutinesApi::class)
 fun postLogin() = GlobalScope.async(Dispatchers.IO) {
     launch { refreshAccountInfo() }
-    runCatching {
-        // For the `star` cookie
+
+    // For the `star` cookie
+    catch {
         EhEngine.getNews(false)
+    }.onLeft {
+        logcat(it)
+    }
 
-        // Get cookies for image limits
-        launch {
-            runCatching {
-                EhEngine.getUConfig(EhUrl.URL_UCONFIG_E)
-                EhCookieStore.flush()
-            }.onFailure {
-                logcat(it)
-            }
+    // Get cookies for image limits
+    launch {
+        catch {
+            EhEngine.getUConfig(EhUrl.URL_UCONFIG_E)
+            EhCookieStore.flush()
+        }.onLeft {
+            logcat(it)
         }
+    }
 
-        // Sad panda check
+    // Sad panda check
+    catch {
         EhEngine.getUConfig(EhUrl.URL_UCONFIG_EX)
         EhCookieStore.flush()
         Settings.gallerySite.value = EhUrl.SITE_EX
-    }.onFailure {
+    }.onLeft {
         Settings.gallerySite.value = EhUrl.SITE_E
     }
 

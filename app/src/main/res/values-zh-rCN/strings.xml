@@ -57,6 +57,7 @@
     <string name="sign_in_failed">登录失败</string>
     <string name="sign_in_failed_tip">若持续出错，请尝试“%s”。</string>
     <string name="get_it">知道了</string>
+    <string name="cloudflare_bypass_failed">未能绕过 Cloudflare 验证</string>
     <!-- Gallery List -->
     <string name="gallery_list_search_bar_hint_exhentai">搜索 ExHentai</string>
     <string name="gallery_list_search_bar_hint_e_hentai">搜索 E-Hentai</string>
@@ -495,6 +496,8 @@
     <string name="preload_thumb_aggressively">激进地预载缩略图</string>
     <string name="animate_items">列表项目动画</string>
     <string name="animate_items_summary">如遇崩溃/掉帧请尝试禁用此项</string>
+    <string name="desktop_site">桌面版网站</string>
+    <string name="desktop_site_summary">更高的默认图片分辨率\n如未能绕过 Cloudflare 验证请尝试禁用此项</string>
     <string name="auto_updates">自动检查更新</string>
     <string name="update_frequency_never">从不</string>
     <string name="update_frequency_daily">每天</string>

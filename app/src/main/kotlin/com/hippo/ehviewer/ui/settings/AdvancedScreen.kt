@@ -223,6 +223,13 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                 title = stringResource(id = R.string.animate_items),
                 summary = stringResource(id = R.string.animate_items_summary),
             )
+            var desktopSite by Settings.desktopSite.asMutableState()
+            SwitchPref(
+                checked = desktopSite,
+                onMutate = { desktopSite = !desktopSite },
+                title = stringResource(id = R.string.desktop_site),
+                summary = stringResource(id = R.string.desktop_site_summary),
+            )
             val exportFailed = stringResource(id = R.string.settings_advanced_export_data_failed)
             LauncherPreference(
                 title = stringResource(id = R.string.settings_advanced_export_data),

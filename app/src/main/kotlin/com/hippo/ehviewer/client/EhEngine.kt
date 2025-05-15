@@ -27,6 +27,7 @@ import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.client.data.GalleryInfo
+import com.hippo.ehviewer.client.exception.CloudflareBypassException
 import com.hippo.ehviewer.client.exception.EhException
 import com.hippo.ehviewer.client.exception.InsufficientFundsException
 import com.hippo.ehviewer.client.exception.NoHitsFoundException
@@ -59,9 +60,9 @@ import com.hippo.ehviewer.util.ReadableTime
 import com.hippo.ehviewer.util.bodyAsUtf8Text
 import com.hippo.ehviewer.util.ensureSuccess
 import eu.kanade.tachiyomi.util.system.logcat
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.HttpStatement
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.pool.DirectByteBufferPool
 import io.ktor.utils.io.pool.useInstance
 import io.ktor.utils.io.readAvailable
@@ -99,9 +100,11 @@ fun Either<String, ByteBuffer>.saveParseError(e: Throwable) {
     }
 }
 
-fun rethrowExactly(status: HttpStatusCode, body: Either<String, ByteBuffer>, e: Throwable): Nothing {
+fun rethrowExactly(response: HttpResponse, body: Either<String, ByteBuffer>, e: Throwable): Nothing {
     // Don't translate coroutine cancellation
     if (e is CancellationException) throw e
+
+    if (response.headers["cf-mitigated"] == "challenge") throw CloudflareBypassException()
 
     // Check sad panda (without panda)
     val empty = body.fold(
@@ -127,7 +130,7 @@ fun rethrowExactly(status: HttpStatusCode, body: Either<String, ByteBuffer>, e: 
     }
 
     // Check bad response code
-    status.ensureSuccess()
+    response.status.ensureSuccess()
 
     if (e is ParseException || e is SerializationException) {
         body.onLeft { if ("<" !in it) throw EhException(it) }
@@ -152,7 +155,7 @@ suspend inline fun <T> HttpStatement.fetchUsingAsText(crossinline block: suspend
     runSuspendCatching {
         block(body)
     }.onFailure {
-        rethrowExactly(response.status, body.left(), it)
+        rethrowExactly(response, body.left(), it)
     }.getOrThrow()
 }
 
@@ -164,7 +167,7 @@ suspend inline fun <T> HttpStatement.fetchUsingAsByteBuffer(crossinline block: s
             block(buffer)
         }.onFailure {
             buffer.rewind()
-            rethrowExactly(response.status, buffer.right(), it)
+            rethrowExactly(response, buffer.right(), it)
         }.getOrThrow()
     }
 }
