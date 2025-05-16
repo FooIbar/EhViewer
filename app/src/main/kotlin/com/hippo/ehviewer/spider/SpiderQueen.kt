@@ -152,6 +152,14 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
     }
 
+    private fun notifyPageReady(index: Int) {
+        synchronized(mSpiderListeners) {
+            mSpiderListeners.forEach {
+                it.onPageReady(index)
+            }
+        }
+    }
+
     private var downloadMode = false
 
     private val isReady
@@ -440,6 +448,7 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) {}
         fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) {}
         fun onFinish(finished: Int, downloaded: Int, total: Int) {}
+        fun onPageReady(index: Int) {}
     }
 
     companion object {
@@ -492,11 +501,6 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         }
 
         fun updateRAList(list: List<Int>, aliveBound: IntRange = 0..Int.MAX_VALUE) {
-            val absent = list.filterNot { index ->
-                (pageStates[index] == STATE_FINISHED).also { finished ->
-                    if (finished) notifyPageSuccess(index)
-                }
-            }
             if (isDownloadMode) return
             synchronized(jobs) {
                 jobs.forEach { (i, job) ->
@@ -504,8 +508,8 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
                         job.cancel()
                     }
                 }
-                absent.forEach {
-                    if (jobs[it]?.isActive != true) {
+                list.forEach {
+                    if (pageStates[it] != STATE_FINISHED && jobs[it]?.isActive != true) {
                         doLaunchDownloadJob(it, false)
                     }
                 }
@@ -541,9 +545,13 @@ class SpiderQueen private constructor(val galleryInfo: GalleryInfo) : CoroutineS
         fun launch(index: Int, force: Boolean = false, orgImg: Boolean) {
             check(index in 0 until size)
             val state = pageStates[index]
-            if (!force && state == STATE_FINISHED) return notifyPageSuccess(index)
+            if (!force && state == STATE_FINISHED) return notifyPageReady(index)
             if (!isDownloadMode) {
                 synchronized(jobs) { doLaunchDownloadJob(index, force, orgImg) }
+            }
+            launch {
+                jobs[index]?.join()
+                if (pageStates[index] == STATE_FINISHED) notifyPageReady(index)
             }
         }
 

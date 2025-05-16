@@ -12,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,11 +60,16 @@ fun PagerItem(
 ) {
     LaunchedEffect(Unit) {
         pageLoader.request(page.index)
-        // In case pageloader restart
+        // In case page loader restart
         page.statusFlow.drop(1).collect {
             if (page.statusFlow.value == PageStatus.Queued) {
                 pageLoader.request(page.index)
             }
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            pageLoader.cancelRequest(page.index)
         }
     }
     val defaultError = stringResource(id = R.string.decode_image_error)

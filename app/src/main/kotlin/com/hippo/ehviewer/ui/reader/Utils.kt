@@ -123,4 +123,6 @@ suspend fun LazyListState.scrollDown() {
 }
 
 private val LazyListState.scrollDistance
-    get() = layoutInfo.viewportSize.height * 0.75f
+    get() = layoutInfo.viewportSize.height * SCROLL_FRACTION
+
+const val SCROLL_FRACTION = 0.75f

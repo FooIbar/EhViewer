@@ -78,7 +78,7 @@ suspend inline fun <T> useArchivePageLoader(
                     return byteBufferSource(buffer) { releaseByteBuffer(buffer) }
                 }
 
-                override fun prefetchPages(pages: List<Int>, bounds: IntRange) = pages.forEach(::notifySourceReady)
+                override fun prefetchPages(pages: List<Int>, bounds: IntRange) = Unit
 
                 override fun onRequest(index: Int, force: Boolean, orgImg: Boolean) = notifySourceReady(index)
             },
