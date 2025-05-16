@@ -79,7 +79,6 @@ import com.hippo.ehviewer.ui.main.GalleryInfoGridItem
 import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.startDownload
-import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.asyncState
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
@@ -191,7 +190,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
         val localFavCount by localFavCountFlow.collectAsState(0)
         TopAppBar(
             title = { Text(text = stringResource(id = R.string.collections)) },
-            windowInsets = EmptyWindowInsets,
+            windowInsets = WindowInsets(),
             colors = topBarOnDrawerColor(),
         )
         val scope = currentRecomposeScope

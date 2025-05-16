@@ -111,7 +111,6 @@ import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.main.SearchFilter
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
-import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.FastScrollLazyColumn
 import com.hippo.ehviewer.ui.tools.HapticFeedbackType
 import com.hippo.ehviewer.ui.tools.asyncState
@@ -252,7 +251,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         ProvideSideSheetContent { sheetState ->
             TopAppBar(
                 title = { Text(text = stringResource(id = R.string.toplist)) },
-                windowInsets = EmptyWindowInsets,
+                windowInsets = WindowInsets(),
                 colors = topBarOnDrawerColor(),
             )
             toplists.forEach { (name, keyword) ->
@@ -343,7 +342,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                         )
                     }
                 },
-                windowInsets = EmptyWindowInsets,
+                windowInsets = WindowInsets(),
             )
             Box(modifier = Modifier.fillMaxSize()) {
                 val dialogState by rememberUpdatedState(implicit<DialogState>())

@@ -18,13 +18,13 @@ package androidx.compose.material3.fork
 
 import androidx.annotation.FloatRange
 import androidx.compose.animation.core.SpringSpec
+import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredHorizontalDraggable
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.gestures.draggableAnchors
-import androidx.compose.foundation.gestures.flingBehavior
 import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -186,7 +186,7 @@ fun SwipeToDismissBox(
                 enableDragFromStartToEnd = enableDismissFromStartToEnd,
                 enableDragFromEndToStart = enableDismissFromEndToStart,
                 enabled = gesturesEnabled && state.currentValue == SwipeToDismissBoxValue.Settled,
-                flingBehavior = flingBehavior(
+                flingBehavior = AnchoredDraggableDefaults.flingBehavior(
                     state = state.anchoredDraggableState,
                     positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold,
                     animationSpec = SnapAnimationSpec,

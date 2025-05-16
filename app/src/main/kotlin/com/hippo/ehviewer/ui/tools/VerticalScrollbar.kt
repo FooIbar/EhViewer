@@ -30,7 +30,7 @@ fun VerticalScrollbar(
     adapter: ScrollbarAdapter,
     isScrollInProgress: Boolean,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues.Zero,
     reverseLayout: Boolean = false,
 ) {
     val isScrolling by rememberUpdatedState(isScrollInProgress)

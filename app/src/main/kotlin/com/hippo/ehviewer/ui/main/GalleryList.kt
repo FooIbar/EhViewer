@@ -84,7 +84,7 @@ fun GalleryList(
     modifier: Modifier = Modifier,
     data: LazyPagingItems<BaseGalleryInfo>,
     contentModifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues.Zero,
     listMode: Int,
     detailListState: LazyGridState = rememberLazyGridState(),
     detailItemContent: @Composable (LazyGridItemScope.(BaseGalleryInfo) -> Unit),

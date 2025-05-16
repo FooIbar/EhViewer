@@ -16,16 +16,8 @@
 
 package androidx.compose.foundation.gestures
 
-import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.DecayAnimationSpec
-import androidx.compose.animation.core.FloatDecayAnimationSpec
-import androidx.compose.animation.core.generateDecayAnimationSpec
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.HorizontalDragEvent.DragDelta
-import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
-import androidx.compose.foundation.gestures.snapping.snapFlingBehavior
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerInputChange
@@ -35,23 +27,15 @@ import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
-import androidx.compose.ui.node.ObserverModifierNode
-import androidx.compose.ui.node.currentValueOf
-import androidx.compose.ui.node.observeReads
 import androidx.compose.ui.node.requireLayoutDirection
 import androidx.compose.ui.platform.InspectorInfo
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
-import androidx.compose.ui.unit.dp
-import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
-import kotlin.math.sign
 import kotlinx.coroutines.launch
 
 @ExperimentalFoundationApi
@@ -61,7 +45,7 @@ fun <T> Modifier.anchoredHorizontalDraggable(
     enableDragFromEndToStart: Boolean = true,
     enabled: Boolean = true,
     startDragImmediately: Boolean = state.isAnimationRunning,
-    flingBehavior: FlingBehavior? = null,
+    flingBehavior: FlingBehavior,
 ): Modifier = this then AnchoredHorizontalDraggableElement(
     state = state,
     canDrag = { (x, y) ->
@@ -78,7 +62,7 @@ private class AnchoredHorizontalDraggableElement<T>(
     private val canDrag: (Offset) -> Boolean,
     private val enabled: Boolean,
     private val startDragImmediately: Boolean,
-    private val flingBehavior: FlingBehavior?,
+    private val flingBehavior: FlingBehavior,
 ) : ModifierNodeElement<AnchoredHorizontalDraggableNode<T>>() {
     override fun create() = AnchoredHorizontalDraggableNode(
         state,
@@ -136,44 +120,11 @@ private class AnchoredHorizontalDraggableNode<T>(
     private var canDrag: (Offset) -> Boolean,
     enabled: Boolean,
     private var startDragImmediately: Boolean,
-    private var flingBehavior: FlingBehavior?,
-) : HorizontalDragGestureNode(enabled = enabled),
-    ObserverModifierNode {
-
-    lateinit var resolvedFlingBehavior: FlingBehavior
-    lateinit var density: Density
+    private var flingBehavior: FlingBehavior,
+) : HorizontalDragGestureNode(enabled = enabled) {
 
     private val isReverseDirection: Boolean
         get() = requireLayoutDirection() == LayoutDirection.Rtl
-
-    override fun onAttach() {
-        updateFlingBehavior(flingBehavior)
-    }
-
-    override fun onObservedReadsChanged() {
-        val newDensity = currentValueOf(LocalDensity)
-        if (density != newDensity) {
-            density = newDensity
-            updateFlingBehavior(flingBehavior)
-        }
-    }
-
-    private fun updateFlingBehavior(newFlingBehavior: FlingBehavior?) {
-        // Fall back to default fling behavior if the new fling behavior is null
-        this.resolvedFlingBehavior =
-            if (newFlingBehavior == null) {
-                // Only register for LocalDensity snapshot updates if we are creating a decay
-                observeReads { density = currentValueOf(LocalDensity) }
-                anchoredDraggableFlingBehavior(
-                    snapAnimationSpec = AnchoredDraggableDefaults.SnapAnimationSpec,
-                    positionalThreshold = AnchoredDraggableDefaults.PositionalThreshold,
-                    density = density,
-                    state = state,
-                )
-            } else {
-                newFlingBehavior
-            }
-    }
 
     override fun canDrag(change: PointerInputChange): Boolean = canDrag(change.positionChange().reverseIfNeeded())
 
@@ -206,7 +157,7 @@ private class AnchoredHorizontalDraggableNode<T>(
                         return consumed
                     }
                 }
-            with(resolvedFlingBehavior) {
+            with(flingBehavior) {
                 leftoverVelocity = scrollScope.performFling(velocity)
             }
         }
@@ -220,7 +171,7 @@ private class AnchoredHorizontalDraggableNode<T>(
         canDrag: (Offset) -> Boolean,
         enabled: Boolean,
         startDragImmediately: Boolean,
-        flingBehavior: FlingBehavior?,
+        flingBehavior: FlingBehavior,
     ) {
         this.flingBehavior = flingBehavior
 
@@ -228,7 +179,6 @@ private class AnchoredHorizontalDraggableNode<T>(
 
         if (this.state != state) {
             this.state = state
-            updateFlingBehavior(flingBehavior)
             resetPointerInputHandling = true
         }
 
@@ -247,132 +197,6 @@ private class AnchoredHorizontalDraggableNode<T>(
 
 internal fun <T> AnchoredDraggableState<T>.newOffsetForDelta(delta: Float) = ((if (offset.isNaN()) 0f else offset) + delta)
     .coerceIn(anchors.minPosition(), anchors.maxPosition())
-
-/**
- * Compute the target anchor based on the [currentOffset], [velocity] and [positionalThreshold] and
- * [velocityThreshold].
- *
- * @return The suggested target anchor
- */
-@ExperimentalFoundationApi
-private fun <T> DraggableAnchors<T>.computeTarget(
-    currentOffset: Float,
-    velocity: Float,
-    positionalThreshold: (totalDistance: Float) -> Float,
-    velocityThreshold: () -> Float,
-): T {
-    val currentAnchors = this
-    require(!currentOffset.isNaN()) { "The offset provided to computeTarget must not be NaN." }
-    val velocitySign = sign(velocity)
-    val isMovingForward = velocitySign == 1.0f
-    val isMoving = isMovingForward || velocitySign == -1.0f
-    // When we're not moving, just pick the closest anchor and don't consider directionality
-    return if (!isMoving) {
-        currentAnchors.closestAnchor(currentOffset)!!
-    } else if (abs(velocity) >= abs(velocityThreshold())) {
-        currentAnchors.closestAnchor(currentOffset, searchUpwards = isMovingForward)!!
-    } else {
-        val left = currentAnchors.closestAnchor(currentOffset, false)!!
-        val leftAnchorPosition = currentAnchors.positionOf(left)
-        val right = currentAnchors.closestAnchor(currentOffset, true)!!
-        val rightAnchorPosition = currentAnchors.positionOf(right)
-        val distance = abs(leftAnchorPosition - rightAnchorPosition)
-        val relativeThreshold = abs(positionalThreshold(distance))
-        val closestAnchorFromStart =
-            if (isMovingForward) leftAnchorPosition else rightAnchorPosition
-        val relativePosition = abs(closestAnchorFromStart - currentOffset)
-        if (relativePosition <= relativeThreshold) left else right
-    }
-}
-
-// https://issuetracker.google.com/374241709
-@Composable
-fun <T> flingBehavior(
-    state: AnchoredDraggableState<T>,
-    positionalThreshold: (totalDistance: Float) -> Float = AnchoredDraggableDefaults.PositionalThreshold,
-    animationSpec: AnimationSpec<Float> = AnchoredDraggableDefaults.SnapAnimationSpec,
-): TargetedFlingBehavior {
-    val density = LocalDensity.current
-    return remember(density, state, positionalThreshold, animationSpec) {
-        anchoredDraggableFlingBehavior(
-            state = state,
-            density = density,
-            positionalThreshold = positionalThreshold,
-            snapAnimationSpec = animationSpec,
-        )
-    }
-}
-
-/**
- * Construct a [FlingBehavior] for use with [Modifier.anchoredDraggable].
- *
- * @param state The [AnchoredDraggableState] that will be used for the fling animation
- * @param positionalThreshold A positional threshold that needs to be crossed in order to reach the
- *   next anchor when flinging, in pixels. This can be a derived from the distance that the lambda
- *   is invoked with.
- * @param snapAnimationSpec The animation spec that will be used to snap to a new state.
- */
-@ExperimentalFoundationApi
-internal fun <T> anchoredDraggableFlingBehavior(
-    state: AnchoredDraggableState<T>,
-    density: Density,
-    positionalThreshold: (totalDistance: Float) -> Float,
-    snapAnimationSpec: AnimationSpec<Float>,
-): TargetedFlingBehavior = snapFlingBehavior(
-    decayAnimationSpec = NoOpDecayAnimationSpec,
-    snapAnimationSpec = snapAnimationSpec,
-    snapLayoutInfoProvider =
-    AnchoredDraggableLayoutInfoProvider(
-        state = state,
-        positionalThreshold = positionalThreshold,
-        velocityThreshold = { with(density) { 125.dp.toPx() } },
-    ),
-)
-
-@Suppress("FunctionName")
-@OptIn(ExperimentalFoundationApi::class)
-private fun <T> AnchoredDraggableLayoutInfoProvider(
-    state: AnchoredDraggableState<T>,
-    positionalThreshold: (totalDistance: Float) -> Float,
-    velocityThreshold: () -> Float,
-): SnapLayoutInfoProvider = object : SnapLayoutInfoProvider {
-
-    // We never decay in AnchoredDraggable's fling
-    override fun calculateApproachOffset(velocity: Float, decayOffset: Float) = 0f
-
-    override fun calculateSnapOffset(velocity: Float): Float {
-        val currentOffset = state.requireOffset()
-        val target =
-            state.anchors.computeTarget(
-                currentOffset = currentOffset,
-                velocity = velocity,
-                positionalThreshold = positionalThreshold,
-                velocityThreshold = velocityThreshold,
-            )
-        return state.anchors.positionOf(target) - currentOffset
-    }
-}
-
-private val NoOpDecayAnimationSpec: DecayAnimationSpec<Float> =
-    object : FloatDecayAnimationSpec {
-        override val absVelocityThreshold = 0f
-
-        override fun getValueFromNanos(
-            playTimeNanos: Long,
-            initialValue: Float,
-            initialVelocity: Float,
-        ) = 0f
-
-        override fun getDurationNanos(initialValue: Float, initialVelocity: Float) = 0L
-
-        override fun getVelocityFromNanos(
-            playTimeNanos: Long,
-            initialValue: Float,
-            initialVelocity: Float,
-        ) = 0f
-
-        override fun getTargetValue(initialValue: Float, initialVelocity: Float) = 0f
-    }.generateDecayAnimationSpec()
 
 /**
  * This Modifier allows configuring an [AnchoredDraggableState]'s anchors based on this layout

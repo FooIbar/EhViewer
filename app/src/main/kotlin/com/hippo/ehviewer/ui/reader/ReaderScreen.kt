@@ -49,6 +49,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.keepScreenOn
 import androidx.compose.ui.res.colorResource
 import androidx.core.view.WindowInsetsControllerCompat
 import arrow.core.Either
@@ -75,8 +76,8 @@ import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
-import com.hippo.ehviewer.ui.tools.EmptyWindowInsets
 import com.hippo.ehviewer.ui.tools.asyncInVM
+import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.hasAds
 import com.hippo.files.toOkioPath
@@ -176,7 +177,6 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
 context(MainActivity, SnackbarHostState, DialogState, CoroutineScope)
 @Composable
 fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
-    ConfigureKeepScreenOn()
     LaunchedEffect(Unit) {
         val orientation = requestedOrientation
         Settings.orientationMode.valueFlow()
@@ -195,6 +195,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
     val reverseControls by Settings.readerReverseControls.collectAsState()
     val fullscreen by Settings.fullscreen.collectAsState()
     val cutoutShort by Settings.cutoutShort.collectAsState()
+    val keepScreenOn by Settings.keepScreenOn.collectAsState()
     val uiController = rememberSystemUiController()
     DisposableEffect(uiController) {
         uiController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -223,7 +224,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
                     if (isWebtoon) lazyListState.scrollDown() else pagerState.moveToNext()
                 }
             },
-        ).focusRequester(focusRequester).focusable(),
+        ).focusRequester(focusRequester).focusable().thenIf(keepScreenOn) { keepScreenOn() },
     ) {
         LaunchedEffect(Unit) {
             focusRequester.requestFocus()
@@ -256,7 +257,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
                             onDismissRequest = { dispose() },
                             modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)),
                             sheetState = state,
-                            contentWindowInsets = { EmptyWindowInsets },
+                            contentWindowInsets = { WindowInsets() },
                         ) {
                             ReaderPageSheetMeta(
                                 retry = { pageLoader.retryPage(page.index) },
@@ -276,7 +277,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
         EhTheme(useDarkTheme = bgColor != Color.White) {
             val insets = if (fullscreen) {
                 if (cutoutShort) {
-                    EmptyWindowInsets
+                    WindowInsets()
                 } else {
                     WindowInsets.displayCutout
                 }
@@ -360,7 +361,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
                             // Yeah, I know color state should not be read here, but we have to do it...
                             scrimColor = scrim,
                             dragHandle = null,
-                            contentWindowInsets = { EmptyWindowInsets },
+                            contentWindowInsets = { WindowInsets() },
                         ) {
                             SettingsPager(modifier = Modifier.fillMaxSize()) { page ->
                                 isColorFilter = page == 2
