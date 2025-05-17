@@ -223,7 +223,7 @@ fun GalleryList(
             }
         }
 
-        PullToRefreshDefaults.Indicator(
+        PullToRefreshDefaults.LoadingIndicator(
             state = refreshState,
             isRefreshing = isRefreshing,
             modifier = Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding())
