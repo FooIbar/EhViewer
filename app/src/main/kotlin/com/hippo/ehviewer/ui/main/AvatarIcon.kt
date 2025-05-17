@@ -16,10 +16,10 @@ import androidx.compose.material.icons.filled.NoAccounts
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -103,7 +103,7 @@ fun AvatarIcon() {
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                             ) {
-                                CircularProgressIndicator()
+                                CircularWavyProgressIndicator()
                                 Spacer(modifier = Modifier.size(dimensionResource(id = R.dimen.keyline_margin)))
                                 Text(text = placeholder)
                             }
@@ -116,7 +116,7 @@ fun AvatarIcon() {
                                         val (limits, funds) = current.value
                                         if (limits.maximum > 0) {
                                             val value by animateFloatAsState(limits.current.toFloat() / limits.maximum)
-                                            LinearProgressIndicator(
+                                            LinearWavyProgressIndicator(
                                                 progress = { value },
                                                 modifier = Modifier.height(12.dp).fillMaxWidth(),
                                             )

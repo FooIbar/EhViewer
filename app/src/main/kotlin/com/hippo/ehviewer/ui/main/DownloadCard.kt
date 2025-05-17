@@ -14,7 +14,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.ShapeDefaults
@@ -182,9 +182,9 @@ fun DownloadCard(
                 }
                 ProvideTextStyle(MaterialTheme.typography.labelMedium) {
                     if (total <= 0 || finished < 0) {
-                        LinearProgressIndicator(modifier = Modifier.layoutId(progressBarRef))
+                        LinearWavyProgressIndicator(modifier = Modifier.layoutId(progressBarRef))
                     } else {
-                        LinearProgressIndicator(
+                        LinearWavyProgressIndicator(
                             progress = { finished.toFloat() / total.toFloat() },
                             modifier = Modifier.layoutId(progressBarRef),
                         )
