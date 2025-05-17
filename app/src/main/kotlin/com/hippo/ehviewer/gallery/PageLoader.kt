@@ -1,6 +1,7 @@
 package com.hippo.ehviewer.gallery
 
 import androidx.collection.SieveCache
+import androidx.collection.mutableIntObjectMapOf
 import arrow.fx.coroutines.ExitCase
 import arrow.fx.coroutines.bracketCase
 import com.hippo.ehviewer.EhDB
@@ -12,12 +13,15 @@ import com.hippo.ehviewer.util.OSUtils
 import com.hippo.ehviewer.util.detectAds
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.isAtLeastO
+import eu.kanade.tachiyomi.util.lang.withNonCancellableContext
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.read
 import kotlin.concurrent.write
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,6 +38,7 @@ private const val MIN_CACHE_SIZE = 256 * 1024 * 1024
 abstract class PageLoader(val scope: CoroutineScope, val gid: Long, startPage: Int, val size: Int, val hasAds: Boolean = false) : AutoCloseable {
     var startPage = startPage.coerceIn(0, size - 1)
 
+    private val jobs = mutableIntObjectMapOf<Job>()
     private val mutex = NamedMutex<Int>()
     private val semaphore = Semaphore(4)
 
@@ -47,24 +52,16 @@ abstract class PageLoader(val scope: CoroutineScope, val gid: Long, startPage: I
         onEntryRemoved = { k, o, n, _ -> if (o.unpin()) n ?: notifyPageWait(k) },
     )
 
-    fun decodePreloadRange(index: Int) = index - 3..index + 3
-
-    fun needDecode(index: Int) = index in decodePreloadRange(prevIndex.load()) &&
-        lock.read { index !in cache } &&
-        pages[index].status !is PageStatus.Ready &&
-        pages[index].status !is PageStatus.Blocked
-
-    suspend fun atomicallyDecodeAndUpdate(index: Int) {
-        if (!needDecode(index)) return
-        try {
-            bracketCase(
-                { openSource(index) },
-                { src -> notifyPageSucceed(index, Image.decode(src, hasAds && detectAds(index, size))) },
-                { src, case -> if (case !is ExitCase.Completed) src.close() },
-            )
-        } catch (e: Throwable) {
-            notifyPageFailed(index, e.displayString())
-        }
+    private suspend fun atomicallyDecodeAndUpdate(index: Int) {
+        bracketCase(
+            { openSource(index) },
+            { src ->
+                withNonCancellableContext {
+                    notifyPageSucceed(index, Image.decode(src, hasAds && detectAds(index, size)))
+                }
+            },
+            { src, case -> if (case !is ExitCase.Completed) src.close() },
+        )
     }
 
     private val lock = ReentrantReadWriteLock()
@@ -156,14 +153,27 @@ abstract class PageLoader(val scope: CoroutineScope, val gid: Long, startPage: I
         prefetchPages(pagesAbsent, start - 5..end + 5)
     }
 
+    fun cancelRequest(index: Int) {
+        jobs[index]?.cancel()
+    }
+
     abstract fun save(index: Int, file: Path): Boolean
 
-    fun notifySourceReady(index: Int) {
-        if (needDecode(index)) {
-            scope.launch {
-                mutex.withLock(index) {
-                    semaphore.withPermit {
-                        atomicallyDecodeAndUpdate(index)
+    fun notifySourceReady(index: Int) = synchronized(jobs) {
+        if (jobs[index]?.isActive != true) {
+            jobs[index] = scope.launch {
+                try {
+                    mutex.withLock(index) {
+                        semaphore.withPermit {
+                            atomicallyDecodeAndUpdate(index)
+                        }
+                    }
+                } catch (e: Throwable) {
+                    if (e is CancellationException) {
+                        notifyPageFailed(index, null)
+                        throw e
+                    } else {
+                        notifyPageFailed(index, e.displayString())
                     }
                 }
             }

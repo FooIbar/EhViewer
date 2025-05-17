@@ -45,7 +45,7 @@ suspend inline fun <T> useEhPageLoader(
                     }
                 }
 
-                override fun onPageSuccess(index: Int, finished: Int, downloaded: Int, total: Int) = notifySourceReady(index)
+                override fun onPageReady(index: Int) = notifySourceReady(index)
 
                 override fun onPageFailure(index: Int, error: String?, finished: Int, downloaded: Int, total: Int) = notifyPageFailed(index, error)
             }

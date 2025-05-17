@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.layout.LazyLayoutCacheWindow
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.BottomSheetDefaults
@@ -204,7 +205,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
             uiController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
         }
     }
-    val lazyListState = rememberLazyListState(pageLoader.startPage)
+    val lazyListState = rememberLazyListState(LazyLayoutCacheWindow(SCROLL_FRACTION, SCROLL_FRACTION), pageLoader.startPage)
     val pagerState = rememberPagerState(pageLoader.startPage) { pageLoader.size }
     val syncState = rememberSliderPagerDoubleSyncState(lazyListState, pagerState, pageLoader)
     var appbarVisible by remember { mutableStateOf(false) }
