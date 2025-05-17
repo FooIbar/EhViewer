@@ -2,7 +2,7 @@ package com.hippo.ehviewer.ui.main
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,7 +19,7 @@ fun LoadStateIndicator(
     retry: () -> Unit,
 ) = when (state) {
     is LoadState.Loading -> {
-        LinearProgressIndicator(modifier = modifier)
+        LinearWavyProgressIndicator(modifier = modifier)
     }
 
     is LoadState.Error -> {
