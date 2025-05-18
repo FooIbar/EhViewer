@@ -9,13 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.NewLabel
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AppBarRow
 import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -57,6 +58,8 @@ import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
+import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
+import com.hippo.ehviewer.ui.tools.isExpanded
 import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.util.AppHelper
@@ -154,9 +157,18 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
     }
 
     val signInFirst = stringResource(R.string.sign_in_first)
+    val addTag = stringResource(id = R.string.action_add_tag)
+    val refresh = stringResource(id = R.string.refresh)
+    val clearCache = stringResource(id = R.string.clear_image_cache)
+    val cacheCleared = stringResource(R.string.image_cache_cleared)
+    val openInBrowser = stringResource(id = R.string.open_in_other_app)
+    val exportArchive = stringResource(id = R.string.export_as_archive)
+    val exportSuccess = stringResource(id = R.string.export_as_archive_success)
+    val exportFailed = stringResource(id = R.string.export_as_archive_failed)
+    val windowSizeClass = LocalWindowSizeClass.current
     Scaffold(
         topBar = {
-            LargeTopAppBar(
+            MediumFlexibleTopAppBar(
                 title = {
                     galleryInfo?.let {
                         Text(
@@ -176,34 +188,28 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 },
                 scrollBehavior = scrollBehavior,
                 actions = {
-                    IconButton(
-                        onClick = {
-                            AppHelper.share(implicit<MainActivity>(), galleryDetailUrl)
-                            // In case the link is copied to the clipboard
-                            Settings.clipboardTextHashCode = galleryDetailUrl.hashCode()
+                    AppBarRow(
+                        overflowIndicator = {
+                            IconButton(onClick = { it.show() }) {
+                                Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
+                            }
                         },
+                        maxItemCount = if (windowSizeClass.isExpanded) 4 else 2,
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = null,
-                        )
-                    }
-                    var dropdown by rememberSaveable { mutableStateOf(false) }
-                    IconButton(onClick = { dropdown = !dropdown }) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = null,
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = dropdown,
-                        onDismissRequest = { dropdown = false },
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.action_add_tag)) },
+                        clickableItem(
                             onClick = {
-                                dropdown = false
-                                val detail = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
+                                AppHelper.share(implicit<MainActivity>(), galleryDetailUrl)
+                                // In case the link is copied to the clipboard
+                                Settings.clipboardTextHashCode = galleryDetailUrl.hashCode()
+                            },
+                            icon = {
+                                Icon(imageVector = Icons.Default.Share, contentDescription = null)
+                            },
+                            label = "",
+                        )
+                        clickableItem(
+                            onClick = {
+                                val detail = galleryInfo as? GalleryDetail ?: return@clickableItem
                                 launchIO {
                                     if (detail.apiUid < 0) {
                                         showSnackbar(signInFirst)
@@ -216,11 +222,13 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                     }
                                 }
                             },
+                            icon = {
+                                Icon(imageVector = Icons.Default.NewLabel, contentDescription = null)
+                            },
+                            label = addTag,
                         )
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.refresh)) },
+                        clickableItem(
                             onClick = {
-                                dropdown = false
                                 // Invalidate cache
                                 detailCache.remove(gid)
 
@@ -228,13 +236,14 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                 galleryInfo = galleryInfo?.findBaseInfo()
                                 getDetailError = ""
                             },
+                            icon = {
+                                Icon(imageVector = Icons.Default.Refresh, contentDescription = null)
+                            },
+                            label = refresh,
                         )
-                        val imageCacheClear = stringResource(R.string.image_cache_cleared)
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.clear_image_cache)) },
+                        clickableItem(
                             onClick = {
-                                dropdown = false
-                                val gd = galleryInfo as? GalleryDetail ?: return@DropdownMenuItem
+                                val gd = galleryInfo as? GalleryDetail ?: return@clickableItem
                                 launchIO {
                                     awaitConfirmationOrCancel(
                                         confirmText = R.string.clear_all,
@@ -246,23 +255,21 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                         val key = getImageKey(gd.gid, it)
                                         imageCache.remove(key)
                                     }
-                                    showSnackbar(imageCacheClear)
+                                    showSnackbar(cacheCleared)
                                 }
                             },
+                            icon = {},
+                            label = clearCache,
                         )
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.open_in_other_app)) },
+                        clickableItem(
                             onClick = {
-                                dropdown = false
                                 openBrowser(galleryDetailUrl)
                             },
+                            icon = {},
+                            label = openInBrowser,
                         )
-                        val exportSuccess = stringResource(id = R.string.export_as_archive_success)
-                        val exportFailed = stringResource(id = R.string.export_as_archive_failed)
-                        DropdownMenuItem(
-                            text = { Text(text = stringResource(id = R.string.export_as_archive)) },
+                        clickableItem(
                             onClick = {
-                                dropdown = false
                                 launchIO {
                                     val downloadInfo = DownloadManager.getDownloadInfo(gid)
                                     val canExport = downloadInfo?.state == DownloadInfo.STATE_FINISH
@@ -297,6 +304,8 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                     }
                                 }
                             },
+                            icon = {},
+                            label = exportArchive,
                         )
                     }
                 },
