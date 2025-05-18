@@ -23,7 +23,10 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -177,8 +180,13 @@ fun DownloadCard(
                     )
                 }
             } else {
-                val (total, finished, speed) = DownloadManager.updatedDownloadInfo(info) {
-                    Triple(total, finished, speed)
+                var total by remember { mutableIntStateOf(info.total) }
+                var finished by remember { mutableIntStateOf(info.finished) }
+                var speed by remember { mutableLongStateOf(info.speed) }
+                DownloadManager.updatedDownloadInfo(info) {
+                    total = this.total
+                    finished = this.finished
+                    speed = this.speed
                 }
                 ProvideTextStyle(MaterialTheme.typography.labelMedium) {
                     if (total <= 0 || finished < 0) {
