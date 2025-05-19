@@ -34,6 +34,8 @@ import coil3.request.SuccessResult
 import coil3.request.allowHardware
 import coil3.size.Dimension
 import coil3.size.Precision
+import coil3.size.Size
+import coil3.size.SizeResolver
 import com.hippo.ehviewer.Settings
 import com.hippo.ehviewer.coil.BitmapImageWithExtraInfo
 import com.hippo.ehviewer.coil.detectQrCode
@@ -85,12 +87,13 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
 
     companion object {
         private val targetWidth = appCtx.resources.displayMetrics.widthPixels * 3
+        private val sizeResolver = SizeResolver(Size(targetWidth, Dimension.Undefined))
 
         private suspend fun Either<ByteBufferSource, PathSource>.decodeCoil(checkExtraneousAds: Boolean): CoilImage {
             val request = appCtx.imageRequest {
                 onLeft { data(it.source) }
                 onRight { data(it.source.toUri()) }
-                size(Dimension(targetWidth), Dimension.Undefined)
+                size(sizeResolver)
                 precision(Precision.INEXACT)
                 allowHardware(false)
                 hardwareThreshold(Settings.hardwareBitmapThreshold)

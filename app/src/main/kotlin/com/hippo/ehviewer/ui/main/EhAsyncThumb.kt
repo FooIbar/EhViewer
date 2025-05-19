@@ -17,9 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil3.compose.AsyncImagePainter
-import coil3.compose.ConstraintsSizeResolver
 import coil3.compose.rememberAsyncImagePainter
-import coil3.compose.rememberConstraintsSizeResolver
 import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
@@ -33,25 +31,7 @@ import com.hippo.ehviewer.ui.tools.thenIf
 @NonRestartableComposable
 fun requestOf(model: GalleryInfo): ImageRequest {
     val context = LocalContext.current
-    return remember(model) { context.imageRequest(model) }.withSizeResolver()
-}
-
-@Composable
-@NonRestartableComposable
-fun ImageRequest.withSizeResolver() = if (defined.sizeResolver != null) {
-    this
-} else {
-    val sizeResolver = rememberConstraintsSizeResolver()
-    remember(this, sizeResolver) { newBuilder().size(sizeResolver).build() }
-}
-
-fun Modifier.imageRequest(request: ImageRequest): Modifier {
-    val sizeResolver = request.sizeResolver
-    return if (sizeResolver is ConstraintsSizeResolver) {
-        then(sizeResolver)
-    } else {
-        this
-    }
+    return remember(model) { context.imageRequest(model) }
 }
 
 context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
@@ -73,7 +53,7 @@ fun EhAsyncCropThumb(
             },
         ),
         contentDescription = null,
-        modifier = modifier.imageRequest(request),
+        modifier = modifier,
         contentScale = contentScale,
     )
 }
@@ -102,7 +82,7 @@ fun EhThumbCard(
             modifier = Modifier.thenIf(state !is AsyncImagePainter.State.Success) {
                 // Keep applying this when state is `Loading` to avoid cutting off the ripple
                 clickable { if (state is AsyncImagePainter.State.Error) painter.restart() }
-            }.imageRequest(request).fillMaxSize(),
+            }.fillMaxSize(),
             contentScale = contentScale,
         )
     }

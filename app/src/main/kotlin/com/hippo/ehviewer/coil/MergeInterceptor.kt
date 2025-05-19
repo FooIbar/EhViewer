@@ -55,7 +55,9 @@ object MergeInterceptor : Interceptor {
             val cached = req.context.imageLoader.memoryCache!![cacheKey] != null
             val result = TightRopeTracker.use(key) { sendAndAwait { chain.proceed() } }
             when (result) {
-                is SuccessResult if !cached -> result.copy(dataSource = DataSource.MEMORY)
+                is SuccessResult if !cached && result.dataSource == DataSource.MEMORY_CACHE -> {
+                    result.copy(dataSource = DataSource.MEMORY)
+                }
                 else -> result
             }
         } else {
