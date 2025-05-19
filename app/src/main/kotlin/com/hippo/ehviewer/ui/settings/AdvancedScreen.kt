@@ -120,10 +120,12 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                     }
                 }
             }
-            SwitchPreference(
+            var saveCrashLog by Settings.saveCrashLog.asMutableState()
+            SwitchPref(
+                checked = saveCrashLog,
+                onMutate = { saveCrashLog = !saveCrashLog },
                 title = stringResource(id = R.string.settings_advanced_save_crash_log),
                 summary = stringResource(id = R.string.settings_advanced_save_crash_log_summary),
-                value = Settings::saveCrashLog,
             )
             val dumpLogError = stringResource(id = R.string.settings_advanced_dump_logcat_failed)
             LauncherPreference(

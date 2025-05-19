@@ -100,8 +100,13 @@ class EhApplication :
                     AppCompatDelegate.setDefaultNightMode(mode)
                 }
             }
-            if (!LogcatLogger.isInstalled && Settings.saveCrashLog) {
-                LogcatLogger.install(AndroidLogcatLogger(LogPriority.VERBOSE))
+            LogcatLogger.loggers += AndroidLogcatLogger(LogPriority.VERBOSE)
+            Settings.saveCrashLog.valueFlow().collect {
+                if (it) {
+                    LogcatLogger.install()
+                } else {
+                    LogcatLogger.uninstall()
+                }
             }
         }
         lifecycle.addObserver(lockObserver)
