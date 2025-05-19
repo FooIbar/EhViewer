@@ -34,7 +34,7 @@ import com.hippo.ehviewer.ui.tools.shouldCrop
 @NonRestartableComposable
 fun requestOf(model: GalleryPreview): ImageRequest {
     val context = LocalContext.current
-    return remember(model) { context.imageRequest(model) }.withSizeResolver()
+    return remember(model) { context.imageRequest(model) }
 }
 
 @Composable
@@ -88,7 +88,7 @@ fun EhPreviewCard(
         Image(
             painter = painter,
             contentDescription = null,
-            modifier = Modifier.imageRequest(request).fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentScale = contentScale,
         )
     }
