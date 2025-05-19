@@ -19,7 +19,7 @@ object CrashHandler {
     fun install() {
         val handler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
-            if (Settings.saveCrashLog) {
+            if (Settings.saveCrashLog.value) {
                 runCatching { saveCrashLog(e) }
             }
             handler?.uncaughtException(t, e)
