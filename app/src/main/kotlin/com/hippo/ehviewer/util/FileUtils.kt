@@ -33,12 +33,12 @@ object FileUtils {
     fun ensureDirectory(file: File?) = file?.let { if (it.exists()) it.isDirectory else it.mkdirs() } == true
 
     /**
-     * Convert byte to human readable string.<br></br>
-     * http://stackoverflow.com/questions/3758606/
+     * Convert byte to human readable string.
      *
      * @param bytes the bytes to convert
      * @return the human readable string
      */
+    // http://stackoverflow.com/questions/3758606/
     fun humanReadableByteCount(bytes: Long): String {
         if (bytes < 1024) return "$bytes B"
         val exp = (ln(bytes.toDouble()) / ln(1024f)).toInt()
@@ -74,13 +74,13 @@ object FileUtils {
         else -> true
     }
 
-    // From https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/FileUtils.java;l=1142;drc=7b647e4ea0e92f33c19b315eaed364ee067ba0aa
     /**
      * Mutate the given filename to make it valid for a FAT filesystem,
      * replacing any invalid characters with "_".
      *
      * @param name the original filename
      */
+    // From https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/os/FileUtils.java;l=1142;drc=7b647e4ea0e92f33c19b315eaed364ee067ba0aa
     fun sanitizeFilename(name: String): String {
         if (name.isEmpty() || "." == name || ".." == name) {
             return "(invalid)"
