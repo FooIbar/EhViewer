@@ -1,7 +1,6 @@
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule
 import java.util.regex.Pattern
-import org.jetbrains.kotlin.compose.compiler.gradle.ComposeFeatureFlag
 
 val isRelease: Boolean
     get() = gradle.startParameter.taskNames.any { it.contains("Release") }
@@ -169,10 +168,6 @@ android {
     namespace = "com.hippo.ehviewer"
 }
 
-composeCompiler {
-    featureFlags = setOf(ComposeFeatureFlag.OptimizeNonSkippingGroups)
-}
-
 baselineProfile {
     mergeIntoMain = true
 }
@@ -284,7 +279,6 @@ kotlin {
             "splitties.preferences.DataStorePreferencesPreview",
         )
         freeCompilerArgs.addAll(
-            "-Xjvm-default=all",
             "-Xcontext-receivers",
             "-Xwhen-guards",
             "-Xsuppress-warning=CONTEXT_RECEIVERS_DEPRECATED",
