@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -16,6 +15,7 @@ import androidx.compose.material3.FlexibleBottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -77,8 +77,9 @@ fun BottomReaderBar(onClickSettings: () -> Unit) = FlexibleBottomAppBar(
     )
 }
 
+// Use surface container highest to have a higher contract on grey background
 val toolbarColor
-    @Composable get() = BottomAppBarDefaults.containerColor.copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
+    @Composable get() = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = if (isSystemInDarkTheme()) 0.9f else 0.95f)
 
 @Composable
 private fun DropdownIconButton(

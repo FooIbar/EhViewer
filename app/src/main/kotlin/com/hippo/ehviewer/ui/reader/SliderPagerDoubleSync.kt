@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import com.hippo.ehviewer.gallery.PageLoader
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filterNotNull
 
 @Stable
@@ -59,7 +60,7 @@ class SliderPagerDoubleSync(
         }
         if (sliderFollowPager) {
             LaunchedEffect(currentIndexFlow) {
-                currentIndexFlow.collect { index ->
+                currentIndexFlow.drop(1).collect { index ->
                     sliderValue = index + 1
                     pageLoader.startPage = index
                     onPageSelected()

@@ -6,10 +6,8 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -30,27 +28,21 @@ fun ReaderAppBars(
     onSliderValueChange: (Int) -> Unit,
     onClickSettings: () -> Unit,
     modifier: Modifier = Modifier,
-) = Column(
-    modifier = modifier.fillMaxHeight().windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)),
-    verticalArrangement = Arrangement.SpaceBetween,
+) = AnimatedVisibility(
+    visible = visible,
+    modifier = modifier.windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)),
+    enter = slideInVertically(initialOffsetY = { it }, animationSpec = animationSpec),
+    exit = slideOutVertically(targetOffsetY = { it }, animationSpec = animationSpec),
 ) {
-    Spacer(modifier = Modifier.weight(1f))
-
-    AnimatedVisibility(
-        visible = visible,
-        enter = slideInVertically(initialOffsetY = { it }, animationSpec = animationSpec),
-        exit = slideOutVertically(targetOffsetY = { it }, animationSpec = animationSpec),
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (showSeekBar) {
-                ChapterNavigator(
-                    isRtl = isRtl,
-                    currentPage = currentPage,
-                    totalPages = totalPages,
-                    onSliderValueChange = onSliderValueChange,
-                )
-            }
-            BottomReaderBar(onClickSettings = onClickSettings)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (showSeekBar && totalPages > 1) {
+            ChapterNavigator(
+                isRtl = isRtl,
+                currentPage = currentPage,
+                totalPages = totalPages,
+                onSliderValueChange = onSliderValueChange,
+            )
         }
+        BottomReaderBar(onClickSettings = onClickSettings)
     }
 }
