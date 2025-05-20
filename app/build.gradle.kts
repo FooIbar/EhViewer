@@ -1,6 +1,7 @@
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule
 import java.util.regex.Pattern
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
 val isRelease: Boolean
     get() = gradle.startParameter.taskNames.any { it.contains("Release") }
@@ -257,6 +258,7 @@ kotlin {
 
     // https://kotlinlang.org/docs/gradle-compiler-options.html#all-compiler-options
     compilerOptions {
+        jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
         progressiveMode = true
         optIn.addAll(
             "coil3.annotation.ExperimentalCoilApi",
@@ -280,7 +282,6 @@ kotlin {
         )
         freeCompilerArgs.addAll(
             "-Xcontext-receivers",
-            "-Xwhen-guards",
             "-Xsuppress-warning=CONTEXT_RECEIVERS_DEPRECATED",
             "-Xannotation-default-target=param-property",
         )
