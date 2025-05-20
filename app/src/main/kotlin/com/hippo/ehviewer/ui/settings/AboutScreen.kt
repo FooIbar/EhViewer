@@ -14,18 +14,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
@@ -38,6 +33,7 @@ import com.hippo.ehviewer.download.downloadLocation
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.LicenseScreenDestination
 import com.hippo.ehviewer.ui.tools.DialogState
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.updater.AppUpdater
 import com.hippo.ehviewer.updater.Release
@@ -50,9 +46,9 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withUIContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.launchSnackbar
+import moe.tarsin.string
 
 private const val REPO_URL = "https://github.com/${BuildConfig.REPO_NAME}"
 private const val RELEASE_URL = "$REPO_URL/releases"
@@ -68,11 +64,7 @@ private fun author() = AnnotatedString.fromHtml(stringResource(R.string.settings
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Screen(navigator) {
-    val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
-    fun launchSnackBar(content: String) = coroutineScope.launch { snackbarHostState.showSnackbar(content) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -85,7 +77,6 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
                 scrollBehavior = scrollBehavior,
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection).verticalScroll(rememberScrollState()).padding(paddingValues)) {
             Preference(
@@ -127,18 +118,17 @@ fun AnimatedVisibilityScope.AboutScreen(navigator: DestinationsNavigator) = Scre
             )
             WorkPreference(title = stringResource(id = R.string.settings_about_check_for_updates)) {
                 runSuspendCatching {
-                    AppUpdater.checkForUpdate(true)?.let {
-                        showNewVersion(context, it)
-                    } ?: launchSnackBar(getString(R.string.already_latest_version))
+                    AppUpdater.checkForUpdate(true)?.let { showNewVersion(it) } ?: launchSnackbar(string(R.string.already_latest_version))
                 }.onFailure {
-                    launchSnackBar(getString(R.string.update_failed, it.displayString()))
+                    launchSnackbar(string(R.string.update_failed, it.displayString()))
                 }
             }
         }
     }
 }
 
-suspend fun DialogState.showNewVersion(context: Context, release: Release) {
+context(ctx: Context, _: DialogState)
+suspend fun showNewVersion(release: Release) {
     awaitConfirmationOrCancel(
         confirmText = R.string.download,
         title = R.string.new_version_available,
@@ -154,10 +144,10 @@ suspend fun DialogState.showNewVersion(context: Context, release: Release) {
     }
     if (Settings.backupBeforeUpdate) {
         val time = ReadableTime.getFilenamableTime()
-        EhDB.exportDB(context, (downloadLocation / "$time.db"))
+        EhDB.exportDB(ctx, (downloadLocation / "$time.db"))
     }
     // TODO: Download in the background and show progress in notification
     val path = AppConfig.tempDir / "update.apk"
     AppUpdater.downloadUpdate(release.downloadLink, path.apply { delete() })
-    withUIContext { context.installPackage(path.toFile()) }
+    withUIContext { installPackage(path.toFile()) }
 }

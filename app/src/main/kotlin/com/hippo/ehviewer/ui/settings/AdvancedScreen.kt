@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.provider.Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS
 import androidx.activity.result.PickVisualMediaRequest
@@ -42,7 +43,6 @@ import com.hippo.ehviewer.client.EhEngine
 import com.hippo.ehviewer.client.data.FavListUrlBuilder
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.Screen
-import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.ui.showRestartDialog
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
@@ -64,7 +64,6 @@ import com.jamal.composeprefs3.ui.prefs.SwitchPref
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import java.io.File
@@ -73,14 +72,49 @@ import java.util.zip.ZipOutputStream
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.launch
+import moe.tarsin.launchSnackbar
+import moe.tarsin.string
+
+context(ctx: Context)
+fun dumplog(uri: Uri): Unit = with(ctx) {
+    grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+    contentResolver.openOutputStream(uri)?.use { outputStream ->
+        val files = ArrayList<File>()
+        AppConfig.externalParseErrorDir?.listFiles()?.let { files.addAll(it) }
+        AppConfig.externalCrashDir?.listFiles()?.let { files.addAll(it) }
+        ZipOutputStream(outputStream).use { zipOs ->
+            files.forEach { file ->
+                if (!file.isFile) return@forEach
+                val entry = ZipEntry(file.name)
+                zipOs.putNextEntry(entry)
+                file.inputStream().use { it.copyTo(zipOs) }
+            }
+            val logcatEntry = ZipEntry("logcat-" + ReadableTime.getFilenamableTime() + ".txt")
+            zipOs.putNextEntry(logcatEntry)
+            CrashHandler.collectInfo(zipOs.writer())
+            Runtime.getRuntime().exec("logcat -d").inputStream.use { it.copyTo(zipOs) }
+        }
+    }
+}
+
+context(ctx: Context)
+fun exportDatabase(uri: Uri) {
+    ctx.grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    EhDB.exportDB(ctx, uri.toOkioPath())
+}
+
+context(ctx: Context)
+suspend fun importDatabase(uri: Uri) {
+    ctx.grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    EhDB.importDB(ctx, uri)
+}
 
 @Destination<RootGraph>
 @Composable
 fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = Screen(navigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    fun launchSnackBar(content: String) = launch { showSnackbar(content) }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -136,27 +170,10 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
             ) { uri ->
                 uri?.run {
                     runCatching {
-                        grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                        contentResolver.openOutputStream(uri)?.use { outputStream ->
-                            val files = ArrayList<File>()
-                            AppConfig.externalParseErrorDir?.listFiles()?.let { files.addAll(it) }
-                            AppConfig.externalCrashDir?.listFiles()?.let { files.addAll(it) }
-                            ZipOutputStream(outputStream).use { zipOs ->
-                                files.forEach { file ->
-                                    if (!file.isFile) return@forEach
-                                    val entry = ZipEntry(file.name)
-                                    zipOs.putNextEntry(entry)
-                                    file.inputStream().use { it.copyTo(zipOs) }
-                                }
-                                val logcatEntry = ZipEntry("logcat-" + ReadableTime.getFilenamableTime() + ".txt")
-                                zipOs.putNextEntry(logcatEntry)
-                                CrashHandler.collectInfo(zipOs.writer())
-                                Runtime.getRuntime().exec("logcat -d").inputStream.use { it.copyTo(zipOs) }
-                            }
-                            launchSnackBar(getString(R.string.settings_advanced_dump_logcat_to, uri.displayPath))
-                        }
+                        dumplog(uri)
+                        launchSnackbar(string(R.string.settings_advanced_dump_logcat_to, uri.displayPath))
                     }.onFailure {
-                        launchSnackBar(dumpLogError)
+                        launchSnackbar(dumpLogError)
                         logcat(it)
                     }
                 }
@@ -241,12 +258,11 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
             ) { uri ->
                 uri?.let {
                     runCatching {
-                        grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                        EhDB.exportDB(implicit<Context>(), uri.toOkioPath())
-                        launchSnackBar(getString(R.string.settings_advanced_export_data_to, uri.displayPath))
+                        exportDatabase(uri)
+                        launchSnackbar(string(R.string.settings_advanced_export_data_to, uri.displayPath))
                     }.onFailure {
                         logcat(it)
-                        launchSnackBar(exportFailed)
+                        launchSnackbar(exportFailed)
                     }
                 }
             }
@@ -260,12 +276,11 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
             ) { uri ->
                 uri?.let {
                     runCatching {
-                        grantUriPermission(BuildConfig.APPLICATION_ID, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        EhDB.importDB(implicit<Context>(), uri)
-                        launchSnackBar(importSucceed)
+                        importDatabase(uri)
+                        launchSnackbar(importSucceed)
                     }.onFailure {
                         logcat(it)
-                        launchSnackBar(importFailed)
+                        launchSnackbar(importFailed)
                     }
                 }
             }
@@ -284,13 +299,13 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                     tailrec suspend fun doBackup() {
                         val result = EhEngine.getFavorites(favListUrlBuilder.build())
                         if (result.galleryInfoList.isEmpty()) {
-                            launchSnackBar(backupNothing)
+                            launchSnackbar(backupNothing)
                         } else {
                             if (favTotal == 0) favTotal = result.countArray.sum()
                             favIndex += result.galleryInfoList.size
                             val status = "($favIndex/$favTotal)"
                             EhDB.putLocalFavorites(result.galleryInfoList)
-                            launchSnackBar(getString(R.string.settings_advanced_backup_favorite_start, status))
+                            launchSnackbar(string(R.string.settings_advanced_backup_favorite_start, status))
                             if (result.next != null) {
                                 delay(Settings.downloadDelay.toLong())
                                 favListUrlBuilder.setIndex(result.next, true)
@@ -298,34 +313,39 @@ fun AnimatedVisibilityScope.AdvancedScreen(navigator: DestinationsNavigator) = S
                             }
                         }
                     }
-                    launchIO {
+                    launch {
                         runSuspendCatching {
                             doBackup()
                         }.onSuccess {
-                            launchSnackBar(backupSucceed)
+                            launchSnackbar(backupSucceed)
                         }.onFailure {
                             logcat(it)
-                            launchSnackBar(backupFailed)
+                            launchSnackbar(backupFailed)
                         }
                     }
                 }
             }
             Preference(title = stringResource(id = R.string.open_by_default)) {
-                try {
-                    @SuppressLint("InlinedApi")
-                    val intent = Intent(
-                        ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
-                        "package:$packageName".toUri(),
-                    )
-                    startActivity(intent)
-                } catch (_: ActivityNotFoundException) {
-                    val intent = Intent(
-                        ACTION_APPLICATION_DETAILS_SETTINGS,
-                        "package:$packageName".toUri(),
-                    )
-                    startActivity(intent)
-                }
+                openByDefaultSettings()
             }
         }
+    }
+}
+
+context(ctx: Context)
+fun openByDefaultSettings() = with(ctx) {
+    try {
+        @SuppressLint("InlinedApi")
+        val intent = Intent(
+            ACTION_APP_OPEN_BY_DEFAULT_SETTINGS,
+            "package:$packageName".toUri(),
+        )
+        startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        val intent = Intent(
+            ACTION_APPLICATION_DETAILS_SETTINGS,
+            "package:$packageName".toUri(),
+        )
+        startActivity(intent)
     }
 }

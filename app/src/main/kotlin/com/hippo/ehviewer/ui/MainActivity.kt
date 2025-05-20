@@ -31,7 +31,6 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -181,15 +180,6 @@ val StartDestination
     get() = navItems[Settings.launchPage].first
 
 class MainActivity : EhActivity() {
-    private val sideSheet = mutableStateListOf<@Composable ColumnScope.(DrawerState2) -> Unit>()
-
-    @Composable
-    fun ProvideSideSheetContent(content: @Composable ColumnScope.(DrawerState2) -> Unit) {
-        DisposableEffect(content) {
-            sideSheet.add(0, content)
-            onDispose { sideSheet.remove(content) }
-        }
-    }
 
     private var shareUrl: String? = null
 
@@ -256,9 +246,7 @@ class MainActivity : EhActivity() {
                     if (hasNetwork) {
                         runSuspendCatching {
                             withIOContext {
-                                AppUpdater.checkForUpdate()?.let {
-                                    showNewVersion(this@MainActivity, it)
-                                }
+                                AppUpdater.checkForUpdate()?.let { showNewVersion(it) }
                             }
                         }.onFailure {
                             snackbarState.showSnackbar(getString(R.string.update_failed, it.displayString()))

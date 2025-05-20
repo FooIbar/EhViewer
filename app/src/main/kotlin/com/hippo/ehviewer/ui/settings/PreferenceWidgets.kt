@@ -110,9 +110,8 @@ fun IntSliderPreference(maxValue: Int, minValue: Int = 0, step: Int = maxValue -
 }
 
 @Composable
-fun UrlPreference(title: String, url: String) {
-    val context = LocalContext.current
-    Preference(title, url) { context.openBrowser(url) }
+fun UrlPreference(title: String, url: String) = with(LocalContext.current) {
+    Preference(title, url) { openBrowser(url) }
 }
 
 @Composable

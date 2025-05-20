@@ -33,9 +33,10 @@ import kotlin.coroutines.suspendCoroutine
 
 private val atomicInteger = AtomicInt(0)
 
-private val Context.lifecycle: Lifecycle
+context(ctx: Context)
+private val lifecycle: Lifecycle
     get() {
-        var context: Context? = this
+        var context: Context? = ctx
         while (true) {
             when (context) {
                 is LifecycleOwner -> return context.lifecycle
@@ -45,7 +46,8 @@ private val Context.lifecycle: Lifecycle
         }
     }
 
-suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<I, O>, input: I): O {
+context(ctx: Context)
+suspend fun <I, O> awaitActivityResult(contract: ActivityResultContract<I, O>, input: I): O {
     val key = "activity_rq#${atomicInteger.fetchAndIncrement()}"
     var launcher: ActivityResultLauncher<I>? = null
     var observer: LifecycleEventObserver? = null
@@ -71,15 +73,18 @@ suspend fun <I, O> Context.awaitActivityResult(contract: ActivityResultContract<
     }
 }
 
-suspend fun Context.requestPermission(key: String): Boolean {
-    if (ContextCompat.checkSelfPermission(this, key) == PackageManager.PERMISSION_GRANTED) return true
+context(ctx: Context)
+suspend fun requestPermission(key: String): Boolean {
+    if (ContextCompat.checkSelfPermission(ctx, key) == PackageManager.PERMISSION_GRANTED) return true
     return awaitActivityResult(ActivityResultContracts.RequestPermission(), key)
 }
 
-suspend fun Context.pickVisualMedia(type: VisualMediaType): Uri? = awaitActivityResult(ActivityResultContracts.PickVisualMedia(), PickVisualMediaRequest(mediaType = type))
+context(_: Context)
+suspend fun pickVisualMedia(type: VisualMediaType): Uri? = awaitActivityResult(ActivityResultContracts.PickVisualMedia(), PickVisualMediaRequest(mediaType = type))
 
+context(ctx: Context)
 @RequiresApi(Build.VERSION_CODES.O)
-suspend fun Context.requestInstallPermission(): Boolean {
+suspend fun requestInstallPermission(): Boolean = with(ctx) {
     if (packageManager.canRequestPackageInstalls()) return true
     val granted = requestPermission(Manifest.permission.REQUEST_INSTALL_PACKAGES)
     if (!granted) {
@@ -95,7 +100,8 @@ suspend fun Context.requestInstallPermission(): Boolean {
     return packageManager.canRequestPackageInstalls()
 }
 
-suspend fun Context.installPackage(file: File) {
+context(ctx: Context)
+suspend fun installPackage(file: File) = with(ctx) {
     val canInstall = !isAtLeastO || requestInstallPermission()
     check(canInstall) { getString(R.string.permission_denied) }
     val contentUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)

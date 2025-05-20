@@ -5,11 +5,9 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 
-/**
- * Find the closest Activity in a given Context.
- */
-inline fun <reified T : Activity> Context.findActivity(): T {
-    var context = this
+context(ctx: Context)
+inline fun <reified T : Activity> findActivity(): T {
+    var context = ctx
     while (context is ContextWrapper) {
         if (context is Activity) return context as T
         context = context.baseContext
@@ -17,7 +15,8 @@ inline fun <reified T : Activity> Context.findActivity(): T {
     throw IllegalStateException("findActivity() should be called in the context of an Activity")
 }
 
-fun Context.restartApplication() {
+context(ctx: Context)
+fun restartApplication() = with(ctx) {
     packageManager.getLaunchIntentForPackage(packageName)?.let {
         startActivity(Intent.makeRestartActivityTask(it.component))
         Runtime.getRuntime().exit(0)

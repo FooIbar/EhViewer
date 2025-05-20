@@ -58,6 +58,8 @@ import com.hippo.ehviewer.ui.destinations.ReaderScreenDestination
 import com.hippo.ehviewer.ui.reader.ReaderScreenArgs
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitSelectDate
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.bgWork
 import com.hippo.ehviewer.util.findActivity
@@ -110,11 +112,8 @@ suspend fun keepNoMediaFileStatus(downloadDir: Path = downloadLocation) {
 
 fun getFavoriteIcon(favorited: Boolean) = if (favorited) Icons.Default.Favorite else Icons.Default.FavoriteBorder
 
-suspend fun DialogState.startDownload(
-    context: Context,
-    forceDefault: Boolean,
-    vararg galleryInfos: BaseGalleryInfo,
-) = with(context) {
+context(_: DialogState, ctx: Context)
+suspend fun DialogState.startDownload(forceDefault: Boolean, vararg galleryInfos: BaseGalleryInfo) {
     if (isAtLeastT) {
         requestPermission(Manifest.permission.POST_NOTIFICATIONS)
     }
@@ -430,7 +429,8 @@ suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>
     return label
 }
 
-suspend fun DialogState.awaitSelectDate(): String? {
+context(_: DialogState)
+suspend fun awaitSelectDate(): String? {
     val initial = LocalDate(2007, 3, 21)
     val yesterday = Clock.System.todayIn(TimeZone.UTC).minus(1, DateTimeUnit.DAY)
     val initialMillis = initial.toEpochMillis()
@@ -447,8 +447,8 @@ suspend fun DialogState.awaitSelectDate(): String? {
     return date
 }
 
-context(Context)
-suspend fun DialogState.showRestartDialog() {
+context(_: Context, _: DialogState)
+suspend fun showRestartDialog() {
     awaitConfirmationOrCancel {
         Text(stringResource(R.string.settings_restart))
     }

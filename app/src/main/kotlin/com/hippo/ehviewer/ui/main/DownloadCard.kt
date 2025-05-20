@@ -96,7 +96,7 @@ private val constraintSet = ConstraintSet {
     }
 }
 
-context(SharedTransitionScope, TransitionsVisibilityScope)
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 @Composable
 fun DownloadCard(
     onClick: () -> Unit,

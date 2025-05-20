@@ -70,6 +70,7 @@ import com.hippo.ehviewer.icons.EhIcons
 import com.hippo.ehviewer.icons.filled.GoTo
 import com.hippo.ehviewer.ui.DrawerHandle
 import com.hippo.ehviewer.ui.LocalSideSheetState
+import com.hippo.ehviewer.ui.ProvideSideSheetContent
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.awaitSelectDate
 import com.hippo.ehviewer.ui.main.AvatarIcon
@@ -80,6 +81,8 @@ import com.hippo.ehviewer.ui.main.GalleryInfoListItem
 import com.hippo.ehviewer.ui.main.GalleryList
 import com.hippo.ehviewer.ui.startDownload
 import com.hippo.ehviewer.ui.tools.asyncState
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitSelectItem
 import com.hippo.ehviewer.ui.tools.foldToLoadResult
 import com.hippo.ehviewer.ui.tools.rememberInVM
 import com.hippo.ehviewer.ui.tools.thenIf
@@ -93,10 +96,10 @@ import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import moe.tarsin.coroutines.onEachLatest
 import moe.tarsin.coroutines.runSuspendCatching
 import moe.tarsin.coroutines.runSwallowingWithUI
+import moe.tarsin.launch
 
 @Destination<RootGraph>
 @Composable
@@ -294,7 +297,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigate(info.asDst())
+                                navigator.navigate(info.asDst())
                             }
                         },
                         onLongClick = {
@@ -323,7 +326,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
                                     checkedInfoMap[info.gid] = info
                                 }
                             } else {
-                                navigate(info.asDst())
+                                navigator.navigate(info.asDst())
                             }
                         },
                         onLongClick = {
@@ -365,7 +368,7 @@ fun AnimatedVisibilityScope.FavouritesScreen(navigator: DestinationsNavigator) =
             if (isLocalFav) {
                 onClick(Icons.Default.Shuffle) {
                     EhDB.randomLocalFav()?.let { info ->
-                        withUIContext { navigate(info.asDst()) }
+                        withUIContext { navigator.navigate(info.asDst()) }
                     }
                 }
             }
