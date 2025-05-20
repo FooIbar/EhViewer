@@ -79,7 +79,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: app/.cxx
-          key: cmake-default-${{ hashFiles('settings.gradle.kts', 'app/src/main/cpp/CMakeLists.txt', 'app/src/main/rust/Cargo.lock') }}
+          key: cmake-default-${{ hashFiles('settings.gradle.kts', 'app/src/main/cpp/CMakeLists.txt', 'app/src/main/cpp/*.patch', 'app/src/main/rust/Cargo.lock') }}
           restore-keys: cmake-default-
 
       - name: Build
@@ -147,7 +147,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: app/.cxx
-          key: cmake-marshmallow-${{ hashFiles('settings.gradle.kts', 'app/src/main/cpp/CMakeLists.txt', 'app/src/main/rust/Cargo.lock') }}
+          key: cmake-marshmallow-${{ hashFiles('settings.gradle.kts', 'app/src/main/cpp/CMakeLists.txt', 'app/src/main/cpp/*.patch', 'app/src/main/rust/Cargo.lock') }}
           restore-keys: cmake-marshmallow-
 
       - name: Build
