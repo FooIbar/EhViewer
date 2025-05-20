@@ -1,25 +1,25 @@
-From c2b25a299eafd774766709df2e9a4c79dda42bde Mon Sep 17 00:00:00 2001
+From e971b9f23727833cc39b9e325db30f383e5bfc30 Mon Sep 17 00:00:00 2001
 From: Dude so hot <djohn@fbi.gov>
 Date: Thu, 14 Nov 2024 00:28:13 +0800
 Subject: [PATCH] Fix zip_time performance
 
 Signed-off-by: Dude so hot <djohn@fbi.gov>
 ---
- libarchive/archive_read_support_format_zip.c | 1 +
+ libarchive/archive_time.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/libarchive/archive_read_support_format_zip.c b/libarchive/archive_read_support_format_zip.c
-index 3e62533b..090a3a1c 100644
---- a/libarchive/archive_read_support_format_zip.c
-+++ b/libarchive/archive_read_support_format_zip.c
-@@ -469,6 +469,7 @@ compression_name(const int compression)
- static time_t
- zip_time(const char *p)
+diff --git a/libarchive/archive_time.c b/libarchive/archive_time.c
+index 3352c809..9289bf1e 100644
+--- a/libarchive/archive_time.c
++++ b/libarchive/archive_time.c
+@@ -53,6 +53,7 @@ FILETIME_to_ntfs(const FILETIME* filetime)
+ int64_t
+ dos_to_unix(uint32_t dos_time)
  {
 +	return 0;
- 	int msTime, msDate;
+ 	uint16_t msTime, msDate;
  	struct tm ts;
- 
+ 	time_t t;
 -- 
 2.47.0
 
