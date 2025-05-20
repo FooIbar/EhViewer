@@ -372,6 +372,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
                     }
                 }
             },
+            modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
 }
