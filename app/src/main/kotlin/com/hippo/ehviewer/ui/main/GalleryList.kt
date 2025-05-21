@@ -143,7 +143,7 @@ fun GalleryList(
                     val info = data[index]
                     if (info != null) {
                         detailItemContent(info)
-                        PrefetchAround(data, index, 5, ::imageRequest)
+                        PrefetchAround(data, index, 5) { imageRequest(it) }
                     }
                 }
                 if (showLoadStateIndicator) {
@@ -173,7 +173,7 @@ fun GalleryList(
                     val info = data[index]
                     if (info != null) {
                         thumbItemContent(info)
-                        PrefetchAround(data, index, 10, ::imageRequest)
+                        PrefetchAround(data, index, 10) { imageRequest(it) }
                     }
                 }
                 if (showLoadStateIndicator) {

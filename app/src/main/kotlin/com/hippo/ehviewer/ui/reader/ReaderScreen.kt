@@ -78,6 +78,8 @@ import com.hippo.ehviewer.ui.theme.EhTheme
 import com.hippo.ehviewer.ui.tools.Await
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.asyncInVM
+import com.hippo.ehviewer.ui.tools.awaitInputText
+import com.hippo.ehviewer.ui.tools.dialog
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.hasAds
@@ -97,10 +99,11 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.kt.unreachable
+import moe.tarsin.launch
+import moe.tarsin.string
 
 sealed interface ReaderScreenArgs : Parcelable {
     @Parcelize
@@ -175,14 +178,14 @@ fun AnimatedVisibilityScope.ReaderScreen(args: ReaderScreenArgs, navigator: Dest
     }
 }
 
-context(MainActivity, SnackbarHostState, DialogState, CoroutineScope)
+context(activity: MainActivity, _: SnackbarHostState, _: DialogState, _: CoroutineScope)
 @Composable
-fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
+fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
     LaunchedEffect(Unit) {
-        val orientation = requestedOrientation
+        val orientation = activity.requestedOrientation
         Settings.orientationMode.valueFlow()
-            .onCompletion { requestedOrientation = orientation }
-            .collect { setOrientation(it) }
+            .onCompletion { activity.requestedOrientation = orientation }
+            .collect { activity.setOrientation(it) }
     }
     LaunchedEffect(pageLoader) {
         with(Settings) {
@@ -215,16 +218,8 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
         Modifier.keyEventHandler(
             enabled = { !appbarVisible },
             reverse = { reverseControls },
-            movePrevious = {
-                launch {
-                    if (isWebtoon) lazyListState.scrollUp() else pagerState.moveToPrevious()
-                }
-            },
-            moveNext = {
-                launch {
-                    if (isWebtoon) lazyListState.scrollDown() else pagerState.moveToNext()
-                }
-            },
+            movePrevious = { launch { if (isWebtoon) lazyListState.scrollUp() else pagerState.moveToPrevious() } },
+            moveNext = { launch { if (isWebtoon) lazyListState.scrollDown() else pagerState.moveToNext() } },
         ).focusRequester(focusRequester).focusable().thenIf(keepScreenOn) { keepScreenOn() },
     ) {
         LaunchedEffect(Unit) {
@@ -323,8 +318,8 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
         if (brightness) {
             LaunchedEffect(Unit) {
                 Settings.customBrightnessValue.valueFlow().sample(100)
-                    .onCompletion { setCustomBrightnessValue(0) }
-                    .collect { setCustomBrightnessValue(it) }
+                    .onCompletion { activity.setCustomBrightnessValue(0) }
+                    .collect { activity.setCustomBrightnessValue(it) }
             }
         }
         val showPageNumber by Settings.showPageNumber.collectAsState()
@@ -374,7 +369,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
     }
 }
 
-context(Context, DialogState, DestinationsNavigator)
+context(_: Context, _: DialogState, nav: DestinationsNavigator)
 suspend inline fun <T> usePageLoader(args: ReaderScreenArgs, crossinline block: suspend (PageLoader) -> T) = when (args) {
     is ReaderScreenArgs.Gallery -> {
         val info = args.info
@@ -390,12 +385,12 @@ suspend inline fun <T> usePageLoader(args: ReaderScreenArgs, crossinline block: 
         args.uri.toOkioPath(),
         passwdProvider = { invalidator ->
             awaitInputText(
-                title = getString(R.string.archive_need_passwd),
-                hint = getString(R.string.archive_passwd),
-                onUserDismiss = { popBackStack() },
+                title = string(R.string.archive_need_passwd),
+                hint = string(R.string.archive_passwd),
+                onUserDismiss = { nav.popBackStack() },
             ) { text ->
-                ensure(text.isNotBlank()) { getString(R.string.passwd_cannot_be_empty) }
-                ensure(invalidator(text)) { getString(R.string.passwd_wrong) }
+                ensure(text.isNotBlank()) { string(R.string.passwd_cannot_be_empty) }
+                ensure(invalidator(text)) { string(R.string.passwd_wrong) }
             }
         },
         block = block,

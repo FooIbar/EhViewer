@@ -110,7 +110,7 @@ class CronetEngine(override val config: CronetConfig) : HttpClientEngineBase("Cr
                     Settings.edit(true) {
                         enableCronet.value = false
                     }
-                    config.context.restartApplication()
+                    with(config.context) { restartApplication() }
                 }
                 if (continuation.isActive) {
                     continuation.resumeWithException(error)

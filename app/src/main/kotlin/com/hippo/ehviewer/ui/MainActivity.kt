@@ -262,13 +262,11 @@ class MainActivity : EhActivity() {
                         Intent.ACTION_VIEW -> {
                             val uri = intent.data ?: return@collect
                             when (uri.scheme) {
-                                SCHEME_CONTENT, SCHEME_FILE -> {
-                                    navigator.navToReader(uri)
-                                }
+                                SCHEME_CONTENT, SCHEME_FILE -> with(navigator) { navToReader(uri) }
 
                                 else -> {
                                     val url = uri.toString()
-                                    if (!navigator.navWithUrl(url)) {
+                                    if (!with(navigator) { navWithUrl(url) }) {
                                         val new = awaitInputText(initial = url, title = cannotParse)
                                         addTextToClipboard(new)
                                     }
@@ -279,7 +277,7 @@ class MainActivity : EhActivity() {
                             val type = intent.type
                             if ("text/plain" == type) {
                                 val keyword = intent.getStringExtra(Intent.EXTRA_TEXT)
-                                if (keyword != null && !navigator.navWithUrl(keyword)) {
+                                if (keyword != null && !with(navigator) { navWithUrl(keyword) }) {
                                     navigator.navigate(ListUrlBuilder(mKeyword = keyword).asDst())
                                 }
                             } else if (type != null && type.startsWith("image/")) {
