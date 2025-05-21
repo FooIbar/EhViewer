@@ -67,7 +67,6 @@ import com.hippo.ehviewer.ui.tools.awaitSelectItemWithIcon
 import com.hippo.ehviewer.ui.tools.awaitSelectItemWithIconAndTextField
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.bgWork
-import com.hippo.ehviewer.util.findActivity
 import com.hippo.ehviewer.util.isAtLeastT
 import com.hippo.ehviewer.util.mapToLongArray
 import com.hippo.ehviewer.util.requestPermission
@@ -293,7 +292,7 @@ fun navToReader(uri: Uri) = navToReader(ReaderScreenArgs.Archive(uri))
 context(nav: DestinationsNavigator)
 private fun navToReader(args: ReaderScreenArgs) = nav.navigate(ReaderScreenDestination(args)) { launchSingleTop = true }
 
-context(_: DialogState, _: Context, _: DestinationsNavigator)
+context(_: DialogState, _: MainActivity, _: DestinationsNavigator)
 suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
     val downloaded = DownloadManager.getDownloadState(info.gid) != DownloadInfo.STATE_INVALID
     val favorited = info.favoriteSlot != NOT_FAVORITED
@@ -316,40 +315,37 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
         }
     }
     val selected = awaitSelectItemWithIcon(items, EhUtils.getSuitableTitle(info))
-    with(findActivity<MainActivity>()) {
-        when (selected) {
-            0 -> {
-                EhDB.putHistoryInfo(info)
-                navToReader(info)
-            }
-
-            1 -> withUIContext {
-                if (downloaded) {
-                    confirmRemoveDownload(info)
-                } else {
-                    startDownload(false, info)
-                }
-            }
-
-            2 -> if (favorited) {
-                runSuspendCatching {
-                    removeFromFavorites(info)
-                    showTip(R.string.remove_from_favorite_success)
-                }.onFailure {
-                    showTip(R.string.remove_from_favorite_failure)
-                }
-            } else {
-                runSuspendCatching {
-                    modifyFavorites(info)
-                    showTip(R.string.add_to_favorite_success)
-                }.onFailure {
-                    showTip(R.string.add_to_favorite_failure)
-                }
-            }
-
-            3 -> showMoveDownloadLabel(info)
+    when (selected) {
+        0 -> {
+            EhDB.putHistoryInfo(info)
+            navToReader(info)
         }
-        true
+
+        1 -> withUIContext {
+            if (downloaded) {
+                confirmRemoveDownload(info)
+            } else {
+                startDownload(false, info)
+            }
+        }
+
+        2 -> if (favorited) {
+            runSuspendCatching {
+                removeFromFavorites(info)
+                tip(R.string.remove_from_favorite_success)
+            }.onFailure {
+                tip(R.string.remove_from_favorite_failure)
+            }
+        } else {
+            runSuspendCatching {
+                modifyFavorites(info)
+                tip(R.string.add_to_favorite_success)
+            }.onFailure {
+                tip(R.string.add_to_favorite_failure)
+            }
+        }
+
+        3 -> showMoveDownloadLabel(info)
     }
 }
 
