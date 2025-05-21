@@ -40,9 +40,10 @@ import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchUI
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import kotlinx.coroutines.launch
+import moe.tarsin.launch
+import moe.tarsin.launchSnackbar
+import moe.tarsin.launchUI
 
 @Destination<RootGraph>
 @Composable
@@ -64,7 +65,7 @@ fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) 
                     val uri = imageUri
                     if (uri != null) {
                         launchUI {
-                            navigate(
+                            navigator.navigate(
                                 ListUrlBuilder(
                                     mode = MODE_IMAGE_SEARCH,
                                     hash = withIOContext { uri.toOkioPath().sha1() },
@@ -72,7 +73,7 @@ fun AnimatedVisibilityScope.ImageSearchScreen(navigator: DestinationsNavigator) 
                             )
                         }
                     } else {
-                        launch { showSnackbar(selectImageFirst) }
+                        launchSnackbar(selectImageFirst)
                     }
                 },
                 modifier = Modifier.snackBarPadding(),
