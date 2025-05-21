@@ -37,7 +37,8 @@ fun openBrowser(url: String) {
     }
 }
 
-fun DestinationsNavigator.jumpToReaderByPage(url: String, detail: GalleryDetail): Boolean {
+context(_: DestinationsNavigator)
+fun jumpToReaderByPage(url: String, detail: GalleryDetail): Boolean {
     GalleryPageUrlParser.parse(url)?.let {
         if (it.gid == detail.gid) {
             navToReader(detail.galleryInfo, it.page)
