@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.util.fastRoundToInt
 
 @Composable
 fun Slider(
@@ -30,7 +31,7 @@ fun Slider(
 ) {
     Slider(
         value = value.toFloat(),
-        onValueChange = { onValueChange(it.toInt()) },
+        onValueChange = { onValueChange(it.fastRoundToInt()) },
         modifier = modifier,
         enabled = enabled,
         onValueChangeFinished = onValueChangeFinished,
