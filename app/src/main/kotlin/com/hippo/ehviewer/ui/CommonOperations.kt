@@ -79,7 +79,6 @@ import com.hippo.files.isDirectory
 import com.hippo.files.write
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import eu.kanade.tachiyomi.util.lang.withIOContext
-import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
@@ -321,12 +320,10 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
             navToReader(info)
         }
 
-        1 -> withUIContext {
-            if (downloaded) {
-                confirmRemoveDownload(info)
-            } else {
-                startDownload(false, info)
-            }
+        1 -> if (downloaded) {
+            confirmRemoveDownload(info)
+        } else {
+            startDownload(false, info)
         }
 
         2 -> if (favorited) {
