@@ -7,15 +7,6 @@ plugins {
 android {
     namespace = "com.ehviewer.baselineprofile"
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -35,6 +26,10 @@ android {
             systemImageSource = "aosp-atd"
         }
     }
+}
+
+kotlin {
+    jvmToolchain(21)
 }
 
 baselineProfile {
