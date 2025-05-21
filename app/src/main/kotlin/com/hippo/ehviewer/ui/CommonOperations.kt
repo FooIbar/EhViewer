@@ -59,7 +59,12 @@ import com.hippo.ehviewer.ui.reader.ReaderScreenArgs
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.LabeledCheckbox
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitResult
 import com.hippo.ehviewer.ui.tools.awaitSelectDate
+import com.hippo.ehviewer.ui.tools.awaitSelectItem
+import com.hippo.ehviewer.ui.tools.awaitSelectItemWithCheckBox
+import com.hippo.ehviewer.ui.tools.awaitSelectItemWithIcon
+import com.hippo.ehviewer.ui.tools.awaitSelectItemWithIconAndTextField
 import com.hippo.ehviewer.util.FavouriteStatusRouter
 import com.hippo.ehviewer.util.bgWork
 import com.hippo.ehviewer.util.findActivity
@@ -85,6 +90,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.todayIn
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.string
+import moe.tarsin.tip
 import okio.Path
 import splitties.init.appCtx
 
@@ -112,8 +119,8 @@ suspend fun keepNoMediaFileStatus(downloadDir: Path = downloadLocation) {
 
 fun getFavoriteIcon(favorited: Boolean) = if (favorited) Icons.Default.Favorite else Icons.Default.FavoriteBorder
 
-context(_: DialogState, ctx: Context)
-suspend fun DialogState.startDownload(forceDefault: Boolean, vararg galleryInfos: BaseGalleryInfo) {
+context(_: DialogState, context: MainActivity)
+suspend fun startDownload(forceDefault: Boolean, vararg galleryInfos: BaseGalleryInfo) {
     if (isAtLeastT) {
         requestPermission(Manifest.permission.POST_NOTIFICATIONS)
     }
@@ -126,9 +133,7 @@ suspend fun DialogState.startDownload(forceDefault: Boolean, vararg galleryInfos
         ContextCompat.startForegroundService(context, intent)
     }
     if (toAdd.isEmpty()) {
-        return with(findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list)
-        }
+        return tip(R.string.added_to_download_list)
     }
     var justStart = forceDefault
     var label: String? = null
@@ -152,14 +157,12 @@ suspend fun DialogState.startDownload(forceDefault: Boolean, vararg galleryInfos
             ContextCompat.startForegroundService(context, intent)
         }
         // Notify
-        with(findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list)
-        }
+        tip(R.string.added_to_download_list)
     } else {
         // Let use chose label
         val list = DownloadManager.labelList
         val items = buildList {
-            add(getString(R.string.default_download_label_name))
+            add(string(R.string.default_download_label_name))
             list.forEach {
                 add(it.label)
             }
@@ -185,13 +188,12 @@ suspend fun DialogState.startDownload(forceDefault: Boolean, vararg galleryInfos
         } else {
             Settings.hasDefaultDownloadLabel = false
         }
-        with(context.findActivity<MainActivity>()) {
-            showTip(R.string.added_to_download_list)
-        }
+        tip(R.string.added_to_download_list)
     }
 }
 
-suspend fun DialogState.modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
+context(_: DialogState)
+suspend fun modifyFavorites(galleryInfo: BaseGalleryInfo): Boolean {
     val localFavorited = EhDB.containLocalFavorites(galleryInfo.gid)
     if (Settings.hasSignedIn.value) {
         val isFavorited = galleryInfo.favoriteSlot != NOT_FAVORITED
@@ -282,13 +284,16 @@ suspend fun removeFromFavorites(galleryInfo: BaseGalleryInfo) = doModifyFavorite
     localFavorited = EhDB.containLocalFavorites(galleryInfo.gid),
 )
 
-fun DestinationsNavigator.navToReader(info: BaseGalleryInfo, page: Int = -1) = navToReader(ReaderScreenArgs.Gallery(info, page))
+context(_: DestinationsNavigator)
+fun navToReader(info: BaseGalleryInfo, page: Int = -1) = navToReader(ReaderScreenArgs.Gallery(info, page))
 
-fun DestinationsNavigator.navToReader(uri: Uri) = navToReader(ReaderScreenArgs.Archive(uri))
+context(_: DestinationsNavigator)
+fun navToReader(uri: Uri) = navToReader(ReaderScreenArgs.Archive(uri))
 
-private fun DestinationsNavigator.navToReader(args: ReaderScreenArgs) = navigate(ReaderScreenDestination(args)) { launchSingleTop = true }
+context(nav: DestinationsNavigator)
+private fun navToReader(args: ReaderScreenArgs) = nav.navigate(ReaderScreenDestination(args)) { launchSingleTop = true }
 
-context(DialogState, Context, DestinationsNavigator)
+context(_: DialogState, _: Context, _: DestinationsNavigator)
 suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
     val downloaded = DownloadManager.getDownloadState(info.gid) != DownloadInfo.STATE_INVALID
     val favorited = info.favoriteSlot != NOT_FAVORITED
@@ -322,7 +327,7 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
                 if (downloaded) {
                     confirmRemoveDownload(info)
                 } else {
-                    startDownload(this@with, false, info)
+                    startDownload(false, info)
                 }
             }
 
@@ -350,7 +355,8 @@ suspend fun doGalleryInfoAction(info: BaseGalleryInfo) {
 
 private const val MAX_FAVNOTE_CHAR = 200
 
-private suspend fun DialogState.confirmRemoveDownload(text: String): Boolean {
+context(_: DialogState)
+private suspend fun confirmRemoveDownload(text: String): Boolean {
     val checked = awaitResult(
         initial = Settings.removeImageFiles,
         title = R.string.download_remove_dialog_title,
@@ -374,7 +380,8 @@ private suspend fun DialogState.confirmRemoveDownload(text: String): Boolean {
     return checked
 }
 
-suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo) {
+context(_: DialogState)
+suspend fun confirmRemoveDownload(info: GalleryInfo) {
     val text = appCtx.getString(R.string.download_remove_dialog_message, EhUtils.getSuitableTitle(info))
     val checked = confirmRemoveDownload(text)
     withIOContext {
@@ -382,7 +389,8 @@ suspend fun DialogState.confirmRemoveDownload(info: GalleryInfo) {
     }
 }
 
-suspend fun DialogState.confirmRemoveDownloadRange(list: Collection<DownloadInfo>) {
+context(_: DialogState)
+suspend fun confirmRemoveDownloadRange(list: Collection<DownloadInfo>) {
     val text = appCtx.getString(R.string.download_remove_dialog_message_2, list.size)
     val checked = confirmRemoveDownload(text)
     withIOContext {
@@ -401,7 +409,8 @@ suspend fun DialogState.confirmRemoveDownloadRange(list: Collection<DownloadInfo
     }
 }
 
-suspend fun DialogState.showMoveDownloadLabel(info: GalleryInfo) {
+context(_: DialogState)
+suspend fun showMoveDownloadLabel(info: GalleryInfo) {
     val defaultLabel = appCtx.getString(R.string.default_download_label_name)
     val labels = buildList {
         add(defaultLabel)
@@ -415,7 +424,8 @@ suspend fun DialogState.showMoveDownloadLabel(info: GalleryInfo) {
     DownloadManager.changeLabel(listOf(downloadInfo), label)
 }
 
-suspend fun DialogState.showMoveDownloadLabelList(list: Collection<DownloadInfo>): String? {
+context(_: DialogState)
+suspend fun showMoveDownloadLabelList(list: Collection<DownloadInfo>): String? {
     val defaultLabel = appCtx.getString(R.string.default_download_label_name)
     val labels = buildList {
         add(defaultLabel)

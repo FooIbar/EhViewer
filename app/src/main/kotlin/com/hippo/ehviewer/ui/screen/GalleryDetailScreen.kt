@@ -59,6 +59,8 @@ import com.hippo.ehviewer.ui.main.GalleryDetailErrorTip
 import com.hippo.ehviewer.ui.navToReader
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
+import com.hippo.ehviewer.ui.tools.awaitSelectTags
 import com.hippo.ehviewer.ui.tools.isExpanded
 import com.hippo.ehviewer.ui.tools.launchInVM
 import com.hippo.ehviewer.ui.tools.rememberInVM
@@ -71,11 +73,13 @@ import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withIOContext
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.parcelize.Parcelize
 import moe.tarsin.coroutines.runSuspendCatching
+import moe.tarsin.launchIO
+import moe.tarsin.snackbar
+import moe.tarsin.tip
 
 typealias VoteTag = suspend GalleryDetail.(String, Int) -> Unit
 
@@ -150,9 +154,9 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
             val new = copy(tagGroups = result).apply { fillInfo() }
             detailCache[gid] = new
             galleryInfo = new
-            showTip(R.string.tag_vote_successfully)
+            tip(R.string.tag_vote_successfully)
         }.onFailure { e ->
-            showTip(e.displayString())
+            tip(e.displayString())
         }
     }
 
@@ -212,7 +216,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                 val detail = galleryInfo as? GalleryDetail ?: return@clickableItem
                                 launchIO {
                                     if (detail.apiUid < 0) {
-                                        showSnackbar(signInFirst)
+                                        snackbar(signInFirst)
                                     } else {
                                         val tags = awaitSelectTags()
                                         if (tags.isNotEmpty()) {
@@ -255,7 +259,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                         val key = getImageKey(gd.gid, it)
                                         imageCache.remove(key)
                                     }
-                                    showSnackbar(cacheCleared)
+                                    snackbar(cacheCleared)
                                 }
                             },
                             icon = {},
@@ -299,7 +303,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                                                 file.delete()
                                                 exportFailed
                                             }
-                                            showSnackbar(message = msg)
+                                            snackbar(message = msg)
                                         }
                                     }
                                 }
@@ -318,7 +322,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                 val from = stringResource(id = R.string.read_from, args.page)
                 val read = stringResource(id = R.string.read)
                 launchInVM {
-                    val result = showSnackbar(from, read, true)
+                    val result = snackbar(from, read, true)
                     if (result == SnackbarResult.ActionPerformed) {
                         navToReader(gi.findBaseInfo(), args.page)
                     }
