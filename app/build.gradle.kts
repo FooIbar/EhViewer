@@ -270,6 +270,7 @@ kotlin {
             "androidx.compose.foundation.ExperimentalFoundationApi",
             "androidx.compose.animation.ExperimentalAnimationApi",
             "androidx.compose.animation.ExperimentalSharedTransitionApi",
+            "androidx.compose.runtime.ExperimentalComposeRuntimeApi",
             "androidx.paging.ExperimentalPagingApi",
             "kotlin.ExperimentalStdlibApi",
             "kotlin.concurrent.atomics.ExperimentalAtomicApi",
