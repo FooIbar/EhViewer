@@ -29,7 +29,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import moe.tarsin.launch
-import moe.tarsin.snackbar
+import moe.tarsin.launchSnackbar
 
 @Destination<RootGraph>
 @Composable
@@ -86,7 +86,7 @@ fun AnimatedVisibilityScope.PrivacyScreen(navigator: DestinationsNavigator) = Sc
                         title = R.string.clear_search_history_confirm,
                     )
                     searchDatabase.searchDao().clear()
-                    launch { snackbar(searchHistoryCleared) }
+                    launchSnackbar(searchHistoryCleared)
                 }
             }
         }
