@@ -1,5 +1,6 @@
 package com.hippo.ehviewer.ui.main
 
+import android.content.Context
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -60,7 +60,7 @@ private val categoryTable = arrayOf(
     EhUtils.MISC to R.string.misc,
 )
 
-context(_: DialogState, _: CoroutineScope)
+context(_: DialogState, _: CoroutineScope, _: Context)
 @Composable
 fun SearchFilter(
     modifier: Modifier = Modifier,
@@ -71,7 +71,6 @@ fun SearchFilter(
     advancedOption: AdvancedSearchOption,
     onAdvancedOptionChange: (AdvancedSearchOption) -> Unit,
 ) = Column(modifier) {
-    val context = LocalContext.current
     val animateItems by Settings.animateItems.collectAsState()
     fun isCategoryChecked(bit: Int) = category and bit != 0
     val categories = remember(category) { categoryTable.sortedBy { !isCategoryChecked(it.first) } }
@@ -98,7 +97,7 @@ fun SearchFilter(
         val any = stringResource(id = R.string.any)
         val languageStr = stringResource(id = R.string.key_language)
         val languages = remember {
-            val translatable = EhTagDatabase.initialized && EhTagDatabase.isTranslatable(context)
+            val translatable = EhTagDatabase.initialized && EhTagDatabase.translatable
             List(S_LANG_TAGS.size + 1) { i ->
                 if (i == 0) {
                     any

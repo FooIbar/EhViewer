@@ -57,7 +57,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -663,10 +662,10 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
 
 private const val TOPLIST_PAGES = 200
 
+context(_: Context)
 @Composable
 @Stable
 private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder, appName: Boolean = true): String? {
-    val context = LocalContext.current
     val keyword = urlBuilder.keyword
     val category = urlBuilder.category
     val mode = urlBuilder.mode
@@ -684,7 +683,7 @@ private fun getSuitableTitleForUrlBuilder(urlBuilder: ListUrlBuilder, appName: B
                 }
             }
             MODE_TAG -> {
-                val canTranslate = Settings.showTagTranslations && EhTagDatabase.isTranslatable(context) && EhTagDatabase.initialized
+                val canTranslate = Settings.showTagTranslations && EhTagDatabase.translatable && EhTagDatabase.initialized
                 wrapTagKeyword(keyword, canTranslate)
             }
             else -> keyword

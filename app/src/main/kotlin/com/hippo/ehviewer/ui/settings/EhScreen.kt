@@ -1,6 +1,5 @@
 package com.hippo.ehviewer.ui.settings
 
-import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Column
@@ -44,7 +43,6 @@ import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.FilterScreenDestination
 import com.hippo.ehviewer.ui.destinations.MyTagsScreenDestination
 import com.hippo.ehviewer.ui.destinations.UConfigScreenDestination
-import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.awaitSelectItem
 import com.hippo.ehviewer.ui.tools.awaitSelectTime
@@ -246,7 +244,7 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                     value = Settings::commentThreshold,
                 )
             }
-            if (EhTagDatabase.isTranslatable(implicit<Context>())) {
+            if (EhTagDatabase.translatable) {
                 SwitchPreference(
                     title = stringResource(id = R.string.settings_eh_show_tag_translations),
                     summary = stringResource(id = R.string.settings_eh_show_tag_translations_summary),

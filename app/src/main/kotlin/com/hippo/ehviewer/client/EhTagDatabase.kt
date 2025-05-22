@@ -68,7 +68,7 @@ object EhTagDatabase : CoroutineScope {
     context(ctx: Context)
     fun suggestion(rawKeyword: String, expectTranslate: Boolean): Sequence<Pair<String, String?>> {
         if (!initialized) return emptySequence()
-        val translate = expectTranslate && isTranslatable(ctx)
+        val translate = expectTranslate && translatable
         val keyword = PREFIXES.fold(rawKeyword) { kwd, pfx -> kwd.removePrefix(pfx) }
         val prefix = rawKeyword.dropLast(keyword.length)
         val ns = keyword.substringBefore(':')
@@ -106,7 +106,9 @@ object EhTagDatabase : CoroutineScope {
 
     private fun metadata(context: Context): Array<String> = context.resources.getStringArray(R.array.tag_translation_metadata)
 
-    fun isTranslatable(context: Context): Boolean = context.resources.getBoolean(R.bool.tag_translatable)
+    context(ctx: Context)
+    val translatable
+        get() = ctx.resources.getBoolean(R.bool.tag_translatable)
 
     private suspend fun fetch(url: String) = ktorClient.prepareGet(url).executeSafely {
         it.status.ensureSuccess()
