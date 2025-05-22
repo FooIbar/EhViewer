@@ -241,7 +241,6 @@ fun AnimatedVisibilityScope.EhScreen(navigator: DestinationsNavigator) = Screen(
                 IntSliderPreference(
                     maxValue = 100,
                     minValue = -101,
-                    showTicks = false,
                     title = stringResource(id = R.string.settings_eh_show_gallery_comment_threshold),
                     summary = stringResource(id = R.string.settings_eh_show_gallery_comment_threshold_summary),
                     value = Settings::commentThreshold,
