@@ -109,7 +109,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
         }
     }
     val galleryDetailUrl = remember(gid, token) { EhUrl.getGalleryDetailUrl(gid, token, 0, false) }
-    implicit<MainActivity>().ProvideAssistContent(galleryDetailUrl)
+    contextOf<MainActivity>().ProvideAssistContent(galleryDetailUrl)
 
     var galleryInfo by rememberInVM {
         val casted = args as? GalleryInfoArgs
@@ -202,7 +202,7 @@ fun AnimatedVisibilityScope.GalleryDetailScreen(args: GalleryDetailScreenArgs, n
                     ) {
                         clickableItem(
                             onClick = {
-                                AppHelper.share(implicit<MainActivity>(), galleryDetailUrl)
+                                AppHelper.share(contextOf<MainActivity>(), galleryDetailUrl)
                                 // In case the link is copied to the clipboard
                                 Settings.clipboardTextHashCode = galleryDetailUrl.hashCode()
                             },

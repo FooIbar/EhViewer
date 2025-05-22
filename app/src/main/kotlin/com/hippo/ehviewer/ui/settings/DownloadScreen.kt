@@ -54,7 +54,6 @@ import com.hippo.ehviewer.spider.readCompatFromPath
 import com.hippo.ehviewer.spider.speedLevelToSpeed
 import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.keepNoMediaFileStatus
-import com.hippo.ehviewer.ui.screen.implicit
 import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.observed
 import com.hippo.ehviewer.ui.tools.rememberedAccessor
@@ -107,7 +106,7 @@ fun AnimatedVisibilityScope.DownloadScreen(navigator: DestinationsNavigator) = S
                 treeUri?.run {
                     launchIO {
                         runCatching {
-                            implicit<Context>().contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
+                            contextOf<Context>().contentResolver.takePersistableUriPermission(treeUri, FLAG_GRANT_READ_URI_PERMISSION or FLAG_GRANT_WRITE_URI_PERMISSION)
                             val path = DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri)).toOkioPath()
                             check(path.isDirectory) { "$path is not a directory" }
                             keepNoMediaFileStatus(path) // Check if the directory is writable

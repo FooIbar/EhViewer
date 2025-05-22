@@ -298,7 +298,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             },
         )
 
-        val dialogState by rememberUpdatedState(implicit<DialogState>())
+        val dialogState by rememberUpdatedState(contextOf<DialogState>())
         val labelsListState = rememberLazyListState()
         val editEnable = DownloadsFilterMode.CUSTOM == filterMode
         val hapticFeedback = rememberHapticFeedback()
@@ -483,9 +483,9 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     text = { Text(text = stringResource(id = R.string.download_start_all)) },
                     onClick = {
                         expanded = false
-                        val intent = Intent(implicit<Activity>(), DownloadService::class.java)
+                        val intent = Intent(contextOf<Activity>(), DownloadService::class.java)
                         intent.action = DownloadService.ACTION_START_ALL
-                        ContextCompat.startForegroundService(implicit<Activity>(), intent)
+                        ContextCompat.startForegroundService(contextOf<Activity>(), intent)
                     },
                 )
                 DropdownMenuItem(
@@ -517,10 +517,10 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                     onClick = {
                         expanded = false
                         val gidList = list.filter { it.state != DownloadInfo.STATE_FINISH }.asReversed().mapToLongArray(DownloadInfo::gid)
-                        val intent = Intent(implicit<Activity>(), DownloadService::class.java)
+                        val intent = Intent(contextOf<Activity>(), DownloadService::class.java)
                         intent.action = DownloadService.ACTION_START_RANGE
                         intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
-                        ContextCompat.startForegroundService(implicit<Activity>(), intent)
+                        ContextCompat.startForegroundService(contextOf<Activity>(), intent)
                     },
                 )
             }
@@ -529,7 +529,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
         val height by collectListThumbSizeAsState()
         val realPadding = contentPadding + PaddingValues(dimensionResource(id = R.dimen.gallery_list_margin_h), dimensionResource(id = R.dimen.gallery_list_margin_v))
         val searchBarConnection = remember {
-            val slop = ViewConfiguration.get(implicit<Context>()).scaledTouchSlop
+            val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
@@ -602,10 +602,10 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                                     checkedInfoMap[info.gid] = info
                                 },
                                 onStart = {
-                                    val intent = Intent(implicit<Activity>(), DownloadService::class.java)
+                                    val intent = Intent(contextOf<Activity>(), DownloadService::class.java)
                                     intent.action = DownloadService.ACTION_START
                                     intent.putExtra(DownloadService.KEY_GALLERY_INFO, info.galleryInfo)
-                                    ContextCompat.startForegroundService(implicit<Activity>(), intent)
+                                    ContextCompat.startForegroundService(contextOf<Activity>(), intent)
                                 },
                                 onStop = { launchIO { DownloadManager.stopDownload(info.gid) } },
                                 info = info,
@@ -667,7 +667,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             }
             onClick(Icons.AutoMirrored.Default.Sort) {
                 val oldMode = SortMode.from(sortMode)
-                val sortModes = implicit<Context>().resources.getStringArray(R.array.download_sort_modes).toList()
+                val sortModes = contextOf<Context>().resources.getStringArray(R.array.download_sort_modes).toList()
                 val (selected, checked) = awaitSelectItemWithCheckBox(
                     sortModes,
                     R.string.sort_by,
@@ -681,7 +681,7 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
                 invalidateKey = !invalidateKey
             }
             onClick(Icons.Default.FilterList) {
-                val downloadStates = implicit<Context>().resources.getStringArray(R.array.download_state).toList()
+                val downloadStates = contextOf<Context>().resources.getStringArray(R.array.download_state).toList()
                 val state = awaitSingleChoice(
                     downloadStates,
                     filterState.state + 1,
@@ -696,10 +696,10 @@ fun AnimatedVisibilityScope.DownloadsScreen(navigator: DestinationsNavigator) = 
             }
             onClick(Icons.Default.PlayArrow) {
                 val gidList = checkedInfoMap.takeAndClear().mapToLongArray(DownloadInfo::gid)
-                val intent = Intent(implicit<Activity>(), DownloadService::class.java)
+                val intent = Intent(contextOf<Activity>(), DownloadService::class.java)
                 intent.action = DownloadService.ACTION_START_RANGE
                 intent.putExtra(DownloadService.KEY_GID_LIST, gidList)
-                ContextCompat.startForegroundService(implicit<Context>(), intent)
+                ContextCompat.startForegroundService(contextOf<Context>(), intent)
             }
             onClick(Icons.Default.Pause) {
                 val gidList = checkedInfoMap.takeAndClear().mapToLongArray(DownloadInfo::gid)

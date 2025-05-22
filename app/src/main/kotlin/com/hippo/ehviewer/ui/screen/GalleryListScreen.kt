@@ -351,7 +351,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                 windowInsets = WindowInsets(),
             )
             Box(modifier = Modifier.fillMaxSize()) {
-                val dialogState by rememberUpdatedState(implicit<DialogState>())
+                val dialogState by rememberUpdatedState(contextOf<DialogState>())
                 val quickSearchListState = rememberLazyListState()
                 val hapticFeedback = rememberHapticFeedback()
                 val reorderableLazyListState = rememberReorderableLazyListState(quickSearchListState) { from, to ->
@@ -555,7 +555,7 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
         val height by collectListThumbSizeAsState()
         val showPages by Settings.showGalleryPages.collectAsState()
         val searchBarConnection = remember {
-            val slop = ViewConfiguration.get(implicit<Context>()).scaledTouchSlop
+            val slop = ViewConfiguration.get(contextOf<Context>()).scaledTouchSlop
             val topPaddingPx = with(density) { contentPadding.calculateTopPadding().roundToPx() }
             object : NestedScrollConnection {
                 override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
