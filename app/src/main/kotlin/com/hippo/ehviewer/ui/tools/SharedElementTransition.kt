@@ -29,20 +29,20 @@ context(ctx: TransitionsVisibilityScope)
 @Composable
 inline fun <T> togetherWith(scope: AnimatedVisibilityScope, block: @Composable TransitionsVisibilityScope.() -> T) = block(remember(ctx.scopes, scope) { TransitionsVisibilityScope(ctx.scopes + scope) })
 
-context(s: SharedTransitionScope, t: TransitionsVisibilityScope, g: SETNodeGenerator)
+context(shareScope: SharedTransitionScope, visScope: TransitionsVisibilityScope, generator: SETNodeGenerator)
 @Composable
 fun Modifier.sharedBounds(
     key: String,
     enter: EnterTransition = fadeIn(),
     exit: ExitTransition = fadeOut(),
-) = remember(key) { g.summon(key) }.let { node ->
+) = remember(key) { generator.summon(key) }.let { node ->
     DisposableEffect(key) {
         onDispose {
-            g.dispose(node)
+            generator.dispose(node)
         }
     }
-    t.scopes.fold(this) { modifier, scope ->
-        with(s) {
+    visScope.scopes.fold(this) { modifier, scope ->
+        with(shareScope) {
             modifier.sharedBounds(
                 rememberSharedContentState("${node.syntheticKey} + ${scope.transition.label}"),
                 scope,

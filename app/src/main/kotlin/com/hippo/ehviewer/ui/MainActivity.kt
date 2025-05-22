@@ -25,7 +25,6 @@ import android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateDpAsState
@@ -523,8 +522,6 @@ class MainActivity : EhActivity() {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
         }
     }
-
-    fun showTip(@StringRes id: Int, useToast: Boolean = false) = showTip(getString(id), useToast)
 
     override fun onProvideAssistContent(outContent: AssistContent?) {
         super.onProvideAssistContent(outContent)
