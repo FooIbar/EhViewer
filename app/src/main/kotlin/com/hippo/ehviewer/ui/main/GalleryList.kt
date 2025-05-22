@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SearchBarScrollBehavior
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -64,6 +65,7 @@ import com.hippo.ehviewer.ui.screen.collectDetailSizeAsState
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalGrid
 import com.hippo.ehviewer.ui.tools.FastScrollLazyVerticalStaggeredGrid
 import com.hippo.ehviewer.util.displayString
+import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
@@ -90,10 +92,9 @@ fun GalleryList(
     detailItemContent: @Composable (LazyGridItemScope.(BaseGalleryInfo) -> Unit),
     thumbListState: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
     thumbItemContent: @Composable (LazyStaggeredGridItemScope.(BaseGalleryInfo) -> Unit),
-    searchBarOffsetY: () -> Int,
+    scrollBehavior: SearchBarScrollBehavior,
     scrollToTopOnRefresh: Boolean = true,
     onRefresh: () -> Unit,
-    onLoading: () -> Unit,
 ) {
     val marginH = dimensionResource(id = R.dimen.gallery_list_margin_h)
     val marginV = dimensionResource(id = R.dimen.gallery_list_margin_v)
@@ -189,7 +190,7 @@ fun GalleryList(
         when (val state = data.loadState.refresh) {
             is LoadState.Loading -> if (!isRefreshing && scrollToTopOnRefresh) {
                 LaunchedEffect(Unit) {
-                    onLoading()
+                    scrollBehavior.scrollOffset = 0f
                 }
                 LaunchedEffect(Unit) {
                     if (listMode == 0) {
@@ -226,8 +227,7 @@ fun GalleryList(
         PullToRefreshDefaults.LoadingIndicator(
             state = refreshState,
             isRefreshing = isRefreshing,
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding())
-                .offset { IntOffset(0, searchBarOffsetY()) },
+            modifier = with(scrollBehavior) { Modifier.align(Alignment.TopCenter).padding(top = contentPadding.calculateTopPadding()).offset { IntOffset(0, scrollBehavior.scrollOffset.roundToInt()) } },
         )
     }
 }
