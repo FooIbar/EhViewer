@@ -32,9 +32,10 @@ import androidx.lifecycle.LifecycleOwner
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.Settings
 
-fun Context.isAuthenticationSupported(): Boolean {
+context(ctx: Context)
+fun isAuthenticationSupported(): Boolean {
     val authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK or DEVICE_CREDENTIAL
-    return BiometricManager.from(this).canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
+    return BiometricManager.from(ctx).canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS
 }
 
 class SecurityActivity : AppCompatActivity() {

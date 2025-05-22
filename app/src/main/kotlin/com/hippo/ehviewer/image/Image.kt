@@ -90,16 +90,18 @@ class Image private constructor(image: CoilImage, private val src: ImageSource) 
         private val sizeResolver = SizeResolver(Size(targetWidth, Dimension.Undefined))
 
         private suspend fun Either<ByteBufferSource, PathSource>.decodeCoil(checkExtraneousAds: Boolean): CoilImage {
-            val request = appCtx.imageRequest {
-                onLeft { data(it.source) }
-                onRight { data(it.source.toUri()) }
-                size(sizeResolver)
-                precision(Precision.INEXACT)
-                allowHardware(false)
-                hardwareThreshold(Settings.hardwareBitmapThreshold)
-                maybeCropBorder(Settings.cropBorder.value)
-                detectQrCode(checkExtraneousAds)
-                memoryCachePolicy(CachePolicy.DISABLED)
+            val request = with(appCtx) {
+                imageRequest {
+                    onLeft { data(it.source) }
+                    onRight { data(it.source.toUri()) }
+                    size(sizeResolver)
+                    precision(Precision.INEXACT)
+                    allowHardware(false)
+                    hardwareThreshold(Settings.hardwareBitmapThreshold)
+                    maybeCropBorder(Settings.cropBorder.value)
+                    detectQrCode(checkExtraneousAds)
+                    memoryCachePolicy(CachePolicy.DISABLED)
+                }
             }
             return when (val result = request.execute()) {
                 is SuccessResult -> result.image

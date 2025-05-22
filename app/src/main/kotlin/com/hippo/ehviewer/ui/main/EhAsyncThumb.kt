@@ -18,7 +18,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ImageRequest
 import com.hippo.ehviewer.client.data.GalleryInfo
 import com.hippo.ehviewer.ktbuilder.imageRequest
 import com.hippo.ehviewer.ui.tools.SETNodeGenerator
@@ -29,12 +28,11 @@ import com.hippo.ehviewer.ui.tools.thenIf
 
 @Composable
 @NonRestartableComposable
-fun requestOf(model: GalleryInfo): ImageRequest {
-    val context = LocalContext.current
-    return remember(model) { context.imageRequest(model) }
+fun requestOf(model: GalleryInfo) = with(LocalContext.current) {
+    remember(model) { imageRequest(model) }
 }
 
-context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope, _: SETNodeGenerator)
 @Composable
 fun EhAsyncCropThumb(
     key: GalleryInfo,
@@ -58,7 +56,7 @@ fun EhAsyncCropThumb(
     )
 }
 
-context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope, _: SETNodeGenerator)
 @Composable
 fun EhThumbCard(
     key: GalleryInfo,

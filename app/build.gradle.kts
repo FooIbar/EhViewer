@@ -282,8 +282,7 @@ kotlin {
             "splitties.preferences.DataStorePreferencesPreview",
         )
         freeCompilerArgs.addAll(
-            "-Xcontext-receivers",
-            "-Xsuppress-warning=CONTEXT_RECEIVERS_DEPRECATED",
+            "-Xcontext-parameters",
             "-Xannotation-default-target=param-property",
         )
     }

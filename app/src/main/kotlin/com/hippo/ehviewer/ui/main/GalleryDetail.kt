@@ -98,7 +98,7 @@ fun GalleryDetailHeaderInfoCard(
     }
 }
 
-context(SharedTransitionScope, TransitionsVisibilityScope)
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 @Composable
 fun GalleryDetailHeaderCard(
     info: GalleryInfo,

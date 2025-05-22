@@ -67,7 +67,7 @@ import com.hippo.ehviewer.util.displayString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import moe.tarsin.launch
 
 @Stable
 operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
@@ -78,7 +78,7 @@ operator fun PaddingValues.plus(r: PaddingValues) = object : PaddingValues {
     override fun calculateTopPadding() = l.calculateTopPadding() + r.calculateTopPadding()
 }
 
-context(CoroutineScope, Context)
+context(_: CoroutineScope, ctx: Context)
 @Composable
 fun GalleryList(
     modifier: Modifier = Modifier,
@@ -143,7 +143,7 @@ fun GalleryList(
                     val info = data[index]
                     if (info != null) {
                         detailItemContent(info)
-                        PrefetchAround(data, index, 5, ::imageRequest)
+                        PrefetchAround(data, index, 5) { imageRequest(it) }
                     }
                 }
                 if (showLoadStateIndicator) {
@@ -173,7 +173,7 @@ fun GalleryList(
                     val info = data[index]
                     if (info != null) {
                         thumbItemContent(info)
-                        PrefetchAround(data, index, 10, ::imageRequest)
+                        PrefetchAround(data, index, 10) { imageRequest(it) }
                     }
                 }
                 if (showLoadStateIndicator) {

@@ -27,16 +27,18 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 private val intent = CustomTabsIntent.Builder().apply { setShowTitle(true) }.build()
 
-fun Context.openBrowser(url: String) {
+context(ctx: Context)
+fun openBrowser(url: String) {
     if (url.isEmpty()) return
     try {
-        intent.launchUrl(this, url.toUri())
+        intent.launchUrl(ctx, url.toUri())
     } catch (e: ActivityNotFoundException) {
-        Toast.makeText(this, R.string.no_browser_installed, Toast.LENGTH_LONG).show()
+        Toast.makeText(ctx, R.string.no_browser_installed, Toast.LENGTH_LONG).show()
     }
 }
 
-fun DestinationsNavigator.jumpToReaderByPage(url: String, detail: GalleryDetail): Boolean {
+context(_: DestinationsNavigator)
+fun jumpToReaderByPage(url: String, detail: GalleryDetail): Boolean {
     GalleryPageUrlParser.parse(url)?.let {
         if (it.gid == detail.gid) {
             navToReader(detail.galleryInfo, it.page)

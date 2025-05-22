@@ -92,7 +92,7 @@ private val constraintSet = ConstraintSet {
     }
 }
 
-context(SharedTransitionScope, TransitionsVisibilityScope)
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 @Composable
 fun GalleryInfoListItem(
     onClick: () -> Unit,
@@ -204,7 +204,7 @@ fun GalleryInfoListItem(
     }
 }
 
-context(SharedTransitionScope, TransitionsVisibilityScope)
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope)
 @Composable
 fun GalleryInfoGridItem(
     onClick: () -> Unit,

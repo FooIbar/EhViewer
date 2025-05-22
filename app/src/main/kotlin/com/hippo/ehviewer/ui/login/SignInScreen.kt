@@ -65,6 +65,7 @@ import com.hippo.ehviewer.ui.Screen
 import com.hippo.ehviewer.ui.destinations.WebViewSignInScreenDestination
 import com.hippo.ehviewer.ui.openBrowser
 import com.hippo.ehviewer.ui.tools.LocalWindowSizeClass
+import com.hippo.ehviewer.ui.tools.awaitConfirmationOrCancel
 import com.hippo.ehviewer.ui.tools.isExpanded
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.displayString
@@ -72,9 +73,9 @@ import com.jamal.composeprefs3.ui.ifTrueThen
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import eu.kanade.tachiyomi.util.lang.launchIO
 import eu.kanade.tachiyomi.util.lang.withUIContext
 import kotlinx.coroutines.Job
+import moe.tarsin.launchIO
 
 @Destination<RootGraph>(start = true)
 @Composable

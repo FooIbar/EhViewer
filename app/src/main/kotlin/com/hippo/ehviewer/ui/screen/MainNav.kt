@@ -12,6 +12,7 @@ import com.hippo.ehviewer.ui.destinations.GalleryListScreenDestination
 import com.hippo.ehviewer.ui.destinations.ProgressScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Direction
+import moe.tarsin.navigate
 
 private fun urlToDestination(url: String): Direction? {
     if (url.isEmpty()) return null
@@ -24,15 +25,17 @@ private fun urlToDestination(url: String): Direction? {
     return null
 }
 
+context(nav: DestinationsNavigator)
 @MainThread
-fun DestinationsNavigator.navWithUrl(url: String): Boolean {
+fun navWithUrl(url: String): Boolean {
     val dest = urlToDestination(url) ?: return false
     navigate(dest)
     return true
 }
 
+context(nav: DestinationsNavigator)
 @MainThread
-fun DestinationsNavigator.popNavigate(direction: Direction) = navigate(direction) {
+fun popNavigate(direction: Direction) = nav.navigate(direction) {
     popUpTo(NavGraphs.root)
 }
 

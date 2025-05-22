@@ -3,7 +3,6 @@ package com.hippo.ehviewer.ui.tools
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -11,7 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.TextToolbar
 import androidx.compose.ui.platform.TextToolbarStatus
@@ -28,7 +26,7 @@ import androidx.compose.ui.text.input.getTextBeforeSelection
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import com.hippo.ehviewer.R
-import com.hippo.ehviewer.util.findActivity
+import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.util.toRangeSet
 import io.github.petertrr.diffutils.diffInline
 import io.github.petertrr.diffutils.patch.ChangeDelta
@@ -142,12 +140,11 @@ fun AnnotatedString.toBBCode() = buildString {
     }
 }
 
+context(activity: MainActivity)
 @Composable
 fun rememberBBCodeTextToolbar(textFieldValue: MutableState<TextFieldValue>): TextToolbar {
     var tfv by textFieldValue
     val view = LocalView.current
-    val context = LocalContext.current
-    val activity = remember { context.findActivity<ComponentActivity>() }
     val coroutineScope = rememberCoroutineScope()
     val toolbar = remember {
         object : TextToolbar {

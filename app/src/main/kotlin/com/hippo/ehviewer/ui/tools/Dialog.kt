@@ -121,228 +121,289 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
     @Composable
     fun rememberLocal() = remember { DialogState(mutex) }
 
-    context(BoxScope)
+    context(scope: BoxScope)
     @Composable
-    fun Place() = value?.let { it() }
+    fun Place() = value?.let { it(scope) }
 
     fun dismiss() {
         value = null
     }
+}
 
-    suspend inline fun <R> dialog(crossinline block: @Composable BoxScope.(CancellableContinuation<R>) -> Unit) = mutex.mutate {
-        try {
-            suspendCancellableCoroutine { cont -> value = { block(cont) } }
-        } finally {
-            dismiss()
+context(state: DialogState)
+suspend inline fun <R> dialog(crossinline block: @Composable BoxScope.(CancellableContinuation<R>) -> Unit) = state.mutex.mutate {
+    try {
+        suspendCancellableCoroutine { cont -> state.value = { block(cont) } }
+    } finally {
+        state.dismiss()
+    }
+}
+
+context(_: DialogState)
+suspend fun <R> awaitResult(
+    initial: R,
+    @StringRes title: Int? = null,
+    invalidator: (suspend Raise<String>.(R) -> Unit)? = null,
+    block: @Composable DialogScope<R>.(String?) -> Unit,
+): R = dialog { cont ->
+    val state = remember(cont) { mutableStateOf(initial) }
+    var errorMsg by remember(cont) { mutableStateOf<String?>(null) }
+    val impl = remember(cont) {
+        object : DialogScope<R> {
+            override var expectedValue by state
         }
     }
-
-    suspend fun <R> awaitResult(
-        initial: R,
-        @StringRes title: Int? = null,
-        invalidator: (suspend Raise<String>.(R) -> Unit)? = null,
-        block: @Composable DialogScope<R>.(String?) -> Unit,
-    ): R = dialog { cont ->
-        val state = remember(cont) { mutableStateOf(initial) }
-        var errorMsg by remember(cont) { mutableStateOf<String?>(null) }
-        val impl = remember(cont) {
-            object : DialogScope<R> {
-                override var expectedValue by state
+    if (invalidator != null) {
+        LaunchedEffect(state) {
+            snapshotFlow { state.value }.collectLatest {
+                errorMsg = either { invalidator(it) }.leftOrNull()
             }
         }
-        if (invalidator != null) {
-            LaunchedEffect(state) {
-                snapshotFlow { state.value }.collectLatest {
-                    errorMsg = either { invalidator(it) }.leftOrNull()
-                }
-            }
-        }
-        AlertDialog(
-            onDismissRequest = { cont.cancel() },
-            confirmButton = {
-                TextButton(onClick = {
-                    if (invalidator == null || errorMsg == null) {
-                        cont.resume(state.value)
-                    }
-                }) {
-                    Text(text = stringResource(id = android.R.string.ok))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    cont.cancel()
-                }) {
-                    Text(text = stringResource(id = android.R.string.cancel))
-                }
-            },
-            title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
-            text = { block(impl, errorMsg) },
-        )
     }
-
-    context(Context)
-    suspend fun awaitSelectTags(): List<String> = dialog { cont ->
-        val selected = remember { mutableStateListOf<String>() }
-        val state = rememberTextFieldState()
-        var suggestionTranslate by rememberMutableStateInDataStore("SuggestionTranslate") { false }
-        PausableAlertDialog(
-            confirmButton = {
-                TextButton(
-                    onClick = { cont.resume(selected.toList()) },
-                    content = { Text(text = stringResource(id = android.R.string.ok)) },
-                )
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { cont.cancel() },
-                    content = { Text(text = stringResource(id = android.R.string.cancel)) },
-                )
-            },
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = stringResource(id = R.string.action_add_tag))
-                    val context = LocalContext.current
-                    if (EhTagDatabase.isTranslatable(context)) {
-                        Spacer(modifier = Modifier.weight(1f))
-                        Text(
-                            text = stringResource(id = R.string.translate_tag_for_tagger),
-                            style = MaterialTheme.typography.titleSmall,
-                        )
-                        Checkbox(
-                            checked = suggestionTranslate,
-                            onCheckedChange = { suggestionTranslate = !suggestionTranslate },
-                        )
-                    }
+    AlertDialog(
+        onDismissRequest = { cont.cancel() },
+        confirmButton = {
+            TextButton(onClick = {
+                if (invalidator == null || errorMsg == null) {
+                    cont.resume(state.value)
                 }
-            },
-            text = {
-                Column {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        selected.forEach { text ->
-                            InputChip(
-                                selected = true,
-                                onClick = { },
-                                label = { Text(text = text) },
-                                trailingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = null,
-                                        modifier = Modifier.clickable { selected -= text },
-                                    )
-                                },
-                            )
-                        }
-                    }
-                    var expanded by remember { mutableStateOf(false) }
-                    ExposedDropdownMenuBox(
-                        expanded = expanded,
-                        onExpandedChange = { if (!it) expanded = false },
-                    ) {
-                        OutlinedTextField(
-                            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
-                            state = state,
-                            label = { Text(text = stringResource(id = R.string.action_add_tag_tip)) },
+            }) {
+                Text(text = stringResource(id = android.R.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                cont.cancel()
+            }) {
+                Text(text = stringResource(id = android.R.string.cancel))
+            }
+        },
+        title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+        text = { block(impl, errorMsg) },
+    )
+}
+
+context(_: Context, _: DialogState)
+suspend fun awaitSelectTags(): List<String> = dialog { cont ->
+    val selected = remember { mutableStateListOf<String>() }
+    val state = rememberTextFieldState()
+    var suggestionTranslate by rememberMutableStateInDataStore("SuggestionTranslate") { false }
+    PausableAlertDialog(
+        confirmButton = {
+            TextButton(
+                onClick = { cont.resume(selected.toList()) },
+                content = { Text(text = stringResource(id = android.R.string.ok)) },
+            )
+        },
+        dismissButton = {
+            TextButton(
+                onClick = { cont.cancel() },
+                content = { Text(text = stringResource(id = android.R.string.cancel)) },
+            )
+        },
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = stringResource(id = R.string.action_add_tag))
+                val context = LocalContext.current
+                if (EhTagDatabase.isTranslatable(context)) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(id = R.string.translate_tag_for_tagger),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Checkbox(
+                        checked = suggestionTranslate,
+                        onCheckedChange = { suggestionTranslate = !suggestionTranslate },
+                    )
+                }
+            }
+        },
+        text = {
+            Column {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    selected.forEach { text ->
+                        InputChip(
+                            selected = true,
+                            onClick = { },
+                            label = { Text(text = text) },
                             trailingIcon = {
-                                IconButton(
-                                    onClick = {
-                                        val text = state.text.toString().trim()
-                                        if (text.isNotEmpty()) {
-                                            selected += text
-                                            state.clearText()
-                                        }
-                                    },
-                                    content = {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = null,
-                                        )
-                                    },
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = null,
+                                    modifier = Modifier.clickable { selected -= text },
                                 )
                             },
                         )
-                        val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
-                        var items by remember { mutableStateOf(emptyList<Pair<String, String?>>()) }
-                        LaunchedEffect(suggestionTranslate, query) {
-                            items = query?.let { suggestion(query, suggestionTranslate).take(15).toList() }.orEmpty()
-                            expanded = items.isNotEmpty()
-                        }
-                        ExposedDropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = {},
-                            modifier = Modifier.heightIn(max = 192.dp),
-                        ) {
-                            items.forEach { (tag, hint) ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Column {
-                                            Text(text = tag, maxLines = 1)
-                                            ProvideTextStyle(MaterialTheme.typography.bodySmall) {
-                                                if (hint != null) {
-                                                    Text(
-                                                        text = hint,
-                                                        maxLines = 1,
-                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    )
-                                                }
+                    }
+                }
+                var expanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { if (!it) expanded = false },
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable),
+                        state = state,
+                        label = { Text(text = stringResource(id = R.string.action_add_tag_tip)) },
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    val text = state.text.toString().trim()
+                                    if (text.isNotEmpty()) {
+                                        selected += text
+                                        state.clearText()
+                                    }
+                                },
+                                content = {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                    )
+                                },
+                            )
+                        },
+                    )
+                    val query = state.text.toString().trim().takeIf { s -> s.isNotEmpty() }
+                    var items by remember { mutableStateOf(emptyList<Pair<String, String?>>()) }
+                    LaunchedEffect(suggestionTranslate, query) {
+                        items = query?.let { suggestion(query, suggestionTranslate).take(15).toList() }.orEmpty()
+                        expanded = items.isNotEmpty()
+                    }
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = {},
+                        modifier = Modifier.heightIn(max = 192.dp),
+                    ) {
+                        items.forEach { (tag, hint) ->
+                            DropdownMenuItem(
+                                text = {
+                                    Column {
+                                        Text(text = tag, maxLines = 1)
+                                        ProvideTextStyle(MaterialTheme.typography.bodySmall) {
+                                            if (hint != null) {
+                                                Text(
+                                                    text = hint,
+                                                    maxLines = 1,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                )
                                             }
                                         }
-                                    },
-                                    onClick = {
-                                        if (tag.endsWith(':')) {
-                                            state.setTextAndPlaceCursorAtEnd(tag)
-                                        } else {
-                                            selected += tag
-                                            state.clearText()
-                                        }
-                                    },
-                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
-                                )
-                            }
+                                    }
+                                },
+                                onClick = {
+                                    if (tag.endsWith(':')) {
+                                        state.setTextAndPlaceCursorAtEnd(tag)
+                                    } else {
+                                        selected += tag
+                                        state.clearText()
+                                    }
+                                },
+                                contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                            )
                         }
                     }
                 }
-            },
-            idleIcon = Icons.Default.NewLabel,
-        )
-    }
+            }
+        },
+        idleIcon = Icons.Default.NewLabel,
+    )
+}
 
-    suspend fun awaitInputText(
-        initial: String = "",
-        title: String? = null,
-        hint: String? = null,
-        isNumber: Boolean = false,
-        @StringRes confirmText: Int = android.R.string.ok,
-        onUserDismiss: (() -> Unit)? = null,
-        invalidator: (suspend Raise<String>.(String) -> Unit)? = null,
-    ) = dialog { cont ->
-        val coroutineScope = rememberCoroutineScope()
-        val state = rememberTextFieldState(initial)
-        var error by remember(cont) { mutableStateOf<String?>(null) }
-        AlertDialog(
-            onDismissRequest = {
-                cont.cancel()
-                onUserDismiss?.invoke()
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    val text = state.text.toString()
-                    if (invalidator == null) {
-                        cont.resume(text)
-                    } else {
-                        coroutineScope.launch {
-                            error = either { invalidator(text) }.leftOrNull()
-                            error ?: cont.resume(text)
-                        }
+context(_: DialogState)
+suspend fun awaitInputText(
+    initial: String = "",
+    title: String? = null,
+    hint: String? = null,
+    isNumber: Boolean = false,
+    @StringRes confirmText: Int = android.R.string.ok,
+    onUserDismiss: (() -> Unit)? = null,
+    invalidator: (suspend Raise<String>.(String) -> Unit)? = null,
+) = dialog { cont ->
+    val coroutineScope = rememberCoroutineScope()
+    val state = rememberTextFieldState(initial)
+    var error by remember(cont) { mutableStateOf<String?>(null) }
+    AlertDialog(
+        onDismissRequest = {
+            cont.cancel()
+            onUserDismiss?.invoke()
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                val text = state.text.toString()
+                if (invalidator == null) {
+                    cont.resume(text)
+                } else {
+                    coroutineScope.launch {
+                        error = either { invalidator(text) }.leftOrNull()
+                        error ?: cont.resume(text)
                     }
-                }) {
-                    Text(text = stringResource(id = confirmText))
                 }
-            },
-            title = title.ifNotNullThen { Text(text = title!!) },
-            text = {
+            }) {
+                Text(text = stringResource(id = confirmText))
+            }
+        },
+        title = title.ifNotNullThen { Text(text = title!!) },
+        text = {
+            OutlinedTextField(
+                state = state,
+                label = hint?.let { { Text(text = it) } },
+                trailingIcon = error.ifNotNullThen {
+                    Icon(
+                        imageVector = Icons.Filled.Info,
+                        contentDescription = null,
+                    )
+                },
+                supportingText = error.ifNotNullThen {
+                    Text(text = error!!)
+                },
+                isError = error != null,
+                keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
+            )
+        },
+    )
+}
+
+context(_: DialogState)
+suspend fun awaitInputTextWithCheckBox(
+    initial: String = "",
+    @StringRes title: Int? = null,
+    @StringRes hint: Int? = null,
+    checked: Boolean,
+    @StringRes checkBoxText: Int,
+    isNumber: Boolean = false,
+    invalidator: (suspend Raise<String>.(String, Boolean) -> Unit)? = null,
+): Pair<String, Boolean> = dialog { cont ->
+    val coroutineScope = rememberCoroutineScope()
+    val state = rememberTextFieldState(initial)
+    var error by remember(cont) { mutableStateOf<String?>(null) }
+    var checkedState by remember { mutableStateOf(checked) }
+    AlertDialog(
+        onDismissRequest = { cont.cancel() },
+        confirmButton = {
+            TextButton(onClick = {
+                val text = state.text.toString()
+                if (invalidator == null) {
+                    cont.resume(text to checkedState)
+                } else {
+                    coroutineScope.launch {
+                        error = either { invalidator(text, checkedState) }.leftOrNull()
+                        error ?: cont.resume(text to checkedState)
+                    }
+                }
+            }) {
+                Text(text = stringResource(id = android.R.string.ok))
+            }
+        },
+        title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
                 OutlinedTextField(
                     state = state,
-                    label = hint?.let { { Text(text = it) } },
+                    label = hint?.let {
+                        { Text(text = stringResource(id = it)) }
+                    },
                     trailingIcon = error.ifNotNullThen {
                         Icon(
                             imageVector = Icons.Filled.Info,
@@ -355,381 +416,335 @@ class DialogState(val mutex: MutatorMutex = MutatorMutex()) : MutableComposable 
                     isError = error != null,
                     keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
                 )
-            },
-        )
-    }
+                LabeledCheckbox(
+                    modifier = Modifier.fillMaxWidth(),
+                    checked = checkedState,
+                    onCheckedChange = { checkedState = !checkedState },
+                    label = stringResource(checkBoxText),
+                )
+            }
+        },
+    )
+}
 
-    suspend fun awaitInputTextWithCheckBox(
-        initial: String = "",
-        @StringRes title: Int? = null,
-        @StringRes hint: Int? = null,
-        checked: Boolean,
-        @StringRes checkBoxText: Int,
-        isNumber: Boolean = false,
-        invalidator: (suspend Raise<String>.(String, Boolean) -> Unit)? = null,
-    ): Pair<String, Boolean> = dialog { cont ->
-        val coroutineScope = rememberCoroutineScope()
-        val state = rememberTextFieldState(initial)
-        var error by remember(cont) { mutableStateOf<String?>(null) }
-        var checkedState by remember { mutableStateOf(checked) }
-        AlertDialog(
-            onDismissRequest = { cont.cancel() },
-            confirmButton = {
-                TextButton(onClick = {
-                    val text = state.text.toString()
-                    if (invalidator == null) {
-                        cont.resume(text to checkedState)
-                    } else {
-                        coroutineScope.launch {
-                            error = either { invalidator(text, checkedState) }.leftOrNull()
-                            error ?: cont.resume(text to checkedState)
-                        }
-                    }
-                }) {
-                    Text(text = stringResource(id = android.R.string.ok))
+context(_: DialogState)
+suspend fun awaitConfirmationOrCancel(
+    @StringRes confirmText: Int = android.R.string.ok,
+    @StringRes dismissText: Int = android.R.string.cancel,
+    @StringRes title: Int? = null,
+    showConfirmButton: Boolean = true,
+    showCancelButton: Boolean = true,
+    onCancelButtonClick: () -> Unit = {},
+    secure: Boolean = false,
+    text: @Composable (() -> Unit)? = null,
+) = dialog { cont ->
+    AlertDialog(
+        onDismissRequest = { cont.cancel() },
+        confirmButton = {
+            if (showConfirmButton) {
+                TextButton(onClick = { cont.resume(Unit) }) {
+                    Text(text = stringResource(id = confirmText))
                 }
-            },
-            title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
-            text = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    OutlinedTextField(
-                        state = state,
-                        label = hint?.let {
-                            { Text(text = stringResource(id = it)) }
-                        },
-                        trailingIcon = error.ifNotNullThen {
-                            Icon(
-                                imageVector = Icons.Filled.Info,
-                                contentDescription = null,
-                            )
-                        },
-                        supportingText = error.ifNotNullThen {
-                            Text(text = error!!)
-                        },
-                        isError = error != null,
-                        keyboardOptions = if (isNumber) KeyboardOptions(keyboardType = KeyboardType.Number) else KeyboardOptions.Default,
-                    )
-                    LabeledCheckbox(
-                        modifier = Modifier.fillMaxWidth(),
-                        checked = checkedState,
-                        onCheckedChange = { checkedState = !checkedState },
-                        label = stringResource(checkBoxText),
-                    )
-                }
-            },
-        )
-    }
+            }
+        },
+        dismissButton = showCancelButton.ifTrueThen {
+            TextButton(onClick = {
+                onCancelButtonClick()
+                cont.cancel()
+            }) {
+                Text(text = stringResource(id = dismissText))
+            }
+        },
+        title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
+        text = text,
+        properties = if (secure) {
+            DialogProperties(securePolicy = SecureFlagPolicy.SecureOn)
+        } else {
+            DialogProperties()
+        },
+    )
+}
 
-    suspend fun awaitConfirmationOrCancel(
-        @StringRes confirmText: Int = android.R.string.ok,
-        @StringRes dismissText: Int = android.R.string.cancel,
-        @StringRes title: Int? = null,
-        showConfirmButton: Boolean = true,
-        showCancelButton: Boolean = true,
-        onCancelButtonClick: () -> Unit = {},
-        secure: Boolean = false,
-        text: @Composable (() -> Unit)? = null,
-    ) = dialog { cont ->
-        AlertDialog(
-            onDismissRequest = { cont.cancel() },
-            confirmButton = {
-                if (showConfirmButton) {
-                    TextButton(onClick = { cont.resume(Unit) }) {
-                        Text(text = stringResource(id = confirmText))
-                    }
-                }
-            },
-            dismissButton = showCancelButton.ifTrueThen {
-                TextButton(onClick = {
-                    onCancelButtonClick()
-                    cont.cancel()
-                }) {
-                    Text(text = stringResource(id = dismissText))
-                }
-            },
-            title = title.ifNotNullThen { Text(text = stringResource(id = title!!)) },
-            text = text,
-            properties = if (secure) {
-                DialogProperties(securePolicy = SecureFlagPolicy.SecureOn)
-            } else {
-                DialogProperties()
-            },
-        )
-    }
-
-    suspend fun awaitSelectDate(
-        @StringRes title: Int,
-        initialSelectedDateMillis: Long? = null,
-        initialDisplayedMonthMillis: Long? = initialSelectedDateMillis,
-        yearRange: IntRange = DatePickerDefaults.YearRange,
-        initialDisplayMode: DisplayMode = DisplayMode.Picker,
-        selectableDates: SelectableDates = DatePickerDefaults.AllDates,
-        showModeToggle: Boolean = true,
-    ): Long? = dialog { cont ->
-        val state = rememberDatePickerState(
-            initialSelectedDateMillis,
-            initialDisplayedMonthMillis,
-            yearRange,
-            initialDisplayMode,
-            selectableDates,
-        )
-        DatePickerDialog(
-            onDismissRequest = { cont.cancel() },
-            confirmButton = {
-                TextButton(onClick = { cont.resume(state.selectedDateMillis) }) {
-                    Text(text = stringResource(id = android.R.string.ok))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { cont.cancel() }) {
-                    Text(text = stringResource(id = android.R.string.cancel))
-                }
-            },
-        ) {
-            DatePicker(
-                state = state,
-                title = {
-                    Text(
-                        text = stringResource(id = title),
-                        modifier = Modifier.padding(DatePickerTitlePadding),
-                    )
-                },
-                showModeToggle = showModeToggle,
-            )
-        }
-    }
-
-    suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable Continuation<R>.() -> Unit): R = dialog { cont ->
-        BasicAlertDialog(
-            onDismissRequest = { cont.cancel() },
-            properties = DialogProperties(usePlatformDefaultWidth = respectDefaultWidth),
-            content = {
-                Surface(
-                    modifier = with(Modifier) { if (!respectDefaultWidth) defaultMinSize(280.dp) else width(280.dp) },
-                    shape = AlertDialogDefaults.shape,
-                    color = AlertDialogDefaults.containerColor,
-                    tonalElevation = AlertDialogDefaults.TonalElevation,
-                    content = { block(cont) },
+context(_: DialogState)
+suspend fun awaitSelectDate(
+    @StringRes title: Int,
+    initialSelectedDateMillis: Long? = null,
+    initialDisplayedMonthMillis: Long? = initialSelectedDateMillis,
+    yearRange: IntRange = DatePickerDefaults.YearRange,
+    initialDisplayMode: DisplayMode = DisplayMode.Picker,
+    selectableDates: SelectableDates = DatePickerDefaults.AllDates,
+    showModeToggle: Boolean = true,
+): Long? = dialog { cont ->
+    val state = rememberDatePickerState(
+        initialSelectedDateMillis,
+        initialDisplayedMonthMillis,
+        yearRange,
+        initialDisplayMode,
+        selectableDates,
+    )
+    DatePickerDialog(
+        onDismissRequest = { cont.cancel() },
+        confirmButton = {
+            TextButton(onClick = { cont.resume(state.selectedDateMillis) }) {
+                Text(text = stringResource(id = android.R.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { cont.cancel() }) {
+                Text(text = stringResource(id = android.R.string.cancel))
+            }
+        },
+    ) {
+        DatePicker(
+            state = state,
+            title = {
+                Text(
+                    text = stringResource(id = title),
+                    modifier = Modifier.padding(DatePickerTitlePadding),
                 )
             },
+            showModeToggle = showModeToggle,
         )
     }
+}
 
-    suspend fun awaitSelectTime(
-        title: String,
-        initialHour: Int,
-        initialMinute: Int,
-    ) = dialog { cont ->
-        val state = rememberTimePickerState(initialHour, initialMinute)
-        Dialog(
-            onDismissRequest = { cont.cancel() },
-            properties = DialogProperties(usePlatformDefaultWidth = false),
-        ) {
+context(_: DialogState)
+suspend fun <R> showNoButton(respectDefaultWidth: Boolean = true, block: @Composable Continuation<R>.() -> Unit): R = dialog { cont ->
+    BasicAlertDialog(
+        onDismissRequest = { cont.cancel() },
+        properties = DialogProperties(usePlatformDefaultWidth = respectDefaultWidth),
+        content = {
             Surface(
+                modifier = with(Modifier) { if (!respectDefaultWidth) defaultMinSize(280.dp) else width(280.dp) },
+                shape = AlertDialogDefaults.shape,
+                color = AlertDialogDefaults.containerColor,
+                tonalElevation = AlertDialogDefaults.TonalElevation,
+                content = { block(cont) },
+            )
+        },
+    )
+}
+
+context(_: DialogState)
+suspend fun awaitSelectTime(
+    title: String,
+    initialHour: Int,
+    initialMinute: Int,
+) = dialog { cont ->
+    val state = rememberTimePickerState(initialHour, initialMinute)
+    Dialog(
+        onDismissRequest = { cont.cancel() },
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            tonalElevation = 6.dp,
+            modifier = Modifier.width(IntrinsicSize.Min).height(IntrinsicSize.Min).background(
                 shape = MaterialTheme.shapes.extraLarge,
-                tonalElevation = 6.dp,
-                modifier = Modifier.width(IntrinsicSize.Min).height(IntrinsicSize.Min).background(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    color = MaterialTheme.colorScheme.surface,
-                ),
+                color = MaterialTheme.colorScheme.surface,
+            ),
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
-                        text = title,
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                    TimePicker(state = state)
-                    Row(modifier = Modifier.height(40.dp).fillMaxWidth()) {
-                        Spacer(modifier = Modifier.weight(1f))
-                        TextButton(onClick = { cont.cancel() }) {
-                            Text(stringResource(id = android.R.string.cancel))
-                        }
-                        TextButton(onClick = { cont.resume(state.hour to state.minute) }) {
-                            Text(stringResource(id = android.R.string.ok))
-                        }
+                Text(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                TimePicker(state = state)
+                Row(modifier = Modifier.height(40.dp).fillMaxWidth()) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    TextButton(onClick = { cont.cancel() }) {
+                        Text(stringResource(id = android.R.string.cancel))
+                    }
+                    TextButton(onClick = { cont.resume(state.hour to state.minute) }) {
+                        Text(stringResource(id = android.R.string.ok))
                     }
                 }
             }
         }
     }
+}
 
-    suspend fun awaitSingleChoice(
-        items: List<String>,
-        selected: Int,
-        @StringRes title: Int? = null,
-    ): Int = showNoButton {
-        Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
-            title?.let {
-                Text(
-                    text = stringResource(id = it),
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-            }
-            items.forEachIndexed { index, text ->
-                Row(
-                    modifier = Modifier.clickable { resume(index) }.fillMaxWidth().padding(horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    RadioButton(selected = index == selected, onClick = { resume(index) })
-                    Text(text = text)
-                }
-            }
-        }
-    }
-
-    suspend fun awaitSelectItem(
-        items: List<String>,
-        @StringRes title: Int? = null,
-        selected: Int = -1,
-        respectDefaultWidth: Boolean = true,
-    ) = awaitSelectItem(items, title?.right(), selected, respectDefaultWidth)
-
-    suspend fun awaitSelectItem(
-        items: List<String>,
-        title: Either<String, Int>?,
-        selected: Int = -1,
-        respectDefaultWidth: Boolean = true,
-    ): Int = showNoButton(respectDefaultWidth) {
-        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            if (title != null) {
-                Text(
-                    text = title.fold({ it }, { stringResource(id = it) }),
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-            }
-            FastScrollLazyColumn {
-                itemsIndexed(items) { index, text ->
-                    CheckableItem(
-                        text = text,
-                        checked = index == selected,
-                        modifier = Modifier.fillMaxWidth().clickable { resume(index) }.padding(horizontal = 8.dp),
-                    )
-                }
-            }
-        }
-    }
-
-    suspend inline fun awaitSelectAction(
-        @StringRes title: Int? = null,
-        selected: Int = -1,
-        builder: ActionScope.() -> Unit,
-    ): suspend () -> Unit {
-        val (items, actions) = buildList { builder { action, that -> add(action to that) } }.unzip()
-        val index = awaitSelectItem(items, title, selected)
-        return actions[index]
-    }
-
-    suspend fun awaitSelectItemWithCheckBox(
-        items: List<String>,
-        @StringRes title: Int,
-        @StringRes checkBoxText: Int,
-        selected: Int = -1,
-        initialChecked: Boolean = false,
-    ): Pair<Int, Boolean> = showNoButton {
-        var checked by remember { mutableStateOf(initialChecked) }
-        Column(modifier = Modifier.padding(vertical = 8.dp)) {
+context(_: DialogState)
+suspend fun awaitSingleChoice(
+    items: List<String>,
+    selected: Int,
+    @StringRes title: Int? = null,
+): Int = showNoButton {
+    Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(vertical = 8.dp)) {
+        title?.let {
             Text(
-                text = stringResource(id = title),
+                text = stringResource(id = it),
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
                 style = MaterialTheme.typography.headlineSmall,
             )
-            FastScrollLazyColumn {
-                itemsIndexed(items) { index, text ->
-                    CheckableItem(
-                        text = text,
-                        checked = index == selected,
-                        modifier = Modifier.fillMaxWidth().clickable { resume(index to checked) }.padding(horizontal = 8.dp),
-                    )
-                }
+        }
+        items.forEachIndexed { index, text ->
+            Row(
+                modifier = Modifier.clickable { resume(index) }.fillMaxWidth().padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(selected = index == selected, onClick = { resume(index) })
+                Text(text = text)
             }
-            LabeledCheckbox(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                checked = checked,
-                onCheckedChange = { checked = !checked },
-                label = stringResource(checkBoxText),
+        }
+    }
+}
+
+context(_: DialogState)
+suspend fun awaitSelectItem(
+    items: List<String>,
+    @StringRes title: Int? = null,
+    selected: Int = -1,
+    respectDefaultWidth: Boolean = true,
+) = awaitSelectItem(items, title?.right(), selected, respectDefaultWidth)
+
+context(_: DialogState)
+suspend fun awaitSelectItem(
+    items: List<String>,
+    title: Either<String, Int>?,
+    selected: Int = -1,
+    respectDefaultWidth: Boolean = true,
+): Int = showNoButton(respectDefaultWidth) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        if (title != null) {
+            Text(
+                text = title.fold({ it }, { stringResource(id = it) }),
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.headlineSmall,
+            )
+        }
+        FastScrollLazyColumn {
+            itemsIndexed(items) { index, text ->
+                CheckableItem(
+                    text = text,
+                    checked = index == selected,
+                    modifier = Modifier.fillMaxWidth().clickable { resume(index) }.padding(horizontal = 8.dp),
+                )
+            }
+        }
+    }
+}
+
+context(_: DialogState)
+suspend inline fun awaitSelectAction(
+    @StringRes title: Int? = null,
+    selected: Int = -1,
+    builder: ActionScope.() -> Unit,
+): suspend () -> Unit {
+    val (items, actions) = buildList { builder { action, that -> add(action to that) } }.unzip()
+    val index = awaitSelectItem(items, title, selected)
+    return actions[index]
+}
+
+context(_: DialogState)
+suspend fun awaitSelectItemWithCheckBox(
+    items: List<String>,
+    @StringRes title: Int,
+    @StringRes checkBoxText: Int,
+    selected: Int = -1,
+    initialChecked: Boolean = false,
+): Pair<Int, Boolean> = showNoButton {
+    var checked by remember { mutableStateOf(initialChecked) }
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(
+            text = stringResource(id = title),
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.headlineSmall,
+        )
+        FastScrollLazyColumn {
+            itemsIndexed(items) { index, text ->
+                CheckableItem(
+                    text = text,
+                    checked = index == selected,
+                    modifier = Modifier.fillMaxWidth().clickable { resume(index to checked) }.padding(horizontal = 8.dp),
+                )
+            }
+        }
+        LabeledCheckbox(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            checked = checked,
+            onCheckedChange = { checked = !checked },
+            label = stringResource(checkBoxText),
+        )
+    }
+}
+
+context(_: DialogState)
+suspend fun awaitSelectItemWithIcon(
+    items: List<Pair<ImageVector, Int>>,
+    title: String,
+): Int = showNoButton {
+    LazyColumn {
+        stickyHeader {
+            Text(text = title, modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp), style = MaterialTheme.typography.titleMedium)
+        }
+        itemsIndexed(items) { index, (icon, text) ->
+            ListItem(
+                headlineContent = { Text(text = stringResource(id = text), style = MaterialTheme.typography.titleMedium) },
+                modifier = Modifier.clickable { resume(index) }.padding(horizontal = 8.dp),
+                leadingContent = { Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor) },
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
             )
         }
     }
+}
 
-    suspend fun awaitSelectItemWithIcon(
-        items: List<Pair<ImageVector, Int>>,
-        title: String,
-    ): Int = showNoButton {
-        LazyColumn {
-            stickyHeader {
-                Text(text = title, modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp), style = MaterialTheme.typography.titleMedium)
-            }
-            itemsIndexed(items) { index, (icon, text) ->
-                ListItem(
-                    headlineContent = { Text(text = stringResource(id = text), style = MaterialTheme.typography.titleMedium) },
-                    modifier = Modifier.clickable { resume(index) }.padding(horizontal = 8.dp),
-                    leadingContent = { Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor) },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
-            }
-        }
-    }
-
-    suspend fun awaitSelectItemWithIconAndTextField(
-        items: List<Pair<ImageVector, String>>,
-        @StringRes title: Int,
-        @StringRes hint: Int,
-        initialNote: String,
-        maxChar: Int,
-    ): Pair<Int, String> = showNoButton(false) {
-        Column {
-            Text(text = stringResource(id = title), modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp), style = MaterialTheme.typography.titleMedium)
-            CircularLayout(
-                modifier = Modifier.fillMaxWidth().aspectRatio(1F),
-                placeFirstItemInCenter = true,
-            ) {
-                val note = rememberTextFieldState(initialNote)
-                TextField(
-                    state = note,
-                    modifier = Modifier.fillMaxWidth(0.45F).aspectRatio(1F),
-                    label = { Text(text = stringResource(id = hint)) },
-                    trailingIcon = {
-                        if (note.text.isNotEmpty()) {
-                            IconButton(onClick = { note.clearText() }) {
-                                Icon(imageVector = Icons.Default.Close, contentDescription = null)
-                            }
+context(_: DialogState)
+suspend fun awaitSelectItemWithIconAndTextField(
+    items: List<Pair<ImageVector, String>>,
+    @StringRes title: Int,
+    @StringRes hint: Int,
+    initialNote: String,
+    maxChar: Int,
+): Pair<Int, String> = showNoButton(false) {
+    Column {
+        Text(text = stringResource(id = title), modifier = Modifier.padding(horizontal = 16.dp).padding(top = 16.dp), style = MaterialTheme.typography.titleMedium)
+        CircularLayout(
+            modifier = Modifier.fillMaxWidth().aspectRatio(1F),
+            placeFirstItemInCenter = true,
+        ) {
+            val note = rememberTextFieldState(initialNote)
+            TextField(
+                state = note,
+                modifier = Modifier.fillMaxWidth(0.45F).aspectRatio(1F),
+                label = { Text(text = stringResource(id = hint)) },
+                trailingIcon = {
+                    if (note.text.isNotEmpty()) {
+                        IconButton(onClick = { note.clearText() }) {
+                            Icon(imageVector = Icons.Default.Close, contentDescription = null)
                         }
-                    },
-                    supportingText = {
-                        Text(
-                            text = "${note.text.toString().toByteArray().size} / $maxChar",
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.End,
-                        )
-                    },
-                    shape = ShapeDefaults.ExtraSmall,
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
-                )
-                items.forEachIndexed { index, (icon, text) ->
-                    Column(
-                        modifier = Modifier.clip(IconWithTextCorner).clickable { resume(index to note.text.toString()) }.fillMaxWidth(0.2F),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
-                        Text(
-                            text = text,
-                            textAlign = TextAlign.Center,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 2,
-                            style = MaterialTheme.typography.bodySmall,
-                        )
                     }
+                },
+                supportingText = {
+                    Text(
+                        text = "${note.text.toString().toByteArray().size} / $maxChar",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End,
+                    )
+                },
+                shape = ShapeDefaults.ExtraSmall,
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+            )
+            items.forEachIndexed { index, (icon, text) ->
+                Column(
+                    modifier = Modifier.clip(IconWithTextCorner).clickable { resume(index to note.text.toString()) }.fillMaxWidth(0.2F),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Icon(imageVector = icon, contentDescription = null, tint = AlertDialogDefaults.iconContentColor)
+                    Text(
+                        text = text,
+                        textAlign = TextAlign.Center,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 2,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
             }
         }

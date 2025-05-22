@@ -25,33 +25,35 @@ val NoopTransitionsVisibilityScope = TransitionsVisibilityScope(emptySet())
 @Stable
 value class TransitionsVisibilityScope(val scopes: Set<AnimatedVisibilityScope>)
 
-context(TransitionsVisibilityScope)
+context(ctx: TransitionsVisibilityScope)
 @Composable
-inline fun <T> togetherWith(scope: AnimatedVisibilityScope, block: @Composable TransitionsVisibilityScope.() -> T) = block(remember(scopes, scope) { TransitionsVisibilityScope(scopes + scope) })
+inline fun <T> togetherWith(scope: AnimatedVisibilityScope, block: @Composable TransitionsVisibilityScope.() -> T) = block(remember(ctx.scopes, scope) { TransitionsVisibilityScope(ctx.scopes + scope) })
 
-context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
+context(s: SharedTransitionScope, t: TransitionsVisibilityScope, g: SETNodeGenerator)
 @Composable
 fun Modifier.sharedBounds(
     key: String,
     enter: EnterTransition = fadeIn(),
     exit: ExitTransition = fadeOut(),
-) = remember(key) { summon(key) }.let { node ->
+) = remember(key) { g.summon(key) }.let { node ->
     DisposableEffect(key) {
         onDispose {
-            dispose(node)
+            g.dispose(node)
         }
     }
-    scopes.fold(this) { modifier, scope ->
-        modifier.sharedBounds(
-            rememberSharedContentState("${node.syntheticKey} + ${scope.transition.label}"),
-            scope,
-            enter,
-            exit,
-        )
+    t.scopes.fold(this) { modifier, scope ->
+        with(s) {
+            modifier.sharedBounds(
+                rememberSharedContentState("${node.syntheticKey} + ${scope.transition.label}"),
+                scope,
+                enter,
+                exit,
+            )
+        }
     }
 }
 
-context(SharedTransitionScope, TransitionsVisibilityScope, SETNodeGenerator)
+context(_: SharedTransitionScope, _: TransitionsVisibilityScope, _: SETNodeGenerator)
 @Composable
 inline fun SharedElementBox(key: String, shape: Shape, crossinline content: @Composable BoxScope.() -> Unit) {
     val modifier = Modifier.sharedBounds(key = key).clip(shape)

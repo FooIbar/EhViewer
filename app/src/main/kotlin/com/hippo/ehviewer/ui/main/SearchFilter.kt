@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,9 +41,11 @@ import com.hippo.ehviewer.client.data.GalleryInfo.Companion.S_LANG_TAGS
 import com.hippo.ehviewer.collectAsState
 import com.hippo.ehviewer.ui.tools.DialogState
 import com.hippo.ehviewer.ui.tools.DropdownFilterChip
+import com.hippo.ehviewer.ui.tools.awaitResult
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.toIntOrDefault
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
+import moe.tarsin.launch
 
 private val categoryTable = arrayOf(
     EhUtils.DOUJINSHI to R.string.doujinshi,
@@ -59,7 +60,7 @@ private val categoryTable = arrayOf(
     EhUtils.MISC to R.string.misc,
 )
 
-context(DialogState)
+context(_: DialogState, _: CoroutineScope)
 @Composable
 fun SearchFilter(
     modifier: Modifier = Modifier,
@@ -70,7 +71,6 @@ fun SearchFilter(
     advancedOption: AdvancedSearchOption,
     onAdvancedOptionChange: (AdvancedSearchOption) -> Unit,
 ) = Column(modifier) {
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val animateItems by Settings.animateItems.collectAsState()
     fun isCategoryChecked(bit: Int) = category and bit != 0
@@ -149,7 +149,7 @@ fun SearchFilter(
         FilterChip(
             selected = advancedOption.fromPage != 0 || advancedOption.toPage != 0,
             onClick = {
-                scope.launch {
+                launch {
                     val (from, to) = awaitResult(
                         initial = advancedOption.fromPage to advancedOption.toPage,
                         title = R.string.key_pages,
