@@ -45,5 +45,5 @@ fun tip(@StringRes id: Int, useToast: Boolean = false) = tip(string(id), useToas
 context(state: SnackbarHostState)
 suspend fun snackbar(message: String, actionLabel: String? = null, withDismissAction: Boolean = false, duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite) = state.showSnackbar(message, actionLabel, withDismissAction, duration)
 
-context(_: SnackbarHostState, _: CoroutineScope)
+context(state: SnackbarHostState, scope: CoroutineScope)
 fun launchSnackbar(message: String, actionLabel: String? = null, withDismissAction: Boolean = false, duration: SnackbarDuration = if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite) = launch { snackbar(message, actionLabel, withDismissAction, duration) }

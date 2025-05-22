@@ -183,7 +183,7 @@ suspend fun <R> awaitResult(
     )
 }
 
-context(_: Context, _: DialogState)
+context(ctx: Context, state: DialogState)
 suspend fun awaitSelectTags(): List<String> = dialog { cont ->
     val selected = remember { mutableStateListOf<String>() }
     val state = rememberTextFieldState()

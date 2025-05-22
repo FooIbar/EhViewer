@@ -369,7 +369,7 @@ fun ReaderScreen(pageLoader: PageLoader, info: BaseGalleryInfo?) {
     }
 }
 
-context(_: Context, _: DialogState, nav: DestinationsNavigator)
+context(ctx: Context, state: DialogState, nav: DestinationsNavigator)
 suspend inline fun <T> usePageLoader(args: ReaderScreenArgs, crossinline block: suspend (PageLoader) -> T) = when (args) {
     is ReaderScreenArgs.Gallery -> {
         val info = args.info
