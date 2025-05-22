@@ -343,7 +343,7 @@ fun AnimatedVisibilityScope.ReaderScreen(pageLoader: PageLoader, info: BaseGalle
             showSeekBar = showSeekbar,
             currentPage = syncState.sliderValue,
             totalPages = pageLoader.size,
-            onSliderValueChange = { syncState.sliderScrollTo(it + 1) },
+            onSliderValueChange = syncState::sliderScrollTo,
             onClickSettings = {
                 launch {
                     dialog { cont ->

@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -46,7 +45,6 @@ import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlin.math.roundToInt
 import kotlin.reflect.KMutableProperty0
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -103,10 +101,8 @@ fun SwitchPreference(title: String, summary: String? = null, value: KMutableProp
 }
 
 @Composable
-fun IntSliderPreference(maxValue: Int, minValue: Int = 0, step: Int = maxValue - minValue - 1, showTicks: Boolean = true, title: String, summary: String? = null, value: KMutableProperty0<Int>, enabled: Boolean = true, display: (Int) -> Int = { it }) {
-    var v by remember { mutableIntStateOf(value.get()) }
-    fun set(float: Float) = value.set(float.roundToInt().also { v = it })
-    SliderPref(title = title, summary = summary, defaultValue = v.toFloat(), onValueChangeFinished = ::set, valueRange = minValue.toFloat()..maxValue.toFloat(), showValue = true, steps = step, showTicks = showTicks, enabled = enabled, display = { display(it.roundToInt()).toFloat() })
+fun IntSliderPreference(maxValue: Int, minValue: Int = 0, step: Int = maxValue - minValue - 1, title: String, summary: String? = null, value: KMutableProperty0<Int>, enabled: Boolean = true, display: (Int) -> Int = { it }) {
+    SliderPref(title = title, summary = summary, defaultValue = value.get(), onValueChangeFinished = value::set, valueRange = minValue..maxValue, showValue = true, steps = step, enabled = enabled, display = display)
 }
 
 @Composable

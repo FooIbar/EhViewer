@@ -14,8 +14,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,10 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
+import com.hippo.ehviewer.ui.tools.Slider
 
 @Composable
 fun SpinnerChoice(title: String, entries: Array<String>, values: Array<String>, field: MutableState<Int>) {
@@ -97,24 +93,11 @@ fun SliderChoice(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         startSlot()
-        val configuration = LocalConfiguration.current
-        val maxTickCount = configuration.screenWidthDp / (SliderDefaults.TickSize.value * 2.5f).roundToInt()
-        val steps = range.last - range.first - 1
-        val showTicks = steps < maxTickCount
         Slider(
-            value = value.toFloat(),
-            onValueChange = { value = it.toInt() },
+            value = value,
+            onValueChange = { value = it },
             modifier = Modifier.weight(1f).padding(8.dp),
-            valueRange = (range.first.toFloat())..(range.last.toFloat()),
-            steps = steps,
-            colors = if (showTicks) {
-                SliderDefaults.colors()
-            } else {
-                SliderDefaults.colors(
-                    activeTickColor = Color.Transparent,
-                    inactiveTickColor = Color.Transparent,
-                )
-            },
+            valueRange = range,
         )
         endSlot()
     }
