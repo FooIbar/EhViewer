@@ -32,6 +32,12 @@ data class FavListUrlBuilder(
     val isLocal
         get() = favCat == FAV_CAT_LOCAL
 
+    fun moveToLastLoadAndMarkUsed() {
+        val tmp = next.orEmpty()
+        next = prev
+        prev = tmp
+    }
+
     fun setIndex(index: String?, isNext: Boolean) {
         next = index.takeIf { isNext }
         prev = index.takeUnless { isNext }

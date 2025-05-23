@@ -219,7 +219,9 @@ fun AnimatedVisibilityScope.GalleryListScreen(lub: ListUrlBuilder, navigator: De
                                 is LoadParams.Refresh -> if (builder.jumpTo != null) {
                                     builder.next ?: builder.setIndex("2", true)
                                 } else {
-                                    builder.setIndex(params.key.orEmpty(), false)
+                                    // key must be null here, indicates initial load(refresh or from saved state)\
+                                    // we try our best to find last content user viewed
+                                    builder.moveToLastLoadAndMarkUsed()
                                 }
                             }
                             runSuspendCatching {

@@ -44,6 +44,11 @@ data class ListUrlBuilder(
     var pageFrom: Int = -1,
     var pageTo: Int = -1,
 ) {
+    fun moveToLastLoadAndMarkUsed() {
+        val tmp = next.orEmpty()
+        next = prev
+        prev = tmp
+    }
 
     fun setIndex(index: String, isNext: Boolean = true) {
         next = index.takeIf { isNext }
