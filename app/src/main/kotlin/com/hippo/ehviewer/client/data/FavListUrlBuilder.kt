@@ -29,7 +29,7 @@ data class FavListUrlBuilder(
     var jumpTo: String? = null,
     var prev: String? = null,
     var next: String? = null,
-) {
+) : Parcelable {
     fun setIndex(index: String?, isNext: Boolean) {
         next = index.takeIf { isNext }
         prev = index.takeUnless { isNext }
