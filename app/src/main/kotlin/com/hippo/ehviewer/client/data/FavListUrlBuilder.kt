@@ -30,6 +30,9 @@ data class FavListUrlBuilder(
     var prev: String? = null,
     var next: String? = null,
 ) : Parcelable {
+    val isLocal
+        get() = favCat == FAV_CAT_LOCAL
+
     fun setIndex(index: String?, isNext: Boolean) {
         next = index.takeIf { isNext }
         prev = index.takeUnless { isNext }
