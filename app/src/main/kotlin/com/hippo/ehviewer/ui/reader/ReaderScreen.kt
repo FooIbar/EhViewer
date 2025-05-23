@@ -1,6 +1,8 @@
 package com.hippo.ehviewer.ui.reader
 
 import android.content.Context
+import android.net.Uri
+import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
@@ -81,6 +83,7 @@ import com.hippo.ehviewer.ui.tools.dialog
 import com.hippo.ehviewer.ui.tools.thenIf
 import com.hippo.ehviewer.util.displayString
 import com.hippo.ehviewer.util.hasAds
+import com.hippo.files.toOkioPath
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -97,19 +100,17 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.serialization.Serializable
+import kotlinx.parcelize.Parcelize
 import moe.tarsin.kt.unreachable
 import moe.tarsin.launch
 import moe.tarsin.string
-import okio.Path.Companion.toPath
 
-@Serializable
-sealed interface ReaderScreenArgs {
-    @Serializable
+sealed interface ReaderScreenArgs : Parcelable {
+    @Parcelize
     data class Gallery(val info: BaseGalleryInfo, val page: Int) : ReaderScreenArgs
 
-    @Serializable
-    data class Archive(val path: String) : ReaderScreenArgs
+    @Parcelize
+    data class Archive(val uri: Uri) : ReaderScreenArgs
 }
 
 @Composable
@@ -381,7 +382,7 @@ suspend inline fun <T> usePageLoader(args: ReaderScreenArgs, crossinline block: 
         }
     }
     is ReaderScreenArgs.Archive -> useArchivePageLoader(
-        args.path.toPath(),
+        args.uri.toOkioPath(),
         passwdProvider = { invalidator ->
             awaitInputText(
                 title = string(R.string.archive_need_passwd),
