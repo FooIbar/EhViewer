@@ -15,14 +15,17 @@
  */
 package com.hippo.ehviewer.client.data
 
+import android.os.Parcelable
 import com.hippo.ehviewer.client.keyToUrl
+import kotlinx.parcelize.Parcelize
 
-sealed interface GalleryPreview {
+sealed interface GalleryPreview : Parcelable {
     val url: String
     val imageKey: String
     val position: Int
 }
 
+@Parcelize
 data class V1GalleryPreview(
     override val imageKey: String,
     override val position: Int,
@@ -30,6 +33,7 @@ data class V1GalleryPreview(
     override val url get() = keyToUrl(imageKey)
 }
 
+@Parcelize
 data class V2GalleryPreview(
     override val url: String,
     override val imageKey: String,

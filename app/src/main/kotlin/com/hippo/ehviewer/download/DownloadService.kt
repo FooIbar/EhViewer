@@ -18,7 +18,6 @@ package com.hippo.ehviewer.download
 import android.Manifest
 import android.app.PendingIntent
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -28,9 +27,6 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
-import androidx.core.content.ContextCompat
-import androidx.savedstate.serialization.decodeFromSavedState
-import androidx.savedstate.serialization.encodeToSavedState
 import com.hippo.ehviewer.R
 import com.hippo.ehviewer.client.EhUtils
 import com.hippo.ehviewer.client.data.BaseGalleryInfo
@@ -38,6 +34,7 @@ import com.hippo.ehviewer.dao.DownloadInfo
 import com.hippo.ehviewer.ui.MainActivity
 import com.hippo.ehviewer.util.FileUtils
 import com.hippo.ehviewer.util.ReadableTime
+import com.hippo.ehviewer.util.getParcelableExtraCompat
 import com.hippo.ehviewer.util.unsafeLazy
 import eu.kanade.tachiyomi.util.system.logcat
 import kotlinx.coroutines.CoroutineScope
@@ -98,9 +95,11 @@ class DownloadService :
     private suspend fun handleIntent(intent: Intent?) {
         when (intent?.action) {
             ACTION_START -> {
-                val gi = intent.getBundleExtra(KEY_GALLERY_INFO) ?: return
+                val gi = intent.getParcelableExtraCompat<BaseGalleryInfo>(KEY_GALLERY_INFO)
                 val label = intent.getStringExtra(KEY_LABEL)
-                deferredMgr.await().startDownload(decodeFromSavedState(gi), label)
+                if (gi != null) {
+                    deferredMgr.await().startDownload(gi, label)
+                }
             }
 
             ACTION_START_RANGE -> {
@@ -454,23 +453,6 @@ class DownloadService :
         private var sFailedCount = 0
         private var sFinishedCount = 0
         private var sDownloadedCount = 0
-
-        context(ctx: Context)
-        inline fun startService(action: String, intentBuilder: Intent.() -> Unit = {}) {
-            val intent = Intent(ctx, DownloadService::class.java).setAction(action).apply(intentBuilder)
-            ContextCompat.startForegroundService(ctx, intent)
-        }
-
-        context(_: Context)
-        fun startDownload(info: BaseGalleryInfo, label: String? = null) = startService(ACTION_START) {
-            putExtra(KEY_GALLERY_INFO, encodeToSavedState(info))
-            label?.let { putExtra(KEY_LABEL, it) }
-        }
-
-        context(_: Context)
-        fun startRangeDownload(gidList: LongArray) = startService(ACTION_START_RANGE) {
-            putExtra(KEY_GID_LIST, gidList)
-        }
 
         fun clear() {
             sFailedCount = 0

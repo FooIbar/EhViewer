@@ -1,5 +1,7 @@
 package com.hippo.ehviewer.ui.main
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -11,6 +13,7 @@ object AdvanceTable {
     const val SFT = 0x10
 }
 
+@Parcelize
 @Serializable
 data class AdvancedSearchOption(
     @Transient
@@ -18,4 +21,4 @@ data class AdvancedSearchOption(
     val minRating: Int = 0,
     val fromPage: Int = 0,
     val toPage: Int = 0,
-)
+) : Parcelable
